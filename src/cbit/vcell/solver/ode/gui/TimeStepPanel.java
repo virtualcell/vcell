@@ -10,11 +10,19 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
+
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 
 /**
  * Insert the type's description here.
@@ -58,6 +66,9 @@ public class TimeStepPanel extends javax.swing.JPanel {
 			if (e.isTemporary()) {
 				return;
 			}
+			if (e.getSource() == getDefaultTimeStepTextField()){
+				correctUniformOutputTimeStep();
+			}
 			if (e.getSource() == getDefaultTimeStepTextField() ||				
 				e.getSource() == getMinimumTimeStepTextField() || 
 				e.getSource() == getMaximumTimeStepTextField()) {
@@ -72,6 +83,41 @@ public TimeStepPanel() {
 	super();
 	addPropertyChangeListener(ivjEventHandler);
 	initialize();
+}
+
+public void correctUniformOutputTimeStep() {
+	boolean bValid = true;
+	double timeStep = Double.parseDouble(getDefaultTimeStepTextField().getText());
+	if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+		OutputTimeSpec outputTimeSpec = solverTaskDescription.getOutputTimeSpec();
+		if (outputTimeSpec instanceof UniformOutputTimeSpec){
+			UniformOutputTimeSpec uniformTimeSpec = (UniformOutputTimeSpec)outputTimeSpec;
+			double outputTime = uniformTimeSpec.getOutputTimeStep();
+			double suggestedInterval = outputTime;
+			if (outputTime < timeStep) {
+				suggestedInterval = timeStep;
+				bValid = false;
+			} else {
+				double n = outputTime/timeStep;
+				int intn = (int)Math.round(n);
+				if (intn != n) {
+					bValid = false;
+					suggestedInterval = (intn * timeStep);
+				}
+			} 
+		
+			if (!bValid) {		
+				String ret = PopupGenerator.showWarningDialog(TimeStepPanel.this, "Output Interval", "Output Interval must " +
+						"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
+						new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+				if (ret.equals(UserMessage.OPTION_YES)) {
+					uniformTimeSpec.setOuputTimeStep(suggestedInterval);
+					bValid = true;
+				} 
+			}
+		}
+	}
+		
 }
 
 public void setNewTimeStep() {
