@@ -325,6 +325,9 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 									// Otherwise it will refer to data from previous (parent) simulation.
 									sims[j].clearVersion();
 									simNames[j] = sims[j].getName();
+//									if(sims[j].getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)){
+//										sims[j].getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+//									}
 								}
 
 								newBioModel = getRequestManager().getDocumentManager().save(bioModel, simNames);
@@ -436,6 +439,9 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 						// Otherwise it will refer to data from previous (parent) simulation.
 						sims[j].clearVersion();
 						simNames[j] = sims[j].getName();
+//						if(sims[j].getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)){
+//							sims[j].getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolumeStandalone);
+//						}
 					}
 
 					pp.setMessage("Saving MathModel "+testCases[i].getVersion().getName());
