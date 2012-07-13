@@ -153,20 +153,15 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
 	
 	String errorMessage = null;
-	long maxTimepoints = Simulation.MAX_LIMIT_ODE_TIMEPOINTS;
-	long warningTimepoints = Simulation.WARNING_ODE_TIMEPOINTS;
+	long maxTimepoints = Simulation.MAX_LIMIT_NON_SPATIAL_TIMEPOINTS;
+	long warningTimepoints = Simulation.WARNING_NON_SPATIAL_TIMEPOINTS;
 	boolean bSpatial = simulation.isSpatial();
 	if(bSpatial)
 	{
-		maxTimepoints = Simulation.MAX_LIMIT_PDE_TIMEPOINTS;
-		warningTimepoints = Simulation.WARNING_PDE_TIMEPOINTS;
+		maxTimepoints = Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS;
+		warningTimepoints = Simulation.WARNING_SPATIAL_TIMEPOINTS;
 	}
-	else if (simulation.getMathDescription().isNonSpatialStoch())
-	{
-		maxTimepoints = Simulation.MAX_LIMIT_STOCH_TIMEPOINTS;
-		warningTimepoints = Simulation.WARNING_STOCH_TIMEPOINTS;
-	}
-	
+		
 	long maxSizeBytes = Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L;
 	long warningSizeBytes = Simulation.WARNING_0DE_MEGABYTES*1000000L;
 	if(bSpatial)
@@ -191,13 +186,11 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	if (expectedNumTimePoints>maxTimepoints){
 		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
 						"maximum allowed is:\n" + 
-						"     "+Simulation.MAX_LIMIT_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
-						"     "+Simulation.MAX_LIMIT_PDE_TIMEPOINTS + " for spatial simulations\n"+
-						"     "+Simulation.MAX_LIMIT_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
+						"     "+Simulation.MAX_LIMIT_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
 						"recommended limits are:\n" + 
-						"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
-						"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n"+
-						"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n"+
+						"     "+Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+Simulation.WARNING_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
 						"Try saving fewer timepoints\n"+
 						"If you need to exceed the quota, please contact us";
 		//not used for multiple stochastic run
@@ -275,9 +268,8 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		//
 		if (expectedNumTimePoints>warningTimepoints){
 			warningMessage = "Warning: large number of timepoints ("+expectedNumTimePoints+"), suggested limits are:\n" + 
-							"     "+Simulation.WARNING_ODE_TIMEPOINTS + " for compartmental ODE simulations\n" + 
-							"     "+Simulation.WARNING_PDE_TIMEPOINTS + " for spatial simulations\n" +
-							"     "+Simulation.WARNING_STOCH_TIMEPOINTS + " for compartmental stochastic simulations\n" +
+							"     "+Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
+							"     "+Simulation.WARNING_SPATIAL_TIMEPOINTS + " for spatial simulations\n" +
 							"Try saving fewer timepoints";
 		} else if (expectedSizeBytes>warningSizeBytes){
 			warningMessage = "Warning: large simulation result set ("+(expectedSizeBytes/1000000L)+"MB) exceeds suggested limits of:\n" + 

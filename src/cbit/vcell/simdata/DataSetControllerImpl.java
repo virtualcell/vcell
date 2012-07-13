@@ -101,6 +101,7 @@ import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -633,6 +634,9 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			FileFormat testFile = null;
 			try{
 				testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+				if(getMesh(vcdID).getGeometryDimension() != 0){ //post data processing is for spatial model only
+					testFile.setMaxMembers(Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS);
+				}
 				// open the file and retrieve the file structure
 				testFile.open();
 				Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
