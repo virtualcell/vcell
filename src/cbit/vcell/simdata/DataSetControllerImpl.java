@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +37,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
@@ -646,6 +649,8 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			}finally{
 				if(testFile != null){testFile.close();}
 			}
+			//uncomment it for Debug
+			//do_iterate(dataProcessingOutputFileDDF5);
 		}else{
 			throw new FileNotFoundException("file not found");
 		}
@@ -656,50 +661,150 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 		throw new DataAccessException(e.getMessage(),e);
 	}
 }
+
+//uncomment it for Debug
+/*private static String DATASETNAME = "/";
+enum H5O_type {
+    H5O_TYPE_UNKNOWN(-1), // Unknown object type
+    H5O_TYPE_GROUP(0), // Object is a group
+    H5O_TYPE_DATASET(1), // Object is a dataset
+    H5O_TYPE_NAMED_DATATYPE(2), // Object is a named data type
+    H5O_TYPE_NTYPES(3); // Number of different object types
+	private static final Map<Integer, H5O_type> lookup = new HashMap<Integer, H5O_type>();
+
+	static {
+		for (H5O_type s : EnumSet.allOf(H5O_type.class))
+			lookup.put(s.getCode(), s);
+	}
+
+	private int code;
+
+	H5O_type(int layout_type) {
+		this.code = layout_type;
+	}
+
+	public int getCode() {
+		return this.code;
+	}
+
+	public static H5O_type get(int code) {
+		return lookup.get(code);
+	}
+}
+
+public static void do_iterate(File hdfFile) {
+	int file_id = -1;
+
+	// Open a file using default properties.
+	try {
+		file_id = H5.H5Fopen(hdfFile.getAbsolutePath(), HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
+	}
+	catch (Exception e) {
+		e.printStackTrace();
+	}
+
+	// Begin iteration.
+	System.out.println("Objects in root group:");
+	try {
+		if (file_id >= 0) {
+			int count = (int)H5.H5Gn_members(file_id, DATASETNAME);
+			String[] oname = new String[count];
+            int[] otype = new int[count];
+            int[] ltype = new int[count];
+			long[] orefs = new long[count];
+			H5.H5Gget_obj_info_all(file_id, DATASETNAME, oname, otype, ltype, orefs, HDF5Constants.H5_INDEX_NAME);
+
+			// Get type of the object and display its name and type.
+			for (int indx = 0; indx < otype.length; indx++) {
+				switch (H5O_type.get(otype[indx])) {
+				case H5O_TYPE_GROUP:
+					System.out.println("  Group: " + oname[indx]);
+					break;
+				case H5O_TYPE_DATASET:
+					System.out.println("  Dataset: " + oname[indx]);
+					break;
+				case H5O_TYPE_NAMED_DATATYPE:
+					System.out.println("  Datatype: " + oname[indx]);
+					break;
+				default:
+					System.out.println("  Unknown: " + oname[indx]);
+				}
+			}
+		}
+	}
+	catch (Exception e) {
+		e.printStackTrace();
+	}
+
+	// Close the file.
+	try {
+		if (file_id >= 0)
+			H5.H5Fclose(file_id);
+	}
+	catch (Exception e) {
+		e.printStackTrace();
+	}
+}*/
+
+
 public static void populateHDF5(Group g, String indent,DataProcessingOutput dataProcessingOutput,boolean bVarStatistics,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception
 {
     if (g == null)
         return;
-
+      
     List members = g.getMemberList();
 
     int n = members.size();
     indent += "    ";
     HObject obj = null;
-//    HashMap<String, Origin> originHashmap = new HashMap<String, Origin>();
-//    HashMap<String, Extent> extentHashmap = new HashMap<String, Extent>();
+
+    String nameAtt = "_name";
+    String unitAtt = "_unit";
     for (int i=0; i<n; i++){
     	
         obj = (HObject)members.get(i);
-        System.out.print(indent+obj+" ("+obj.getClass().getName()+") isGroup="+(obj instanceof Group));
+        //uncomment for Debug
+        /*System.out.print(indent+obj+" ("+obj.getClass().getName()+") isGroup="+(obj instanceof Group));*/
         if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS)){
 	    	List<Metadata> metaDataL = obj.getMetadata();
 	    	if(metaDataL != null){
-	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);
-	    		String[] variableStatNames = new String[attrHashMap.size()];
+	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);//map contains the same number of names and attributes
+	    		String[] variableStatNames = null;
+	    		String[] variableUnits = null;
+	    		Iterator<String> attrIterTemp = attrHashMap.keySet().iterator();
+	    		boolean bHasUnit = false;
+	    		for (int j = 0; j < attrHashMap.size(); j++) {
+	    			String compVal = attrIterTemp.next();
+	    			if(compVal.contains(nameAtt) || compVal.contains(unitAtt)){
+	    				bHasUnit = true;
+	    				break;
+	    			}
+	    		}
+	    		if(bHasUnit){
+	    			variableStatNames = new String[attrHashMap.size()/2];
+	    			variableUnits = new String[attrHashMap.size()/2]; 
+	    		}else{
+	    			variableStatNames = new String[attrHashMap.size()]; // old way
+	    		}
 	    		Iterator<String> attrIter = attrHashMap.keySet().iterator();
 	    		for (int j = 0; j < attrHashMap.size(); j++) {
 	    			String compVal = attrIter.next();
-	    			String compValtemp = compVal.substring(5);
-	    			int compValIdx = Integer.parseInt(compValtemp);
-	    			variableStatNames[compValIdx] = attrHashMap.get(compVal);
+	    			int compVarIdx = Integer.parseInt(compVal.substring(5, 6));
+	    			if(compVal.contains(nameAtt)){
+	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
+	    			}else if(compVal.contains(unitAtt)){
+	    				variableUnits[compVarIdx] = attrHashMap.get(compVal);
+	    			}else{//old way for var names(e.g. comp_0 = abc) with no "_name" or "_unit"
+	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
+	    			}
 				}
-	    		
 	        	dataProcessingOutput.setVariableStatNames(variableStatNames);
+	        	dataProcessingOutput.setVariableUnits(variableUnits);
 	        	dataProcessingOutput.setVariableStatValues(new double[variableStatNames.length][dataProcessingOutput.getTimes().length]);
 	        	bVarStatistics = true;
 	    	}
         }else if(obj instanceof H5ScalarDS){
         	H5ScalarDS h5ScalarDS = (H5ScalarDS)obj;
-//        	h5ScalarDS.init();
-//        	long[] selectedDims = h5ScalarDS.getSelectedDims();
-//        	long[] startDims = h5ScalarDS.getStartDims();
-//        	long[] stride = h5ScalarDS.getStride();
-//        	int[] selectedIndex = h5ScalarDS.getSelectedIndex();
-
-        	
-        	
-        	
         	h5ScalarDS.init();
         	long[] dims = h5ScalarDS.getDims();
         	
@@ -721,11 +826,12 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
         			dims[0] = dims[1];
         			dims[1] = dimsY;
         		}
-	        	System.out.print(" dims=(");
+        		//uncomment for Debug
+	        	/*System.out.print(" dims=(");
 	        	for (int j = 0; j < dims.length; j++) {
 					System.out.print((j>0?"x":"")+dims[j]);
 				}
-	        	System.out.print(")");
+	        	System.out.print(")");*/
         	}
         	
 //        	System.out.print(" len="+times.length);
@@ -765,10 +871,18 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 	    	List<Metadata> metaDataL = obj.getMetadata();
 	    	if(metaDataL != null){//assume 6 attributes defining origin and extent
 	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);
-	    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINZ)));
-	    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTZ)));
-//	    		originHashmap.put(imgDataName,orign);
-//	    		extentHashmap.put(imgDataName,extent);
+	    		if(attrHashMap.size() == 2){
+		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), 0, 0);
+		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), 1, 1);//this is 1D, however the extentY, Z cannot take 0
+	    		}	
+	    		else if(attrHashMap.size() == 4){
+		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), 0);
+		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), 1);//this is 2D, however the extentZ cannot take 0
+	    		}
+	    		else if(attrHashMap.size() == 6){
+		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINZ)));
+		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTZ)));
+	    		}
 	    	}
 
         }
