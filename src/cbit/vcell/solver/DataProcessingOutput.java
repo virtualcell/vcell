@@ -34,6 +34,7 @@ public class DataProcessingOutput implements Serializable {
 	private double[] times;
 	private String[] variableStatNames;
 	private double[][] variableStatValues;
+	private String[] variableUnits;
 	private HashMap<String, Vector<SourceDataInfo>> dataGenerators = new HashMap<String, Vector<SourceDataInfo>>();
 
 /**
@@ -60,6 +61,13 @@ public void setVariableStatNames(String[] variableStatNames) {
 	this.variableStatNames = variableStatNames;
 }
 
+public String[] getVariableUnits() {
+	return variableUnits;
+}
+
+public void setVariableUnits(String[] variableUnits) {
+	this.variableUnits = variableUnits;
+}
 
 public double[][] getVariableStatValues() {
 	return variableStatValues;

@@ -348,7 +348,11 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					//					List<Variable> varList = ncfile.getVariables();
 					DefaultListModel dlm = new DefaultListModel();
 					for (int i = 0; i < dpo.getVariableStatNames().length; i++) {
-						dlm.addElement(dpo.getVariableStatNames()[i]);
+						if(dpo.getVariableUnits() != null && dpo.getVariableUnits()[i] != null && dpo.getVariableUnits()[i].length() > 0){
+							dlm.addElement(dpo.getVariableStatNames()[i] + "_(" + dpo.getVariableUnits()[i] + ")");
+						}else{
+							dlm.addElement(dpo.getVariableStatNames()[i]);
+						}
 					}
 //					for (Variable var : varList) {
 //						if (!var.getName().equals(ReservedSymbol.TIME.getName())) {
@@ -395,7 +399,12 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			String[] plotNames = new String[totalColumns - 1];
 			int columnCount = 0;
 			for (int v = 0; v < numSelectedVars; v ++) {
-				String varName = (String)selectedObjects[v];
+				String varName = ((String)selectedObjects[v]);
+				//remove the unit from name if exist
+				if(varName.indexOf("_(") > 0) //"_(" doesn't suppose to be the first char
+				{
+					varName = varName.substring(0, varName.indexOf("_("));
+				}
 //				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
 //				int[] shape = volVar.getShape();
 //				int numColumns = shape[1];
