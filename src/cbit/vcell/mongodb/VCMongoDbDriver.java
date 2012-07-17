@@ -124,6 +124,7 @@ public class VCMongoDbDriver implements Runnable {
         {
             processing = true;
             Thread messageProcessingThread = new Thread(this,"MongoDB Process Thread");
+            messageProcessingThread.setDaemon(true);
             messageProcessingThread.start();
         }
     }

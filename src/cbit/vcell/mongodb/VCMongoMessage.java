@@ -1,5 +1,7 @@
 package cbit.vcell.mongodb;
 
+import java.net.URL;
+
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.WorkerEvent;
@@ -7,12 +9,16 @@ import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationMessage.DetailedState;
-import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solver.SolverEvent;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.AbstractSolver;
 
 import com.mongodb.BasicDBObject;
 
@@ -27,6 +33,8 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_msgtype_simJobStatusInsert_AlreadyInserted	= "simJobStatusInsert_AlreadyInserted";
 	public final static String MongoMessage_msgtype_solverStatus						= "solverStatus";
 	public final static String MongoMessage_msgtype_workerEventMessage					= "workerEventMessage";
+	public final static String MongoMessage_msgtype_rpcRequestSent						= "rpcRequestSent";
+	public final static String MongoMessage_msgtype_rpcRequestReceived					= "rpcRequestReceived";
 	public final static String MongoMessage_msgTime				= "msgTime";
 	
 	//
@@ -60,6 +68,11 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_simEstMemory		= "simEstMemory";
 	public final static String MongoMessage_pbsJobID			= "pbsJobID";
 	public final static String MongoMessage_pbsWorkerMsg		= "pbsWorkerMsg";
+	public final static String MongoMessage_rpcRequestMethod	= "rpcMethod";
+	public final static String MongoMessage_rpcRequestArgs		= "rpcArgs";
+	public final static String MongoMessage_rpcRequestService	= "rpcService";
+	public final static String MongoMessage_userName			= "user";
+	public final static String MongoMessage_host				= "host";
 	
 
 	private BasicDBObject doc = null;
@@ -85,6 +98,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_simJobStatusInsert_AlreadyInserted);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,newSimulationJobStatus);
 			
@@ -111,6 +125,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_simJobStatusInsert);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,updatedSimulationJobStatus);
 			
@@ -137,6 +152,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_simJobStatusUpdate_DBCacheMiss);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,newSimulationJobStatus);
 			
@@ -167,6 +183,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_simJobStatusUpdate);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,updatedSimulationJobStatus);
 	
@@ -198,6 +215,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_solverStatus);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,solverEvent);
 				
@@ -216,6 +234,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
 			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_workerEventMessage);
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,workerEventMessage);
 				
@@ -236,6 +255,7 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
 			dbObject.put(MongoMessage_pbsWorkerMsg, pbsWorkerMsg);
 			dbObject.put(MongoMessage_pbsJobID, pbsJobID);
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	
 			addObject(dbObject,simulationTask);
 			
@@ -246,6 +266,64 @@ public final class VCMongoMessage {
 	}
 
 
+	public static void sendRpcRequestReceived(RpcRequest rpcRequest) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
+			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_rpcRequestReceived);
+			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
+
+			addObject(dbObject,rpcRequest);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendRpcRequestSent(RpcRequest rpcRequest) {
+		if (!enabled){
+			return;
+		}
+		try {
+			
+			BasicDBObject dbObject = new BasicDBObject();
+			dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
+			dbObject.put(MongoMessage_msgtype,MongoMessage_msgtype_rpcRequestSent);
+			dbObject.put(MongoMessage_msgTime, System.currentTimeMillis());
+			dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
+
+			addObject(dbObject,rpcRequest);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	private static void addObject(BasicDBObject dbObject, RpcRequest rpcRequest){
+		dbObject.put(MongoMessage_rpcRequestArgs,rpcRequest.getArguments().toString());
+		for (Object arg : rpcRequest.getArguments()){
+			//
+			// look for simulation IDs in rpcRequest arguments ... add to field.
+			//
+			if (arg instanceof VCSimulationIdentifier){
+				dbObject.put(MongoMessage_simId, ((VCSimulationIdentifier)arg).getSimulationKey().toString());
+			}else if (arg instanceof VCSimulationDataIdentifier){
+				dbObject.put(MongoMessage_simId, ((VCSimulationDataIdentifier)arg).getSimulationKey().toString());
+			}else if (arg instanceof VCSimulationDataIdentifierOldStyle){
+				dbObject.put(MongoMessage_simId, ((VCSimulationDataIdentifierOldStyle)arg).getSimulationKey().toString());
+			}
+		}
+		dbObject.put(MongoMessage_rpcRequestMethod,rpcRequest.getMethodName());
+		dbObject.put(MongoMessage_rpcRequestService,rpcRequest.getRequestedServiceType().getName());
+		dbObject.put(MongoMessage_userName,rpcRequest.getUserName());
+	}
+	
 	private static void addObject(BasicDBObject dbObject, SimulationTask simulationTask){
 		dbObject.put(MongoMessage_simId,simulationTask.getSimulationJob().getVCDataIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_jobIndex, simulationTask.getSimulationJob().getJobIndex());
