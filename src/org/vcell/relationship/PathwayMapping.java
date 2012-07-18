@@ -193,7 +193,7 @@ public class PathwayMapping {
 	
 	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
 	{
-		for(Process process :BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion)) {
+		for(Process process :BioPAXUtil.getAllProcesses(bioModel, conversion)) {
 			String name = process.getName();
 			if(bioModel.getModel().getReactionStep(name) == null){
 				// create a new reactionStep object
@@ -216,7 +216,7 @@ public class PathwayMapping {
 			{
 		// use user defined id as the name of the reaction name
 		// get participants from table rows
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows){
 				if(ctr.interactionId().equals(bioPaxObject.getID())){
@@ -250,7 +250,8 @@ public class PathwayMapping {
 	{
 		// use user defined id as the name of the reaction name
 		// get participants from table rows
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+//		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows){
 				if(ctr.interactionId().equals(bioPaxObject.getID())){
@@ -282,7 +283,7 @@ public class PathwayMapping {
 	private void createReactionStepsFromTableRow(BioModel bioModel, Transport bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 			{
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
 			// use user defined id as the name of the reaction name
 			// get participants from table rows
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
@@ -371,30 +372,18 @@ public class PathwayMapping {
 					 * using addCatalyst() to create catalyst in reaction: 
 					 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
 					 */
-					//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
+					//reactionStep.addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
 
 					/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
 					 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
 					 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
 					 */
-					reactionStep.addReactionParticipant(
-							new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
+					reactionStep.addReactionParticipant(new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 				}else if(ctr.participantType().equals("Control")){
 					String safeId = getSafetyName(ctr.id());
-					/* 
-					 * using addCatalyst() to create catalyst in reaction: 
-					 * this function cannot allow an object to be catalyst and (reactant/product) in the same reaction
-					 */
-					//	((ReactionStep)bioModelEntityObject).addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
-
-					/* However, in pathway interaction object, an physicalEntity can be catalyst and (reactant/product) in the same reaction
-					 * So we just call create catalyst for the reaction no matter what rolls the object is playing in the reaction
-					 * Switch back to the addCatalyst() function when it is necessary, but exceptions make be reported for some reactions
-					 */
-					reactionStep.addReactionParticipant(
-							new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
+					//reactionStep.addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
+					reactionStep.addReactionParticipant(new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 				}
-
 			}
 		}
 	}
@@ -403,7 +392,7 @@ public class PathwayMapping {
 			double stoich, String id, String location) throws Exception
 	{
 		// use user defined id as the name of the reaction name
-		Set<Process> processes = BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion);
+		Set<Process> processes = BioPAXUtil.getAllProcesses(bioModel, conversion);
 		for(Process process : processes) {
 			String name = getSafetyName(process.getName() + "_" + location);
 			if(bioModel.getModel().getReactionStep(name) == null){
@@ -510,15 +499,8 @@ public class PathwayMapping {
 		}
 		(reactionStep).setReactionParticipants(rpArray);
 		// add Control to the reaction
-		if(process.getCatalysis() != null) {
-			for(InteractionParticipant pe : process.getCatalysis().getParticipants()){
-				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
-				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
-			}
-			
-		}
-		if(process.getModulation() != null) {
-			for(InteractionParticipant pe : process.getModulation().getParticipants()){
+		if(process.getControl() != null) {
+			for(InteractionParticipant pe : process.getControl().getParticipants()){
 				SpeciesContext newSpeciescontext = createSpeciesContextFromBioPaxObject( bioModel, pe.getPhysicalEntity());
 				(reactionStep).addReactionParticipant(new Catalyst(null,reactionStep, newSpeciescontext));
 			}

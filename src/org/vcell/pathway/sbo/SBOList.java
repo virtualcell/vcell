@@ -13,15 +13,16 @@ package org.vcell.pathway.sbo;
 import java.util.HashMap;
 import java.util.Map;
 
-
+@Deprecated
 public class SBOList {
 
 	public static final String NO_SYMBOL = "?";
 
 	protected static Map<String, SBOTerm> indexToTerm = new HashMap<String, SBOTerm>();
 
+	@Deprecated
 	public static SBOTerm createTerm(String index, String symbol, String name, String description) {
-		SBOTerm sboTerm = SBOUtil.createSBOTermFromIndex(index, symbol, name, description);
+		SBOTerm sboTerm = SBOUtil.createSBOTermFromIndex(index, symbol, name, description, "");
 		indexToTerm.put(index, sboTerm);
 		return sboTerm;
 	}

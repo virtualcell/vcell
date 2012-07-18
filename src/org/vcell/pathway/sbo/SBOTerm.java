@@ -23,12 +23,15 @@ public class SBOTerm {
 	protected final String index;
 	protected final Set<String> labels = new HashSet<String>();
 	protected final Set<String> comments = new HashSet<String>();
+	@Deprecated
 	protected final Set<SBOTerm> subClasses = new HashSet<SBOTerm>();
+	@Deprecated
 	protected final Set<SBOTerm> superClasses = new HashSet<SBOTerm>();
 	protected Expression expression;
 	protected String symbol;
 	protected String name;
 	protected String description;
+	protected String isA;
 	
 	public SBOTerm(String index) { this.index = index; }
 	
@@ -47,7 +50,9 @@ public class SBOTerm {
 
 	public Set<String> getLabels() { return labels; }
 	public Set<String> getComments() { return comments; }
+	@Deprecated
 	public Set<SBOTerm> getSubClasses() { return subClasses; }
+	@Deprecated
 	public Set<SBOTerm> getSuperClasses() { return superClasses; }
 	
 	public void setExpression(Expression expression) { this.expression = expression; }
@@ -58,5 +63,8 @@ public class SBOTerm {
 	public String getName() { return name; }
 	public void setDescription(String description) { this.description = description; }
 	public String getDescription() { return description; }
+	public void setIsA(String isA) { this.isA = isA; }
+	public String getIsA() { return isA; }
+
 	
 }
