@@ -11,23 +11,65 @@
 package org.vcell.pathway.sbo;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SBOUtil {
 
-	public static SBOTerm createSBOTermFromIndex(String index, String symbol, 
-			String name, String description) {
-		SBOTerm sboTerm = createSBOTermFromIndex(index);
+	public static SBOTerm createTerm(
+			String index, 
+			String symbol, 
+			String name, 
+			String description, 
+			String isA)
+//			Map<String, SBOTerm> map)
+	{
+		SBOTerm sboTerm = SBOUtil.createSBOTermFromIndex(index, symbol, name, description, isA);
+		SBOListEx.sboMap.put(index, sboTerm);
+		return sboTerm;
+	}
+
+	public static SBOTerm createSBOTermFromIndex(String index, String symbol, String name, String description, String isA) {
+		SBOTerm sboTerm = new SBOTerm(index);
 		sboTerm.setSymbol(symbol);
 		sboTerm.setName(name);
 		sboTerm.setDescription(description);
+		sboTerm.setIsA(isA);
 		return sboTerm;
 	}
 	
-	public static SBOTerm createSBOTermFromIndex(String index) { 
-		return new SBOTerm(index); 
+	public static Set<SBOTerm> getSubClasses(SBOTerm term) {
+		Set<SBOTerm> subClasses = new HashSet<SBOTerm>();
+
+		Iterator<String> iterator = SBOListEx.sboMap.keySet().iterator();
+		while (iterator.hasNext()) {
+			String key = (String) iterator.next();
+			SBOTerm candidate = SBOListEx.sboMap.get(key);
+			if(candidate.getIsA().contains(term.getId())) {
+				subClasses.add(candidate);
+			}
+		}
+        return subClasses;
+	}
+	public static Set<SBOTerm> getSuperClasses(SBOTerm term) {
+		Set<SBOTerm> superClasses = new HashSet<SBOTerm>();
+
+		String isA = term.getIsA();
+		if(isA.contains(",")) {	// 2 super classes, comma separated
+			String id1 = isA.substring(0,isA.indexOf(","));
+			String id2 = isA.substring(isA.indexOf(",")+1);
+			superClasses.add(SBOListEx.sboMap.get(id1));
+			superClasses.add(SBOListEx.sboMap.get(id2));
+//			System.out.println(id1 + " ,   " + id2);
+		} else {
+			superClasses.add(SBOListEx.sboMap.get(isA));
+		}
+		return superClasses;
 	}
 	
+	@Deprecated
 	public static String getIndexFromId(String id) {
 		if(id.length()<7) {
 			id = "0000000" + id; 
@@ -35,23 +77,28 @@ public class SBOUtil {
 		return id.substring(id.length() - 7);
 	}
 	
+	@Deprecated
 	public static SBOTerm createSBOTermFromId(String id) {
 		return new SBOTerm(getIndexFromURI(id));
 	}
 	
+	@Deprecated
 	public static String getIndexFromURI(String uri) {
 		return uri.substring(uri.length() - 7);
 	}
 	
+	@Deprecated
 	public static SBOTerm createSBOTermFromURI(String uri) {
 		return new SBOTerm(getIndexFromURI(uri));
 	}
 	
+	@Deprecated
 	public static void setChild(SBOTerm parent, SBOTerm child) {
 		parent.getSubClasses().add(child);
 		child.getSuperClasses().add(parent);
 	}
 	
+	@Deprecated
 	public static Set<SBOTerm> getAllDescendents(SBOTerm term) {
 		Set<SBOTerm> descendents = new HashSet<SBOTerm>();
 		Set<SBOTerm> descendentsNew = new HashSet<SBOTerm>();			
