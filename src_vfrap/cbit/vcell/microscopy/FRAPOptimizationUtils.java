@@ -664,7 +664,7 @@ public class FRAPOptimizationUtils {
 	}
 	
 	/*
-	 * From netCDF file, the rawdata contains average data over time under difference 8 roi rings,
+	 * From HDF5 file, the rawdata contains average data over time under difference 8 roi rings,
 	 * which are stored in colume1 to colume8. colume0 stores the time average data from region0
 	 * which is the area beyond ring1-8.
 	 * Here we want to generate a double array which includes all roi data (bleached, bg, cell, ring1 to ring8)

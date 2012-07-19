@@ -133,7 +133,7 @@ public class ProjectionDataGenerator extends DataGenerator {
 		if (!Compare.isEqualOrNull(function, pdg.function)){
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override
