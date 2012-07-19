@@ -60,6 +60,7 @@ import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
@@ -304,9 +305,9 @@ private void writeSmoldyn() throws Exception {
 	printWriter.println();
 }
 
-private void writePostProcessingBlock() throws SolverException, ExpressionException {
+private void writePostProcessingBlock() throws Exception{ // SolverException, ExpressionException and exceptions from roiDataGenerator.getROIDataGeneratorDescription()
 	PostProcessingBlock postProcessingBlock = simulationJob.getSimulation().getMathDescription().getPostProcessingBlock();
-	if (postProcessingBlock.getNumDataGenerators() == 0) {
+	if (postProcessingBlock.getNumDataGenerators() == 0) { // to make c++ code write default var statisitcs, without the token it won't write anything
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_END);
 		printWriter.println();
@@ -334,6 +335,19 @@ private void writePostProcessingBlock() throws SolverException, ExpressionExcept
 				printWriter.println(FVInputFileKeyword.GAUSSIAN_CONVOLUTION_DATA_GENERATOR + " " + varName + " " + domainName 
 						+ " " + sigmaXY.infix() + " " + sigmaZ.infix() + " " + function.infix()  +";");
 			}
+		} else if (dataGenerator instanceof ROIDataGenerator) {
+			/*
+			ROI_DATA_GENERATOR_BEGIN roidata
+			VolumePoints 20
+			2667 2676 2679 2771 2969 2877 3067 3277 3185 3283 3473 3580 3690 3687 3878 4086 3990 4182 4193 1077 (all points in one line)
+			SampleImage 9 0 1341426862190 vcField('sumROIData','roiSumDataVar',0.0,'Volume')
+			StoreEnabled false
+
+			SampleImageFile roiSumDataVar 0.0 C:\Users\abcde\VirtualMicroscopy\SimulationData\SimID_1341426862125_0_sumROIData_roiSumDataVar_0_0_Volume.fdat
+			DATA_PROCESSOR_END
+			*/
+			ROIDataGenerator roiDataGenerator = (ROIDataGenerator) dataGenerator;
+			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simulationJob)); 
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
 		}
@@ -342,23 +356,7 @@ private void writePostProcessingBlock() throws SolverException, ExpressionExcept
 	printWriter.println();
 }
 
-/**
-DATA_PROCESSOR_BEGIN VFRAP
-VolumePoints 49
-2667 2676 2679 2771 2969 2877 3067 3277 3185 3283 3473 3580 3690 3687 3878 4086 3990 4182 4193 1077
-2257 1984 2269 2648 3561 2890 3116 4104 4383 3995 4561 3909 3816 3820 5024 4429 4979 5102 6011 6094
-6338 6081 6527 7705 7305 8040 7423 8105 8023
-SampleImage 41 0 32742266 field(imageFieldDataName1,mask,0.0,Volume)
-StoreEnabled false
 
-SampleImageFile mask 0.0 \\users\\schaff\\SimID_32742646_0_imageFieldDataName1_mask_0_0_Volume.fdat
-DATA_PROCESSOR_END
- * @throws MathException 
- * @throws IOException 
- * @throws DataAccessException 
- * @throws ExpressionException 
- * @throws DivideByZeroException 
-*/
 /*private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
 	Simulation simulation = simulationJob.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
