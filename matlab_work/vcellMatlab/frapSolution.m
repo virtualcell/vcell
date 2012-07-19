@@ -7,17 +7,17 @@ classdef frapSolution < handle
         problem           % object that holds parameters and geometry
         
         % discretization
-        xarray            % x coordinate of each mesh element
-        yarray            % y coordinate of each mesh element
+        xarray            % x coordinate of each mesh element, number of non-zero mask points 1*n
+        yarray            % y coordinate of each mesh element, number of non-zero mask points 1*n
         A_matrix          % sparse laplacian matrix, cell region indexing
-        numMeshPoints     % number of rows (size of cell region)
+        numMeshPoints     % number of non-zero mask points
         
         % smallest N eigenvalues/eigenvectors
-        eigenVectors      % V matrix (each column is an eigenvector?)
-        eigenValues       % vector (not diagonal D matrix)
+        eigenVectors      % V matrix (each column is an eigenvector?) non-zero mask points n * m (numOfEigenValues)
+        eigenValues       % vector (not diagonal D matrix) numOfEigenValues * 1
         
         % initial total fluorescence in mesh indices
-        initialFluorescence
+        initialFluorescence % number of non-zero mask points n*1
         
         % solution
         solutionTimes     % vector of times (including 0.0)
@@ -63,16 +63,12 @@ classdef frapSolution < handle
             solutionT = this.getSolutionM() + this.getSolutionI();
         end
         
-        function projections = getProjections(this, var)
-            projections = this.eigenVectors'*var;
-        end
-        
         function eigenvector = getEigenvector(this, index)
             eigenvector = this.eigenVectors(:,index);
         end
         
-        function eigenvector = getEigenvalue(this, index)
-            eigenvector = this.eigenValues(index);
+        function eigenvalue = getEigenvalue(this, index)
+            eigenvalue = this.eigenValues(index);
         end
         
         function numEigenvalues = getNumEigenvalues(this)
@@ -102,6 +98,10 @@ classdef frapSolution < handle
         function projectFluorescence(this)
             T = this.getSolutionT();   % numTimes x numMeshpoints
             this.projection = T*this.eigenVectors;
+        end
+        
+        function projectExpFluorescence(this)
+            this.projection = this.problem.expFluorescence * this.eigenVectors;
         end
         
         function plotMesh(this, var, figure1, figure2, bSymmetric)
@@ -137,9 +137,9 @@ classdef frapSolution < handle
         function computeEigenvalues(this, numSmallEigenvalues)
             display(sprintf('\nstarting eigs() %d smallest', numSmallEigenvalues));    
             tic();
-            [V,D] = eigs(this.A_matrix,numSmallEigenvalues,'SM');
+            [V,D] = eigs(this.A_matrix,numSmallEigenvalues,'sm');
             this.eigenVectors = V;
-            this.eigenValues = spdiags(D);
+            this.eigenValues = spdiags(D);%Extract and create sparse band and diagonal matrices
             toc();
             display(sprintf('done with eigs() %d smallest', numSmallEigenvalues));
         end

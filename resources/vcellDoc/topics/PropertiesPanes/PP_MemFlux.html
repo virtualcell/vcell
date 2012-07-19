@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Membrane Flux Properties Pane</title>
+</head><body>
+<p><h2>Membrane Flux Properties Pane</h2></p>
+<p>
+  The membrane flux panel is used to display and edit properties of a membrane flux, which are the name, whether or not
+  it is a molecular flux, an electric flux or both, the reaction rate J, 
+  the electric current I, and the math expressions involved in J or I,
+  and a free text annotation.
+  </p>
+<p><p><br><br>
+<img align=left src="../image/PP_MemFlux.png" width="578" height="288">
+
+  On top, there is an editable field for the name of the reaction (i.e. the flux). The line below shows flux type checkboxes
+  to select whether there is a molecular flux, whether there is an electric current, and a charge valence combobox showing
+  the electric charge per molecule. 
+  One line below that, there is a non-editable combobox
+  offering a few options for laws governing the reaction rate or the electrical current or both, 
+  and a conversion button to convert the rate law either from flux and current ("molecules per second") to 
+  flux density and current density ("micromolar per second") or vice versa.
+  </p>
+<p>
+  Below these, taking most of the space of the panel, there is the kinetic table of math terms used to define the reaction rate J
+  and the electric current density I: 
+  the first two rows contain J and I, and further rows contain named mathematical terms referred to by J and I (e.g. kinetic parameters)
+  or referred to by any of the other math terms 
+  in the table. Note that among J and I, one of them is either zero or refers to the other. 
+  If needed, the terms include species concentrations, whose name is the species name. 
+  Typically, concentrations of all reactants and catalysts are needed (and products, if reversible).
+  </p>
+<p>
+  Columns of the kinetic table are: the name, the description, a checkbox whether it is a global expression 
+  (i.e. shared across the model,
+  as opposed to local, i.e. used only in this reaction), the math expression and the units of measurement.
+  </p>
+<p>
+  At the bottom, there is a text field for free text annotations, which can be hidden or shown by clicking on on the tiny button 
+  left of the "Add Annotation Here" label.
+  </p>
+</p>
+<p><p>
+    The name of the reaction (i.e. the flux) can be changed by editing the text field. 
+    A name already given to another reaction will be rejected.
+    </p>
+<p>
+    The flux type check boxes can be checked or unchecked to determine whether there is a flux of molecules, an electric current, 
+    or both. The charge valence combobox allows selecting a charge per molecule in elementary charges, 
+    an integer from minus five to five.
+    </p>
+<p>
+    The rate law combobox can be used to either select one of a few predefined laws for reaction rate or current
+    or choose to enter a user-defined rate law, which describes a flux, flux density, current or current density. 
+    Flux density and current density correspond to what would be micromolar per second in the case of reactions,
+    while fluxes and currents correspond to molecules per second in the case of reactions, although the actual units are different. 
+    </p>
+<p>
+    In the case of flux density or current density, the conversion button will say "Convert to molecules per second", which means
+    convert it to flux or current. In the case of flux or current, the conversion button will say "Convert to micromolar per second",
+    which means convert it to a flux density or a current density.
+    Note that predefined laws are flux densities or current densities, so if they are converted to fluxes or currents, they
+    will be converted to user-defined, and remain so even if converted back.
+    </p>
+<p>
+    Expressions and their units can be edited except for predefined rate laws, species concentrations and universal constants. 
+    Incompatible units will be silently rejected. 
+    If references to new terms are added to expressions of existing ones, new rows will automatically be added for these terms. 
+    Each term can be set to global or local by a checkbox, except for the reaction rate, which is always local, and species
+    concentrations and universal constants, which are always global. 
+    If a term is global, it is identical to any global term of the same name. If a term is
+    local, it is different from any term in a different context.
+    </p>
+<p>
+    The text field for free text annotations can be edited.
+    </p>
+</p>
+</body>
+</html>

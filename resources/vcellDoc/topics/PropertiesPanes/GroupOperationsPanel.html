@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>Entities Management Toolbar</title>
+</head><body>
+<p><h2>Entities Management Toolbar</h2></p>
+<p>
+The buttons shown in this toolbar allow the user to perform various useful operations 
+on selected entities within the 
+		<a href="../chapter_6/PathwayDiagram/PathwayDiagramView.html"> Entities Diagram View</a>
+and the 
+		<a href="../chapter_6/PathwayObjects/PathwayObjectsView.html"> Entities Table View</a>
+.
+	</p>
+<p>
+This toolbar shows buttons allowing group, delete and link operations on selected 
+entities. There is also present a Search feature which filters entities by string.
+		<br><br>
+<img align=left src="../image/OperationsToolbar.png" width="543" height="47">
+<p></p>
+</p>
+<p>
+The user can perform various operations upon these entities, either on individually selected 
+entities or multiple selected entities.
+<p></p>
+<b>Linking.</b> Single / multiple entities can be imported within a model. Following this process, equivalent 
+entities to those pathway entities being imported will be created within the BioModel. A permanent
+link will preserve the relationship between the BioModel and the Pathway entities. 
+To do this select one or more 
+entities and press the Physiology Links button, then use the option Import into physiology...
+<p></p>
+
+The Import into physiology Dialog box is opened. Here the user is allowed to edit the 
+values for the compartment and stoichiometric coefficient. The default values is c0 for the 
+compartment and it may be sufficient for most cases. However, the user may take advantage of 
+the location property of many pathway entities and manually edit the location field. In the 
+example below, the reactants are located in c1 while the product is located on the membrane. 
+The reaction itself must be treated as a membrane reaction because at least one reaction participant 
+is located on the membrane.
+		<br><br>
+<img align=left src="../image/PathwayImportDlg.png" width="554" height="259">
+<p></p>
+
+Once that step is finished the imported entities are displayed within the 
+		<a href="../chapter_2/ReactDiagView.html"> Reaction Diagram View</a>. In the context 
+of this example c0 is extracellular region, c1 is the cytosol and Membrane0 is the 
+plasma membrane.
+		<br><br>
+<img align=left src="../image/PathwayDiagramLinkedComp.png" width="571" height="377">
+<p></p>
+
+Returning to the Pathway Diagram View it can be noticed that the linked entities display a 
+small 'L' mark within their circle representation, indicating their linked status.
+		<br><br>
+<img align=left src="../image/PathwayDiagramLinked1.png" width="562" height="400">
+<p></p>
+<b>Grouping.</b> Multiple entities can be grouped together under a Group entity. The goal of such action would 
+be to reduce clutter and allow the user to focus on the significant parts of the view. Consider 
+the view below:
+		<br><br>
+<img align=left src="../image/PathwayDiagramLinked1.png" width="562" height="400">
+<p></p>
+
+The user may choose to group all the linked items (those marked with a 'L' letter) under a group 
+and all the participants of the other reaction under a second group. The result should look as 
+follows: 
+		<br><br>
+<img align=left src="../image/PathwayGroupedItems.png" width="568" height="373">
+<p>
+Existing groups can be grouped in even larger groups. Also groups can be broken down into 
+their original subcomponents using the Ungroup option.
+</p>
+
+A particular type of grouping applies to reactions. The Collapse / Expand commands will hide / 
+restore the entities associated with a selected reaction.
+<p></p>
+<b>Deleting.</b> Single / multiple entities can be deleted from the view using the Delete Selected button. Note 
+that linked entities cannot be deleted as long as the link exists. In the case of selections 
+where some entities can be deleted and some others can not, a warning dialog box will display 
+pertinent information. In the example below the user tried to delete two reactions one of which 
+is linked.
+		<br><br>
+<img align=left src="../image/PathwayDeleteObjectDlg.png" width="496" height="318">
+<p></p>
+</p>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>The Imported Pathway View</title>
+</head><body>
+<p><h2>The Imported Pathway View</h2></p>
+<p>
+	The pathway import table shows, for an imported pathway, the interactions (i.e. biochemical reaction,
+	transport, transport with biochemical reaction) and the physical entities (i.e. proteins, small molecules, complexes,
+	DNA, RNA) it contains. 
+	</p>
+<p><br><br>
+<img align=left src="../image/PathwayImportTable.png" width="549" height="233">
+<p>
+	Most of the space is occupied by the pathway import table, which shows entities from an imported pathway
+	to select those entities that should be added to the pathway model. It has three columns: the first contains
+	selection checkboxes, the second an entity name and the third the (BioPAx Level 2) type of entity.
+	At the bottom, there is a search text field to filter results and an add button to add selected entities
+	to the pathway model.
+    </p>
+</p>
+<p>
+	After a pathway is imported, its entities appear in the pathway import table. Selection checkboxes can be used to
+	select those entities which should be added to the pathway model. Entering a string into the search text field causes 
+	the entity list to be filtered and only those entities to appear which match the search text. 
+	The table can be sorted by clicking on a table header.
+	<p>
+	After entities have been selected, pressing the add button will add these entities to the pathway model, 
+	including dependencies (e.g. if adding a reaction, all participants will come along).
+	</p>
+<p>
+	The pathway model entities are being displayed as a 
+	<a href="PathwayDiagram/PathwayDiagramView.html"> diagram</a> 
+	or as a 
+	<a href="PathwayObjects/PathwayObjectsView.html"> table</a> .	
+	</p>
+<p>
+	The table items can be sorted alphabetically by any column by clicking on the column header. As an added capability,
+	the items in the table can be filtered in real time by typing a string inside the Search field. 
+	</p>
+<br><br>
+<img align=left src="../image/PathwayImportTableSearch.png" width="566" height="234">
+</p>
+</body>
+</html>

@@ -343,7 +343,12 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 		}			
 		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
 			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
-			addParticleProperties(pp);
+			if(pp.getVariable().getDomain().compareEqual(this)){
+				addParticleProperties(pp);
+			}else{
+				throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
+						                 ". \nHowever the variable particle properties of " + pp.getVariable().getName() + " is defined in domain " + this.getName() + ". \nPlease check your model.");
+			}
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastSystem)){

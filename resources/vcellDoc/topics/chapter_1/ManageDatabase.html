@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>File -> Manage Database</title>
+</head><body>
+<p><h2>File -> Manage Database</h2></p>
+<p><p>
+	The Virtual Cell Modeling and Simulation Framework allows for easy maintenance of models. 
+	The <b>File -> Manage Database</b> menu sequence brings up the <b>Database Manager</b>. The Database Manager has a tab for each of the three VCell document types (BioModel, MathModel, Geometry).
+	Each tab lists models of the corresponding document type that belong to the user, those that are shared with the current user by other VCell users and those that are public.
+	<b>Note:</b> Documents can be deleted only from within the Database Manager or by selecting the model in the VCell Database tab of the 'Database Panel' (on the lower left corner of the VCell document) 
+	and right-clicking and selecting the 'Delete' option. 
+	</p>
+</p>
+<p><br><br>
+<img align=left src="../image/FileManageDB.gif" width="505" height="567">
+</p>
+<p><p> 
+	The main Database Manager window has the following menu options:
+	</p>
+<ul><li><a href="ManageDBFile.html">File</a></li>
+<li><a href="ManageDBEdit.html">Edit</a></li>
+<li><b>Server</b> : this menu option has the <b>Reconnect</b> menu item that allows the user to reconnect to the server. The status bar at the bottom of the window displays the connecting status. 
+			<br><br>
+<img align=left src="../image/ManageDBServerMenu.PNG" width="325" height="414">
+</li>
+<li><a href="ManageDBCompareWith.html">Compare With</a></li>
+<li><a href="ManageDBView.html">View</a></li>
+<li><b>Search</b> : this menu option is currently disabled.</li>
+</ul>
+<p>
+	The Database Manager has a <b>Search</b> section that allows the user to search for models by name and/or by date modified. 
+	In the Database Manager window, the models are listed in a tree structure as 'folders'. The number of models stored in the database under each 'folder' is displayed in parenthesis.
+	The possible folders that are listed include:
+	</p>
+<ul><li><b>My BioModels</b> - where the current user's models are listed with user name in parenthesis.</li>
+<li><b>Shared BioModels</b> - where models shared by other users with current user are listed (as "userName : modelName").</li>
+<li><b>Public BioModels</b> - where VCell models created by users and used in their publications are listed (as "userName : modelName").</li>
+<li><b>Tutorials</b> - list models that are designed for specific modeling problems, such as FRAP binding or Calcium diffusion. These models can be used as tutorials for modelers seeking to model similar problems.</li>
+<li><b>Education</b> - lists simple models that have been created to demonstrate the VCell functionality to train new users of the VCell.</li>
+</ul>
+<p>
+	Expanding a tree node displays all the models of the user stored in the VCell database. Each model, when expanded, will list all the versions/editions of the models stored.
+	Selecting any model or one of its versions lists a summary of the model (about its applications, geometries, simulations, annotations, etc) in the <b>Selected BioModel Summary</b> in the lower panel of the window.
+	</p>
+<p>
+	Right clicking any selected model brings up a pop-up menu. The options available are: 
+	</p>
+<br><br>
+<img align=left src="../image/FileManageDBPopup.gif" width="435" height="454">
+<ul><li><b>Open</b> - opens the selected model. Please refer to the section <a href="Open.html">File ->Open</a>.
+		</li>
+<li><b>Delete</b> - allows user to delete the selected models (only the current user's models). To access the delete function, the user should make sure the document he/she is interested in deleting is closed prior to deleting it. A warning message is displayed asking if user wants to continue with the delete operation.
+		</li>
+<li><b>Permissions...</b> - allows user to share his/her models with other users. Please refer to the section <a href="Permissions.html">File -> Permissions</a>. 
+		</li>
+<li><b>Archive</b> - this option is designed for use when models are used in publications or need to be saved in a final state. 
+			<p> 
+			This maybe useful when models are a requirement for publication in a journal or associated with textbook examples. Models can always be made public through Permissions without archiving. 
+			When model results are reported in publications, it is ideal to make the model public. Once information of the publication and the public model are provided to the Virtual Cell team, they will be
+			added to the VCell “Published Models” web page. An Archived BioModel or MathModel is protected from deletion or alteration by the owner. 
+			Their permissions can be set to either 'Private' or 'Public''. Users may wish to 'Archive'' the public model and 'Create a New Edition' to continue model development.
+			A description of the restrictions imposed on Archived documents is displayed. Press <b>OK</b> to set 'ARCHIVE' mode. 
+			Current Archive restrictions: ARCHIVING cannot be undone without VCELL administrative assistance. ARCHIVED versions of documents cannot be deleted without VCELL administrative assistance.
+			</p>
+</li>
+<li><b>Publish</b> - this option is currently disabled.
+		</li>
+<li><b>Compare With</b> - allows user to compare models. Please refer to the section <a href="ManageDBCompareWith.html">Manage Database -> Compare With</a>.
+		</li>
+<li><b>Export</b> - Please refer to the section on <a href="Export.html">File -> Export</a></li>
+</ul>
+</p>
+</body>
+</html>

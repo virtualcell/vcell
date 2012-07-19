@@ -82,7 +82,7 @@ public void addParticleProperties(ParticleProperties newParticleProperties) thro
 
 public ParticleProperties getParticleProperties(Variable variable) {
 	for (ParticleProperties pp : listOfParticleProperties) {
-		if (pp.getVariable().getName().equals(variable.getName())) {
+		if (pp.getVariable() == variable) {
 			return pp;
 		}
 	}
@@ -97,7 +97,7 @@ public ParticleProperties getParticleProperties(Variable variable) {
  */
 public void addVarIniCondition(VarIniCondition newVarIniCondition) throws MathException
 {
-	if(getVarIniCondition(newVarIniCondition.getVar().getName())!=null)
+	if(getVarIniCondition(newVarIniCondition.getVar())!=null)
 		throw new MathException("Initial condition regarding variable: "+newVarIniCondition.getVar().getName()+" already exists");
 	listOfVarIniConditions.add(newVarIniCondition);
 }
@@ -308,10 +308,10 @@ public VarIniCondition getVarIniCondition(int index)
  * @return cbit.vcell.math.VarIniCondition
  * @param varName java.lang.String
  */
-public VarIniCondition getVarIniCondition(String varName) 
+public VarIniCondition getVarIniCondition(Variable var) 
 {
 	for (VarIniCondition vic : listOfVarIniConditions){
-		if (vic.getVar().getName().equals(varName)){
+		if (vic.getVar() == var){
 			return vic;
 		}
 	}

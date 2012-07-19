@@ -46,6 +46,7 @@ classdef paramestFew < handle
             numLastPoints = 5;
             t1 = numTimes-numLastPoints;
             t2 = numTimes;
+            % P is the Omega2, the slower decay rate
             [P1 S1] = polyfit(this.solution.solutionTimes(t1:t2),this.logProjections(t1:t2,1),1);
             [P2 S2] = polyfit(this.solution.solutionTimes(t1:t2),this.logProjections(t1:t2,2),1);
             [P3 S3] = polyfit(this.solution.solutionTimes(t1:t2),this.logProjections(t1:t2,3),1);

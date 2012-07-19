@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>Structure Mapping</title>
+</head><body>
+<p><h2>Structure Mapping</h2></p>
+<p>
+	Structure Mapping defines the relationship between the physiology (Compartments/Structures) and the geometry (Domains).
+	The mapping provides information to simulation solvers that identifies a physiology structure at every point in space.
+	</p>
+<p><br><br>
+<img align=left src="../../image/frm_Structure_Mapping.gif" width="587" height="325">
+</p>
+<p><p>
+	MathModel structure mappings are implicit in the definition of a MathModel document (described elsewhere).
+	Compartmental (non-spatial) BioModel structure mapping (to an empty geometry) is created automatically.  
+	Spatial BioModel structure mappings are defined by the user within an "Application" after all physiology compartments and a spatial geometry have been added.
+	Expand the "Applications" tab and select a previously defined application.  Click the "Structure Mapping" tab.
+	There are 3 panels, on the left is the "physiology (structures)" panel, on the right is the "Geometry (subdomains)" panel and on the bottom is the "Structure Mapping" table.
+	Choose 1 of the methods below to map each physiology structure to the appropriate geometry subdomain: 
+	1.  For each distinct physiology structure, select the "mapping" tool and click on a point within the physiology structure (left panel) and drag to a colored square next to the appropriate geometry subdomain (right panel).  (ignore any 2-color squares).
+	- or -
+	2.  In the "Structure Mapping" table click the table under the "Subdomain" heading next to the "Structure" you want to map and choose a geometry domain from the pop-up list that appears to define the mapping.
+	</p>
+<p>
+	The BioModel "Structure Mapping" table also provides 2 additional parameter editing capabilities depending on the type of geometry defined.
+	1.  For applications with NON-SPATIAL geometries the "Structure Mapping" table allows the user to enter "Size" information.
+	"Size" information defines the volume (in units of um2) of a particular structure.  The size does not include the sizes of any other structures or membrane surface areas.
+	2.  For applications with SPATIAL geometries the "Structure Mapping" table allows the user to enter boundary conditions.
+	Boundary conditions are represented in the "Structure Mapping" table as 6 table columns.  Each column represents an edge of the simulation world.
+	"-X" represents the edge of the simulation world in the minus X direction. the other columns have similar meaning for the indicated axis (XYZ) and direction (-+).
+	Click on (-X,+X,-Y,+Y,-Z,+Z) to set one of 2 boundary conditions (FLUX, VALUE) for each structure/subdomain mapping.
+	FLUX instructs the solver to use an explicitly defined constant or function to calculate the flux (uM.um.s-1) of a species at the simulation world boundary.
+	VALUE instructs the solver to use an explicitly defined constant or function to calculate the concentration (uM) of a species at the simulation world boundary.
+	The boundary condition chosen will determine how a species interacts with the simulation world boundary.
+	The actual constant or function is defined for each species in the (see <a href="../Specifications/SpeciesSpecifications.html">Specifications->Species</a>) panel.
+	One or more of the structures may be mapped to a spatial geometry domain that does not intersect the edge of the simulation world and this setting will have no effect.
+	</p>
+</p>
+</body>
+</html>

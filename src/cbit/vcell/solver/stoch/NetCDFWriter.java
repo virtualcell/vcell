@@ -506,7 +506,7 @@ public class NetCDFWriter {
 			    for(int i=0; i<numSpecies.getLength(); i++)
 			    {
 			    	try{
-			    		VarIniCondition varIniCondition = subDomain.getVarIniCondition(vars.elementAt(i).getName());
+			    		VarIniCondition varIniCondition = subDomain.getVarIniCondition(vars.elementAt(i));
 			  			Expression varIniExp = varIniCondition.getIniVal();
 			  			varIniExp.bindExpression(simSymbolTable);
 						varIniExp = simSymbolTable.substituteFunctions(varIniExp).flatten();

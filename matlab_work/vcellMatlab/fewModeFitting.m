@@ -21,20 +21,20 @@ problem.initMask();
 solution = frapSolution;
 solution.problem = problem;
 solution.buildMatrix();
-solution.initialFluorescence = solution.getGaussianBleachPattern(0.63, 0.63, 80.0);
+solution.initialFluorescence = solution.getGaussianBleachPattern(0.63, 0.63, 80.0); % 1*n (num of non-zero mask points)
 
 solution.plotInitialConditions();
 
 solution.solutionTimes = 0 : 0.05 : 1;
-solution.solve();
+solution.solve(); % artificial data, solutionValues m(num time points) * 2n(2 times of non-zero mask points, for mobile and immobile)
 
 solution.animateSolution(solution.getSolutionT(),0.1);
 
 solution.computeEigenvalues(10);
 solution.animateEigenfunctions(0.2);
 
-solution.projectFluorescence()
-solution.projection
+solution.projectFluorescence() %solution total (num time points * non-zero mask points) * eigenVector(non-zero mask points * num eigen values)
+solution.projection % created by projectFluorescence(), num time points * num eigen values
 
 paramest = paramestFew;
 paramest.solution = solution;
