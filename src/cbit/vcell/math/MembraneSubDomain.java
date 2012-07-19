@@ -373,7 +373,7 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 		}
 		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
 			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
-			if(pp.getVariable().getDomain().compareEqual(this)){
+			if(pp.getVariable().getDomain().getName().equals(this.getName())){
 				addParticleProperties(pp);
 			}else{
 				throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
