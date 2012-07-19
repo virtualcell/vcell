@@ -275,8 +275,8 @@ public static void main(String[] args) {
 			System.setOut(ps);
 			System.setErr(ps);			
 		}
-		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
 		org.vcell.util.PropertyLoader.loadProperties();
+		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
 		new ServerManagerDaemon().start();		
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
