@@ -16,6 +16,7 @@ import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 
 import cbit.htc.PBSUtils;
+import cbit.htc.PbsJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.SimulationMessage;
@@ -46,18 +47,30 @@ public PBSSolver(SimulationTask simTask, java.io.File directory, SessionLog sess
  * @throws SolverException 
  * @throws ExecutableException 
  */
-private String submit2PBS() throws SolverException, ExecutableException {
+private PbsJobID submit2PBS() throws SolverException, ExecutableException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
 	String cmd = getExecutableCommand();
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 	String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 	
-	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
+	PbsJobID jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
 	if (jobid == null) {
 		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
 		return null;
 	}
-	fireSolverStarting(SimulationMessage.solverEvent_Starting_Submit("submitted to job scheduler, job id is " + jobid));
+	fireSolverStarting(SimulationMessage.solverEvent_Starting_Submit("submitted to job scheduler, job id is " + jobid, jobid));
+	
+	// babysitPBSSubmission(jobid);
+	
+	return jobid;
+}
+
+/**
+ * the code below was called synchronously within submit2PBS();
+ * 
+ */
+@Deprecated
+private void babysitPBSSubmission(PbsJobID jobid) throws SolverException{
 
 	// if PBS has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
@@ -126,7 +139,6 @@ private String submit2PBS() throws SolverException, ExecutableException {
 	}
 	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
 	VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
-	return jobid;
 }
 
 @Override
@@ -141,13 +153,13 @@ public double getProgress() {
 
 public void startSolver() {
 	try {
-		VCMongoMessage.sendPBSWorkerMessage(simulationTask,"", "calling PBSSolver.initialize()");
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.initialize()");
 		initialize();
-		VCMongoMessage.sendPBSWorkerMessage(simulationTask,"", "calling PBSSolver.submit2PBS()");
-		String jobID = submit2PBS();
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.submit2PBS()");
+		PbsJobID jobID = submit2PBS();
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobID, "PBSSolver.submit2PBS() returned");
 	} catch (Throwable throwable) {
-		VCMongoMessage.sendPBSWorkerMessage(simulationTask,"", "PBSSolver.startSolver() exception: "+throwable.getClass().getName()+" "+throwable.getMessage());
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "PBSSolver.startSolver() exception: "+throwable.getClass().getName()+" "+throwable.getMessage());
 		getSessionLog().exception(throwable);
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));		
