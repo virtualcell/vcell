@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>Output Functions</title>
+</head><body>
+<p><h2>Output Functions</h2></p>
+<p><p>Output functions are user defined functions for simulation results in a biomodel application or in a math model, 
+	and they are saved with the model and available for viewing in all simulations in the containing application or math model.</p>
+<p>Output functions are defined as vcell expressions. Symbols that can be used in the expression of a output function are:</p>
+<ul><li>t</li>
+<li>x, y, z : spatial models only</li>
+<li>model variables</li>
+<li>vcell predefined mathematical functions</li>
+<li>previously defined output functions</li>
+</ul>
+<p>After an output function is added, it will be automatically added to all simulation result viewers.</p>
+<p>
+	In spatial models, output functions are defined in a specific subdomain, either in a volume or on a membrane. This determines the function type of a output function. 
+	In subdomains where a output function is not define, Gray color will be displayed with "Undefined" as the value in results viewer.  	
+	</p>
+</p>
+<p><ul><li>Add Function</li>
+
+	
+	In an non-spatial application or math model, click "Add Function" button to add a output function.
+	After editing the name and expression, click "OK" to add the function.
+	<br><br>
+<img align=left src="../../image/output_functions_nonspatial_add.gif" width="561" height="424">
+<p>In a spatial application or math model, click "Add Function" button to add a output function.
+	After selecting a subdomain, editing the name and expression, click "OK" to add the function.
+	<br><br>
+<img align=left src="../../image/output_functions_spatial_add.gif" width="564" height="442">
+</p>
+<li>Delete Function</li>
+
+	Select a function in the table, click "Delete Function" button to delete a function.	
+	
+	<li>Edit Expression</li>
+	
+	After a function is added, expression can be changed by double clicking the expression column.
+	<br><br>
+<img align=left src="../../image/output_functions_edit.gif" width="560" height="415">
+</ul>
+<p>Remember to save the model after a function is added or deleted.</p>
+</p>
+</body>
+</html>

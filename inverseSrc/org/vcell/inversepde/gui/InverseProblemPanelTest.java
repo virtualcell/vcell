@@ -10,7 +10,6 @@
 package org.vcell.inversepde.gui;
 
 
-import java.awt.Component;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -20,10 +19,6 @@ import javax.swing.JFrame;
 import org.vcell.inversepde.InverseProblem;
 import org.vcell.inversepde.services.InversePDERequestManager;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 
