@@ -46,7 +46,7 @@ public class ExplicitDataGenerator extends DataGenerator {
 		if (!Compare.isEqualOrNull(expression,v.expression)){
 			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override

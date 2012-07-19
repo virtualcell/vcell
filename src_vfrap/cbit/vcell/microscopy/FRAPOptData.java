@@ -11,25 +11,35 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Vector;
+
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
 
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
+import cbit.image.gui.SourceDataInfo;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
@@ -184,21 +194,23 @@ public class FRAPOptData {
 		System.out.println("run simulation...");
 		KeyValue referenceSimKeyValue = null;
 		referenceSimKeyValue = runRefSimulation(progressListener);
-		System.out.println("simulation done...");
+ 		System.out.println("simulation done...");
 		
 		VCSimulationIdentifier vcSimID =
 			new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 		VCSimulationDataIdentifier vcSimDataID =
 			new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 		//read results from netCDF file
-		String ncFileStr = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION).getAbsolutePath();
-		NetCDFRefDataReader refDataReader = new NetCDFRefDataReader(ncFileStr);
+		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
+		//get dataprocessing output
+		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
 		//get ref sim time points
-		double[] rawRefDataTimePoints = refDataReader.getTimePoints();
+		double[] rawRefDataTimePoints = dataProcessingOutput.getTimes();
 		//get shifted time points
 		refDataTimePoints = shiftTimeForBaseDiffRate(rawRefDataTimePoints);
 		//get summarized raw ref data
-		double[][] rawData = refDataReader.getRegionVar(); //contains only 8rois +1(the area that beyond 8 rois)
+		double[][] rawData = getDataFromSourceDataInfo(dataProcessingOutput);
+		 //contains only 8rois +1(the area that beyond 8 rois)
 		//extend to whole roi data
 		dimensionReducedRefData = FRAPOptimizationUtils.extendSimToFullROIData(expFrapStudy.getFrapData(), rawData, refDataTimePoints.length);
 		
@@ -214,6 +226,63 @@ public class FRAPOptData {
 		//remove experimental and roi external files
 		FRAPStudy.removeExternalFiles(getExpFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(), 
 				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
+	}
+	
+	public double[][] getDataFromSourceDataInfo(DataProcessingOutput dataProcessingOutput)
+	{
+		double[][] results = null;
+		Vector<SourceDataInfo> sourceDataInfoList = dataProcessingOutput.getDataGenerators().get(FRAPStudy.ROI_EXTDATA_NAME);
+		if(sourceDataInfoList != null && sourceDataInfoList.size() > 0)
+		{
+			double[] rowData = (double[])sourceDataInfoList.get(0).getData();
+			results = new double[rowData.length][sourceDataInfoList.size()];// rois * timePoints
+			for(int i=0; i<sourceDataInfoList.size(); i++)
+			{
+				double[] temp = (double[])sourceDataInfoList.get(i).getData();
+				for(int j=0; j<temp.length; j++)
+				{
+					results[j][i] = temp[j];
+				}
+			}
+		}
+		return results;
+	}
+	
+	public DataProcessingOutput getRawReferenceDataFromHDF5(File hdf5File) throws DataAccessException {
+		try {
+			DataProcessingOutput dataProcessingOutput = null;
+			
+			if (hdf5File.exists()) {
+				dataProcessingOutput = new DataProcessingOutput();
+				// retrieve an instance of H5File
+				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+				if (fileFormat == null){
+					throw new Exception("Cannot find HDF5 FileFormat.");
+				}
+				// open the file with read-only access	
+				FileFormat testFile = null;
+				try{
+					testFile = fileFormat.open(hdf5File.getAbsolutePath(), FileFormat.READ);
+					// open the file and retrieve the file structure
+					testFile.open();
+					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
+					DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
+				}catch(Exception e){
+					throw new IOException("Error reading file");
+				}finally{
+					if(testFile != null){testFile.close();}
+				}
+				//uncomment it for Debug
+				//DataSetControllerImpl.do_iterate(hdf5File);
+			}else{
+				throw new FileNotFoundException("file not found");
+			}
+
+			return dataProcessingOutput;
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+			throw new DataAccessException(e.getMessage(),e);
+		}
 	}
 	
 	private double[] shiftTimeForBaseDiffRate(double[] timePoints)
@@ -248,8 +317,8 @@ public class FRAPOptData {
 			//change time bound and time step
 			Simulation sim = bioModel.getSimulations()[0];
 			
-			DataProcessingInstructions dpi = getExpFrapStudy().getDataProcessInstructions(getLocalWorkspace());
-			sim.setDataProcessingInstructions(dpi);
+			ROIDataGenerator roiDataGenerator = getExpFrapStudy().getROIDataGenerator(getLocalWorkspace());
+			sim.getMathDescription().getPostProcessingBlock().addDataGenerator(roiDataGenerator);
 			System.out.println("run FRAP Reference Simulation...");
 
 			//run simulation

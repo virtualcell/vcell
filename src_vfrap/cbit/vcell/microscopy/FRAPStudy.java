@@ -63,6 +63,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.model.Feature;
@@ -1016,7 +1017,7 @@ public class FRAPStudy implements Matchable{
 		getFrapData().saveROIsAsExternalData(localWorkspace, newROIExtDataID, startingIndexForRecovery, getCartesianMesh());
 	}
 	
-	public DataProcessingInstructions getDataProcessInstructions(LocalWorkspace localWorkspace)
+	public ROIDataGenerator getROIDataGenerator(LocalWorkspace localWorkspace)
 	{
 		//create ROI image
 		short[] roiFieldData = null;
@@ -1071,13 +1072,14 @@ public class FRAPStudy implements Matchable{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return DataProcessingInstructions.getVFrapInstructions(new int[] {0}/* volumePoints*/, 
-					                                               new int[0]/* membranePoints*/,
-					                                               regionCounter /*numRegions*/, 
-					                                               0 /*zSlice*/, 
-					                                               newROIExtDataID.getKey()/* fieldDataKey, sample image*/, 
-					                                               new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments, sample image*/,
-					                                               false/* bStoreEnabled*/); 
+			return new ROIDataGenerator(ROI_EXTDATA_NAME, /*name*/
+					                    new int[] {0}/* volumePoints*/, 
+					                    new int[0]/* membranePoints*/,
+					                    regionCounter /*numRegions*/, 
+					                    0 /*zSlice*/, 
+					                    newROIExtDataID.getKey()/* fieldDataKey, sample image*/, 
+					                    new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments, sample image*/,
+					                    false/* bStoreEnabled*/); 
 					                                               
 		}
 		return null;
