@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 
+import cbit.htc.PbsJobID;
 import cbit.vcell.solvers.AbstractSolver;
 
 /**
@@ -35,16 +36,18 @@ public class SolverEvent extends java.util.EventObject implements java.io.Serial
 	private SimulationMessage fieldSimulationMessage = null;
 	private double fieldTimePoint = -1;
 	private double fieldProgress = -1;
+	private PbsJobID fieldPbsJobId = null;
 /**
  * IntegratorEvent constructor comment.
  * @param source java.lang.Object
  */
-public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint) {
+public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint, PbsJobID pbsJobId) {
 	super(source);
 	this.fieldSimulationMessage = simulationMessage;
 	this.fieldType = type;
 	this.fieldProgress = progress;
 	this.fieldTimePoint = timePoint;
+	this.fieldPbsJobId = pbsJobId;
 }
 /**
  * Insert the method's description here.
@@ -77,12 +80,16 @@ public double getTimePoint() {
 public int getType() {
 	return fieldType;
 }
+
+public PbsJobID getPbsJobId(){
+	return fieldPbsJobId;
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/17/01 11:00:16 AM)
  * @return java.lang.String
  */
 public String toString() {
-	return "SolverEvent: type="+getType()+", msg="+getSimulationMessage()+", progress="+getProgress()+", timepoint="+getTimePoint();
+	return "SolverEvent: type="+getType()+", msg="+getSimulationMessage()+", progress="+getProgress()+", timepoint="+getTimePoint()+", pbsJobId="+getPbsJobId();
 }
 }

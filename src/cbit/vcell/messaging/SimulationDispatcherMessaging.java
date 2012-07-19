@@ -104,6 +104,22 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				log.print("##MT");
 				while (true) { // second while(true), check one by one
 					try {	
+						
+						//
+						// for first 10 minutes of dispatcher uptime, don't check for obsolete messages.
+						// as a startup transient, let the dispatchers catch up with worker messages before passing
+						// judgement on the health of jobs.
+						//
+						long uptime = System.currentTimeMillis() - VCMongoMessage.getServiceStartupTime();
+						final int UPTIME_WAIT = 1000*60*10;
+						if (uptime < UPTIME_WAIT){
+							try {
+								Thread.sleep(UPTIME_WAIT - uptime);
+							}catch (Exception e){
+							}
+							continue;  // for first 10 minutes of uptime, don't obsolete
+						}
+						
 						obsoleteJobDbConnection = new JtaOracleConnection(conFactory);
 
 						jobStatus = jobAdminXA.getNextObsoleteSimulation(obsoleteJobDbConnection.getConnection(), MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								

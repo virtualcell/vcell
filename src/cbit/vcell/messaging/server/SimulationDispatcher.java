@@ -61,6 +61,7 @@ import cbit.vcell.messaging.StatusMessage;
 import java.util.HashSet;
 import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 
 /**
  * Insert the type's description here.
@@ -313,7 +314,8 @@ public static void main(java.lang.String[] args) {
 		if (args.length > 1) {
 			logdir = args[1];
 		}
-		
+		VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+
 		SimulationDispatcher simulationDispatcher = new SimulationDispatcher(serviceOrdinal, logdir);
 		simulationDispatcher.start();
 	} catch (Throwable e) {

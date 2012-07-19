@@ -102,7 +102,7 @@ public class VCMongoDbDriver implements Runnable {
     public void run()
     {
 		log.print("Starting MongoDB Thread");
-        while(processing) {
+        while(processing && VCMongoMessage.enabled) {
             try {
                 sendMessages();
                 try {
