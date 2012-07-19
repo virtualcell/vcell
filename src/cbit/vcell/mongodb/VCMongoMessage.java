@@ -28,6 +28,8 @@ import com.mongodb.BasicDBObject;
 
 public final class VCMongoMessage {
 	public static boolean enabled = true;
+	private static boolean processingException = false;
+	
 	public static enum ServiceName {
 		unknown,
 		client,
@@ -157,7 +159,7 @@ public final class VCMongoMessage {
 	}
 	
 	private static void addHeader(BasicDBObject dbObject, String messageType) throws UnknownHostException{
-		dbObject.put(MongoMessage_serverId, VCellServerID.getSystemServerID().toString());
+		dbObject.put(MongoMessage_serverId, org.vcell.util.PropertyLoader.getProperty(org.vcell.util.PropertyLoader.vcellServerIDProperty,"unknown"));
 		dbObject.put(MongoMessage_serviceName,serviceName);
 		dbObject.put(MongoMessage_serviceOrdinal,serviceOrdinal);
 		dbObject.put(MongoMessage_serviceStartTime,serviceStartupTime);
@@ -171,7 +173,12 @@ public final class VCMongoMessage {
 		if (!enabled){
 			return;
 		}
+		if (processingException){
+			System.out.println("recursively invoking sendException() for " +message +", " + stack + ", exception not logged to MongoDB.");
+			return;
+		}
 		try {
+			processingException = true;
 			BasicDBObject dbObject = new BasicDBObject();
 	
 			addHeader(dbObject,MongoMessage_msgtype_exception);
@@ -181,7 +188,12 @@ public final class VCMongoMessage {
 	
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+			e.printStackTrace(System.out);
+			// cannot put exception to SessionLog ... infinite recursion.
+			// VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+			//
+		} finally {
+			processingException = false;
 		}
 	}
 
