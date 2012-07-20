@@ -420,7 +420,9 @@ public final class VCMongoMessage {
 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
 
 			dbObject.put(MongoMessage_pbsWorkerMsg, pbsWorkerMsg);
-			dbObject.put(MongoMessage_pbsJobID, pbsJobID.getID());
+			if (pbsJobID!=null){
+				dbObject.put(MongoMessage_pbsJobID, pbsJobID.getID());
+			}
 	
 			addObject(dbObject,simulationTask);
 			
@@ -655,7 +657,7 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_simMessageState,detailedState.name());
 		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
 		if (simMessage.getPbsJobId()!=null){
-			dbObject.put(MongoMessage_pbsJobID,simMessage.getPbsJobId());
+			dbObject.put(MongoMessage_pbsJobID,simMessage.getPbsJobId().getID());
 		}
 	}
 
