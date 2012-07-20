@@ -59,6 +59,8 @@ import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.StatusMessage;
 import java.util.HashSet;
 import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 
 /**
  * Insert the type's description here.
@@ -125,7 +127,7 @@ private void dataMoved(VCSimulationDataIdentifier vcSimDataID, User user, double
  */
 private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	if (clientMessaging == null) {
-		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getJmsConnection(), log);
+		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getJmsConnection(), log, null);
 	}
 
 	if (userDbServerMap == null) {
@@ -311,7 +313,8 @@ public static void main(java.lang.String[] args) {
 		if (args.length > 1) {
 			logdir = args[1];
 		}
-		
+		VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+
 		SimulationDispatcher simulationDispatcher = new SimulationDispatcher(serviceOrdinal, logdir);
 		simulationDispatcher.start();
 	} catch (Throwable e) {
@@ -335,6 +338,8 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 		return;
 	}
 		
+	VCMongoMessage.sendWorkerEvent(workerEventMessage);
+	
 	WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
 	String hostName = workerEvent.getHostName();
 	String userName = workerEvent.getUserName(); // as the filter of the client
