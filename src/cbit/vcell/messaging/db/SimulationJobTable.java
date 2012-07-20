@@ -16,6 +16,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.htc.PbsJobID;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.modeldb.DatabaseConstants;
@@ -47,10 +48,11 @@ public class SimulationJobTable extends Table {
 
 	public final Field serverID			= new Field("serverID",			"varchar(20)",	"NOT NULL");
 	public final Field jobIndex			= new Field("jobIndex",			"integer",		"");	
+	public final Field pbsJobID			= new Field("pbsJobID",			"varchar(100)",	"");	
 	
 	private final Field fields[] = {simRef,submitDate, taskID, schedulerStatus, statusMsg,
 		queueDate,queuePriority,queueID, 
-		startDate, computeHost, latestUpdateDate, endDate, hasData, serverID, jobIndex};
+		startDate, computeHost, latestUpdateDate, endDate, hasData, serverID, jobIndex, pbsJobID};
 	
 	public static final SimulationJobTable table = new SimulationJobTable();
 
@@ -124,11 +126,18 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//hasData
 	String parsedHasData = rset.getString(hasData.toString());
 	
-	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null);
+	PbsJobID parsedPbsJobID = null;
+	String pbsJobIDString = rset.getString(pbsJobID.toString());
+	if (!rset.wasNull() && pbsJobIDString!=null && pbsJobIDString.length()>0){
+		parsedPbsJobID = new PbsJobID(pbsJobIDString);
+	}
+	
+	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedPbsJobID);
 
 	VCSimulationIdentifier parsedVCSimID = new VCSimulationIdentifier(parsedSimKey,owner);
 	//jobIndex
 	int parsedJobIndex = rset.getInt(jobIndex.toString());
+
 	SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getServerID(serID), parsedVCSimID, parsedJobIndex, parsedSubmitDate,parsedSchedulerStatus,parsedTaskID, simulationMessage, simQueueEntryStatus, simExeStatus);
 	//sysDate
 	java.util.Date parsedSysDate = rset.getTimestamp(DatabaseConstants.SYSDATE_COLUMN_NAME);
@@ -249,8 +258,16 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 
 	//jobIndex
 	buffer.append(jobIndex + "=");
-	buffer.append(simulationJobStatus.getJobIndex());
+	buffer.append(simulationJobStatus.getJobIndex()+",");
 	
+	//pbsJobID
+	buffer.append(pbsJobID + "=");
+	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID() != null) {
+		buffer.append("'" + simExecutionStatus.getPbsJobID().getID() + "'");
+	} else {
+		buffer.append("null");
+	}
+
 	return buffer.toString();
 }
 
@@ -343,7 +360,13 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 		buffer.append(simExecutionStatus.hasData()? "'Y'," : "null,");		
 	}	
 	buffer.append(simulationJobStatus.getServerID() == null? "null," : "'" + simulationJobStatus.getServerID() + "',");
-	buffer.append(simulationJobStatus.getJobIndex());
+	buffer.append(simulationJobStatus.getJobIndex()+",");
+	
+	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID()!=null){
+		buffer.append("'"+simExecutionStatus.getPbsJobID().getID()+"'");
+	}else{
+		buffer.append("null");
+	}
 	buffer.append(")");
 	
 	return buffer.toString();

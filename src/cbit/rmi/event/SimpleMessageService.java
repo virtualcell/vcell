@@ -10,6 +10,8 @@
 
 package cbit.rmi.event;
 
+import cbit.vcell.mongodb.VCMongoMessage;
+
 
 /**
  * Insert the type's description here.
@@ -26,6 +28,7 @@ public SimpleMessageService() {
 }
 
 public void messageEvent(MessageEvent event) {
+	VCMongoMessage.sendClientMessageEventQueued(event);
 	messageQueue.push(event);
 	
 }

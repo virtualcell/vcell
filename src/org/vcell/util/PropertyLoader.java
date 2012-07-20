@@ -177,6 +177,11 @@ public class PropertyLoader {
 
 	public final static String onlineResourcesURL = "vcell.onlineResourcesURL";
 
+	public final static String mongodbHost						= "vcell.mongodb.host";
+	public final static String mongodbPort						= "vcell.mongodb.port";   // default 27017
+	public final static String mongodbDatabase					= "vcell.mongodb.database";
+	public final static String mongodbLoggingCollection			= "vcell.mongodb.loggingCollection";
+	public final static String mongodbThreadSleepMS				= "vcell.mongodb.threadSleepMS";
 	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
@@ -308,6 +313,13 @@ public class PropertyLoader {
 		mathSBMLDirectory,
 		COPASIExecutable,
 		mathematicaKernelExecutable,
+		
+		mongodbHost,
+		mongodbPort,
+		mongodbDatabase,
+		mongodbLoggingCollection,
+		mongodbThreadSleepMS,
+
 	};
 
 

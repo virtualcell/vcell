@@ -37,6 +37,7 @@ import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.AbstractDBTopLevel;
 import cbit.vcell.modeldb.AdminDatabaseServerXAImpl;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -103,6 +104,22 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				log.print("##MT");
 				while (true) { // second while(true), check one by one
 					try {	
+						
+						//
+						// for first 10 minutes of dispatcher uptime, don't check for obsolete messages.
+						// as a startup transient, let the dispatchers catch up with worker messages before passing
+						// judgement on the health of jobs.
+						//
+						long uptime = System.currentTimeMillis() - VCMongoMessage.getServiceStartupTime();
+						final int UPTIME_WAIT = 1000*60*10;
+						if (uptime < UPTIME_WAIT){
+							try {
+								Thread.sleep(UPTIME_WAIT - uptime);
+							}catch (Exception e){
+							}
+							continue;  // for first 10 minutes of uptime, don't obsolete
+						}
+						
 						obsoleteJobDbConnection = new JtaOracleConnection(conFactory);
 
 						jobStatus = jobAdminXA.getNextObsoleteSimulation(obsoleteJobDbConnection.getConnection(), MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
@@ -619,6 +636,7 @@ public VCSimulationIdentifier processNextRequest() {
 			VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
 			User user = request.getUser();
 
+			VCMongoMessage.sendRpcRequestReceived(request);
 			log.print("++PNR: " + request);
 
 			mainJobDbConnection = new JtaOracleConnection(conFactory);	

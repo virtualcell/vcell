@@ -65,7 +65,7 @@ public static String checkServerStatus() throws ExecutableException {
 	return pbsServer;
 }
 
-static int getJobExitCode(String jobid) {
+static int getJobExitCode(PbsJobID jobid) {
 	/*
 	Job: 67.dll-2-1-1
 
@@ -95,7 +95,7 @@ static int getJobExitCode(String jobid) {
 	Executable exe = null;
 	
 	try {
-		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid};
+		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getID()};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -121,12 +121,12 @@ static int getJobExitCode(String jobid) {
  * @return int
  * @param jobid java.lang.String
  */
-public static int getJobStatus(String jobid) {		
+public static int getJobStatus(PbsJobID jobid) {		
 	int iStatus = PBS_STATUS_UNKNOWN;
 	Executable exe = null;
 	
 	try {
-		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid};
+		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -180,12 +180,12 @@ public static int getJobStatus(String jobid) {
  * @return int
  * @param jobid java.lang.String
  */
-public static String getPendingReason(String jobid) {
+public static String getPendingReason(PbsJobID jobid) {
 	String pendingReason = "unknown pending reason";
 	Executable exe = null;
 	
 	try {
-		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid};
+		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
 		exe = new Executable(cmd);
 		exe.start();
 		
@@ -228,13 +228,13 @@ public static String getPendingReason(String jobid) {
  * Creation date: (9/29/2003 10:35:12 AM)
  * @param jobid java.lang.String
  */
-public static void killJob(String jobid) {
+public static void killJob(PbsJobID jobid) {
 	if (jobid == null) {
 		return;
 	}
 		
 	try {
-		String[] cmd = new String[]{JOB_CMD_DELETE, jobid};
+		String[] cmd = new String[]{JOB_CMD_DELETE, jobid.getID()};
 		Executable exe = new Executable(cmd);
 		exe.start();
 	} catch (ExecutableException ex) {
@@ -253,7 +253,7 @@ public static void main(String[] args) {
 	try {		
 		PropertyLoader.loadProperties();
 		
-		String jobid = "29908"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
+		PbsJobID jobid = new PbsJobID("29908"); //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
 		int status = PBSUtils.getJobStatus(jobid);
 		System.out.println("jobid=" + jobid);
 		System.out.println("status=" + PBS_JOB_STATUS[status]);
@@ -270,7 +270,7 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {	
+public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {	
 	try {	
 		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
 		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
@@ -298,7 +298,7 @@ public static String submitJob(String computeResource, String jobName, String su
 	Executable exe = new Executable(completeCommand);
 	exe.start();
 	String jobid = exe.getStdoutString().trim();
-	return jobid;
+	return new PbsJobID(jobid);
 }
 
 public static boolean isJobExiting(int status) {
@@ -309,11 +309,11 @@ public static boolean isJobRunning(int status) {
 	return status == PBS_STATUS_RUNNING;
 }
 
-public static boolean isJobRunning(String jobid) {
+public static boolean isJobRunning(PbsJobID jobid) {
 	return isJobRunning(getJobStatus(jobid));
 }
 
-public static boolean isJobExecOK(String jobid) {
+public static boolean isJobExecOK(PbsJobID jobid) {
 	return getJobExitCode(jobid) == JOB_EXEC_OK;
 }
 
@@ -321,7 +321,7 @@ public static String getJobStatusDescription(int status) {
 	return PBSConstants.PBS_JOB_STATUS[status];
 }
 
-public static String getJobExecStatus(String jobid) {
+public static String getJobExecStatus(PbsJobID jobid) {
 	int exitCode = getJobExitCode(jobid);
 	if (exitCode <= 0) {
 		return PBS_JOB_EXEC_STATUS[-exitCode];
