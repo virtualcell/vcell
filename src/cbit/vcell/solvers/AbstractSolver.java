@@ -19,6 +19,7 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
@@ -83,7 +84,8 @@ public synchronized void addSolverListener(cbit.vcell.solver.SolverListener list
  */
 protected void fireSolverAborted(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getPbsJobId());
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -101,7 +103,8 @@ protected void fireSolverAborted(SimulationMessage message) {
  */
 protected void fireSolverFinished() {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVEREVENT_FINISHED, getProgress(), getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVEREVENT_FINISHED, getProgress(), getCurrentTime(), null);
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -119,7 +122,8 @@ protected void fireSolverFinished() {
  */
 protected void fireSolverPrinted(double timepoint) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PRINTED, SimulationMessage.solverPrinted(timepoint), getProgress(), timepoint);
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PRINTED, SimulationMessage.solverPrinted(timepoint), getProgress(), timepoint, null);
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -137,7 +141,8 @@ protected void fireSolverPrinted(double timepoint) {
  */
 protected void fireSolverProgress(double progress) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, SimulationMessage.solverProgress(progress), progress, getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PROGRESS, SimulationMessage.solverProgress(progress), progress, getCurrentTime(), null);
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -155,7 +160,8 @@ protected void fireSolverProgress(double progress) {
  */
 protected void fireSolverStarting(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0);
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getPbsJobId());
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying
@@ -173,7 +179,8 @@ protected void fireSolverStarting(SimulationMessage message) {
  */
 protected void fireSolverStopped() {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STOPPED, SimulationMessage.solverStopped("stopped by user"), getProgress(), getCurrentTime());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STOPPED, SimulationMessage.solverStopped("stopped by user"), getProgress(), getCurrentTime(), null);
+	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Process the listeners last to first, notifying

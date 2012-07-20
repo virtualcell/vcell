@@ -30,6 +30,7 @@ import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsConnection;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.JmsMessageCollector;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellServer;
 import cbit.vcell.server.PerformanceMonitoringFacility;
@@ -137,7 +138,7 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getDataSetController()");
 	if (dataSetControllerMessaging == null) {
 		try {
-			dataClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
+			dataClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog, getUserLoginInfo());
 			dataSetControllerMessaging = new LocalDataSetControllerMessaging(fieldSessionLog, getUserLoginInfo().getUser(), dataClientMessaging);
 			fieldSessionLog.print("new dataClientMessaging=" + dataClientMessaging);
 		} catch (javax.jms.JMSException ex) {
@@ -168,7 +169,7 @@ SimpleMessageService getMessageService() {
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationControllerMessaging == null){
 		try {
-			simClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
+			simClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog, getUserLoginInfo());
 			simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo().getUser(), simClientMessaging, fieldSessionLog);
 			fieldSessionLog.print("new simClientMessaging=" + simClientMessaging);
 		} catch (DataAccessException ex) {
@@ -224,7 +225,7 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
 		try {
-			dbClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
+			dbClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog, getUserLoginInfo());
 			userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(dbClientMessaging, getUserLoginInfo().getUser(), fieldSessionLog);
 			fieldSessionLog.print("new dbClientMessaging=" + dbClientMessaging);
 		} catch (javax.jms.JMSException ex) {
@@ -245,11 +246,14 @@ public boolean isTimeout() throws java.rmi.RemoteException {
 
 
 public void sendErrorReport(Throwable exception) throws RemoteException {
+	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
 	BeanUtils.sendErrorReport(exception);
 }
 
 public MessageEvent[] getMessageEvents() throws RemoteException {
-	return messageService.getMessageEvents();
+	MessageEvent[] messageEvents = messageService.getMessageEvents();
+	VCMongoMessage.sendClientMessageEventsDelivered(messageEvents, getUserLoginInfo());
+	return messageEvents;
 }
 
 

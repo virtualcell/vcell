@@ -16,6 +16,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.MessageConstants.ServiceType;
 
 import cbit.vcell.messaging.server.RpcRequest;
+import cbit.vcell.server.UserLoginInfo;
 
 /**
  * Insert the type's description here.
@@ -26,6 +27,7 @@ public class JmsClientMessaging {
 
 	private JmsSession responseRequestor = null;
 	private JmsConnection queueConn = null;
+	private UserLoginInfo userLoginInfo = null;
 
 	private SessionLog log = null;
 	private long timeSinceLastMessage = System.currentTimeMillis();
@@ -33,10 +35,10 @@ public class JmsClientMessaging {
 /**
  * Client constructor comment.
  */
-public JmsClientMessaging(JmsConnection queueConn0, SessionLog log0) throws JMSException {
+public JmsClientMessaging(JmsConnection queueConn0, SessionLog log0, UserLoginInfo userLoginInfo) throws JMSException {
 	log = log0;
 	queueConn = queueConn0;
-	
+	this.userLoginInfo = userLoginInfo;
 	reconnect();
 }
 
@@ -140,4 +142,11 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 public void setTimeSinceLastMessage(long newTimeSinceLastMessage) {
 	timeSinceLastMessage = newTimeSinceLastMessage;
 }
+
+
+public UserLoginInfo getUserLoginInfo() {
+	return userLoginInfo;
+}
+
+
 }

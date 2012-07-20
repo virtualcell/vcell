@@ -32,7 +32,7 @@ public interface MessageConstants {
 	public static final int TASKID_USERCOUNTER_MASK		= 0xFFFFFFF0;
 	public static final int TASKID_RETRYCOUNTER_MASK	= 0x0000000F;
 	public static final int TASKID_USERINCREMENT	    = 0x00000010;
-	public static final int TASKID_MAX_RETRIES = 3;
+	public static final int TASKID_MAX_RETRIES = 0;
 
 	public static final String JMSCORRELATIONID_PROPERTY	= "JMSCorrelationID";
 	

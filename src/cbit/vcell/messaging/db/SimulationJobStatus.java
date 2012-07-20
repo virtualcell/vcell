@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.messaging.db;
+import cbit.htc.PbsJobID;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.util.Date;
@@ -42,6 +43,16 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	public static final int SCHEDULERSTATUS_COMPLETED = 4;
 	public static final int SCHEDULERSTATUS_STOPPED = 5;
 	public static final int SCHEDULERSTATUS_FAILED = 6;
+	
+	private final static String[] schedulerStatusDescription = new String[] {
+		"waiting",
+		"queued",
+		"dispatched",
+		"running",
+		"completed",
+		"stopped",
+		"failed"
+	};
 
 	private SimulationQueueEntryStatus fieldSimulationQueueEntryStatus = null;	// may be null
 	private SimulationExecutionStatus fieldSimulationExecutionStatus = null;	// may be null
@@ -202,6 +213,11 @@ public int getSchedulerStatus() {
 }
 
 
+public String getSchedulerStatusDescription() {
+	return schedulerStatusDescription[fieldSchedulerStatus];
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/27/2005 2:09:03 PM)
@@ -283,7 +299,6 @@ public int getTaskID() {
 public java.util.Date getTimeDateStamp() {
 	return fieldTimeDateStamp;
 }
-
 
 /**
  * Insert the method's description here.
@@ -430,6 +445,6 @@ public void setTimeDateStamp(java.util.Date newFieldTimeDateStamp) {
  */
 public String toString() {
 	return "SimulationJobStatus[" + fieldVCSimID + ",status=" + fieldSchedulerStatus + ",job=" + fieldJobIndex + ",task=" + fieldTaskID + "," + fieldSimulationMessage 
-	+ ",execStatus=" + fieldSimulationExecutionStatus + "]";
+	+ ",execStatus=" + fieldSimulationExecutionStatus+"]";
 }
 }

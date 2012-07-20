@@ -16,7 +16,9 @@ import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 
 import cbit.htc.PBSUtils;
+import cbit.htc.PbsJobID;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
@@ -45,18 +47,30 @@ public PBSSolver(SimulationTask simTask, java.io.File directory, SessionLog sess
  * @throws SolverException 
  * @throws ExecutableException 
  */
-private void submit2PBS() throws SolverException, ExecutableException {
+private PbsJobID submit2PBS() throws SolverException, ExecutableException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
 	String cmd = getExecutableCommand();
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 	String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 	
-	String jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
+	PbsJobID jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
 	if (jobid == null) {
 		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
-		return;
+		return null;
 	}
-	fireSolverStarting(SimulationMessage.solverEvent_Starting_Submit("submitted to job scheduler, job id is " + jobid));
+	fireSolverStarting(SimulationMessage.solverEvent_Starting_Submit("submitted to job scheduler, job id is " + jobid, jobid));
+	
+	// babysitPBSSubmission(jobid);
+	
+	return jobid;
+}
+
+/**
+ * the code below was called synchronously within submit2PBS();
+ * 
+ */
+@Deprecated
+private void babysitPBSSubmission(PbsJobID jobid) throws SolverException{
 
 	// if PBS has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
@@ -71,40 +85,51 @@ private void submit2PBS() throws SolverException, ExecutableException {
 		} catch (InterruptedException ex) {
 		}
 		
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"done waiting 1 second, getting pbs status");
 		status = PBSUtils.getJobStatus(jobid);
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbsStatus = "+PBSUtils.getJobStatusDescription(status));
 		if (PBSUtils.isJobExiting(status)){
 			// pbs command tracejob takes more than 1 minute to get exit status after the job exists. 
 			// we don't want to spend so much time on a job, especially when the job is very short. 
 			// However, if dispatcher restarted the simulation, which means the first run failed, 
 			// we have to find out why.
 			if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
+				VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"status indicates exiting and retry>0, waiting 1 minute");
 				try {
 					Thread.sleep(MessageConstants.MINUTE_IN_MS); // have to sleep at least one minute to get tracejob exist status;
 				} catch (InterruptedException ex) {
 				}
+				VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"getting pbs status");
 				if (!PBSUtils.isJobExecOK(jobid)) {
+					VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status indicates exit status");
 					throw new SolverException("Job [" + jobid + "] exited unexpectedly: [" + PBSUtils.getJobExecStatus(jobid));			
 				}
 			}
+			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status Okay");
 			break;
 		} else if (PBSUtils.isJobRunning(status)) {
 			//check to see if it exits soon after it runs
+			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"Job is running, waiting 1 second before getting pbs status");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
 			}
 			status = PBSUtils.getJobStatus(jobid);
+			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status = "+PBSUtils.getJobStatusDescription(status));
 			if (PBSUtils.isJobExiting(status)) {
 				if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
+					VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"status indicates exiting and retry>0, waiting 1 minute");
 					try {
 						Thread.sleep(MessageConstants.MINUTE_IN_MS); // have to sleep at least one minute to get tracejob exist status;
 					} catch (InterruptedException ex) {
 					}
 					if (!PBSUtils.isJobExecOK(jobid)) {
+						VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status indicates exit status");
 						throw new SolverException("Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid));			
 					}
 				}
 			}
+			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status Okay");
 			break;
 		} else if (System.currentTimeMillis() - t > 4 * MessageConstants.MINUTE_IN_MS) {
 			String pendingReason = PBSUtils.getPendingReason(jobid);
@@ -113,6 +138,7 @@ private void submit2PBS() throws SolverException, ExecutableException {
 		}
 	}
 	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
+	VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
 }
 
 @Override
@@ -127,9 +153,13 @@ public double getProgress() {
 
 public void startSolver() {
 	try {
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.initialize()");
 		initialize();
-		submit2PBS();
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.submit2PBS()");
+		PbsJobID jobID = submit2PBS();
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobID, "PBSSolver.submit2PBS() returned");
 	} catch (Throwable throwable) {
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "PBSSolver.startSolver() exception: "+throwable.getClass().getName()+" "+throwable.getMessage());
 		getSessionLog().exception(throwable);
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));		

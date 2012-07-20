@@ -12,7 +12,10 @@ package cbit.vcell.messaging.db;
 
 import java.util.Date;
 
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+
+import cbit.htc.PbsJobID;
 
 
 /**
@@ -26,15 +29,17 @@ public class SimulationExecutionStatus implements org.vcell.util.Matchable, java
 	private Date fieldEndDate = null;
 	private String fieldComputeHost = null;
 	private boolean fieldHasData = false;
+	private PbsJobID fieldPbsJobID = null;
 /**
  * SimulationExecutionStatus constructor comment.
  */
-public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData) {
+public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, PbsJobID pbsJobID) {
 	fieldStartDate = startDate;
 	fieldComputeHost = computeHost;
 	fieldLatestUpdateDate = latestUpdateDate;
 	fieldEndDate = endDate;
 	fieldHasData = hasData;
+	fieldPbsJobID = pbsJobID;
 }
 /**
  * Checks for internal representation of objects, not keys from database
@@ -62,6 +67,9 @@ public boolean compareEqual(Matchable obj) {
 		}
 		if (exeStatus.fieldLatestUpdateDate != null && fieldLatestUpdateDate != null && exeStatus.fieldLatestUpdateDate.getTime()/1000 != fieldLatestUpdateDate.getTime()/1000){
 			//System.out.println("fieldLatestUpdateDate not = ");
+			return false;
+		}
+		if (!Compare.isEqualOrNull(fieldPbsJobID,exeStatus.fieldPbsJobID)){
 			return false;
 		}
 		
@@ -108,6 +116,10 @@ public Date getStartDate() {
  */
 public boolean hasData() {
 	return fieldHasData;
+}
+
+public PbsJobID getPbsJobID(){
+	return fieldPbsJobID;
 }
 /**
  * Insert the method's description here.
