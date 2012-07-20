@@ -128,7 +128,7 @@ private void dataMoved(VCSimulationDataIdentifier vcSimDataID, User user, double
  */
 private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	if (clientMessaging == null) {
-		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getJmsConnection(), log);
+		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getJmsConnection(), log, null);
 	}
 
 	if (userDbServerMap == null) {

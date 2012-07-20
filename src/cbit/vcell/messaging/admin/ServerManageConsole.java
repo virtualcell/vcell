@@ -476,7 +476,7 @@ private RpcDbServerProxy getDbProxy(User user) throws JMSException, DataAccessEx
 	RpcDbServerProxy dbProxy = (RpcDbServerProxy)dbProxyHash.get(user);
 
 	if (dbProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log, null);		
 		dbProxy = new RpcDbServerProxy(user, jmsClientMessaging, log);
 		dbProxyHash.put(user, dbProxy);
 	}
@@ -1702,7 +1702,7 @@ private RpcSimServerProxy getSimProxy(User user) throws JMSException, DataAccess
 	RpcSimServerProxy simProxy = (RpcSimServerProxy)simProxyHash.get(user);
 
 	if (simProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log, null);		
 		simProxy = new RpcSimServerProxy(user, jmsClientMessaging, log);
 		simProxyHash.put(user, simProxy);
 	}

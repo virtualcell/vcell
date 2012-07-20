@@ -64,7 +64,7 @@ public Object rpc(ServiceType serviceType, String methodName, Object[] args, boo
  */
 public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
 	RpcRequest request = new RpcRequest(user, serviceType, methodName, args);
-	VCMongoMessage.sendRpcRequestSent(request);
+	VCMongoMessage.sendRpcRequestSent(request, clientMessaging.getUserLoginInfo());
 	return clientMessaging.rpc(request, queueName, returnRequired, specialProperties, specialValues);
 }
 }
