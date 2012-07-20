@@ -34,9 +34,7 @@ public void messageEvent(MessageEvent event) {
 }
 
 public MessageEvent[] getMessageEvents() {
-	MessageEvent[] messageEvents = messageQueue.popAll();
-	VCMongoMessage.sendClientMessageEventsDelivered(messageEvents);
-	return messageEvents;
+	return messageQueue.popAll();
 }
 
 public long timeSinceLastPoll() {
