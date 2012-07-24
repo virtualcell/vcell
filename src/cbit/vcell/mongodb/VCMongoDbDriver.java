@@ -94,7 +94,28 @@ public class VCMongoDbDriver implements Runnable {
 //   				e.printStackTrace(System.out);
    			} catch (Exception e) {
    				e.printStackTrace(System.out);
-   				VCMongoMessage.enabled = false;
+   				try {
+   					if (m!=null){
+   						m.close();
+   					}
+   				}catch (Exception e2){
+   					e2.printStackTrace(System.out);
+   				} finally {
+   					m = null;
+   				}
+   				final int minutesToWaitUponFailure = 20;
+   				log.alert("MongoDB failure ... waiting "+minutesToWaitUponFailure+" minutes before trying to connect again");
+   				for (VCMongoMessage msg : queuedMessages){
+   					try {
+   						log.alert("MongoDB failure: discarding message: "+msg);
+   					}catch (Exception e4){
+   						e4.printStackTrace(System.out);
+   					}
+   				}
+   				try {
+   					Thread.sleep(1000*60*minutesToWaitUponFailure); // wait 20 minutes to try again.
+   				}catch (Exception e3){
+   				}
 			}
     	}
      }
