@@ -32,6 +32,7 @@ import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
@@ -178,7 +179,7 @@ private void runSimulation() throws SolverException {
 public static void main(String[] args) {	
 	try {
 		PropertyLoader.loadProperties();
-	
+		VCMongoMessage.enabled = false;
 		JavaSimulationExecutable worker = new JavaSimulationExecutable(args);
 		worker.start();
 	} catch (Throwable ex) {
