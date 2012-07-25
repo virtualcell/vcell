@@ -47,6 +47,7 @@ public class PBSUtils {
  */
 public static String checkServerStatus() throws ExecutableException {
 	org.vcell.util.Executable exe = new Executable(new String[] {SERVER_CMD_STATUS, "-B"});
+	exe.setPollingIntervalMS(0);
 	exe.start();
 	
 	String output = exe.getStdoutString();
@@ -97,6 +98,7 @@ static int getJobExitCode(PbsJobID jobid) {
 	try {
 		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getID()};
 		exe = new Executable(cmd);
+		exe.setPollingIntervalMS(0);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -128,6 +130,7 @@ public static int getJobStatus(PbsJobID jobid) {
 	try {
 		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
 		exe = new Executable(cmd);
+		exe.setPollingIntervalMS(0);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -187,6 +190,7 @@ public static String getPendingReason(PbsJobID jobid) {
 	try {
 		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
 		exe = new Executable(cmd);
+		exe.setPollingIntervalMS(0);
 		exe.start();
 		
 		/*
@@ -236,6 +240,7 @@ public static void killJob(PbsJobID jobid) {
 	try {
 		String[] cmd = new String[]{JOB_CMD_DELETE, jobid.getID()};
 		Executable exe = new Executable(cmd);
+		exe.setPollingIntervalMS(0);
 		exe.start();
 	} catch (ExecutableException ex) {
 		pbsLog.exception(ex);
@@ -296,6 +301,7 @@ public static PbsJobID submitJob(String computeResource, String jobName, String 
 	
 	String[] completeCommand = new String[] {JOB_CMD_SUBMIT, sub_file};
 	Executable exe = new Executable(completeCommand);
+	exe.setPollingIntervalMS(0);
 	exe.start();
 	String jobid = exe.getStdoutString().trim();
 	return new PbsJobID(jobid);

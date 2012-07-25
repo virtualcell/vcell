@@ -634,7 +634,7 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_serverId, newSimulationJobStatus.getServerID().toString());
 		if (newSimulationJobStatus.getTimeDateStamp()!=null){
 			dbObject.put(MongoMessage_simJobStatusTimeStamp,newSimulationJobStatus.getTimeDateStamp().getTime());
-			dbObject.put(MongoMessage_simJobStatusTimeStampNice,newSimulationJobStatus.getTimeDateStamp().toString());
+			dbObject.put(MongoMessage_simJobStatusTimeStampNice,new Date(newSimulationJobStatus.getTimeDateStamp().getTime()).toString());
 		}
 
 		addObject(dbObject,newSimulationJobStatus.getSimulationExecutionStatus());
@@ -652,15 +652,15 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_hasData, simExeStatus.hasData());
 		if (simExeStatus.getEndDate()!=null){
 			dbObject.put(MongoMessage_endTime, simExeStatus.getEndDate().getTime());
-			dbObject.put(MongoMessage_endTimeNice, simExeStatus.getEndDate().toString());
+			dbObject.put(MongoMessage_endTimeNice, new Date(simExeStatus.getEndDate().getTime()).toString());
 		}
 		if (simExeStatus.getStartDate()!=null){
 			dbObject.put(MongoMessage_startTime, simExeStatus.getStartDate().getTime());
-			dbObject.put(MongoMessage_startTimeNice, simExeStatus.getStartDate().toString());
+			dbObject.put(MongoMessage_startTimeNice, new Date(simExeStatus.getStartDate().getTime()).toString());
 		}
 		if (simExeStatus.getLatestUpdateDate()!=null){
 			dbObject.put(MongoMessage_latestUpdateTime, simExeStatus.getLatestUpdateDate().getTime());
-			dbObject.put(MongoMessage_latestUpdateTimeNice, simExeStatus.getLatestUpdateDate().toString());
+			dbObject.put(MongoMessage_latestUpdateTimeNice, new Date(simExeStatus.getLatestUpdateDate().getTime()).toString());
 		}
 		if (simExeStatus.getPbsJobID()!=null){
 			dbObject.put(MongoMessage_pbsJobID, simExeStatus.getPbsJobID().getID());
@@ -685,7 +685,7 @@ public final class VCMongoMessage {
 		}
 		if (simQueueEntryStatus.getQueueDate()!=null){
 			dbObject.put(MongoMessage_simQueueEntryDate,simQueueEntryStatus.getQueueDate().getTime());
-			dbObject.put(MongoMessage_simQueueEntryDateNice,simQueueEntryStatus.getQueueDate().toString());
+			dbObject.put(MongoMessage_simQueueEntryDateNice,new Date(simQueueEntryStatus.getQueueDate().getTime()).toString());
 		}
 		dbObject.put(MongoMessage_simQueueEntryId,simQueueEntryStatus.getQueueID());
 		dbObject.put(MongoMessage_simQueueEntryPriority,simQueueEntryStatus.getQueuePriority());
