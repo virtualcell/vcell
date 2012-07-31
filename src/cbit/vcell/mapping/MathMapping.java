@@ -2565,7 +2565,13 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>(); 
 			for (EventAssignment ea : eventAssignments) {
 				SymbolTableEntry ste = simContext.getEntry(ea.getTarget().getName());
+				
+				if (ste==null){
+					throw new MathException("Cannot find variable name \""+ea.getTarget().getName()+"\" referenced in expression for event trigger.  Species or parameter name \""+ea.getTarget().getName()+"\" may have been deleted or renamed?");
+				}
+				
 				VCUnitDefinition eventAssignVarUnit = getEventVarUnit(ste);
+				
 				Variable variable = varHash.getVariable(ste.getName());
 				Event.EventAssignment mathEA = new Event.EventAssignment(variable, getIdentifierSubstitutions(ea.getAssignmentExpression(), eventAssignVarUnit, null));
 				mathEventAssignmentsList.add(mathEA);
