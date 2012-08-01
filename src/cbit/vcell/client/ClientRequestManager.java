@@ -1107,6 +1107,9 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						fdfos.origin = geometry.getOrigin();
 						fdfos.extent = geometry.getExtent();
 						VCImage image = geometry.getGeometrySpec().getImage();
+						if(image.getNumPixelClasses() == 1){
+							throw new Exception("STL import failed during processing.");
+						}
 						fdfos.isize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());
 						byte[] pixels = image.getPixels();
 						short[] dataToSegment = new short[image.getNumXYZ()];
