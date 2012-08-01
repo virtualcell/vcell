@@ -260,10 +260,11 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 
 	//jobIndex
 	buffer.append(jobIndex + "=");
-	buffer.append(simulationJobStatus.getJobIndex()+",");
+	buffer.append(simulationJobStatus.getJobIndex());
 	
 	//pbsJobID
 	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID() != null) {
+		buffer.append(",");
 		buffer.append(pbsJobID + "='" + simExecutionStatus.getPbsJobID().getID() + "'");
 	}
 
