@@ -14,13 +14,7 @@ import static cbit.htc.PBSConstants.JOB_CMD_DELETE;
 import static cbit.htc.PBSConstants.JOB_CMD_HISTORY;
 import static cbit.htc.PBSConstants.JOB_CMD_STATUS;
 import static cbit.htc.PBSConstants.JOB_CMD_SUBMIT;
-import static cbit.htc.PBSConstants.JOB_EXEC_OK;
-import static cbit.htc.PBSConstants.PBS_JOB_EXEC_STATUS;
-import static cbit.htc.PBSConstants.PBS_JOB_STATUS;
 import static cbit.htc.PBSConstants.PBS_MEM_OVERHEAD_MB;
-import static cbit.htc.PBSConstants.PBS_STATUS_EXITING;
-import static cbit.htc.PBSConstants.PBS_STATUS_RUNNING;
-import static cbit.htc.PBSConstants.PBS_STATUS_UNKNOWN;
 import static cbit.htc.PBSConstants.SERVER_CMD_STATUS;
 
 import java.io.BufferedReader;
@@ -35,6 +29,9 @@ import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+
+import cbit.htc.PBSConstants.PBSJobExitCode;
+import cbit.htc.PBSConstants.PBSJobStatus;
 
 public class PBSUtils {
 	private static SessionLog pbsLog = new StdoutSessionLog("PBS-Command");
@@ -66,7 +63,7 @@ public static String checkServerStatus() throws ExecutableException {
 	return pbsServer;
 }
 
-static int getJobExitCode(PbsJobID jobid) {
+public static PBSJobExitCode getPbsTraceJobExitCode(PbsJobID jobid) throws Exception {
 	/*
 	Job: 67.dll-2-1-1
 
@@ -92,30 +89,28 @@ static int getJobExitCode(PbsJobID jobid) {
 	                          resources_used.walltime=00:00:00
 	06/04/2007 10:04:44  S    Post job file processing error
 	 */
-	int iExitCode = JOB_EXEC_OK;
 	Executable exe = null;
 	
-	try {
-		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getID()};
-		exe = new Executable(cmd);
-		exe.setPollingIntervalMS(0);
-		exe.start();
-		
-		String output = exe.getStdoutString();
-		final String exitStatus = "Exit_status=";
-		int idx = output.indexOf(exitStatus);
-		if (idx < 0) {
-			throw new RuntimeException("Job [" + jobid + "] : unknown status"); 
-		}
-		output = output.substring(idx);
-		StringTokenizer st = new StringTokenizer(output, " =");
-		st.nextToken();
-		iExitCode = Integer.parseInt(st.nextToken()); 
-		return iExitCode;
-		
-	} catch (ExecutableException ex) {
-		throw new RuntimeException("No job history for job [" + jobid + "]");
-	}	
+	String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getID()};
+	exe = new Executable(cmd);
+	exe.setPollingIntervalMS(0);
+	exe.start();
+	
+	String output = exe.getStdoutString();
+	final String exitStatus = "Exit_status=";
+	int idx = output.indexOf(exitStatus);
+	if (idx < 0) {
+		throw new RuntimeException("Job [" + jobid + "] : unknown status"); 
+	}
+	output = output.substring(idx);
+	StringTokenizer st = new StringTokenizer(output, " =");
+	st.nextToken();
+	int retcode = Integer.parseInt(st.nextToken());
+	PBSJobExitCode pbsJobExitCode = PBSJobExitCode.fromPBSJobExitCode(retcode);
+	if (pbsJobExitCode!=null){
+		return pbsJobExitCode;
+	}
+	throw new Exception("Unknown PBS tracejob exit code ("+retcode+") for job [" + jobid + "]");
 }
 /**
  * Insert the method's description here.
@@ -123,57 +118,52 @@ static int getJobExitCode(PbsJobID jobid) {
  * @return int
  * @param jobid java.lang.String
  */
-public static int getJobStatus(PbsJobID jobid) {		
-	int iStatus = PBS_STATUS_UNKNOWN;
+public static PBSJobStatus getJobStatus(PbsJobID jobid) throws Exception {		
+	PBSJobStatus iStatus = null;
 	Executable exe = null;
 	
-	try {
-		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
-		exe = new Executable(cmd);
-		exe.setPollingIntervalMS(0);
-		exe.start();
-		
-		String output = exe.getStdoutString();
-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
-		String strStatus = "";
-		while (st.hasMoreTokens()) {
-			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
-				if (st.hasMoreTokens()) {
-					st.nextToken();
-				}
-				if (st.hasMoreTokens()) {
-					strStatus = st.nextToken();
-				}
-				break;
-			}			
-		}
-		if (strStatus.length() == 0) {
-			return iStatus;
-		}
-		/*
-		
-		pbssrv: 
-		                                                            Req'd  Req'd   Elap
-		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
-		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
-		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
-		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
-
-		*/		
-		st = new StringTokenizer(strStatus, " ");
-		String token = "";
-		for (int i = 0; i < 10 && st.hasMoreTokens(); i ++) {
-			token = st.nextToken();
-		}
-		for (iStatus = 0; iStatus < PBS_JOB_STATUS.length; iStatus ++) {
-			if (token.equals(PBS_JOB_STATUS[iStatus])) {
-				return iStatus;
+	String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
+	exe = new Executable(cmd);
+	exe.setPollingIntervalMS(0);
+	exe.start();
+	
+	String output = exe.getStdoutString();
+	StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+	String strStatus = "";
+	while (st.hasMoreTokens()) {
+		if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
+			if (st.hasMoreTokens()) {
+				st.nextToken();
 			}
-		}		
-	} catch (ExecutableException ex) {
-		return PBS_STATUS_EXITING;
+			if (st.hasMoreTokens()) {
+				strStatus = st.nextToken();
+			}
+			break;
+		}			
 	}
-	return iStatus;
+	if (strStatus.length() == 0) {
+		return iStatus;
+	}
+	/*
+	
+	pbssrv: 
+	                                                            Req'd  Req'd   Elap
+	Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+	--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+	29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
+	   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
+
+	*/		
+	st = new StringTokenizer(strStatus, " ");
+	String token = "";
+	for (int i = 0; i < 10 && st.hasMoreTokens(); i ++) {
+		token = st.nextToken();
+	}
+	PBSJobStatus status = PBSJobStatus.fromPBSCommandLetter(token);
+	if (status!=null){
+		return status;
+	}
+	throw new Exception("unknown PBS status letter '"+token+"'");
 }
 
 
@@ -259,12 +249,12 @@ public static void main(String[] args) {
 		PropertyLoader.loadProperties();
 		
 		PbsJobID jobid = new PbsJobID("29908"); //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
-		int status = PBSUtils.getJobStatus(jobid);
+		PBSJobStatus status = PBSUtils.getJobStatus(jobid);
 		System.out.println("jobid=" + jobid);
-		System.out.println("status=" + PBS_JOB_STATUS[status]);
+		System.out.println("status=" + status.getPBSCommandLetter());
 		System.out.println("pendingreason=" + getPendingReason(jobid));
-		int code = PBSUtils.getJobExitCode(jobid);
-		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
+		PBSJobExitCode code = PBSUtils.getPbsTraceJobExitCode(jobid);
+		System.out.println("exitcode=" + code + ":" + code.getDescription() + "]");
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}
@@ -307,32 +297,4 @@ public static PbsJobID submitJob(String computeResource, String jobName, String 
 	return new PbsJobID(jobid);
 }
 
-public static boolean isJobExiting(int status) {
-	return status == PBS_STATUS_EXITING;
-}
-
-public static boolean isJobRunning(int status) {
-	return status == PBS_STATUS_RUNNING;
-}
-
-public static boolean isJobRunning(PbsJobID jobid) {
-	return isJobRunning(getJobStatus(jobid));
-}
-
-public static boolean isJobExecOK(PbsJobID jobid) {
-	return getJobExitCode(jobid) == JOB_EXEC_OK;
-}
-
-public static String getJobStatusDescription(int status) {
-	return PBSConstants.PBS_JOB_STATUS[status];
-}
-
-public static String getJobExecStatus(PbsJobID jobid) {
-	int exitCode = getJobExitCode(jobid);
-	if (exitCode <= 0) {
-		return PBS_JOB_EXEC_STATUS[-exitCode];
-	} else {
-		return "job was killed with system signal " + exitCode;
-	}	
-}
 }

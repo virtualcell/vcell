@@ -8,6 +8,8 @@ import java.util.Date;
 
 import org.vcell.util.document.VCellServerID;
 
+import cbit.htc.PBSConstants.PBSJobExitCode;
+import cbit.htc.PBSConstants.PBSJobStatus;
 import cbit.htc.PbsJobID;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
@@ -44,7 +46,8 @@ public final class VCMongoMessage {
 		simData,
 		export,
 		database,
-		serverManager
+		serverManager,
+		console
 	};
 	
 	private static ServiceName serviceName = ServiceName.unknown;
@@ -68,6 +71,8 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_msgtype_exception							= "exception";
 	public final static String MongoMessage_msgtype_clientConnect						= "clientConnect";
 	public final static String MongoMessage_msgtype_clientTimeout						= "clientTimeout";
+	public final static String MongoMessage_msgtype_simJobStatusMonitor					= "simJobStatusMonitor";
+	public final static String MongoMessage_msgtype_alert								= "alert";
 	public final static String MongoMessage_msgTime				= "msgTime";
 	public final static String MongoMessage_msgTimeNice			= "msgTimeNice";
 	
@@ -127,6 +132,9 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_osName				= "osName";
 	public final static String MongoMessage_osVersion			= "osVersion";
 	public final static String MongoMessage_vcSoftwareVersion	= "vcSoftwareVersion";
+	public final static String MongoMessage_message				= "message";
+	public final static String MongoMessage_pbsJobExitCode		= "pbsJobExitCode";
+	public final static String MongoMessage_pbsJobStatus		= "pbsJobStatus";
 
 	private BasicDBObject doc = null;
 	
@@ -145,7 +153,6 @@ public final class VCMongoMessage {
 	public static void serviceStartup(ServiceName serviceName, Integer serviceOrdinal, String[] args){
 		VCMongoMessage.serviceName = serviceName;
 		VCMongoMessage.serviceOrdinal = serviceOrdinal;
-		VCMongoMessage.serviceArgs = args;
 		VCMongoMessage.serviceStartupTime = System.currentTimeMillis();
 		
 		if (!enabled){
@@ -253,6 +260,24 @@ public final class VCMongoMessage {
 		}
 	}
 
+	public static void sendAlert(String message) {
+		if (!enabled){
+			return;
+		}
+		try {
+			processingException = true;
+			BasicDBObject dbObject = new BasicDBObject();
+	
+			addHeader(dbObject,MongoMessage_msgtype_exception);
+			
+			dbObject.put(MongoMessage_message,message);
+	
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
 	public static void sendException(String stack, String message) {
 		if (!enabled){
 			return;
@@ -300,6 +325,69 @@ public final class VCMongoMessage {
 			addObject(newSimJobStatusObject, newSimulationJobStatus);
 			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
 	
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendSimJobStatusMonitor(String message, SimulationJobStatus simulationJobStatus, PBSJobStatus pbsJobStatus) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_simJobStatusMonitor);
+
+			addObject(dbObject,simulationJobStatus);
+			
+			dbObject.put(MongoMessage_message, message);
+			if (pbsJobStatus!=null){
+				dbObject.put(MongoMessage_pbsJobStatus, pbsJobStatus.getPBSCommandLetter());
+			}
+						
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendSimJobStatusMonitor(String message, SimulationJobStatus simulationJobStatus, PBSJobExitCode pbsExitCode) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_simJobStatusMonitor);
+
+			addObject(dbObject,simulationJobStatus);
+			
+			dbObject.put(MongoMessage_message, message);
+			if (pbsExitCode!=null){
+				dbObject.put(MongoMessage_pbsJobExitCode, pbsExitCode.getDescription());
+			}
+						
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+	
+	public static void sendSimJobStatusMonitor(String message, SimulationJobStatus simulationJobStatus) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_simJobStatusMonitor);
+
+			dbObject.put(MongoMessage_message, message);
+			
+			addObject(dbObject,simulationJobStatus);
+			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
@@ -630,7 +718,7 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_simId,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_taskId, newSimulationJobStatus.getTaskID());
 		dbObject.put(MongoMessage_jobIndex, newSimulationJobStatus.getJobIndex());
-		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatusDescription());
+		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatus().getDescription());
 		dbObject.put(MongoMessage_serverId, newSimulationJobStatus.getServerID().toString());
 		if (newSimulationJobStatus.getTimeDateStamp()!=null){
 			dbObject.put(MongoMessage_simJobStatusTimeStamp,newSimulationJobStatus.getTimeDateStamp().getTime());

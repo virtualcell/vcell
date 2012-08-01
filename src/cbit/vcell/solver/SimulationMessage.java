@@ -15,7 +15,7 @@ import java.io.Serializable;
 import org.vcell.util.Compare;
 
 import cbit.htc.PbsJobID;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 public class SimulationMessage implements Serializable {
 	
@@ -127,44 +127,43 @@ public class SimulationMessage implements Serializable {
 	}
 	
 
-	public static SimulationMessage fromSerialized(int schedulerStatus, String serializedMessage){
+	public static SimulationMessage fromSerialized(SchedulerStatus schedulerStatus, String serializedMessage){
 		
 		SimulationMessage simulationMessage = fromSerializedMessage(serializedMessage);
 		if (simulationMessage != null) {
 			return simulationMessage;
 		}
-		
-		if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_WAITING){
+		if (schedulerStatus.isWaiting()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_WAITING;
 			}
 			return new SimulationMessage(DetailedState.JOB_WAITING, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_QUEUED){
+		}else if (schedulerStatus.isQueued()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_QUEUED;
 			}
 			return new SimulationMessage(DetailedState.JOB_QUEUED, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED){
+		}else if (schedulerStatus.isDispatched()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_DISPATCHED;
 			}
 			return new SimulationMessage(DetailedState.JOB_DISPATCHED, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_RUNNING){
+		}else if (schedulerStatus.isRunning()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_RUNNING_UNKNOWN;
 			}
 			return new SimulationMessage(DetailedState.JOB_RUNNING, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED){
+		}else if (schedulerStatus.isCompleted()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_COMPLETED;
 			}
 			return new SimulationMessage(DetailedState.JOB_COMPLETED, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_STOPPED){
+		}else if (schedulerStatus.isStopped()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_STOPPED;
 			}
 			return new SimulationMessage(DetailedState.JOB_STOPPED, serializedMessage);
-		}else if (schedulerStatus == SimulationJobStatus.SCHEDULERSTATUS_FAILED){
+		}else if (schedulerStatus.isFailed()){
 			if (serializedMessage == null) {
 				return MESSAGE_JOB_FAILED_UNKNOWN;
 			}

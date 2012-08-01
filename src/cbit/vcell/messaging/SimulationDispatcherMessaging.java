@@ -26,10 +26,15 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.htc.PBSConstants.PBSJobStatus;
+import cbit.htc.PBSConstants.PBSJobExitCode;
+import cbit.htc.PBSUtils;
+import cbit.htc.PbsJobID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.RpcRequest;
@@ -67,7 +72,9 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 	private JmsXASession mainJobDispatcher = null;
 
 	private AdminDatabaseServerXA jobAdminXA = null;
-	private String jobSelector = null;
+	private String selector_simReq_RpcDispatcher = null;
+	private String selector_workerEvent_ProgressOrData = null;
+	private String selector_workerEvent_NotProgressOrData = null;
 	
 
 	class SimulationMonitorThread extends Thread {
@@ -83,7 +90,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 			JtaDbConnection obsoleteJobDbConnection = null;
 			JmsXASession obsoleteJobDispatcher = null;	
 			boolean join = true;
-			SimulationJobStatus jobStatus = null;
+			SimulationJobStatus simulationJobStatus = null;
 				
 			while (true) {
 				try {
@@ -122,11 +129,13 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 						
 						obsoleteJobDbConnection = new JtaOracleConnection(conFactory);
 
-						jobStatus = jobAdminXA.getNextObsoleteSimulation(obsoleteJobDbConnection.getConnection(), MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
-						if (jobStatus == null) {
+						simulationJobStatus = jobAdminXA.getNextObsoleteSimulation(obsoleteJobDbConnection.getConnection(), MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);
+						if (simulationJobStatus == null) {
 							log.print("##MT OK");
 							break; // no obsolete simulation, no transaction here. go back to sleep
-						}				
+						}
+						//update the database
+						jobAdminXA.touchSimulationJobStatus(obsoleteJobDbConnection.getConnection(), simulationJobStatus);
 
 						tm.begin();	
 						join = obsoleteJobDbConnection.joinTransaction(tm);
@@ -140,40 +149,67 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								throw new RuntimeException("##MT: join failed");
 							} else {
 								// too many retries
-								if ((jobStatus.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) >= MessageConstants.TASKID_MAX_RETRIES) {							
-									log.print("##MT too many retries " + jobStatus);
-
-									// new job status is failed.
-									SimulationJobStatus	newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(),
-										SimulationJobStatus.SCHEDULERSTATUS_FAILED, jobStatus.getTaskID(),
-										SimulationMessage.MESSAGE_JOB_FAILED_TOOMANYRETRIES,
-										jobStatus.getSimulationQueueEntryStatus(), jobStatus.getSimulationExecutionStatus());
-									//update the database
-									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
-									// tell client
-									StatusMessage statusMsg = new StatusMessage(newJobStatus, jobStatus.getVCSimulationIdentifier().getOwner().getName(), null, null);
-									statusMsg.sendToClient(obsoleteJobDispatcher);
+								if ((simulationJobStatus.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) >= MessageConstants.TASKID_MAX_RETRIES) {
+									if(simulationJobStatus.getSimulationExecutionStatus().getPbsJobID() == null){
+										VCMongoMessage.sendSimJobStatusMonitor("Expected PBSJobID to be not null, aborting timeout", simulationJobStatus);
+										throw new DataAccessException("Expected PBSJobID to be not null.  "+simulationJobStatus.toString());
+									}
+									PbsJobID pbsJobID = simulationJobStatus.getSimulationExecutionStatus().getPbsJobID();
+									if (pbsJobID == null){
+										// never submitted to PBS (not yet)
+									}
+									PBSJobStatus pbsJobStatus = null;
+									try {
+										pbsJobStatus = PBSUtils.getJobStatus(pbsJobID);
+									}catch (Exception e){
+										log.exception(e);
+									}
+									if (pbsJobStatus != null){
+										VCMongoMessage.sendSimJobStatusMonitor("job timed out but pbs returned status = "+pbsJobStatus.getDescription(), simulationJobStatus, pbsJobStatus);
+									}else{
+										// look for exit code
+										try {
+											PBSJobExitCode exitCode = PBSUtils.getPbsTraceJobExitCode(pbsJobID);
+											VCMongoMessage.sendSimJobStatusMonitor("job timed out, no pbs status, pbs exit code = "+exitCode, simulationJobStatus, exitCode);
+										}catch (Exception e2){
+											log.exception(e2);
+											VCMongoMessage.sendSimJobStatusMonitor("job timed out, no pbs status, can't get exit code: "+e2.getMessage(), simulationJobStatus);
+										}
+									}
 									
-								} else {
-									SimulationTask simTask = simDispatcher.getSimulationTask(jobStatus);
-									
-									log.print("##MT requeued " + simTask);
-
-									// increment taskid, new job status is queued
-									SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(), 
-										SimulationJobStatus.SCHEDULERSTATUS_QUEUED, jobStatus.getTaskID() + 1, 
-										SimulationMessage.MESSAGE_JOB_QUEUED_RETRY, jobStatus.getSimulationQueueEntryStatus(), null);
-									
-									//update the database
-									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
-									// send to simulation queue
-									Simulation sim = simTask.getSimulationJob().getSimulation();
-									SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, newJobStatus.getJobIndex(), simDispatcher.getFieldDataIdentifierSpecs(sim)), newJobStatus.getTaskID());
-									SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);
-									taskMsg.sendSimulationTask(obsoleteJobDispatcher);
-									// tell client
-									StatusMessage statusMsg = new StatusMessage(newJobStatus, newSimTask.getUserName(), null, null);
-									statusMsg.sendToClient(obsoleteJobDispatcher);
+//									log.print("##MT too many retries " + simulationJobStatus);
+//
+//									// new job status is failed.
+//									SimulationJobStatus	newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), simulationJobStatus.getVCSimulationIdentifier(), simulationJobStatus.getJobIndex(), simulationJobStatus.getSubmitDate(),
+//										SimulationJobStatus.SCHEDULERSTATUS_FAILED, simulationJobStatus.getTaskID(),
+//										SimulationMessage.MESSAGE_JOB_FAILED_TOOMANYRETRIES,
+//										simulationJobStatus.getSimulationQueueEntryStatus(), simulationJobStatus.getSimulationExecutionStatus());
+//									//update the database
+//									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), simulationJobStatus, newJobStatus);
+//									// tell client
+//									StatusMessage statusMsg = new StatusMessage(newJobStatus, simulationJobStatus.getVCSimulationIdentifier().getOwner().getName(), null, null);
+//									statusMsg.sendToClient(obsoleteJobDispatcher);
+//									
+//								} else {
+//									SimulationTask simTask = simDispatcher.getSimulationTask(simulationJobStatus);
+//									
+//									log.print("##MT requeued " + simTask);
+//
+//									// increment taskid, new job status is queued
+//									SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), simulationJobStatus.getVCSimulationIdentifier(), simulationJobStatus.getJobIndex(), simulationJobStatus.getSubmitDate(), 
+//										SimulationJobStatus.SCHEDULERSTATUS_QUEUED, simulationJobStatus.getTaskID() + 1, 
+//										SimulationMessage.MESSAGE_JOB_QUEUED_RETRY, simulationJobStatus.getSimulationQueueEntryStatus(), null);
+//									
+//									//update the database
+//									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), simulationJobStatus, newJobStatus);
+//									// send to simulation queue
+//									Simulation sim = simTask.getSimulationJob().getSimulation();
+//									SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, newJobStatus.getJobIndex(), simDispatcher.getFieldDataIdentifierSpecs(sim)), newJobStatus.getTaskID());
+//									SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);
+//									taskMsg.sendSimulationTask(obsoleteJobDispatcher);
+//									// tell client
+//									StatusMessage statusMsg = new StatusMessage(newJobStatus, newSimTask.getUserName(), null, null);
+//									statusMsg.sendToClient(obsoleteJobDispatcher);
 								}
 								tm.commit();
 								
@@ -312,7 +348,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 							double requiredMemMB = simTask.getEstimatedMemorySizeMB();
 							if (requiredMemMB > Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB))) {						
 								SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
-										jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, 
+										jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SchedulerStatus.FAILED, 
 										SimulationMessage.jobFailed("Simulation [" + simTask.getSimulationInfo().getName() + ", " + jobStatus.getJobIndex() + "] requires approximately " + requiredMemMB + "mb memory. Exceeds current memory limit."));
 								
 								// tell client
@@ -367,11 +403,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 
 				// if there are no messages or no qualified jobs or exceptions, sleep for a while
 				try {
-					if (foundOne) {
-						sleep(100);
-					} else {
-						sleep(1 * MessageConstants.SECOND_IN_MS);
-					}
+					sleep(500);
 				} catch (InterruptedException ex) {
 					log.exception(ex);
 				}
@@ -420,8 +452,13 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 					if (!join) {
 						throw new RuntimeException("--ST: join failed");
 					} else {
-						recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), 100);
-
+						// get high priority message (non-progress/data message)
+						recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), selector_workerEvent_NotProgressOrData, 0);
+						
+						if (recievedMsg == null) {
+							// if no high-priority message waiting - take any message
+							recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), 100);
+						}
 						if (recievedMsg == null) {
 							try {
 								tm.rollback();
@@ -472,7 +509,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				
 				// if there are no messages or exceptions, sleep for a while
 				try {
-					sleep(5 * MessageConstants.SECOND_IN_MS);
+					sleep(100);
 				} catch (InterruptedException ex) {
 					log.exception(ex);
 				}
@@ -516,7 +553,7 @@ private void do_failed(Connection con, SimulationJobStatus oldJobStatus, String 
 	// if the job is in simJob queue, get it out	
 	
 	// update database
-	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, failMsg);
+	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SchedulerStatus.FAILED, failMsg);
 	
 	// tell client
 	StatusMessage message = new StatusMessage(newJobStatus, username, null, null);
@@ -529,8 +566,7 @@ private void do_failed(Connection con, SimulationJobStatus oldJobStatus, String 
  * Creation date: (10/24/2001 11:08:09 PM)
  * @param simulation cbit.vcell.solver.Simulation
  */
-private void do_start(Connection con, SimulationJobStatus oldJobStatus, SimulationTask simTask, int queueID) 
-	throws JMSException, DataAccessException, XmlParseException {
+private void do_start(Connection con, SimulationJobStatus oldJobStatus, SimulationTask simTask, int queueID) throws JMSException, DataAccessException, UpdateSynchronizationException, XmlParseException {
 	// send to simulation queue, for waiting jobs, only update the database
 	if (queueID == MessageConstants.QUEUE_ID_SIMULATIONJOB) {
 		SimulationTaskMessage taskMsg = new SimulationTaskMessage(simTask);
@@ -573,7 +609,7 @@ private void do_stop(Connection con, SimulationJobStatus oldJobStatus, String us
 	
 	// update database
 	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
+			SchedulerStatus.STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 	
 	// tell client
 	if (!newJobStatus.compareEqual(oldJobStatus)) {
@@ -611,7 +647,7 @@ public VCSimulationIdentifier processNextRequest() {
 		if (!join) {
 			throw new RuntimeException("++PNR: join failed");
 		} else {
-			Message message = mainJobDispatcher.receiveMessage(JmsUtils.getQueueSimReq(), jobSelector, 100);
+			Message message = mainJobDispatcher.receiveMessage(JmsUtils.getQueueSimReq(), selector_simReq_RpcDispatcher, 100);
 			if (message == null) {			
 				try {
 					tm.rollback();
@@ -696,9 +732,12 @@ public VCSimulationIdentifier processNextRequest() {
  */
 protected void reconnect() throws JMSException {
 	// msg filter selector 
-	jobSelector =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " 
-		+ MessageConstants.SERVICE_TYPE_PROPERTY + "='" + simDispatcher.getServiceType() + "'";	
+	selector_simReq_RpcDispatcher =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " 
+			+ MessageConstants.SERVICE_TYPE_PROPERTY + "='" + simDispatcher.getServiceType() + "'";	
 	
+	selector_workerEvent_ProgressOrData = WorkerEventMessage.getWorkerEventSelector_ProgressAndData();
+	selector_workerEvent_NotProgressOrData = WorkerEventMessage.getWorkerEventSelector_NotProgressAndData();
+		
 	super.reconnect();
 	
 	jmsXAConn = jmsConnFactory.createXAConnection();
@@ -718,7 +757,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 	if (!user.equals(vcSimID.getOwner())) {
 		log.alert(user + " is not authorized to start simulation " + vcSimID);
 		StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.MESSAGE_JOB_FAILED_NOTAUTHORIZED, null, null), user.getName(), null, null);
+			SchedulerStatus.FAILED, 0, SimulationMessage.MESSAGE_JOB_FAILED_NOTAUTHORIZED, null, null), user.getName(), null, null);
 		message.sendToClient(mainJobDispatcher);
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
@@ -729,7 +768,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 		} catch (DataAccessException ex) {
 			log.alert("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Failed to dispatch simuation: " + ex.getMessage()), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Failed to dispatch simuation: " + ex.getMessage()), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 			return;
 		}
@@ -737,7 +776,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 			if (simulation.getScanCount() > Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxJobsPerScan))) {
 				log.alert("Too many simulations (" + simulation.getScanCount() + ") for parameter scan." + vcSimID);
 				StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-					SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Too many simulations (" + simulation.getScanCount() 
+					SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Too many simulations (" + simulation.getScanCount() 
 							+ ") for parameter scan."), null, null), user.getName(), null, null);
 				message.sendToClient(mainJobDispatcher);
 				return;
@@ -745,28 +784,39 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 			for (int i = 0; i < simulation.getScanCount(); i++){
 				// right now, we submit a regular task for each scan job...
 				// should get smarter in the future for load balancing, quotas, priorities...
-				SimulationJobStatus oldJobStatus = jobAdminXA.getSimulationJobStatus(con, simKey, i);
-				try {
-					fdis = simDispatcher.getFieldDataIdentifierSpecs(simulation);
-				} catch (DataAccessException ex) {
-					do_failed(con, oldJobStatus, user.getName(), vcSimID, i, SimulationMessage.jobFailed(ex.getMessage()));
-					return;
-				}
-				// if already started by another thread
-				if (oldJobStatus != null && !oldJobStatus.isDone()) {
-					log.alert("Can't start, simulation[" + vcSimID + "] job [" + i + "] is running already");
-				} else {
-					int newTaskID = oldJobStatus == null ? 0 : (oldJobStatus.getTaskID() & MessageConstants.TASKID_USERCOUNTER_MASK) + MessageConstants.TASKID_USERINCREMENT;
-					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, i, fdis), newTaskID);
-					int queueID = MessageConstants.QUEUE_ID_WAITING;
-					// put all the jobs to waiting first, let dispatch thread decide which to dispatch
-					do_start(con, oldJobStatus, simTask, queueID);
+				int attemptCount = 0;
+				while (attemptCount<3){
+					try {
+						SimulationJobStatus oldJobStatus = jobAdminXA.getSimulationJobStatus(con, simKey, i);
+						try {
+							fdis = simDispatcher.getFieldDataIdentifierSpecs(simulation);
+						} catch (DataAccessException ex) {
+							log.exception(ex);
+							do_failed(con, oldJobStatus, user.getName(), vcSimID, i, SimulationMessage.jobFailed(ex.getMessage()));
+							return;
+						}
+						// if already started by another thread
+						if (oldJobStatus != null && !oldJobStatus.isDone()) {
+							log.alert("Can't start, simulation[" + vcSimID + "] job [" + i + "] is running already");
+						} else {
+							int newTaskID = oldJobStatus == null ? 0 : (oldJobStatus.getTaskID() & MessageConstants.TASKID_USERCOUNTER_MASK) + MessageConstants.TASKID_USERINCREMENT;
+							SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, i, fdis), newTaskID);
+							int queueID = MessageConstants.QUEUE_ID_WAITING;
+							// put all the jobs to waiting first, let dispatch thread decide which to dispatch
+							do_start(con, oldJobStatus, simTask, queueID);
+						}
+						break;
+					} catch (UpdateSynchronizationException e) {
+						log.exception(e);
+					} finally {
+						attemptCount++;
+					}
 				}
 			}
 		} else {
 			log.alert("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 		}
 	}
@@ -799,7 +849,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 	if (!user.equals(vcSimID.getOwner())) {
 		log.alert(user + " is not authorized to stop simulation " + vcSimID);
 		StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
+			SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
 		message.sendToClient(mainJobDispatcher);			
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
@@ -809,7 +859,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		} catch (DataAccessException ex) {
 			log.alert("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed(ex.getMessage()), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed(ex.getMessage()), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 			return;
 		}
@@ -830,7 +880,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		} else {
 			log.alert("Can't stop, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't stop, simulation [" + 
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Can't stop, simulation [" + 
 						vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 		}

@@ -16,6 +16,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
@@ -65,7 +66,9 @@ public class VCMongoDbDriver implements Runnable {
 	        	if (m==null){
 	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
 	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
-	        		m = new Mongo(mongoDbHost,mongoDbPort);
+	        		MongoOptions mongoOptions = new MongoOptions();
+	        		mongoOptions.setConnectionsPerHost(1);
+	        		m = new Mongo(mongoDbHost,mongoOptions);
 	        	}
 	        	
 	        	String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
@@ -85,7 +88,7 @@ public class VCMongoDbDriver implements Runnable {
 	        		}
 	        	}else{
 		    		for (VCMongoMessage message : queuedMessages){
-		    			log.alert("VCMongoMessage sent : "+message);
+		    			log.print("VCMongoMessage sent : "+message);
 		    		}
 	        	}
 //   			} catch (MongoException e){
