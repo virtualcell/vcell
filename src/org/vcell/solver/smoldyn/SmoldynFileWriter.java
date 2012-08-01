@@ -12,9 +12,11 @@ package org.vcell.solver.smoldyn;
 
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -28,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.DeflaterOutputStream;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.math.random.RandomDataImpl;
 import org.vcell.util.BeanUtils;
@@ -414,52 +418,54 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 }
 
 private void writeHighResVolumeSamples() {	
-	PrintWriter pw = null;
-	try {
-		File hrvsFile = new File(baseFileName + SimDataConstants.SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION);
-		printWriter.println("# "+VCellSmoldynKeyword.highResVolumeSamplesFile);
-		printWriter.println(VCellSmoldynKeyword.highResVolumeSamplesFile + " " + hrvsFile);
-		printWriter.println();
-		
-		pw = new PrintWriter(hrvsFile);
-		Origin origin = resampledGeometry.getOrigin();
-		Extent extent = resampledGeometry.getExtent();
-		int numSamples = 10000000;
-		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
-		VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
+	if(baseFileName != null){
+		PrintWriter pw = null;
+		try {
+			File hrvsFile = new File(baseFileName + SimDataConstants.SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION);
+			printWriter.println("# "+VCellSmoldynKeyword.highResVolumeSamplesFile);
+			printWriter.println(VCellSmoldynKeyword.highResVolumeSamplesFile + " " + hrvsFile);
+			printWriter.println();
 			
-		pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
-		pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
-		pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
-		VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
-		for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
-			for(VCPixelClass vcPixelClass : pixelclasses )
-			{
-				if(vcPixelClass.getPixel() == subVolume.getHandle())
+			pw = new PrintWriter(hrvsFile);
+			Origin origin = resampledGeometry.getOrigin();
+			Extent extent = resampledGeometry.getExtent();
+			int numSamples = 10000000;
+			ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
+			VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
+				
+			pw.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
+			pw.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
+			pw.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
+			VCPixelClass[] pixelclasses = vcImage.getPixelClasses();
+			for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
+				for(VCPixelClass vcPixelClass : pixelclasses )
 				{
-					pw.println(subVolume.getName() + " " + vcPixelClass.getPixel());
-					break;
+					if(vcPixelClass.getPixel() == subVolume.getHandle())
+					{
+						pw.println(subVolume.getName() + " " + vcPixelClass.getPixel());
+						break;
+					}
 				}
 			}
-		}
-		
-		pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
-		
-		if (vcImage != null) {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-			byte[] pixels = vcImage.getPixels();
-			dos.write(pixels, 0, pixels.length);
-			dos.close();
-			byte[] compressedPixels = bos.toByteArray();
-			pw.println(Hex.toString(compressedPixels));
-		}		
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
-	} finally {
-		if (pw != null) {
-			pw.close();
+			
+			pw.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
+			
+			if (vcImage != null) {
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+				byte[] pixels = vcImage.getPixels();
+				dos.write(pixels, 0, pixels.length);
+				dos.close();
+				byte[] compressedPixels = bos.toByteArray();
+				pw.println(Hex.toString(compressedPixels));
+			}		
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
+		} finally {
+			if (pw != null) {
+				pw.close();
+			}
 		}
 	}
 }
@@ -484,7 +490,8 @@ private void writeGraphicsOpenGL() throws MathException {
 	if (!bGraphicOpenGL) {
 		return;
 	}
-	printWriter.println("# graphics command");	
+	printWriter.println("# graphics command");
+	//writeGraphicsLegend(); uncomment for writing out color map for vars
 	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
 	
 	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
@@ -500,8 +507,38 @@ private void writeGraphicsOpenGL() throws MathException {
 		printWriter.println(SmoldynKeyword.color + " " + variableName + "(" + SmoldynKeyword.all + ") " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
 		printWriter.println(SmoldynKeyword.display_size + " " + variableName  + "(" + SmoldynKeyword.all + ") 3");
 	}
+		
 	printWriter.println();
 }
+
+// uncomment for writing out color map for vars
+/*private void writeGraphicsLegend() throws MathException{
+	try {
+		java.awt.image.BufferedImage cmapImage = new java.awt.image.BufferedImage(200, particleVariableList.size()*30,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = (Graphics2D)cmapImage.getGraphics();
+		for (int i = 0; i < particleVariableList.size(); i ++) {
+			Color c = colors[i];
+			String variableName = getVariableName(particleVariableList.get(i),null);
+			g2d.setColor(c);
+			g2d.drawString(variableName, 5, 30*i);
+		}
+		g2d.dispose();
+		File tmpFile = File.createTempFile("legend", "jpg");
+		
+		FileOutputStream fios = null;
+		try {
+			printWriter.println("# legend file: " + tmpFile.getAbsolutePath());
+			fios = new FileOutputStream(tmpFile);
+			ImageIO.write(cmapImage,"jpg",fios);
+		}  finally {
+			if(fios != null) {fios.close();}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new MathException(e.getMessage());
+	}
+}*/
+
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
 	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");

@@ -468,7 +468,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			File inputFile = new File(ResourceUtil.getLocalSimDir(), simJob.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
 			inputFile.deleteOnExit();
 			PrintWriter pw = new PrintWriter(inputFile);
-			SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+			SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, new File(ResourceUtil.getLocalSimDir(), simJob.getSimulationJobID()).getAbsolutePath(), simJob, false);
 			smf.write();
 			pw.close();	
 			String[] cmd = new String[] {smoldynExe.getAbsolutePath(), inputFile.getAbsolutePath()};
