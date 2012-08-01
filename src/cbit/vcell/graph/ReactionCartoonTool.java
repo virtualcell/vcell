@@ -912,6 +912,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					// (rather than attachment area on ReactionStepShape)
 					LineType lineType = getLineTypeFromDirection(startShape, endPointWorld);
 					if (endShape instanceof SimpleReactionShape){
+						// start : SpeciesContext; end : simpleReaction
+						// add speciesContext as reactant to simpleReaction
 						SimpleReaction simpleReaction = (SimpleReaction)endShape.getModelObject();
 						Object startShapeObject = null;						
 						if(startShape != null) {
@@ -943,6 +945,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							}
 							break;
 						} else if(startShapeObject instanceof SimpleReaction) {
+							// start : simpleReaction1; end : simpleReaction
+							// create new speciesContext (sc) in designated structure. Add sc as product of simpleReaction1 and reactant of simpleReaction.
 							SimpleReaction simpleReactionStart = (SimpleReaction) startShapeObject;
 							Structure structureReaction = simpleReaction.getStructure();
 							Structure structureReactionStart = simpleReactionStart.getStructure();
@@ -966,6 +970,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 										(startLoc.x + endLoc.x) / 2, (startLoc.y + endLoc.y) / 2));
 							}
 						} else if(startShapeObject instanceof Structure) {
+							// start : structure; end : simpleReaction
+							// create speciesContext in 'structure' and add it is reactant to 
 							Structure structure = (Structure) startShapeObject;
 							if(StructureUtil.reactionHereCanHaveParticipantThere(
 									simpleReaction.getStructure(), structure)) {
@@ -983,6 +989,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							startShapeObject = startShape.getModelObject();							
 						}
 						if(startShapeObject instanceof SimpleReaction) {
+							// start : simpleReaction; end : speciesContext
+							// If speciesContext is already a product of simpleReaction, increase its stoichiometry, else add speciesContext as a product to simplReaction 
 							SimpleReaction simpleReaction = (SimpleReaction) startShapeObject;
 							if(StructureUtil.reactionHereCanHaveParticipantThere(
 									simpleReaction.getStructure(), speciesContextEnd.getStructure())) {
@@ -1008,6 +1016,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							}
 							break;
 						} else if (startShapeObject instanceof SpeciesContext) {
+							// start : SpeciesContext; end : speciesContext
 							SpeciesContext speciesContextStart = (SpeciesContext) startShapeObject;
 							if(!speciesContextStart.equals(speciesContextEnd)) {
 								Structure structureEnd = speciesContextEnd.getStructure();
@@ -1016,6 +1025,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								Species speciesEnd = speciesContextEnd.getSpecies();
 								boolean bDone = false;
 								if(!bDone && speciesStart.equals(speciesEnd)) {
+									// if the species for the 2 speciesContexts are the same, check if there is a membrane in between the features of the 2 species
+									// create a FLUX reaction on the membrane
 									Membrane membraneBetween = null;
 									if(structureEnd instanceof Feature && structureStart instanceof Feature) {
 										membraneBetween = getReactionCartoon().getModel()
@@ -1035,25 +1046,32 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									}
 								}
 								if(!bDone && !speciesStart.equals(speciesEnd)) {
+									// if the species for the 2 speciesContexts are NOT the same, check if there is a membrane in between the features of the 2 species
 									Membrane membraneBetween = null;
+									Model model = getReactionCartoon().getModel();
 									if(structureEnd instanceof Feature && structureStart instanceof Feature) {
-										membraneBetween = getReactionCartoon().getModel()
-										.getMembrane((Feature) structureStart, (Feature) structureEnd);
+										membraneBetween = model.getMembrane((Feature) structureStart, (Feature) structureEnd);
 									}
 									if(membraneBetween != null) {
-										SimpleReaction simpleReaction = getReactionCartoon().getModel().createSimpleReaction(membraneBetween);
-										simpleReaction.addReactant(speciesContextStart, 1);
-										simpleReaction.addProduct(speciesContextEnd, 1);
-										getReactionCartoon().notifyChangeEvent();
-										Point startPos = edgeShape.getStart();
-										Point endPos = edgeShape.getEnd();
-										positionShapeForObject(membraneBetween, simpleReaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-										getGraphModel().clearSelection();
-										getGraphModel().select(simpleReaction);
-										bDone = true;
+										// convert speciesContextEnd to have same species as speciesContextStart
+										model.changeSpeciesInSpeciesContext(speciesContextEnd, speciesContextStart);
+										if (speciesContextEnd.getSpecies().equals(speciesContextStart.getSpecies())) {
+											Species fluxCarrier = speciesContextStart.getSpecies(); 
+											FluxReaction fluxReaction = getReactionCartoon().getModel().createFluxReaction(membraneBetween);
+											fluxReaction.setFluxCarrier(fluxCarrier, getReactionCartoon().getModel());
+											
+											getReactionCartoon().notifyChangeEvent();
+											Point startPos = edgeShape.getStart();
+											Point endPos = edgeShape.getEnd();
+											positionShapeForObject(membraneBetween, fluxReaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+											getGraphModel().clearSelection();
+											getGraphModel().select(fluxReaction);
+											bDone = true;
+										}										
 									}
 								}
 								if(!bDone && structureEnd.equals(structureStart)) {
+									// if the 2 speciesContexts are in the same structure, create a simpleReaction, add speciesContextStart as reactant, and speciesContextEnd as product.
 									Model model = getReactionCartoon().getModel();
 									SimpleReaction reaction = model.createSimpleReaction(structureEnd);
 									reaction.addReactant(speciesContextStart, 1);
@@ -1068,10 +1086,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 									getGraphModel().select(reaction);
 									getReactionCartoon().notifyChangeEvent();
 								} else if(!bDone && structureEnd instanceof Membrane && structureStart instanceof Feature) {
+									// if structure of speciesContextStart is a feature and structure of speciesContextEnd is a membrane
 									Membrane endMembrane = (Membrane)structureEnd;
 									Feature startFeature = (Feature)structureStart;
 									if(endMembrane.getOutsideFeature().equals(startFeature) || endMembrane.getInsideFeature().equals(startFeature))
 									{
+										// if the feature and membrane are adjacent; create a simplereaction in membrane, add spContextStart as reactant and spContextEnd as product
 										SpeciesContext speciesContext1 = speciesContextStart;
 										SpeciesContext speciesContext2 = speciesContextEnd;
 										SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(endMembrane);
@@ -1104,10 +1124,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 								}
 								else if(!bDone && structureEnd instanceof Feature && structureStart instanceof Membrane)
 								{
+									// if structure of speciesContextStart is a membrane and structure of speciesContextEnd is a feature
 									Membrane startMembrane = (Membrane) structureStart;
 									Feature endFeature = (Feature) structureEnd;
 									if(startMembrane.getOutsideFeature().equals(endFeature) || startMembrane.getInsideFeature().equals(endFeature))
 									{
+										// if membrane and feature are adjacent, create simpleReaction on membrane, add spContextStart as reactant, spContextEnd as product.
 										SpeciesContext speciesContext1 = speciesContextStart;
 										SpeciesContext speciesContext2 = speciesContextEnd;
 										SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startMembrane);
