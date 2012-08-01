@@ -10,6 +10,7 @@
 
 package cbit.vcell.messaging.db;
 import cbit.htc.PbsJobID;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.util.Date;
@@ -30,29 +31,70 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	private Date fieldTimeDateStamp = null;
 	private VCSimulationIdentifier fieldVCSimID = null;
 	private Date fieldSubmitDate = null;
-	private int fieldSchedulerStatus; // define here
+	private SchedulerStatus fieldSchedulerStatus = SchedulerStatus.WAITING; // define here
 	private int fieldTaskID = 0;
 	private SimulationMessage fieldSimulationMessage = null;
 	private VCellServerID fieldServerID = null;
 	private int fieldJobIndex;
 
-	public static final int SCHEDULERSTATUS_WAITING = 0;
-	public static final int SCHEDULERSTATUS_QUEUED = 1;
-	public static final int SCHEDULERSTATUS_DISPATCHED = 2;
-	public static final int SCHEDULERSTATUS_RUNNING = 3;
-	public static final int SCHEDULERSTATUS_COMPLETED = 4;
-	public static final int SCHEDULERSTATUS_STOPPED = 5;
-	public static final int SCHEDULERSTATUS_FAILED = 6;
-	
-	private final static String[] schedulerStatusDescription = new String[] {
-		"waiting",
-		"queued",
-		"dispatched",
-		"running",
-		"completed",
-		"stopped",
-		"failed"
-	};
+	public enum SchedulerStatus {
+		WAITING(0,"waiting"),
+		QUEUED(1,"queued"),
+		DISPATCHED(2,"dispatched"),
+		RUNNING(3,"running"),
+		COMPLETED(4,"completed"),
+		STOPPED(5,"stopped"),
+		FAILED(6,"failed");
+		
+		private int databaseNumber;
+		private String description;
+		private SchedulerStatus(int databaseNumber, String desc){
+			this.databaseNumber = databaseNumber;
+			this.description = desc;
+		}
+		
+		public int getDatabaseNumber(){
+			return databaseNumber;
+		}
+		public String getDescription(){
+			return description;
+		}
+
+		public boolean isSupercededBy(SchedulerStatus other) {
+			return other.getDatabaseNumber() > getDatabaseNumber();
+		}
+
+		public boolean isWaiting() {
+			return this.equals(WAITING);
+		}
+		public boolean isQueued() {
+			return this.equals(QUEUED);
+		}
+		public boolean isDispatched() {
+			return this.equals(DISPATCHED);
+		}
+		public boolean isRunning() {
+			return this.equals(RUNNING);
+		}
+		public boolean isCompleted() {
+			return this.equals(COMPLETED);
+		}
+		public boolean isStopped() {
+			return this.equals(STOPPED);
+		}
+		public boolean isFailed() {
+			return this.equals(FAILED);
+		}
+
+		public static SchedulerStatus fromDatabaseNumber(int databaseNumber) {
+			for (SchedulerStatus status : values()){
+				if (status.getDatabaseNumber()==databaseNumber){
+					return status;
+				}
+			}
+			throw new RuntimeException("unexpected SchedulerStatus database number "+databaseNumber);
+		}
+	}
 
 	private SimulationQueueEntryStatus fieldSimulationQueueEntryStatus = null;	// may be null
 	private SimulationExecutionStatus fieldSimulationExecutionStatus = null;	// may be null
@@ -61,7 +103,7 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 /**
  * SimulationJobStatus constructor comment.
  */
-public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimID, int jobIndex, Date submitDate, int schedulerStatus, int taskID, SimulationMessage simMessage, SimulationQueueEntryStatus simQueueStatus, SimulationExecutionStatus simExeStatus){
+public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimID, int jobIndex, Date submitDate, SchedulerStatus schedulerStatus, int taskID, SimulationMessage simMessage, SimulationQueueEntryStatus simQueueStatus, SimulationExecutionStatus simExeStatus){
 	if (simMessage == null) {
 		throw new RuntimeException("SimulationJobStatus : SimulationMessage should not be null");
 	}
@@ -84,7 +126,7 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
 public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimulationJobStatus){
 		SimulationJobStatus jobStatus = (SimulationJobStatus)obj;
-		if (jobStatus.fieldSchedulerStatus != fieldSchedulerStatus){
+		if (!jobStatus.fieldSchedulerStatus.equals(fieldSchedulerStatus)){
 			//System.out.println("getSchedulerStatus() not =");
 			return false;
 		}
@@ -139,16 +181,16 @@ public boolean isSupercededBy(SimulationJobStatus simJobStatus, Double oldProgre
 		return true;
 	}
 	
-	if (simJobStatus.fieldSchedulerStatus > fieldSchedulerStatus){
+	if (fieldSchedulerStatus.isSupercededBy(simJobStatus.fieldSchedulerStatus)){
 		return true;
-	}else if (simJobStatus.fieldSchedulerStatus < fieldSchedulerStatus){
+	}else if (simJobStatus.fieldSchedulerStatus.isSupercededBy(fieldSchedulerStatus)){
 		return false;
 	}
 	
 	//
 	// simJobStatus.schedulerStatus == fieldSchedulerStatus 
 	//
-	if (simJobStatus.fieldSchedulerStatus == SCHEDULERSTATUS_RUNNING && fieldSchedulerStatus == SCHEDULERSTATUS_RUNNING){
+	if (simJobStatus.fieldSchedulerStatus.isRunning() && fieldSchedulerStatus.isRunning()){
 		if (oldProgress!=null && newProgress!=null){
 			if (oldProgress < newProgress){
 				return true;
@@ -208,13 +250,8 @@ public int getJobIndex() {
  * Creation date: (1/31/2003 11:15:48 AM)
  * @return int
  */
-public int getSchedulerStatus() {
+public SchedulerStatus getSchedulerStatus() {
 	return fieldSchedulerStatus;
-}
-
-
-public String getSchedulerStatusDescription() {
-	return schedulerStatusDescription[fieldSchedulerStatus];
 }
 
 
@@ -329,7 +366,7 @@ public boolean hasData() {
  * @return int
  */
 public boolean inQueue() {
-	return (fieldSchedulerStatus == SCHEDULERSTATUS_QUEUED || fieldSchedulerStatus == SCHEDULERSTATUS_WAITING) ? true : false;
+	return (fieldSchedulerStatus.isQueued() || fieldSchedulerStatus.isWaiting());
 }
 
 
@@ -353,7 +390,7 @@ public boolean isActive() {
  * @return int
  */
 public boolean isCompleted() {
-	return  fieldSchedulerStatus == SCHEDULERSTATUS_COMPLETED ? true : false;
+	return  fieldSchedulerStatus.isCompleted();
 }
 
 
@@ -363,7 +400,7 @@ public boolean isCompleted() {
  * @return int
  */
 public boolean isDispatched() {
-	return  fieldSchedulerStatus == SCHEDULERSTATUS_DISPATCHED ? true : false;
+	return  fieldSchedulerStatus.isDispatched();
 }
 
 
@@ -373,8 +410,7 @@ public boolean isDispatched() {
  * @return int
  */
 public boolean isDone() {
-	return  (fieldSchedulerStatus == SCHEDULERSTATUS_STOPPED || fieldSchedulerStatus == SCHEDULERSTATUS_FAILED 
-		|| fieldSchedulerStatus == SCHEDULERSTATUS_COMPLETED) ? true : false;
+	return  (fieldSchedulerStatus.isStopped() || fieldSchedulerStatus.isFailed() || fieldSchedulerStatus.isCompleted());
 }
 
 
@@ -384,7 +420,7 @@ public boolean isDone() {
  * @return int
  */
 public boolean isFailed() {
-	return  fieldSchedulerStatus == SCHEDULERSTATUS_FAILED ? true : false;
+	return  fieldSchedulerStatus.isFailed();
 }
 
 
@@ -394,7 +430,7 @@ public boolean isFailed() {
  * @return int
  */
 public boolean isQueued() {
-	return  (fieldSchedulerStatus == SCHEDULERSTATUS_QUEUED) ? true : false;
+	return  fieldSchedulerStatus.isQueued();
 }
 
 
@@ -404,7 +440,7 @@ public boolean isQueued() {
  * @return int
  */
 public boolean isRunning() {
-	return  fieldSchedulerStatus == SCHEDULERSTATUS_RUNNING ? true : false;
+	return  fieldSchedulerStatus.isRunning();
 }
 
 
@@ -414,7 +450,7 @@ public boolean isRunning() {
  * @return int
  */
 public boolean isStopped() {
-	return  fieldSchedulerStatus == SCHEDULERSTATUS_STOPPED ? true : false;
+	return  fieldSchedulerStatus.isStopped();
 }
 
 
@@ -424,7 +460,7 @@ public boolean isStopped() {
  * @return int
  */
 public boolean isWaiting() {
-	return  (fieldSchedulerStatus == SCHEDULERSTATUS_WAITING) ? true : false;
+	return  fieldSchedulerStatus.isWaiting();
 }
 
 

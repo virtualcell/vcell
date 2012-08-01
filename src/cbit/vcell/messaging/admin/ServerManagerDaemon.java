@@ -25,6 +25,7 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.htc.PBSUtils;
 import cbit.htc.PbsJobID;
+import cbit.htc.PBSConstants.PBSJobStatus;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.messaging.*;
@@ -159,7 +160,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
 			} else {
 				long t = System.currentTimeMillis();
-				int status;
+				PBSJobStatus status;
 				while (true) {
 					try {
 						Thread.sleep(1000);
@@ -167,11 +168,11 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 					}
 					
 					status = PBSUtils.getJobStatus(jobid);
-					if (PBSUtils.isJobExiting(status)){
+					if (status.isExiting()){
 						// should never happen
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
 						break;
-					} else if (PBSUtils.isJobRunning(status)) {						
+					} else if (status.isRunning()) {						
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
 						break;
 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
@@ -309,13 +310,15 @@ private void on_stopservice(Message message) throws JMSException {
 				ServiceStatus service = iter.next();		
 				if (service.getServiceSpec().getID().equals(serviceID)) {
 					PbsJobID pbsJobId = service.getPbsJobId();
-					if (pbsJobId != null && PBSUtils.isJobRunning(pbsJobId)) {
+					PBSJobStatus jobStatus = PBSUtils.getJobStatus(pbsJobId);
+					if (pbsJobId != null && jobStatus.isRunning()) {
 						try {
 							Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
 						} catch (InterruptedException ex) {							
 						}					
 						// if the service is not stopped, kill it from PBS
-						if (PBSUtils.isJobRunning(pbsJobId)) {
+						jobStatus = PBSUtils.getJobStatus(pbsJobId);
+						if (jobStatus.isRunning()) {
 							PBSUtils.killJob(pbsJobId);
 						}
 					}
@@ -323,7 +326,10 @@ private void on_stopservice(Message message) throws JMSException {
 				}
 			}
 		}
-	} catch (MessagePropertyNotFoundException ex) {
+//	} catch (MessagePropertyNotFoundException ex) {
+//		log.exception(ex);
+	} catch (Exception ex) {
+		// from PBSUtils.isJobRunning(pbsJobId)
 		log.exception(ex);
 	}
 }

@@ -544,6 +544,10 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 	}
 }
 
+public void touchSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException {
+	jobDB.updateSimulationJobStatus(con,simulationJobStatus);
+}
+
 
 /**
  * This method was created in VisualAge.
@@ -818,5 +822,6 @@ public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) t
 		conFactory.release(con,lock);
 	}
 }
+
 
 }
