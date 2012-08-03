@@ -1530,6 +1530,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getLocalWorkspace().getDataSetControllerImpl().addDataJobListener(flourViewer);
 			((VirtualFrapWindowManager)flourViewer.getDataViewerManager()).setLocalWorkSpace(getLocalWorkspace());
 			
+			//do now show post data processing for VFRAP
+			flourViewer.setPostProcessingPanelVisible(false);
+			
 			flourViewer.repaint();
 			
 		}
