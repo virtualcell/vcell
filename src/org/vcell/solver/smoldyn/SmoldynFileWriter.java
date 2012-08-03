@@ -10,7 +10,6 @@
 
 package org.vcell.solver.smoldyn;
 
-
 import java.awt.Color;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
@@ -74,9 +73,6 @@ import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -84,6 +80,7 @@ import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.parser.DivideByZeroException;
@@ -112,7 +109,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.util.VCellErrorMessages;
-import cbit.vcell.visit.GetSystemProperties;
 
 
 /**
@@ -494,7 +490,9 @@ private void writeGraphicsOpenGL() throws MathException {
 	if (!bGraphicOpenGL) {
 		return;
 	}
-	printWriter.println("# graphics command");	
+	printWriter.println("# graphics command");
+	//uncomment for debug
+	//writeGraphicsLegend(); 
 	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
 	
 	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
@@ -512,6 +510,36 @@ private void writeGraphicsOpenGL() throws MathException {
 	}
 	printWriter.println();
 }
+
+//uncomment for debug
+/*private void writeGraphicsLegend() throws MathException{
+	try {
+		java.awt.image.BufferedImage cmapImage = new java.awt.image.BufferedImage(200, particleVariableList.size()*30,java.awt.image.BufferedImage.TYPE_INT_RGB);
+		Graphics g = cmapImage.getGraphics();
+		for (int i = 0; i < particleVariableList.size(); i ++) {
+			Color c = colors[i];
+			System.out.println("color for legend: " + "red--"+ c.getRed() + "  green--" + c.getGreen() + "  blue--" + c.getBlue());
+			String variableName = getVariableName(particleVariableList.get(i),null);
+			g.setColor(c);
+			g.drawString(variableName, 5, 30*i + 20);
+			g.fillRect(105, 30*i + 10, 20, 10);
+		}
+		g.dispose();
+		File tmpFile = File.createTempFile("legend", ".jpg");
+		
+		FileOutputStream fios = null;
+		try {
+			printWriter.println("# legend file: " + tmpFile.getAbsolutePath());
+			fios = new FileOutputStream(tmpFile);
+			ImageIO.write(cmapImage,"jpg",fios);
+		}  finally {
+			if(fios != null) {fios.close();}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new MathException(e.getMessage());
+	}
+}*/
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
 	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
