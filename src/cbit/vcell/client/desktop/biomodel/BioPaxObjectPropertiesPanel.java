@@ -13,6 +13,8 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,8 +30,11 @@ import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -89,28 +94,54 @@ public class BioPaxObjectPropertiesPanel extends DocumentEditorSubPanel {
 	private BioModel bioModel = null;
 	private ScrollTable table = null;
 	private BioPaxObjectPropertiesTableModel tableModel = null;
+	private JTextPane details = null;
+	private JSplitPane splitPane = null;
 	
 	private static class BioPaxObjectProperty {
 		String name;
 		String value;
+		String tooltip;				// sometimes we want to enforce a tooltip instead of extracting it from the object
+		String details;
 		BioPaxObject bioPaxObject;
 		BioModelEntityObject bioModelEntityObject;
-		private BioPaxObjectProperty(String name, String value) {
+
+		private BioPaxObjectProperty(String name, String value, String tooltip) {
 			super();
 			this.name = name;
 			this.value = value;
+			if(tooltip != null) {
+				this.tooltip = tooltip;
+			} else {
+				this.tooltip = "";
+			}
+			this.details = "";
+		}
+		private BioPaxObjectProperty(String name, String value) {
+			this(name, value, "");
 		}
 		private BioPaxObjectProperty(String name, String value, BioPaxObject bioPaxObject) {
-			super();
-			this.name = name;
-			this.value = value;
+			this(name, value, "");
+			this.bioPaxObject = bioPaxObject;
+		}
+		private BioPaxObjectProperty(String name, String value, BioPaxObject bioPaxObject, String tooltip) {
+			this(name, value, tooltip);
 			this.bioPaxObject = bioPaxObject;
 		}
 		private BioPaxObjectProperty(String name, String value, BioModelEntityObject bioModelEntityObject) {
-			super();
-			this.name = name;
-			this.value = value;
+			this(name, value, "");
 			this.bioModelEntityObject = bioModelEntityObject;
+		}
+		private BioPaxObjectProperty(String name, String value, BioModelEntityObject bioModelEntityObject, String tooltip) {
+			this(name, value, tooltip);
+			this.bioModelEntityObject = bioModelEntityObject;
+		}
+		private void setDetails(String details) {
+			if(details != null) {
+				this.details = details;
+			}
+		}
+		private String getDetails() {
+			return details;
 		}
 	}
 	private static class BioPaxObjectPropertiesTableModel extends VCellSortTableModel<BioPaxObjectProperty> {
@@ -167,40 +198,71 @@ private void initialize() {
 		tableModel = new BioPaxObjectPropertiesTableModel(table);
 		table.setModel(tableModel);
 		
+		details = new JTextPane();
+		details.setContentType("text/html");
+		details.setEditable(false);
+		JScrollPane scrl = new JScrollPane(details); 
+		
+		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, table.getEnclosingScrollPane(), scrl);
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(150);
+		
+		Dimension minimumSize = new Dimension(100, 50);		//provide minimum sizes for the two components in the split pane
+		table.getEnclosingScrollPane().setMinimumSize(minimumSize);
+		scrl.setMinimumSize(minimumSize);
+
+		
 		setLayout(new BorderLayout());
-		add(table.getEnclosingScrollPane(), BorderLayout.CENTER);
+//		add(table.getEnclosingScrollPane(), BorderLayout.CENTER);
+//		add(details, BorderLayout.CENTER);
+		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
 		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() != 2) {
-					return;
-				}
-				// launch the browser when double click on hyperlinks
-			    Point pt = e.getPoint();
-			    int crow = table.rowAtPoint(pt);
-			    int ccol = table.columnAtPoint(pt);
-			    if(table.convertColumnIndexToModel(ccol) == BioPaxObjectPropertiesTableModel.Column_Value) {
-			    	BioPaxObjectProperty property = tableModel.getValueAt(crow);
-			    	BioPaxObject bioPaxObject = property.bioPaxObject;
-			    	if (bioPaxObject == null) {
-			    		BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
-						if (bioModelEntityObject != null) {
-							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
-							selectionManager.setSelectedObjects(new Object[]{bioModelEntityObject});
+				if(e.getClickCount() == 1) {
+					Point pt = e.getPoint();
+					int crow = table.rowAtPoint(pt);
+					int ccol = table.columnAtPoint(pt);
+					BioPaxObjectProperty property = tableModel.getValueAt(crow);
+					if(property != null) {
+						final String htmlStart = "<html><font face = \"Arial\"><font size =\"-2\">";
+						final String htmlEnd = "</font></font></html>";
+						if(!property.getDetails().isEmpty()) {
+							details.setText(htmlStart + property.getDetails() + htmlEnd);
+						} else if((property.value != null) && !property.value.isEmpty()) {
+							details.setText(htmlStart + property.value + htmlEnd);
+						} else {
+							details.setText(htmlStart + "row: " + crow + ", col: " + ccol + htmlEnd);
 						}
-			    	} else if (bioPaxObject instanceof Xref) { // if xRef, get url
-			    		String url = ((Xref) bioPaxObject).getURL();
-			    		DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
-			    	} else if (bioPaxObject instanceof SBEntity) {		// TODO: kineticLaw
-			    		SBEntity sbE = (SBEntity)bioPaxObject;
-						if(sbE.getID().contains("kineticLaw")) {
-							String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+					}
+				} else if (e.getClickCount() == 2) {
+					// launch the browser when double click on hyperlinks
+					Point pt = e.getPoint();
+					int crow = table.rowAtPoint(pt);
+					int ccol = table.columnAtPoint(pt);
+					if(table.convertColumnIndexToModel(ccol) == BioPaxObjectPropertiesTableModel.Column_Value) {
+						BioPaxObjectProperty property = tableModel.getValueAt(crow);
+						BioPaxObject bioPaxObject = property.bioPaxObject;
+						if (bioPaxObject == null) {
+							BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
+							if (bioModelEntityObject != null) {
+								selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
+								selectionManager.setSelectedObjects(new Object[]{bioModelEntityObject});
+							}
+						} else if (bioPaxObject instanceof Xref) { // if xRef, get url
+							String url = ((Xref) bioPaxObject).getURL();
 							DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
+						} else if (bioPaxObject instanceof SBEntity) {		// TODO: kineticLaw
+							SBEntity sbE = (SBEntity)bioPaxObject;
+							if(sbE.getID().contains("kineticLaw")) {
+								String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+								DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
+							}
 						}
-			    	}
-			    }
+					}
+				}
 			}
 		});		// --- end of addMouseListener()
 		
@@ -245,6 +307,10 @@ private void initialize() {
 						}
 					}
 				}
+				BioPaxObjectProperty property = tableModel.getValueAt(row);
+				if(!property.tooltip.isEmpty()) {
+					setToolTipText(property.tooltip);
+				}
 				return this;
 			}
 		});		// --- end of setCellRenderer()
@@ -270,6 +336,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	} else {
 		setBioPaxObject(null);
 	}
+	details.setText("");
 }
 
 private void setBioPaxObject(BioPaxObject newValue) {
@@ -318,47 +385,58 @@ protected void refreshInterface() {
 		// physicalEntity::notFeature (***ignored***)
 
 // TODO:  extract the kinetic law, then the SBEntities, then the measurables, units, aso
-		Set<SBEntity> kineticLaws = BioPAXUtil.getKineticLawsOfController(physicalEntity, bioModel);
-		if(!kineticLaws.isEmpty()) {
-			propertyList.add(new BioPaxObjectProperty("Role", "Controller"));	// if we found kinetic laws then it's a controller
-		}
-		for(SBEntity kL : kineticLaws) {
-			propertyList.add(new BioPaxObjectProperty("SBML for Kinetic Law", kL.getID(), kL));
-			ArrayList<SBEntity> klProperties = kL.getSBSubEntity();
-			for(SBEntity klProperty : klProperties) {
-				if(klProperty instanceof SBMeasurable) {
-					SBMeasurable m  = (SBMeasurable)klProperty;
-					String str1 = "";
-					String str2 = "";
-					String str3 = "";
-					if(!m.getSBTerm().isEmpty()) {
-						str1 += m.getSBTerm().get(0).toString();
-						str1 = str1.substring(str1.lastIndexOf('#'));
-						str1 = str1.replace('#', ' ');
-						str1 = str1.replace('\'', ' ');
-						str1 = str1.replace("(proxy)", "");
-						str1 = str1.replace(" ", "");
-						str2 += m.getNumber() + "";
-						str2 = str2.replace('[', ' ');
-						str2 = str2.replace(']', ' ');
-					}
-					if(!m.getUnit().isEmpty()) {
-						UnitOfMeasurement u = m.getUnit().get(0);
-						if(u.getSymbols().isEmpty()) {
-							str3 += u.getIDShort();
-						} else {
-							str3 += u.getSymbols().get(0);
-						}
-					}
-					// str1 is an SBO id, for example "SBO:0000064"
-					SBOTerm sboT = SBOListEx.sboMap.get(str1);
-					
-					propertyList.add(new BioPaxObjectProperty("   " + sboT.getSymbol() + "  (" + sboT.getName() + "): " + sboT.getDescription(), str2 + str3));
-				} else {
-					propertyList.add(new BioPaxObjectProperty("   " + klProperty.getIDShort(), klProperty.getTypeLabel()));
-				}
+		boolean isReactionParticipant = BioPAXUtil.isReactionParticipant(physicalEntity, bioModel);
+		String role = "";
+		if(BioPAXUtil.isController(physicalEntity, bioModel)) {
+			role += "Controller";
+			if(isReactionParticipant) {
+				role += ", Participant";
 			}
+		} else if (isReactionParticipant) {
+			role += "Participant";
 		}
+		if(!role.isEmpty()) {
+			propertyList.add(new BioPaxObjectProperty("Role(s)", role));
+		}
+//		Set<SBEntity> kineticLaws = BioPAXUtil.getKineticLawsOfController(physicalEntity, bioModel);
+//		for(SBEntity kL : kineticLaws) {
+//			propertyList.add(new BioPaxObjectProperty("SBML for Kinetic Law", kL.getID(), kL));
+//			ArrayList<SBEntity> klProperties = kL.getSBSubEntity();
+//			for(SBEntity klProperty : klProperties) {
+//				if(klProperty instanceof SBMeasurable) {
+//					SBMeasurable m  = (SBMeasurable)klProperty;
+//					String str1 = "";
+//					String str2 = "";
+//					String str3 = "";
+//					if(!m.getSBTerm().isEmpty()) {
+//						str1 += m.getSBTerm().get(0).toString();
+//						str1 = str1.substring(str1.lastIndexOf('#'));
+//						str1 = str1.replace('#', ' ');
+//						str1 = str1.replace('\'', ' ');
+//						str1 = str1.replace("(proxy)", "");
+//						str1 = str1.replace(" ", "");
+//						str2 += m.getNumber() + "";
+//						str2 = str2.replace('[', ' ');
+//						str2 = str2.replace(']', ' ');
+//					}
+//					if(!m.getUnit().isEmpty()) {
+//						UnitOfMeasurement u = m.getUnit().get(0);
+//						if(u.getSymbols().isEmpty()) {
+//							str3 += u.getIDShort();
+//						} else {
+//							str3 += u.getSymbols().get(0);
+//						}
+//					}
+//					// str1 is an SBO id, for example "SBO:0000064"
+//					SBOTerm sboT = SBOListEx.sboMap.get(str1);
+//					
+//					propertyList.add(new BioPaxObjectProperty("   " + sboT.getSymbol() + "   (" + sboT.getName() + ")", 
+//							str2 + str3, sboT.getDescription()));
+//				} else {
+//					propertyList.add(new BioPaxObjectProperty("   " + klProperty.getIDShort(), klProperty.getTypeLabel()));
+//				}
+//			}
+//		}
 				
 		if(!(physicalEntity instanceof SmallMolecule)){
 			// physicalEntity::cellular location
@@ -428,7 +506,9 @@ protected void refreshInterface() {
 		Set<String> controllersNames = getControllersNames(interaction);
 		if(controllersNames.size() > 0 ){
 			for(String str : controllersNames){
-				propertyList.add(new BioPaxObjectProperty("Controlled by", str, interaction));
+				//String tooltip = "<html>how many of these 12 M <br>average size  1.12345*E12 nm <br>temperature 37 degrees Celsius</html>";
+				String tooltip = "";
+				propertyList.add(new BioPaxObjectProperty("Controlled by", str, interaction, tooltip));
 			}
 		}
 		// get the kinetic laws (if any)
@@ -436,6 +516,8 @@ protected void refreshInterface() {
 		for(Control control : controls) {
 			ArrayList<SBEntity> sbEntities = control.getSBSubEntity();
 			for(SBEntity sbE : sbEntities) {
+				// the following if clause may not be needed, we KNOW that 
+				// the only SBSubEntities allowed in a control are kinetic laws
 				if(sbE.getID().contains("kineticLaw")) {
 					// TODO: when double click navigate to the catalyst (no more web hyper link)
 					// TODO: or when single click highlight the catalyst
@@ -451,7 +533,48 @@ protected void refreshInterface() {
 							str += " ";
 						}
 					}
-					propertyList.add(new BioPaxObjectProperty("Kinetic Law" + str, sbE.getID(), sbE));									
+					String sDetails = "";
+					ArrayList<SBEntity> klProperties = sbE.getSBSubEntity();
+					for(SBEntity klProperty : klProperties) {
+						if(klProperty instanceof SBMeasurable) {
+							SBMeasurable m  = (SBMeasurable)klProperty;
+							String str1 = "";
+							String str2 = "";
+							String str3 = "";
+							if(!m.getSBTerm().isEmpty()) {
+								str1 += m.getSBTerm().get(0).toString();
+								str1 = str1.substring(str1.lastIndexOf('#'));
+								str1 = str1.replace('#', ' ');
+								str1 = str1.replace('\'', ' ');
+								str1 = str1.replace("(proxy)", "");
+								str1 = str1.replace(" ", "");
+								str2 += m.getNumber() + "";
+								str2 = str2.replace('[', ' ');
+								str2 = str2.replace(']', ' ');
+							}
+							if(!m.getUnit().isEmpty()) {
+								UnitOfMeasurement u = m.getUnit().get(0);
+								if(u.getSymbols().isEmpty()) {
+									str3 += u.getIDShort();
+								} else {
+									str3 += u.getSymbols().get(0);
+								}
+							}
+							// str1 is an SBO id, for example "SBO:0000064"
+							SBOTerm sboT = SBOListEx.sboMap.get(str1);
+							sDetails += sboT.getSymbol() + "   (" + sboT.getName() + ")" + 
+							"<font color=\"#660000\"><b>" + str2 + str3 + "</b></font>" + "  " + 
+							"<font color=\"#006600\">" + sboT.getDescription() + "</font>";
+						} else {
+							sDetails = klProperty.getIDShort() + "  " + klProperty.getTypeLabel();
+						}
+						sDetails += "<br>";
+					}
+					// String tooltip = "<html>how many of these 12 M <br>average size  1.12345*E12 nm <br>temperature 37 degrees Celsius</html>";
+					String tooltip = "";
+					BioPaxObjectProperty bpop = new BioPaxObjectProperty("Kinetic Law" + str, sbE.getID(), sbE, tooltip);
+					bpop.setDetails(sDetails);
+					propertyList.add(bpop);									
 				}
 			}
 		}
@@ -487,6 +610,10 @@ protected void refreshInterface() {
 	//			}
 	//		}
 
+	// entity::comments
+	for (String comment : entity.getComments()){
+		propertyList.add(new BioPaxObjectProperty("Comment", comment));
+	}
 	// entity::xRef
 	ArrayList<Xref> xrefList = ((Entity) bioPaxObject).getxRef();
 	for (Xref xref : xrefList) {
@@ -503,10 +630,6 @@ protected void refreshInterface() {
 		if (xref instanceof PublicationXref){
 			propertyList.add(new BioPaxObjectProperty("Publication", xref.getDb() + ":" + xref.getId(), xref));
 		}
-	}
-	// entity::comments
-	for (String comment : entity.getComments()){
-		propertyList.add(new BioPaxObjectProperty("Comment", comment));
 	}
 //	for(SBVocabulary sbVocab : sbEntity.getSBTerm()) {
 //		propertyList.add(new BioPaxObjectProperty("SBO Term", SBPAXLabelUtil.makeLabel(sbVocab)));
