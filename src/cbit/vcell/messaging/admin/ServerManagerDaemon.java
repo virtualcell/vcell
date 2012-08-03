@@ -23,15 +23,16 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
+import cbit.htc.PbsJobID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.server.*;
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 
 /**
  * Insert the type's description here.
@@ -152,7 +153,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	log.print("starting service " + service);
 	AdminDBTopLevel.TransactionalServiceOperation tso = new AdminDBTopLevel.TransactionalServiceOperation() {
 		public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception {
-			String jobid = submit2PBS(oldStatus);
+			PbsJobID jobid = submit2PBS(oldStatus);
 			ServiceStatus newServiceStatus = null;
 			if (jobid == null) {
 				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
@@ -190,7 +191,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	adminDbTop.updateServiceStatus(service, tso, true);
 }	
 
-private String submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
 	killService(service);
 	
 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
@@ -275,6 +276,7 @@ public static void main(String[] args) {
 			System.setErr(ps);			
 		}
 		org.vcell.util.PropertyLoader.loadProperties();
+		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
 		new ServerManagerDaemon().start();		
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
@@ -306,7 +308,7 @@ private void on_stopservice(Message message) throws JMSException {
 			while (iter.hasNext()) {
 				ServiceStatus service = iter.next();		
 				if (service.getServiceSpec().getID().equals(serviceID)) {
-					String pbsJobId = service.getPbsJobId();
+					PbsJobID pbsJobId = service.getPbsJobId();
 					if (pbsJobId != null && PBSUtils.isJobRunning(pbsJobId)) {
 						try {
 							Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
@@ -384,7 +386,7 @@ private void pingAll() throws JMSException {
 
 private void killService(ServiceStatus service) {
 	if (service.getPbsJobId() != null) {
-		PBSUtils.killJob(service.getPbsJobId() + "");
+		PBSUtils.killJob(service.getPbsJobId());
 	}
 }
 /**

@@ -15,6 +15,8 @@ import org.vcell.util.PropertyLoader;
 import static org.vcell.util.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.modeldb.DatabasePolicySQL;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 
 /**
  * Insert the type's description here.
@@ -73,7 +75,7 @@ public static void main(java.lang.String[] args) {
 		if (args.length > 1) {
 			logdir = args[1];
 		}
-		
+		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
         DatabaseServer databaseServer = new DatabaseServer(serviceOrdinal, logdir);       
         databaseServer.start();        
     } catch (Throwable e) {

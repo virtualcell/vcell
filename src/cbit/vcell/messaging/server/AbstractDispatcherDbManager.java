@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.messaging.server;
+import cbit.htc.PbsJobID;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -48,9 +49,9 @@ SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJ
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
 	SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), 
 		oldQueueStatus.getQueuePriority(), MessageConstants.QUEUE_ID_NULL);
-
+	
 	// new exe status
-	SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(null, computeHost, null,	null, false);
+	SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(null, computeHost, null,	null, false, startMsg.getPbsJobId());
 
 	// new job status
 	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED,
@@ -84,14 +85,18 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
 		if (status == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {
 			hasData = true;
 		}
-		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData);				
+		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData, solverMsg.getPbsJobId());				
 	} else {
 		if (status == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {
 			hasData = true;
 		} else {
 			hasData = oldExeStatus.hasData();
 		}
-		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData);
+		PbsJobID pbsJobID = oldExeStatus.getPbsJobID();
+		if (solverMsg.getPbsJobId()!=null){
+			pbsJobID = solverMsg.getPbsJobId();
+		}
+		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData, pbsJobID);
 	}
 
 	// new job status
@@ -121,10 +126,14 @@ SimulationJobStatus getNewStatus_updateLatestUpdateDate(SimulationJobStatus oldJ
 	if (sysDate.getTime() - latestUpdate.getTime() < MessageConstants.INTERVAL_PING_SERVER * 3 / 5) {
 		return null;
 	}
-
+	
 	// new exe status
+	PbsJobID pbsJobID = oldExeStatus.getPbsJobID();
+	if (simulationMessage.getPbsJobId()!=null){
+		pbsJobID = simulationMessage.getPbsJobId();
+	}
 	SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), oldExeStatus.getComputeHost(), null, 
-			oldExeStatus.getEndDate(), oldExeStatus.hasData());
+			oldExeStatus.getEndDate(), oldExeStatus.hasData(), pbsJobID);
 	
 	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), 
 		oldJobStatus.getSchedulerStatus(),	oldJobStatus.getTaskID(), simulationMessage, oldJobStatus.getSimulationQueueEntryStatus(), newExeStatus);
@@ -152,9 +161,13 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
 	SimulationExecutionStatus newExeStatus = null;
 	if (oldExeStatus == null) {
-		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData);
+		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData, solverMsg.getPbsJobId());
 	} else if (!oldJobStatus.isRunning() || !oldExeStatus.hasData() && hasData) {
-		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData);		
+		PbsJobID pbsJobID = oldExeStatus.getPbsJobID();
+		if (solverMsg.getPbsJobId()!=null){
+			pbsJobID = solverMsg.getPbsJobId();
+		}
+		newExeStatus = new SimulationExecutionStatus(oldExeStatus.getStartDate(), (hostName != null) ? hostName : oldExeStatus.getComputeHost(), null, null, hasData, pbsJobID);		
 	} else {
 		return oldJobStatus;
 	}

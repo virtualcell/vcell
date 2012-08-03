@@ -11,9 +11,10 @@
 package org.vcell.util;
 
 import java.rmi.server.*;
-import java.rmi.*;
 import java.util.*;
 import java.io.*;
+
+import cbit.vcell.mongodb.VCMongoMessage;
 /**
  * This type was created in VisualAge.
  */
@@ -83,6 +84,7 @@ public synchronized void exception(Throwable exception) {
 	// print to log (stdout)
 	//
 	out.println(buffer.toString());
+	VCMongoMessage.sendException(stack,exception.getMessage());
 	return;
 }
 /**

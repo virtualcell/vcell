@@ -28,6 +28,7 @@ import cbit.vcell.client.desktop.biomodel.VCellErrorMessages;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 /**
@@ -89,6 +90,7 @@ private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws
 			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), this);
 		} else {
 			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), fieldJmsConnFactory, this);
+			VCMongoMessage.sendClientConnectionNew(localConn.getUserLoginInfo());
 		}
 		vcellConnectionList.addElement(localConn);
 	}
@@ -120,6 +122,7 @@ public void cleanupConnections() {
 					LocalVCellConnectionMessaging messagingConnection = (LocalVCellConnectionMessaging)connections[i];
 
 					if (messagingConnection != null && messagingConnection.isTimeout()) {
+						VCMongoMessage.sendClientConnectionClosing(messagingConnection.getUserLoginInfo());
 						synchronized (this) {
 							vcellConnectionList.remove(messagingConnection);
 							messagingConnection.close();							

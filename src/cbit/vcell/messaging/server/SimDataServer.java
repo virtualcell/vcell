@@ -14,6 +14,8 @@ import org.vcell.util.PropertyLoader;
 
 import static org.vcell.util.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 
 /**
  * Insert the type's description here.
@@ -71,14 +73,15 @@ public static void main(java.lang.String[] args) {
 		if (args.length > 1) {
 			if (args[1].equalsIgnoreCase("EXPORTONLY")) {
 				bExportOnly = true;
+				VCMongoMessage.serviceStartup(ServiceName.export, new Integer(serviceOrdinal), args);
 				if (args.length > 2) {	
 					logdir = args[2];
 				}
 			} else {
+				VCMongoMessage.serviceStartup(ServiceName.simData, new Integer(serviceOrdinal), args);
 				logdir = args[1];
 			}
 		}
-		
         SimDataServer simDataServer = new SimDataServer(serviceOrdinal, bExportOnly, logdir);
         simDataServer.start();
     } catch (Throwable e) {

@@ -9,24 +9,28 @@
  */
 
 package cbit.vcell.messaging.server;
-import cbit.htc.PBSUtils;
 import java.io.File;
-import javax.jms.*;
+import java.io.FileNotFoundException;
+import java.net.UnknownHostException;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 
-import java.io.FileNotFoundException;
-import java.net.UnknownHostException;
-import cbit.vcell.xml.XmlParseException;
+import cbit.htc.PBSUtils;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solvers.PBSSolver;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -171,16 +175,18 @@ public static void main(java.lang.String[] args) {
 		PropertyLoader.loadProperties();
 		
 		ServiceType workerType = ServiceType.LOCALCOMPUTE;
+		int serviceOrdinal = Integer.parseInt(args[1]);	
+		
 		if (args[0].equalsIgnoreCase("-pbs")) { // submit everything to PBS
 			PBSUtils.checkServerStatus();
 			workerType = ServiceType.PBSCOMPUTE;
+			VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
 		} else if (args[0].equalsIgnoreCase("-local")) { // run everything locally
 			workerType = ServiceType.LOCALCOMPUTE;
+			VCMongoMessage.serviceStartup(ServiceName.localWorker, new Integer(serviceOrdinal), args);
 		} else {
 			throw new IllegalArgumentException("wrong worker type argument : " + args[0]);
 		}
-		
-		int serviceOrdinal = Integer.parseInt(args[1]);	
 		int maxMemoryMB = Integer.parseInt(args[2]);		
 		String logdir = null;
 		if (args.length > 3) {
