@@ -11,6 +11,7 @@
 package cbit.vcell.messaging.db;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.admin.ServiceStatus;
+import cbit.htc.PbsJobID;
 import cbit.sql.*;
 import java.sql.*;
 
@@ -78,9 +79,10 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 		parsedStatusMsg = null;
 	}
 	//host
-	String parsedPBSJobId = rset.getString(pbsjobid.toString());
-	if (rset.wasNull()) {
-		parsedPBSJobId = null;
+	PbsJobID parsedPBSJobId = null;
+	String parsedPBSJobIdString = rset.getString(pbsjobid.toString());
+	if (!rset.wasNull() && parsedPBSJobIdString!=null && parsedPBSJobIdString.length()>0) {
+		parsedPBSJobId = new PbsJobID(parsedPBSJobIdString);
 	}
 	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
 			parsedDate, parsedStatus, parsedStatusMsg, parsedPBSJobId);

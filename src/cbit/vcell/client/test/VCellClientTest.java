@@ -23,6 +23,8 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -97,6 +99,8 @@ public static void main(java.lang.String[] args) {
 		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user, password);
 	}
 	try {
+		VCMongoMessage.enabled = false; // comment out to enable logging to MongoDB.
+		VCMongoMessage.serviceStartup(ServiceName.client,null,null);
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of VCellApplication");

@@ -476,7 +476,7 @@ private RpcDbServerProxy getDbProxy(User user) throws JMSException, DataAccessEx
 	RpcDbServerProxy dbProxy = (RpcDbServerProxy)dbProxyHash.get(user);
 
 	if (dbProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log, null);		
 		dbProxy = new RpcDbServerProxy(user, jmsClientMessaging, log);
 		dbProxyHash.put(user, dbProxy);
 	}
@@ -699,7 +699,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
  * @return java.lang.String
  */
 private String getLocalVCellBootstrapUrl() {
-	String rmiHost = "ms3";
+	String rmiHost = "ms3.vcell.uchc.edu";
 	int rmiPort = PropertyLoader.getIntProperty(PropertyLoader.rmiPortRegistry, 1099);
 	return "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
 }
@@ -1702,7 +1702,7 @@ private RpcSimServerProxy getSimProxy(User user) throws JMSException, DataAccess
 	RpcSimServerProxy simProxy = (RpcSimServerProxy)simProxyHash.get(user);
 
 	if (simProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log, null);		
 		simProxy = new RpcSimServerProxy(user, jmsClientMessaging, log);
 		simProxyHash.put(user, simProxy);
 	}

@@ -17,6 +17,8 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.htc.PbsJobID;
+
 import static cbit.vcell.messaging.admin.ManageConstants.*;
 
 public class ServiceStatus implements ComparableObject, Matchable, Serializable {
@@ -24,15 +26,15 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 	private Date date = null;
 	private int status;
 	private String statusMsg;
-	private String pbsJobId;
+	private PbsJobID pbsJobId;
 	
-	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, String pji) {
+	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, PbsJobID pbsJobID) {
 		super();
 		this.serviceSpec = ss;
 		this.date = d;
 		this.status = s;
 		this.statusMsg = sm;
-		this.pbsJobId = pji;
+		this.pbsJobId = pbsJobID;
 	}
 
 	public Date getDate() {
@@ -90,7 +92,7 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 		return false;
 	}
 
-	public String getPbsJobId() {
+	public PbsJobID getPbsJobId() {
 		return pbsJobId;
 	}
 	

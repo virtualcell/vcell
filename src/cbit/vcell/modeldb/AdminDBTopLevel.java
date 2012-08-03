@@ -33,6 +33,7 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
+import cbit.vcell.mongodb.VCMongoMessage;
 
 /**
  * This type was created in VisualAge.
@@ -496,11 +497,13 @@ SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatu
 	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),false);
 	if (currentSimulationJobStatus != null){
 		con.rollback();
+		VCMongoMessage.sendSimJobStatusInsertedAlready(simulationJobStatus, currentSimulationJobStatus);
 		log.alert("AdminDbTopLevel.insertSimulationJobStatus() : current Job Status = " + currentSimulationJobStatus + ", job status database record already exists");
 		throw new UpdateSynchronizationException("Job Status database record already exists:" + currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex());
 	}
 	jobDB.insertSimulationJobStatus(con,simulationJobStatus, DbDriver.getNewKey(con));
 	SimulationJobStatus newSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),false);
+	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus, newSimulationJobStatus);
 	return newSimulationJobStatus;
 }
 
@@ -583,11 +586,13 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
 SimulationJobStatus updateSimulationJobStatus(Connection con, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
 	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),true);
 	if (!currentSimulationJobStatus.compareEqual(oldSimulationJobStatus)){
+		VCMongoMessage.sendSimJobStatusUpdateCacheMiss(oldSimulationJobStatus, currentSimulationJobStatus, newSimulationJobStatus);
 		log.print("AdminDbTopLevel.updateSimulationJobStatus() : current Job Status = "+currentSimulationJobStatus+", old Job Status = "+oldSimulationJobStatus);
 		throw new UpdateSynchronizationException("current Job Status doesn't match argument for Simulation :"+currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex());
 	}
 	jobDB.updateSimulationJobStatus(con,newSimulationJobStatus);
 	SimulationJobStatus updatedSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),false);
+	VCMongoMessage.sendSimJobStatusUpdate(oldSimulationJobStatus,newSimulationJobStatus,updatedSimulationJobStatus);
 	return updatedSimulationJobStatus;
 }
 
