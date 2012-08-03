@@ -36,6 +36,9 @@ public class Xref extends BioPaxObjectImpl implements UtilityClass {
 		return idVersion;
 	}
 	public String getURL(){
+		if(db == null) {
+			return null;
+		}
 		String db_id = db;
 		if(db.equals("REACTOME")){
 			if(id.contains("REACT")) db_id = "REACTOME_STID";

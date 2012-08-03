@@ -248,10 +248,32 @@ public class PathwayModel {
 			
 			hideUtilityClassObjects();
 			cleanupUnresolvedProxies();
+			ConvertModulationToCatalysis();
 			setDisableUpdate(false);
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		}finally{
 			setDisableUpdate(false);
+		}
+	}
+
+	private void ConvertModulationToCatalysis() {
+		// we cannot represent the case when a physical entity modulates a catalysis interaction
+		// instead, we make it appear that the modulation directly regulates the conversion 
+		//  controlled by the catalysis		
+		Set<BioPaxObject> bpObjects = getBiopaxObjects();
+		for(BioPaxObject bpObject : bpObjects) {
+			if(bpObject instanceof Modulation) {
+				Modulation m = (Modulation) bpObject;
+				
+				BioPaxObject bpO = m.getControlledInteraction();
+				if(bpO != null && bpO instanceof Catalysis) {
+					Catalysis c = (Catalysis) bpO;
+					bpO = c.getControlledInteraction();
+					if(bpO != null && bpO instanceof Conversion) {
+						m.setControlledInteraction((Conversion)bpO);
+					}
+				}
+			}
 		}
 	}
 

@@ -61,6 +61,22 @@ public class BioPAXUtil {
 		}
 		return controls;
 	}
+	private static Set<Conversion> getAllConversions(BioModel bioModel) {
+		Set<Conversion> conversion = new HashSet<Conversion>();
+		if(bioModel == null) {
+			return conversion;
+		}
+		PathwayModel pathwayModel = bioModel.getPathwayModel();
+		
+		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
+		for(BioPaxObject bpObject : bpObjects) {
+			if(bpObject instanceof Conversion) {
+				Conversion c = (Conversion) bpObject;
+				conversion.add(c);
+			}
+		}
+		return conversion;
+	}
 	// find the controls for which this physical entity is a controller
 	private static Set<Control> getControlsOfController(PhysicalEntity controller, BioModel bioModel) {
 		Set<Control> filteredControls = new HashSet<Control>();
@@ -78,6 +94,33 @@ public class BioPAXUtil {
 			}
 		}
 		return filteredControls;
+	}
+	public static boolean isController(PhysicalEntity controller, BioModel bioModel) {
+		if(bioModel == null) {
+			return false;
+		}
+		if(getControlsOfController(controller, bioModel).isEmpty()) {
+			return false;	// not a controller since is not part of any control
+		} else {
+			return true;
+		}
+	}
+	public static boolean isReactionParticipant(PhysicalEntity physicalEntity, BioModel bioModel) {
+		if(bioModel == null) {
+			return false;
+		}
+		Set<Conversion> allConversions = getAllConversions(bioModel);
+		for(Conversion c : allConversions) {
+			List<InteractionParticipant> participants = c.getParticipants();
+			for(InteractionParticipant p : participants) {
+				if(p.getType() == Type.RIGHT || p.getType() == Type.LEFT) {
+					if(p.getPhysicalEntity() == physicalEntity) {
+						return true;	// true if participant of at least 1 conversion
+					}
+				}
+			}
+		}
+		return false;
 	}
 	// find the kinetic laws of the controls for which this physical entity is a controller
 	public static Set<SBEntity> getKineticLawsOfController(PhysicalEntity controller, BioModel bioModel) {
