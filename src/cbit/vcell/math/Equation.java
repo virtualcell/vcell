@@ -356,7 +356,7 @@ protected void checkInitialCondition(MathDescription mathDesc) throws Expression
 			|| refVar instanceof MembraneRegionVariable
 			|| refVar instanceof VolumeParticleVariable
 			|| refVar instanceof MembraneParticleVariable) {
-			throw new MathException("Initial condition for variable '" + getVariable().getName() + "' references one or more variables. Initial conditions cannot reference variables.");
+			throw new MathException("Initial condition for variable '" + getVariable().getName() + "' references variable '"+ refVar.getName() +"'. Initial conditions cannot reference variables.");
 		}
 	}
 }
