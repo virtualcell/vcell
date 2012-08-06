@@ -283,9 +283,9 @@ public class ParticleProperties implements Serializable, Matchable {
 					bFound = true;
 					break;
 				}
-				if (!bFound) {
-					return false;
-				}
+			}
+			if (!bFound) {
+				return false;
 			}
 		}
 				
