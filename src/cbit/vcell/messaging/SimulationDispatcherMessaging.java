@@ -453,7 +453,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 						throw new RuntimeException("--ST: join failed");
 					} else {
 						// get high priority message (non-progress/data message)
-						recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), selector_workerEvent_NotProgressOrData, 0);
+						recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), selector_workerEvent_NotProgressOrData, 5);
 						
 						if (recievedMsg == null) {
 							// if no high-priority message waiting - take any message
