@@ -378,8 +378,8 @@ public org.vcell.util.Preference[] getPreferences() throws org.vcell.util.DataAc
 /**
  * getReactionStep method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue rxID) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.model.ReactionStep)rpc("getReactionStep",new Object[]{user, rxID});
+public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.model.Model)rpc("getReactionStepAsModel",new Object[]{user, rxID});
 }
 
 

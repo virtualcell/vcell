@@ -278,9 +278,9 @@ public class FRAPStudy implements Matchable{
 		bioModel.setName("unnamed");
 		Model model = new Model("model");
 		bioModel.setModel(model);
-		model.addFeature(EXTRACELLULAR_NAME, null, null);
+		model.addFeature(EXTRACELLULAR_NAME);
 		Feature extracellular = (Feature)model.getStructure(EXTRACELLULAR_NAME);
-		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
+		model.addFeature(CYTOSOL_NAME);
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
 
 		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
@@ -310,7 +310,7 @@ public class FRAPStudy implements Matchable{
 		bioModel.addSimulationContext(simContext);
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
 		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		Membrane plasmaMembrane = model.getMembrane(cytosol, extracellular);
+		Membrane plasmaMembrane = model.getStructureTopology().getMembrane(cytosol, extracellular);
 		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
 		
 		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
@@ -441,9 +441,9 @@ public class FRAPStudy implements Matchable{
 		bioModel.setName("unnamed");
 		Model model = new Model("model");
 		bioModel.setModel(model);
-		model.addFeature(EXTRACELLULAR_NAME, null, null);
+		model.addFeature(EXTRACELLULAR_NAME);
 		Feature extracellular = (Feature)model.getStructure(EXTRACELLULAR_NAME);
-		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
+		model.addFeature(CYTOSOL_NAME);
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
 
 		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
@@ -534,7 +534,7 @@ public class FRAPStudy implements Matchable{
 		bioModel.addSimulationContext(simContext);
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
 		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		Membrane plasmaMembrane = model.getMembrane(cytosol, extracellular);
+		Membrane plasmaMembrane = model.getStructureTopology().getMembrane(cytosol, extracellular);
 		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
 		
 		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
@@ -1074,12 +1074,12 @@ public class FRAPStudy implements Matchable{
 			}
 			return new ROIDataGenerator(ROI_EXTDATA_NAME, /*name*/
 					                    new int[] {0}/* volumePoints*/, 
-					                    new int[0]/* membranePoints*/,
-					                    regionCounter /*numRegions*/, 
-					                    0 /*zSlice*/, 
-					                    newROIExtDataID.getKey()/* fieldDataKey, sample image*/, 
-					                    new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments, sample image*/,
-					                    false/* bStoreEnabled*/); 
+					                                               new int[0]/* membranePoints*/,
+					                                               regionCounter /*numRegions*/, 
+					                                               0 /*zSlice*/, 
+					                                               newROIExtDataID.getKey()/* fieldDataKey, sample image*/, 
+					                                               new FieldFunctionArguments(FRAPStudy.ROI_SUMDATA_NAME, "roiSumDataVar", new Expression(0), VariableType.VOLUME)/*FieldFunctionArguments, sample image*/,
+					                                               false/* bStoreEnabled*/); 
 					                                               
 		}
 		return null;

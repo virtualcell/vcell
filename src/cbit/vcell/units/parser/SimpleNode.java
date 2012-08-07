@@ -77,8 +77,8 @@ public abstract class SimpleNode implements Node, Serializable {
 	  return toInfix(RationalNumber.ONE);
   }
   
-  public final String toSymbol(){
-	  return toSymbol(RationalNumber.ONE);
+  public final String toSymbol(UnitTextFormat format){
+	  return toSymbol(RationalNumber.ONE, format);
   }
 
 }

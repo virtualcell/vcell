@@ -23,11 +23,12 @@ public abstract class VCLogger {
 	public static final int MEDIUM_PRIORITY = 1;
 	public static final int HIGH_PRIORITY = 2;
 	public static final int SCHEMA_VALIDATION_ERROR = 0;
-	public static final int UNSUPPORED_ELEMENTS_OR_ATTS = 1;
-	public static final int COMPARTMENT_ERROR = 2;           //useful for SBML imports
+	public static final int UNSUPPORED_ELEMENTS_OR_ATTS = 1;	//useful for SBML imports
+	public static final int COMPARTMENT_ERROR = 2;           
 	public static final int UNIT_ERROR = 3;
 	public static final int SPECIES_ERROR = 4;
 	public static final int REACTION_ERROR = 5;
+	public static final int OVERALL_WARNINGS = 6;
 
 	public abstract boolean hasMessages();
 
@@ -67,6 +68,9 @@ public abstract class VCLogger {
 			case VCLogger.REACTION_ERROR:
 				tempStr = "Problem in the reactions section";
 				break;
+			case VCLogger.OVERALL_WARNINGS:
+				tempStr = "Warnings in the Import process";
+				break;
 			default:
 				tempStr = "";
 		}
@@ -82,7 +86,8 @@ public abstract class VCLogger {
 			messageType == VCLogger.COMPARTMENT_ERROR ||
 			messageType == VCLogger.UNIT_ERROR ||
 			messageType == VCLogger.SPECIES_ERROR ||
-			messageType == VCLogger.REACTION_ERROR) {
+			messageType == VCLogger.REACTION_ERROR||
+			messageType == VCLogger.OVERALL_WARNINGS) {
 			return true;
 		}
 		return false;

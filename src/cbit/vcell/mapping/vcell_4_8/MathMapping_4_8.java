@@ -22,10 +22,10 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
-import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -45,10 +45,12 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.UnitFactorProvider;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -65,17 +67,19 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.Event.Delay;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -85,10 +89,6 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -96,7 +96,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -104,7 +103,7 @@ import cbit.vcell.units.VCUnitException;
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
  */
-public class MathMapping_4_8 implements ScopedSymbolTable {
+public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider {
 	
 	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
 	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
@@ -627,7 +626,7 @@ private Expression getInsideFluxCorrectionExpression(MembraneMapping membraneMap
 	// then divide by 1-Sum(child volume fractions)
 	//
 	//
-	FeatureMapping insideFeatureMapping = (FeatureMapping) simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
+	FeatureMapping insideFeatureMapping = (FeatureMapping) simContext.getGeometryContext().getStructureMapping(getSimulationContext().getModel().getStructureTopology().getInsideFeature(membraneMapping.getMembrane()));
 	Expression insideResidualVolFraction = getResidualVolumeFraction(insideFeatureMapping);
 	Expression exp = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simContext.getNameScope());
 	exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
@@ -881,6 +880,7 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 	}
 	
 	// 
+	Model model = simContext.getModel();
 	if (ste instanceof ModelParameter) {
 		ModelParameter mp = (ModelParameter)ste;
 		if (simContext.getGeometry().getDimension() == 0) {
@@ -910,7 +910,7 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 				if (symbols != null) {
 					Vector<String> spContextNamesVector = new Vector<String>();
 					for (int j = 0; j < symbols.length; j++) {
-						SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[j]);
+						SpeciesContext sc = model.getSpeciesContext(symbols[j]);
 						if (sc != null) {
 							if (!sc.getStructure().compareEqual(structureMapping.getStructure())) {
 								spContextNamesVector.addElement(sc.getName());
@@ -1011,12 +1011,13 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 			return "V_"+nameWithScope;
 		}
 	}
+	StructureTopology structTopology = model.getStructureTopology();
 	if (ste instanceof StructureMapping.StructureMappingParameter){
 		StructureMapping.StructureMappingParameter smParm = (StructureMapping.StructureMappingParameter)ste;
 		Structure structure = ((StructureMapping)(smParm.getNameScope().getScopedSymbolTable())).getStructure();
 		int role = smParm.getRole();
 		if (role==StructureMapping.ROLE_VolumeFraction){
-			return "VolFract_"+((Membrane)structure).getInsideFeature().getNameScope().getName();
+			return "VolFract_"+(structTopology.getInsideFeature((Membrane)structure)).getNameScope().getName();
 		} else {
 			String nameWithScope = structure.getNameScope().getName();
 			if (role==StructureMapping.ROLE_SurfaceToVolumeRatio){
@@ -1081,7 +1082,7 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 			//
 			} else {
 				SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
-				if (sc.getStructure()==membrane.getInsideFeature() || sc.getStructure()==membrane.getOutsideFeature()){
+				if (sc.getStructure() == structTopology.getInsideFeature(membrane) || sc.getStructure() == structTopology.getOutsideFeature(membrane)){
 					if (getResolved(structureMapping) && !scs.isConstant()){
 						if (!scs.isDiffusing()) {
 							throw new MappingException("Enable diffusion in Application '" + simContext.getName() 
@@ -1089,7 +1090,7 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 									+ "To save or run simulations, set the diffusion rate to a non-zero " +
 											"value in Initial Conditions or disable those reactions in Specifications->Reactions.");
 						}					
-						return scm.getVariable().getName()+ (sc.getStructure()==membrane.getInsideFeature() ? "_INSIDE" : "_OUTSIDE");
+						return scm.getVariable().getName()+ (sc.getStructure() == structTopology.getInsideFeature(membrane) ? "_INSIDE" : "_OUTSIDE");
 					}else{
 						return scm.getSpeciesContext().getName();
 					}
@@ -1121,7 +1122,7 @@ public Structure[] getStructures(SubVolume subVolume) {
 		StructureMapping sm = structureMappings[i];
 		if (sm instanceof MembraneMapping){
 			Membrane membrane = ((MembraneMapping)sm).getMembrane();
-			if (list.contains(membrane.getInsideFeature())){
+			if (list.contains(simContext.getModel().getStructureTopology().getInsideFeature(membrane))){
 				list.add(membrane);
 			}
 		}
@@ -1137,6 +1138,7 @@ public Structure[] getStructures(SubVolume subVolume) {
 public Expression getResidualVolumeFraction(FeatureMapping featureMapping) throws ExpressionException {
 	Expression exp = new Expression(1.0);
 	Structure structures[] = simContext.getGeometryContext().getModel().getStructures();
+	StructureTopology structTopology = simContext.getModel().getStructureTopology();
 	for (int i=0;i<structures.length;i++){
 		//
 		// for each membrane that is distributed within this feature, subtract that volume fraction
@@ -1144,7 +1146,7 @@ public Expression getResidualVolumeFraction(FeatureMapping featureMapping) throw
 		//
 		Structure struct = structures[i];
 		if (struct instanceof Membrane) {
-			if (((Membrane) struct).getOutsideFeature() == featureMapping.getFeature()) {
+			if ((structTopology.getOutsideFeature((Membrane) struct)) == featureMapping.getFeature()) {
 				MembraneMapping mm = (MembraneMapping) simContext.getGeometryContext().getStructureMapping(struct);
 				if (getResolved(mm)==false){
 					exp = Expression.add(exp, Expression.negate(new Expression(mm.getVolumeFractionParameter(), simContext.getNameScope())));
@@ -1162,8 +1164,9 @@ boolean getResolved(StructureMapping structureMapping) {
 	if (structureMapping.getGeometryClass()==null){
 		return false;
 	}
-	if (structureMapping.getStructure().getParentStructure()!=null){
-		Structure parentStructure = structureMapping.getStructure().getParentStructure();
+	StructureTopology structureTopology = simContext.getModel().getStructureTopology();
+	Structure parentStructure = structureTopology.getParentStructure(structureMapping.getStructure());
+	if (parentStructure != null){
 		StructureMapping outsideSM = simContext.getGeometryContext().getStructureMapping(parentStructure);
 		if (outsideSM.getGeometryClass()!=null && outsideSM.getGeometryClass()==structureMapping.getGeometryClass()){
 			return false;
@@ -1235,7 +1238,7 @@ private Expression getOutsideFluxCorrectionExpression(SimulationContext simulati
 	//
 	// ?????? only works for 1 distributed organelle
 	//
-	FeatureMapping outsideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
+	FeatureMapping outsideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(simContext.getModel().getStructureTopology().getOutsideFeature(membraneMapping.getMembrane()));
 	Expression outsideVolFraction = getResidualVolumeFraction(outsideFeatureMapping);
 	Expression surfaceToVolumeParameter = new Expression(membraneMapping.getSurfaceToVolumeParameter(), simulationContext.getNameScope());
 	Expression volumeFractionParameter = new Expression(membraneMapping.getVolumeFractionParameter(), simulationContext.getNameScope());	
@@ -1429,7 +1432,8 @@ private void refreshKFluxParameters() throws ExpressionException {
 	// Add new KFlux Parameters
 	//
 	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
-	VCUnitDefinition lengthInverseUnit = simContext.getModel().getUnitSystem().getLengthUnit().getInverse();
+	StructureTopology structTopology = simContext.getModel().getStructureTopology();
+	VCUnitDefinition lengthInverseUnit = simContext.getModel().getX().getUnitDefinition().getInverse();
 	for (int i = 0; i < structureMappings.length; i++){
 		if (structureMappings[i] instanceof MembraneMapping && !getResolved(structureMappings[i])){
 			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
@@ -1438,7 +1442,8 @@ private void refreshKFluxParameters() throws ExpressionException {
 			//
 			Expression insideCorrectionExp = getInsideFluxCorrectionExpression(membraneMapping);
 			insideCorrectionExp.bindExpression(this);
-			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
+			Membrane memMappingMembrane = membraneMapping.getMembrane();
+			Feature insideFeature = structTopology.getInsideFeature(memMappingMembrane);
 			String membraneNameWithScope = membraneMapping.getNameScope().getName();
 			String insideName = "KFlux_"+membraneNameWithScope+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,lengthInverseUnit,membraneMapping,insideFeature);
@@ -1449,7 +1454,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			//
 			Expression outsideCorrectionExp = getOutsideFluxCorrectionExpression(simContext,membraneMapping);
 			outsideCorrectionExp.bindExpression(this);
-			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
+			Feature outsideFeature = structTopology.getOutsideFeature(memMappingMembrane);
 			String outsideName = "KFlux_"+membraneNameWithScope+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,lengthInverseUnit,membraneMapping,outsideFeature);
 			newMathMappingParameters = (MathMappingParameter[])BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
@@ -1535,8 +1540,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 	
 	Model model = simContext.getModel();
-	ModelUnitSystem modelUnitSystem = simContext.getModel().getUnitSystem();
-
+	StructureTopology structTopology = model.getStructureTopology();
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
@@ -1553,7 +1557,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				try {
 					double volFract = volFractExp.evaluateConstant();
 					if (volFract>=1.0){
-						throw new MappingException("model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
+						throw new MappingException("model structure '"+structTopology.getInsideFeature(((MembraneMapping)sm).getMembrane()).getName()+"' has volume fraction >= 1.0");
 					}
 				}catch (ExpressionException e){
 				}
@@ -1569,7 +1573,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 
 	// deals with model parameters
 	Hashtable<VolVariable, EventAssignmentInitParameter> eventVolVarHash = new Hashtable<VolVariable, EventAssignmentInitParameter>();
-	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	ModelParameter[] modelParameters = model.getModelParameters();
 	if (simContext.getGeometry().getDimension() == 0) {
 		//
 		// global parameters from model (that presently are constants)
@@ -1630,7 +1634,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						Structure sm_struct = structureMappings[k].getStructure();
 						if (symbols != null) {
 							for (int ii = 0; ii < symbols.length; ii++) {
-								SpeciesContext sc = simContext.getModel().getSpeciesContext(symbols[ii]); 
+								SpeciesContext sc = model.getSpeciesContext(symbols[ii]); 
 								if (sc != null) {
 									// symbol[ii] is a speciesContext, check its structure with structureMapping[k].structure. If they are the same or
 									// if it is the adjacent membrane(s), allow variant expression to be created. Else, continue.
@@ -1642,8 +1646,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 										if ((sm_struct instanceof Feature) && (sp_struct instanceof Membrane)) {
 											Feature sm_feature = (Feature)sm_struct;
 											Membrane sp_mem = (Membrane)sp_struct;
-											if (sp_mem.compareEqual(sm_feature.getParentStructure()) || (sp_mem.getInsideFeature().compareEqual(sm_feature) || 
-													sp_mem.getOutsideFeature().compareEqual(sm_feature))) {
+											if (sp_mem.compareEqual(structTopology.getParentStructure(sm_feature)) || (structTopology.getInsideFeature(sp_mem).compareEqual(sm_feature) || 
+													structTopology.getOutsideFeature(sp_mem).compareEqual(sm_feature))) {
 												bValid = bValid && true;
 											} else {
 												bValid = bValid && false;
@@ -1652,8 +1656,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 										} else if ((sm_struct instanceof Membrane) && (sp_struct instanceof Feature)) {
 											Feature sp_feature = (Feature)sp_struct;
 											Membrane sm_mem = (Membrane)sm_struct;
-											if (sm_mem.compareEqual(sp_feature.getParentStructure()) || (sm_mem.getInsideFeature().compareEqual(sp_feature) || 
-													sm_mem.getOutsideFeature().compareEqual(sp_feature))) {
+											if (sm_mem.compareEqual(structTopology.getParentStructure(sp_feature)) || (structTopology.getInsideFeature(sm_mem).compareEqual(sp_feature) || 
+													structTopology.getOutsideFeature(sm_mem).compareEqual(sp_feature))) {
 												bValid = bValid && true;
 											} else {
 												bValid = bValid && false;
@@ -2072,13 +2076,14 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	//
 	// conversion factors
 	//
-	varHash.addVariable(new Constant(model.getKMOLE().getName(),getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(model.getN_PMOLE().getName(),getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(model.getKMILLIVOLTS().getName(),getIdentifierSubstitutions(model.getKMILLIVOLTS().getExpression(),model.getKMILLIVOLTS().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(model.getK_GHK().getName(),getIdentifierSubstitutions(model.getK_GHK().getExpression(),model.getK_GHK().getUnitDefinition(),null)));
 	//
 	// geometric functions
 	//
+	ModelUnitSystem modelUnitSystem = simContext.getModel().getUnitSystem();
 	VCUnitDefinition lengthInverseUnit = modelUnitSystem.getLengthUnit().getInverse();
 	for (int i=0;i<structureMappings.length;i++){
 		StructureMapping sm = structureMappings[i];
@@ -2095,7 +2100,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			MembraneMapping mm = (MembraneMapping)sm;
 			parm = ((MembraneMapping)sm).getVolumeFractionParameter();
 			if (parm.getExpression()==null){
-				throw new MappingException("volume fraction not specified for feature '"+mm.getMembrane().getInsideFeature().getName()+"', please refer to Structure Mapping in Application '"+simContext.getName()+"'");
+				throw new MappingException("volume fraction not specified for feature '" + structTopology.getInsideFeature(mm.getMembrane()).getName()+"', please refer to Structure Mapping in Application '"+simContext.getName()+"'");
 			}
 			varHash.addVariable(newFunctionOrConstant(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), sm)));
 			parm = mm.getSurfaceToVolumeParameter();
@@ -2124,13 +2129,13 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				if (sm instanceof MembraneMapping){
 					MembraneMapping mm = (MembraneMapping)sm;
 					if (getResolved(mm)){
-						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
-						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
+						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getInsideFeature(mm.getMembrane()));
+						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getOutsideFeature(mm.getMembrane()));
 						compartmentName = getSubVolume(fm_inside).getName()+"_"+getSubVolume(fm_outside).getName();
 						sizeFunctionName = MathFunctionDefinitions.Function_regionArea_current.getFunctionName();
 					}else{
-						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature());
-						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getOutsideFeature());
+						FeatureMapping fm_inside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getInsideFeature(mm.getMembrane()));
+						FeatureMapping fm_outside = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getOutsideFeature(mm.getMembrane()));
 						if (getSubVolume(fm_inside)==getSubVolume(fm_outside)){
 							compartmentName = getSubVolume(fm_inside).getName();
 							sizeFunctionName = MathFunctionDefinitions.Function_regionVolume_current.getFunctionName();
@@ -2145,7 +2150,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}else{
 					throw new RuntimeException("structure mapping "+sm.getClass().getName()+" not yet supported");
 				}
-				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext);
+				Expression totalVolumeCorrection = sm.getStructureSizeCorrection(simContext,this);
 				Expression sizeFunctionExpression = Expression.function(sizeFunctionName, new Expression[] {new Expression("'"+compartmentName+"'")} );
 				sizeFunctionExpression.bindExpression(mathDesc);
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(sizeParm,sm),getIdentifierSubstitutions(Expression.mult(totalVolumeCorrection,sizeFunctionExpression),sizeUnit,sm)));
@@ -2226,7 +2231,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
 			}
 		}else{
-			priority = spatialFeature.getPriority() * 100 + j; // now does not have to match spatial feature, *BUT* needs to be unique
+			priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
 		}
 		//
 		// create subDomain
@@ -2310,7 +2315,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 						mappedSubVolume = getSubVolume((FeatureMapping)sm);
 					}else if (sm instanceof MembraneMapping){
 						// membrane is mapped to that of the inside feature
-						FeatureMapping featureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(((Membrane)sm.getStructure()).getInsideFeature());
+						FeatureMapping featureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getInsideFeature((Membrane)sm.getStructure()));
 						mappedSubVolume = getSubVolume(featureMapping);
 					}
 					if (mappedSubVolume == subVolume){
@@ -2405,8 +2410,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (membrane==null){
 			continue;
 		}
-		SubVolume outerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(membrane.getOutsideFeature())));
-		SubVolume innerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(membrane.getInsideFeature())));
+		SubVolume outerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getOutsideFeature(membrane))));
+		SubVolume innerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(structTopology.getInsideFeature(membrane))));
 		if (innerSubVolume!=subVolume){
 			throw new MappingException("membrane "+membrane.getName()+" improperly mapped to inner subVolume "+innerSubVolume.getName());
 		}
@@ -2523,9 +2528,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 		if (resolvedFluxes!=null){
 			for (int i=0;i<resolvedFluxes.length;i++){
 				Species species = resolvedFluxes[i].getSpecies();
-				SpeciesContext sc = simContext.getReactionContext().getModel().getSpeciesContext(species,membraneStructureAnalyzer.getMembrane().getInsideFeature());
+				SpeciesContext sc = simContext.getReactionContext().getModel().getSpeciesContext(species, structTopology.getInsideFeature(membraneStructureAnalyzer.getMembrane()));
 				if (sc==null){
-					sc = simContext.getReactionContext().getModel().getSpeciesContext(species,membraneStructureAnalyzer.getMembrane().getOutsideFeature());
+					sc = simContext.getReactionContext().getModel().getSpeciesContext(species, structTopology.getOutsideFeature(membraneStructureAnalyzer.getMembrane()));
 				}
 				SpeciesContextMapping scm = getSpeciesContextMapping(sc);
 				//
@@ -2752,7 +2757,7 @@ protected void refreshStructureAnalyzers() {
 					MembraneMapping mm = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
 					if (mm != null){
 						if (getResolved(mm) && getMembraneStructureAnalyzer(membrane)==null){
-							SubVolume outerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(membrane.getOutsideFeature())));
+							SubVolume outerSubVolume = getSubVolume(((FeatureMapping)simContext.getGeometryContext().getStructureMapping(simContext.getModel().getStructureTopology().getOutsideFeature(membrane))));
 							structureAnalyzerList.addElement(new MembraneStructureAnalyzer(this,membrane,subVolume,outerSubVolume));
 						}
 					}
@@ -2884,6 +2889,10 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);
+}
+
+public Expression getUnitFactor(VCUnitDefinition unitFactor) {
+	return new Expression(unitFactor.getDimensionlessScale());
 }
 
 }

@@ -24,7 +24,7 @@ Product(KeyValue key, ReactionStep reactionStep) {
 }
 
 
-public Product(KeyValue key, SimpleReaction parent,SpeciesContext speciesContext, int stoichiometry) 
+public Product(KeyValue key, ReactionStep parent,SpeciesContext speciesContext, int stoichiometry) 
 {
 	super(key,parent,speciesContext, stoichiometry);
 }   

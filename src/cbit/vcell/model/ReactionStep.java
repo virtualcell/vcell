@@ -29,11 +29,12 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.meta.Identifiable;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -50,11 +51,14 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * @since   VCELL1.0
  */
 @SuppressWarnings("serial")
-public abstract class ReactionStep implements BioModelEntityObject, Cacheable, Serializable, 
-	ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable {
+public abstract class ReactionStep implements BioModelEntityObject,
+		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
+{
 
 	public static final String PROPERTY_NAME_KINETICS = "kinetics";
+	
 	private String annotation = null;
+	
 	
 	public final static int PHYSICS_MOLECULAR_ONLY = 0;
 	public final static int PHYSICS_MOLECULAR_AND_ELECTRICAL = 1;
@@ -74,7 +78,6 @@ public abstract class ReactionStep implements BioModelEntityObject, Cacheable, S
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private Kinetics fieldKinetics = null;
 	private transient Model model = null;
-	private ChargeCarrierValence fieldChargeCarrierValence = null;  // see constructor
 	private ReactionParticipant[] fieldReactionParticipants = new ReactionParticipant[0];
 	private ReactionNameScope nameScope = null; // see constructor
 
@@ -112,7 +115,7 @@ public abstract class ReactionStep implements BioModelEntityObject, Cacheable, S
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Model model, Structure structure, KeyValue key, String name, String annotation) throws java.beans.PropertyVetoException {
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
 	super();
 	
 	if (model != null) {
@@ -122,7 +125,6 @@ protected ReactionStep(Model model, Structure structure, KeyValue key, String na
 	}
 	
 	nameScope = new ReactionStep.ReactionNameScope();
-	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope(), null);
 	setStructure(structure);
 	this.key = key;
 	removePropertyChangeListener(this);
@@ -208,10 +210,6 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 
-	if (!fieldChargeCarrierValence.compareEqual(rs.fieldChargeCarrierValence)) {
-		return false;
-	}
-
 	if (fieldPhysicsOptions != rs.fieldPhysicsOptions){
 		return false;
 	}
@@ -261,14 +259,6 @@ public void gatherIssues(List<Issue> issueList) {
 	if (fieldKinetics!=null){
 		fieldKinetics.gatherIssues(issueList);
 	}
-}
-/**
- * Gets the chargeCarrierValence property (int) value.
- * @return The chargeCarrierValence property value.
- * @see #setChargeCarrierValence
- */
-public ChargeCarrierValence getChargeCarrierValence() {
-	return fieldChargeCarrierValence;
 }
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry localSTE = getLocalEntry(identifier);
@@ -332,13 +322,6 @@ public Kinetics getKinetics() {
 }
 public SymbolTableEntry getLocalEntry(String identifier) {
 	//
-	// check symbol against charge valence
-	//
-	if (getChargeCarrierValence().getName().equals(identifier)){
-		return getChargeCarrierValence();
-	}
-
-	//
 	// if resolved parameter exists, then return it
 	//
 	SymbolTableEntry ste = getKinetics().getKineticsParameter(identifier);
@@ -398,50 +381,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 
-public Expression getReactionRateExpression(ReactionParticipant reactionParticipant) throws Exception {
-	if (reactionParticipant instanceof Catalyst){
-		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
-		//return new Expression(0.0);
-	}	
-	double stoich = getStoichiometry(reactionParticipant.getSpeciesContext());
-	if (stoich==0.0){
-		return new Expression(0.0);
-	}
-	if (getKinetics() instanceof DistributedKinetics){
-		DistributedKinetics distributedKinetics = (DistributedKinetics)getKinetics();
-		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter(), getNameScope()));
-			return exp;
-		}else{
-			Expression exp = new Expression(distributedKinetics.getReactionRateParameter(), getNameScope());
-			return exp;
-		}
-	}else if (getKinetics() instanceof LumpedKinetics){
-		Structure.StructureSize structureSize = getStructure().getStructureSize();
-		//
-		// need to put this into concentration/time with respect to structure for reaction.
-		//
-		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
-		Expression factor = null;
-		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
-			factor = Expression.mult(new Expression(model.getKMOLE(), model.getKMOLE().getNameScope()),Expression.invert(new Expression(structureSize, getNameScope())));
-		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
-			factor = Expression.invert(new Expression(structureSize, getNameScope()));
-		}else{
-			throw new RuntimeException("failed to create reaction rate expression for reaction "+getName()+", with kinetic type of "+getKinetics().getClass().getName());
-		}
-		if (stoich!=1){
-			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter(), getNameScope()),factor));
-			return exp;
-		}else{
-			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter(), getNameScope()),factor);
-			return exp;
-		}
-	}else{
-		throw new RuntimeException("unexpected kinetic type "+getKinetics().getClass().getName());
-	}
-}   
-
 public ReactionParticipant getReactionParticipantFromSymbol(String reactParticipantName) {
 
 	ReactionParticipant rp_Array[] = getReactionParticipants();
@@ -471,12 +410,21 @@ public ReactionParticipant getReactionParticipants(int index) {
 	return getReactionParticipants()[index];
 }
 
-/**
- * This method was created in VisualAge.
- * @return double
- * @param speciesContext cbit.vcell.model.SpeciesContext
- */
-public abstract int getStoichiometry(SpeciesContext speciesContext);
+public final int getStoichiometry(SpeciesContext speciesContext) {
+	ReactionParticipant[] rps = getReactionParticipants();
+
+	int totalStoich = 0;
+	for (ReactionParticipant rp : rps) {
+		if (rp.getSpeciesContext() == speciesContext) {
+			if (rp instanceof Product){
+				totalStoich += rp.getStoichiometry();
+			}else if (rp instanceof Reactant){
+				totalStoich += (-1)*rp.getStoichiometry();
+			}
+		}
+	}
+	return totalStoich;
+}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Reaction
@@ -484,6 +432,11 @@ public abstract int getStoichiometry(SpeciesContext speciesContext);
 public Structure getStructure() {
 	return structure;
 }
+
+//public Structure getLocation() {
+//	return structure;
+//}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/22/00 10:20:28 PM)
@@ -513,8 +466,9 @@ public void propertyChange(PropertyChangeEvent evt) {
 			// setting physicsOptions to "Molecular&Electrical", must have a non-zero chargeValence
 			//
 			try {
-				if (getChargeCarrierValence().getConstantValue()==0){
-					getChargeCarrierValence().setExpression(new Expression(1.0));
+				KineticsParameter chargeValence = getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				if (chargeValence.getConstantValue()==0){
+					chargeValence.setExpression(new Expression(1.0));
 				}
 			}catch (PropertyVetoException e){
 				e.printStackTrace(System.out);
@@ -530,11 +484,6 @@ public void propertyChange(PropertyChangeEvent evt) {
  */
 public void rebindAllToModel(Model model) throws ExpressionException, ModelException, PropertyVetoException {
 	this.model = model;
-
-	// could not set chanrgeCarrierValence to DIMENSIONLESS in constructor, since no model (modelUnitsystem). Set it here, when setting model on reactionStep.
-	if (getChargeCarrierValence() != null && getChargeCarrierValence().getUnitDefinition() != null) {
-		getChargeCarrierValence().setUnitDefinition(this.model.getUnitSystem().getInstance_DIMENSIONLESS());
-	}
 	
 	if (getName() == null){
 		try {
@@ -577,13 +526,7 @@ public void rebindAllToModel(Model model) throws ExpressionException, ModelExcep
 		for (int i = 0; i < unresolvedParameters.length; i++){
 			SpeciesContext referencedSpeciesContext = model.getSpeciesContext(unresolvedParameters[i].getName());
 			if (referencedSpeciesContext!=null){
-				if (referencedSpeciesContext.getStructure()==getStructure()){
-					addCatalyst(referencedSpeciesContext);
-				}else if (getStructure() instanceof Membrane &&
-						(((Membrane)getStructure()).getInsideFeature()==referencedSpeciesContext.getStructure() || 
-						 ((Membrane)getStructure()).getOutsideFeature()==referencedSpeciesContext.getStructure())){
-					addCatalyst(referencedSpeciesContext);
-				}
+				addCatalyst(referencedSpeciesContext);
 			}
 		}
 		getKinetics().bind(this);
@@ -645,9 +588,6 @@ public void setKinetics(Kinetics kinetics) {
 		oldValue.removePropertyChangeListener(this);
 		removePropertyChangeListener(oldValue);
 		removePropertyChangeListener(oldValue);
-		if (getChargeCarrierValence() != null){
-			getChargeCarrierValence().removePropertyChangeListener(oldValue);
-		}
 	}
 	fieldKinetics = kinetics;
 	if (kinetics != null) {
@@ -655,9 +595,6 @@ public void setKinetics(Kinetics kinetics) {
 		kinetics.addPropertyChangeListener(this);
 		removePropertyChangeListener(kinetics);
 		addPropertyChangeListener(kinetics);
-		if (getChargeCarrierValence() != null){
-			getChargeCarrierValence().addPropertyChangeListener(kinetics);
-		}
 	}
 
 	//
@@ -665,9 +602,10 @@ public void setKinetics(Kinetics kinetics) {
 	// then if "zero" valence is incompatable with new kinetic type and new physicsOptions, then force to 1
 	//
 	try {
+		KineticsParameter chargeValenceParameter = getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
 		if (kinetics.getKineticsDescription().isElectrical()){
 			if (getPhysicsOptions() == PHYSICS_MOLECULAR_ONLY){
-				if (!getChargeCarrierValence().getExpression().isZero()){
+				if (chargeValenceParameter!=null && !chargeValenceParameter.getExpression().isZero()){
 					setPhysicsOptions(PHYSICS_MOLECULAR_AND_ELECTRICAL);
 				}else{
 					setPhysicsOptions(PHYSICS_ELECTRICAL_ONLY);
@@ -675,7 +613,7 @@ public void setKinetics(Kinetics kinetics) {
 			}
 		}else{
 			if (getPhysicsOptions() == PHYSICS_ELECTRICAL_ONLY){
-				if (!getChargeCarrierValence().getExpression().isZero()){
+				if (chargeValenceParameter!=null && !chargeValenceParameter.getExpression().isZero()){
 					setPhysicsOptions(PHYSICS_MOLECULAR_AND_ELECTRICAL);
 				}else{
 					setPhysicsOptions(PHYSICS_MOLECULAR_ONLY);
@@ -683,8 +621,12 @@ public void setKinetics(Kinetics kinetics) {
 			}
 		}
 
-		if (kinetics.getKineticsDescription().needsValence() && getChargeCarrierValence().getExpression().isZero()){
-			getChargeCarrierValence().setExpression(new Expression(1.0));
+		if (getKinetics()!=null){
+			if (chargeValenceParameter!=null){
+				if (chargeValenceParameter.getExpression().isZero()){
+					chargeValenceParameter.setExpression(new Expression(1.0));
+				}
+			}
 		}
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);
@@ -841,7 +783,6 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (SymbolTableEntry ste : getKinetics().getKineticsParameters()) {
 		entryMap.put(ste.getName(), ste);
 	}
-	entryMap.put(getChargeCarrierValence().getName(), getChargeCarrierValence());
 }
 
 
@@ -859,9 +800,10 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 			} else {			
 				if (structure instanceof Membrane) {
 					Membrane membrane = (Membrane)structure;				
+					StructureTopology structTopology = getModel().getStructureTopology();
 					if (ste instanceof SpeciesContext) {	
 						Structure entryStructure = ((SpeciesContext)ste).getStructure();
-						if (entryStructure != membrane && entryStructure != membrane.getInsideFeature() && entryStructure != membrane.getOutsideFeature()) {
+						if (entryStructure != membrane && entryStructure != structTopology.getInsideFeature(membrane) && entryStructure != structTopology.getOutsideFeature(membrane)) {
 							return false;
 						}
 					} else if (ste instanceof MembraneVoltage) {
@@ -890,6 +832,70 @@ public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
 	return stef;
 }
 
+public void addReactant(SpeciesContext speciesContext,int stoichiometry) throws ModelException, PropertyVetoException {
+
+	int count = countNumReactionParticipants(speciesContext);
+
+	// NOTE : right now, we are not taking into account the possiblity of allowing 
+	// a speciesContext to be a Catalyst as well as pdt or reactant.
+	if (count == 0) {
+		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt
+		addReactionParticipant(new Reactant(null,this, speciesContext, stoichiometry));
+	} else if (count == 1) {
+		ReactionParticipant[] rps = getReactionParticipants();
+		ReactionParticipant rp0 = null;
+		for (ReactionParticipant rp : rps) {
+			if (rp.getSpeciesContext() == speciesContext) {
+				rp0 = rp;
+				break;
+			}
+		}
+		// One matching reactionParticipant was found for the speciesContext, 
+		// if rp[0] is a product, add speciesContext as reactant, else throw exception since it is already a reactant (refer NOTE above)
+		if (rp0 instanceof Product){
+			addReactionParticipant(new Reactant(null,this, speciesContext, stoichiometry));
+		} else if (rp0 instanceof Reactant || rp0 instanceof Catalyst) {
+			throw new ModelException("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant or a Catalyst of the reaction.");
+		}
+	} else if (count > 1) {
+		// if rps.length is > 1, speciesContext occurs both as reactant and pdt, so throw exception
+		throw new ModelException("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant AND Product of the reaction.");
+	}
+		
+}   
+
+public void addProduct(SpeciesContext speciesContext,int stoichiometry) throws ModelException, PropertyVetoException {
+
+	int count = countNumReactionParticipants(speciesContext);
+
+	// NOTE : right now, we are not taking into account the possiblity of allowing 
+	// a speciesContext to be a Catalyst as well as pdt or reactant.
+	if (count == 0) {
+		// No matching reactionParticipant was found for the speciesContext, hence add it as a Pdt
+		addReactionParticipant(new Product(null,this, speciesContext, stoichiometry));
+	} else if (count == 1) {
+		ReactionParticipant[] rps = getReactionParticipants();
+		ReactionParticipant rp0 = null;
+		for (ReactionParticipant rp : rps) {
+			if (rp.getSpeciesContext() == speciesContext) {
+				rp0 = rp;
+				break;
+			}
+		}
+		// One matching reactionParticipant was found for the speciesContext, 
+		// if rp[0] is a product, add speciesContext as reactant, else throw exception since it is already a reactant (refer NOTE above)
+		if (rp0 instanceof Reactant){
+			addReactionParticipant(new Product(null,this, speciesContext, stoichiometry));
+		} else if (rp0 instanceof Product || rp0 instanceof Catalyst) {
+			throw new ModelException("reactionParticipant " + speciesContext.getName() + " already defined as a Product or a Catalyst of the reaction.");
+		}
+	} else if (count > 1) {
+		// if rps.length is > 1, speciesContext occurs both as reactant and pdt, so throw exception
+		throw new ModelException("reactionParticipant " + speciesContext.getName() + " already defined as a Reactant AND Product of the reaction.");
+	}
+		
+}
+
 public String getTypeLabel() {
 	return "Reaction";
 }
@@ -905,4 +911,29 @@ public boolean hasCatalyst()
 	}
 	return false;
 }
+
+public boolean hasProduct()
+{
+	for(ReactionParticipant rp : fieldReactionParticipants)
+	{
+		if(rp instanceof Product)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+public boolean hasReactant()
+{
+	for(ReactionParticipant rp : fieldReactionParticipants)
+	{
+		if(rp instanceof Reactant)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 }

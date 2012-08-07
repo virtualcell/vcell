@@ -97,6 +97,9 @@ public class IssueManager {
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
+			if (vcDocument==null){
+				return;
+			}
 			vcDocument.gatherIssues(tempIssueList);
 			
 			issueList = new ArrayList<Issue>();

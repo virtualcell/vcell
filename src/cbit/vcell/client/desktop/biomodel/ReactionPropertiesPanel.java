@@ -46,11 +46,11 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
 
@@ -63,7 +63,6 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private ScrollTable ivjScrollPaneTable = null;
 	private EventHandler eventHandler = new EventHandler();
 	private ReactionElectricalPropertiesPanel reactionElectricalPropertiesPanel;
-	
 	private JTextArea annotationTextArea = null;
 	private JTextField nameTextField = null;
 	private JLabel electricalPropertiesLabel;
@@ -458,13 +457,15 @@ private void updateKineticChoice() {
 }
 
 private void updateToggleButtonLabel(){
-	final String MU = "\u03BC";
-	final String MICROMOLAR = MU+"M";
 	if (reactionStep.getKinetics() instanceof DistributedKinetics){
-		getJToggleButton().setText("Convert to [molecules/s]");
+		getJToggleButton().setText("Convert to ["+reactionStep.getModel().getUnitSystem().getLumpedReactionRateUnit().getSymbolUnicode()+"]");
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of molecules rather than concentration");
 	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
-		getJToggleButton().setText("Convert to ["+MICROMOLAR+"/s]");
+		if (reactionStep.getStructure() instanceof Feature){
+			getJToggleButton().setText("Convert to ["+reactionStep.getModel().getUnitSystem().getVolumeReactionRateUnit().getSymbolUnicode()+"]");
+		}else{
+			getJToggleButton().setText("Convert to ["+reactionStep.getModel().getUnitSystem().getMembraneReactionRateUnit().getSymbolUnicode()+"]");
+		}
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of concentration rather than molecules");
 	}
 }
@@ -483,53 +484,32 @@ private JButton getJToggleButton() {
 		jToggleButton = new JButton("Convert");
 		jToggleButton.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
-				final String MU = "\u03BC";
-				final String SQUARED = "\u00B2";
-				final String CUBED = "\u00B3";
-				String sizeUnits = MU+"m"+SQUARED;
+				ModelUnitSystem modelUnitSystem = reactionStep.getModel().getUnitSystem();
 				Kinetics kinetics = reactionStep.getKinetics();
-				if (kinetics!=null && kinetics.getReactionStep()!=null && kinetics.getReactionStep().getStructure() instanceof Feature){
-					sizeUnits = MU+"m"+CUBED;
-				}
 
-				ReservedSymbol kMoleReservedSymbol = reactionStep.getModel().getKMOLE();
 				if (kinetics instanceof DistributedKinetics){
 					try {
-						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
-						if (response == null || response.length() == 0) {
-							throw new NumberFormatException("Please type in a valid compartment size.");
-						}
-						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics, size, kMoleReservedSymbol));
-					} catch (UtilCancelException e1) {
-					} catch (NumberFormatException ex) {
-						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						
+						reactionStep.setKinetics(LumpedKinetics.toLumpedKinetics((DistributedKinetics)kinetics));
 					} catch (Exception e2){
+						e2.printStackTrace(System.out);
 						if (kinetics.getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Kinetics [pA]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Kinetics ["+modelUnitSystem.getCurrentUnit().getSymbolUnicode()+"]: "+e2.getMessage(), e2);
 						}else{
-							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Lumped Kinetics [molecules/s]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Lumped Kinetics ["+modelUnitSystem.getLumpedReactionRateUnit().getSymbolUnicode()+"]: "+e2.getMessage(), e2);
 						}
 					}
  				}else if (kinetics instanceof LumpedKinetics){
 					try {
-						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
-						if (response == null || response.length() == 0) {
-							throw new NumberFormatException("Please type in a valid compartment size.");
-						}
-						double size = Double.parseDouble(response);
-						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics, size, kMoleReservedSymbol));
-					} catch (UtilCancelException e1) {
-					} catch (NumberFormatException ex) {
-						DialogUtils.showErrorDialog(ReactionPropertiesPanel.this, ex.getMessage());						
+						reactionStep.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics));
 					} catch (Exception e2){
+						e2.printStackTrace(System.out);
 						if (kinetics.getKineticsDescription().isElectrical()){
-							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics [pA/"+MU+"m"+SQUARED+"]: "+e2.getMessage(), e2);
+							DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Current Density Kinetics ["+modelUnitSystem.getCurrentDensityUnit().getSymbolUnicode()+"]: "+e2.getMessage(), e2);
 						}else{
 							if (kinetics.getReactionStep().getStructure() instanceof Feature){
-								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+MU+"M/s]: "+e2.getMessage(), e2);
+								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+modelUnitSystem.getVolumeReactionRateUnit().getSymbolUnicode()+"]: "+e2.getMessage(), e2);
 							}else{
-								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics [molecules/"+MU+"m"+SQUARED+".s]: "+e2.getMessage(), e2);
+								DialogUtils.showErrorDialog(ReactionPropertiesPanel.this,"failed to translate into General Kinetics ["+modelUnitSystem.getMembraneReactionRateUnit().getSymbolUnicode()+"]: "+e2.getMessage(), e2);
 							}
 						}
 					}

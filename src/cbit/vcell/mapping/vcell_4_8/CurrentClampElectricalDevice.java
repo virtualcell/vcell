@@ -20,6 +20,7 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -75,10 +76,11 @@ private void initializeParameters() throws ExpressionException {
 		Feature feature1 = currentClampStimulus.getElectrode().getFeature();
 		Feature feature2 = mathMapping_4_8.getSimulationContext().getGroundElectrode().getFeature();
 		Membrane membrane = null;
-		if (feature1.getParentStructure()!=null && ((Membrane)feature1.getParentStructure()).getOutsideFeature()==feature2){
-			membrane = ((Membrane)feature1.getParentStructure());
-		} else if (feature2.getParentStructure()!=null && ((Membrane)feature2.getParentStructure()).getOutsideFeature()==feature1){
-			membrane = ((Membrane)feature2.getParentStructure());
+		StructureTopology structTopology = mathMapping_4_8.getSimulationContext().getModel().getStructureTopology();
+		if (structTopology.getParentStructure(feature1)!=null && structTopology.getOutsideFeature((Membrane)structTopology.getParentStructure(feature1))==feature2){
+			membrane = ((Membrane)structTopology.getParentStructure(feature1));
+		} else if (structTopology.getParentStructure(feature2)!=null && structTopology.getOutsideFeature((Membrane)structTopology.getParentStructure(feature2))==feature1){
+			membrane = ((Membrane)structTopology.getParentStructure(feature2));
 		}
 		if (membrane==null){
 			throw new RuntimeException("current clamp based on current density crosses multiple membranes, unable to " 

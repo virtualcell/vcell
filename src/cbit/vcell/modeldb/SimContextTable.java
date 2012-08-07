@@ -32,6 +32,7 @@ import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
 import cbit.vcell.math.MathDescription;
@@ -203,22 +204,34 @@ public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,
 public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	Element appComponentsElement = new Element(XMLTags.ApplicationComponents);
 	
+	Xmlproducer xmlProducer = new Xmlproducer(false);
 	// first fill in bioevents from simContext
 	BioEvent[] bioEvents = simContext.getBioEvents();
 	if (bioEvents != null && bioEvents.length > 0) {
 		try {
-			Element bioEventElement = ((new Xmlproducer(false)).getXML(bioEvents));
+			Element bioEventElement = xmlProducer.getXML(bioEvents);
 			appComponentsElement.addContent(bioEventElement);
 		} catch (XmlParseException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
 		}
 	}
-	Element element = new Xmlproducer(false).getXML(simContext.getMicroscopeMeasurement());
+	// microscope measurements
+	Element element = xmlProducer.getXML(simContext.getMicroscopeMeasurement());
 	appComponentsElement.addContent(element);
-	
-	// fill in other application components when ready (rate rules, etc. etc.?)
-	
+
+	// rate rules
+	RateRule[] rateRules = simContext.getRateRules();
+	if (rateRules != null && rateRules.length > 0) {
+		try {
+			Element rateRulesElement = xmlProducer.getXML(rateRules);
+			appComponentsElement.addContent(rateRulesElement);
+		} catch (XmlParseException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
+		}
+	}
+
 	String appComponentsXMLStr = null; 
 	if (appComponentsElement.getContent() != null) {
 		appComponentsXMLStr = XmlUtil.xmlToString(appComponentsElement);
@@ -272,14 +285,23 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 	try {
 		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
 		if (appComponentsElement != null) {
+			XmlReader xmlReader = new XmlReader(false);
+			// get bioEvents
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
 			if (bioEventsElement != null) {
-				BioEvent[] bioEvents = (new XmlReader(false)).getBioEvents(simContext, bioEventsElement);
+				BioEvent[] bioEvents = xmlReader.getBioEvents(simContext, bioEventsElement);
 				simContext.setBioEvents(bioEvents);
 			}
+			// get microscope measurements
 			Element element = appComponentsElement.getChild(XMLTags.MicroscopeMeasurement);
 			if (element != null) {
-				new XmlReader(false).getMicroscopeMeasurement(element, simContext);
+				xmlReader.getMicroscopeMeasurement(element, simContext);
+			}
+			// get rate rules
+			Element rateRulesElement = appComponentsElement.getChild(XMLTags.RateRulesTag);
+			if (rateRulesElement != null) {
+				RateRule[] rateRules = xmlReader.getRateRules(simContext, rateRulesElement);
+				simContext.setRateRules(rateRules);
 			}
 		}
 	} catch (XmlParseException e) {

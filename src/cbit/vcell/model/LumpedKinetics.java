@@ -13,9 +13,11 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
+import cbit.vcell.units.VCUnitDefinition;
 
 
 /**
@@ -37,6 +39,9 @@ import cbit.vcell.parser.ExpressionException;
  *
  */
 public abstract class LumpedKinetics extends Kinetics {
+	
+	// store SBML unit for rate expression from SBML kinetic law.
+//	private transient VCUnitDefinition sbmlRateUnit = null;
 
 	public LumpedKinetics(String name, ReactionStep reactionStep) {
 		super(name, reactionStep);
@@ -68,46 +73,32 @@ public abstract class LumpedKinetics extends Kinetics {
 		return getKineticsParameterFromRole(ROLE_LumpedCurrent);
 	}
 
-	public static LumpedKinetics toLumpedKinetics(DistributedKinetics distributedKinetics, double size, ReservedSymbol kMoleReservedSymbol){
+	public static LumpedKinetics toLumpedKinetics(DistributedKinetics distributedKinetics){
 		KineticsParameter[] distKineticsParms = distributedKinetics.getKineticsParameters();
 		ReactionStep reactionStep = distributedKinetics.getReactionStep();
 		try {
 			Vector<KineticsParameter> parmsToAdd = new Vector<KineticsParameter>();
 			
 			LumpedKinetics lumpedKinetics = null;
-			Expression sizeExpr = new Expression(size);
+			StructureSize structureSize = distributedKinetics.getReactionStep().getStructure().getStructureSize();
+			Expression sizeExp = new Expression(structureSize.getName());
+			VCUnitDefinition sizeUnit = structureSize.getUnitDefinition();
 			if (distributedKinetics.getKineticsDescription().isElectrical()){
 				lumpedKinetics = new GeneralCurrentLumpedKinetics(reactionStep);
-				Expression lumpingFactor = sizeExpr; // from pA.um-2 to pA (current density to current)
-				KineticsParameter distCurrentDensityParam = distributedKinetics.getCurrentDensityParameter();
-				KineticsParameter lumpedCurrentParam = lumpedKinetics.getLumpedCurrentParameter();
-				Expression newLumpedCurrentExp = Expression.mult(lumpingFactor,distCurrentDensityParam.getExpression()).flatten();
-				parmsToAdd.add(lumpedKinetics.new KineticsParameter(lumpedCurrentParam.getName(),newLumpedCurrentExp,lumpedCurrentParam.getRole(),lumpedCurrentParam.getUnitDefinition()));
 			}else{
 				lumpedKinetics = new GeneralLumpedKinetics(reactionStep);
-				Expression lumpingFactor = null;
-				Expression kmole = distributedKinetics.getSymbolExpression(kMoleReservedSymbol);
-				if (reactionStep.getStructure() instanceof Membrane){
-					if (reactionStep instanceof FluxReaction){
-						// size/KMOLE  (from uM.um.s-1 to molecules.s-1)
-						lumpingFactor = Expression.div(sizeExpr, kmole);
-					}else if (reactionStep instanceof SimpleReaction){
-						// size (from molecules.um-2.s-1 to molecules.s-1)
-						lumpingFactor = sizeExpr;
-					}else{
-						throw new RuntimeException("unexpected ReactionStep type "+reactionStep.getClass().getName());
-					}
-				}else if (reactionStep.getStructure() instanceof Feature){
-					// size/KMOLE (from uM.s-1 to molecules.s-1)
-					lumpingFactor = Expression.div(sizeExpr, kmole);
-				}else{
-					throw new RuntimeException("unexpected structure type "+reactionStep.getStructure().getClass().getName());
-				}
-				KineticsParameter distReactionRateParam = distributedKinetics.getReactionRateParameter();
-				KineticsParameter lumpedReactionRateParm = lumpedKinetics.getLumpedReactionRateParameter();
-				Expression newLumpedRateExp = Expression.mult(lumpingFactor,distReactionRateParam.getExpression()).flatten();
-				parmsToAdd.add(lumpedKinetics.new KineticsParameter(lumpedReactionRateParm.getName(),newLumpedRateExp,lumpedReactionRateParm.getRole(),lumpedReactionRateParm.getUnitDefinition()));
 			}
+			Expression unitFactor = new Expression(lumpedKinetics.getAuthoritativeParameter().getUnitDefinition().divideBy(sizeUnit).divideBy(distributedKinetics.getAuthoritativeParameter().getUnitDefinition()).getDimensionlessScale());
+			Expression lumpingFactor = Expression.mult(sizeExp, unitFactor);
+			KineticsParameter distAuthoritativeParam = distributedKinetics.getAuthoritativeParameter();
+			KineticsParameter lumpedAuthoritativeParam = lumpedKinetics.getAuthoritativeParameter();
+			Expression newLumpedAuthoritativeExp = Expression.mult(lumpingFactor,distAuthoritativeParam.getExpression()).flatten();
+			Expression substitutedExp = newLumpedAuthoritativeExp.getSubstitutedExpression(sizeExp, new Expression(1.0));
+			if (ExpressionUtils.functionallyEquivalent(newLumpedAuthoritativeExp,substitutedExp,false)){
+				newLumpedAuthoritativeExp = substitutedExp.flatten();
+			}
+			parmsToAdd.add(lumpedKinetics.new KineticsParameter(lumpedAuthoritativeParam.getName(),newLumpedAuthoritativeExp,lumpedAuthoritativeParam.getRole(),lumpedAuthoritativeParam.getUnitDefinition()));
+
 			for (int i = 0; i < distKineticsParms.length; i++) {
 				if (distKineticsParms[i].getRole()!=Kinetics.ROLE_ReactionRate &&
 					distKineticsParms[i].getRole()!=Kinetics.ROLE_CurrentDensity){
@@ -125,4 +116,13 @@ public abstract class LumpedKinetics extends Kinetics {
 		}
 	}
 
+/*	public VCUnitDefinition getSbmlRateUnit() {
+		return sbmlRateUnit;
+	}
+	
+	public void setSbmlRateUnit(VCUnitDefinition sbmlRateUnit) {
+		this.sbmlRateUnit = sbmlRateUnit;
+	}
+*/
 }
+

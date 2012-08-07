@@ -121,7 +121,7 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_SIZE:{
 			double size = region.getSize();
 			cbit.vcell.units.VCUnitDefinition sizeUnit = region.getSizeUnit();
-			return size+" ["+sizeUnit.getSymbol()+"]";
+			return size+" ["+sizeUnit.getSymbolUnicode()+"]";
 		}
 		case COLUMN_INSIDE:{
 			if (region instanceof SurfaceGeometricRegion){

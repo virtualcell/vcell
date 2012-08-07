@@ -38,7 +38,7 @@ public class ElectricalMembraneMappingTableModel extends VCellSortTableModel<Mem
 	public final static String LABEL_MEMBRANE = "Membrane";
 	public final static String LABEL_CALCULATE_POTENTIAL = "Calculate V?";
 	public final static String LABEL_INITIAL_POTENTIAL = "V initial";
-	public final static String LABEL_SPECIFIC_CAPACITANCE = "Specific Capacitance (pF/um2)";
+	public final static String LABEL_SPECIFIC_CAPACITANCE = "Specific Capacitance";
 	private final static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
 	private GeometryContext fieldGeometryContext = null;
 /**

@@ -28,11 +28,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	private EventsDisplayPanel eventsDisplayPanel;
 	private ElectricalMembraneMappingPanel electricalMembraneMappingPanel;
 	private MicroscopeMeasurementPanel microscopeMeasurementPanel;
+	private RateRulesDisplayPanel rateRulesDisplayPanel;
 	
 	private enum ProtocolsPanelTabID {
-		electrical("Electrical"),
 		events("Events"),
-		microscope_measurements("Microscope Measurements");
+		electrical("Electrical"),
+		microscope_measurements("Microscope Measurements"),
+		rate_rules("Rate Rules");
 		
 		String title = null;
 		ProtocolsPanelTabID(String name) {
@@ -64,11 +66,13 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		eventsDisplayPanel = new EventsDisplayPanel();
 		electricalMembraneMappingPanel = new ElectricalMembraneMappingPanel();
 		microscopeMeasurementPanel = new MicroscopeMeasurementPanel();
+		rateRulesDisplayPanel = new RateRulesDisplayPanel();
 		
 		protocolPanelTabs = new ProtocolsPanelTab[ProtocolsPanelTabID.values().length]; 
 		protocolPanelTabs[ProtocolsPanelTabID.events.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.electrical.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.electrical, electricalMembraneMappingPanel, null);
 		protocolPanelTabs[ProtocolsPanelTabID.microscope_measurements.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.microscope_measurements, microscopeMeasurementPanel, null);
+		protocolPanelTabs[ProtocolsPanelTabID.rate_rules.ordinal()] = new ProtocolsPanelTab(ProtocolsPanelTabID.rate_rules, rateRulesDisplayPanel, null);
 		
 		for (ProtocolsPanelTab tab : protocolPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -82,14 +86,16 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideEventsPanel();
 		showOrHideMicroscopeMeasurementPanel();
+		rateRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
 		eventsDisplayPanel.setSelectionManager(selectionManager);
+		rateRulesDisplayPanel.setSelectionManager(selectionManager);
 	}
-	
+
 	private void showOrHidePanel(ProtocolsPanelTabID tabID, boolean bShow) {
 		ProtocolsPanelTab tab = protocolPanelTabs[tabID.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
@@ -126,7 +132,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 			eventsDisplayPanel.setSimulationContext(simulationContext);
 		}
 	}
-	
+
 	@Override
 	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
@@ -137,6 +143,8 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 			activeViewID =  ActiveViewID.electrical;
 		} else if (selectedComponent == microscopeMeasurementPanel) {
 			activeViewID = ActiveViewID.microscope_measuremments;
+		} else if (selectedComponent == rateRulesDisplayPanel) {
+			activeViewID =  ActiveViewID.rateRules;
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, activeViewID);
 	}

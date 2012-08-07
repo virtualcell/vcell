@@ -633,10 +633,10 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 /**
  * getReactionStep method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
+public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getReactionStep()");
-		return dbServerProxy.getReactionStep(rxID);
+		return dbServerProxy.getReactionStepAsModel(rxID);
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;

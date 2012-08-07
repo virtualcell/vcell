@@ -25,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -44,6 +45,7 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -51,8 +53,12 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ModelUnitConverter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.xml.XmlParseException;
 
 @SuppressWarnings("serial")
 public class BioModelParametersPanel extends DocumentEditorSubPanel {
@@ -64,6 +70,9 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JTabbedPane tabbedPane;
 
+	private JButton changeUnitsButton = null;
+	private BioModelWindowManager bioModelWindowManager = null;
+	
 	private JButton addNewButton = null;
 	private JButton deleteButton = null;
 	private EditorScrollTable parametersFunctionsTable;
@@ -74,10 +83,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	private EditorScrollTable predefinedSymbolsTable;
 	private PredefinedSymbolsTableModel predefinedSymbolsTableModel = null;
 	private JPanel predefinedSymbolsPanel = null;
+	private EditorScrollTable modelUnitSystemTable;
+	private ModelUnitSystemTableModel modelUnitSystemTableModel = null;
+	private JPanel modelUnitSystemPanel = null;
 	
 	private enum ParametersPanelTabID {
 		parameters_functions("Parameters and Functions"),
-		predefined("Predefined Constants and Math Functions");
+		predefined("Predefined Constants and Math Functions"),
+		modelUnitSystem("Model Unit System");
 		
 		String title = null;
 		ParametersPanelTabID(String name) {
@@ -103,6 +116,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				newButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
+			} else if (e.getSource() == changeUnitsButton) {
+				changeUnitsButtonPressed();
 			} else if (e.getSource() == globalParametersCheckBox) {
 				parametersFunctionsTableModel.setIncludeGlobal(globalParametersCheckBox.isSelected());
 			} else if (e.getSource() == applicationsCheckBox) {
@@ -149,12 +164,35 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 
+	public void changeUnitsButtonPressed() {
+		UnitSystemSelectionPanel unitSystemSelectionPanel = new UnitSystemSelectionPanel();
+		unitSystemSelectionPanel.initialize(bioModel.getModel().getUnitSystem());
+		int retcode = DialogUtils.showComponentOKCancelDialog(this, unitSystemSelectionPanel, "select new unit system");
+		while (retcode == JOptionPane.OK_OPTION){
+			ModelUnitSystem forcedModelUnitSystem;
+			try {
+				forcedModelUnitSystem = unitSystemSelectionPanel.createModelUnitSystem();
+				BioModel newBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, forcedModelUnitSystem);
+				this.bioModelWindowManager.resetDocument(newBioModel);
+				break;
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				DialogUtils.showErrorDialog(this, e.getMessage(), e);
+				retcode = DialogUtils.showComponentOKCancelDialog(this, unitSystemSelectionPanel, "select new unit system");
+			}
+		}
+	}
+
 	private void initialize(){
 		addNewButton = new JButton("Add New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete Global Parameter(s)");
 		deleteButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
+
+		changeUnitsButton = new JButton("Change Unit System");
+		changeUnitsButton.addActionListener(eventHandler);
+		
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.getDocument().addDocumentListener(eventHandler);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
@@ -181,6 +219,10 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		predefinedSymbolsTableModel = new PredefinedSymbolsTableModel(predefinedSymbolsTable);
 		predefinedSymbolsTable.setModel(predefinedSymbolsTableModel);
 		GuiUtils.flexResizeTableColumns(predefinedSymbolsTable);
+		modelUnitSystemTable = new EditorScrollTable();
+		modelUnitSystemTableModel = new ModelUnitSystemTableModel(modelUnitSystemTable);
+		modelUnitSystemTable.setModel(modelUnitSystemTableModel);
+		GuiUtils.flexResizeTableColumns(modelUnitSystemTable);
 
 		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.addChangeListener(eventHandler);
@@ -188,6 +230,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		ParametersPanelTab parametersPanelTabs[] = new ParametersPanelTab[ParametersPanelTabID.values().length]; 
 		parametersPanelTabs[ParametersPanelTabID.parameters_functions.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.parameters_functions, getParametersFunctionsPanel(), null);
 		parametersPanelTabs[ParametersPanelTabID.predefined.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.predefined, getPredefinedSymbolsPanel(), null);
+		parametersPanelTabs[ParametersPanelTabID.modelUnitSystem.ordinal()] = new ParametersPanelTab(ParametersPanelTabID.modelUnitSystem, getModelUnitSystemPanel(), null);
 		
 		for (ParametersPanelTab tab : parametersPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -210,6 +253,13 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(deleteButton, gbc);
 				
+		gbc = new GridBagConstraints();
+		gbc.gridx = GridBagConstraints.RELATIVE;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(changeUnitsButton, gbc);
+		
 		gbc = new GridBagConstraints();
 		gbc.gridx = GridBagConstraints.RELATIVE;
 		gbc.gridy = gridy;
@@ -250,6 +300,16 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		});
 	}
 	
+	private JPanel getModelUnitSystemPanel() {
+		if (modelUnitSystemPanel == null) {
+			modelUnitSystemPanel = new JPanel();
+			modelUnitSystemPanel.setLayout(new BorderLayout());
+			
+			modelUnitSystemPanel.add(modelUnitSystemTable.getEnclosingScrollPane(), BorderLayout.CENTER);
+		}
+		return modelUnitSystemPanel;
+	}
+
 	private JPanel getPredefinedSymbolsPanel() {
 		if (predefinedSymbolsPanel == null) {
 			predefinedSymbolsPanel = new JPanel();
@@ -259,6 +319,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		}
 		return predefinedSymbolsPanel;
 	}
+
 	private JPanel getParametersFunctionsPanel() {
 		if (parametersFunctionsPanel == null) {
 			parametersFunctionsPanel = new JPanel();
@@ -403,6 +464,8 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			currentSelectedTableModel = parametersFunctionsTableModel;
 		} else if (selectedIndex == ParametersPanelTabID.predefined.ordinal()) {
 			currentSelectedTableModel = predefinedSymbolsTableModel;			
+		} else if (selectedIndex == ParametersPanelTabID.modelUnitSystem.ordinal()) {
+			currentSelectedTableModel = modelUnitSystemTableModel;			
 		}
 	}
 
@@ -440,6 +503,11 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			addNewButton.setVisible(false);
 			deleteButton.setVisible(false);			
 		}
+		if (selectedIndex == ParametersPanelTabID.modelUnitSystem.ordinal()) {
+			changeUnitsButton.setVisible(true);
+		} else {
+			changeUnitsButton.setVisible(false);
+		}
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -449,6 +517,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		bioModel = newValue;		
 		parametersFunctionsTableModel.setBioModel(bioModel);
 		predefinedSymbolsTableModel.setBioModel(bioModel);
+		modelUnitSystemTableModel.setBioModel(bioModel);
 	}
 	
 	@Override
@@ -467,5 +536,9 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
 		parametersFunctionsTableModel.setIssueManager(issueManager);
+	}
+
+	public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
+		this.bioModelWindowManager = bioModelWindowManager;
 	}
 }

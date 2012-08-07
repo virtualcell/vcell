@@ -86,7 +86,6 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
@@ -106,7 +105,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements Model.Owner {
 	protected static final String PROPERTY_NAME_BIO_MODEL = "bioModel";
 	public enum ModelPanelTabID {
-		structure_diagram("Structure Diagram"),
+//		structure_diagram("Structure Diagram"),
 		reaction_diagram("Reaction Diagram"),
 		reaction_table("Reactions"),
 		structure_table("Structures"),
@@ -144,6 +143,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private ModelPanelTab modelPanelTabs[] = new ModelPanelTab[ModelPanelTabID.values().length]; 
 
 	private JButton newButton = null;
+	private JButton newMemButton = null;
 	private JButton deleteButton = null;
 	private JButton pathwayButton = null;
 	private JPopupMenu pathwayPopupMenu = null;
@@ -159,7 +159,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JTextField textFieldSearch = null;
 	private JTabbedPane tabbedPane = null;
 	
-	private CartoonEditorPanelFixed cartoonEditorPanel = null;
+//	private CartoonEditorPanelFixed cartoonEditorPanel = null;
 	private ReactionCartoonEditorPanel reactionCartoonEditorPanel = null;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
@@ -183,6 +183,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == newButton) {
 				newButtonPressed();
+			} else if (e.getSource() == newMemButton) {
+				newMemButtonPressed();
 			} else if (e.getSource() == deleteButton) {
 				deleteButtonPressed();
 			} else if (e.getSource() == pathwayButton) {
@@ -273,11 +275,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private void refreshButtons() {
 		int selectedIndex = tabbedPane.getSelectedIndex();		
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
-			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
+//			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
 			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
 			newButton.setVisible(false);
+			newMemButton.setVisible(false);
 		} else {
 			newButton.setVisible(true);
+			newMemButton.setVisible(true);
 		}
 		
 		deleteButton.setEnabled(false);
@@ -286,8 +290,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		Object[] selectedObjects = null;
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 			selectedObjects = reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects();
-		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			selectedObjects = cartoonEditorPanel.getStructureCartoon().getSelectedObjects();
+//		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+//			selectedObjects = cartoonEditorPanel.getStructureCartoon().getSelectedObjects();
 		} else {
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
@@ -329,8 +333,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species);
 		} else if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram);
-		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, ActiveViewID.structure_diagram);
+//		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+//			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE, ActiveViewID.structure_diagram);
 		}
 		if (activeView != null) {
 			setActiveView(activeView);
@@ -341,7 +345,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	@Override
 	public void onSelectedObjectsChange(Object[] selectedObjects) {
 		reactionCartoonEditorPanel.getReactionCartoon().setSelectedObjects(selectedObjects);
-		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
+//		cartoonEditorPanel.getStructureCartoon().setSelectedObjects(selectedObjects);
 		setTableSelections(selectedObjects, structuresTable, structureTableModel);
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
 		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
@@ -367,7 +371,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("Add New");
+		newButton = new JButton("Add New Compartment");
+		newMemButton = new JButton("Add New Membrane");
 		deleteButton = new JButton("Delete");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -388,8 +393,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
 		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
-		cartoonEditorPanel  = new CartoonEditorPanelFixed();
-		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
+//		cartoonEditorPanel  = new CartoonEditorPanelFixed();
+//		cartoonEditorPanel.getStructureCartoon().addPropertyChangeListener(eventHandler);
 		
 		/* button panel */
 		buttonPanel = new JPanel();
@@ -403,20 +408,27 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(newMemButton, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(deleteButton, gbc);
 				
 		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
+		gbc.gridx = 3;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(pathwayButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
+		gbc.gridx = 4;
 		gbc.gridy = 0;
 		gbc.weightx = 0.5;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -424,14 +436,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
+		gbc.gridx = 5;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(new JLabel("Search "), gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
+		gbc.gridx = 6;
 		gbc.gridy = 0;
 		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -443,7 +455,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		tabbedPane = new JTabbedPaneEnhanced();
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_diagram, reactionCartoonEditorPanel, VCellIcons.diagramIcon);
-		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.structureIcon);
+//		modelPanelTabs[ModelPanelTabID.structure_diagram.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_diagram, cartoonEditorPanel, VCellIcons.structureIcon);
 		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
@@ -461,6 +473,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		add(buttonPanel, BorderLayout.SOUTH);
 						
 		newButton.addActionListener(eventHandler);
+		newMemButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		pathwayButton.addActionListener(eventHandler);
@@ -550,8 +563,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		int selectedIndex = tabbedPane.getSelectedIndex();
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 			reactionCartoonEditorPanel.getReactionCartoon().searchText(searchText);
-		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-			cartoonEditorPanel.getStructureCartoon().searchText(searchText);
+//		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+//			cartoonEditorPanel.getStructureCartoon().searchText(searchText);
 		} else {
 			computeCurrentSelectedTable();
 			if (currentSelectedTableModel != null) {
@@ -597,14 +610,44 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		}
 	}
+
+	private void newMemButtonPressed() {
+		computeCurrentSelectedTable();
+		Object newObject = null;
+		if (currentSelectedTable == structuresTable) {
+//			Feature parentFeature = null;fsdf
+//			for (int i = bioModel.getModel().getNumStructures() - 1; i >= 0; i --) {
+//				if (bioModel.getModel().getStructures()[i] instanceof Feature) {
+//					parentFeature = (Feature)bioModel.getModel().getStructures()[i];
+//					break;
+//				}
+//			}
+			try {
+				Membrane membrane = bioModel.getModel().createMembrane();
+				newObject = membrane;
+			} catch (Exception e) {
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, e.getMessage(), e);
+			}
+		}
+		if (newObject != null) {
+			for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+				if (currentSelectedTableModel.getValueAt(i) == newObject) {
+					currentSelectedTable.setRowSelectionInterval(i, i);
+					break;
+				}
+			}
+		}
+	}
+
 	private void deleteButtonPressed() {
 		try {
 			ArrayList<Object> deleteList = new ArrayList<Object>();
 			int selectedIndex = tabbedPane.getSelectedIndex();
 			if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 				deleteList.addAll(Arrays.asList(reactionCartoonEditorPanel.getReactionCartoon().getSelectedObjects()));			
-			} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
-				deleteList.addAll(Arrays.asList(cartoonEditorPanel.getStructureCartoon().getSelectedObjects()));
+//			} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
+//				deleteList.addAll(Arrays.asList(cartoonEditorPanel.getStructureCartoon().getSelectedObjects()));
 			} else {
 				computeCurrentSelectedTable();
 				int[] rows = currentSelectedTable.getSelectedRows();
@@ -624,7 +667,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					for (int r : rows) {
 						if (r < structureTableModel.getRowCount()) {
 							Structure rowValue = structureTableModel.getValueAt(r);
-							if (rowValue instanceof Feature) {
+							if (rowValue instanceof Feature || rowValue instanceof Membrane) {
 								deleteList.add(rowValue);
 							}
 						}
@@ -642,12 +685,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 			if (deleteList.size() == 0) {
 				return;
-			}
-			for (Object object : deleteList) {
-				if(object instanceof Membrane){
-					DialogUtils.showWarningDialog(this, "Cannot delete Membranes explicitly, to delete a membrane select its enclosed compartment.");
-					return;
-				}
 			}
 			StringBuilder deleteListText = new StringBuilder();
 			for (Object object : deleteList) {
@@ -684,7 +721,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				reactionCartoonEditorPanel.getReactionCartoon());
 		reactionCartoonEditorPanel.getReactionCartoon().refreshRelationshipInfo(
 				bioModel.getRelationshipModel());
-		cartoonEditorPanel.setBioModel(bioModel);
+//		cartoonEditorPanel.setBioModel(bioModel);
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);
 		speciesTableModel.setBioModel(bioModel);
@@ -718,7 +755,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	public void setDocumentManager(DocumentManager documentManager) {
-		cartoonEditorPanel.setDocumentManager(documentManager);	
+//		cartoonEditorPanel.setDocumentManager(documentManager);	
 		reactionCartoonEditorPanel.setDocumentManager(documentManager);
 	}
 	
@@ -768,9 +805,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			childWindow.show();
 //			diagramViewInternalFrame.setFrameIcon(new ImageIcon(getClass().getResource("/images/step.gif")));
 		} else {
-			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(reactionCartoonEditorPanel);
-			if (childWindow!=null){
-				childWindowManager.closeChildWindow(childWindow);
+			if (childWindowManager!=null){
+				ChildWindow childWindow = childWindowManager.getChildWindowFromContext(reactionCartoonEditorPanel);
+				if (childWindow!=null){
+					childWindowManager.closeChildWindow(childWindow);
+				}
 			}
 			tabbedPane.setComponentAt(ModelPanelTabID.reaction_diagram.ordinal(), modelPanelTabs[ModelPanelTabID.reaction_diagram.ordinal()].getComponent());
 			tabbedPane.setSelectedIndex(ModelPanelTabID.reaction_diagram.ordinal());
@@ -802,9 +841,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		case REACTION_DIAGRAM_NODE:
 			selectTab(ModelPanelTabID.reaction_diagram);
 			break;
-		case STRUCTURE_DIAGRAM_NODE:
-			selectTab(ModelPanelTabID.structure_diagram);
-			break;
+//		case STRUCTURE_DIAGRAM_NODE:
+//			selectTab(ModelPanelTabID.structure_diagram);
+//			break;
 		}
 	}
 	
@@ -861,17 +900,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					Structure structure = (Structure) structureComboBox.getSelectedItem();
 					
 					if (ste instanceof SpeciesContext) {
-						SpeciesContext sc = (SpeciesContext) ste;
-						if (sc.getStructure() == structure) {
+//						SpeciesContext sc = (SpeciesContext) ste;
+//						if (sc.getStructure() == structure) {
+//							return true;
+//						}
+//						if (structure instanceof Membrane) {
+//							if (((Membrane)structure).getInsideFeature() == sc.getStructure() 
+//									|| ((Membrane)structure).getOutsideFeature() == sc.getStructure()) {
+//								return true;
+//							}
+//						}
 							return true;
 						}
-						if (structure instanceof Membrane) {
-							if (((Membrane)structure).getInsideFeature() == sc.getStructure() 
-									|| ((Membrane)structure).getOutsideFeature() == sc.getStructure()) {
-								return true;
-							}
-						}
-					}
 					return false;					
 				}
 			});
@@ -1006,20 +1046,21 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					}
 					ReactionStep simpleReaction = new SimpleReaction(model, reactionStructure, "dummy");
 					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(simpleReaction, getModel(), equationString);
-					for (ReactionParticipant reactionParticipant : rpArray) {
-						if (reactionParticipant.getStructure() == reactionStructure) {
-							continue;
-						}
-						if (reactionStructure instanceof Feature) {
-							throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be in the same volume compartment as reaction.");
-						} else if (reactionStructure instanceof Membrane) {
-							if (((Membrane)reactionStructure).getInsideFeature() != reactionParticipant.getStructure()
-									&& ((Membrane)reactionStructure).getOutsideFeature() != reactionParticipant.getStructure()) {
-								throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be adjacent to " +
-										"or within reaction's structure '" + reactionStructure.getName() + "'.");
-							}
-						}
-					}
+//					StructureTopology structTopology = getModel().getStructureTopology();
+//					for (ReactionParticipant reactionParticipant : rpArray) {
+//						if (reactionParticipant.getStructure() == reactionStructure) {
+//							continue;
+//						}
+//						if (reactionStructure instanceof Feature) {
+//							throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be in the same volume compartment as reaction.");
+//						} else if (reactionStructure instanceof Membrane) {
+//							if (structTopology.getInsideFeature((Membrane)reactionStructure) != reactionParticipant.getStructure()
+//									&& (structTopology.getOutsideFeature((Membrane)reactionStructure)) != reactionParticipant.getStructure()) {
+//								throw new RuntimeException("Species '" + reactionParticipant.getSpeciesContext().getName() + "' must be adjacent to " +
+//										"or within reaction's structure '" + reactionStructure.getName() + "'.");
+//							}
+//						}
+//					}
 					simpleReaction = getModel().createSimpleReaction(reactionStructure);
 					for (ReactionParticipant rp : rpArray) {
 						SpeciesContext speciesContext = rp.getSpeciesContext();

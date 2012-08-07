@@ -18,6 +18,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -33,6 +34,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
+import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public class StructureMappingTableRenderer extends DefaultScrollTableCellRenderer
@@ -99,10 +101,8 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			return height;
 		}
 	};
-	private static final TextIcon volumeUnitIcon = new TextIcon("[ \u03BCm3 ]", 4, 5);
-	private static final TextIcon areaUnitIcon = new TextIcon("[ \u03BCm2 ]", 4, 5);
-	private static final TextIcon surfVolUnitIcon = new TextIcon("[ \u03BCm-1 ]", 4, 6);
-	private static final TextIcon volSurfUnitIcon = new TextIcon("[ \u03BCm ]");
+	
+	private static final HashMap<String, TextIcon> unitIconHash = new HashMap<String, StructureMappingTableRenderer.TextIcon>();
 	
 	public StructureMappingTableRenderer() {
 		super();
@@ -121,15 +121,22 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 			} else if (value instanceof Double && structureMappingTableModel.isNewSizeColumn(column)) {
 				StructureMapping structureMapping = structureMappingTableModel.getStructureMapping(row);
 				if (structureMappingTableModel.isNonSpatial()) {	
-					setIcon(structureMapping instanceof FeatureMapping ? volumeUnitIcon : areaUnitIcon);
+					VCUnitDefinition unitDefinition = structureMapping.getStructure().getStructureSize().getUnitDefinition();
+					TextIcon sizeIcon = unitIconHash.get(unitDefinition.getSymbol());
+					if (sizeIcon==null){
+						sizeIcon = new TextIcon("[ "+unitDefinition.getSymbolUnicode()+" ]");
+						unitIconHash.put(unitDefinition.getSymbol(), sizeIcon);
+					}
+					setIcon(sizeIcon);
 				} else {
 					if (structureMapping.getUnitSizeParameter()!=null){
-						int role = structureMapping.getUnitSizeParameter().getRole();
-						if (role == StructureMapping.ROLE_VolumePerUnitArea) {
-							setIcon(volSurfUnitIcon);
-						} else if (role == StructureMapping.ROLE_AreaPerUnitVolume) {
-							setIcon(surfVolUnitIcon);
+						VCUnitDefinition unitDefinition = structureMapping.getUnitSizeParameter().getUnitDefinition();
+						TextIcon sizeIcon = unitIconHash.get(unitDefinition.getSymbol());
+						if (sizeIcon==null){
+							sizeIcon = new TextIcon("[ "+unitDefinition.getSymbolUnicode()+" ]");
+							unitIconHash.put(unitDefinition.getSymbol(), sizeIcon);
 						}
+						setIcon(sizeIcon);
 					}
 				}
 			}

@@ -470,6 +470,7 @@ public class XMLTags {
 	public static final String AnalysisTaskListTag = "AnalysisTaskList";
 	public static final String ParameterEstimationTaskTag = "ParameterEstimationTask";
 
+	// For events
 	public final static String EventTag = "Event";
 	public final static String BioEventsTag = "BioEvents";
 	public final static String BioEventTag = "BioEvent";
@@ -478,6 +479,15 @@ public class XMLTags {
 	public final static String DelayTag = "Delay";
 	public final static String EventAssignmentTag = "EventAssignment";
 	public final static String EventAssignmentVariableAttrTag = "Variable";
+	
+	// for rate rules
+	public final static String RateRulesTag = "RateRules";
+	public final static String RateRuleTag  = "RateRule";
+	public final static String RateRuleVariableAttrTag  = "RateRuleVariable";
+	
+//	public final static String RateRuleVariablesTag = "RateRuleVariables";
+//	public final static String RateRuleVariableTag  = "RateRuleVariable";
+//	public static final String RoleVariableRateTag  = "variable rate";	
 	
 	// for database storage of simContext (application) related components
 	public final static String ApplicationComponents = "AppComponents";
@@ -551,11 +561,21 @@ public class XMLTags {
 	public final static String KernelGaussianSigmaXY = "SigmaXY";
 	public final static String KernelGaussianSigmaZ = "SigmaZ";
 	
-	
 	// Microscope Measurement
 	public final static String MicroscopeMeasurement = "MicroscopeMeasurement";
 	public final static String ConvolutionKernel = "ConvolutionKernel";
 	public final static String FluorescenceSpecies = "FluorescenceSpecies";
 	public final static String ConvolutionKernel_Type_ProjectionZKernel = "ProjectionZKernel";	
-	public final static String ConvolutionKernel_Type_GaussianConvolutionKernel = "GaussianConvolutionKernel";	
+	public final static String ConvolutionKernel_Type_GaussianConvolutionKernel = "GaussianConvolutionKernel";
+	
+	// Mode unit system
+	public final static String ModelUnitSystemTag = "ModelUnitSystem";
+	public final static String VolumeSubstanceUnitTag = "VolumeSubstanceUnit";
+	public final static String MembraneSubstanceUnitTag = "MembraneSubstanceUnit";
+	public final static String LumpedReactionSubstanceUnitTag = "LumpedReactionSubstanceUnit";
+	public final static String VolumeUnitTag = "VolumeUnit";
+	public final static String AreaUnitTag = "AreaUnit";
+	public final static String LengthUnitTag = "LengthUnit";
+	public final static String TimeUnitTag = "TimeUnit";
+	
 }

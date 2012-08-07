@@ -17,10 +17,15 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -202,16 +207,8 @@ private void refreshFastMatrices() throws Exception {
 				// if reaction is on membrane and reactionParticipant isn't, then add flux correction
 				//
 				if (rp0 != null) {
-					Structure structure = fastReactionSteps[j].getStructure();
-					Expression fastRateExpression = fastReactionSteps[j].getReactionRateExpression(rp0).renameBoundSymbols(mathMapping.getNameScope());
-					if ((structure instanceof Membrane) && (rp0.getStructure()!=structure)){
-						Membrane membrane = (Membrane)structure;
-						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
-						Expression fluxCorrection = new Expression(mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rp0.getStructure()), mathMapping.getNameScope());
-						exp = Expression.add(exp,Expression.mult(fluxCorrection, fastRateExpression));
-					}else{
-						exp = Expression.add(exp,new Expression(fastRateExpression));
-					}
+					Expression fastRateExpression = getCorrectedRateExpression(fastReactionSteps[j],rp0,RateType.ConcentrationRate).renameBoundSymbols(mathMapping.getNameScope());
+					exp = Expression.add(exp,fastRateExpression);
 				}
 			}
 		}
@@ -376,7 +373,23 @@ private void refreshTotalDependancies() throws Exception {
 				
 	StructureAnalyzer.Dependency[] dependencies = refreshTotalDependancies(totalNullSpaceMatrix,speciesContextMappings,mathMapping,false);
 
-	VCUnitDefinition totalMassUnit = mathMapping.getSimulationContext().getModel().getUnitSystem().getVolumeConcentrationUnit();
+	VCUnitDefinition totalMassUnit = null;
+	boolean bIsSpatial = mathMapping.getSimulationContext().getGeometry().getDimension() > 0;
+	ModelUnitSystem modelUnitSystem = mathMapping.getSimulationContext().getModel().getUnitSystem();
+	
+	if (this instanceof VolumeStructureAnalyzer) {
+		if (!bIsSpatial) {
+			totalMassUnit = modelUnitSystem.getVolumeSubstanceUnit(); 								// VCUnitDefinition.UNIT_umol_um3_per_L; -> VCell vol substance unit
+		}  else {
+			totalMassUnit = modelUnitSystem.getVolumeConcentrationUnit();							// VCUnitDefinition.UNIT_uM;
+		}
+	} else if (this instanceof MembraneStructureAnalyzer) {
+		if (!bIsSpatial) {
+			totalMassUnit = modelUnitSystem.getMembraneSubstanceUnit();								// VCUnitDefinition.UNIT_molecules;
+		} else {
+			totalMassUnit = modelUnitSystem.getMembraneConcentrationUnit();							// VCUnitDefinition.UNIT_molecules_per_um2;
+		}
+	}
 	for (int i = 0; i < dependencies.length; i++){
 		String constantName = dependencies[i].invariantSymbolName;
 		Expression constantExp = dependencies[i].conservedMoietyExpression;
@@ -402,10 +415,10 @@ private void refreshTotalDependancies() throws Exception {
  * @param vars java.lang.String[]
  */
 public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, 
-		MathMapping mathMapping_temp, boolean bFast) throws Exception {
+		MathMapping argMathMapping, boolean bFast) throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
-	SimulationContext simContext_temp = mathMapping_temp.getSimulationContext();
+	SimulationContext argSimContext = argMathMapping.getSimulationContext();
 
 	//
 	// reset dependancy relationships for all species contexts
@@ -460,16 +473,16 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					//
 					// first term of K expression
 					//
-					StructureMapping firstSM = simContext_temp.getGeometryContext().getStructureMapping(firstSC.getStructure());
-					SpeciesContextSpec firstSCS = simContext_temp.getReactionContext().getSpeciesContextSpec(firstSC);
+					StructureMapping firstSM = argSimContext.getGeometryContext().getStructureMapping(firstSC.getStructure());
+					SpeciesContextSpec firstSCS = argSimContext.getReactionContext().getSpeciesContextSpec(firstSC);
 					SymbolTableEntry scSTE = null;
 					if (bFast){
 						scSTE = firstSCS.getSpeciesContext();
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getNormalizedConcentrationCorrection(simContext_temp),
-																new Expression(scSTE, mathMapping_temp.getNameScope()));
+					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+																new Expression(scSTE, argMathMapping.getNameScope()));
 					bFirst = false;
 				}else{
 					//
@@ -477,10 +490,10 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					//
 					SpeciesContextMapping scm = speciesContextMappings[j];
 					SpeciesContext sc = scm.getSpeciesContext();
-					StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(sc.getStructure());
-					SpeciesContextSpec scs = simContext_temp.getReactionContext().getSpeciesContextSpec(sc);
+					StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(sc.getStructure());
+					SpeciesContextSpec scs = argSimContext.getReactionContext().getSpeciesContextSpec(sc);
 					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()),
-							sm.getNormalizedConcentrationCorrection(simContext_temp),new Expression(sc, mathMapping_temp.getNameScope()))));
+							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),new Expression(sc, argMathMapping.getNameScope()))));
 					//
 					// add term to K expression
 					//
@@ -490,8 +503,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff.toString()),sm.getNormalizedConcentrationCorrection(simContext_temp),
-																			new Expression(scSTE, mathMapping_temp.getNameScope())));
+					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff.toString()),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+																			new Expression(scSTE, argMathMapping.getNameScope())));
 				}
 			}
 		}
@@ -503,8 +516,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			//
 			// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 			//
-			StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure());
-			exp = Expression.mult(exp,Expression.invert(sm.getNormalizedConcentrationCorrection(simContext_temp)));
+			StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure());
+			exp = Expression.mult(exp,Expression.invert(sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping)));
 			exp = exp.flatten();
 			//exp.bindExpression(mathMapping_temp);
 			//firstSCM.setDependencyExpression(exp);
@@ -547,14 +560,15 @@ private void refreshTotalMatrices() throws Exception {
 		//
 		Expression exp = new Expression(0.0);
 		for (int j=0;j<reactionSteps.length;j++){
-			int stoichiometry = reactionSteps[j].getStoichiometry(sc);
+			ReactionStep reactionStep = reactionSteps[j];
+			int stoichiometry = reactionStep.getStoichiometry(sc);
 			
 			totalSchemeMatrix.set_elem(i,j,stoichiometry);
 			
 			if (stoichiometry != 0){
-				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !(reactionSteps[j] instanceof EventReactionStep) &&
+				if (!(reactionStep instanceof DiffusionReactionStep) && !(reactionStep instanceof EventReactionStep) &&
 					!reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
-					ReactionParticipant[] rps1 = reactionSteps[j].getReactionParticipants();
+					ReactionParticipant[] rps1 = reactionStep.getReactionParticipants();
 					ReactionParticipant rp0 = null;
 					for (ReactionParticipant rp : rps1) {
 						if (rp.getSpeciesContext() == sc) {
@@ -562,30 +576,9 @@ private void refreshTotalMatrices() throws Exception {
 							break;
 						}
 					}
-					Structure structure = reactionSteps[j].getStructure();
-					//
-					// if reaction is in one compartment and reactionParticipant is in another, then add a flux correction.
-					// (e.g. if reaction is on membrane and reactionParticipant is in a feature)
-					//
-					if (rp0 != null) {
-						Expression reactRateExp = reactionSteps[j].getReactionRateExpression(rp0).renameBoundSymbols(mathMapping.getNameScope());
-						if ((structure instanceof Membrane) && (sc.getStructure()!=structure)){
-							Membrane membrane = (Membrane)structure;
-							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
-							Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
-							Expression fluxCorrection = new Expression(fluxCorrectionParameter, mathMapping.getNameScope());
-							if (reactionSteps[j] instanceof FluxReaction){
-								exp = Expression.add(exp, Expression.mult(fluxCorrection, reactRateExp));
-								//Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+expInfix));
-							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp, Expression.mult(fluxCorrection, new Expression(reactionSteps[j].getModel().getKMOLE(), mathMapping.getNameScope()), reactRateExp));
-//								exp = Expression.add(exp,new Expression(fluxCorrectionParameterSymbolName+"*"+ReservedSymbol.KMOLE.getName()+"*"+expInfix));
-							}else{
-								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
-							}
-						}else{
-							exp = Expression.add(exp, reactRateExp);
-						}
+					if (rp0 != null) {	
+						Expression distributedReactRateExp = getCorrectedRateExpression(reactionStep, rp0, RateType.ConcentrationRate);
+						exp = Expression.add(exp, distributedReactRateExp);
 					}
 				}
 			}
@@ -768,4 +761,69 @@ private void substituteIntoFastSystem() throws Exception {
 //	}
 //}
 }
+
+enum RateType {
+	ConcentrationRate,
+	ResolvedFluxRate
+};
+
+public Expression getCorrectedRateExpression(ReactionStep reactionStep, ReactionParticipant reactionParticipant, RateType rateType) throws Exception {
+	if (reactionParticipant instanceof Catalyst){
+		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
+		//return new Expression(0.0);
+	}
+	double stoich = reactionStep.getStoichiometry(reactionParticipant.getSpeciesContext());
+	if (stoich==0.0){
+		return new Expression(0.0);
+	}
+	//
+	// make distributed rate with correct stoichiometry for this participant
+	//
+	VCUnitDefinition correctedReactionRateUnit = null;
+	Expression distribRate = null;
+	if (reactionStep.getKinetics() instanceof DistributedKinetics){
+		DistributedKinetics distributedKinetics = (DistributedKinetics)reactionStep.getKinetics();
+		KineticsParameter distribReactionRateParameter = distributedKinetics.getReactionRateParameter();
+		distribRate = new Expression(distribReactionRateParameter, mathMapping.getNameScope());
+		correctedReactionRateUnit = distribReactionRateParameter.getUnitDefinition();
+	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
+		//
+		// need to put this into concentration/time with respect to structure for reaction.
+		//
+		Structure.StructureSize structureSize = reactionStep.getStructure().getStructureSize();
+		LumpedKinetics lumpedKinetics = (LumpedKinetics)reactionStep.getKinetics();
+		KineticsParameter lumpedReactionRateParameter = lumpedKinetics.getLumpedReactionRateParameter();
+		Expression lumpedReactionRateExp = new Expression(lumpedReactionRateParameter, mathMapping.getNameScope());
+		distribRate = Expression.div(lumpedReactionRateExp,new Expression(structureSize, mathMapping.getNameScope()));;
+		correctedReactionRateUnit = lumpedReactionRateParameter.getUnitDefinition().divideBy(structureSize.getUnitDefinition());
+	}
+	// correct for stoichiometry
+	Expression distribRateWithStoich = distribRate;
+	if (stoich!=1){
+		distribRateWithStoich = Expression.mult(new Expression(stoich),distribRateWithStoich);
+	}
+	// flux correction if reaction and reactionParticipant are in different compartments. (not necessarily dimensionless, use KFlux parameter).
+	Expression distribRateWithStoichFlux = distribRateWithStoich;
+	if (reactionStep.getStructure() != reactionParticipant.getStructure()){
+		StructureMapping reactionSM = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
+		StructureMapping speciesSM = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(reactionParticipant.getStructure());
+		Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(reactionSM,speciesSM);
+		Expression fluxCorrection = new Expression(fluxCorrectionParameter, mathMapping.getNameScope());
+		distribRateWithStoichFlux = Expression.mult(fluxCorrection,distribRateWithStoichFlux);
+		correctedReactionRateUnit = correctedReactionRateUnit.multiplyBy(fluxCorrectionParameter.getUnitDefinition());
+	}
+	// apply unit factor for difference substance
+	ModelUnitSystem unitSystem = mathMapping.getSimulationContext().getModel().getUnitSystem();
+	VCUnitDefinition timeUnit = unitSystem.getTimeUnit();
+	VCUnitDefinition speciesConcUnit = reactionParticipant.getSpeciesContext().getUnitDefinition();
+	VCUnitDefinition speciesConcRateUnit = speciesConcUnit.divideBy(timeUnit);
+	Expression unitFactor = null;
+	if (rateType == RateType.ConcentrationRate){
+		unitFactor = mathMapping.getUnitFactor(speciesConcRateUnit.divideBy(correctedReactionRateUnit));
+	}else if (rateType == RateType.ResolvedFluxRate){
+		unitFactor = mathMapping.getUnitFactor(speciesConcRateUnit.multiplyBy(unitSystem.getLengthUnit()).divideBy(correctedReactionRateUnit));
+	}
+	return Expression.mult(unitFactor,distribRateWithStoichFlux).flatten();
+}
+
 }

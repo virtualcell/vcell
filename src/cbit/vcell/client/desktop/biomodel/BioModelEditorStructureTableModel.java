@@ -25,6 +25,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
 
@@ -33,9 +34,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_TYPE = 1;
-	public final static int COLUMN_INSIDE_COMPARTMENT = 2;
-	public final static int COLUMN_OUTSIDE_COMPARTMENT = 3;	
-	private static String[] columnNames = new String[] {"Name", "Type", "Inside", "Outside Parent"};
+	private static String[] columnNames = new String[] {"Name", "Type"};
 
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
@@ -50,13 +49,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			case COLUMN_TYPE:{
 				return String.class;
 			}
-			case COLUMN_INSIDE_COMPARTMENT:{
-				return Structure.class;
 			}
-			case COLUMN_OUTSIDE_COMPARTMENT:{
-				return Structure.class;
-			}
-		}
 		return Object.class;
 	}
 
@@ -68,13 +61,14 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				structureList = Arrays.asList(structures);
 			} else {
 				structureList = new ArrayList<Structure>();
+				StructureTopology structureTopology = getStructureTopology();
 				String lowerCaseSearchText = searchText.toLowerCase();	
 				for (Structure s : structures){
 					if (s.getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getTypeName().toLowerCase().contains(lowerCaseSearchText)
-							|| s.getParentStructure() != null && s.getParentStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+							|| structureTopology.getParentStructure(s) != null && structureTopology.getParentStructure(s).getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getStructureSize().getName().toLowerCase().contains(lowerCaseSearchText)
-							|| (s instanceof Membrane && (((Membrane)s).getInsideFeature().getName().toLowerCase().contains(lowerCaseSearchText)
+							|| (s instanceof Membrane && (structureTopology.getInsideFeature((Membrane)s).getName().toLowerCase().contains(lowerCaseSearchText)
 									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText)))) {
 						structureList.add(s);
 					}					
@@ -98,12 +92,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					case COLUMN_TYPE: {
 						return structure.getTypeName();
 					} 
-					case COLUMN_INSIDE_COMPARTMENT: {
-						return structure instanceof Membrane ? ((Membrane)structure).getInsideFeature() : null;
-					} 
-					case COLUMN_OUTSIDE_COMPARTMENT: {
-						return structure.getParentStructure();
-					}
 				}
 			} else {
 				if (column == COLUMN_NAME) {
@@ -114,6 +102,10 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 			e.printStackTrace(System.out);
 		}
 		return null;
+	}
+
+	private StructureTopology getStructureTopology() {
+		return getModel().getStructureTopology();
 	}
 
 	@Override
@@ -164,20 +156,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					}
 					break;
 				} 
-				case COLUMN_INSIDE_COMPARTMENT: {
-					Structure insideFeature = (Structure)value;
-					if (insideFeature instanceof Membrane) {
-						DialogUtils.showErrorDialog(ownerTable, Structure.TYPE_NAME_FEATURE + " is expected!");
-					} else {
-						((Membrane)structure).setInsideFeature((Feature)insideFeature);
-					}
-					break;
-				} 
-				case COLUMN_OUTSIDE_COMPARTMENT: {
-					Structure outsideFeature = (Structure)value;
-					structure.setParentStructure(outsideFeature);
-					break;
-				} 
 				}
 			} else {
 				switch (column) {
@@ -221,14 +199,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					return scale * o1.getName().compareTo(o2.getName());
 				} else if (col == COLUMN_TYPE) {
 					return scale * o1.getTypeName().compareTo(o2.getTypeName());
-				} else if (col == COLUMN_INSIDE_COMPARTMENT) {
-					String s1 = o1 instanceof Membrane ? ((Membrane)o1).getInsideFeature().getName() : "";
-					String s2 = o2 instanceof Membrane ? ((Membrane)o2).getInsideFeature().getName() : "";
-					return scale * s1.compareTo(s2);
-				} else if (col == COLUMN_OUTSIDE_COMPARTMENT) {
-					String s1 = o1.getParentStructure() == null ? "" : o1.getParentStructure().getName();
-					String s2 = o2.getParentStructure() == null ? "" : o2.getParentStructure().getName();
-					return scale * s1.compareTo(s2);
 				}
 				return 0;
             }
@@ -245,27 +215,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				}
 			}
 			break;
-		case COLUMN_INSIDE_COMPARTMENT: {
-			Structure s = getModel().getStructure(inputValue);
-			if (s == null) {
-				return "Compartment '" + inputValue + "' does not exist!";
-			} 
-			if (s instanceof Membrane) {
-				return "Structure '" + inputValue + "' is not a compartment!";
 			}
-			break;
-		}
-		case COLUMN_OUTSIDE_COMPARTMENT: {
-			Structure s = getModel().getStructure(inputValue);
-			if (s == null) {
-				return "Structure '" + inputValue + "' does not exist!";
-			} 
-			if (structure != null){
-				return structure.checkNewParent(s);
-			}
-			break;
-		}
-		}
 		return null;
 	}
 	
@@ -284,9 +234,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {		
 		super.bioModelChange(evt);
-//		ownerTable.getColumnModel().getColumn(COLUMN_INSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
-//		ownerTable.getColumnModel().getColumn(COLUMN_OUTSIDE_COMPARTMENT).setCellEditor(getStructureComboBoxEditor());
-//		updateStructureComboBox();
 		
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {

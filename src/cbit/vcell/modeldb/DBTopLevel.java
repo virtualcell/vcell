@@ -47,7 +47,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOPResults;
@@ -755,16 +754,16 @@ public Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAc
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-ReactionStep getReactionStep(QueryHashtable dbc, User user,KeyValue reactionStepKey,boolean bEnableRetry, Model model) throws DataAccessException, java.sql.SQLException {
+Model getReactionStepAsModel(QueryHashtable dbc, User user,KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return reactStepDB.getReactionStep(dbc, con,user,reactionStepKey, model);
+		return reactStepDB.getReactionStepAsModel(dbc, con,user,reactionStepKey);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getReactionStep(dbc, user,reactionStepKey,false, model);
+			return getReactionStepAsModel(dbc, user,reactionStepKey,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

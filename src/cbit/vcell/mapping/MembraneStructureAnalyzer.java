@@ -16,12 +16,11 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -29,6 +28,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
@@ -79,6 +79,7 @@ private void refreshResolvedFluxes() throws Exception {
 
 //System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes()");
 
+	ModelUnitSystem unitSystem = mathMapping.getSimulationContext().getModel().getUnitSystem();
 	GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
 	Vector<ResolvedFlux> resolvedFluxList = new Vector<ResolvedFlux>();
 
@@ -104,20 +105,24 @@ private void refreshResolvedFluxes() throws Exception {
 	//
 	for (int i=0;i<fluxList.size();i++){
 		FluxReaction fr = fluxList.elementAt(i);
-		Flux[] fluxes = fr.getFluxes();
-		for (int j = 0; j < fluxes.length; j++) {
+		ReactionParticipant[] reactionParticipants = fr.getReactionParticipants();
+		for (int j = 0; j < reactionParticipants.length; j++) {
+			if (!(reactionParticipants[j] instanceof Reactant) &&
+				!(reactionParticipants[j] instanceof Product)){
+				continue;
+			}
 			ResolvedFlux rf = null;
-			SpeciesContext speciesContext = fluxes[j].getSpeciesContext();
+			SpeciesContext speciesContext = reactionParticipants[j].getSpeciesContext();
 			for (int k=0;k<resolvedFluxList.size();k++){
 				ResolvedFlux rf_tmp = resolvedFluxList.elementAt(k);
-				if (rf_tmp.getSpeciesContext() == fluxes[j].getSpeciesContext()){
+				if (rf_tmp.getSpeciesContext() == reactionParticipants[j].getSpeciesContext()){
 					rf = rf_tmp;
 				}
 			}
 			//
 			// if speciesContext is not "fixed" and is mapped to a volume, add flux to ResolvedFlux
 			//
-			StructureMapping structureMapping = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(fluxes[j].getStructure());
+			StructureMapping structureMapping = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(reactionParticipants[j].getStructure());
 			if (structureMapping.getGeometryClass()==surfaceClass){
 				// flux within surface
 				continue;
@@ -126,7 +131,8 @@ private void refreshResolvedFluxes() throws Exception {
 				SpeciesContextSpec speciesContextSpec = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(speciesContext);
 				if (!speciesContextSpec.isConstant()){
 					if (rf == null){
-						rf = new ResolvedFlux(speciesContext, fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
+						VCUnitDefinition speciesFluxUnit = speciesContext.getUnitDefinition().multiplyBy(unitSystem.getLengthUnit()).divideBy(unitSystem.getTimeUnit());
+						rf = new ResolvedFlux(speciesContext, speciesFluxUnit);
 						resolvedFluxList.addElement(rf);
 					}
 					FeatureMapping featureMapping = (FeatureMapping)structureMapping;
@@ -137,18 +143,20 @@ private void refreshResolvedFluxes() throws Exception {
 					if (fr.getKinetics() instanceof DistributedKinetics){
 						KineticsParameter reactionRateParameter = ((DistributedKinetics)fr.getKinetics()).getReactionRateParameter();
 						Expression correctedReactionRate = Expression.mult(new Expression(reactionRateParameter, mathMapping.getNameScope()),insideFluxCorrection);
-						if (((Membrane)fr.getStructure()).getInsideFeature() == fluxes[j].getStructure()) {
+						if (reactionParticipants[j] instanceof Product){
 							if (rf.getFluxExpression().isZero()){
 								rf.setFluxExpression(correctedReactionRate.flatten());
 							}else{
 								rf.setFluxExpression(Expression.add(rf.getFluxExpression(),correctedReactionRate.flatten()));
 							}
-						} else {
+						} else if (reactionParticipants[j] instanceof Reactant){
 							if (rf.getFluxExpression().isZero()){
 								rf.setFluxExpression(Expression.negate(correctedReactionRate).flatten());
 							} else {
 								rf.setFluxExpression(Expression.add(rf.getFluxExpression(),Expression.negate(correctedReactionRate).flatten()));
 							}
+						}else{
+							throw new RuntimeException("expected either FluxReactant or FluxProduct");
 						}
 					}else if (fr.getKinetics() instanceof LumpedKinetics){
 						throw new RuntimeException("Lumped Kinetics for fluxes not yet supported");
@@ -174,57 +182,44 @@ private void refreshResolvedFluxes() throws Exception {
 				ReactionParticipant rp_Array[] = sr.getReactionParticipants();
 				for (int k = 0; k < rp_Array.length; k++) {
 					if (rp_Array[k] instanceof Reactant || rp_Array[k] instanceof Product){
-						SpeciesContextSpec scs = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(rp_Array[k].getSpeciesContext());
-						StructureMapping sm = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(rp_Array[k].getStructure());
+						SpeciesContextSpec rpSCS = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(rp_Array[k].getSpeciesContext());
+						StructureMapping rpSM = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(rp_Array[k].getStructure());
 						//
 						// for volume species that are not "fixed", add fluxes to "ResolvedFlux"
 						//
 
-						if (rs.getStructure() instanceof Membrane) {
-							if (sm.getStructure() instanceof Feature && !scs.isConstant()){
-								//
-								// for each Reactant or Product binding to this membrane...
-								//
-	
-								//
-								// get ResolvedFlux for this species
-								//
-								ResolvedFlux rf = null;
-								for (int j=0;j<resolvedFluxList.size();j++){
-									ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
-									if (rf_tmp.getSpeciesContext() == rp_Array[k].getSpeciesContext()){
-										rf = rf_tmp;
-									}
-								}
-								if (rf == null){
-									rf = new ResolvedFlux(rp_Array[k].getSpeciesContext(), sr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
-									resolvedFluxList.addElement(rf);
-								}
-								
-								if (sm.getGeometryClass() instanceof SubVolume && surfaceClass.isAdjacentTo((SubVolume)sm.getGeometryClass())) {
-									//
-									// for binding on inside or outside, add to ResolvedFlux.flux
-									//
-									FeatureMapping featureMapping = (FeatureMapping)sm;								
-									Expression kmole = new Expression(mathMapping.getSimulationContext().getModel().getKMOLE(), mathMapping.getNameScope());
-									Expression volFract = new Expression(featureMapping.getVolumePerUnitVolumeParameter(), mathMapping.getNameScope());
-									Expression fluxCorrection = Expression.div(kmole, volFract).flatten(); 
-									Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping.getNameScope());
-									if (rf.getFluxExpression().isZero()){
-										rf.setFluxExpression(Expression.mult(fluxCorrection,reactionRateExpression));
-									}else{
-										rf.setFluxExpression(Expression.add(rf.getFluxExpression(),Expression.mult(fluxCorrection,reactionRateExpression)));
-									}
-									rf.getFluxExpression().bindExpression(mathMapping);
-								} else if (sm.getGeometryClass() == getSurfaceClass()) {
-									throw new Exception("In Application '" + mathMapping.getSimulationContext().getName() + "', membrane reaction with reactant in volume mapped to surface not yet implemented.");
-								} else {
-									String structureName = ((rs.getStructure()!=null)?(rs.getStructure().getName()):("<null>"));
-									throw new Exception("In Application '" + mathMapping.getSimulationContext().getName() + "', SpeciesContext '"+rp_Array[k].getSpeciesContext().getName()+"' is not mapped adjacent to structure '"+structureName+"' but reacts there");
+						if (rpSM.getGeometryClass() instanceof SubVolume && !rpSCS.isConstant()){
+							//
+							// get ResolvedFlux for this species
+							//
+							ResolvedFlux rf = null;
+							for (int j=0;j<resolvedFluxList.size();j++){
+								ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
+								if (rf_tmp.getSpeciesContext() == rp_Array[k].getSpeciesContext()){
+									rf = rf_tmp;
 								}
 							}
-						} else {							
-							throw new Exception("In Application '" + mathMapping.getSimulationContext().getName() + "', volume reaction mapped to surface not yet implemented.");
+							if (rf == null){
+								VCUnitDefinition speciesFluxUnit = rp_Array[k].getSpeciesContext().getUnitDefinition().multiplyBy(unitSystem.getLengthUnit()).divideBy(unitSystem.getTimeUnit());
+								rf = new ResolvedFlux(rp_Array[k].getSpeciesContext(), speciesFluxUnit);
+								resolvedFluxList.addElement(rf);
+							}
+							
+							if (rpSM.getGeometryClass() instanceof SubVolume && surfaceClass.isAdjacentTo((SubVolume)rpSM.getGeometryClass())) {
+								//
+								// for binding on inside or outside, add to ResolvedFlux.flux
+								//
+								Expression fluxRateExpression = getCorrectedRateExpression(sr,rp_Array[k],RateType.ResolvedFluxRate).renameBoundSymbols(mathMapping.getNameScope());
+								if (rf.getFluxExpression().isZero()){
+									rf.setFluxExpression(fluxRateExpression);
+								}else{
+									rf.setFluxExpression(Expression.add(rf.getFluxExpression(),fluxRateExpression));
+								}
+								rf.getFluxExpression().bindExpression(mathMapping);
+							} else {
+								String structureName = ((rs.getStructure()!=null)?(rs.getStructure().getName()):("<null>"));
+								throw new Exception("In Application '" + mathMapping.getSimulationContext().getName() + "', SpeciesContext '"+rp_Array[k].getSpeciesContext().getName()+"' is not mapped adjacent to structure '"+structureName+"' but reacts there");
+							}
 						}
 					}
 				}					

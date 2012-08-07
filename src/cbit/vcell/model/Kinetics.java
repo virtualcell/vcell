@@ -14,11 +14,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -28,7 +26,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AbstractNameScope;
@@ -39,7 +36,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -82,18 +78,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_VmaxRev		= 10;
 	public static final int ROLE_Permeability	= 11;
 	public static final int ROLE_Conductivity	= 12;
-	public static final int ROLE_LumpedReactionRate = 13;
-	public static final int ROLE_LumpedCurrent	= 14;
+	public static final int ROLE_ChargeValence	= 13;
+	public static final int ROLE_LumpedReactionRate = 14;
+	public static final int ROLE_LumpedCurrent	= 15;
 	
 	// spatial stochastic-related roles
-	public static final int ROLE_Binding_Radius  		= 15;
-	public static final int ROLE_KOn  					= 16;
-	public static final int ROLE_Diffusion_Reactant1 	= 17;
-	public static final int ROLE_Diffusion_Reactant2  	= 18;
-	public static final int ROLE_Concentration_Reactant1  = 19;
-	public static final int ROLE_Concentration_Reactant2  = 20;
+	public static final int ROLE_Binding_Radius  		= 16;
+	public static final int ROLE_KOn  					= 17;
+	public static final int ROLE_Diffusion_Reactant1 	= 18;
+	public static final int ROLE_Diffusion_Reactant2  	= 19;
+	public static final int ROLE_Concentration_Reactant1  = 20;
+	public static final int ROLE_Concentration_Reactant2  = 21;
 	
-	public static final int NUM_ROLES			= 21;
+	public static final int NUM_ROLES			= 22;
 
 	
 	private static final String RoleDescs[] = {
@@ -110,6 +107,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"max reverse rate",
 		"permeability",
 		"conductivity",
+		"charge",
 		"lumped reaction rate",
 		"lumped current",
 		"binding radius",
@@ -135,6 +133,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.VmaxRev,
 		VCMODL.Permeability,
 		VCMODL.Conductivity,
+		VCMODL.ChargeValence,
 		VCMODL.LumpedReactionRate,
 		VCMODL.LumpedCurrent,
 		VCMODL.Binding_Radius,
@@ -159,6 +158,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"VmaxRev",
 		"P",
 		"C",
+		"valence",
 		"LumpedJ",
 		"LumpedI",
 		"Binding_Radius",
@@ -183,6 +183,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // VmaxRev
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Permeability
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conductivity
+		null,   // charge valence
 		null,   // lumped rate
 		null,	// lumped current
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Binding radius
@@ -540,7 +541,6 @@ protected Kinetics(String name, ReactionStep reactionStep) {
 	addPropertyChangeListener(this);
 	reactionStep.addPropertyChangeListener(this);
 	reactionStep.setKinetics(this);
-	reactionStep.getChargeCarrierValence().addPropertyChangeListener(this);
 	ReactionParticipant reactionParticipants[] = reactionStep.getReactionParticipants();
 	for (int i = 0; i < reactionParticipants.length; i++){
 		reactionParticipants[i].addPropertyChangeListener(this);
@@ -1566,11 +1566,6 @@ public void propertyChange(PropertyChangeEvent event) {
 			refreshUnits();
 			cleanupParameters();
 		}
-		if (event.getSource() instanceof ChargeCarrierValence && event.getPropertyName().equals("expression")){
-			updateGeneratedExpressions();
-			refreshUnits();
-			cleanupParameters();
-		}
 		if (event.getSource() instanceof ReactionStep && event.getPropertyName().equals("structure")){
 			updateGeneratedExpressions();
 			refreshUnits();
@@ -1648,8 +1643,6 @@ public void refreshDependencies() {
 	addVetoableChangeListener(this);
 	reactionStep.removePropertyChangeListener(this);
 	reactionStep.addPropertyChangeListener(this);
-	reactionStep.getChargeCarrierValence().removePropertyChangeListener(this);
-	reactionStep.getChargeCarrierValence().addPropertyChangeListener(this);
 	ReactionParticipant reactionParticipants[] = reactionStep.getReactionParticipants();
 	for (int i = 0; i < reactionParticipants.length; i++){
 		reactionParticipants[i].removePropertyChangeListener(this);

@@ -59,6 +59,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private GraphPane graphPane = null;
 	private JToolBar toolBar = null;
 	private JToolBarToggleButton speciesButton = null;
+	private JToolBarToggleButton fluxReactionButton = null;
 	private JToolBarToggleButton lineDirectedButton = null;
 	private JToolBarToggleButton lineCatalystButton = null;
 	private JToolBarToggleButton selectButton = null;
@@ -289,6 +290,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getSelectButton(), getSelectButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getSpeciesButton(), getSpeciesButton().getName());
+				toolBar.add(getFluxReactionButton(), getFluxReactionButton().getName());
 				//toolBar.add(getStepButton(), getStepButton().getName());
 				//toolBar.add(getFluxButton(), getFluxButton().getName());
 				//toolBar.add(getLineButton(), getLineButton().getName());
@@ -436,6 +438,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			modeButtons = new ArrayList<JToolBarToggleButton>();
 			modeButtons.add(getSelectButton());
 			modeButtons.add(getSpeciesButton());
+			modeButtons.add(getFluxReactionButton());
 			//modeButtons.add(getStepButton());
 			//modeButtons.add(getFluxButton());
 			//modeButtons.add(getLineButton());
@@ -465,6 +468,17 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			}
 		}
 		return speciesButton;
+	}
+
+	private JToolBarToggleButton getFluxReactionButton() {
+		if (fluxReactionButton == null) {
+			try {
+				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return fluxReactionButton;
 	}
 
 //	private JToolBarToggleButton getStepButton() {
@@ -579,6 +593,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			modeButtonGroup.add(getLineCatalystButton());
 			modeButtonGroup.add(getSelectButton());
 			modeButtonGroup.add(getSpeciesButton());
+			modeButtonGroup.add(getFluxReactionButton());
 			getReactionCartoonTool().setReactionCartoon(getReactionCartoon());
 			getReactionCartoonTool().setGraphPane(getGraphPane());
 			getReactionCartoonTool().setButtonGroup(modeButtonGroup);

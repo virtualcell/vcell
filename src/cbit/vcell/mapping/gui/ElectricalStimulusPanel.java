@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -50,6 +51,7 @@ import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -1025,31 +1027,31 @@ private void newStimulus() {
 			return;
 		}		
 
-		Feature topFeature = simContext.getModel().getTopFeature();
-		Feature innerFeature = topFeature; // start here, but look for inner feature
-		//
-		// ground initialized to topFeature ... e.g. extracellular
-		// then (probe) placed in innerFeature who is direct child (cytosol?)
-		//
-		Structure structures[] = simContext.getModel().getStructures();
-		for (int i = 0; i < structures.length; i++){
-			if (structures[i] instanceof Feature){
-				Feature feature = (Feature)structures[i];
-				if (feature.getParentStructure() != null && feature.getParentStructure().getParentStructure() == topFeature){
-					innerFeature = (Feature)structures[i];
+		StructureTopology structTopology = getSimulationContext().getModel().getStructureTopology();
+		Structure[] structures = getSimulationContext().getModel().getStructures();
+		ArrayList<Feature> features = new ArrayList<Feature>();
+		for (Structure structure : structures){
+			if (structure instanceof Feature){
+				features.add((Feature)structure);
 				}
 			}
+		if (features.size()<2){
+			PopupGenerator.showErrorDialog(this,"error: electrodes must be placed in distinct volumetric structures, found "+features.size()+" volumetric structures in model");
+			return;
 		}
+		Feature groundFeature = features.get(0);
+		Feature clampedFeature = features.get(1);
+
 		//
 		// selected "Total Current Clamp Stimulus"
 		//
 		if (selectedClamp==Clamp.Total_Current_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof TotalCurrentClampStimulus)){
-				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
+				Electrode probeElectrode = new Electrode(clampedFeature,new Coordinate(0,0,0));
 				TotalCurrentClampStimulus ccStimulus = new TotalCurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
-				simContext.setGroundElectrode(new Electrode(topFeature,new Coordinate(0,0,0)));
+				simContext.setGroundElectrode(new Electrode(groundFeature,new Coordinate(0,0,0)));
 			}
 		}
 		//
@@ -1057,11 +1059,11 @@ private void newStimulus() {
 		//
 		if (selectedClamp==Clamp.Current_Density_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof CurrentDensityClampStimulus)){
-				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
+				Electrode probeElectrode = new Electrode(clampedFeature,new Coordinate(0,0,0));
 				CurrentDensityClampStimulus ccStimulus = new CurrentDensityClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
-				simContext.setGroundElectrode(new Electrode(topFeature,new Coordinate(0,0,0)));
+				simContext.setGroundElectrode(new Electrode(groundFeature,new Coordinate(0,0,0)));
 			}
 		}
 		//
@@ -1077,11 +1079,11 @@ private void newStimulus() {
 		//
 		if (selectedClamp==Clamp.Voltage_Clamp){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof VoltageClampStimulus)){
-				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
+				Electrode probeElectrode = new Electrode(clampedFeature,new Coordinate(0,0,0));
 				VoltageClampStimulus vcStimulus = new VoltageClampStimulus(probeElectrode,"vcElectrode",new Expression(0.0), simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { vcStimulus });
-				simContext.setGroundElectrode(new Electrode(topFeature,new Coordinate(0,0,0)));
+				simContext.setGroundElectrode(new Electrode(groundFeature,new Coordinate(0,0,0)));
 			}
 		}
 	}catch (java.beans.PropertyVetoException e){

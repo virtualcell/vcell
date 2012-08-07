@@ -145,34 +145,29 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 									new RealInterval(model.getKMILLIVOLTS().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
-		ccImpl.addSimpleBound(new SimpleBounds(
-									model.getKMOLE().getName(),
-									new RealInterval(model.getKMOLE().getExpression().evaluateConstant()),
-									AbstractConstraint.PHYSICAL_LIMIT,
-									"conversion factor"));
 		//
 		// add K_fluxs
 		//
-		try {
-			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
-		}catch (Throwable e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("cannot create mathDescription");
-		}
-		MathDescription mathDesc = simContext.getMathDescription();
+//		try {
+//			simContext.setMathDescription(simContext.createNewMathMapping().getMathDescription());
+//		}catch (Throwable e){
+//			e.printStackTrace(System.out);
+//			throw new RuntimeException("cannot create mathDescription");
+//		}
+//		MathDescription mathDesc = simContext.getMathDescription();
+//
+//		Enumeration<Variable> enumVars = mathDesc.getVariables();
+//		while (enumVars.hasMoreElements()){
+//			Variable var = enumVars.nextElement();
+//			if (var.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && var instanceof Function){
+//				Expression kfluxExp = new Expression(((Function)var).getExpression());
+//				kfluxExp.bindExpression(mathDesc);
+//				kfluxExp = MathUtilities.substituteFunctions(kfluxExp,mathDesc);
+//				kfluxExp = kfluxExp.flatten();
+//				ccImpl.addSimpleBound(new SimpleBounds(var.getName(),new RealInterval(kfluxExp.evaluateConstant()),AbstractConstraint.MODELING_ASSUMPTION,"flux conversion factor"));
+//			}
+//		}
 
-		java.util.Enumeration<Variable> enumVars = mathDesc.getVariables();
-		while (enumVars.hasMoreElements()){
-			Variable var = (Variable)enumVars.nextElement();
-			if (var.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && var instanceof Function){
-				Expression kfluxExp = new Expression(((Function)var).getExpression());
-				kfluxExp.bindExpression(mathDesc);
-				kfluxExp = MathUtilities.substituteFunctions(kfluxExp,mathDesc);
-				kfluxExp = kfluxExp.flatten();
-				ccImpl.addSimpleBound(new SimpleBounds(var.getName(),new RealInterval(kfluxExp.evaluateConstant()),AbstractConstraint.MODELING_ASSUMPTION,"flux conversion factor"));
-			}
-		}
-		
 		return ccImpl;
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
@@ -343,7 +338,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 									"Absolute Temperature Kelvin"));
 		ccImpl.addSimpleBound(new SimpleBounds(
 									model.getGAS_CONSTANT().getName(),
-									new RealInterval(simContext.getModel().getGAS_CONSTANT().getExpression().evaluateConstant()),
+									new RealInterval(model.getGAS_CONSTANT().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
 		ccImpl.addSimpleBound(new SimpleBounds(
@@ -351,11 +346,6 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 									new RealInterval(model.getKMILLIVOLTS().getExpression().evaluateConstant()),
 									AbstractConstraint.PHYSICAL_LIMIT,
 									"ideal gas constant"));
-		ccImpl.addSimpleBound(new SimpleBounds(
-									model.getKMOLE().getName(),
-									new RealInterval(model.getKMOLE().getExpression().evaluateConstant()),
-									AbstractConstraint.PHYSICAL_LIMIT,
-									"conversion factor"));
 		//
 		// add K_fluxs
 		//

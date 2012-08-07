@@ -23,13 +23,13 @@ import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.graph.BioCartoonTool;
-import cbit.vcell.graph.FeatureMappingShape;
-import cbit.vcell.graph.FeatureShape;
+import cbit.vcell.graph.StructureMappingShape;
 import cbit.vcell.graph.GeometryClassLegendShape;
-import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.graph.StructureShape;
 import cbit.vcell.mapping.IllegalMappingException;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.model.Feature;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Structure;
 
 public class StructureMappingCartoonTool extends BioCartoonTool {
 	//
@@ -59,7 +59,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		return getStructureMappingCartoon();
 	}
 
-	private int getLineTypeFromWorld(Feature feature, Point worldPoint) {
+	private int getLineTypeFromWorld(Structure structure, Point worldPoint) {
 		try {
 			Shape mouseOverShape = getStructureMappingCartoon().pickWorld(worldPoint);
 			if (mouseOverShape instanceof GeometryClassLegendShape){
@@ -89,10 +89,10 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 		if(shape == null){return;}
 		//	
 		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
-			if (shape instanceof FeatureMappingShape){
+			if (shape instanceof StructureMappingShape){
 				try {
-					FeatureMapping fm = (FeatureMapping)((FeatureMappingShape)shape).getModelObject();
-					getStructureMappingCartoon().getGeometryContext().assignFeature(fm.getFeature(),null);
+					StructureMapping sm = (StructureMapping)((StructureMappingShape)shape).getModelObject();
+					getStructureMappingCartoon().getGeometryContext().assignStructure(sm.getStructure(),null);
 					getStructureMappingCartoon().refreshAll();
 				}catch (IllegalMappingException e){
 					e.printStackTrace(System.out);
@@ -149,8 +149,8 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 					edgeShape.setEnd(endPoint);
 					edgeShape.paint_NoAntiAlias(g,0,0);
 					// set label and color for line depending on attachment area on ReactionStepShape
-					Feature feature = (Feature)edgeShape.getStartShape().getModelObject();
-					int lineType = getLineTypeFromWorld(feature,worldPoint);
+					Structure structure = (Structure)edgeShape.getStartShape().getModelObject();
+					int lineType = getLineTypeFromWorld(structure,worldPoint);
 					edgeShape.setLabel(lineLabels[lineType]);
 					edgeShape.setForgroundColor(lineColors[lineType]);
 					getGraphPane().setCursor(lineCursors[lineType]);
@@ -163,11 +163,11 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 						return;
 					}	
 					Shape startShape = getStructureMappingCartoon().pickWorld(worldPoint);
-					if (startShape instanceof FeatureShape){
-						FeatureShape featureShape = (FeatureShape)startShape;
+					if (startShape instanceof StructureShape){
+						StructureShape structureShape = (StructureShape)startShape;
 						bLineStretch = true;
 						endPoint = worldPoint;
-						edgeShape = new RubberBandEdgeShape(featureShape,null,getStructureMappingCartoon());
+						edgeShape = new RubberBandEdgeShape(structureShape,null,getStructureMappingCartoon());
 						edgeShape.setEnd(endPoint);
 						Graphics2D g = (Graphics2D)getGraphPane().getGraphics();
 						g.setXORMode(Color.white);
@@ -223,13 +223,13 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 				if (bLineStretch){
 					bLineStretch = false;
 					// set label and color for line depending on attachment area on ReactionStepShape
-					Feature feature = (Feature)edgeShape.getStartShape().getModelObject();
+					Structure structure = (Structure)edgeShape.getStartShape().getModelObject();
 					// remove temporary edge
 					getStructureMappingCartoon().removeShape(edgeShape);
 					edgeShape = null;
 					if (shape instanceof GeometryClassLegendShape){
 						GeometryClass geometryClass = (GeometryClass)shape.getModelObject();
-						getStructureMappingCartoon().getGeometryContext().assignFeature(feature, geometryClass);
+						getStructureMappingCartoon().getGeometryContext().assignStructure(structure, geometryClass);
 						getStructureMappingCartoon().refreshAll();
 						setMode(Mode.SELECT);
 					}else{
@@ -266,7 +266,7 @@ public class StructureMappingCartoonTool extends BioCartoonTool {
 	}
 
 	public boolean shapeHasMenuAction(cbit.gui.graph.Shape shape, java.lang.String menuAction) {
-		if (shape instanceof FeatureMappingShape){
+		if (shape instanceof StructureMappingShape){
 			if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
 				return true;
 			}

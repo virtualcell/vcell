@@ -32,8 +32,9 @@ public GeneralPermeabilityKinetics(ReactionStep reactionStep) throws ExpressionE
 		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
 		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),new Expression(0.0),ROLE_ReactionRate,null);
 		KineticsParameter permeabilityParam = new KineticsParameter(getDefaultParameterName(ROLE_Permeability),new Expression(0.0),ROLE_Permeability,null);
+		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
-		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, permeabilityParam });
+		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, chargeValence, permeabilityParam });
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (java.beans.PropertyVetoException e){
@@ -78,18 +79,10 @@ public void gatherIssues(java.util.Vector issueList) {
 	int productCount=0;
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();
 	for (int i = 0; i < reactionParticipants.length; i++){
-		if (reactionParticipants[i] instanceof Flux && 
-			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getInsideFeature())){
-			if (reactionParticipants[i].getStructure()!=((Membrane)getReactionStep().getStructure()).getInsideFeature()){
-				issueList.add(new Issue(this,IssueCategory.InternalError,"multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
-			}
+		if (reactionParticipants[i] instanceof Product){
 			reactantCount++;
 		}
-		if (reactionParticipants[i] instanceof Flux && 
-			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getOutsideFeature())){
-			if (reactionParticipants[i].getStructure()!=((Membrane)getReactionStep().getStructure()).getOutsideFeature()){
-				issueList.add(new Issue(this,IssueCategory.InternalError,"multiple instantiations of feature '"+reactionParticipants[i].getStructure(),Issue.SEVERITY_WARNING));
-			}
+		if (reactionParticipants[i] instanceof Reactant){
 			productCount++;
 		}
 	}
@@ -141,6 +134,10 @@ protected void refreshUnits() {
 			if (permeabilityParm != null){
 				permeabilityParm.setUnitDefinition(modelUnitSystem.getPermeabilityUnit());
 			}
+			KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
+			if (chargeValenceParm!=null){
+				chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -160,25 +157,21 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	}
 	
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();
-	Flux fInside = null;
-	Flux fOutside = null;
+	Reactant R0 = null;
+	Product P0 = null;
 	for (int i = 0; i < reactionParticipants.length; i++){
-		if (reactionParticipants[i] instanceof Flux && 
-			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getInsideFeature()) &&
-			fInside == null){
-			fInside = (Flux)reactionParticipants[i];
+		if (reactionParticipants[i] instanceof Reactant){
+			R0 = (Reactant)reactionParticipants[i];
 		}
-		if (reactionParticipants[i] instanceof Flux && 
-			reactionParticipants[i].getStructure().compareEqual(((Membrane)getReactionStep().getStructure()).getOutsideFeature()) &&
-			fOutside == null){
-			fOutside = (Flux)reactionParticipants[i];
+		if (reactionParticipants[i] instanceof Product){
+			P0 = (Product)reactionParticipants[i];
 		}
 	}
 	
-	if (fInside!=null && fOutside!=null){
-		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
-		Expression outside_exp = getSymbolExpression(fOutside.getSpeciesContext());
-		Expression inside_exp = getSymbolExpression(fInside.getSpeciesContext());
+	if (R0!=null && P0!=null){
+		Expression z = getSymbolExpression(getKineticsParameterFromRole(ROLE_ChargeValence));
+		Expression outside_exp = getSymbolExpression(R0.getSpeciesContext());
+		Expression inside_exp = getSymbolExpression(P0.getSpeciesContext());
 		Expression permeability_exp = getSymbolExpression(permeability);
 		
 		// P * (fOutside - fInside)

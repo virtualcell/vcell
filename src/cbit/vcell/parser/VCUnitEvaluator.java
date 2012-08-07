@@ -10,7 +10,6 @@
 
 package cbit.vcell.parser;
 import ucar.units.RationalNumber;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
@@ -353,9 +352,9 @@ public class VCUnitEvaluator {
 			unit = getUnitDefinition((SimpleNode)node.jjtGetChild(1),unitsHashMap);
 			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit);
 		} else if (node instanceof ASTLaplacianNode) {
-			// TODO: reevaluate
-			unit = unitSystem.getInstance(ModelUnitSystem.UNITSYMBOL_um);
-			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit).divideBy(unit);
+			return unitSystem.getInstance_TBD();
+//			unit = unitSystem.Instance(ModelUnitSystem.UNITSYMBOL_um);
+//			return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap).divideBy(unit).divideBy(unit);
 		} else if (node instanceof ASTFloatNode) {          //return TBD instead of dimensionless. 
 			return unitSystem.getInstance_TBD();
 		} else if (node instanceof ASTFuncNode) {   

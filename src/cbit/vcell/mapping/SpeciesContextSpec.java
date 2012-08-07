@@ -1358,13 +1358,16 @@ public Expression convertConcentrationToParticles(Expression iniConcentration) t
 	} else {
 		// convert concentration(particles/volume) to number of particles
 		// particles = [iniConcentration(uM)*size(um3)]/KMOLE
-		cbit.vcell.model.Model.ReservedSymbol kMole = getSimulationContext().getModel().getKMOLE();
+		// @Note : 'kMole' variable here is used only as a var name, it does not represent the previously known ReservedSymbol KMOLE.
+		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+		VCUnitDefinition volSubstanceToStochastic = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getVolumeSubstanceUnit());
+		double volSubstanceToStochasticScale = volSubstanceToStochastic.getDimensionlessScale().doubleValue();
 		try {
-			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize / kMole.getExpression().evaluateConstant())));
+			iniParticlesExpr = new Expression((Math.round(iniConcentration.evaluateConstant() * structSize * volSubstanceToStochasticScale)));
 		} catch (ExpressionException e) {
 			Expression numeratorExpr = Expression.mult(iniConcentration, new Expression(structSize));
-			Expression denominatorExpr = new Expression(kMole.getExpression().evaluateConstant());
-			iniParticlesExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
+			Expression exp = new Expression(volSubstanceToStochasticScale);
+			iniParticlesExpr = Expression.mult(numeratorExpr, exp).flatten();
 		}
 	}
 	
@@ -1388,11 +1391,14 @@ public Expression convertParticlesToConcentration(Expression iniParticles) throw
 	} else {
 		// convert concentration(particles/volume) to number of particles
 		// particles = [iniParticles(uM)/size(um3)]*KMOLE
-		cbit.vcell.model.Model.ReservedSymbol kMole = getSimulationContext().getModel().getKMOLE();
+		// @Note : 'kMole' variable here is used only as a var name, it does not represent the previously known ReservedSymbol KMOLE.
+		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+		VCUnitDefinition stochasticToVolSubstance = modelUnitSystem.getVolumeSubstanceUnit().divideBy(modelUnitSystem.getStochasticSubstanceUnit());
+		double stochasticToVolSubstanceScale = stochasticToVolSubstance.getDimensionlessScale().doubleValue();
 		try {
-			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant()*kMole.getExpression().evaluateConstant() / structSize));
+			iniConcentrationExpr = new Expression((iniParticles.evaluateConstant() * stochasticToVolSubstanceScale / structSize));
 		} catch (ExpressionException e) {
-			Expression numeratorExpr = Expression.mult(iniParticles, new Expression(kMole.getExpression().evaluateConstant()));
+			Expression numeratorExpr = Expression.mult(iniParticles, new Expression(stochasticToVolSubstanceScale));
 			Expression denominatorExpr = new Expression(structSize);
 			iniConcentrationExpr = Expression.div(numeratorExpr, denominatorExpr).flatten();
 		}

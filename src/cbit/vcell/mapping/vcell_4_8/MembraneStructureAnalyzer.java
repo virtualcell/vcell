@@ -17,20 +17,25 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
@@ -104,6 +109,7 @@ void refreshResolvedFluxes() throws Exception {
 //System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes()");
 
 	GeometryContext geoContext = mathMapping_4_8.getSimulationContext().getGeometryContext();
+	StructureTopology structTopology = mathMapping_4_8.getSimulationContext().getModel().getStructureTopology();
 	Vector<ResolvedFlux> resolvedFluxList = new Vector<ResolvedFlux>();
 
 	//
@@ -128,20 +134,32 @@ void refreshResolvedFluxes() throws Exception {
 	//
 	for (int i=0;i<fluxList.size();i++){
 		FluxReaction fr = (FluxReaction)fluxList.elementAt(i);
-		if (fr.getFluxCarrier() == null) {
+		Species fluxCarrier = null;
+		for (ReactionParticipant rp : fr.getReactionParticipants()) {
+			if (rp instanceof Reactant || rp instanceof Product) {
+				if (fluxCarrier == null) {
+					fluxCarrier = rp.getSpecies();
+				} else {
+					if (fluxCarrier != rp.getSpecies()) {
+						throw new Exception("Flux reaction '" + fr.getName() + "' with multiple species not allowed in VCell 4.8.");
+					}
+				}
+			}
+		}
+		if (fluxCarrier == null) {
 			continue;
 		}
 		ResolvedFlux rf = null;
 		for (int j=0;j<resolvedFluxList.size();j++){
 			ResolvedFlux rf_tmp = (ResolvedFlux)resolvedFluxList.elementAt(j);
-			if (rf_tmp.getSpecies() == fr.getFluxCarrier()){
+			if (rf_tmp.getSpecies() == fluxCarrier){
 				rf = rf_tmp;
 			}
 		}
 		//
 		// if "inside" speciesContext is not "fixed", add flux to ResolvedFlux
 		//
-		SpeciesContext insideSpeciesContext = mathMapping_4_8.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),getMembrane().getInsideFeature());
+		SpeciesContext insideSpeciesContext = mathMapping_4_8.getSimulationContext().getModel().getSpeciesContext(fluxCarrier, structTopology.getInsideFeature(getMembrane()));
 		SpeciesContextSpec insideSpeciesContextSpec = mathMapping_4_8.getSimulationContext().getReactionContext().getSpeciesContextSpec(insideSpeciesContext);
 		//
 		// introduce bug compatability mode for NoFluxIfFixed bug
@@ -152,10 +170,10 @@ void refreshResolvedFluxes() throws Exception {
 				bNoFluxIfFixedExercised = true;
 			}
 			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier(), fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
+				rf = new ResolvedFlux(fluxCarrier, fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 				resolvedFluxList.addElement(rf);
 			}
-			FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getInsideFeature());
+			FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping((structTopology.getInsideFeature((Membrane)fr.getStructure())));
 			
 			Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(insideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
 			Expression insideFluxCorrection = Expression.invert(residualVolumeFraction);
@@ -184,7 +202,7 @@ void refreshResolvedFluxes() throws Exception {
 			}
 //			rf.inFlux.bindExpression(mathMapping);
 		}
-		SpeciesContext outsideSpeciesContext = mathMapping_4_8.getSimulationContext().getModel().getSpeciesContext(fr.getFluxCarrier(),getMembrane().getOutsideFeature());
+		SpeciesContext outsideSpeciesContext = mathMapping_4_8.getSimulationContext().getModel().getSpeciesContext(fluxCarrier, structTopology.getOutsideFeature(getMembrane()));
 		SpeciesContextSpec outsideSpeciesContextSpec = mathMapping_4_8.getSimulationContext().getReactionContext().getSpeciesContextSpec(outsideSpeciesContext);
 		//
 		// introduce bug compatability mode for NoFluxIfFixed bug
@@ -195,10 +213,10 @@ void refreshResolvedFluxes() throws Exception {
 				bNoFluxIfFixedExercised = true;
 			}
 			if (rf == null){
-				rf = new ResolvedFlux(fr.getFluxCarrier(), fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
+				rf = new ResolvedFlux(fluxCarrier,  fr.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getUnitDefinition());
 				resolvedFluxList.addElement(rf);
 			}
-			FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getOutsideFeature());
+			FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(structTopology.getOutsideFeature((Membrane)fr.getStructure()));
 			Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(outsideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
 			Expression outsideFluxCorrection = Expression.invert(residualVolumeFraction);
 			//
@@ -231,6 +249,7 @@ void refreshResolvedFluxes() throws Exception {
 	//
 	// for each reaction, incorporate all reactionSteps involving binding with volumetric species
 	//
+	double kMoleValue = 1/602.0;
 	for (int i=0;i<reactionSpecs.length;i++){
 		if (reactionSpecs[i].isExcluded()){
 			continue;
@@ -274,22 +293,21 @@ void refreshResolvedFluxes() throws Exception {
 								resolvedFluxList.addElement(rf);
 							}
 							
-							Expression reactionRateExpression = sr.getReactionRateExpression(rp_Array[k]).renameBoundSymbols(mathMapping_4_8.getNameScope());
-							cbit.vcell.model.Model.ReservedSymbol kMole = mathMapping_4_8.getSimulationContext().getModel().getKMOLE();
-							if (rp_Array[k].getStructure() == getMembrane().getInsideFeature()){
+							Expression reactionRateExpression = getReactionRateExpression(sr,rp_Array[k]).renameBoundSymbols(mathMapping_4_8.getNameScope());
+							if (rp_Array[k].getStructure() == structTopology.getInsideFeature(getMembrane())){
 								//
 								// for binding on inside, add to ResolvedFlux.inFlux
 								//
-								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getInsideFeature());
+								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(structTopology.getInsideFeature(getMembrane()));
 								Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(insideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
-								Expression insideFluxCorrection = Expression.div(new Expression(kMole, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
+								Expression insideFluxCorrection = Expression.div(new Expression(kMoleValue), residualVolumeFraction).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									insideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
+									insideFluxCorrection = new Expression(kMoleValue);
 								}
 								if (rf.inFluxExpression.isZero()){
 									rf.inFluxExpression = Expression.mult(insideFluxCorrection, reactionRateExpression);
@@ -297,20 +315,20 @@ void refreshResolvedFluxes() throws Exception {
 									rf.inFluxExpression = Expression.add(rf.inFluxExpression,Expression.mult(insideFluxCorrection, reactionRateExpression));
 								}
 //								rf.inFlux.bindExpression(mathMapping);
-							}else if (rp_Array[k].getStructure() == getMembrane().getOutsideFeature()){
+							}else if (rp_Array[k].getStructure() == structTopology.getOutsideFeature(getMembrane())){
 								//
 								// for binding on outside, add to ResolvedFlux.outFlux
 								//
-								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getOutsideFeature());
+								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(structTopology.getOutsideFeature(getMembrane()));
 								Expression residualVolumeFraction = mathMapping_4_8.getResidualVolumeFraction(outsideFeatureMapping).renameBoundSymbols(mathMapping_4_8.getNameScope());
-								Expression outsideFluxCorrection = Expression.div(new Expression(kMole, mathMapping_4_8.getNameScope()), residualVolumeFraction).flatten();
+								Expression outsideFluxCorrection = Expression.div(new Expression(kMoleValue), residualVolumeFraction).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
 								if (bResolvedFluxCorrectionBug && !residualVolumeFraction.compareEqual(new Expression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									outsideFluxCorrection = new Expression(kMole, mathMapping_4_8.getNameScope());
+									outsideFluxCorrection = new Expression(kMoleValue);
 								}
 								if (rf.outFluxExpression.isZero()){
 									rf.outFluxExpression = Expression.mult(outsideFluxCorrection, reactionRateExpression);

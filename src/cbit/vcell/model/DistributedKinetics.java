@@ -13,9 +13,12 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionUtils;
+import cbit.vcell.units.VCUnitDefinition;
 
 
 /**
@@ -68,51 +71,41 @@ public abstract class DistributedKinetics extends Kinetics {
 		}
 	}
 
-	public static DistributedKinetics toDistributedKinetics(LumpedKinetics origLumpedKinetics, double size, ReservedSymbol kMole){
+	public static DistributedKinetics toDistributedKinetics(LumpedKinetics origLumpedKinetics){
 		KineticsParameter[] origLumpedKineticsParms = origLumpedKinetics.getKineticsParameters();
+		ReactionStep reactionStep = origLumpedKinetics.getReactionStep();
 		try {
 			Vector<KineticsParameter> parmsToAdd = new Vector<KineticsParameter>();
 			
-			DistributedKinetics newDistributedKinetics = null;
+			
+			DistributedKinetics distributedKinetics = null;
+			StructureSize structureSize = origLumpedKinetics.getReactionStep().getStructure().getStructureSize();
+			Expression sizeExp = new Expression(structureSize.getName());
+			VCUnitDefinition sizeUnit = structureSize.getUnitDefinition();
 			if (origLumpedKinetics.getKineticsDescription().isElectrical()){
-				newDistributedKinetics = new GeneralCurrentKinetics(origLumpedKinetics.getReactionStep());
-				Expression distributionFactor = Expression.invert(new Expression(size)); // from pA to pA.um-2 (current to current density)
-				KineticsParameter newDistCurrentDensityParam = newDistributedKinetics.getCurrentDensityParameter();
-				KineticsParameter origLumpedCurrentParam = origLumpedKinetics.getLumpedCurrentParameter();
-				Expression newDistributedCurrentExp = Expression.mult(distributionFactor,origLumpedCurrentParam.getExpression()).flatten();
-				parmsToAdd.add(newDistributedKinetics.new KineticsParameter(newDistCurrentDensityParam.getName(),newDistributedCurrentExp,newDistCurrentDensityParam.getRole(),newDistCurrentDensityParam.getUnitDefinition()));
+				distributedKinetics = new GeneralCurrentKinetics(reactionStep);
 			}else{
-				newDistributedKinetics = new GeneralKinetics(origLumpedKinetics.getReactionStep());
-				Expression distributionFactor = null;
-				if (origLumpedKinetics.getReactionStep().getStructure() instanceof Membrane){
-					if (origLumpedKinetics.getReactionStep() instanceof FluxReaction){
-						// KMOLE/size  (from molecules.s-1 to uM.um.s-1)
-						distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(kMole),Expression.invert(new Expression(size)));
-					}else if (origLumpedKinetics.getReactionStep() instanceof SimpleReaction){
-						// 1/size (from molecules.s-1 to molecules.um-2.s-1)
-						distributionFactor = Expression.invert(new Expression(size));
-					}else{
-						throw new RuntimeException("unexpected ReactionStep type "+origLumpedKinetics.getReactionStep().getClass().getName());
-					}
-				}else if (origLumpedKinetics.getReactionStep().getStructure() instanceof Feature){
-					// KMOLE/size (from molecules.s-1 to uM.s-1)
-					distributionFactor = Expression.mult(origLumpedKinetics.getSymbolExpression(kMole),Expression.invert(new Expression(size)));
-				}else{
-					throw new RuntimeException("unexpected structure type "+origLumpedKinetics.getReactionStep().getStructure().getClass().getName());
-				}
-				KineticsParameter distReactionRateParam = newDistributedKinetics.getReactionRateParameter();
-				KineticsParameter lumpedReactionRateParm = origLumpedKinetics.getLumpedReactionRateParameter();
-				Expression newDistributedReactionRateExp = Expression.mult(distributionFactor,lumpedReactionRateParm.getExpression()).flatten();
-				parmsToAdd.add(newDistributedKinetics.new KineticsParameter(distReactionRateParam.getName(),newDistributedReactionRateExp,distReactionRateParam.getRole(),distReactionRateParam.getUnitDefinition()));
+				distributedKinetics = new GeneralKinetics(reactionStep);
 			}
+			Expression unitFactor = new Expression(distributedKinetics.getAuthoritativeParameter().getUnitDefinition().multiplyBy(sizeUnit).divideBy(origLumpedKinetics.getAuthoritativeParameter().getUnitDefinition()).getDimensionlessScale());
+			Expression distributionFactor = Expression.div(unitFactor, sizeExp);
+			KineticsParameter lumpedAuthoritativeParm = origLumpedKinetics.getAuthoritativeParameter();
+			KineticsParameter distAuthoritativeParam = distributedKinetics.getAuthoritativeParameter();
+			Expression newDistributedAuthoritativeExp = Expression.mult(distributionFactor,lumpedAuthoritativeParm.getExpression()).flatten();
+			Expression substitutedExp = newDistributedAuthoritativeExp.getSubstitutedExpression(sizeExp, new Expression(1.0));
+			if (ExpressionUtils.functionallyEquivalent(newDistributedAuthoritativeExp,substitutedExp,false)){
+				newDistributedAuthoritativeExp = substitutedExp.flatten();
+			}
+			parmsToAdd.add(distributedKinetics.new KineticsParameter(distAuthoritativeParam.getName(),newDistributedAuthoritativeExp,distAuthoritativeParam.getRole(),distAuthoritativeParam.getUnitDefinition()));
+
 			for (int i = 0; i < origLumpedKineticsParms.length; i++) {
 				if (origLumpedKineticsParms[i].getRole()!=Kinetics.ROLE_LumpedReactionRate &&
 						origLumpedKineticsParms[i].getRole()!=Kinetics.ROLE_LumpedCurrent){
-					parmsToAdd.add(newDistributedKinetics.new KineticsParameter(origLumpedKineticsParms[i].getName(),new Expression(origLumpedKineticsParms[i].getExpression()),Kinetics.ROLE_UserDefined,origLumpedKineticsParms[i].getUnitDefinition()));
+					parmsToAdd.add(distributedKinetics.new KineticsParameter(origLumpedKineticsParms[i].getName(),new Expression(origLumpedKineticsParms[i].getExpression()),Kinetics.ROLE_UserDefined,origLumpedKineticsParms[i].getUnitDefinition()));
 				}
 			}
-			newDistributedKinetics.addKineticsParameters(parmsToAdd.toArray(new KineticsParameter[parmsToAdd.size()]));
-			return newDistributedKinetics;
+			distributedKinetics.addKineticsParameters(parmsToAdd.toArray(new KineticsParameter[parmsToAdd.size()]));
+			return distributedKinetics;
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 			throw new RuntimeException("failed to create distributed Kinetics for reaction: \""+origLumpedKinetics.getReactionStep().getName()+"\": "+e.getMessage());

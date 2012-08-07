@@ -53,7 +53,7 @@ MembraneElectricalDevice(MembraneMapping argMembraneMapping, MathMapping_4_8 arg
 							DefaultNames[ROLE_Capacitance],
 							Expression.mult(new Expression(membraneMapping.getSpecificCapacitanceParameter(),mathMapping_4_8.getNameScope()), new Expression(membraneMapping.getSizeParameter(),mathMapping_4_8.getNameScope())), // given
 							ROLE_Capacitance,
-							modelUnitSystem.getSpecificCapacitanceUnit().multiplyBy(modelUnitSystem.getAreaUnit()));
+							modelUnitSystem.getCapacitanceUnit());
 
 	setParameters(parameters);
 }

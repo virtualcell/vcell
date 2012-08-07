@@ -43,28 +43,39 @@ public class ASTPowerTerm extends SimpleNode {
 		}
 	}
 
-	public String toSymbol(RationalNumber power) {
+	public String toSymbol(RationalNumber power, UnitTextFormat format) {
 		if (jjtGetChild(0) instanceof ASTIdNode || jjtGetChild(0) instanceof ASTIntegerBaseNode){
 			if (jjtGetNumChildren()==1){
 				if (power.equals(RationalNumber.ONE)){
-					return jjtGetChild(0).toSymbol(power);
+					return jjtGetChild(0).toSymbol(power, format);
 				}else{
-					return jjtGetChild(0).toSymbol(power)+power;
+					switch(format) {
+					case plain:{
+						return jjtGetChild(0).toSymbol(power, format)+power;
+					}
+					case unicode:{
+						String powerString = ASTRationalNumberExponent.getUnicodeExponent(power);
+						return jjtGetChild(0).toSymbol(power, format)+powerString;
+					}
+					default:{
+						throw new RuntimeException("format "+format.name()+" not supported by unit symbol");
+					}
+					}
 				}
 			}else{
-				return jjtGetChild(0).toSymbol(power)+jjtGetChild(1).toSymbol(power);
+				return jjtGetChild(0).toSymbol(power, format)+jjtGetChild(1).toSymbol(power, format);
 			}
 		}else if (jjtGetNumChildren()==1){
-			return jjtGetChild(0).toSymbol(power);
+			return jjtGetChild(0).toSymbol(power, format);
 		}else if (jjtGetNumChildren()==2){
 			if (jjtGetChild(1) instanceof ASTNegative){
 				ASTNegative negNode = (ASTNegative)jjtGetChild(1);
 				RationalNumber exponent = negNode.getRationalNumber();
-				return jjtGetChild(0).toSymbol(power.mult(exponent));
+				return jjtGetChild(0).toSymbol(power.mult(exponent), format);
 			}else if (jjtGetChild(1) instanceof ASTRationalNumberExponent){
 				ASTRationalNumberExponent rationalNumberExponent = (ASTRationalNumberExponent)jjtGetChild(1);
 				RationalNumber exponent = rationalNumberExponent.value;
-				return jjtGetChild(0).toSymbol(power.mult(exponent));
+				return jjtGetChild(0).toSymbol(power.mult(exponent), format);
 			}else{
 				throw new RuntimeException("unexpected second child "+jjtGetChild(1).getClass().getName());
 			}

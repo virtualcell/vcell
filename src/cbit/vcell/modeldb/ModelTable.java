@@ -14,13 +14,17 @@ import java.sql.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.sql.*;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.*;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 /**
  * This type was created in VisualAge.
  */
@@ -28,7 +32,9 @@ public class ModelTable extends cbit.vcell.modeldb.VersionTable {
 	private static final String TABLE_NAME = "vc_model";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	private final Field fields[] = null;
+	public final Field unitSystemXML	= new Field("unitSystemXML",	"VARCHAR2(4000)",	"");
+	
+	private final Field fields[] = { unitSystemXML };
 	
 	public static final ModelTable table = new ModelTable();
 	
@@ -82,7 +88,17 @@ public Model getModel(ResultSet rset, Connection con,SessionLog log) throws SQLE
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-	return new Model(version);
+
+	ModelUnitSystem modelUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
+	
+	String unitSystemXML = rset.getString(ModelTable.table.unitSystemXML.toString());
+	if(!rset.wasNull()){
+		unitSystemXML = org.vcell.util.TokenMangler.getSQLRestoredString(unitSystemXML);
+		XmlReader xmlReader = new XmlReader(false);
+		modelUnitSystem = xmlReader.getUnitSystem(XmlUtil.stringToXML(unitSystemXML, null).getRootElement());
+	}
+
+	return new Model(version, modelUnitSystem);
 }
 /**
  * This method was created in VisualAge.
@@ -91,9 +107,13 @@ public Model getModel(ResultSet rset, Connection con,SessionLog log) throws SQLE
  * @param modelName java.lang.String
  */
 public String getSQLValueList(Model model, Version version) {
+	Xmlproducer xmlProducer = new Xmlproducer(false);
+	String modelUnitSystemXML = TokenMangler.getSQLEscapedString(XmlUtil.xmlToString(xmlProducer.getXML(model.getUnitSystem())));
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
-	buffer.append(getVersionGroupSQLValue(version)+")");
+	buffer.append(getVersionGroupSQLValue(version) + ",");
+	buffer.append("'"+modelUnitSystemXML+"'");
+	buffer.append(")");
 	return buffer.toString();
 }
 }

@@ -17,8 +17,8 @@ public class ASTNegative extends SimpleNode {
 		return jjtGetChild(0).toInfix(power.minus());
 	}
 
-	public String toSymbol(RationalNumber power) {
-		return jjtGetChild(0).toSymbol(power.minus());
+	public String toSymbol(RationalNumber power, UnitTextFormat format) {
+		return jjtGetChild(0).toSymbol(power.minus(), format);
 	}
 
 	public RationalNumber getRationalNumber(){

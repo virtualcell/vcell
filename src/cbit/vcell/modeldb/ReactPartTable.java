@@ -13,8 +13,14 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.modeldb.ReactStepDbDriver.Flux;
 /**
  * This type was created in VisualAge.
  */

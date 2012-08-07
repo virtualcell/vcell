@@ -37,6 +37,7 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
@@ -138,10 +139,10 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * @param geometryClass cbit.vcell.geometry.SubVolume
  * @throws MappingException 
  */
-public void assignFeature(Feature feature, GeometryClass geometryClass) throws IllegalMappingException, PropertyVetoException, MappingException {
+public void assignStructure(Structure structure, GeometryClass geometryClass) throws IllegalMappingException, PropertyVetoException, MappingException {
 	
-	FeatureMapping featureMapping = (FeatureMapping)getStructureMapping(feature);
-	GeometryClass currentlyMappedSubvolume = featureMapping.getGeometryClass();
+	StructureMapping structureMapping = (StructureMapping)getStructureMapping(structure);
+	GeometryClass currentlyMappedSubvolume = structureMapping.getGeometryClass();
 	//
 	// already mapped here, done.
 	//
@@ -153,7 +154,7 @@ public void assignFeature(Feature feature, GeometryClass geometryClass) throws I
 	// check if deleting mapping
 	//
 	if (geometryClass==null){
-		featureMapping.setGeometryClass(null);
+		structureMapping.setGeometryClass(null);
 	} else {
 	
 //		//
@@ -168,25 +169,21 @@ public void assignFeature(Feature feature, GeometryClass geometryClass) throws I
 //			parent = (parent.getMembrane()!=null)?parent.getMembrane().getOutsideFeature():null;
 //		}
 	
-		featureMapping.setGeometryClass(geometryClass);
+		structureMapping.setGeometryClass(geometryClass);
 		//
 		// if there are encapsulated features and membranes, then map them too
+		// Membrane mappings will be fixed within fixMembraneMappings
 		//
-		Structure[] structures = getSimulationContext().getModel().getStructures();
-		for (int i = 0; i < structures.length; i++) {
-			if (structures[i] instanceof Feature){
-				if (((Feature)structures[i]).enclosedBy(feature)){
-					getStructureMapping(structures[i]).setGeometryClass(geometryClass);
+//		Structure[] structures = getSimulationContext().getModel().getStructures();
+//		for (int i = 0; i < structures.length; i++) {
+//			if (structures[i] instanceof Feature){
+//				Feature otherFeature = (Feature)structures[i];
+//				if (getModel().getStructureTopology().getChildStructures(feature).contains(otherFeature)){
+//					getStructureMapping(structures[i]).setGeometryClass(geometryClass);
+//				}
+//			}
+//		}
 				}
-			}else if (structures[i] instanceof Membrane){
-				Membrane membrane = (Membrane)structures[i];
-				if (membrane.getInsideFeature()!=null && membrane.getInsideFeature().enclosedBy(feature) &&
-					membrane.getOutsideFeature()!=null && membrane.getOutsideFeature().enclosedBy(feature)){
-					getStructureMapping(membrane).setGeometryClass(geometryClass);
-				}
-			}
-		}
-	}
 	refreshStructureMappings();
 	setDefaultUnitSizes();
 }
@@ -249,7 +246,7 @@ public void gatherIssues(List<Issue> issueList) {
 		Structure[] structuresFromGeometryClass = getStructuresFromGeometryClass(gc);
 		if (structuresFromGeometryClass == null || structuresFromGeometryClass.length == 0) {
 			UnmappedGeometryClass unmappedGeometryClass = new UnmappedGeometryClass(gc);
-			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain '" + gc.getName() + "' is not mapped to any physiological structure.", Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain '" + gc.getName() + "' is not mapped to any physiological structure.", Issue.SEVERITY_WARNING);
 			issueList.add(issue);
 		}
 	}
@@ -259,57 +256,7 @@ public void gatherIssues(List<Issue> issueList) {
 		issueList.add(issue);
 	}
 }
-/**
- * This method was created in VisualAge.
- * @return java.util.Enumeration
- * @param feature cbit.vcell.model.Feature
- */
-public Enumeration<FeatureMapping> getChildFeatureMappings(Feature feature) {
-	//
-	// preload list with the featureMapping of the parent
-	//
-	Vector<FeatureMapping> childList = new Vector<FeatureMapping>();
-	FeatureMapping parentFM = (FeatureMapping)getStructureMapping(feature);
-	childList.addElement(parentFM);
 
-	//
-	// go through list of featureMappings and add child if parent is in list
-	// repeat until no more additions
-	//
-	boolean bFoundMore = true;
-	while (bFoundMore){
-		bFoundMore = false;
-		StructureMapping structureMappings[] = getStructureMappings();
-		for (int i=0;i<structureMappings.length;i++){
-			StructureMapping sm = structureMappings[i];
-			if (sm instanceof FeatureMapping){
-				FeatureMapping fm = (FeatureMapping)sm;
-				//
-				// if parent featureMapping is in the list, add to this featureMapping to the list 
-				//
-				if (!childList.contains(fm)){
-					Feature f = fm.getFeature();
-					Feature parent = (f.getMembrane() != null) ? f.getMembrane().getOutsideFeature() : null;
-					if (parent != null){
-						FeatureMapping pfm = (FeatureMapping)getStructureMapping(parent);
-						if (childList.contains(pfm)){
-							childList.addElement(fm);
-							bFoundMore = true;
-						}
-					}
-				}	
-			}
-		}
-	}
-
-	//
-	// remove original featureMapping (only want the children)
-	//
-	childList.removeElement(parentFM);
-	
-	
-	return childList.elements();
-}
 /**
  * Gets the geometry property (cbit.vcell.geometry.Geometry) value.
  * @return The geometry property value.
@@ -494,18 +441,13 @@ public boolean isAllSizeSpecifiedPositive()
 public boolean isAllVolFracAndSurfVolSpecified() 
 {
 	StructureMapping structureMappings[] = getStructureMappings();
-	for (int i=0;i<structureMappings.length;i++)
-	{
-		if(structureMappings[i] instanceof FeatureMapping)
-		{
-			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
-			if (featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
-			{
-				Membrane membrane = featureMapping.getFeature().getMembrane();
-				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
-				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() == null)
+	for (int i=0;i<structureMappings.length;i++){
+		if(structureMappings[i] instanceof MembraneMapping){
+			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
+			if(membraneMapping.getSurfaceToVolumeParameter().getExpression() == null){
 					return false;
-				if(membraneMapping.getVolumeFractionParameter().getExpression() == null)
+			}
+			if(membraneMapping.getVolumeFractionParameter().getExpression() == null){
 					return false;
 			}
 		}
@@ -520,18 +462,13 @@ public boolean isAllVolFracAndSurfVolSpecified()
 public boolean isAllVolFracAndSurfVolSpecifiedNull() 
 {
 	StructureMapping structureMappings[] = getStructureMappings();
-	for (int i=0;i<structureMappings.length;i++)
-	{
-		if(structureMappings[i] instanceof FeatureMapping)
-		{
-			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
-			if (featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
-			{
-				Membrane membrane = featureMapping.getFeature().getMembrane();
-				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
-				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() != null)
+	for (int i=0;i<structureMappings.length;i++){
+		if(structureMappings[i] instanceof MembraneMapping){
+			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
+			if(membraneMapping.getSurfaceToVolumeParameter().getExpression() != null){
 					return false;
-				if(membraneMapping.getVolumeFractionParameter().getExpression() != null)
+			}
+			if(membraneMapping.getVolumeFractionParameter().getExpression() != null){
 					return false;
 			}
 		}
@@ -642,13 +579,16 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 	//
 	StructureMapping newStructureMappings[] = (StructureMapping[])fieldStructureMappings.clone();
 	
-	// fill in geometryClass for those MembraneMappings that were not mapped explicitly
+	// fill in geometryClass for those MembraneMappings that were not mapped explicitly (and topology is available)
 	for (int j=0;j<newStructureMappings.length;j++){
 		StructureMapping structureMapping = newStructureMappings[j];
 		if (structureMapping instanceof MembraneMapping && structureMapping.getGeometryClass()==null){
 			MembraneMapping membraneMapping = (MembraneMapping)structureMapping;
-			FeatureMapping insideFeatureMapping = (FeatureMapping)getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
-			FeatureMapping outsideFeatureMapping = (FeatureMapping)getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
+			Feature insideFeature = getModel().getStructureTopology().getInsideFeature(membraneMapping.getMembrane());
+			Feature outsideFeature = getModel().getStructureTopology().getOutsideFeature(membraneMapping.getMembrane());
+			if (insideFeature!=null && outsideFeature!=null){
+				FeatureMapping insideFeatureMapping = (FeatureMapping)getStructureMapping(insideFeature);
+				FeatureMapping outsideFeatureMapping = (FeatureMapping)getStructureMapping(outsideFeature);
 			if (insideFeatureMapping.getGeometryClass()==outsideFeatureMapping.getGeometryClass()){
 				membraneMapping.setGeometryClass(insideFeatureMapping.getGeometryClass());
 			}else if (insideFeatureMapping.getGeometryClass() instanceof SubVolume && outsideFeatureMapping.getGeometryClass() instanceof SubVolume){
@@ -660,6 +600,7 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 				}
 			}
 		}
+	}
 	}
 		
 	for (int j=0;j<newStructureMappings.length;j++){
@@ -700,20 +641,20 @@ public void refreshStructureMappings() throws MappingException, PropertyVetoExce
 		if (!(structureFound && geometryClassFound)){
 			newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,structureMapping);
 			j--;
-			//
-			// delete accompanied membrane mapping if exists 
-			//
-			for (int i = 0; i < newStructureMappings.length; i++){
-				if (newStructureMappings[i] instanceof MembraneMapping){
-					MembraneMapping membraneMapping = (MembraneMapping)newStructureMappings[i];
-					if (membraneMapping.getMembrane()==null ||
-						membraneMapping.getMembrane().getInsideFeature() == structureMapping.getStructure() ||
-						membraneMapping.getMembrane().getOutsideFeature() == structureMapping.getStructure()){
-						newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,membraneMapping);
-						break;
-					}
-				}
-			}
+//			//
+//			// delete accompanied membrane mapping if exists 
+//			//
+//			for (int i = 0; i < newStructureMappings.length; i++){
+//				if (newStructureMappings[i] instanceof MembraneMapping){
+//					MembraneMapping membraneMapping = (MembraneMapping)newStructureMappings[i];
+//					if (membraneMapping.getMembrane()==null ||
+//						membraneMapping.getMembrane().getInsideFeature() == structureMapping.getStructure() ||
+//						membraneMapping.getMembrane().getOutsideFeature() == structureMapping.getStructure()){
+//						newStructureMappings = (StructureMapping[])BeanUtils.removeElement(newStructureMappings,membraneMapping);
+//						break;
+//					}
+//				}
+//			}
 		}else{
 			// update references to Structure and SubVolume to correspond to those of Model and Geometry
 			structureMapping.setGeometryClass(newGeometryClass);
@@ -796,7 +737,13 @@ private void setDefaultUnitSizes() throws PropertyVetoException {
 						}
 					}
 				} else {
-					// Feature mapped to Surface, no default
+					if (exp == null) {
+						try {
+							unitSizeParameter.setExpression(new Expression(1.0));
+						} catch (ExpressionBindingException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}
@@ -804,15 +751,19 @@ private void setDefaultUnitSizes() throws PropertyVetoException {
 }
 
 private void fixMembraneMappings() throws PropertyVetoException {
+	StructureTopology structTopology = getModel().getStructureTopology();
 	for (int j=0;j<fieldStructureMappings.length;j++){
 		if (fieldStructureMappings[j] instanceof MembraneMapping){
 			MembraneMapping membraneMapping = (MembraneMapping)fieldStructureMappings[j];
 			Membrane membrane = membraneMapping.getMembrane();
-			Feature insideFeature = membrane.getInsideFeature();
-			Feature outsideFeature = membrane.getOutsideFeature();
+			Feature insideFeature = structTopology.getInsideFeature(membrane);
+			Feature outsideFeature = structTopology.getOutsideFeature(membrane);
+			//
+			// if the topology is specified (inside/outside features defined), then we can "fix" ... otherwise, it there are no constraints/guidance.
+			//
 			if (insideFeature!=null && outsideFeature!=null){
-				FeatureMapping insideFM = (FeatureMapping)getStructureMapping(membrane.getInsideFeature());
-				FeatureMapping outsideFM = (FeatureMapping)getStructureMapping(membrane.getOutsideFeature());
+				FeatureMapping insideFM = (FeatureMapping)getStructureMapping(insideFeature);
+				FeatureMapping outsideFM = (FeatureMapping)getStructureMapping(outsideFeature);
 				GeometryClass insideGeometryClass = insideFM.getGeometryClass();
 				GeometryClass outsideGeometryClass = outsideFM.getGeometryClass();
 				

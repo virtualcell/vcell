@@ -426,10 +426,10 @@ private void initialize() {
 					}
 					if (unit != null) {
 						setHorizontalTextPosition(JLabel.LEFT);
-						setIcon(new TextIcon("[" + unit.getSymbol() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
 					}
 					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
-					String tooltip = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbol() + "] </font></html>";
+					String tooltip = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(tooltip);
 				}
 				return this;

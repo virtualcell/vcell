@@ -18,9 +18,9 @@ import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -452,7 +452,7 @@ public void gatherIssues(List<Issue> issueVector) {
 		}
 	}
 	if (geometryClass == null) {
-		issueVector.add(new Issue(this, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_ERROR));
+		issueVector.add(new Issue(this, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
 	}
 }
 
@@ -650,14 +650,14 @@ public Structure getStructure() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext) throws ExpressionException;
+public abstract Expression getNormalizedConcentrationCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
 
 
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext) throws ExpressionException;
+public abstract Expression getStructureSizeCorrection(SimulationContext simulationContext, UnitFactorProvider unitFactorProvider) throws ExpressionException, MappingException;
 
 
 /**

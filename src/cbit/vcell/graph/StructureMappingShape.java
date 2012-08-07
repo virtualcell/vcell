@@ -1,31 +1,25 @@
-/*
- * Copyright (C) 1999-2011 University of Connecticut Health Center
- *
- * Licensed under the MIT License (the "License").
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at:
- *
- *  http://www.opensource.org/licenses/mit-license.php
- */
-
 package cbit.vcell.graph;
+/*�
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+�*/
 import cbit.gui.graph.*;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.
  */
-public class FeatureMappingShape extends EdgeShape {
-	protected FeatureMapping featureMapping = null;
+public class StructureMappingShape extends EdgeShape {
+	protected StructureMapping structureMapping = null;
 
 	/**
 	 * ReactionParticipantShape constructor comment.
 	 * @param label java.lang.String
 	 * @param graphModel cbit.vcell.graph.GraphModel
 	 */
-	public FeatureMappingShape(FeatureMapping featureMapping, FeatureShape featureShape,
+	public StructureMappingShape(StructureMapping structureMapping, StructureShape structureShape,
 			GeometryClassLegendShape geometryClassShape, GraphModel graphModel) {
-		super(featureShape, geometryClassShape, graphModel);
-		this.featureMapping = featureMapping;
+		super(structureShape, geometryClassShape, graphModel);
+		this.structureMapping = structureMapping;
 	}
 
 
@@ -33,8 +27,8 @@ public class FeatureMappingShape extends EdgeShape {
 	 * This method was created in VisualAge.
 	 * @return cbit.vcell.graph.ReactionStepShape
 	 */
-	public FeatureShape getFeatureShape() {
-		return (FeatureShape)startShape;
+	public StructureShape getStructureShape() {
+		return (StructureShape)startShape;
 	}
 
 
@@ -44,7 +38,7 @@ public class FeatureMappingShape extends EdgeShape {
 	 */
 	@Override
 	public Object getModelObject() {
-		return featureMapping;
+		return structureMapping;
 	}
 
 	/**

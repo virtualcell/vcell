@@ -19,7 +19,7 @@ public class ASTNumericScale extends SimpleNode {
   	return toNumber(Math.pow(value.doubleValue(),power.doubleValue()));
   }
 
-  public String toSymbol(RationalNumber power) {
+  public String toSymbol(RationalNumber power, UnitTextFormat format) {
   	return toNumber(Math.pow(value.doubleValue(),power.doubleValue()));
   }
 

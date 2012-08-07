@@ -37,9 +37,10 @@ public HMM_REVKinetics(ReactionStep reactionStep) throws ExpressionException {
 		KineticsParameter vMaxFwdParm = new KineticsParameter(getDefaultParameterName(ROLE_VmaxFwd),new Expression(0.0),ROLE_VmaxFwd,null);
 		KineticsParameter kmRevParm = new KineticsParameter(getDefaultParameterName(ROLE_KmRev),new Expression(0.0),ROLE_KmRev,null);
 		KineticsParameter vMaxRevParm = new KineticsParameter(getDefaultParameterName(ROLE_VmaxRev),new Expression(0.0),ROLE_VmaxRev,null);
+		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
 		if (reactionStep.getStructure() instanceof Membrane){
-			setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, kmFwdParm, vMaxFwdParm, kmRevParm, vMaxRevParm });
+			setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, chargeValence, kmFwdParm, vMaxFwdParm, kmRevParm, vMaxRevParm });
 		}else{
 			setKineticsParameters(new KineticsParameter[] { rateParm, kmFwdParm, vMaxFwdParm, kmRevParm, vMaxRevParm });
 		}
@@ -178,6 +179,7 @@ protected void refreshUnits() {
 
 		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
 		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
+		KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
 		Kinetics.KineticsParameter kmFwdParm = getKmFwdParameter();
 		Kinetics.KineticsParameter vmaxFwdParm = getVmaxFwdParameter();
 		Kinetics.KineticsParameter kmRevParm = getKmRevParameter();
@@ -191,6 +193,9 @@ protected void refreshUnits() {
 				}
 				if (currentDensityParm!=null){
 					currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
+				}
+				if (chargeValenceParm!=null){
+					chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
 				}
 				if (vmaxFwdParm!=null){
 					vmaxFwdParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
@@ -285,7 +290,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
-		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression z = getSymbolExpression(getKineticsParameterFromRole(ROLE_ChargeValence));
 		Expression J = getSymbolExpression(rateParm);
 		Model model = getReactionStep().getModel();
 		if (getReactionStep() instanceof SimpleReaction){

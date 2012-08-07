@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -45,7 +47,6 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.graph.ReactionCartoon;
-import cbit.vcell.graph.StructureCartoon;
 import cbit.vcell.graph.structures.MembraneStructureSuite;
 import cbit.vcell.graph.structures.SingleStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
@@ -91,6 +92,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
@@ -127,7 +129,6 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.Section;
 import com.lowagie.text.Table;
 import com.lowagie.text.pdf.BaseFont;
-import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 
 /**
 This is the root class that handles publishing of models in the Virtual Cell. It supports the publishing of BioModels, MathModels, 
@@ -408,8 +409,8 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
 		StructureSuite layout;
-		if(struct instanceof Membrane) {
-			layout = new MembraneStructureSuite(((Membrane) struct));
+		if(struct instanceof Membrane && model.getStructureTopology().getOutsideFeature((Membrane)struct) != null && model.getStructureTopology().getInsideFeature((Membrane)struct) != null) {
+			layout = new MembraneStructureSuite(model.getStructureTopology().getOutsideFeature((Membrane)struct), ((Membrane) struct), model.getStructureTopology().getInsideFeature((Membrane)struct));
 		} else {
 			layout = new SingleStructureSuite(struct);
 		}
@@ -444,26 +445,29 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			break;
 		}
 		rcartoon.paint(g, null);
-		bos = new ByteArrayOutputStream();
-		ImageOutputStream imageOut = null;
-
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-		
-		bos.flush();
-		
+		bos = encodeJPEG(bufferedImage);
+				
 		return bos;
 	}
 
 
+	public static ByteArrayOutputStream encodeJPEG(BufferedImage bufferedImage) throws Exception{
+		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(byteArrayOutputStream);
+		imageWriter.setOutput(imageOutputStream);
+		ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
+		imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		imageWriteParam.setCompressionQuality(1.0f);  // quality 0(very compressed, lossy) -> 1.0(less compressed,loss-less)
+		IIOImage iioImage = new IIOImage(bufferedImage, null, null);
+		imageWriter.write(null, iioImage, imageWriteParam);
+		imageOutputStream.close();
+		imageWriter.dispose();
+		return byteArrayOutputStream;
+	}
+
 //pretty similar to its static counterpart
+	/*
 	protected ByteArrayOutputStream generateDocStructureImage(Model model, String resolution) throws Exception {
 
 		if (model == null || !isValidResolutionSetting(resolution)) {
@@ -504,36 +508,10 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			break;
 		}
 		scartoon.paint(g, null);
-		bos = new ByteArrayOutputStream();
-		ImageOutputStream imageOut = null;
-
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-
-		bos.flush();
-
-		// *** Writing the image into a file - testing if the image is generated.
-		
-		//File gifFile = new File("\\Temp\\BIOMODEL.GIF");
-		//java.io.FileOutputStream osGif = null;
-		//try {
-			//osGif = new java.io.FileOutputStream(gifFile);
-		//}catch (java.io.IOException e){
-			//e.printStackTrace(System.out);
-			//throw new RuntimeException("error writing image to file '"+gifFile+": "+e.getMessage());
-		//}	
-		//bos.writeTo(osGif);
-
+		bos = encodeJPEG(bufferedImage);
 		return bos;
 	}
-
+*/
 
 	protected ByteArrayOutputStream generateGeometryImage(Geometry geom) throws Exception{
 
@@ -713,20 +691,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		
 		
 		ByteArrayOutputStream bos = null;
-		bos = new ByteArrayOutputStream();
-
-		ImageOutputStream imageOut = null; 
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(newBufferedImage);
-		
-		bos.flush();
+		bos = encodeJPEG(newBufferedImage);
 		return bos;
 	}
 
@@ -742,8 +707,8 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
 		StructureSuite layout;
-		if(struct instanceof Membrane) {
-			layout = new MembraneStructureSuite(((Membrane) struct));
+		if(struct instanceof Membrane && model.getStructureTopology().getOutsideFeature((Membrane)struct) != null && model.getStructureTopology().getInsideFeature((Membrane)struct) != null) {
+			layout = new MembraneStructureSuite(model.getStructureTopology().getOutsideFeature((Membrane)struct), ((Membrane) struct), model.getStructureTopology().getInsideFeature((Membrane)struct));
 		} else {
 			layout = new SingleStructureSuite(struct);
 		}
@@ -775,26 +740,11 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		g.clearRect(0, 0, width, height);
 		g.setColor(java.awt.Color.red);
 		rcartoon.paint(g, null);
-		bos = new ByteArrayOutputStream();
-
-		ImageOutputStream imageOut = null;
-
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-		
-		bos.flush();
-		
+		bos = encodeJPEG(bufferedImage);
 		return bos;
 	}
 
-
+/*
 	public static ByteArrayOutputStream generateStructureImage(Model model, String resolution) throws Exception {
 
 		final int SIZE_INC = 10; 
@@ -827,23 +777,10 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			break;
 		}
 		scartoon.paint(g, null);
-		bos = new ByteArrayOutputStream();
-		
-		ImageOutputStream imageOut = null;
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-		bos.flush();
-
+		bos = encodeJPEG(bufferedImage);
 		return bos;
 	}
-
+*/
 
 	protected ByteArrayOutputStream generateStructureMappingImage(SimulationContext simContext, int width, int height) throws Exception {
              
@@ -858,21 +795,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 			break;
 		}
 		structMapCartoon.paint(g, null);
-		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-		
-		ImageOutputStream imageOut = null;
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-
-		bos.flush();
-
+		java.io.ByteArrayOutputStream bos = encodeJPEG(bufferedImage);
 		return bos;
 	}
 
@@ -1274,7 +1197,7 @@ protected void writeHorizontalLine() throws DocumentException {
 				paramTable.addCell(createCell(name, getFont()));
 				paramTable.addCell(createCell((expression == null ? "": expression.infix()), getFont()));
 				paramTable.addCell(createCell(role, getFont()));
-				paramTable.addCell(createCell((unit == null ? "": unit.getSymbol()), getFont()));      //dimensionless will show as '1'.
+				paramTable.addCell(createCell((unit == null ? "": unit.getSymbolUnicode()), getFont()));      //dimensionless will show as '1'.
 			}
 		}
 		if (paramTable != null) {
@@ -1522,7 +1445,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			if (tempExp != null) {
 				initVoltage = tempExp.infix();
 				if (tempUnit != null) {
-					initVoltage += "   " + tempUnit.getSymbol();
+					initVoltage += "   " + tempUnit.getSymbolUnicode();
 				}
 			}
 			String spCap = "";
@@ -1531,7 +1454,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			if (tempExp != null) {
 				spCap = tempExp.infix();
 				if (tempUnit != null) {
-					spCap += "   " + tempUnit.getSymbol();
+					spCap += "   " + tempUnit.getSymbolUnicode();
 				}
 			}
 			if (memMapTable == null) {
@@ -1593,7 +1516,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			if (tempExp != null) {
 				expStr = tempExp.infix();
 				if (tempUnit != null) {
-					expStr += "   " + tempUnit.getSymbol();
+					expStr += "   " + tempUnit.getSymbolUnicode();
 				}
 			}
 			electTable.addCell(createCell(stimName, getFont()));
@@ -1692,16 +1615,16 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 
 	Section structSection = null;
 	//add structures image
-	if (model.getNumStructures() > 0) {
-		try {
-			ByteArrayOutputStream bos = generateDocStructureImage(model, ITextWriter.LOW_RESOLUTION);
-			structSection = physioChapter.addSection("Structures For: " + model.getName(), physioChapter.numberDepth() + 1);
-			addImage(structSection, bos);
-		} catch(Exception e) {
-			System.err.println("Unable to add structures image for model: " + model.getName());
-			e.printStackTrace();
-		}
-	}
+//	if (model.getNumStructures() > 0) {
+//		try {
+//			ByteArrayOutputStream bos = generateDocStructureImage(model, ITextWriter.LOW_RESOLUTION);
+//			structSection = physioChapter.addSection("Structures For: " + model.getName(), physioChapter.numberDepth() + 1);
+//			addImage(structSection, bos);
+//		} catch(Exception e) {
+//			System.err.println("Unable to add structures image for model: " + model.getName());
+//			e.printStackTrace();
+//		}
+//	}
 	//write structures
 	Table structTable = null;
 	for (int i = 0; i < model.getNumStructures(); i++) {
@@ -1896,8 +1819,8 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			VCUnitDefinition initConcUnit = initParam == null? null : initParam.getUnitDefinition();
 			speciesSpecTable.addCell(createCell(speciesName, getFont()));
 			speciesSpecTable.addCell(createCell(structName, getFont()));
-			speciesSpecTable.addCell(createCell(initConc + (initConcUnit == null ? "": "   " + initConcUnit.getSymbol()), getFont()));
-			speciesSpecTable.addCell(createCell(diff + (diffUnit == null ? "": "   " + diffUnit.getSymbol()), getFont()));
+			speciesSpecTable.addCell(createCell(initConc + (initConcUnit == null ? "": "   " + initConcUnit.getSymbolUnicode()), getFont()));
+			speciesSpecTable.addCell(createCell(diff + (diffUnit == null ? "": "   " + diffUnit.getSymbolUnicode()), getFont()));
 			speciesSpecTable.addCell(createCell((speciesContSpecs[i].isConstant() ? " T ": " F "), getFont()));	
 		}
 		if (speciesSpecTable != null) {
@@ -2274,16 +2197,17 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 		} else {
 			structTable.addCell(createCell(struct.getName(), getFont()));
 		}
+		StructureTopology structTopology = model.getStructureTopology();
 		if (struct instanceof Membrane) {
 			structTable.addCell(createCell("Membrane", getFont()));
-			Feature outsideFeature = ((Membrane)struct).getOutsideFeature();
-			Feature insideFeature = ((Membrane)struct).getInsideFeature();
+			Feature outsideFeature = structTopology.getOutsideFeature((Membrane)struct);
+			Feature insideFeature = structTopology.getInsideFeature((Membrane)struct);
 			structTable.addCell(createCell((insideFeature != null ? insideFeature.getName() : "N/A"), getFont()));
 			structTable.addCell(createCell((outsideFeature != null ? outsideFeature.getName() : "N/A"), getFont()));
 		} else {
 			structTable.addCell(createCell("Feature", getFont()));
 			String outsideStr = "N/A", insideStr = "N/A";
-			Membrane enclosingMem = (Membrane)struct.getParentStructure();
+			Membrane enclosingMem = (Membrane)structTopology.getParentStructure(struct);
 			if (enclosingMem != null) {
 				outsideStr = enclosingMem.getName();
 			}
@@ -2336,7 +2260,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			}
 			boolean isResolved = false; // ((FeatureMapping)structMap[i]).getResolved();
 			String surfVolStr = "", volFractStr = "";
-			MembraneMapping mm = (MembraneMapping)gc.getStructureMapping(structMap[i].getStructure().getParentStructure());
+			MembraneMapping mm = (MembraneMapping)gc.getStructureMapping(sc.getModel().getStructureTopology().getParentStructure(structMap[i].getStructure()));
 			if (mm != null) {
 				StructureMapping.StructureMappingParameter smp = mm.getSurfaceToVolumeParameter();
 				if (smp != null) {
@@ -2345,7 +2269,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 					if (tempExp != null) {
 						surfVolStr = tempExp.infix();
 						if (tempUnit != null && !modelUnitSystem.getInstance_DIMENSIONLESS().compareEqual(tempUnit)) {  //no need to add '1' for dimensionless unit
-							surfVolStr += " " + tempUnit.getSymbol();
+							surfVolStr += " " + tempUnit.getSymbolUnicode();
 						}
 					}
 				}
@@ -2356,7 +2280,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 					if (tempExp != null) {
 						volFractStr = tempExp.infix();
 						if (tempUnit != null && !modelUnitSystem.getInstance_DIMENSIONLESS().compareEqual(tempUnit)) { 
-							volFractStr += " " + tempUnit.getSymbol();
+							volFractStr += " " + tempUnit.getSymbolUnicode();
 						}
 					}
 				}

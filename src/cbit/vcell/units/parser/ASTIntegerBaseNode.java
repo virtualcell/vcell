@@ -19,7 +19,7 @@ public class ASTIntegerBaseNode extends SimpleNode {
 		return "" + value.intValue();
 	}
 
-	public String toSymbol(RationalNumber power) {
+	public String toSymbol(RationalNumber power, UnitTextFormat format) {
 		return "" + value.intValue();
 	}
 

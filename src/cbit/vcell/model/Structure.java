@@ -14,9 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
-import java.util.Enumeration;
 import java.util.Map;
-import java.util.Vector;
 
 import org.vcell.util.Cacheable;
 import org.vcell.util.Matchable;
@@ -24,13 +22,9 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.meta.Identifiable;
-import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
@@ -47,6 +41,11 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 	private StructureSize fieldStructureSize = null;
+	private Structure sbmlParentStructure = null;
+
+	// store SBML unit for compartment size from SBML.
+	private transient VCUnitDefinition sbmlCompartmentSizeUnit = null;
+
 	
 
 	public class StructureNameScope extends BioNameScope {
@@ -170,12 +169,6 @@ protected boolean compareEqual0(Structure s) {
 	return true;
 }
 /**
- * This method was created by a SmartGuide.
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
-public abstract boolean enclosedBy(Structure parentStructure);
-/**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
@@ -266,11 +259,6 @@ public NameScope getNameScope() {
 	return fieldNameScope;
 }
 /**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Structure
- */
-public abstract Structure getParentStructure();
-/**
  * Accessor for the propertyChange field.
  */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
@@ -278,26 +266,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
 	return propertyChange;
-}
-/**
- * Get sub features inside this structure.
- * If it is a feature, the sub features include all features inside it and itself.
- * If it is a membrance, the sub features include all features inside it.
- * Creation date: (12/11/2006 5:42:07 PM)
- * @return java.util.Enumeration
- */
-public Enumeration<Feature> getSubFeatures() 
-{
-	Vector<Feature> subFeatures = new Vector<Feature>();
-	Structure[] structures = this.getModel().getStructures();
-	for (int i=0; i<structures.length; i++)
-	{
-		if((structures[i] instanceof Feature) && (structures[i].enclosedBy(this)))
-		{
-			subFeatures.addElement((Feature)structures[i]);
-		}
-	}
-	return subFeatures.elements();
 }
 /**
  * Accessor for the vetoPropertyChange field.
@@ -352,11 +320,6 @@ public void setName(String name) throws java.beans.PropertyVetoException {
 }
 /**
  * This method was created in VisualAge.
- * @param structure cbit.vcell.model.Structure
- */
-public abstract void setParentStructure(Structure structure) throws ModelException;
-/**
- * This method was created in VisualAge.
  * @param e java.beans.PropertyChangeEvent
  */
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
@@ -376,5 +339,24 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 }
 
 public abstract String getTypeName();
-public abstract String checkNewParent(Structure structure);
+//public abstract String checkNewParent(Structure structure);
+
+public VCUnitDefinition getSbmlCompartmentSizeUnit() {
+	return sbmlCompartmentSizeUnit;
 }
+
+
+public void setSbmlCompartmentSizeUnit(VCUnitDefinition sbmlUnit) {
+	this.sbmlCompartmentSizeUnit = sbmlUnit;
+}
+
+public Structure getSbmlParentStructure() {
+	return sbmlParentStructure;
+}
+
+public void setSbmlParentStructure(Structure argSbmlParentStructure) {
+	this.sbmlParentStructure = argSbmlParentStructure;
+}
+
+}
+

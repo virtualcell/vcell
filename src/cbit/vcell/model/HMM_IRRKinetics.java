@@ -36,9 +36,10 @@ public HMM_IRRKinetics(ReactionStep reactionStep) throws ExpressionException {
 		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
 		KineticsParameter kmParm = new KineticsParameter(getDefaultParameterName(ROLE_Km),new Expression(0.0),ROLE_Km,null);
 		KineticsParameter vMaxParm = new KineticsParameter(getDefaultParameterName(ROLE_Vmax),new Expression(0.0),ROLE_Vmax,null);
+		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
 		if (reactionStep.getStructure() instanceof Membrane){
-			setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, kmParm, vMaxParm });
+			setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, chargeValence, kmParm, vMaxParm });
 		}else{
 			setKineticsParameters(new KineticsParameter[] { rateParm, kmParm, vMaxParm });
 		}
@@ -173,6 +174,10 @@ protected void refreshUnits() {
 				if (currentDensityParm!=null){
 					currentDensityParm.setUnitDefinition(modelUnitSystem.getCurrentDensityUnit());
 				}
+				KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
+				if (chargeValenceParm!=null){
+					chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
+				}
 				if (vmaxParm!=null){
 					vmaxParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
 				}
@@ -233,7 +238,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 	Expression newRateExp = Expression.div(Expression.mult(vMax_exp, R0_exp), Expression.add(km_exp, R0_exp));
 	rateParm.setExpression(newRateExp);
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression z = getSymbolExpression(getKineticsParameterFromRole(ROLE_ChargeValence));
 		Expression tempCurrentExpression = null;
 		Expression J = getSymbolExpression(rateParm);
 		Model model = getReactionStep().getModel();

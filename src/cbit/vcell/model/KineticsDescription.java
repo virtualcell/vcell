@@ -18,7 +18,7 @@ public  class KineticsDescription implements java.io.Serializable {
 	private java.lang.String fieldName;
 	private java.lang.String fieldDescription;
 	private java.lang.String fieldVCMLName;
-	private java.lang.Class fieldKineticsClass;
+	private java.lang.Class<? extends Kinetics> fieldKineticsClass;
 	private boolean fieldIsElectrical = false;
 	private boolean fieldNeedsValence = false;
 
@@ -40,7 +40,7 @@ public  class KineticsDescription implements java.io.Serializable {
 /**
  * KineticsDescription constructor comment.
  */
-private KineticsDescription(String name, String description, String vcmlName, boolean argIsElectrical, boolean needsValence, Class kineticsClass) {
+private KineticsDescription(String name, String description, String vcmlName, boolean argIsElectrical, boolean needsValence, Class<? extends Kinetics> kineticsClass) {
 	super();
 	fieldName = name;
 	fieldDescription = description;
@@ -58,8 +58,8 @@ private KineticsDescription(String name, String description, String vcmlName, bo
  */
 public Kinetics createKinetics(ReactionStep reactionStep) {
 	try {
-		java.lang.reflect.Constructor constructor = fieldKineticsClass.getConstructor(new Class[] { ReactionStep.class });
-		Kinetics kinetics = (Kinetics)constructor.newInstance(new Object[]{ reactionStep });
+		java.lang.reflect.Constructor<? extends Kinetics> constructor = fieldKineticsClass.getConstructor(new Class[] { ReactionStep.class });
+		Kinetics kinetics = constructor.newInstance(new Object[]{ reactionStep });
 		return kinetics;
 	}catch (NoSuchMethodException e){
 		e.printStackTrace(System.out);
@@ -184,5 +184,13 @@ public boolean isElectrical() {
  */
 public boolean needsValence() {
 	return fieldNeedsValence;
+}
+
+
+public boolean isLumped() {
+	if (this.equals(GeneralLumped) || this.equals(GeneralCurrentLumped)){
+		return true;
+}
+	return false;
 }
 }

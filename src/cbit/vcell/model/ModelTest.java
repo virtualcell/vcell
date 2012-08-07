@@ -28,12 +28,12 @@ public static Model getExample() throws Exception {
 	model.addSpecies(new Species("Ca","Calcium"));
 	model.addSpecies(new Species("R","IP3-Receptor"));
 	model.addSpecies(new Species("RI","IP3-Receptor-Activated"));
-	model.addFeature("Extracellular",null,null);
+	model.addFeature("Extracellular");
 	Feature extracellular = (Feature)model.getStructure("Extracellular");
-	model.addFeature("Cytosol",extracellular,"PlasmaMembrane");
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	Membrane plasmaMembrane = (Membrane)model.getStructure("PlasmaMembrane");
-	model.addFeature("ER",cytosol,"ER_Membrane");
+	model.addFeature("ER");
 	Feature er = (Feature)model.getStructure("ER");
 	Membrane erMembrane = (Membrane)model.getStructure("ER_Membrane");
 	
@@ -120,8 +120,9 @@ public static Model getExample() throws Exception {
 	//     
 //	model.addReaction("IP3_generation");
 //	reaction = model.getReaction("IP3_generation");
-	fr = new FluxReaction(plasmaMembrane,ip3,model,"IP3_FLUX");
-	fr.setModel(model);
+	fr = new FluxReaction(model, plasmaMembrane, null,"IP3_FLUX");
+	fr.addReactant(ip3_extracellular, 1);
+	fr.addProduct(ip3_cytosol, 1);
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
@@ -170,8 +171,9 @@ public static Model getExample() throws Exception {
 	massAct.setParameterValue(massAct.getKineticsParameter("I1"),new Expression(I1));
 	model.addReactionStep(sr);
 	
-	fr = new FluxReaction(erMembrane,calcium,model,"IP3R_FLUX");
-	fr.setModel(model);
+	fr = new FluxReaction(model, erMembrane, null,"IP3R_FLUX");
+	fr.addReactant(calcium_cytosol, 1);
+	fr.addProduct(calcium_er, 1);
 	fr.addCatalyst(ri_erMembrane);
 //	fr.addCatalyst(calcium_cytosol);
 //	fr.addCatalyst(calcium_er);
@@ -193,8 +195,9 @@ public static Model getExample() throws Exception {
 	
 //	model.addReaction("Serca_Pump");
 //	reaction = model.getReaction("Serca_Pump");
-	fr = new FluxReaction(erMembrane,calcium,model,"SERCA_FLUX");
-	fr.setModel(model);
+	fr = new FluxReaction(model, erMembrane, null,"SERCA_FLUX");
+	fr.addReactant(calcium_cytosol, 1);
+	fr.addProduct(calcium_er, 1);
 	genKinetics = (GeneralKinetics)fr.getKinetics();
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
 	genKinetics.setParameterValue(genKinetics.getKineticsParameter("Kd"),new Expression(0.7));
@@ -272,12 +275,12 @@ public static Model getExample_Bound() throws Exception {
 	model.addSpecies(new Species("IP3_Receptor_Activated",null));
 
 	
-	model.addFeature("Extracellular",null,null);
+	model.addFeature("Extracellular");
 	Feature extracellular = (Feature)model.getStructure("Extracellular");
-	model.addFeature("Cytosol",extracellular,"PlasmaMembrane");
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	Membrane plasmaMembrane = (Membrane)model.getStructure("PlasmaMembrane");
-	model.addFeature("ER",cytosol,"ER_Membrane");
+	model.addFeature("ER");
 	Feature er = (Feature)model.getStructure("ER");
 	Membrane erMembrane = (Membrane)model.getStructure("ER_Membrane");
 	
@@ -361,7 +364,9 @@ public static Model getExample_Bound() throws Exception {
 	//     
 //	model.addReaction("IP3_generation");
 //	reaction = model.getReaction("IP3_generation");
-	fr = new FluxReaction(plasmaMembrane,ip3,model,"IP3_FLUX");
+	fr = new FluxReaction(model, plasmaMembrane, null, "IP3_FLUX");
+	fr.addReactant(ip3_extracellular, 1);
+	fr.addProduct(ip3_cytosol, 1);
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
@@ -409,7 +414,9 @@ public static Model getExample_Bound() throws Exception {
 	massAct.setParameterValue(massAct.getKineticsParameter("I1"),new Expression(I1));
 	model.addReactionStep(sr);
 	
-	fr = new FluxReaction(erMembrane,calcium,model,"IP3R_FLUX");
+	fr = new FluxReaction(model, erMembrane, null, "IP3R_FLUX");
+	fr.addReactant(calcium_cytosol, 1);
+	fr.addProduct(calcium_er, 1);
 	fr.addCatalyst(ri_erMembrane);
 //	fr.addCatalyst(calcium_cytosol);
 //	fr.addCatalyst(calcium_er);
@@ -431,7 +438,9 @@ public static Model getExample_Bound() throws Exception {
 	
 //	model.addReaction("Serca_Pump");
 //	reaction = model.getReaction("Serca_Pump");
-	fr = new FluxReaction(erMembrane,calcium,model,"SERCA_FLUX");
+	fr = new FluxReaction(model, erMembrane, null, "SERCA_FLUX");
+	fr.addReactant(calcium_cytosol, 1);
+	fr.addProduct(calcium_er, 1);
 	genKinetics = (GeneralKinetics)fr.getKinetics();
 	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
 	genKinetics.setParameterValue(genKinetics.getKineticsParameter("Kd"),new Expression(0.7));
@@ -541,14 +550,14 @@ public static Model getExample_Wagner() throws Exception {
 	model.addSpecies(new Species("IP3","IP3"));
 	Species I = model.getSpecies("IP3");
 	
-	model.addFeature("extracellular",null,null);
+	model.addFeature("extracellular");
 	Feature extracellular = (Feature)model.getStructure("extracellular");
 
-	model.addFeature("cytosol",extracellular,"plasmaMembrane");
+	model.addFeature("cytosol");
 	Feature cytosol = (Feature)model.getStructure("cytosol");
 	Membrane plasmaMem = (Membrane)model.getStructure("plasmaMembrane");
 
-	model.addFeature("er",cytosol,"erMembrane");
+	model.addFeature("er");
 	Feature ER = (Feature)model.getStructure("er");
 	Membrane ERmem = (Membrane)model.getStructure("erMembrane");
 	
@@ -665,7 +674,9 @@ public static Model getExample_Wagner() throws Exception {
 	//
 	// calcium flux through the IP3 Receptor
 	//
-	FluxReaction fr = new FluxReaction(ERmem,Ca,model,"IP3R_FLUX");
+	FluxReaction fr = new FluxReaction(model, ERmem, null,"IP3R_FLUX");
+	fr.addReactant(Ca_cyt, 1);
+	fr.addProduct(Ca_ER, 1);
 	fr.addCatalyst(I_cyt);
 	fr.addCatalyst(RCact_bound_ERmem);
 	fr.addCatalyst(RCact_ERmem);
@@ -683,7 +694,9 @@ public static Model getExample_Wagner() throws Exception {
 	//
 	// calcium flux through the SERCA pump
 	//
-	fr = new FluxReaction(ERmem,Ca,model,"SERCA_FLUX");
+	fr = new FluxReaction(model, ERmem, null,"SERCA_FLUX");
+	fr.addReactant(Ca_cyt, 1);
+	fr.addProduct(Ca_ER, 1);
 	genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
 	fr.setModel(model);
@@ -698,7 +711,9 @@ public static Model getExample_Wagner() throws Exception {
 	//
 	// calcium flux through leak
 	//
-	fr = new FluxReaction(ERmem,Ca,model,"LEAK_FLUX");
+	fr = new FluxReaction(model, ERmem, null,"LEAK_FLUX");
+	fr.addReactant(Ca_cyt, 1);
+	fr.addProduct(Ca_ER, 1);
 	genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
 	fr.setModel(model);
@@ -735,7 +750,7 @@ public static Model getExample2() throws Exception {
 	model.addSpecies(new Species("D","D"));
 	Species D = model.getSpecies("D");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	
@@ -841,7 +856,7 @@ public static Model getExample2_Fast() throws Exception {
 	model.addSpecies(new Species("F","F"));
 	Species F = model.getSpecies("F");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	
@@ -962,7 +977,7 @@ public static Model getExampleForFluorescenceIndicatorProtocol() throws Exceptio
 	model.addSpecies(new Species("I","I"));
 	Species I = model.getSpecies("I");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	model.addSpeciesContext(A,cytosol);
@@ -1060,7 +1075,7 @@ public static Model getExampleForFluorescenceLabelProtocol() throws Exception {
 	model.addSpecies(new Species("E","E"));
 	Species E = model.getSpecies("E");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	
@@ -1151,7 +1166,7 @@ public static Model getExampleHMM() throws Exception {
 	model.addSpecies(new Species("D","D"));
 	Species D = model.getSpecies("D");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	
@@ -1253,9 +1268,9 @@ public static Model getExampleWithCurrent() throws Exception {
 	model.addSpecies(new Species("D","D"));
 	Species D = model.getSpecies("D");
 	
-	model.addFeature("extracellular",null,null);
+	model.addFeature("extracellular");
 	Feature extracellular = (Feature)model.getStructure("extracellular");
-	model.addFeature("cytosol",extracellular,"PM");
+	model.addFeature("cytosol");
 	Feature cytosol = (Feature)model.getStructure("cytosol");
 	Membrane PM = (Membrane)model.getStructure("PM");
 	
@@ -1344,11 +1359,13 @@ public static Model getExampleWithCurrent() throws Exception {
 	//
 	// PlasmaMembrane REACTIONS
 	//
-	fr = new FluxReaction(PM,A,model,"A Flux");
+	fr = new FluxReaction(model, PM, null,"A Flux");
+	fr.addReactant(A_ec, 1);
+	fr.addProduct(A_cyt, 1);
 	fr.addCatalyst(B_cyt);
 	GHKKinetics ghk = new GHKKinetics(fr);
 	fr.setKinetics(ghk);
-	fr.getChargeCarrierValence().setExpression(new Expression(2));
+	ghk.getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence).setExpression(new Expression(2));
 	//ghk.setPermeability(new Expression("(Vmax*B_cyt/(Kd_Bcyt+B_cyt))"));
 	ghk.setParameterValue(ghk.getPermeabilityParameter(),new Expression(8.314e-2));
 	//ghk.setParameterValue("Vmax",Double.toString(Vmax));
@@ -1394,7 +1411,7 @@ public static Model getExample_GlobalParams() throws Exception {
 	model.addSpecies(new Species("D","D"));
 	Species D = model.getSpecies("D");
 	
-	model.addFeature("Cytosol",null,null);
+	model.addFeature("Cytosol");
 	Feature cytosol = (Feature)model.getStructure("Cytosol");
 	
 	

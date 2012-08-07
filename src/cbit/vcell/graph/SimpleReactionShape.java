@@ -17,6 +17,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 
+import javax.swing.Icon;
+
 import cbit.vcell.model.SimpleReaction;
 
 public class SimpleReactionShape extends ReactionStepShape {
@@ -40,19 +42,26 @@ public class SimpleReactionShape extends ReactionStepShape {
 	@Override
 	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
 		int circleDiameter = 9;
+		// --- Added for relaxed topolgy
+		Color newBackgroundColor = backgroundColor;
+		if (getSimpleReaction().getKinetics().getKineticsDescription().isLumped()){
+			newBackgroundColor = newBackgroundColor.darker().darker().darker();
+		}
+		// --- End Add for relaxed topolgy
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-circleDiameter) / 2;
 		int offsetY = (shapeHeight-circleDiameter) / 2;
-		if (icon == null) {
+//		if (icon == null) {			// ----- removing for relaxed topolgy
 			icon = new Area();
 			//icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY,circleDiameter,circleDiameter)));
 			icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
-		}
+//		}							// ----- removing for relaxed topolgy
 		Area movedIcon = icon.createTransformedArea(
 			AffineTransform.getTranslateInstance(absPosX, absPosY));
 
-		g2D.setColor(backgroundColor);
+		// g2D.setColor(backgroundColor);		// arg Altered for relaxed topology ......... to newBackgroundColor 
+		g2D.setColor(newBackgroundColor);
 		g2D.fill(movedIcon);
 		g2D.setColor(forgroundColor);
 		g2D.draw(movedIcon);

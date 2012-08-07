@@ -26,15 +26,9 @@ public class FluxReactionShape extends ReactionStepShape {
 
 	@Override
 	public Point getAttachmentLocation(int attachmentType) {
-		switch (attachmentType){
-		case ATTACH_CENTER:
-			return new Point(getSpaceManager().getSize().width/2, getSpaceManager().getSize().height/2);
-		case ATTACH_LEFT:
-			return new Point(0, getSpaceManager().getSize().height/2);
-		case ATTACH_RIGHT:
-			return new Point(getSpaceManager().getSize().width, getSpaceManager().getSize().height/2);
-		}
-		return null;	
+		int centerX = getSpaceManager().getSize().width / 2;
+		int centerY = getSpaceManager().getSize().height / 2;
+		return new Point(centerX, centerY);
 	}
 
 	public FluxReaction getFluxReaction() {

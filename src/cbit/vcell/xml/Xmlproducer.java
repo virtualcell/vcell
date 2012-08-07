@@ -100,6 +100,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -113,11 +114,11 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvolutionDataGenerator;
 import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
 import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
+import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
-import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.ExplicitDataGenerator;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
@@ -142,12 +143,12 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
@@ -165,7 +166,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GHKKinetics;
 import cbit.vcell.model.GeneralCurrentKinetics;
@@ -182,6 +182,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
@@ -1567,10 +1568,17 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	}
 	
 	// Add (Bio)events
-	if (param.getBioEvents()!=null && param.getBioEvents().length>0){
-		simulationcontext.addContent( getXML(param.getBioEvents()) );
+	BioEvent[] bioEvents = param.getBioEvents();
+	if (bioEvents!=null && bioEvents.length>0){
+		simulationcontext.addContent( getXML(bioEvents) );
 	}
 	
+	// Add rate rules
+	RateRule[] rateRules = param.getRateRules();
+	if (param.getRateRules()!=null && rateRules.length>0){
+		simulationcontext.addContent( getXML(rateRules) );
+	}
+
 	// Add Datacontext
 	if (param.getDataContext()!=null && param.getDataContext().getDataSymbols().length>0){
 		simulationcontext.addContent( getXML(param.getDataContext(), param.getModel().getUnitSystem()) );
@@ -1583,7 +1591,7 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	
 	// Add microscope measurements
 	simulationcontext.addContent(getXML(param.getMicroscopeMeasurement()));
-		
+
 	return simulationcontext;
 }
 
@@ -3119,24 +3127,6 @@ private Element getXML(FluxReaction param) throws XmlParseException {
 	fluxreaction.setAttribute(XMLTags.NameAttrTag, versionName);
 	fluxreaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	
-	if (param.getFluxCarrier() != null) {
-		fluxreaction.setAttribute(XMLTags.FluxCarrierAttrTag, mangle(param.getFluxCarrier().getCommonName()));		
-	}
-	Expression tempExp = null;
-	int valence;
-	try {
-		tempExp = param.getChargeCarrierValence().getExpression();
-		double d = (int)tempExp.evaluateConstant();
-		if ((int)d != d) {
-			throw new XmlParseException("Invalid value for charge valence: " + d + " for reaction: " + param.getName());
-		}
-		valence = (int)d;
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("Invalid value for the charge valence: " + 
-									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName()+" : "+e.getMessage());
-	}
-	fluxreaction.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
 	if (param.getPhysicsOptions() == FluxReaction.PHYSICS_ELECTRICAL_ONLY){
 		fluxreaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
 	}else if (param.getPhysicsOptions() == FluxReaction.PHYSICS_MOLECULAR_AND_ELECTRICAL){
@@ -3150,19 +3140,27 @@ private Element getXML(FluxReaction param) throws XmlParseException {
 		fluxreaction.setAttribute(XMLTags.KeyValueAttrTag, param.getKey().toString());
 	}
 
-	//
-	// write Catalysts
-	//
+	// Add subelements: Reactants/Products/Catalysts
+	//separate the order of the reactants, products, and modifiers.
 	ReactionParticipant rpArray[] = param.getReactionParticipants();
+	ArrayList<Element> products = new ArrayList<Element>();
+	ArrayList<Element> modifiers = new ArrayList<Element>();
 	for (int i = 0; i < rpArray.length; i++){
-		if (rpArray[i] instanceof Catalyst) {
-			fluxreaction.addContent( getXML((Catalyst)rpArray[i]) );
-		} else if (rpArray[i] instanceof Flux) {
-	        //ignore a Flux object
-		}/* else {
-				throw new Error("expecting catalyst, found type " + rp.getClass());
-			}*/
+		Element rp =  getXML(rpArray[i]);
+		if (rp != null) {
+			if (rpArray[i] instanceof Reactant)
+				fluxreaction.addContent(rp);
+			else if (rpArray[i] instanceof Product)
+				products.add(rp);
+			else if (rpArray[i] instanceof Catalyst)
+				modifiers.add(rp);
+		}
 	}
+	for (int i = 0; i < products.size(); i++)
+		fluxreaction.addContent((Element)products.get(i));
+	for (int i = 0; i < modifiers.size(); i++)
+		fluxreaction.addContent((Element)modifiers.get(i));
+	
 	//Add Kinetics	
 	fluxreaction.addContent( getXML(param.getKinetics()) );
 
@@ -3240,31 +3238,6 @@ private Element getXML(Kinetics param) throws XmlParseException {
 	return kinetics;
 }
 
-
-/**
- * This method returns a XMl representation of a Membrane object.
- * Creation date: (2/26/2001 11:56:13 AM)
- * @return Element
- * @param param cbit.vcell.model.Membrane
- * @param model cbit.vcell.model.Model
- * @deprecated This method is no longer in use.
- */
-private Element getXML(Membrane param/*, Model model*/) {
-	Element membrane = new Element(XMLTags.MembraneTag);
-	//Add Atributes
-	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	membrane.setAttribute(XMLTags.InsideFeatureTag, mangle(param.getInsideFeature().getName()));
-	membrane.setAttribute(XMLTags.OutsideFeatureTag, mangle(param.getOutsideFeature().getName()));
-	//*****not any more in use***** speciesContexts moved to Model level********
-	//Add SpeciesContexts			
-	/*SpeciesContext[] array = model.getSpeciesContexts(param);
-	for (int i=0 ; i<array.length ; i++){
-		membrane.addContent( getXML(array[i]) );
-	}**************/
-
-	return membrane;
-}
-
 public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 	Element outputFunctionsElement = new Element(XMLTags.OutputFunctionsTag);
 	for (AnnotatedFunction outputfunction : outputFunctions) {
@@ -3277,31 +3250,44 @@ public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 public Element getXML(ModelParameter[] modelParams) {
 	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
-		Element glParamElement = new Element(XMLTags.ParameterTag);
-		//Get parameter attributes - name, role and unit definition
-		glParamElement.setAttribute(XMLTags.NameAttrTag, mangle(modelParams[i].getName()));
-		if (modelParams[i].getRole() == Model.ROLE_UserDefined) {
-			glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDesc);
-		} else {
-			throw new RuntimeException("Unknown model parameter role/type");
-		}
-		VCUnitDefinition unit = modelParams[i].getUnitDefinition();
-		if (unit != null) {
-			glParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
-		}
-		// add expression as content
-		glParamElement.addContent(mangleExpression(modelParams[i].getExpression()) );
-		//add annotation (if there is any)
-		if (modelParams[i].getModelParameterAnnotation() != null &&
-				modelParams[i].getModelParameterAnnotation().length() > 0) {
-			Element annotationElement = new Element(XMLTags.AnnotationTag);
-			annotationElement.setText(mangle(modelParams[i].getModelParameterAnnotation()));
-			glParamElement.addContent(annotationElement);
-		}
+		Element glParamElement = getXML(modelParams[i]);
 		globalsElement.addContent(glParamElement);
 	}
 
 	return globalsElement;
+}
+
+
+private Element getXML(ModelParameter modelParam) {
+	Element glParamElement = new Element(XMLTags.ParameterTag);
+	//Get parameter attributes - name, role and unit definition
+	glParamElement.setAttribute(XMLTags.NameAttrTag, mangle(modelParam.getName()));
+	if (modelParam.getRole() == Model.ROLE_UserDefined) {
+		glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDesc);
+	} else {
+		throw new RuntimeException("Unknown model parameter role/type");
+	}
+//	if (modelParam.getRole() == Model.ROLE_UserDefined) {
+//		glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDescs[0]);
+//	} else	if (modelParam.getRole() == Model.ROLE_VariableRate) {
+//		glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDescs[1]);
+//	} else {
+//		throw new RuntimeException("Unknown model parameter role/type");
+//	}
+	VCUnitDefinition unit = modelParam.getUnitDefinition();
+	if (unit != null) {
+		glParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
+	}
+	// add expression as content
+	glParamElement.addContent(mangleExpression(modelParam.getExpression()) );
+	//add annotation (if there is any)
+	if (modelParam.getModelParameterAnnotation() != null &&
+			modelParam.getModelParameterAnnotation().length() > 0) {
+		Element annotationElement = new Element(XMLTags.AnnotationTag);
+		annotationElement.setText(mangle(modelParam.getModelParameterAnnotation()));
+		glParamElement.addContent(annotationElement);
+	}
+	return glParamElement;
 }
 
 
@@ -3341,7 +3327,7 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 		ArrayList<Element> list = new ArrayList<Element>();
 		Structure[] structarray = param.getStructures();
 		for (int i=0 ; i < structarray.length ; i++){
-			Element structure = getXML(structarray[i]);
+			Element structure = getXML(structarray[i], param);
 			if (structarray[i] instanceof Feature)
 				modelnode.addContent(structure);
 			else
@@ -3364,6 +3350,12 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 	for (int i=0 ; i < reactarray.length ; i++ ){
 		modelnode.addContent( getXML(reactarray[i]) );
 	}
+	
+//	// Add rate rules
+//	if (param.getRateRuleVariables()!=null && param.getRateRuleVariables().length>0){
+//		modelnode.addContent( getXML(param.getRateRuleVariables()) );
+//	}
+
 	//Get Diagrams
 	Diagram[] diagarray = param.getDiagrams();
 	for (int i=0 ; i<diagarray.length ; i++){
@@ -3374,9 +3366,27 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 		modelnode.addContent( getXML(param.getVersion(), param) );
 	}
 	
+	// add model UnitSystem
+	ModelUnitSystem unitSystem = param.getUnitSystem();
+	if (unitSystem != null) {
+		modelnode.addContent(getXML(unitSystem));
+	}
 	return modelnode;
 }
 
+
+public Element getXML(ModelUnitSystem unitSystem) {
+	Element unitSystemNode = new Element(XMLTags.ModelUnitSystemTag);
+	unitSystemNode.setAttribute(XMLTags.VolumeSubstanceUnitTag, mangle(unitSystem.getVolumeSubstanceUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.MembraneSubstanceUnitTag, mangle(unitSystem.getMembraneSubstanceUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.LumpedReactionSubstanceUnitTag, mangle(unitSystem.getLumpedReactionSubstanceUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.VolumeUnitTag, mangle(unitSystem.getVolumeUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.AreaUnitTag, mangle(unitSystem.getAreaUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.LengthUnitTag, mangle(unitSystem.getLengthUnit().getSymbol()));
+	unitSystemNode.setAttribute(XMLTags.TimeUnitTag, mangle(unitSystem.getTimeUnit().getSymbol()));
+	
+	return unitSystemNode;
+}
 
 /**
  * This method returns the XML representation of a NodeReference type object.
@@ -3511,21 +3521,7 @@ private Element getXML(SimpleReaction param) throws XmlParseException {
 	String nameStr = (param.getName()!=null)?(mangle(param.getName())):"unnamed_SimpleReaction";
 	simplereaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	simplereaction.setAttribute(XMLTags.NameAttrTag, nameStr);
-	Expression tempExp = null;
-	int valence;
-	try {
-		tempExp = param.getChargeCarrierValence().getExpression();
-		double d = (int)tempExp.evaluateConstant();
-		if ((int)d != d) {
-			throw new XmlParseException("Invalid value for charge valence: " + d + " for reaction: " + param.getName());
-		}
-		valence = (int)d;
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("Invalid value for the charge valence: " + 
-									(tempExp == null ? "null": tempExp.infix()) + " for reaction: " + param.getName(), e);
-	}
-	simplereaction.setAttribute(XMLTags.FluxCarrierValenceAttrTag, String.valueOf(valence));
+
 	if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_ELECTRICAL_ONLY){
 		simplereaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
 	}else if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_MOLECULAR_AND_ELECTRICAL){
@@ -3627,9 +3623,9 @@ private Element getXML(SpeciesContext param) {
  * @param param cbit.vcell.model.Structure
  * @param model cbit.vcell.model.Model
  */
-private Element getXML(Structure structure) throws XmlParseException {
+private Element getXML(Structure structure, Model model) throws XmlParseException {
 	Element structureElement = null;
-	
+	StructureTopology structTopology = model.getStructureTopology();
     if (structure instanceof Feature) {
         //This is a Feature
         structureElement = new Element(XMLTags.FeatureTag);
@@ -3637,8 +3633,14 @@ private Element getXML(Structure structure) throws XmlParseException {
 	    //process a Membrane
 	    structureElement = new Element(XMLTags.MembraneTag);
 	    //add specific attributes
-	    structureElement.setAttribute(XMLTags.InsideFeatureTag, mangle(((Membrane)structure).getInsideFeature().getName()));
-	    structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(((Membrane)structure).getOutsideFeature().getName()));
+		Feature insideFeature = structTopology.getInsideFeature((Membrane)structure);
+		if (insideFeature != null) {
+			structureElement.setAttribute(XMLTags.InsideFeatureTag, mangle(insideFeature.getName()));
+		}
+		Feature outsideFeature = structTopology.getOutsideFeature((Membrane)structure);
+		if (outsideFeature != null) {
+			structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(outsideFeature.getName()));
+		}
 		structureElement.setAttribute(XMLTags.MemVoltNameTag, mangle(((Membrane)structure).getMembraneVoltage().getName()));
     } else {
 	    throw new XmlParseException("An unknown type of structure was found:"+structure.getClass().getName());
@@ -4047,24 +4049,24 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 		Element eventElement = new Element(XMLTags.BioEventTag);
 		eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvents[i].getName()));
 
-	Element element = new Element(XMLTags.TriggerTag);
+		Element element = new Element(XMLTags.TriggerTag);
 		element.addContent(mangleExpression(bioEvents[i].getTriggerExpression()));
-	eventElement.addContent(element);
+		eventElement.addContent(element);
 
 		BioEvent.Delay delay = bioEvents[i].getDelay();
-	if (delay != null) {
-		element = new Element(XMLTags.DelayTag);
-		element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
+		if (delay != null) {
+			element = new Element(XMLTags.DelayTag);
+			element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
 			element.addContent(mangleExpression(delay.getDurationExpression()));
-		eventElement.addContent(element);
-	}
+			eventElement.addContent(element);
+		}
 		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
-	for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-		element = new Element(XMLTags.EventAssignmentTag);
-		element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+		for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
+			element = new Element(XMLTags.EventAssignmentTag);
+			element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
 			element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
-		eventElement.addContent(element);
-	}
+			eventElement.addContent(element);
+		}
 		bioEventsElement.addContent(eventElement);
 	}
 
@@ -4072,5 +4074,38 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 }
 
 
+//For rateRules in SimulationContext
+public Element getXML(RateRule[] rateRules) throws XmlParseException{
+	Element rateRulesElement = new Element(XMLTags.RateRulesTag);
+	for (int i = 0; i < rateRules.length; i++) {
+		Element rateRuleElement = new Element(XMLTags.RateRuleTag);
+		rateRuleElement.setAttribute(XMLTags.NameAttrTag, mangle(rateRules[i].getName()));
+		rateRuleElement.setAttribute(XMLTags.RateRuleVariableAttrTag, rateRules[i].getRateRuleVar().getName());
+		rateRuleElement.addContent(mangleExpression(rateRules[i].getRateRuleExpression()));
 
+		rateRulesElement.addContent(rateRuleElement);
+	}
+
+	return rateRulesElement;
+}
+
+/*
+//For rateRuleVariables in model
+public Element getXML(RateRuleVariable[] rateRuleVars) throws XmlParseException{
+	Element rateRuleVarsElement = new Element(XMLTags.RateRuleVariablesTag);
+	for (int i = 0; i < rateRuleVars.length; i++) {
+		Element rateRuleElement = new Element(XMLTags.RateRuleVariableTag);
+		rateRuleElement.setAttribute(XMLTags.NameAttrTag, mangle(rateRuleVars[i].getName()));
+		if (rateRuleVars[i].getStructure() != null) {
+			rateRuleElement.setAttribute(XMLTags.StructureAttrTag, mangle(rateRuleVars[i].getStructure().getName()));
+		}
+		rateRuleElement.setAttribute(XMLTags.ParamRoleAttrTag, rateRuleVars[i].getParameterRoleDesc(rateRuleVars[i].getParameterRole()));
+		rateRuleElement.addContent(getXML(rateRuleVars[i].getParameter()));
+
+		rateRuleVarsElement.addContent(rateRuleElement);
+	}
+
+	return rateRuleVarsElement;
+}
+*/
 }

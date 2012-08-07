@@ -13,6 +13,8 @@ package cbit.vcell.graph.structures;
 import java.util.Arrays;
 import java.util.List;
 
+import org.vcell.sbml.vcell.SBMLImporter;
+
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 
@@ -28,7 +30,7 @@ public class AllStructureSuite extends StructureSuite {
 	}
 	
 	public List<Structure> getStructures() {
-		return Arrays.asList(modelOwner.getModel().getStructures());
+		return Arrays.asList(SBMLImporter.sortStructures(modelOwner.getModel()));
 	}
 
 	@Override

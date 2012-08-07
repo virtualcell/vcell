@@ -15,8 +15,6 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitSystem;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2006 5:45:48 PM)
@@ -33,9 +31,10 @@ public GeneralLumpedKinetics(ReactionStep reactionStep) throws ExpressionExcepti
 	try {
 		KineticsParameter lumpedCurrentParm = new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),new Expression(0.0),ROLE_LumpedCurrent,null);
 		KineticsParameter lumpedReactionRateParm = new KineticsParameter(getDefaultParameterName(ROLE_LumpedReactionRate),new Expression(0.0),ROLE_LumpedReactionRate,null);
+		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
 		if (reactionStep.getStructure() instanceof Membrane){
-			setKineticsParameters(new KineticsParameter[] { lumpedCurrentParm, lumpedReactionRateParm });
+			setKineticsParameters(new KineticsParameter[] { lumpedCurrentParm, lumpedReactionRateParm, chargeValence });
 		}else{
 			setKineticsParameters(new KineticsParameter[] { lumpedReactionRateParm });
 		}
@@ -105,6 +104,10 @@ protected void refreshUnits() {
 			if (lumpedReactionRateParm!=null){
 				lumpedReactionRateParm.setUnitDefinition(modelUnitSystem.getLumpedReactionRateUnit());
 			}
+			KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
+			if (chargeValenceParm!=null){
+				chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -127,7 +130,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, java.bea
 	
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
 		Expression tempCurrentExpression = null;
-		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression z = getSymbolExpression(getKineticsParameterFromRole(ROLE_ChargeValence));
 		Expression F = getSymbolExpression(getReactionStep().getModel().getFARADAY_CONSTANT());
 		Expression N_PMOLE = getSymbolExpression(getReactionStep().getModel().getN_PMOLE());
 		Expression lumpledJ = getSymbolExpression(lumpedReactionRate); 

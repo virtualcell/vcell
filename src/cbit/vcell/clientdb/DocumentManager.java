@@ -336,7 +336,7 @@ Preference[] getPreferences() throws DataAccessException;
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:25:07 PM)
  */
-public ReactionStep getReactionStep(KeyValue reactionStepKey) throws DataAccessException;
+public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException;
 
 
 /**

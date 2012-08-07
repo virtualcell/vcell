@@ -25,52 +25,124 @@ package org.vcell.sbml.vcell;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.TreeMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.libsbml.ASTNode;
+import org.sbml.libsbml.AdjacentDomains;
+import org.sbml.libsbml.AdvectionCoefficient;
 import org.sbml.libsbml.AlgebraicRule;
+import org.sbml.libsbml.AnalyticGeometry;
+import org.sbml.libsbml.AnalyticVolume;
 import org.sbml.libsbml.AssignmentRule;
+import org.sbml.libsbml.BoundaryCondition;
+import org.sbml.libsbml.CSGeometry;
 import org.sbml.libsbml.Compartment;
+import org.sbml.libsbml.CompartmentMapping;
+import org.sbml.libsbml.CoordinateComponent;
+import org.sbml.libsbml.DiffusionCoefficient;
+import org.sbml.libsbml.Domain;
+import org.sbml.libsbml.DomainType;
 import org.sbml.libsbml.Event;
 import org.sbml.libsbml.FunctionDefinition;
+import org.sbml.libsbml.GeometryDefinition;
+import org.sbml.libsbml.ImageData;
 import org.sbml.libsbml.InitialAssignment;
+import org.sbml.libsbml.InteriorPoint;
 import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
+import org.sbml.libsbml.ListOfAnalyticVolumes;
+import org.sbml.libsbml.ListOfCSGObjects;
+import org.sbml.libsbml.ListOfCompartments;
+import org.sbml.libsbml.ListOfCoordinateComponents;
+import org.sbml.libsbml.ListOfDomainTypes;
+import org.sbml.libsbml.ListOfDomains;
 import org.sbml.libsbml.ListOfEvents;
+import org.sbml.libsbml.ListOfParameters;
+import org.sbml.libsbml.ListOfReactions;
+import org.sbml.libsbml.ListOfSampledVolumes;
+import org.sbml.libsbml.ListOfSpecies;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.Parameter;
+import org.sbml.libsbml.ParametricGeometry;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.Reaction;
+import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
+import org.sbml.libsbml.SampledField;
+import org.sbml.libsbml.SampledFieldGeometry;
+import org.sbml.libsbml.SampledVolume;
+import org.sbml.libsbml.SpatialCompartmentPlugin;
+import org.sbml.libsbml.SpatialModelPlugin;
+import org.sbml.libsbml.SpatialParameterPlugin;
+import org.sbml.libsbml.SpatialSpeciesRxnPlugin;
+import org.sbml.libsbml.SpatialSymbolReference;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
-import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Coordinate;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Issue;
+import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
 
+import sun.rmi.transport.proxy.CGIHandler;
+
+import cbit.image.VCImage;
+import cbit.image.VCImageCompressed;
+import cbit.image.VCImageUncompressed;
+import cbit.image.VCPixelClass;
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+import cbit.util.graph.Path;
+import cbit.util.graph.Tree;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CSGObject;
+import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
+import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralKinetics;
@@ -78,24 +150,27 @@ import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.solver.ode.FastAlgebraicSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
@@ -111,15 +186,28 @@ public class SBMLImporter {
 	private LambdaFunction[] lambdaFunctions = null;
 	private BioModel vcBioModel = null;
 	private HashMap<String, Expression> assignmentRulesHash = new HashMap<String, Expression>();
-	private TreeMap<String, VCUnitDefinition> vcUnitsHash = new TreeMap<String, VCUnitDefinition>();
-	private Hashtable<String, SBVCConcentrationUnits> speciesUnitsHash = new Hashtable<String, SBVCConcentrationUnits>();
+	private HashMap<String, Expression> rateRulesHash = new HashMap<String, Expression>();
+	private HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
+//	private Hashtable<String, SBVCConcentrationUnits> speciesUnitsHash = new Hashtable<String, SBVCConcentrationUnits>();
+	
+	// issue list for medium-level warnings while importing 
+	private Vector<Issue> localIssueList = new Vector<Issue>();
+	
+	// is model spatial?
+	private boolean bSpatial = false;
 
 	private VCLogger logger = null;
-	 
+	// for VCell specific annotation 
 	private static String RATE_NAME = XMLTags.ReactionRateTag;
 	private static String SPECIES_NAME = XMLTags.SpeciesTag;
 	private static String REACTION = XMLTags.ReactionTag;
 	private static String OUTSIDE_COMP_NAME = XMLTags.OutsideCompartmentTag;
+	
+	// For SBML geometry (definition) type
+	public static int GEOM_OTHER = 0;
+	public static int GEOM_ANALYTIC = 1;
+	public static int GEOM_IMAGEBASED = 2;
+	public static int GEOM_CSG = 3;
 	
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
@@ -152,11 +240,12 @@ public class SBMLImporter {
 		ResourceUtil.loadlibSbmlLibray();
 	}
 
-	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger) {
+	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean isSpatial) {
 		super();
 		this.sbmlFileName = argSbmlFileName;
 		this.logger = argVCLogger;
 		this.vcBioModel = new BioModel(null);
+		this.bSpatial = isSpatial;
 	}
 
 
@@ -168,41 +257,45 @@ protected void addCompartments(VCMetaData metaData) {
 	if (listofCompartments == null) {
 		throw new RuntimeException("Cannot have 0 compartments in model"); 
 	}
-	// Using a vector here - since there can be sbml models with only features and no membranes. In that case, we will need to add a membrane in between.
-	// Hence keepign the datastructure flexible.
+	// Using a vector here - since there can be SBML models with only features and no membranes.
+	// Hence keeping the datastructure flexible.
 	Vector<Structure> structVector = new Vector<Structure>();
 	java.util.HashMap<String, Structure> structureNameMap = new java.util.HashMap<String, Structure>();
-	ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
+
+	
 	try {
+		int structIndx = 0;
 		// First pass - create the structures
 		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 			org.sbml.libsbml.Compartment compartment = (org.sbml.libsbml.Compartment)listofCompartments.get(i);
-			// Sometimes, the compartment name can be null; in that case, use compartment id as the name.
 			String compartmentName = compartment.getId();
 			if (compartment.getSpatialDimensions() == 3) {
-				structVector.insertElementAt(new Feature(compartmentName), i);
-				structureNameMap.put(compartmentName, (Feature)structVector.elementAt(i));
+				Feature feature = new Feature(compartmentName);
+				structVector.insertElementAt(feature, structIndx);
+				structureNameMap.put(compartmentName, feature);
 			} else if (compartment.getSpatialDimensions() == 2) {
-				structVector.insertElementAt(new Membrane(compartmentName), i);
-				structureNameMap.put(compartmentName, (Membrane)structVector.elementAt(i));
+				Membrane membrane = new Membrane(compartmentName);
+				structVector.insertElementAt(membrane, structIndx);
+				structureNameMap.put(compartmentName, membrane);
 			} else {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
 				throw new RuntimeException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
-			
+			structIndx++;
 			sbmlAnnotationUtil.readAnnotation(structVector.get(i), compartment);
 			sbmlAnnotationUtil.readNotes(structVector.get(i), compartment);
 		}
 
-		// Second pass - connect the structures - add membranes if needed.
+		// Second pass - connect the structures
+		Model model = simContext.getModel();
 		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
-			org.sbml.libsbml.Compartment compartment = (org.sbml.libsbml.Compartment)listofCompartments.get(i);
+			org.sbml.libsbml.Compartment sbmlCompartment = (org.sbml.libsbml.Compartment)listofCompartments.get(i);
 			String outsideCompartmentId = null;
-			if (compartment.getOutside() != null && compartment.getOutside().length() > 0) {
-				//compartment.getOutside returns the Sid of the 'outside' compartment, so get its name from model.
-				outsideCompartmentId = compartment.getOutside();
+			if (sbmlCompartment.getOutside() != null && sbmlCompartment.getOutside().length() > 0) {
+				//compartment.getOutside returns the Sid of the 'outside' compartment, so get the compartment from model.
+				outsideCompartmentId = sbmlCompartment.getOutside();
 			} else {
-				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(compartment);
+				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlCompartment);
 				if (sbmlImportRelatedElement != null) {
 					Element embeddedVCellElement = sbmlImportRelatedElement.getChild(OUTSIDE_COMP_NAME, Namespace.getNamespace(SBMLUtils.SBML_VCELL_NS));
 					if (embeddedVCellElement != null) {
@@ -213,77 +306,14 @@ protected void addCompartments(VCMetaData metaData) {
 			if (outsideCompartmentId != null) {
 				Compartment outsideCompartment = sbmlModel.getCompartment(outsideCompartmentId);
 				Structure outsideStructure = (Structure)structureNameMap.get(outsideCompartment.getId());
-				if (compartment.getSpatialDimensions() == 3) {
-					// Check if outsideStructure is a membrane. If not, we have to add a membrane between the compartments, 
-					// since VCell requires that 2 features need to be separated by a membrane, and 2 membranes by a feature.
-					Feature feature = (Feature)structVector.elementAt(i);
-					if (outsideStructure instanceof Membrane) {
-						// If feature, set the parent structure (outside structure) only; i.e., the bounding membrane.
-						feature.setParentStructure(outsideStructure);
-						// Also, set the inside feature of the bounding membrane to this feature.
-						((Membrane)outsideStructure).setInsideFeature(feature);
-					} else if (outsideStructure instanceof Feature) {
-						// VCell doesn't permit the parent structure of a feature to be a feature.
-						// hence we add a membrane in between.
-						Membrane newMembrane = new Membrane(feature.getName() + "_membrane");
-						// add this new membrane to structsVector and the structureNamesMap
-						structVector.addElement(newMembrane);
-						structureNameMap.put(newMembrane.getName(), newMembrane);
-						// set this membrane as the parent for given structure, and set it as inside structure for the outer feature
-						feature.setParentStructure(newMembrane);
-						newMembrane.setInsideFeature(feature);
-						newMembrane.setOutsideFeature((Feature)outsideStructure);
-						// compute the size of membrane
-						if (compartment.isSetSize() && compartment.getSize() > 0.0) {
-							double size = compartment.getSize();
-							String spatialDimBuiltInName = getSpatialDimensionBuiltInName((int)compartment.getSpatialDimensions());
-							VCUnitDefinition sbmlSizeUnit = getSBMLUnit(compartment.getUnits(), spatialDimBuiltInName);	
-							size = sbmlSizeUnit.convertTo(size, vcModelUnitSystem.getVolumeUnit());
-							// Calculating the smallest surface area enclosing the volume of the compartment.
-							// Vol. of inner compartment: size = 4/3*PI*R^3; solving for R, substitute into surface of membrane : 4*PI*R^2
-							double membSize = 4 * Math.PI * Math.pow((size * 3/(4*Math.PI)), 2.0/3.0);
-							// add the newly added membrane as a compartment to the SBML model (set size, units, etc)
-							Compartment newCompartment = sbmlModel.createCompartment();
-							newCompartment.setId(newMembrane.getName());
-							newCompartment.setSpatialDimensions(2);
-							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
-							newCompartment.setSize(membSize);
-							// Define um2 - AREA; add it to model
-							VCUnitDefinition vcAreaUnit = vcModelUnitSystem.getAreaUnit();
-							UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcAreaUnit, sbmlModel.getLevel(), sbmlModel.getVersion(), vcModelUnitSystem);
-							unitDefn.setId(TokenMangler.mangleToSName(vcAreaUnit.getSymbol()));
-							// Also add it to vcUnitsHash, to be able to retreive it later
-							String unitName = unitDefn.getId();
-							if (vcUnitsHash.get(unitName) == null) {
-								sbmlModel.addUnitDefinition(unitDefn);
-								VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(unitDefn, vcBioModel.getModel().getUnitSystem());
-								vcUnitsHash.put(unitName, vcUnitDef);
-							}
-							newCompartment.setUnits(unitName);
-							newCompartment.setOutside(newMembrane.getOutsideFeature().getName());
-							compartment.setOutside(newCompartment.getId());
-						} else {
-							Compartment newCompartment = sbmlModel.createCompartment();
-							newCompartment.setId(newMembrane.getName());
-							newCompartment.setSpatialDimensions(2);
-							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
-							newCompartment.setOutside(newMembrane.getOutsideFeature().getName());
-							compartment.setOutside(newCompartment.getId());
-							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartment.getId()+" size is not set.");
-						}
-						newMembrane.setParentStructure(outsideStructure);
-					}
-				} else if (compartment.getSpatialDimensions() == 2) {
-					// If membrane, need to set both inside and outside feature. Inside feature will be set by the
-					// compartment for which this membrane is the outside (bounding) structure.
-					((Membrane)structVector.elementAt(i)).setParentStructure(outsideStructure);
-				}
+				Structure struct = (Structure)structureNameMap.get(sbmlCompartment.getId());
+				struct.setSbmlParentStructure(outsideStructure);
 			}
 		}
 
 		// set the structures in vc simContext
 		Structure[] structures = (Structure[])BeanUtils.getArray(structVector, Structure.class);
-		simContext.getModel().setStructures(structures);
+		model.setStructures(structures);
 		
 		// Third pass thro' the list of compartments : set the sizes on the structureMappings - can be done only after setting 
 		// the structures on simContext.
@@ -298,33 +328,32 @@ protected void addCompartments(VCMetaData metaData) {
 			} else {
 				double size = compartment.getSize();
 				// Check if size is specified by a rule
-				Expression sizeExpr = getValueFromRule(compartmentName);
-				if (sizeExpr != null) {
-					// WE ARE NOT HANDLING COMPARTMENT SIZES WITH ASSIGNMENT RULES AT THIS TIME  ...
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an assignment rule, cannot handle it at this time.");
+				Expression sizeExpr = getValueFromAssignmentRule(compartmentName);
+				if (sizeExpr != null && !sizeExpr.isNumeric()) {
+					// We are NOT handling compartment sizes with assignment rules/initial Assignments that are NON-numeric at this time ...
+					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an assignment rule which is not a numeric value, cannot handle it at this time.");
+				}
+				// check if sizeExpr is null - no assignment rule for size - check if it is specified by initial assignment
+				if (sizeExpr == null) {
+					InitialAssignment compInitAssgnment = sbmlModel.getInitialAssignment(compartmentName);
+					if (compInitAssgnment != null) {
+						sizeExpr = getExpressionFromFormula(compInitAssgnment.getMath());
+					}
+				}
+				if (sizeExpr != null && !sizeExpr.isNumeric()) {
+					// We are NOT handling compartment sizes with assignment rules/initial Assignments that are NON-numeric at this time ...
+					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an initial assignment which is not a numeric value, cannot handle it at this time.");
 				}
 				
-				// Convert size units from SBML -> VC compatible units.
-				// If compartment (size) unit is not set, it is in the default SBML volume unit for 3d compartment and 
-				// area unit for 2d compartment. Check to see if the default units are re-defined. If not, they are "litre"
-				// for vol and "sq.m" for area. Convert it to VC units (um3 for 3d and um2 for 2d compartments) -
-				// multiply the size value by the conversion factor.
-				Expression adjustedSizeExpr = new Expression(size);
-				Structure struct = simContext.getModel().getStructure(compartmentName);
-				StructureMapping.StructureMappingParameter mappingParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
-				VCUnitDefinition vcSizeUnit = mappingParam.getUnitDefinition();
-				int spatialDim = (int)compartment.getSpatialDimensions();
-				String spatialDimBuiltInName = getSpatialDimensionBuiltInName(spatialDim);
-				VCUnitDefinition sbmlSizeUnit = getSBMLUnit(compartment.getUnits(), spatialDimBuiltInName);
-				// Need to convert the size unit (vol or area) into VC compatible units (um3, um2) if it is not already in VC compatible units
-				double factor = 1.0;
-				factor  = sbmlSizeUnit.convertTo(factor, vcSizeUnit);
-				if (factor != 1.0) {
-					adjustedSizeExpr = Expression.mult(adjustedSizeExpr, new Expression(factor));
+				// no init assignment or assignment rule; create expression from 'size' attribute,  
+				if (sizeExpr == null) {
+					sizeExpr = new Expression(size);
 				}
-					
-				// Now set the size  & units of the compartment.
-				mappingParam.setExpression(new Expression(adjustedSizeExpr));
+				
+				// Now set the size of the compartment.
+				Structure struct = model.getStructure(compartmentName);
+				StructureMapping.StructureMappingParameter mappingParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
+				mappingParam.setExpression(sizeExpr);
 			}
 		}
 
@@ -332,7 +361,6 @@ protected void addCompartments(VCMetaData metaData) {
 		if (allSizesSet) {
 			StructureSizeSolver.updateRelativeStructureSizes(simContext);
 		}
-		simContext.getModel().getTopFeature();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error adding Feature to vcModel " + e.getMessage());
@@ -342,8 +370,8 @@ protected void addCompartments(VCMetaData metaData) {
 protected void addEvents() {
 	if (sbmlModel.getNumEvents() > 0) {
 		ListOfEvents listofEvents = sbmlModel.getListOfEvents();
+
 		Model vcModel = simContext.getModel();
-		ReservedSymbol kMole = vcModel.getKMOLE();
 		for (int i = 0; i < sbmlModel.getNumEvents(); i++){
 			try {
 				Event event = listofEvents.get(i);
@@ -375,7 +403,7 @@ protected void addEvents() {
 					/* TODO : This code is used when libSBML-4.1.0-b2 is used. On 3-29-10, version was switched back to 
 					 * libSBML-4.0.1-b2, which does not support boolean 'bUseValueFromTriggerTime'. This code shall be reinstated
 					 * when libSBML version is upgraded.
-					 * 
+					 */ 
 					if (event.isSetUseValuesFromTriggerTime()) {
 						bUseValsFromTriggerTime = event.isSetUseValuesFromTriggerTime();
 					} else {
@@ -383,7 +411,7 @@ protected void addEvents() {
 							bUseValsFromTriggerTime = false;
 						}
 					}
-  					*/
+  					
 					if (durationExpr != null && !durationExpr.isZero()) {
 						bUseValsFromTriggerTime = false;
 					}
@@ -400,25 +428,6 @@ protected void addEvents() {
 					if (varSTE != null) {
 						Expression evntAssgnExpr = getExpressionFromFormula(sbmlEvntAssgn.getMath());
 						evntAssgnExpr = adjustExpression(evntAssgnExpr, vcModel);
-						if (varSTE instanceof SpeciesContext) {
-							// if event assignment var is a species, the whole expression needs to be multiplied by the sp_Conc_factor
-					    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(varName);
-							SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
-							VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
-							VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-							SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", sbUnit, vcUnit, kMole);
-							String CONVFACTOR_PARAMETER = TokenMangler.mangleToSName("VC_SpConvFactor_" + concScaleFactor.getUnitDefinition().getSymbol());
-							
-							ModelParameter concParam = vcModel.getModelParameter(CONVFACTOR_PARAMETER);
-							if (concParam == null) {
-								concParam = vcModel.new ModelParameter(CONVFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
-								String annotation = "Conversion from SBML concentration units to VC concentration units";
-								concParam.setModelParameterAnnotation(annotation);
-								vcModel.addModelParameter(concParam);
-							}
-							// now multiply event assignment expression by the conc factor
-							evntAssgnExpr = Expression.mult(evntAssgnExpr, new Expression(concParam.getName()));
-						}
 						EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
 						vcEvntAssgnList.add(vcEvntAssgn);
 					} else {
@@ -470,13 +479,16 @@ protected void addInitialAssignments() {
 		try {
 			InitialAssignment initAssgn = (InitialAssignment)listofInitialAssgns.get(i);
 			String initAssgnSymbol = initAssgn.getSymbol();
+			Expression initAssignMathExpr = getExpressionFromFormula(initAssgn.getMath());
 			// if initial assignment is for a compartment, VCell doesn't support compartmentSize expressions, warn and bail out.
 			if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment '"+initAssgnSymbol+"' size has an initial assignment, cannot handle it at this time.");
+				if (!initAssignMathExpr.isNumeric()) {
+					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment '"+initAssgnSymbol+"' size has an initial assignment, cannot handle it at this time.");
+				} 
+				// if init assgn for compartment is numeric, the numeric value for size is set in addCompartments().
 			}
-			Expression initAssignMathExpr = getExpressionFromFormula(initAssgn.getMath());
 			// Check if init assgn expr for a species is in terms of x,y,z or other species. Not allowed for species.
-			if (sbmlModel.getSpecies(initAssgnSymbol) != null) {
+			if ( !bSpatial && sbmlModel.getSpecies(initAssgnSymbol) != null) {
 				if (initAssignMathExpr.hasSymbol(vcModel.getX().getName()) || 
 					initAssignMathExpr.hasSymbol(vcModel.getY().getName()) ||
 					initAssignMathExpr.hasSymbol(vcModel.getZ().getName()) ) {
@@ -493,7 +505,8 @@ protected void addInitialAssignments() {
 			} else if (mp != null) {
 				mp.setExpression(initAssignMathExpr);
 			} else {
-				logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
+				localIssueList.add(new Issue(initAssignMathExpr, IssueCategory.SBMLImport_UnsupportedAttributeOrElement , "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
+				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -530,7 +543,7 @@ protected void addFunctionDefinitions() {
 					continue;
 				}
 				// Add function arguments into vector, print args 
-				// Note that lambda function always shoud have at least 2 children
+				// Note that lambda function always should have at least 2 children
 				for (long j = 0; j < math.getNumChildren() - 1; ++j) {
 					argsVector.addElement(new String(math.getChild(j).getName()));
 				}
@@ -559,7 +572,7 @@ protected void addFunctionDefinitions() {
  * @throws PropertyVetoException
  */
 
-protected void addParameters() throws PropertyVetoException {
+protected void addParameters() throws Exception {
 	ListOf listofGlobalParams = sbmlModel.getListOfParameters();
 	if (listofGlobalParams == null) {
 		System.out.println("No Global Parameters");
@@ -571,27 +584,81 @@ protected void addParameters() throws PropertyVetoException {
 	// the hash can be used to check for reserved symbols, so that it will not be added as a global parameter in VCell, 
 	// since reserved symbols cannot be used as other variables (species, structureSize, parameters, reactions, etc.).
 	HashSet<String> reservedSymbolHash = new HashSet<String>();
-	reservedSymbolHash.add(vcModel.getPI_CONSTANT().getName());
-	reservedSymbolHash.add(vcModel.getFARADAY_CONSTANT().getName());
-	reservedSymbolHash.add(vcModel.getFARADAY_CONSTANT_NMOLE().getName());
-	reservedSymbolHash.add(vcModel.getGAS_CONSTANT().getName());
-	reservedSymbolHash.add(vcModel.getKMILLIVOLTS().getName());
-	reservedSymbolHash.add(vcModel.getKMOLE().getName());
-	reservedSymbolHash.add(vcModel.getN_PMOLE().getName());
-	reservedSymbolHash.add(vcModel.getTEMPERATURE().getName());
-	reservedSymbolHash.add(vcModel.getK_GHK().getName());
-	reservedSymbolHash.add(vcModel.getTIME().getName());
+	for (ReservedSymbol rs : vcModel.getReservedSymbols()) {
+		reservedSymbolHash.add(rs.getName());
+	}
 	
 	ModelUnitSystem modelUnitSystem = vcModel.getUnitSystem();
+	
+	// needed to ascertain the boundary condition type (later, when processing the SBML parameters for boundary condition) 
+	CoordinateComponent ccX = null; 
+	CoordinateComponent ccY = null;
+	CoordinateComponent ccZ = null;
+	if (bSpatial) {
+		SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+		if (mplugin != null) {
+			org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
+			ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
+			ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
+			ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
+		}
+	}
+	
 	for (int i = 0; i < sbmlModel.getNumParameters(); i++){
 		Parameter sbmlGlobalParam = (Parameter)listofGlobalParams.get(i);
 		String paramName = sbmlGlobalParam.getId();
-		// Check if param is defined by a rule. If so, that value overrides the value existing in the param element.
-		Expression valueExpr = getValueFromRule(paramName);
+
+		SpatialParameterPlugin spplugin = null;
+		if (bSpatial) {
+			// check if parameter id is x/y/z : if so, check if its 'spatialSymbolRef' child's spatial id and type are non-empty.
+			// If so, the parameter represents a spatial element.
+			// If not, throw an exception, since a parameter that does not represent a spatial element cannot have an id of x/y/z
+			
+			// (a) the requiredElements attributes should be 'spatial'
+			boolean bSpatialParam = false;
+			RequiredElementsSBasePlugin reqPlugin = (RequiredElementsSBasePlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
+			if (reqPlugin != null) {
+				if (reqPlugin.getMathOverridden().equals(SBMLUtils.SBML_SPATIAL_NS_PREFIX)) {
+					bSpatialParam = true;
+				}
+				spplugin = (SpatialParameterPlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+				if (paramName.equals("x") || paramName.equals("y") || paramName.equals("z")) {
+					// (b) and the spatialSymbolRef (splatialParamPlugin) attributes should be non-empty
+					SpatialSymbolReference spSymRef = spplugin.getSpatialSymbolReference();
+					if (spSymRef.isSetSpatialId() && spSymRef.isSetType()) {
+						bSpatialParam = bSpatialParam && true;
+					}
+					
+					// if (a) and (b) are not true, for param with id x/y/z, throw exception - not allowed.
+					// if (a) and (b) are true, continue with the next parameter
+					if (!bSpatialParam) {
+						throw new RuntimeException("Parameter '" + paramName +
+							"' is not a spatial parameter : Cannot have a variable in VCell named '" + 
+							paramName + "' unless it is a spatial variable.");
+					} else {
+						// go to the next parameter - do not add the spatial parameter to the list of vcell parameters.
+						continue;
+					}
+				}
+			}
+		}
+		
+		//
+		// Get param value if set or get its expression from rule
+		//
+		
+		// Check if param is defined by an assignment rule or initial assignment. If so, that value overrides the value existing in the param element.
+		// assignment rule, first
+		Expression valueExpr = getValueFromAssignmentRule(paramName);
 		if (valueExpr == null) {
 			if (sbmlGlobalParam.isSetValue()) {
 				double value = sbmlGlobalParam.getValue();
 				valueExpr = new Expression(value);
+			} else {
+				// if value for global param is not set and param has a rate rule, need to set an init value for param (else, there will be a problem in reaction which uses this parameter).
+				// use a 'default' initial value of '0'
+				valueExpr = new Expression(0.0);
+				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.LOW_PRIORITY, "Parameter did not have an initial value, but has a rate rule specified. Using a default value of 0.0.");
 			}
 		}
 
@@ -599,16 +666,111 @@ protected void addParameters() throws PropertyVetoException {
 			// valueExpr will be changed
 			valueExpr = adjustExpression(valueExpr, vcModel);
 		}
-			
+
+		// if SBML model is spatial, check if param represents species diffusion/advection/boundary condition parameters for 'spatial' extension
+		if (bSpatial) {
+			try {
+				SpeciesContext paramSpContext = null;
+				SpeciesContextSpec vcSpContextsSpec = null;
+				// Check for diffusion coefficient(s)
+				DiffusionCoefficient diffCoeff = spplugin.getDiffusionCoefficient();
+				if (diffCoeff.isSetVariable()) {
+					// get the var of diffCoeff; find appropriate spContext in vcell; set its diff param to param value. 
+					paramSpContext = vcModel.getSpeciesContext(diffCoeff.getVariable());
+					if (paramSpContext != null) {
+						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+						vcSpContextsSpec.getDiffusionParameter().setExpression(valueExpr);
+					}
+					// go to the next parameter - do not add the diffusion coeff parameter to the list of vcell parameters.
+					continue;
+				}
+				
+				// Check for advection coefficient(s)
+				AdvectionCoefficient advCoeff = spplugin.getAdvectionCoefficient();
+				if (advCoeff.isSetVariable()) {
+					// get the var of advCoeff; find appropriate spContext in vcell; set its adv param to param value. 
+					paramSpContext = vcModel.getSpeciesContext(advCoeff.getVariable());
+					if (paramSpContext != null) {
+						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+						long coord = advCoeff.getCoordinateIndex();
+						if (coord == 0) {
+							vcSpContextsSpec.getVelocityXParameter().setExpression(valueExpr);
+						} else if (coord == 1) {
+							vcSpContextsSpec.getVelocityYParameter().setExpression(valueExpr);
+						} else if (coord == 2) {
+							vcSpContextsSpec.getVelocityZParameter().setExpression(valueExpr);
+						}
+					}
+					// go to the next parameter - do not add the advection coeff parameter to the list of vcell parameters.
+					continue;
+				} 
+	
+				// Check for Boundary condition(s)
+				BoundaryCondition bCondn = spplugin.getBoundaryCondition();
+				if (bCondn.isSetVariable()) {
+					// get the var of boundaryCondn; find appropriate spContext in vcell; 
+					// set the BC param of its speciesContextSpec to param value. 
+					paramSpContext = vcModel.getSpeciesContext(bCondn.getVariable());
+					if (paramSpContext != null) {
+						StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
+						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
+						if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getSpatialId())) {
+							// if type from SBML parameter Boundary Condn is not the same as the boundary type of the 
+							// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping
+							// to the value of 'type' from SBML parameter Boundary Condn. 
+							String bcXmType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeXm().toString().equals(bcXmType)) {
+								sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
+							}
+							// set expression for boundary condition in speciesContextSpec
+							vcSpContextsSpec.getBoundaryXmParameter().setExpression(valueExpr);
+						} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
+							String bcXpType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeXp().toString().equals(bcXpType)) {
+								sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
+							}
+							vcSpContextsSpec.getBoundaryXpParameter().setExpression(valueExpr);
+						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
+							String bcYmType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeYm().toString().equals(bcYmType)) {
+								sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
+							}
+							vcSpContextsSpec.getBoundaryYmParameter().setExpression(valueExpr);
+						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
+							String bcYpType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeYp().toString().equals(bcYpType)) {
+								sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
+							}
+							vcSpContextsSpec.getBoundaryYpParameter().setExpression(valueExpr);
+						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
+							String bcZmType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeZm().toString().equals(bcZmType)) {
+								sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
+							}
+							vcSpContextsSpec.getBoundaryZmParameter().setExpression(valueExpr);
+						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
+							String bcZpType = bCondn.getType();
+							if (!sm.getBoundaryConditionTypeZp().toString().equals(bcZpType)) {
+								sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
+							}
+							vcSpContextsSpec.getBoundaryZpParameter().setExpression(valueExpr);
+						}
+					}
+					// go to the next parameter - do not add the advection coeff parameter to the list of vcell parameters.
+					continue;
+				}
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace(System.out);
+			}
+		}
+
+		
 		// Finally, create and add model parameter to VC model if it already doesn't exist.
 		if (vcModel.getModelParameter(paramName) == null) {
-			VCUnitDefinition glParamUnitDefn = vcUnitsHash.get(sbmlGlobalParam.getUnits());
+			VCUnitDefinition glParamUnitDefn = sbmlUnitIdentifierHash.get(sbmlGlobalParam.getUnits());
 			// if units for param were not defined, don't let it be null; set it to TBD or check if it was dimensionless.
 			if (glParamUnitDefn == null) {
 				glParamUnitDefn = modelUnitSystem.getInstance_TBD();
-			}
-			if (sbmlGlobalParam.getUnits().equals("dimensionless")) {
-				glParamUnitDefn = modelUnitSystem.getInstance_DIMENSIONLESS();
 			}
 			// Also check if the SBML global param is a reserved symbol in VCell : cannot add reserved symbol to model params.
 			if (!reservedSymbolHash.contains(paramName)) {
@@ -630,100 +792,18 @@ protected void addParameters() throws PropertyVetoException {
  * @param vcSpContexts
  * @throws PropertyVetoException
  */
-private Expression adjustExpression(Expression valueExpr, Model vcModel) throws PropertyVetoException {
+private Expression adjustExpression(Expression valueExpr, Model model) throws PropertyVetoException {
 	Expression adjustedExpr = new Expression(valueExpr);
 	// ************* TIME CONV_FACTOR if 'time' is present in global parameter expression
 	// If time 't' is present in the global expression, it is in VC units (secs), convert it back to SBML units
 	// hence, we take the inverse of the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
-	adjustedExpr = adjustTimeConvFactor(vcModel, adjustedExpr);
+
+	/** ---- FOR NOW, IGNORE TIME UNIT CONVERSION ----  */
+	// adjustedExpr = adjustTimeConvFactor(model, adjustedExpr);
 	
-	// ************** SPECIES CONC_FACTOR if species are present in global parameter expression ******************
-	// if global parameter is an expression with model species, we need a conversion factor for the species units (SBML - VC units),
-	// similar to the conversion that is done in reactions.
-	ReservedSymbol kMole = vcModel.getKMOLE();
-	ModelUnitSystem modelUnitSystem = vcModel.getUnitSystem();
-	String[] symbols = adjustedExpr.getSymbols();
-	if (symbols != null) {
-		for (int j = 0; j < symbols.length; j++) {
-			String CONCFACTOR_PARAMETER = "VC_SpConcFactor_";
-			SpeciesContext spContext = vcModel.getSpeciesContext(symbols[j]);
-			
-			if (spContext != null) {
-		    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spContext.getName());
-				SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
-				VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
-				VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-								
-				// the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
-				// within the expr; we convert concs into SBML (using 'sp_conc_factor'), so that the SBML expression is consistent;  
-				try {
-					SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit, kMole);
-					if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().isEquivalent(modelUnitSystem.getInstance_DIMENSIONLESS())) ) {
-						// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
-						// No conversion is required, and we don't need to include a concentration scale factor for the species.
-					} else {
-						// Substitute any occurrence of speciesName in global param expression with 'speciesName*concScaleFactor'
-						// check if CONC_FACTOR is already defined in VCell model.
-						CONCFACTOR_PARAMETER = TokenMangler.mangleToSName(CONCFACTOR_PARAMETER + concScaleFactor.getUnitDefinition().getSymbol());
-						ModelParameter mp = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
-						if (mp == null) {
-							// no global parameter with concFactor name, so create and add one.
-							ModelParameter concScaleParam = vcModel.new ModelParameter(CONCFACTOR_PARAMETER, concScaleFactor.getExpression().flatten(), Model.ROLE_UserDefined, concScaleFactor.getUnitDefinition());
-							String annotation = "Conversion from VC concentration units to SBML concentration units";
-							concScaleParam.setModelParameterAnnotation(annotation);
-							vcModel.addModelParameter(concScaleParam);	
-						} else {
-							// ???????????
-							System.out.println("DON'T KNOW WHAT TO DO YET ...");
-						}
-					}
-				} catch (ExpressionException e) {
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
-				}	// end try - catch
-				// any occurrence of "sp" in param valeExpr should be replaced by "sp*CONCFACTOR_PARAM", if not already present.
-				if ((vcModel.getModelParameter(CONCFACTOR_PARAMETER) != null)) {
-					try {
-						adjustedExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
-					} catch (ExpressionException e) {
-						e.printStackTrace(System.out);
-						throw new RuntimeException(e.getMessage());
-					}
-				}
-			} // end --- (if spContext != null)
-		}	// end for j - symbols
-	}	// end valExpr.Symbols != null
 	return adjustedExpr;
 }
 
-
-private Expression adjustTimeConvFactor(Model model, Expression expr) throws PropertyVetoException {
-	Expression adjustedExpr = new Expression(expr);
-	String t = simContext.getModel().getTIME().getName();
-	double timeFactorVal = 1.0/getSBMLTimeUnitsFactor(); 
-	String TIME_CONVFACTOR = "VC_TimeConvFactor";
-	if ((timeFactorVal != 1) && (adjustedExpr.hasSymbol(t))) {
-		if (!adjustedExpr.hasSymbol(TIME_CONVFACTOR)) {
-			// If no matching param for time conversion factor was found in sbml model, 
-			// add TIME_CONVFACTOR as a global param in VCell before setting this global.
-			ModelParameter timeConvParam = model.getModelParameter(TIME_CONVFACTOR);
-			if (timeConvParam == null) {
-				timeConvParam = model.new ModelParameter(TIME_CONVFACTOR, new Expression(timeFactorVal), Model.ROLE_UserDefined, model.getUnitSystem().getInstance_DIMENSIONLESS());
-				String annotation = "Conversion from SBML time units to VC time units";
-				timeConvParam.setModelParameterAnnotation(annotation);
-				model.addModelParameter(timeConvParam);	
-			}
-			// now replace 't' with 't*TIME_CONVFACTOR' in the parameter expression.
-			try {
-				adjustedExpr.substituteInPlace(new Expression(t), new Expression(t +"*" + TIME_CONVFACTOR));
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
-			}
-		}
-	}
-	return adjustedExpr;
-}
 
 /**
  *  addReactionParticipant :
@@ -809,7 +889,8 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		// If species is not present, and modifierNum > 0, it was not previously added as a reactant and/or pdt, hence can add it as a catalyst.
 		if (modifierNum > 0) {
 			if (bAddedAsReactant || bAddedAsProduct) {
-				logger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
+				localIssueList.add(new Issue(speciesContext, IssueCategory.SBMLImport_Reaction, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
+				// logger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
 			} else {
 				vcRxn.addCatalyst(speciesContext);
 			}
@@ -820,7 +901,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
  * addReactions:
  *
  */
-protected void addReactions(VCMetaData metaData) {
+
+/*
+protected void addReactionsOld(VCMetaData metaData) {
 	if (sbmlModel == null) {
 		throw new RuntimeException("SBML model is NULL");
 	}
@@ -832,8 +915,8 @@ protected void addReactions(VCMetaData metaData) {
 	ReactionStep[] vcReactions = new ReactionStep[(int)sbmlModel.getNumReactions()];
 	Model vcModel = simContext.getModel();
 	ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
-	ReservedSymbol kMole = vcModel.getKMOLE();
-	VCUnitDefinition KmoleUnits = kMole.getUnitDefinition();
+//	ReservedSymbol kMole = vcModel.getKMOLE();
+//	VCUnitDefinition KmoleUnits = kMole.getUnitDefinition();
 	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 	try {
 		for (int i = 0; i < sbmlModel.getNumReactions(); i++) {
@@ -854,12 +937,8 @@ protected void addReactions(VCMetaData metaData) {
 						if (!(struct instanceof Membrane)) {
 							throw new RuntimeException("Appears that the flux reaction is not occuring on a membrane.");
 						}
-						String fluxCarrierSpName = embeddedRxnElement.getAttributeValue(XMLTags.FluxCarrierAttrTag);
-						Species fluxCarrierSp = vcModel.getSpecies(fluxCarrierSpName);
-						if (fluxCarrierSp == null) {
-							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxCarrier : " + fluxCarrierSpName + " for SBML reaction : " + rxnName);
-						}
-						vcReactions[i] = new FluxReaction((Membrane)struct, fluxCarrierSp, vcModel, rxnName);
+						vcReactions[i] = new FluxReaction((Membrane)struct, null, rxnName);
+						vcReactions[i].setModel(vcModel);
 						// Set the fluxOption on the flux reaction based on whether it is molecular, molecular & electrical, electrical.
 						String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
 						if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularOnly)) {
@@ -873,13 +952,13 @@ protected void addReactions(VCMetaData metaData) {
 						}
 					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
-						vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+						vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
 					}
 				} else {
-					vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+					vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
 				}
 			} else {
-				vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+				vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
 			}
 			
 			// set annotations and notes on vcReactions[i]
@@ -979,13 +1058,13 @@ protected void addReactions(VCMetaData metaData) {
 				VCUnitDefinition VC_RateUnit = null;
 				VCUnitDefinition SBML_RateUnit = kLawRateUnit;
 	
-				/**
-				 * Now, based on the kinetic law expression, see if the rate is expressed in concentration/time or substance/time :
-				 * If the compartment_id of the compartment corresponding to the structure in which the reaction takes place 
-				 * occurs in the rate law expression, it is in concentration/time; divide it by the compartment size and bring in 
-				 * the rate law as 'Distributed' kinetics. If not, the rate law is in substance/time; bring it in (as is) as 
-				 * 'Lumped' kinetics. 
-				 */ 
+				
+				//  Now, based on the kinetic law expression, see if the rate is expressed in concentration/time or substance/time :
+				//  If the compartment_id of the compartment corresponding to the structure in which the reaction takes place 
+				//  occurs in the rate law expression, it is in concentration/time; divide it by the compartment size and bring in 
+				//  the rate law as 'Distributed' kinetics. If not, the rate law is in substance/time; bring it in (as is) as 
+				//  'Lumped' kinetics. 
+				  
 				
 				if (kinetics instanceof GeneralKinetics) {
 					// rate law is in terms of concentration/time; use GeneralKinetics ('Distributed' kinetics) 
@@ -1005,21 +1084,9 @@ protected void addReactions(VCMetaData metaData) {
 							VC_RateUnit = vcModelUnitSystem.getMembraneReactionRateUnit();
 						}
 					}
-//					if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_mol)) {
-//						if (reactionStructure instanceof Membrane && vcReactions[i] instanceof SimpleReaction) {
-//							SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
-//							vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(kMole, kMole.getNameScope())));
-//						} 
-//					} else if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_molecules)) {
-//						if ( (reactionStructure instanceof Feature) || (reactionStructure instanceof Membrane && vcReactions[i] instanceof FluxReaction) ) {
-//							SBML_RateUnit = SBML_RateUnit.multiplyBy(KmoleUnits);
-//							vcRateExpression = Expression.mult(vcRateExpression, new Expression(kMole, kMole.getNameScope()));
-//						} 
-//					}
-	
-					/* Depending on SBML substance units (moles or molecules) and location of reaction  (membrane or feature), 
-					   an intermediate unit conversion is required between SBML and VC units before evaluating 
-					   the 'dimensionless' scale factor (see next step below) */
+					//   Depending on SBML substance units (moles or molecules) and if the reaction is on a membrane or feature, 
+					//   an intermediate unit conversion is required between SBML and VC units before evaluating 
+					//   the 'dimensionless' scale factor (see next step below) 
 					if (reactionStructure instanceof Membrane && vcReactions[i] instanceof SimpleReaction) {
 						if (kLawSubstanceUnit.divideBy(KmoleUnits).isCompatible(vcModelUnitSystem.getMembraneSubstanceUnit())) {
 							SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
@@ -1031,10 +1098,11 @@ protected void addReactions(VCMetaData metaData) {
 							vcRateExpression = Expression.mult(vcRateExpression, new Expression(kMole, kMole.getNameScope()));
 						} 
 					}
-					/* Converting rate expression into density/time (for VCell). We need to divide by compartmentSize to remove the size from
-					   the existing equation, but since just dividing by size will accumulate the variables (VCell expression handling), we 
-					   differentiate the rate expression to remove the compartmentSize var from the original expression.
-					   (No need to check if rate expression has COMP_SYMBOL, since we wouldn't be in this loop otherwise, but checking anyway). */
+	
+					//   Converting rate expression into density/time (for VCell). We need to divide by compartmentSize to remove the size from
+					//   the existing equation, but since just dividing by size will accumulate the variables (VCell expression handling), we 
+					//   differentiate the rate expression to remove the compartmentSize var from the original expression.
+					//   (No need to check if rate expression has COMP_SYMBOL, since we wouldn't be in this loop otherwise, but checking anyway). 
 					 
 					if (vcRateExpression.hasSymbol(COMPARTMENTSIZE_SYMBOL)) {
 						vcRateExpression = removeCompartmentScaleFactorInRxnRateExpr(vcRateExpression, COMPARTMENTSIZE_SYMBOL, rxnName);
@@ -1048,9 +1116,9 @@ protected void addReactions(VCMetaData metaData) {
 					// Virtual cell rate unit in terms of substance/time. Units depend on whether reaction is in feature or membrane
 					VC_RateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
 	
-					/* Depending on SBML substance units (moles or molecules) and if the reaction is on a membrane or feature, 
-					   an intermediate unit conversion is required between SBML and VC units before evaluating 
-					   the 'dimensionless' scale factor (see next step below) */
+					//   Depending on SBML substance units (moles or molecules) and if the reaction is on a membrane or feature, 
+					//   an intermediate unit conversion is required between SBML and VC units before evaluating 
+					//   the 'dimensionless' scale factor (see next step below) 
 					if (kLawSubstanceUnit.divideBy(KmoleUnits).isCompatible(vcModelUnitSystem.getLumpedSubstanceUnit())) {
 						SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
 						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(kMole, kMole.getNameScope())));
@@ -1069,13 +1137,13 @@ protected void addReactions(VCMetaData metaData) {
 							}
 						}
 						if (vcRateExpression.hasSymbol(comp1.getId()) && !bCompFoundInLocalParams) {
-							/* this compartmentSize is being used in the rate expr, but since compSizes are now proxy parameters, their actual sizes 
-							   need not be added as a kinetic parameter. Compare the units of the compSize in SBML (usually L) with VCell (um3)
-							   The expr from SBML is in terms of SBML units, and it is now in VC units, but we have to translate them back to SBML units 
-							   within the expr; then we translate the SBML rate units into VCell units.
-							   we convert sizes into SBML (using 'comp_sizefactor'); so that the SBML expression is consistent; 
-							   then we translate the SBML expression into VCell units (using 'sbmlRateFactor') - happens later
-							*/
+							//   this compartmentSize is being used in the rate expr, but since compSizes are now proxy parameters, their actual sizes 
+							//   need not be added as a kinetic parameter. Compare the units of the compSize in SBML (usually L) with VCell (um3)
+							//   The expr from SBML is in terms of SBML units, and it is now in VC units, but we have to translate them back to SBML units 
+							//   within the expr; then we translate the SBML rate units into VCell units.
+							//   we convert sizes into SBML (using 'comp_sizefactor'); so that the SBML expression is consistent; 
+							//   then we translate the SBML expression into VCell units (using 'sbmlRateFactor') - happens later
+							
 							// If there is a conversion factor, we need to use it ('comp*comp_Sizefactor' instead of 'comp').This conversion factor
 							// needs to be added; but add it as a global parameter if it doesn't already exist.
 							if (!comp1.getId().equals(compartment.getId())) {
@@ -1153,8 +1221,8 @@ protected void addReactions(VCMetaData metaData) {
 				for (int k = 0; k < vcSpeciesContexts.length; k++){
 					if (vcRateExpression.hasSymbol(vcSpeciesContexts[k].getName())) {
 						org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[k].getName());
-						/* Check if species name is used as a local parameter in the klaw. If so, the parameter in the local namespace 
-						   takes precedence. So ignore unit conversion for the species with the same name. */
+						// Check if species name is used as a local parameter in the klaw. If so, the parameter in the local namespace 
+						// takes precedence. So ignore unit conversion for the species with the same name. 
 						boolean bSpeciesNameFoundInLocalParamList = false;
 						for (int ll = 0; ll < kLaw.getNumParameters(); ll++) {
 							org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(ll);
@@ -1173,12 +1241,12 @@ protected void addReactions(VCMetaData metaData) {
 						VCUnitDefinition VC_conc_unit = sbvcSubstUnits.getVCConcentrationUnits();
 						VCUnitDefinition SBML_conc_unit = sbvcSubstUnits.getSBConcentrationUnits();
 
-						/* the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
-						   within the expr; then we translate the SBML rate units into VCell units.
-						   we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
-						   into VCell units (using 'sbmlRateFactor') */
+						 //  the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
+						 //  within the expr; then we translate the SBML rate units into VCell units.
+						 //  we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
+						 //  into VCell units (using 'sbmlRateFactor') 
 						SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcUnit", VC_conc_unit, SBML_conc_unit, kMole);
-						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().isEquivalent(vcModelUnitSystem.getInstance_DIMENSIONLESS())) ) {
+						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(vcModelUnitSystem.getInstance_DIMENSIONLESS())) ) {
 							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
 							// No conversion is required, and we don't need to include a concentration scale factor for the species.
 						} else {
@@ -1216,7 +1284,7 @@ protected void addReactions(VCMetaData metaData) {
 									Expression tempConcFactorExpr = concScaleFactor.getExpression();
 									Parameter glParam = sbmlModel.getParameter(CONCFACTOR_PARAMETER);
 									if (glParam != null) {
-										Expression paramValExpr = getValueFromRule(glParam.getId());
+										Expression paramValExpr = getValueFromAssignmentRule(glParam.getId());
 										if (paramValExpr == null) {
 											if (glParam.isSetValue()) {
 												double value = glParam.getValue();
@@ -1329,14 +1397,15 @@ protected void addReactions(VCMetaData metaData) {
 	}
 }
 
+*/
+
 /**
- *  addRules :
- *		Adds Rules from the SBML document
+ *  addAssignmentRules :
+ *		Adds Assignment Rules from the SBML document
  *		Assignment rules are allowed (initial concentration of species; parameter definitions, etc.
- *		Rate rules and Algebraic rules are not allowed (used) in the Virtual Cell.
  *		
 **/
-protected void addRules() throws Exception {
+protected void addAssignmentRules() throws Exception {
 	if (sbmlModel == null) {
 		throw new RuntimeException("SBML model is NULL");
 	}
@@ -1347,9 +1416,7 @@ protected void addRules() throws Exception {
 	}
 	for (int i = 0; i < sbmlModel.getNumRules(); i++){
 		Rule rule = (org.sbml.libsbml.Rule)listofRules.get(i);
-		if (!(rule instanceof AssignmentRule)) {
-			throw new RuntimeException("Algebraic or Rate rules are not handled in the Virtual Cell at this time");
-		} else {
+		if (rule instanceof AssignmentRule) {
 			// Get the assignment rule and store it in the hashMap.
 			AssignmentRule assignmentRule = (AssignmentRule)rule;
 			Expression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getMath());
@@ -1359,17 +1426,70 @@ protected void addRules() throws Exception {
 			if (ruleSpecies != null) {
 				if (assignmentRuleMathExpr != null) {
 					Model vcModel = simContext.getModel();
-					if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName()) || 
-						assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName()) || 
-						assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
+					if (!bSpatial) {
+						if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName()) || 
+							assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName()) || 
+							assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
+							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
+						}
 					}
 				}
 			}
-			
-			assignmentRulesHash.put(assgnRuleVar, assignmentRuleMathExpr);
-		}
+			assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
+		} 
+	}	// end - for i : rules
+}
+
+/**
+ *  addRateRules :
+ *		Adds Rate Rules from the SBML document
+ *		Rate rules are allowed (initial concentration of species; parameter definitions, etc.
+ *		
+**/
+protected void addRateRules() throws ExpressionException {
+	if (sbmlModel == null) {
+		throw new RuntimeException("SBML model is NULL");
 	}
+	ListOf listofRules = sbmlModel.getListOfRules();
+	if (listofRules == null) {
+		System.out.println("No Rules specified");
+		return;
+	}
+
+	for (int i = 0; i < sbmlModel.getNumRules(); i++){
+		Rule rule = (org.sbml.libsbml.Rule)listofRules.get(i);
+		if (rule instanceof RateRule) {
+			// Get the rate rule and store it in the hashMap, and create VCell rateRule.
+			RateRule sbmlRateRule = (RateRule)rule;
+			// rate rule name
+			String rateruleName = sbmlRateRule.getId();
+			if (rateruleName == null || rateruleName.length() == 0) {
+				rateruleName = TokenMangler.mangleToSName(sbmlRateRule.getName());
+				// if rate rule name is still null, get free rate rule name from simContext.
+				if  (rateruleName == null  || rateruleName.length() == 0) {
+					rateruleName = simContext.getFreeRateRuleName();
+				}
+			}
+			// rate rule variable
+			String varName = sbmlRateRule.getVariable();
+			SymbolTableEntry rateRuleVar = simContext.getEntry(varName);
+			if (rateRuleVar instanceof Structure) {
+				throw new RuntimeException("Compartment '" + rateRuleVar.getName() + "' has a rate rule : not allowed in VCell at this time.");
+			}
+			try {
+				if (rateRuleVar != null) {
+					Expression vcRateRuleExpr = getExpressionFromFormula(sbmlRateRule.getMath());
+					cbit.vcell.mapping.RateRule vcRateRule = new cbit.vcell.mapping.RateRule(rateruleName, rateRuleVar, vcRateRuleExpr, simContext);
+					vcRateRule.bind();
+					rateRulesHash.put(rateRuleVar.getName(), vcRateRuleExpr);
+					simContext.addRateRule(vcRateRule);
+				}
+			} catch (PropertyVetoException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Unable to create and add rate rule to VC model : " + e.getMessage());
+			}
+		}	// end if - RateRule 
+	}	// end - for i : rules
 }
 
 protected void addSpecies(VCMetaData metaData) {
@@ -1381,7 +1501,8 @@ protected void addSpecies(VCMetaData metaData) {
 		System.out.println("No Spcecies");
 		return;
 	}
-	ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
+	HashMap<String, Species> vcSpeciesHash = new HashMap<String, Species>();
+	HashMap<Species, org.sbml.libsbml.Species> vc_sbmlSpeciesHash = new HashMap<Species, org.sbml.libsbml.Species>();
 	SpeciesContext[] vcSpeciesContexts = new SpeciesContext[(int)sbmlModel.getNumSpecies()];	
 	// Get species from SBMLmodel;  Add/get speciesContext
 	try {
@@ -1390,10 +1511,8 @@ protected void addSpecies(VCMetaData metaData) {
 			org.sbml.libsbml.Species sbmlSpecies = (org.sbml.libsbml.Species)listOfSpecies.get(i);
 			// Sometimes, the species name can be null or a blank string; in that case, use species id as the name.
 			String speciesName = sbmlSpecies.getId();
-
-			// create a species with speciesName as commonName. If it is different in the annotation, can change it later
 			Species vcSpecies = null;
-
+			// create a species with speciesName as commonName. If it is different in the annotation, can change it later
 			Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlSpecies);
 			if (sbmlImportRelatedElement != null) {
 				Element embeddedElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, SPECIES_NAME);
@@ -1401,32 +1520,29 @@ protected void addSpecies(VCMetaData metaData) {
 					// Get the species name from annotation and create the species.
 					if (embeddedElement.getName().equals(XMLTags.SpeciesTag)) {
 						String vcSpeciesName = embeddedElement.getAttributeValue(XMLTags.NameAttrTag);
-						vcSpecies = simContext.getModel().getSpecies(vcSpeciesName);
-						if (vcSpecies == null) {
-							simContext.getModel().addSpecies(new Species(vcSpeciesName, vcSpeciesName));
-							vcSpecies = simContext.getModel().getSpecies(vcSpeciesName);
+						if (vcSpeciesHash.get(vcSpeciesName) == null) {
+							vcSpecies = new Species(vcSpeciesName, vcSpeciesName);
+							vcSpeciesHash.put(vcSpeciesName, vcSpecies);
 						}
 					}
 					// if embedded element is not speciesTag, do I have to do something?
 				} else {
 					// Annotation element is present, but doesn't contain the species element.
-					simContext.getModel().addSpecies(new Species(speciesName, speciesName));
-					vcSpecies = simContext.getModel().getSpecies(speciesName);
+					vcSpecies = new Species(speciesName, speciesName);
+					vcSpeciesHash.put(speciesName, vcSpecies);
 				}
 			} else {
-				simContext.getModel().addSpecies(new Species(speciesName, speciesName));
-				vcSpecies = simContext.getModel().getSpecies(speciesName);
+				vcSpecies = new Species(speciesName, speciesName);
+				vcSpeciesHash.put(speciesName, vcSpecies);
 			}
 
-			// Set annotations and notes from SBML to VCMetadata
-			sbmlAnnotationUtil.readAnnotation(vcSpecies, sbmlSpecies);
-			sbmlAnnotationUtil.readNotes(vcSpecies, sbmlSpecies);
+			// store vc & sbml species in hash to read in annotation later
+			vc_sbmlSpeciesHash.put(vcSpecies, sbmlSpecies);
 			
 			// Get matching compartment name (of sbmlSpecies[i]) from feature list
 			String compartmentId = sbmlSpecies.getCompartment();
 			Structure spStructure = simContext.getModel().getStructure(compartmentId);
-			simContext.getModel().addSpeciesContext(vcSpecies, spStructure);
-			vcSpeciesContexts[i] = simContext.getModel().getSpeciesContext(vcSpecies, spStructure);
+			vcSpeciesContexts[i] = new SpeciesContext(vcSpecies, spStructure);
 			vcSpeciesContexts[i].setName(speciesName);
 
 			// Adjust units of species, convert to VC units.
@@ -1435,29 +1551,19 @@ protected void addSpecies(VCMetaData metaData) {
 			if (dimension == 0 || dimension == 1){
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, dimension+" dimensional compartment "+compartmentId+" not supported");
 			}
-			String spatialDimBuiltinName = getSpatialDimensionBuiltInName(dimension);
+		} // end - for sbmlSpecies
+		
+		// set the species & speciesContexts on model
+		Model vcModel = simContext.getModel();
+		vcModel.setSpecies(vcSpeciesHash.values().toArray(new Species[0]));
+		vcModel.setSpeciesContexts(vcSpeciesContexts);
 
-			String spatialSizeUnitStr = sbmlSpecies.getSpatialSizeUnits();
-			if (spatialSizeUnitStr == null) {
-				spatialSizeUnitStr = sbmlModel.getCompartment(compartmentId).getUnits();
-			}
-			VCUnitDefinition spatialSizeUnit = getSBMLUnit(spatialSizeUnitStr, spatialDimBuiltinName); 
-			String substanceUnitStr = sbmlSpecies.getSubstanceUnits();
-			VCUnitDefinition substanceUnit = getSBMLUnit(substanceUnitStr, SBMLUnitTranslator.SUBSTANCE);
-			VCUnitDefinition SBConcUnit = substanceUnit.divideBy(spatialSizeUnit);
-
-			// To be used later in SBVCConcentrationUnit along with SBConcUnit.
-			VCUnitDefinition vcUnit = null;
-			if (spStructure instanceof Feature) {
-				vcUnit = vcModelUnitSystem.getVolumeConcentrationUnit();
-			} else if (spStructure instanceof Membrane) {
-				vcUnit = vcModelUnitSystem.getMembraneConcentrationUnit();
-			}
-			// add the <sbmlSpName, sbvcSubstanceUnit> pair to speciesUnitsHash, to be used later (for validation testing)
-			if (speciesUnitsHash.get(speciesName) == null) {
-				SBVCConcentrationUnits sbvcSubstUnits = new SBVCConcentrationUnits(SBConcUnit, vcUnit);
-				speciesUnitsHash.put(speciesName, sbvcSubstUnits);
-			}
+		// Set annotations and notes from SBML to VCMetadata
+		Species[] vcSpeciesArray = vc_sbmlSpeciesHash.keySet().toArray(new Species[0]);
+		for (Species vcSpecies : vcSpeciesArray) {
+			org.sbml.libsbml.Species sbmlSpecies = vc_sbmlSpeciesHash.get(vcSpecies);
+			sbmlAnnotationUtil.readAnnotation(vcSpecies, sbmlSpecies);
+			sbmlAnnotationUtil.readNotes(vcSpecies, sbmlSpecies);
 		}
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
@@ -1475,7 +1581,6 @@ private void setSpeciesInitialConditions() {
 	try {
 		// fill in SpeciesContextSpec for each speciesContext
 		Model vcModel = simContext.getModel();
-		ReservedSymbol kMole = vcModel.getKMOLE();
 		SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 		for (int i = 0; i < vcSpeciesContexts.length; i++) {
 			org.sbml.libsbml.Species sbmlSpecies = (org.sbml.libsbml.Species)sbmlModel.getSpecies(vcSpeciesContexts[i].getName());
@@ -1483,22 +1588,13 @@ private void setSpeciesInitialConditions() {
 			String speciesName = sbmlSpecies.getId();
 			Compartment compartment = (Compartment)sbmlModel.getCompartment(sbmlSpecies.getCompartment());
 	
-			// get the conversion units from speciesUnitsHash
-			SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(speciesName);
-			VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
-			VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-	
 			Expression initExpr = null;
 			if (sbmlSpecies.isSetInitialConcentration()) { 		// If initial Concentration is set
 				Expression initConcentration = new Expression(sbmlSpecies.getInitialConcentration());
-				SBMLUnitParameter unitFactor = SBMLUtils.getConcUnitFactor("spConcUnitFactor", sbUnit, vcUnit, kMole);
-				initConcentration = Expression.mult(initConcentration, unitFactor.getExpression());
 				// check if initConc is set by a (assignment) rule. That takes precedence over initConc value set on species.
-				initExpr = getValueFromRule(speciesName);
+				initExpr = getValueFromAssignmentRule(speciesName);
 				if (initExpr == null) {
 					initExpr = new Expression(initConcentration);
-				} else {
-					initExpr = Expression.mult(initExpr, unitFactor.getExpression());
 				}
 			} else if (sbmlSpecies.isSetInitialAmount()) {		// If initial amount is set
 				double initAmount = sbmlSpecies.getInitialAmount();
@@ -1507,59 +1603,31 @@ private void setSpeciesInitialConditions() {
 				if (compartment.isSetSize()) {
 					double compartmentSize = compartment.getSize();
 					Expression initConcentration = new Expression(0.0);
-					SBMLUnitParameter factor = null;
 					if (compartmentSize != 0.0) {
 						initConcentration = new Expression(initAmount / compartmentSize);
-						factor = SBMLUtils.getConcUnitFactor("spConcUnitParam", sbUnit, vcUnit, kMole);
-						initConcentration = Expression.mult(initConcentration, factor.getExpression());
 					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment "+compartment.getId()+" has zero size, unable to determine initial concentration for species "+speciesName);
+						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment '"+compartment.getId()+"' has zero size, unable to determine initial concentration for species "+speciesName);
 					}
 					// check if initConc is set by a (assignment) rule. That takes precedence over initConc/initAmt value set on species.
-					initExpr = getValueFromRule(speciesName);
+					initExpr = getValueFromAssignmentRule(speciesName);
 					if (initExpr == null) {
 						initExpr = new Expression(initConcentration);
-					} else {
-						initExpr = Expression.mult(initExpr, factor.getExpression());
 					}
 				} else {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment " + compartment.getId() + " size not set or is defined by a rule; cannot calculate initConc.");
+					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
 				}
 			} else {
 				// initConc/initAmt not set; check if species has a (assignment) rule.
-				initExpr = getValueFromRule(speciesName);
+				initExpr = getValueFromAssignmentRule(speciesName);
 				if (initExpr == null) {
 					// no assignment rule (and there was no initConc or initAmt); if it doesn't have initialAssignment, throw warning and set it to 0.0
 					if (sbmlModel.getInitialAssignment(speciesName) == null) {
-						logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
+						localIssueList.add(new Issue(initExpr, IssueCategory.SBMLImport_MissingSpeciesInitCondition , "no initial condition for species "+speciesName+", assuming 0.0", Issue.SEVERITY_WARNING));
+						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
 					}
 					initExpr = new Expression(0.0);
 				}
 	
-				// Units for initial conc or amt if it is specified by an assignment rule
-				SBMLUnitParameter factor = null;
-				Expression adjustedFactorExpr = null;
-				int dimension = (int)sbmlModel.getCompartment(sbmlSpecies.getCompartment()).getSpatialDimensions();
-				if (dimension != 0 && !sbmlSpecies.getHasOnlySubstanceUnits()) {
-					// Init conc : 'hasOnlySubstanceUnits' should be false and spatial dimension of compartment should be non-zero.
-					factor = SBMLUtils.getConcUnitFactor("spConcFactor", sbUnit, vcUnit, kMole);
-					adjustedFactorExpr = factor.getExpression();
-				} else if (dimension == 0 || sbmlSpecies.getHasOnlySubstanceUnits()) {
-					// Init Amount : 'hasOnlySubstanceUnits' should be true or spatial dimension of compartment should zero.
-					if (compartment.isSetSize()) {
-						double compartmentSize = compartment.getSize();
-						if (compartmentSize != 0.0) {
-							// initConcentration := initAmount / compartmentSize
-							factor = SBMLUtils.getConcUnitFactor("spConcFactor", sbUnit, vcUnit, kMole);
-							adjustedFactorExpr = Expression.mult(factor.getExpression(), Expression.invert(new Expression(compartmentSize)));
-						} else {
-							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment "+compartment.getId()+" has zero size, unable to determine initial concentration for species "+speciesName);
-						}
-					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment " + compartment.getId() + " size not set or is defined by a rule; cannot calculate initConc.");
-					}
-				} // else, there is nothing else to happen.
-				initExpr = Expression.mult(initExpr, adjustedFactorExpr);
 			}
 
 			// if initExpr is an expression with model species, we need a conversion factor for the species units (SBML - VC units),
@@ -1583,26 +1651,6 @@ private void setSpeciesInitialConditions() {
 	}
 }
 
-/**
- * addUnitDefinitions:
- *
- */
-protected void addUnitDefinitions() {
-	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
-	}
-	ListOf listofUnitDefns = sbmlModel.getListOfUnitDefinitions();
-	if (listofUnitDefns == null) {
-		System.out.println("No Unit Definitions");
-		return;
-	}
-	for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
-		UnitDefinition ud = (org.sbml.libsbml.UnitDefinition)listofUnitDefns.get(i);
-		String unitName = ud.getId();
-		VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, vcBioModel.getModel().getUnitSystem());
-		vcUnitsHash.put(unitName, vcUnitDef);
-	}
-}
 /**
  *  checkCompartmentScaleFactorInRxnRateExpr :
  *		Used to check if reaction rate expression has a compartment scale factor. Need to remove this factor from the rate expression.
@@ -1732,7 +1780,7 @@ private void getReferencedSpeciesInExpr(Expression sbmlExpr, HashSet<String> ref
 	for (int i = 0; symbols != null && i < symbols.length; i++) {
 		Parameter sbmlParam = sbmlModel.getParameter(symbols[i]);
 		if (sbmlParam != null){
-			Expression paramExpression = getValueFromRule(sbmlParam.getId());
+			Expression paramExpression = getValueFromAssignmentRule(sbmlParam.getId());
 			if (paramExpression != null) {
 				getReferencedSpeciesInExpr(paramExpression, refSpNamesHash);
 			}
@@ -1759,7 +1807,7 @@ private void substituteGlobalParamRulesInPlace(Expression sbmlExpr, boolean bRep
 		for (int i = 0; symbols != null && i < symbols.length; i++) {
 			Parameter sbmlParam = sbmlModel.getParameter(symbols[i]);
 			if (sbmlParam != null){
-				Expression paramExpression = getValueFromRule(sbmlParam.getId());
+				Expression paramExpression = getValueFromAssignmentRule(sbmlParam.getId());
 				if (paramExpression != null) {
 					sbmlExpr.substituteInPlace(new Expression(sbmlParam.getId()), paramExpression);
 					bParamChanged = true;
@@ -1832,27 +1880,27 @@ public BioModel getBioModel() {
 	this.version = sbmlModel.getVersion();
 	XMLNamespaces nss = document.getNamespaces();
 	String namespaceStr = nss.getURI();
-//	if (!nss.isEmpty()) {
-//		int length = nss.getLength();
-//		for (int i = 0; i < length; i++) {
-//			String prefix = nss.getPrefix(i);
-//			if (prefix == null || prefix.length() == 0) {
-//				namespaceStr = nss.getURI();
-//				break;
-//			}
-//		}
-//	}
-	sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, namespaceStr);
-	Model vcModel = new Model(modelName);
 
-	Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
+	// SBML annotation
+	sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, namespaceStr);
+	
 	try {
+		// create SBML unit system to pass into VCModel
+		Model vcModel;
+		try {
+			vcModel = new Model(modelName, createSBMLUnitSystemForVCModel());
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Inconsistent unit system. Cannot import SBML model into VCell");
+		}
+		Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
 		simContext = new SimulationContext(vcModel, geometry);
-		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
+		simContext.setName(simContext.getModel().getName());
+//		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
 	} catch (PropertyVetoException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Could not create simulation context corresponding to the input SBML model");
-	}
+	} 
 	translateSBMLModel();
 
 	try {
@@ -1881,8 +1929,240 @@ public BioModel getBioModel() {
 	sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
 
 	vcBioModel.refreshDependencies();
+	
+	Issue warningIssues[] = (Issue[])BeanUtils.getArray(localIssueList,Issue.class);
+	if (warningIssues!=null && warningIssues.length>0){
+		StringBuffer messageBuffer = new StringBuffer("Issues encountered during SBML Import:\n");
+		int issueCount=0;
+		for (int i = 0; i < warningIssues.length; i++){
+			if (warningIssues[i].getSeverity()==Issue.SEVERITY_WARNING || warningIssues[i].getSeverity()==Issue.SEVERITY_INFO){
+				messageBuffer.append(warningIssues[i].getCategory()+" "+warningIssues[i].getSeverityName()+" : "+warningIssues[i].getMessage()+"\n");
+				issueCount++;
+			}
+		}
+		if (issueCount>0){
+			try {
+				logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS, messageBuffer.toString());
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+			}
+			// PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+		}
+	}
+
 	return vcBioModel;
 }
+
+private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
+	if (sbmlModel == null) {
+		throw new RuntimeException("SBML model is NULL");
+	}
+	ListOf listofUnitDefns = sbmlModel.getListOfUnitDefinitions();
+	if (listofUnitDefns == null) {
+		System.out.println("No Unit Definitions");
+		// if < level 3, use SBML default units to create unit system; else, return a default VC modelUnitSystem.
+		// @TODO: deal with SBML level < 3.
+		return ModelUnitSystem.createDefaultVCModelUnitSystem();
+	}
+	
+	VCUnitSystem tempVCUnitSystem = new VCUnitSystem() {};
+	HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
+	// add base SI unit identifiers (as defined in SBML spec) to hash 
+	sbmlUnitIdentifierHash.put("ampere", tempVCUnitSystem.getInstance("A"));
+	sbmlUnitIdentifierHash.put("avogadro", tempVCUnitSystem.getInstance("6.02e23"));
+//	sbmlUnitIdentifierHash.put("becquerel", tempVCUnitSystem.getInstance("becquerel"));
+//	sbmlUnitIdentifierHash.put("candela", tempVCUnitSystem.getInstance("candela"));
+	sbmlUnitIdentifierHash.put("coulomb", tempVCUnitSystem.getInstance("C"));
+	sbmlUnitIdentifierHash.put("dimensionless", tempVCUnitSystem.getInstance("1"));
+	sbmlUnitIdentifierHash.put("farad", tempVCUnitSystem.getInstance("F"));
+	sbmlUnitIdentifierHash.put("gram", tempVCUnitSystem.getInstance("g"));
+//	sbmlUnitIdentifierHash.put("gray", tempVCUnitSystem.getInstance("gray"));
+	sbmlUnitIdentifierHash.put("henry", tempVCUnitSystem.getInstance("H"));
+	sbmlUnitIdentifierHash.put("hertz", tempVCUnitSystem.getInstance("Hz"));
+	sbmlUnitIdentifierHash.put("item", tempVCUnitSystem.getInstance("molecules"));
+	sbmlUnitIdentifierHash.put("joule", tempVCUnitSystem.getInstance("J"));
+//	sbmlUnitIdentifierHash.put("katal", tempVCUnitSystem.getInstance("katal"));
+	sbmlUnitIdentifierHash.put("kelvin", tempVCUnitSystem.getInstance("K"));
+	sbmlUnitIdentifierHash.put("kilogram", tempVCUnitSystem.getInstance("kg"));
+	sbmlUnitIdentifierHash.put("litre", tempVCUnitSystem.getInstance("litre"));
+//	sbmlUnitIdentifierHash.put("lumen", tempVCUnitSystem.getInstance("lumen"));
+//	sbmlUnitIdentifierHash.put("lux", tempVCUnitSystem.getInstance("lux"));
+	sbmlUnitIdentifierHash.put("metre", tempVCUnitSystem.getInstance("m"));
+	sbmlUnitIdentifierHash.put("mole", tempVCUnitSystem.getInstance("mol"));
+	sbmlUnitIdentifierHash.put("newton", tempVCUnitSystem.getInstance("N"));
+//	sbmlUnitIdentifierHash.put("ohm", tempVCUnitSystem.getInstance("ohm"));
+//	sbmlUnitIdentifierHash.put("pascal", tempVCUnitSystem.getInstance("pascal"));
+//	sbmlUnitIdentifierHash.put("radian", tempVCUnitSystem.getInstance("radian"));
+	sbmlUnitIdentifierHash.put("second", tempVCUnitSystem.getInstance("s"));
+	sbmlUnitIdentifierHash.put("siemens", tempVCUnitSystem.getInstance("S"));
+//	sbmlUnitIdentifierHash.put("sievert", tempVCUnitSystem.getInstance("sievert"));
+//	sbmlUnitIdentifierHash.put("steradian", tempVCUnitSystem.getInstance("steradian"));
+//	sbmlUnitIdentifierHash.put("tesla", tempVCUnitSystem.getInstance("tesla"));
+	sbmlUnitIdentifierHash.put("volt", tempVCUnitSystem.getInstance("V"));
+	sbmlUnitIdentifierHash.put("watt", tempVCUnitSystem.getInstance("W"));
+	sbmlUnitIdentifierHash.put("weber", tempVCUnitSystem.getInstance("Wb"));	
+
+	long sbmlLevel = sbmlModel.getLevel();
+	if (sbmlLevel < 3) {
+		// SBML predefined unit identifiers
+		sbmlUnitIdentifierHash.put("substance", tempVCUnitSystem.getInstance("mole"));
+		sbmlUnitIdentifierHash.put("volume", tempVCUnitSystem.getInstance("litre"));
+		sbmlUnitIdentifierHash.put("area", tempVCUnitSystem.getInstance("m2"));
+		sbmlUnitIdentifierHash.put("length", tempVCUnitSystem.getInstance("m"));
+		sbmlUnitIdentifierHash.put("time", tempVCUnitSystem.getInstance("s"));
+	}
+
+	// read unit definition (identifiers) declared in SBML model
+	for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
+		UnitDefinition ud = (org.sbml.libsbml.UnitDefinition)listofUnitDefns.get(i);
+		String unitName = ud.getId();
+		VCUnitDefinition vcUnitDef = SBMLUnitTranslator.getVCUnitDefinition(ud, tempVCUnitSystem);
+		sbmlUnitIdentifierHash.put(unitName, vcUnitDef);
+	}
+	
+	// For SBML level 2
+		// default units
+		VCUnitDefinition defaultSubstanceUnit = sbmlUnitIdentifierHash.get("substance");
+		VCUnitDefinition defaultVolumeUnit = sbmlUnitIdentifierHash.get("volume");
+		VCUnitDefinition defaultAreaUnit = sbmlUnitIdentifierHash.get("area");
+		VCUnitDefinition defaultLengthUnit = sbmlUnitIdentifierHash.get("length");
+		VCUnitDefinition defaultTimeUnit = sbmlUnitIdentifierHash.get("time");
+
+			
+		
+		VCUnitDefinition modelSubstanceUnit = null;
+		VCUnitDefinition modelVolumeUnit = null;
+		VCUnitDefinition modelAreaUnit = null;
+		VCUnitDefinition modelLengthUnit = null;
+		VCUnitDefinition modelTimeUnit = null;
+		
+		// units in SBML model
+		
+		// compartments
+		ListOfCompartments listOfCompartments = sbmlModel.getListOfCompartments();
+		for (int i = 0; i < listOfCompartments.size(); i++) {
+			Compartment sbmlComp = listOfCompartments.get(i);
+			long dim = sbmlComp.getSpatialDimensions();
+			String unitStr = sbmlComp.getUnits();
+			VCUnitDefinition sbmlUnitDefinition = null;
+			if (unitStr != null && unitStr.length() > 0) {
+				sbmlUnitDefinition = sbmlUnitIdentifierHash.get(unitStr);
+			} else {
+				// applying default unit if not defined for this compartment
+				if (dim == 3){
+					sbmlUnitDefinition = defaultVolumeUnit;
+				}else if (dim == 2){
+					sbmlUnitDefinition = defaultAreaUnit;
+				}else if (dim == 1){
+					sbmlUnitDefinition = defaultLengthUnit;
+				}
+			}
+			if (dim == 3) {
+				if (sbmlUnitDefinition == null) {
+					sbmlUnitDefinition = defaultVolumeUnit;
+				}
+				if (modelVolumeUnit == null) {
+					modelVolumeUnit = sbmlUnitDefinition;
+				} else if (!sbmlUnitDefinition.isEquivalent(modelVolumeUnit)) {
+					localIssueList.add(new Issue(modelVolumeUnit, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")");
+				}
+			} else if (dim == 2) {
+				if (modelAreaUnit == null) {
+					modelAreaUnit = sbmlUnitDefinition;
+				} else if (!sbmlUnitDefinition.isEquivalent(modelAreaUnit)) {
+					localIssueList.add(new Issue(modelAreaUnit, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")");
+				}
+			}
+		}
+		
+		// species
+		ListOfSpecies listOfSpecies = sbmlModel.getListOfSpecies();
+		for (int i = 0; i < listOfSpecies.size(); i++) {
+			org.sbml.libsbml.Species sbmlSpecies = listOfSpecies.get(i);
+			String unitStr = sbmlSpecies.getSubstanceUnits();
+			VCUnitDefinition sbmlUnitDefinition = null;
+			if (unitStr != null && unitStr.length() > 0) {
+				sbmlUnitDefinition = sbmlUnitIdentifierHash.get(unitStr);
+			} else {
+				// apply default substance unit
+				sbmlUnitDefinition = defaultSubstanceUnit;
+			}
+			if (modelSubstanceUnit==null){
+				modelSubstanceUnit = sbmlUnitDefinition;
+			}else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
+				localIssueList.add(new Issue(modelSubstanceUnit, IssueCategory.Units, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
+			}
+		}
+
+		// reactions for SBML level 2 version < 3
+		long sbmlVersion = sbmlModel.getVersion();
+		if (sbmlVersion < 3) {
+			ListOfReactions listOfReactions = sbmlModel.getListOfReactions();
+			for (int i = 0; i < listOfReactions.size(); i++) {
+				Reaction sbmlReaction = listOfReactions.get(i);
+				KineticLaw kineticLaw = sbmlReaction.getKineticLaw();
+				if (kineticLaw != null) {
+					// first check substance unit
+					String unitStr = kineticLaw.getSubstanceUnits();
+					VCUnitDefinition sbmlUnitDefinition = null;
+					if (unitStr != null && unitStr.length() > 0) {
+						sbmlUnitDefinition = sbmlUnitIdentifierHash.get(unitStr);
+					} else {
+						// apply default substance unit
+						sbmlUnitDefinition = defaultSubstanceUnit;
+					}
+					if (modelSubstanceUnit == null) {
+						modelSubstanceUnit = sbmlUnitDefinition;
+					} else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
+						localIssueList.add(new Issue(modelSubstanceUnit, IssueCategory.Units, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
+					}
+					// check time unit
+					unitStr = kineticLaw.getTimeUnits();
+					if (unitStr != null && unitStr.length() > 0) {
+						sbmlUnitDefinition = sbmlUnitIdentifierHash.get(unitStr);
+					} else {
+						// apply default time unit
+						sbmlUnitDefinition = defaultTimeUnit;
+					}
+					if (modelTimeUnit == null) {
+						modelTimeUnit = sbmlUnitDefinition;
+					} else if (!sbmlUnitDefinition.isEquivalent(modelTimeUnit)) {
+						localIssueList.add(new Issue(modelTimeUnit, IssueCategory.Units, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")");
+					}
+				}
+			}
+		}
+		
+		if (modelSubstanceUnit == null) {
+			modelSubstanceUnit = defaultSubstanceUnit;
+		}
+		if (modelVolumeUnit == null) {
+			modelVolumeUnit = defaultVolumeUnit;
+		}
+		if (modelAreaUnit == null) {
+			modelAreaUnit = defaultAreaUnit;
+		}
+		if (modelLengthUnit == null) {
+			modelLengthUnit = defaultLengthUnit;
+		}
+		if (modelTimeUnit == null) {
+			modelTimeUnit = defaultTimeUnit;
+		}
+		
+		if (modelSubstanceUnit == null && modelVolumeUnit == null && modelAreaUnit == null && modelLengthUnit == null && modelTimeUnit == null) {
+			// no default units specified in SBML Level 3, so just return a default (VC)modelUnitSystem
+			return ModelUnitSystem.createDefaultVCModelUnitSystem();
+		} else {
+			return ModelUnitSystem.createSBMLUnitSystem(modelSubstanceUnit, modelVolumeUnit, modelAreaUnit, modelLengthUnit, modelTimeUnit);
+		}
+	
+}
+
 
 /**
  *  getEmbeddedElementInRxnAnnotation :
@@ -1925,53 +2205,58 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
  *	hence the ExpressionMathMLParser is given a substring of the MathML containing the <apply> elements. 
  */
 private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException {
-//	MathMLDocument mDoc = new MathMLDocument();
-//	mDoc.setMath(math.deepCopy());
 	String mathMLStr = libsbml.writeMathMLToString(math);
 	ExpressionMathMLParser exprMathMLParser = new ExpressionMathMLParser(lambdaFunctions);
 	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);
 	return expr;
 }
 
-public Hashtable<String, SBVCConcentrationUnits> getSpeciesUnitsHash()  {
-	return speciesUnitsHash;
-}
-
-/**
- * If SBML time units are not defined in seconds (default), we need to convert it to secs and use a conversion factor when using
- * time 't' in rate and parameter expressions. This method converts from SBML time units to VC time units (seconds)
- * @return
- */
-public double getSBMLTimeUnitsFactor() {
-	double timeFactor = 1.0;
-	VCUnitDefinition timeUnits = getSBMLUnit("", SBMLUnitTranslator.TIME);
-	ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
-	if (timeUnits.isCompatible(vcModelUnitSystem.getTimeUnit())) {
-		timeFactor = timeUnits.convertTo(timeFactor, vcModelUnitSystem.getTimeUnit());
-	} else {
-		
-	}
-	return timeFactor;
-}
 /**
  * getReactionStructure :
  */
 private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, SpeciesContext[] speciesContexts, Element sbmlImportElement) throws Exception {
     Structure struct = null;
-
+    String structName = null;
+    Model vcModel = simContext.getModel();
+    
+    // if sbml model is spatial, see if reaction has compartment atribute, return structure from vcmodel, if present.
+    if (bSpatial) {
+    	structName = sbmlRxn.getCompartment();
+    	if (structName != null && structName.length() > 0) {
+    		struct = vcModel.getStructure(structName);
+    		if (struct != null) {
+    			return struct;
+    		}
+    	}
+    }
+    
     // Check annotation for reaction - if we are importing an exported VCell model, it will contain annotation for reaction.
     // If annotation has structure name, return the corresponding structure.
-    String structName = null;
-    if (sbmlImportElement != null) {
+	if (sbmlImportElement != null) {
         // Get the embedded element in the annotation str (fluxStep or simpleReaction), and the structure attribute from the element.
         Element embeddedElement = getEmbeddedElementInAnnotation(sbmlImportElement, REACTION);
         if (embeddedElement != null) {
             structName = embeddedElement.getAttributeValue(XMLTags.StructureAttrTag);
 	        // Using the structName, get the structure from the structures (compartments) list.
-	        struct = simContext.getModel().getStructure(structName);
+	        struct = vcModel.getStructure(structName);
 	        return struct;
         }
     }
+	
+	if (sbmlRxn.isSetKineticLaw()){
+		String rxnName = sbmlRxn.getId();
+		KineticLaw kLaw = sbmlRxn.getKineticLaw();
+		Expression kRateExp = getExpressionFromFormula(kLaw.getMath());
+		String[] symbols = kRateExp.getSymbols();
+		if (symbols != null) {
+			for (String symbol : symbols){
+				Compartment sbmlCompartment = sbmlModel.getCompartment(symbol);
+				if (sbmlCompartment!=null){
+					return simContext.getModel().getStructure(sbmlCompartment.getId());
+				}
+			}
+		}
+	}
 
     HashSet<String> refSpeciesNameHash = new HashSet<String>(); 
     getReferencedSpecies(sbmlRxn, refSpeciesNameHash);
@@ -1985,115 +2270,33 @@ private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, Specie
     }
     
     if (compartmentNamesHash.size() == 1) {
-    	struct = simContext.getModel().getStructure(compartmentNamesHash.iterator().next());
+    	struct = vcModel.getStructure(compartmentNamesHash.iterator().next());
+    	return struct;
+    } else if (compartmentNamesHash.size() == 0){
+    	struct = vcModel.getStructures()[0];
     	return struct;
     } else {
-    	// Check adjacency of compartments of reactants/products/modifiers
-    	if (compartmentNamesHash.size() > 3) {
-    		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot resolve location of reaction : " + sbmlRxn.getId());
+    	// more than one structure in reaction participants, try to figure out which one to choose
+    	HashMap<String, Integer> structureFrequencyHash = new HashMap<String, Integer>();
+    	for (String structureName : compartmentNamesHash){
+    		if (structureFrequencyHash.containsKey(structureName)){
+    			structureFrequencyHash.put(structureName, structureFrequencyHash.get(structName)+1);
+    		}else{
+    			structureFrequencyHash.put(structureName, 1);
+    		}
     	}
-    	String[] compNames = compartmentNamesHash.toArray(new String[compartmentNamesHash.size()]);
-    	if (compNames.length == 2) {
-			Compartment compartment1 = sbmlModel.getCompartment(compNames[0]);
-			Compartment compartment2 = sbmlModel.getCompartment(compNames[1]);
-			boolean bAdjacent = compartment1.getOutside().equals(compartment2.getId()) || compartment2.getOutside().equals(compartment1.getId());
-    		if ((compartment1.getSpatialDimensions() == 2  && compartment2.getSpatialDimensions() == 3) && bAdjacent) {
-    			struct = simContext.getModel().getStructure(compartment1.getId());
-    		} else if ((compartment2.getSpatialDimensions() == 2  && compartment1.getSpatialDimensions() == 3) && bAdjacent) {
-    			struct = simContext.getModel().getStructure(compartment2.getId());
-    		} else if (compartment1.getSpatialDimensions() == 3  && compartment2.getSpatialDimensions() == 3) {
-    			Compartment outside1 = null;
-    			Compartment outside2 = null;
-    			if (compartment1.isSetOutside()) {
-    				outside1 = sbmlModel.getCompartment(compartment1.getOutside());
-    			} 
-    			if (compartment2.isSetOutside()) {
-    				outside2 = sbmlModel.getCompartment(compartment2.getOutside());
-    			}
-				if ( (outside1 != null) && ((outside1.getSpatialDimensions() == 2) && (compartment2.getId().equals(outside1.getOutside()))) ) {
-					struct = simContext.getModel().getStructure(outside1.getId());
-				} else if ( (outside2 != null) && ((outside2.getSpatialDimensions() == 2) && (compartment1.getId().equals(outside2.getOutside()))) ) {
-					struct = simContext.getModel().getStructure(outside2.getId());				
-				}
-    		}
-    	} else if (compNames.length == 3) {
-    		int dim2 = 0;
-    		int dim3 = 0;
-    		int membraneIndx = -1;
-    		for (int i = 0; i < compNames.length; i++) {
-    			Compartment comp = sbmlModel.getCompartment(compNames[i]);
-    			if (comp.getSpatialDimensions() == 2) {
-    				dim2++;
-    				membraneIndx = i;
-    			} else if (comp.getSpatialDimensions() == 3) {
-    				dim3++;
-    			}
+    	Iterator<Entry<String, Integer>> iterator = structureFrequencyHash.entrySet().iterator();
+		Entry<String, Integer> mostUsedStructureEntry = iterator.next();
+		while (iterator.hasNext()){
+			Entry<String, Integer> currentStructureEntry = iterator.next();
+			if (currentStructureEntry.getValue()>mostUsedStructureEntry.getValue()){
+				mostUsedStructureEntry = currentStructureEntry;
 			}
-    		if (dim2 != 1 || dim3 != 2) {
-    	   		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot resolve location of reaction : " + sbmlRxn.getId());
-    		}
-    		Compartment membraneComp = sbmlModel.getCompartment(compNames[membraneIndx]);
-    		Compartment volComp1 = sbmlModel.getCompartment(compNames[(membraneIndx+1)%3]);
-    		Compartment volComp2 = sbmlModel.getCompartment(compNames[(membraneIndx+2)%3]);
-    		if ( (volComp1.getId().equals(membraneComp.getOutside()) && membraneComp.getId().equals(volComp2.getOutside())) ||  
-    				(volComp2.getId().equals(membraneComp.getOutside()) && membraneComp.getId().equals(volComp1.getOutside())) ) {
-    					struct = simContext.getModel().getStructure(membraneComp.getId());
-    		} 
-    	} 
-    	if (struct == null) {
-	   		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot resolve location of reaction : " + sbmlRxn.getId());
-    	} 
+		}
+		String mostUsedStructureName = mostUsedStructureEntry.getKey();
+    	struct = vcModel.getStructure(mostUsedStructureName);
     	return struct;
     }
-}
-
-
-/**
- *  getSBMLUnits : 
- */
-private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
-	//
-	// Check to see if 'unitSymbol' is a base unit (one of a list of unitKinds) or 
-	// built-in unit (substance, volume, area, length, time) or
-	// is defined in the list of unit definitions
-	//
-
-	VCUnitDefinition SbmlUnit = null;
-	ModelUnitSystem vcUnitSystem = vcBioModel.getModel().getUnitSystem();
-
-	if (unitSymbol == null || unitSymbol.equals("")) {
-		if (builtInName != null) {
-			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
-			if (SbmlUnit == null) {
-				SbmlUnit = vcUnitSystem.getInstance(SBMLUnitTranslator.getDefaultSBMLUnitSymbol(builtInName));
-			}
-		} else if (builtInName == null) {
-			SbmlUnit = vcUnitSystem.getInstance_TBD();
-		}
-	} else {
-		if (org.sbml.libsbml.Unit.isUnitKind(unitSymbol,level,version)) {
-			// SbmlUnit = VCUnitDefinition.getInstance(unitSymbol);
-			SbmlUnit = vcUnitSystem.getInstance(unitSymbol);
-		} else if (org.sbml.libsbml.Unit.isBuiltIn(unitSymbol,level)) {
-			//check if its a built-in unit that was explicitly specified
-			if (builtInName != null) {
-				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
-				if (SbmlUnit == null) { 
-					SbmlUnit = vcUnitSystem.getInstance(SBMLUnitTranslator.getDefaultSBMLUnitSymbol(builtInName));
-				}
-			} else {
-				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);
-			}
-		} else {
-			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);
-		}
-	}
-	if (SbmlUnit == null) {
-		System.err.println("SBML unit not found or not supported: " + unitSymbol);    //allow nulls for params.
-		SbmlUnit = vcUnitSystem.getInstance_TBD();
-	}
-
-	return SbmlUnit;
 }
 
 
@@ -2130,10 +2333,11 @@ private String getSpatialDimensionBuiltInName(int dimension) {
  *	is 0.0, check if it is given by a rule or functionDefinition, and return the string (of the rule or
  *	functionDefinition expression).
  */
-private Expression getValueFromRule(String paramName)  {
+private Expression getValueFromAssignmentRule(String paramName)  {
 	Expression valueExpr = null;
 	// Check if param name has an assignment rule associated with it
-	for (int i = 0; i < assignmentRulesHash.size(); i++) {
+	int numAssgnRules = assignmentRulesHash.size();
+	for (int i = 0; i < numAssgnRules; i++) {
 		valueExpr = (Expression)assignmentRulesHash.get(paramName);
 		if (valueExpr != null) {
 			return new Expression(valueExpr);
@@ -2142,6 +2346,17 @@ private Expression getValueFromRule(String paramName)  {
 	return null;
 }
 
+private boolean varHasRateRule(String paramName)  {
+	// Check if param name has an assignment rule associated with it
+	int numRateRules = rateRulesHash.size();
+	for (int i = 0; i < numRateRules; i++) {
+		Expression valueExpr = (Expression)rateRulesHash.get(paramName);
+		if (valueExpr != null) {
+			return true;
+		}
+	}
+	return false;
+}
 /**
  * checkForUnsupportedVCellFeatures:
  * 
@@ -2152,40 +2367,16 @@ private Expression getValueFromRule(String paramName)  {
  */
 private void checkForUnsupportedVCellFeatures() throws Exception {
 	
-	// Check if rules, if present, are algrbraic or rate rules
+	// Check if rules, if present, are algrbraic rules
 	if (sbmlModel.getNumRules() > 0) {
 		for (int i = 0; i < sbmlModel.getNumRules(); i++){
 			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
 			if (rule instanceof AlgebraicRule) {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic rules are not handled in the Virtual Cell at this time");
-			}  else if (rule instanceof RateRule) {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Rate rules are not handled in the Virtual Cell at this time");
 			}
 		}
 	}
 
-	// Check if species are specified by assignemnt rules; and if they refer to other species ...
-//	if (sbmlModel.getNumRules() > 0) {
-//		for (int i = 0; i < sbmlModel.getNumRules(); i++){
-//			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
-//			if (rule instanceof AssignmentRule) {
-//				// Check if assignment rule variable is a species. 
-//				AssignmentRule assignRule = (AssignmentRule)rule;
-//				org.sbml.libsbml.Species ruleSpecies = sbmlModel.getSpecies(assignRule.getVariable());
-//				if (ruleSpecies != null) {
-//					Expression assignRuleMathExpr = getExpressionFromFormula(assignRule.getMath());
-//					// if the rule variable is a species, check if rule math refers to other species; if so, throw exception - can't handle it in VCell.
-//					if (assignRuleMathExpr != null) {
-//						if (assignRuleMathExpr.hasSymbol(ReservedSymbol.X.getName()) || 
-//							assignRuleMathExpr.hasSymbol(ReservedSymbol.Y.getName()) || 
-//							assignRuleMathExpr.hasSymbol(ReservedSymbol.Z.getName())) {
-//							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
-//						}
-//					}
-//				}
-//			} 
-//		}
-//	}
 	// Check if any of the compartments have spatial dimension 0
 	for (int i = 0; i < (int)sbmlModel.getNumCompartments(); i++) {
 		Compartment comp = (Compartment)sbmlModel.getCompartment(i);
@@ -2211,15 +2402,14 @@ public void translateSBMLModel() {
 	}
 	
 	// Create Virtual Cell Model with species, compartment, etc. and read in the 'values' from the SBML model
-	// Add Unit definitions
-	addUnitDefinitions();
+
 	// Add compartmentTypes (not handled in VCell)
 	addCompartmentTypes();
 	// Add spciesTypes (not handled in VCell)
 	addSpeciesTypes();
-	// Add Rules
+	// Add Assignment Rules : adding these first, since compartment/species/parameter init condns could be defined by assignment rules
 	try {
-		addRules();
+		addAssignmentRules();
 	} catch (Exception ee) {
 		ee.printStackTrace(System.out);
 		throw new RuntimeException(ee.getMessage());
@@ -2232,7 +2422,7 @@ public void translateSBMLModel() {
 	// Add Parameters
 	try {
 		addParameters();
-	} catch (PropertyVetoException e) {
+	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
@@ -2240,10 +2430,26 @@ public void translateSBMLModel() {
 	setSpeciesInitialConditions();
 	// Add InitialAssignments 
 	addInitialAssignments();
+	// Add Rules Rules : adding these later (after assignment rules, since compartment/species/parameter need to be defined before rate rules for those vars can be read in).
+	try {
+		addRateRules();
+	} catch (ExpressionException ee) {
+		ee.printStackTrace(System.out);
+		throw new RuntimeException(ee.getMessage());
+	}
 	// Add constraints (not handled in VCell)
 	addConstraints();
 	// Add Reactions
 	addReactions(vcMetaData);
+	// Sort VCell-model Structures in structure array according to reaction adjacency and parentCompartment.
+	Structure[] sortedStructures = sortStructures(simContext.getModel());
+	try {
+		simContext.getModel().setStructures(sortedStructures);
+	} catch (PropertyVetoException e1) {
+		e1.printStackTrace(System.out);
+		throw new RuntimeException("Error while sorting compartments: "+e1.getMessage());
+	}
+	
 	// Add Events
 	addEvents();
 	// Check if names of species, structures, reactions, parameters are long (say, > 64), if so give warning.
@@ -2253,17 +2459,151 @@ public void translateSBMLModel() {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
+	
+	// Add geometry, if sbml model is spatial
+	if (bSpatial) {
+		addGeometry();
+	}
 }
+
+private static class StructureRelationshipEdge extends Edge {
+	int numConnections = 0;
+	boolean bParentChild = false;
+	
+	public StructureRelationshipEdge(Node node1, Node node2) {
+		super(node1, node2);
+	}
+	
+	public String toString(){
+		return super.toString() + ", nc="+numConnections+", p="+bParentChild;
+	}
+}
+
+public static Structure[] sortStructures(Model model) {
+	Graph graph = new Graph();
+	// add all structures to the graph
+	for (Structure structure : model.getStructures()){
+		graph.addNode(new Node(structure.getName(), structure));
+	}
+	// add an edge
+	for (Structure structure : model.getStructures()){
+		Structure parentStructure = null;
+		if (structure.getSbmlParentStructure()!=null){
+			parentStructure = structure.getSbmlParentStructure();
+		}else if (model.getStructureTopology().getParentStructure(structure)!=null){
+			parentStructure = model.getStructureTopology().getParentStructure(structure);
+		}
+		if (parentStructure!=null){
+			int index1 = graph.getIndex(graph.getNode(structure.getName()));
+			int index2 = graph.getIndex(graph.getNode(parentStructure.getName()));
+			StructureRelationshipEdge edge = getStructureRelationshipEdge(graph, index1, index2);
+			edge.bParentChild = true;
+		}
+	}
+	for (ReactionStep rs : model.getReactionSteps()){
+		int index1 = graph.getIndex(graph.getNode(rs.getStructure().getName()));
+		for (ReactionParticipant rp : rs.getReactionParticipants()){
+			if (rp.getStructure()!=rs.getStructure()){
+				int index2 = graph.getIndex(graph.getNode(rp.getStructure().getName()));
+				StructureRelationshipEdge edge = getStructureRelationshipEdge(graph, index2, index1);
+				edge.numConnections++;
+			}
+		}
+	}
+	// remove edges such that all nodes have degree <= 2
+	for (Node node : graph.getNodes()){
+		Edge[] adjacentEdges = graph.getAdjacentEdges(node);
+		while (adjacentEdges.length>2){
+			StructureRelationshipEdge lowestCostEdge = getLowestCodeEdge(Arrays.asList(adjacentEdges));
+			graph.remove(lowestCostEdge);
+			adjacentEdges = graph.getAdjacentEdges(node);
+		}
+	}
+	
+	// for each dependency loop, remove edge with lowest cost
+	Path[] fundamentalCycles = graph.getFundamentalCycles();
+	while (fundamentalCycles.length>0){
+		StructureRelationshipEdge lowestCostEdge = getLowestCodeEdge(Arrays.asList(fundamentalCycles[0].getEdges()));
+		graph.remove(lowestCostEdge);
+		fundamentalCycles = graph.getFundamentalCycles();
+	}
+	
+	// all graphs in the forest are linear now ... find path from first to last and line up all trees in list.
+	Tree[] spanningForest = graph.getSpanningForest();
+	ArrayList<Structure> structures = new ArrayList<Structure>();
+	for (Tree tree : spanningForest){
+		if (tree.getNodes().length>1){
+			Node start = null;
+			Node end = null;
+			for (Node node : tree.getNodes()){
+				if (tree.getDegree(node) == 1){
+					if (start == null){
+						start = node;
+					}else if (end == null){
+						end = node;
+					}else{
+						break;
+					}
+				}
+			}
+			Path path = tree.getTreePath(start, end);
+			for (Node node : path.getNodesTraversed()){
+				structures.add((Structure)node.getData());
+			}
+		}else{
+			structures.add((Structure)tree.getNodes()[0].getData());
+		}
+	}
+	return structures.toArray(new Structure[structures.size()]);
+}
+
+private static StructureRelationshipEdge getLowestCodeEdge(List<Edge> structureRelationshipEdgeList){
+	StructureRelationshipEdge lowestCostEdge = null;
+	for (Edge e : structureRelationshipEdgeList){
+		StructureRelationshipEdge currentEdge = (StructureRelationshipEdge)e;
+		if (lowestCostEdge==null){
+			lowestCostEdge = currentEdge;
+		}else{
+			if (lowestCostEdge.bParentChild && !currentEdge.bParentChild){
+				lowestCostEdge = currentEdge;
+			}else if (lowestCostEdge.numConnections > currentEdge.numConnections){
+				lowestCostEdge = currentEdge;
+			}
+		}
+	}
+	return lowestCostEdge;
+}
+
+private static StructureRelationshipEdge getStructureRelationshipEdge(Graph graph,	int index1, int index2) {
+	StructureRelationshipEdge edge = null;	
+	if (index1 > index2){
+		edge = (StructureRelationshipEdge)graph.getEdge(index2, index1);
+		if (edge==null){
+			edge = new StructureRelationshipEdge(graph.getNodes()[index2],graph.getNodes()[index1]);
+			graph.addEdge(edge);
+		}
+	}else{
+		edge = (StructureRelationshipEdge)graph.getEdge(index1, index2);		
+		if (edge==null){
+			edge = new StructureRelationshipEdge(graph.getNodes()[index1],graph.getNodes()[index2]);
+			graph.addEdge(edge);
+		}
+	}
+	return edge;
+}
+
 
 private void checkIdentifiersNameLength() throws Exception {
 	// Check compartment name lengths
 	ListOf listofIds = sbmlModel.getListOfCompartments();
 	boolean bLongCompartmentName = false;
+	Object issueSource = null;
 	for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 		Compartment compartment = (Compartment)listofIds.get(i);
 		String compartmentName = compartment.getId();
 		if (compartmentName.length() > 64) {
 			bLongCompartmentName = true;
+			issueSource = compartment;
 		}
 	}
 	// Check species name lengths
@@ -2274,6 +2614,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String speciesName = species.getId();
 		if (speciesName.length() > 64) {
 			bLongSpeciesName = true;
+			issueSource = species;
 		}
 	}
 	// Check parameter name lengths
@@ -2284,6 +2625,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String paramName = param.getId();
 		if (paramName.length() > 64) {
 			bLongParameterName = true;
+			issueSource = param;
 		}
 	}
 	// Check reaction name lengths
@@ -2294,6 +2636,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String rxnName = rxn.getId();
 		if (rxnName.length() > 64) {
 			bLongReactionName = true;
+			issueSource = rxn;
 		}
 	}
 
@@ -2313,7 +2656,825 @@ private void checkIdentifiersNameLength() throws Exception {
 		}
 		warningMsg = warningMsg + "that have ids/names that are longer than 64 characters. \n\nUser is STRONGLY recommeded to shorten " +
 						"the names to avoid problems with the length of expressions these names might be used in.";
-		logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
+		
+		localIssueList.add(new Issue(issueSource, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, warningMsg, Issue.SEVERITY_WARNING));
+		// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
 	}
 }
+
+
+/**
+ * addReactions:
+ *
+ */
+protected void addReactions(VCMetaData metaData) {
+	if (sbmlModel == null) {
+		throw new RuntimeException("SBML model is NULL");
+	}
+	ListOf listofReactions = sbmlModel.getListOfReactions();
+	if (listofReactions == null) {
+		System.out.println("No Reactions");
+		return;
+	}
+	int numReactions = (int)sbmlModel.getNumReactions();
+	ReactionStep[] vcReactions = new ReactionStep[numReactions];
+	boolean[] fast = new boolean[numReactions];
+	Model vcModel = simContext.getModel();
+	ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
+	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
+	try {
+		for (int i = 0; i < sbmlModel.getNumReactions(); i++) {
+			org.sbml.libsbml.Reaction sbmlRxn = (org.sbml.libsbml.Reaction)listofReactions.get(i);
+			String rxnName = sbmlRxn.getId();
+			// Check of reaction annotation is present; if so, does it have an embedded element (flux or simpleRxn).
+			// Create a fluxReaction or simpleReaction accordingly.
+			Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlRxn);
+			Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement);
+			if (sbmlImportRelatedElement != null) {
+				Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
+				if (embeddedRxnElement != null) {
+					if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
+						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attributes.
+						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
+						Structure struct = vcModel.getStructure(structName);
+						if (!(struct instanceof Membrane)) {
+							throw new RuntimeException("Appears that the flux reaction is not occuring on a membrane.");
+						}
+						vcReactions[i] = new FluxReaction(vcModel, (Membrane)struct, null, rxnName);
+						vcReactions[i].setModel(vcModel);
+						// Set the fluxOption on the flux reaction based on whether it is molecular, molecular & electrical, electrical.
+						String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
+						if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularOnly)) {
+							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
+						} else if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
+							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
+						} else if (fluxOptionStr.equals(XMLTags.FluxOptionElectricalOnly)) {
+							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
+						} else {
+							localIssueList.add(new Issue(vcReactions[i], IssueCategory.SBMLImport_Reaction, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
+							// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
+						}
+					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
+						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
+						vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+					}
+				} else {
+					vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+				}
+			} else {
+				vcReactions[i] = new SimpleReaction(vcModel, reactionStructure, rxnName);
+			}
+			
+			// set annotations and notes on vcReactions[i]
+			sbmlAnnotationUtil.readAnnotation(vcReactions[i], sbmlRxn);
+			sbmlAnnotationUtil.readNotes(vcReactions[i], sbmlRxn);
+			// record reaction name in annotation if it is greater than 64 characters. Choosing 64, since that is (as of 12/2/08) 
+			// the limit on the reactionName length.
+			if (rxnName.length() > 64) {
+				StringBuffer oldRxnAnnotation = new StringBuffer(metaData.getFreeTextAnnotation(vcReactions[i]));
+				oldRxnAnnotation.append("\n\n" + rxnName);
+				metaData.setFreeTextAnnotation(vcReactions[i], oldRxnAnnotation.toString());
+			}
+			
+
+			// Now add the reactants, products, modifiers as specified by the sbmlRxn
+			addReactionParticipants(sbmlRxn, vcReactions[i]);
+			
+			KineticLaw kLaw = sbmlRxn.getKineticLaw();
+			Kinetics kinetics = null;
+			if (kLaw != null) {
+				// Convert the formula from kineticLaw into MathML and then to an expression (infix) to be used in VCell kinetics
+				ASTNode sbmlRateMath = kLaw.getMath();
+				Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
+				Expression vcRateExpression = new Expression(kLawRateExpr);
+	
+				// Check the kinetic rate equation for occurances of any species in the model that is not a reaction participant.
+				// If there exists any such species, it should be added as a modifier (catalyst) to the reaction.
+				for (int k = 0; k < vcSpeciesContexts.length; k++){
+					if (vcRateExpression.hasSymbol(vcSpeciesContexts[k].getName())) {
+						if ((sbmlRxn.getReactant(vcSpeciesContexts[k].getName()) == null) && 
+							(sbmlRxn.getProduct(vcSpeciesContexts[k].getName()) == null) && 
+							(sbmlRxn.getModifier(vcSpeciesContexts[k].getName()) == null)) {
+							// This means that the speciesContext is not a reactant, product or modifier : it has to be added to the VC Rxn as a catalyst
+							vcReactions[i].addCatalyst(vcSpeciesContexts[k]);
+						}
+					}
+				}
+	
+				// set kinetics on VCell reaction 
+				if (bSpatial) {
+					// if spatial SBML ('isSpatial' attribute set), create DistributedKinetics)
+					SpatialSpeciesRxnPlugin ssrplugin = null;
+					// (a) the requiredElements attributes should be 'spatial'
+					ssrplugin = (SpatialSpeciesRxnPlugin)sbmlRxn.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+					if (ssrplugin.getIsLocal()) {
+						kinetics = new GeneralKinetics(vcReactions[i]);
+					}
+						
+				} else {
+					kinetics = new GeneralLumpedKinetics(vcReactions[i]);
+				}
+				
+				// set kinetics on vcReaction
+				vcReactions[i].setKinetics(kinetics);
+	
+				// If the name of the rate parameter has been changed by user, or matches with global/local param, 
+				// it has to be changed.
+				resolveRxnParameterNameConflicts(sbmlRxn, kinetics, sbmlImportRelatedElement);
+				
+				/**
+				 * Now, based on the kinetic law expression, see if the rate is expressed in concentration/time or substance/time :
+				 * If the compartment_id of the compartment corresponding to the structure in which the reaction takes place 
+				 * occurs in the rate law expression, it is in concentration/time; divide it by the compartment size and bring in 
+				 * the rate law as 'Distributed' kinetics. If not, the rate law is in substance/time; bring it in (as is) as 
+				 * 'Lumped' kinetics. 
+				 */ 
+				
+				ListOf listofLocalParams = kLaw.getListOfParameters();
+				kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), vcRateExpression);
+				
+				// If there are any global parameters used in the kinetics, and if they have species,
+				// check if the species are already reactionParticipants in the reaction. If not, add them as catalysts.
+				KineticsProxyParameter[] kpps = kinetics.getProxyParameters();
+				for (int j = 0; j < kpps.length; j++) {
+					if (kpps[j].getTarget() instanceof ModelParameter) {
+						ModelParameter mp = (ModelParameter)kpps[j].getTarget();
+					    HashSet<String> refSpeciesNameHash = new HashSet<String>(); 
+					    getReferencedSpeciesInExpr(mp.getExpression(), refSpeciesNameHash);
+					    java.util.Iterator<String> refSpIterator = refSpeciesNameHash.iterator();
+						while (refSpIterator.hasNext()) {
+					    	String spName = refSpIterator.next();
+					    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spName);
+							if (vcReactions[i].getReactionParticipantFromSymbol(sp.getId()) == null) {
+								// This means that the speciesContext is not a reactant, product or modifier : it has to be added as a catalyst
+								vcReactions[i].addCatalyst(vcModel.getSpeciesContext(sp.getId()));
+							}
+						}
+	
+					}
+				}
+				
+				// Introduce all remaining local parameters from the SBML model - local params cannot be defined by rules.
+				for (int j = 0; j < kLaw.getNumParameters(); j++) {
+					org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
+					String paramName = param.getId();
+					// check if sbml local param is in kinetic params list; if so, add its value. 
+					KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
+					if (kineticsParameter != null) {
+						kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
+						VCUnitDefinition paramUnit = sbmlUnitIdentifierHash.get(param.getUnits());
+						if (paramUnit == null) {
+							paramUnit = vcModelUnitSystem.getInstance_TBD();
+						}
+						kineticsParameter.setUnitDefinition(paramUnit);
+					} else {
+						// check if it is a proxy parameter (specifically, speciesContext or model parameter (structureSize too)).
+						KineticsProxyParameter kpp = kinetics.getProxyParameter(paramName);
+						// if there is a proxy param with same name as sbml kinetic local param, if proxy param
+						// is a model global parameter, change proxy param to local, set its value 
+						// and units to local param values
+						if (kpp != null && kpp.getTarget() instanceof ModelParameter) {
+							kinetics.convertParameterType(kpp, false);
+							kineticsParameter = kinetics.getKineticsParameter(paramName);
+							kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
+							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash.get(param.getUnits());
+							kineticsParameter.setUnitDefinition(paramUnit);
+						}
+					}
+				}
+			} else {
+				// sbmlKLaw was null, so creating a GeneralKinetics with 0.0 as rate.
+				kinetics = new GeneralKinetics(vcReactions[i]); 
+			} // end - if-else  KLaw != null
+
+			// set the reaction kinetics, and add reaction to the vcell model.
+			kinetics.resolveUndefinedUnits();
+			// System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
+			if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
+				fast[i] = true;
+			} else {
+				fast[i] = false;
+			}
+		}	// end - for vcReactions
+		
+		vcModel.setReactionSteps(vcReactions);
+
+		// set 'fast' on reactionSpec in simulationContext
+		for (int j = 0; j < fast.length; j++) {
+			if (fast[j]) {
+				simContext.getReactionContext().getReactionSpec(vcReactions[j]).setReactionMapping(ReactionSpec.FAST);
+			}
+		}
+
+	} catch (Exception e1) {
+		e1.printStackTrace(System.out);
+		throw new RuntimeException(e1.getMessage());
+	}
+	
+}
+
+public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNode sbmlCSGNode){
+	String csgNodeName = sbmlCSGNode.getSpatialId();
+	if (sbmlCSGNode.isCSGPrimitive()){
+		String primitiveType = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_SPHERE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.SPHERE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CONE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CONE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CUBE)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CUBE);
+			return vcellPrimitive;
+		}
+		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CYLINDER)){
+			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CYLINDER);
+			return vcellPrimitive;
+		}
+		throw new RuntimeException("PrimitiveType '" + primitiveType + "' not recognized");
+	}else if (sbmlCSGNode.isCSGPseudoPrimitive()) {
+		throw new RuntimeException("Pseudo primitives not yet supported in CSGeometry.");
+	}else if (sbmlCSGNode.isCSGSetOperator()) {
+		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = (org.sbml.libsbml.CSGSetOperator)sbmlCSGNode;
+		String operatorType = sbmlSetOperator.getOperationType();
+		OperatorType opType = null;
+		if (operatorType.equals(SBMLSpatialConstants.UNION)){
+			opType = OperatorType.UNION;
+		}else if (operatorType.equals(SBMLSpatialConstants.DIFFERENCE)){
+			opType = OperatorType.DIFFERENCE;
+		}else if (operatorType.equals(SBMLSpatialConstants.INTERSECTION)){
+			opType = OperatorType.INTERSECTION;
+		}else{
+			throw new RuntimeException("unsupported operator type '"+operatorType+"'");
+		}
+		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(csgNodeName, opType);
+		for (int c = 0; c < sbmlSetOperator.getNumCSGNodeChildren(); c++){
+			vcellSetOperator.addChild(getVCellCSGNode(sbmlSetOperator.getCSGNodeChild(c)));
+		}
+		return vcellSetOperator;
+	}else if (sbmlCSGNode.isCSGTransformation()) {
+		org.sbml.libsbml.CSGTransformation sbmlTransformation = (org.sbml.libsbml.CSGTransformation)sbmlCSGNode;  
+		cbit.vcell.geometry.CSGNode vcellCSGChild = getVCellCSGNode(sbmlTransformation.getChild());
+		if (sbmlTransformation.isCSGTranslation()) {
+			org.sbml.libsbml.CSGTranslation sbmlTranslation = (org.sbml.libsbml.CSGTranslation) sbmlTransformation;
+			Vect3d translation = new Vect3d(sbmlTranslation.getTranslateX(),sbmlTranslation.getTranslateY(),sbmlTranslation.getTranslateZ());
+			cbit.vcell.geometry.CSGTranslation vcellTranslation = new cbit.vcell.geometry.CSGTranslation(csgNodeName, translation);
+			vcellTranslation.setChild(vcellCSGChild);
+			return vcellTranslation;
+		}else if (sbmlTransformation.isCSGRotation()) {
+			org.sbml.libsbml.CSGRotation sbmlRotation = (org.sbml.libsbml.CSGRotation) sbmlTransformation;
+			Vect3d axis = new Vect3d(sbmlRotation.getRotationAxisX(),sbmlRotation.getRotationAxisY(),sbmlRotation.getRotationAxisZ());
+			double rotationAngleRadians = sbmlRotation.getRotationAngleInRadians();
+			cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(csgNodeName, axis, rotationAngleRadians);
+			vcellRotation.setChild(vcellCSGChild);
+			return vcellRotation;
+		}else if (sbmlTransformation.isCSGScale()) {
+			org.sbml.libsbml.CSGScale sbmlScale = (org.sbml.libsbml.CSGScale) sbmlTransformation;
+			Vect3d scale = new Vect3d(sbmlScale.getScaleX(),sbmlScale.getScaleY(),sbmlScale.getScaleZ());
+			cbit.vcell.geometry.CSGScale vcellScale = new cbit.vcell.geometry.CSGScale(csgNodeName, scale);
+			vcellScale.setChild(vcellCSGChild);
+			return vcellScale;
+		}else if (sbmlTransformation.isCSGHomogeneousTransformation()) {
+			throw new RuntimeException("homogeneous transformations not supported yet.");
+		}else{
+			throw new RuntimeException("unsupported type of CSGTransformation");
+		}
+	}else{
+		throw new RuntimeException("unsupported type of CSGNode");
+	}
+}
+
+protected void addGeometry() {
+	// Get a SpatialModelPlugin object plugged in the model object.
+	//
+	// The type of the returned value of SBase::getPlugin() function is 
+	// SBasePlugin*, and thus the value needs to be cast for the 
+	// corresponding derived class.
+	//
+	SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+
+	// get a Geometry object via SpatialModelPlugin object.
+	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
+
+	
+	// get a CoordComponent object via the Geometry object.	
+	ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
+	if (listOfCoordComps == null) {
+		throw new RuntimeException("Cannot have 0 coordinate compartments in geometry"); 
+	}
+	// coord component
+	double origX = 0.0; double origY = 0.0; double origZ = 0.0;
+	double extentX = 1.0; double extentY = 1.0; double extentZ = 1.0;
+	int dimension = 0;
+	long dim = sbmlGeometry.getNumCoordinateComponents();
+	for (int i = 0; i < dim; i++) {
+		CoordinateComponent coordComponent = listOfCoordComps.get(i);
+		if (coordComponent.getComponentType().equals("cartesianX") && (coordComponent.getIndex() == 0)) {
+			origX = coordComponent.getBoundaryMin().getValue();
+			extentX = coordComponent.getBoundaryMax().getValue() - origX;
+		} else if (coordComponent.getComponentType().equals("cartesianY") && (coordComponent.getIndex() == 1)) {
+			origY = coordComponent.getBoundaryMin().getValue();
+			extentY = coordComponent.getBoundaryMax().getValue() - origY;
+		} else if (coordComponent.getComponentType().equals("cartesianZ") && (coordComponent.getIndex() == 2)) {
+			origZ = coordComponent.getBoundaryMin().getValue();
+			extentZ = coordComponent.getBoundaryMax().getValue() - origZ;
+		} else {
+			throw new RuntimeException("unknown componentType '" + coordComponent.getComponentType() + "' : not supported in VCell");
+		}
+		dimension++;
+	}
+	
+	Origin vcOrigin = new Origin(origX, origY, origZ);
+	Extent vcExtent = new Extent(extentX, extentY, extentZ);
+	
+	// from geometry definition, find out which type of geometry : image or analytic or CSG
+	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
+		throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+	}
+	
+	AnalyticGeometry analyticGeometryDefinition = null;
+	CSGeometry csGeometry = null;
+	SampledFieldGeometry segmentedSampledFieldGeometry = null;
+	SampledFieldGeometry distanceMapSampledFieldGeometry = null;
+	ParametricGeometry parametricGeometry = null;
+	
+	for (int i = 0; i < sbmlGeometry.getNumGeometryDefinitions(); i++) {
+		GeometryDefinition gd_temp = sbmlGeometry.getGeometryDefinition(i);
+		if (gd_temp.isAnalyticGeometry()) {
+			analyticGeometryDefinition = (AnalyticGeometry)gd_temp;
+		} else if (gd_temp.isSampledFieldGeometry()){
+			SampledFieldGeometry temp_sampledFieldGeometry = (SampledFieldGeometry)gd_temp;
+			if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("linear")){
+				distanceMapSampledFieldGeometry = temp_sampledFieldGeometry;
+			}else if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("constant")){
+				segmentedSampledFieldGeometry = temp_sampledFieldGeometry;
+			}
+		} else if (gd_temp.isCSGeometry()) {
+			csGeometry = (CSGeometry)gd_temp;
+		} else if (gd_temp.isParametricGeometry()) {
+			parametricGeometry = (ParametricGeometry)gd_temp;
+		}
+	}
+	
+	if (analyticGeometryDefinition==null && segmentedSampledFieldGeometry==null && distanceMapSampledFieldGeometry==null && csGeometry==null) {
+		throw new RuntimeException("VCell supports only Analytic, Image based (segmentd or distance map) or Constructed Solid Geometry at this time.");
+	}
+	GeometryDefinition selectedGeometryDefinition = null;
+	if (csGeometry!=null){
+		selectedGeometryDefinition = csGeometry;
+	}else if (analyticGeometryDefinition!=null){
+		selectedGeometryDefinition = analyticGeometryDefinition;
+	}else if (segmentedSampledFieldGeometry!=null){
+		selectedGeometryDefinition = segmentedSampledFieldGeometry;
+	}else if (distanceMapSampledFieldGeometry!=null){
+		selectedGeometryDefinition = distanceMapSampledFieldGeometry;
+	}else if (parametricGeometry!=null){
+		selectedGeometryDefinition = parametricGeometry;
+	}else{
+		throw new RuntimeException("no geometry definition found");
+	}
+	Geometry vcGeometry = null;
+	if (selectedGeometryDefinition==analyticGeometryDefinition || selectedGeometryDefinition==csGeometry){
+		vcGeometry = new Geometry("spatialGeom", dimension);
+	} else if (selectedGeometryDefinition==distanceMapSampledFieldGeometry || selectedGeometryDefinition==segmentedSampledFieldGeometry){
+		SampledFieldGeometry sfg = (SampledFieldGeometry)selectedGeometryDefinition;
+		// get image from sampledFieldGeometry
+		// get a sampledVol object via the listOfSampledVol (from SampledGeometry) object.
+		
+		SampledField sf = sfg.getSampledField();
+		int numX = sf.getNumSamples1();
+		int numY = sf.getNumSamples2();
+		int numZ = sf.getNumSamples3();
+		ImageData id = sf.getImageData();
+		int[] samples = new int[(int) id.getSamplesLength()];
+		id.getSamples(samples);
+		byte[] imageInBytes = new byte[samples.length];
+		if (selectedGeometryDefinition == distanceMapSampledFieldGeometry){
+			//
+			// single distance-map ... negative values are 1, zero and positive are 2 (for now assume that there are only two DomainTypes which are volume)
+			// alternatively, one could use the marching cube algorithm to create polygons which can be super sampled.
+			//
+			// could resample to higher resolution segmented images (via linear interpolation).
+			//
+			for (int i = 0; i < imageInBytes.length; i++) {
+//				if (interpolation(samples[i])<0){
+				if (samples[i]<0){
+					imageInBytes[i] = -1;
+				}else{
+					imageInBytes[i] = 1;
+				}
+			}
+		}else{
+			for (int i = 0; i < imageInBytes.length; i++) {
+				imageInBytes[i] = (byte)samples[i];
+			}
+		}
+		try {
+			VCImage vcImage = null;
+			if (id.getDataType().equals("compressed")) {
+				vcImage = new VCImageCompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+			}else if (id.getDataType().equals("uint8") || id.getDataType().equals("int16")){
+				vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+			}else{			
+				throw new RuntimeException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
+			}
+			vcImage.setName(sf.getSpatialId());
+			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
+			if (listOfSampledVols == null) {
+				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+			}
+			int numSampledVols = (int)sfg.getNumSampledVolumes();
+			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
+			// get pixel classes for geometry
+			for (int i = 0; i < numSampledVols; i++) {
+				SampledVolume sVol = listOfSampledVols.get(i);
+				// from subVolume, get pixelClass?
+				vcpixelClasses[i] = new VCPixelClass(null, sVol.getSpatialId(), (int)sVol.getSampledValue());
+			}
+			vcImage.setPixelClasses(vcpixelClasses);
+			// now create image geometry
+			vcGeometry = new Geometry("spatialGeom", vcImage);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Unable to create image from SampledFieldGeometry : " + e.getMessage());
+		} 
+	}
+	GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
+	vcGeometrySpec.setOrigin(vcOrigin);
+	try {
+		vcGeometrySpec.setExtent(vcExtent);
+	} catch (PropertyVetoException e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Unable to set extent on VC geometry : " + e.getMessage());
+	}
+
+	// get  listOfDomainTypes via the Geometry object.	
+	ListOfDomainTypes listOfDomainTypes = sbmlGeometry.getListOfDomainTypes();
+	if (listOfDomainTypes == null) {
+		throw new RuntimeException("Cannot have 0 domainTypes in geometry"); 
+	}
+	// get a listOfDomains via the Geometry object.	
+	ListOfDomains listOfDomains = sbmlGeometry.getListOfDomains();
+	if (listOfDomains == null) {
+		throw new RuntimeException("Cannot have 0 domains in geometry"); 
+	}
+	
+//	ListOfGeometryDefinitions listOfGeomDefns = sbmlGeometry.getListOfGeometryDefinitions();
+//	if ((listOfGeomDefns == null) || (sbmlGeometry.getNumGeometryDefinitions() > 1)) {
+//		throw new RuntimeException("Can have only 1 geometry definition in geometry");
+//	}
+	// use the boolean bAnalytic to create the right kind of subvolume. First match the somVol=domainTypes for spDim=3. Deal witl spDim=2 afterwards.
+	GeometrySurfaceDescription vcGsd = vcGeometry.getGeometrySurfaceDescription();
+	Vector<DomainType> surfaceClassDomainTypesVector = new Vector<DomainType>();
+	try {
+		for (int i = 0; i < sbmlGeometry.getNumDomainTypes(); i++) {
+			DomainType dt = listOfDomainTypes.get(i);
+			if (dt.getSpatialDimensions() == 3) {
+				// subvolume
+				if (selectedGeometryDefinition == analyticGeometryDefinition) {
+					// will set expression later - when reading in Analytic Volumes in GeometryDefinition
+					vcGeometrySpec.addSubVolume(new AnalyticSubVolume(dt.getSpatialId(), new Expression(1.0)));
+				} else {
+					// add SubVolumes later for CSG and Image-based
+				}
+			} else if (dt.getSpatialDimensions() == 2) {
+				surfaceClassDomainTypesVector.add(dt);
+			}
+		}
+
+		// get an AnalyticGeometry object via the Geometry object. The analytic vol is needed to get the expression for subVols
+		if (selectedGeometryDefinition == analyticGeometryDefinition) {
+			// get an analyticVol object via the listOfAnalyticVol (from AnalyticGeometry) object.	
+			ListOfAnalyticVolumes listOfAnalyticVols = analyticGeometryDefinition.getListOfAnalyticVolumes();
+			if (listOfAnalyticVols == null) {
+				throw new RuntimeException("Cannot have 0 Analytic volumes in analytic geometry"); 
+			}
+			for (int i = 0; i < analyticGeometryDefinition.getNumAnalyticVolumes(); i++) {
+				// get subVol from VC geometry using analyticVol spatialId; set its expr using analyticVol's math.
+				AnalyticVolume analyticVol = listOfAnalyticVols.get(i);
+				SubVolume vcSubvolume = vcGeometrySpec.getSubVolume(analyticVol.getDomainType());
+				if (vcSubvolume == null) {
+					throw new RuntimeException("analytic volume '" + analyticVol.getSpatialId() + "' does not map to any VC subvolume.");
+				}
+				try {
+					Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath());
+					((AnalyticSubVolume)vcSubvolume).setExpression(subVolExpr);
+				} catch (ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Unable to set expression on subVolume '" + vcSubvolume.getName() + "'" + e.getMessage());
+				}
+			}
+		}
+		if (selectedGeometryDefinition instanceof SampledFieldGeometry) {
+			SampledFieldGeometry sfg = (SampledFieldGeometry)selectedGeometryDefinition;
+			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
+			if (listOfSampledVols == null) {
+				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+			}
+			int numSampledVols = (int)sfg.getNumSampledVolumes();
+			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
+			// get pixel classes for geometry
+			for (int i = 0; i < numSampledVols; i++) {
+				SampledVolume sVol = listOfSampledVols.get(i);
+				// from subVolume, get pixelClass?
+				vcpixelClasses[i] = new VCPixelClass(null, sVol.getSpatialId(), (int)sVol.getSampledValue());
+			}
+
+			ImageSubVolume[] vcImageSubVols = new ImageSubVolume[numSampledVols]; 
+			for (int i = 0; i < numSampledVols; i++) {
+				SampledVolume sVol = listOfSampledVols.get(i);
+				// find the pixel class corresponding to pixel value from sVol.sampledValue.
+				VCPixelClass pixelClass = null;
+				for (int j = 0; j < vcpixelClasses.length; j++){
+					if (vcpixelClasses[j].getPixel() == (int)sVol.getSampledValue()){
+						pixelClass = vcpixelClasses[j];
+					}
+				}
+				//Create the new Image SubVolume - use index of this for loop as 'handle' for ImageSubVol?
+				vcImageSubVols[i] = new ImageSubVolume(null, pixelClass, i);
+				vcImageSubVols[i].setName(sVol.getSpatialId());
+			}
+			vcGeometry.getGeometrySpec().setSubVolumes(vcImageSubVols);
+		}
+		if (selectedGeometryDefinition == csGeometry) {
+			ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCSGObjects();
+			int numCSGObjects = (int)csGeometry.getNumCSGObjects();
+			ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
+			int index = 0;
+			for (int kk = 0; kk < numCSGObjects;kk++) {
+				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
+				index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
+				// indx = n - (ordinal+1) : we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
+				// insert vcCSGObj at position 'indx' in arraylist 
+				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
+				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
+				vcCSGSubVolumes.add(index, vcellCSGObject);
+			}
+			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes.toArray(new CSGObject[numCSGObjects]));
+		}
+
+		
+		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
+//		vcGsd.updateAll();
+		vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, true);
+	}   catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage());
+	}
+	
+	
+	// should now map each SBML domain to right VC geometric region.
+	GeometricRegion[] vcGeomRegions = vcGsd.getGeometricRegions(); 
+	ISize sampleSize = vcGsd.getVolumeSampleSize();
+	RegionInfo[] regionInfos = vcGsd.getRegionImage().getRegionInfos();
+	int numX = sampleSize.getX();
+	int numY = sampleSize.getY();
+	int numZ = sampleSize.getZ();
+	double ox = vcOrigin.getX();
+	double oy = vcOrigin.getY();
+	double oz = vcOrigin.getZ();
+
+	for (int i = 0; i < sbmlGeometry.getNumDomains(); i++) {
+		Domain domain = listOfDomains.get(i);
+		String domainType = domain.getDomainType();
+		InteriorPoint interiorPt = domain.getInteriorPoint(0);
+		if (interiorPt == null && sbmlGeometry.getDomainType(domainType).getSpatialDimensions() == 2) {
+			continue;
+		}
+		Coordinate sbmlInteriorPtCoord = new Coordinate(interiorPt.getCoord1(), interiorPt.getCoord2(), interiorPt.getCoord3());
+		for (int j = 0; j < vcGeomRegions.length; j++) {
+			if (vcGeomRegions[j] instanceof VolumeGeometricRegion) {
+				int regionID = ((VolumeGeometricRegion)vcGeomRegions[j]).getRegionID();
+				for (int k = 0; k < regionInfos.length; k++) {
+					// get the regionInfo corresponding to the vcGeomRegion (using gemoRegion regionID).
+					if (regionInfos[k].getRegionIndex() == regionID) {
+						int volIndx = 0;
+						Coordinate nearestPtCoord = null;
+						double minDistance = Double.MAX_VALUE;
+						// for each point in the region, find it if is close to 'sbmlInteriorPt'. If it is, this is the region represented by SBML 'domain[i]'. 
+						for (int z = 0; z < numZ; z++) {
+							for (int y = 0; y < numY; y++) {
+								for (int x = 0; x < numX; x++) {
+									if (regionInfos[k].isIndexInRegion(volIndx)) {
+										double unit_z = (numZ>1)?((double)z)/(numZ-1):0.5;
+										double coordZ = oz + vcExtent.getZ() * unit_z;
+										double unit_y = (numY>1)?((double)y)/(numY-1):0.5;
+										double coordY = oy + vcExtent.getY() * unit_y;
+										double unit_x = (numX>1)?((double)x)/(numX-1):0.5;
+										double coordX = ox + vcExtent.getX() * unit_x;
+										// for now, find the shortest dist coord. Can refine algo later.
+										Coordinate vcCoord = new Coordinate(coordX, coordY, coordZ);
+										double distance = sbmlInteriorPtCoord.distanceTo(vcCoord);
+										if (distance < minDistance) {
+											minDistance = distance;
+											nearestPtCoord = vcCoord;
+										}
+									}
+									volIndx++;
+								}	// end - for x
+							}	// end - for y
+						}	// end - for z
+						// verify that domainType of domain and geomClass of geomRegion are the same; if so, name vcGeomReg[j] with domain name
+						if (nearestPtCoord != null) {
+							GeometryClass geomClassSBML = vcGeometry.getGeometryClass(domainType);
+							// we know vcGeometryReg[j] is a VolGeomRegion
+							GeometryClass geomClassVC = ((VolumeGeometricRegion)vcGeomRegions[j]).getSubVolume();
+							if (geomClassSBML.compareEqual(geomClassVC)) {
+								vcGeomRegions[j].setName(domain.getSpatialId());
+							}
+						}
+					}	// end if (regInfoIndx = regId)
+				}	// end - for regInfo 
+			} 
+		}	// end for - vcGeomRegions
+	}	// end - for domains
+	
+	// now that we have the subVolumes:spDim3-domainTypes mapped, we need to deal with surfaceClass:spDim2-domainTypes
+	for (int i = 0; i < surfaceClassDomainTypesVector.size(); i++) {
+		DomainType surfaceClassDomainType = surfaceClassDomainTypesVector.elementAt(i);
+		// get the domain that has the same 'domainType' field as 'surfaceClassDomainType'
+		for (int j = 0; j < sbmlGeometry.getNumDomains(); j++) {
+			Domain d = listOfDomains.get(j);
+			if (d.getDomainType().equals(surfaceClassDomainType.getSpatialId())) {
+				// get the adjacent domains of this 'surface' domain (surface domain + its 2 adj vol domains)
+				Set<Domain> adjacentDomainsSet = getAssociatedAdjacentDomains(sbmlGeometry, d);
+				// get the domain types of the adjacent domains in SBML and store the corresponding subVol counterparts from VC for adj vol domains 
+				Vector<SubVolume> adjacentSubVolumesVector = new Vector<SubVolume>();
+				Vector<VolumeGeometricRegion> adjVolGeomRegionsVector = new Vector<VolumeGeometricRegion>();
+				Iterator<Domain> iterator = adjacentDomainsSet.iterator();
+				while (iterator.hasNext()) {
+					Domain dom = iterator.next();
+					DomainType dt = sbmlGeometry.getDomainType(dom.getDomainType());
+					if (dt.getSpatialDimensions() == 3) {
+						// for domain type with sp. dim = 3, get correspoinding subVol from VC geometry.
+						GeometryClass gc = vcGeometry.getGeometryClass(dt.getSpatialId());
+						adjacentSubVolumesVector.add((SubVolume)gc);
+						// store volGeomRegions corresponding to this (vol) geomClass in adjVolGeomRegionsVector : this should return ONLY 1 region for subVol.
+						GeometricRegion[] geomRegion = vcGsd.getGeometricRegions(gc);	
+						adjVolGeomRegionsVector.add((VolumeGeometricRegion)geomRegion[0]);
+					}
+				}
+				// there should be only 2 subVols in this vector
+				if (adjacentSubVolumesVector.size() != 2) {
+					throw new RuntimeException("Cannot have more or less than 2 subvolumes that are adjacent to surface (membrane) '" + d.getSpatialId() + "'"); 
+				}
+				// get the surface class with these 2 adj subVols. Set its name to that of 'surfaceClassDomainType'
+				SurfaceClass surfacClass = vcGsd.getSurfaceClass(adjacentSubVolumesVector.get(0), adjacentSubVolumesVector.get(1));
+				surfacClass.setName(surfaceClassDomainType.getSpatialId());
+				// get surfaceGeometricRegion that has adjVolGeomRegions as its adjacent vol geom regions and set its name from domain 'd'
+				SurfaceGeometricRegion surfaceGeomRegion = getAssociatedSurfaceGeometricRegion(vcGsd, adjVolGeomRegionsVector);
+				if (surfaceGeomRegion != null) {
+					surfaceGeomRegion.setName(d.getSpatialId());
+				}
+			}	// end if - domain.domainType == surfaceClassDomainType
+		}	// end for - numDomains
+	}	// end surfaceClassDomainTypesVector
+		
+	// structureMappings in VC from compartmentMappings in SBML
+	try {
+		// set geometry first and then set structureMappings?
+		simContext.setGeometry(vcGeometry);
+		// update simContextName ...
+		simContext.setName(simContext.getName() + "_" + vcGeometry.getName());
+		Model vcModel = simContext.getModel();
+		ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
+		
+		Vector<StructureMapping> structMappingsVector = new Vector<StructureMapping>();
+		Compartment c;
+		SpatialCompartmentPlugin cplugin = null;
+		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
+			c = sbmlModel.getCompartment(i);
+			cplugin = (SpatialCompartmentPlugin)c.getPlugin("spatial");
+			CompartmentMapping compMapping = cplugin.getCompartmentMapping();
+			Structure struct = vcModel.getStructure(compMapping.getCompartment());
+			String domainType = compMapping.getDomainType();
+			GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
+			double unitSize = compMapping.getUnitSize();
+			if (struct instanceof Feature) {
+				FeatureMapping featureMapping = new FeatureMapping((Feature)struct, simContext, vcModelUnitSystem);
+				featureMapping.setGeometryClass(geometryClass);
+				if (geometryClass instanceof SubVolume) {
+					featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+				} else if (geometryClass instanceof SurfaceClass) {
+					featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+				}
+				structMappingsVector.add(featureMapping);
+			} else if (struct instanceof Membrane) {
+				MembraneMapping membraneMapping = new MembraneMapping((Membrane)struct, simContext, vcModelUnitSystem);
+				membraneMapping.setGeometryClass(geometryClass);
+				if (geometryClass instanceof SubVolume) {
+					membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+				} else if (geometryClass instanceof SurfaceClass) {
+					membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+				}
+				structMappingsVector.add(membraneMapping);
+			}
+		}
+		StructureMapping[] structMappings = structMappingsVector.toArray(new StructureMapping[0]);
+		simContext.getGeometryContext().setStructureMappings(structMappings);
+
+		// if type from SBML parameter Boundary Condn is not the same as the boundary type of the 
+		// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping
+		// to the value of 'type' from SBML parameter Boundary Condn. 
+		ListOfParameters listOfGlobalParams = sbmlModel.getListOfParameters();
+		CoordinateComponent ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
+		CoordinateComponent ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
+		CoordinateComponent ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
+
+		for (int i = 0; i < sbmlModel.getNumParameters(); i++){
+			Parameter sbmlGlobalParam = (Parameter)listOfGlobalParams.get(i);
+			SpatialParameterPlugin spplugin = (SpatialParameterPlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+			BoundaryCondition bCondn = spplugin.getBoundaryCondition();
+			if (bCondn.isSetVariable()) {
+				// get the var of boundaryCondn; find appropriate spContext in vcell; 
+				SpeciesContext paramSpContext = simContext.getModel().getSpeciesContext(bCondn.getVariable());
+				if (paramSpContext != null) {
+					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
+					if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getSpatialId())) {
+						String bcXmType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeXm().toString().equals(bcXmType)) {
+							sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
+						}
+					} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
+						String bcXpType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeXp().toString().equals(bcXpType)) {
+							sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
+						}
+					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
+						String bcYmType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeYm().toString().equals(bcYmType)) {
+							sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
+						}
+					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
+						String bcYpType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeYp().toString().equals(bcYpType)) {
+							sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
+						}
+					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
+						String bcZmType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeZm().toString().equals(bcZmType)) {
+							sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
+						}
+					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
+						String bcZpType = bCondn.getType();
+						if (!sm.getBoundaryConditionTypeZp().toString().equals(bcZpType)) {
+							sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
+						}
+					}
+				}	// end if (paramSpContext != null)
+			}	// end if (bCondn.isSetVar()) 
+		}	// end for (sbmlModel.numParams)
+
+		simContext.getGeometryContext().refreshStructureMappings();
+	}  catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Unable to create VC structureMappings from SBML compartment mappings : " + e.getMessage());
+	}
+}
+
+private SurfaceGeometricRegion getAssociatedSurfaceGeometricRegion(GeometrySurfaceDescription vcGsd, Vector<VolumeGeometricRegion> volGeomRegionsVector) {
+	GeometricRegion[] geomeRegions = vcGsd.getGeometricRegions();
+	// adjVolGeomRegionsVector should have only 2 elements - the 2 adj volGeomRegions for any surfaceRegion.
+	VolumeGeometricRegion[] volGeomRegionsArray = volGeomRegionsVector.toArray(new VolumeGeometricRegion[0]);
+	for (int i = 0; i < geomeRegions.length; i++) {
+		if (geomeRegions[i] instanceof SurfaceGeometricRegion) {
+			SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)geomeRegions[i];
+			GeometricRegion[] adjVolGeomRegs = surfaceRegion.getAdjacentGeometricRegions();
+			// adjVolGeomRegs array should also have 2 elements : the 2 adj volGeomRegions for surfaceRegion.
+			// if the 2 arrays do not have 2 elements each, throw exception
+			if (volGeomRegionsArray.length != 2 && adjVolGeomRegs.length != 2) {
+				throw new RuntimeException("There should be 2 adjacent geometric regions for surfaceRegion '" + surfaceRegion.getName() + "'");
+			}
+			// if the vol geomtric regions in both arrays match, we have a winner! - return surfaceRegion
+			if ((adjVolGeomRegs[0].compareEqual(volGeomRegionsArray[0]) && adjVolGeomRegs[1].compareEqual(volGeomRegionsArray[1])) || 
+				(adjVolGeomRegs[0].compareEqual(volGeomRegionsArray[1]) && adjVolGeomRegs[1].compareEqual(volGeomRegionsArray[0]))) {
+				return surfaceRegion;
+			}
+		}
+	}
+	return null;
+}
+
+
+// collect the domains that are adjacent to each other. Typically, 'd' is a 'surface' domain. We scan through adjacent domains to get the 
+// the surface domain and its adjacent volume domains. The set returned should have 3 domains.
+private Set<Domain> getAssociatedAdjacentDomains(org.sbml.libsbml.Geometry sbmlGeom, Domain d) {
+	Set<Domain> adjacentDomainsSet = new HashSet<Domain>();
+	for (int i = 0; i < sbmlGeom.getNumAdjacentDomains(); i++) {
+		AdjacentDomains adjDomains = sbmlGeom.getAdjacentDomains(i);
+		if (adjDomains.getDomain1().equals(d.getSpatialId()) || adjDomains.getDomain2().equals(d.getSpatialId())) {
+			if (!adjacentDomainsSet.contains(sbmlGeom.getDomain(adjDomains.getDomain1()))) {
+				adjacentDomainsSet.add(sbmlGeom.getDomain(adjDomains.getDomain1()));
+			}
+			if (!adjacentDomainsSet.contains(sbmlGeom.getDomain(adjDomains.getDomain2()))) {
+				adjacentDomainsSet.add(sbmlGeom.getDomain(adjDomains.getDomain2()));
+			}
+		}
+	}
+	return adjacentDomainsSet;
+}
+
+
 }

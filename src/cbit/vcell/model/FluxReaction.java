@@ -9,19 +9,15 @@
  */
 
 package cbit.vcell.model;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.Vector;
+import java.util.ArrayList;
 
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-
 public class FluxReaction extends ReactionStep {
-	private Species fieldFluxCarrier = null;
+//	private Species fieldFluxCarrier = null;
 
 public FluxReaction(Model model, Membrane membrane, KeyValue argKey, String name) throws PropertyVetoException {
     super(model, membrane, argKey, name);
@@ -31,23 +27,6 @@ public FluxReaction(Model model, Membrane membrane, KeyValue argKey, String name
 		e.printStackTrace(System.out);
 	}
 }
-
-
-public FluxReaction(Membrane membrane, Species fluxCarrier, Model model, KeyValue key,String name) throws Exception {
-	super(model, membrane,key,name);
-	setFluxCarrier(fluxCarrier,model);
-	try {
-		setKinetics(new GeneralKinetics(this));
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
-}   
-
-
-public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,String name) throws Exception {
-	this(membrane,fluxCarrier, model, null, name);
-}   
-
 
 /**
  * This method was created in VisualAge.
@@ -60,85 +39,13 @@ public boolean compareEqual(Matchable obj) {
 		if (!super.compareEqual0(fr)){
 			return false;
 		}
-		if (!Compare.isEqualOrNull(getFluxCarrier(),fr.getFluxCarrier())){
-			return false;
-		}
+//		if (!Compare.isEqualOrNull(getFluxCarrier(),fr.getFluxCarrier())){
+//			return false;
+//		}
 		return true;
 	}else{
 		return false;
 	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Flux
- * @param feature cbit.vcell.model.Feature
- */
-public Flux getFlux(Feature feature) {
-	ReactionParticipant rp_Array[] = getReactionParticipants();
-	
-	for (int i = 0; i < rp_Array.length; i++) { 
-		if (rp_Array[i] instanceof Flux){
-			Flux flux = (Flux)rp_Array[i];
-			if (flux.getStructure().compareEqual(feature)){
-				return flux;
-			}
-		}
-	}
-	return null;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Flux
- * @param feature cbit.vcell.model.Feature
- */
-public Flux[] getFluxes() {
-	ReactionParticipant rp_Array[] = getReactionParticipants();
-	Vector<Flux> fluxList = new Vector<Flux>();
-	for (int i = 0; i < rp_Array.length; i++) { 
-		if (rp_Array[i] instanceof Flux){
-			Flux flux = (Flux)rp_Array[i];
-			fluxList.add(flux);
-		}
-	}
-	return fluxList.toArray(new Flux[fluxList.size()]);
-}
-
-
-/**
- * Gets the fluxCarrier property (cbit.vcell.model.Species) value.
- * @return The fluxCarrier property value.
- * @see #setFluxCarrier
- */
-public Species getFluxCarrier() {
-	return fieldFluxCarrier;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return double
- * @param speciesContext cbit.vcell.model.SpeciesContext
- */
-public int getStoichiometry(SpeciesContext speciesContext) {
-	ReactionParticipant[] rps = getReactionParticipants();
-	for (ReactionParticipant rp : rps) {
-		if (rp.getSpeciesContext() == speciesContext) {
-			if (rp instanceof Flux) {
-				Membrane membrane = (Membrane)getStructure();
-				Structure structure = speciesContext.getStructure();
-				if (structure == membrane.getInsideFeature()){
-					return rps[0].getStoichiometry();
-				}else if (structure == membrane.getOutsideFeature()){
-					return -rps[0].getStoichiometry();
-				}
-			}
-		}
-	}
-	return 0;
 }
 
 
@@ -149,66 +56,6 @@ public int getStoichiometry(SpeciesContext speciesContext) {
  */
 public String getTerm() {
 	return "Flux Reaction";
-}
-
-
-/**
- * This method was created in VisualAge.
- */
-private void removeAllFluxes() throws ModelException, PropertyVetoException {
-	boolean fluxesLeft=true;
-	while (fluxesLeft){
-		fluxesLeft = false;
-		ReactionParticipant rp_Array[] = getReactionParticipants();
-		
-		for (int i = 0; i < rp_Array.length; i++) {
-			if (rp_Array[i] instanceof Flux){
-				try {
-					removeReactionParticipant(rp_Array[i]);
-				}catch (ExpressionException e){
-					throw new ModelException("Exception removing "+rp_Array[i]+": "+e.getMessage());
-				}
-				fluxesLeft=true;
-			}
-		}
-	}
-}
-
-
-/**
- * Sets the fluxCarrier property (cbit.vcell.model.Species) value.
- * @param fluxCarrier The new value for the property.
- * @see #getFluxCarrier
- */
-public void setFluxCarrier(Species fluxCarrier, Model model) throws PropertyVetoException, ModelException {
-	Species oldValue = fieldFluxCarrier;
-	fieldFluxCarrier = fluxCarrier;
-	if (oldValue!=fieldFluxCarrier){
-		if (model!=null){
-			removeAllFluxes();
-
-			Feature outside = ((Membrane)getStructure()).getOutsideFeature();
-			Feature inside = ((Membrane)getStructure()).getInsideFeature();
-			//
-			// add inside flux
-			//
-			SpeciesContext insideSC = model.getSpeciesContext(fluxCarrier,inside);
-			if (insideSC==null){
-				throw new ModelException("interior speciesContext for "+fluxCarrier.getCommonName()+" within feature "+inside.getName()+" not defined");
-			}
-			addReactionParticipant(new Flux(null,this,insideSC));
-
-			//
-			// add outside flux
-			//
-			SpeciesContext outsideSC = model.getSpeciesContext(fluxCarrier,outside);
-			if (outsideSC==null){
-				throw new ModelException("exterior speciesContext for "+fluxCarrier.getCommonName()+" within feature "+outside.getName()+" not defined");
-			}
-			addReactionParticipant(new Flux(null,this,outsideSC));	
-		}
-		firePropertyChange("fluxCarrier", oldValue, fluxCarrier);
-	}
 }
 
 
@@ -224,13 +71,54 @@ public void setKinetics(Kinetics kinetics) throws IllegalArgumentException {
 	}
 }
 
+public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
+	super.vetoableChange(e);
+		
+	if (e.getSource() == this && e.getPropertyName().equals("reactionParticipants")) {
+		ArrayList<Reactant> reactants = new ArrayList<Reactant>();
+		ArrayList<Product> products = new ArrayList<Product>();
+		ReactionParticipant[] newReactionParticipants = (ReactionParticipant[])e.getNewValue();
+		for (ReactionParticipant rp : newReactionParticipants){
+			if (rp instanceof Reactant){
+				reactants.add((Reactant)rp);
+				}
+			if (rp instanceof Product){
+				products.add((Product)rp);
+			}
+		}
+		// fluxreaction cannot have more than one reactant and product
+		if (reactants.size() > 1 || products.size() > 1) {
+			throw new RuntimeException("FluxReaction '" + getName() + "' can have only one reactant and one product.");
+		}
+
+		if (reactants.size() > 0 && products.size() > 0) {
+			Reactant reactant = reactants.get(0);
+			Product product = products.get(0);
+			// if the speciesContexts for the reactant and product are the same, throw exception : cannot have same speciesContext as reactant and product for a flux reaction.
+			if (reactant.getSpeciesContext() == product.getSpeciesContext()) {
+				throw new PropertyVetoException("FluxReaction '" + getName() + "' cannot have the same species as reactant and product.", e);
+			}
+	
+			// if the structure for the reactant and product are the same, throw exception. Cannot have reactant and product in the same structure.
+			if (reactant.getStructure() == product.getStructure()) {
+				throw new PropertyVetoException("FluxReaction '" + getName() + "' cannot have its reactant and product in the same structure.", e);
+			}
+	
+			// reactant or product should not be in the same structure (membrane) as the flux reaction.
+			if (reactant.getStructure() == this.getStructure() || product.getStructure() == this.getStructure()) {
+				throw new PropertyVetoException("Reactant or product cannot be in the same membrane as the flux reaction '" + getName() + "'.", e);
+			}
+		}
+	}
+}
+
 
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
  */
 public String toString() {
-	return "FluxReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, valence="+getChargeCarrierValence()+", physicsOption="+getPhysicsOptions()+")";
+	return "FluxReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, physicsOption="+getPhysicsOptions()+")";
 
 }
 

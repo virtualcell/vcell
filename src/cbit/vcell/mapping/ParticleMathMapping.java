@@ -29,15 +29,14 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.InteractionRadius;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -45,6 +44,7 @@ import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Feature;
@@ -54,7 +54,6 @@ import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -233,7 +232,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null),getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null),getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()), model.getTEMPERATURE().getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null),getIdentifierSubstitutions(new Expression(getSimulationContext().getTemperatureKelvin()), model.getTEMPERATURE().getUnitDefinition(), null)));
 
 	//
 	// add Initial Voltages and Voltage Symbols (even though not computing potential).
@@ -398,8 +397,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// conversion factors
 	//
-	ReservedSymbol kMole = model.getKMOLE();
-	varHash.addVariable(new Constant(getMathSymbol(kMole, null),getIdentifierSubstitutions(kMole.getExpression(),kMole.getUnitDefinition(),null)));
+	varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null), getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getKMILLIVOLTS(), null),getIdentifierSubstitutions(model.getKMILLIVOLTS().getExpression(),model.getKMILLIVOLTS().getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(model.getK_GHK(), null),getIdentifierSubstitutions(model.getK_GHK().getExpression(),model.getK_GHK().getUnitDefinition(),null)));
@@ -537,8 +535,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			for (Structure s : mappedStructures) {
 				if (s instanceof Membrane) {
 					Membrane m = (Membrane)s;
-					Feature infeature = m.getInsideFeature();
-					Feature outfeature = m.getOutsideFeature();
+					Feature infeature = model.getStructureTopology().getInsideFeature(m);
+					Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
 					FeatureMapping insm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(infeature);
 					FeatureMapping outsm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(outfeature);
 					if (insm.getGeometryClass() instanceof SubVolume) {
@@ -578,6 +576,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	// create Particle Contexts for all Particle Variables
 	//
 	Enumeration<SpeciesContextMapping> enumSCM = getSpeciesContextMappings();
+	Expression unitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getVolumeSubstanceUnit()));
 	while (enumSCM.hasMoreElements()){
 		SpeciesContextMapping scm = enumSCM.nextElement();
 		SpeciesContext        sc  = scm.getSpeciesContext();
@@ -596,7 +595,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				Expression initialDistribution = scs.getInitialConcentrationParameter().getExpression() == null ? null : new Expression(getMathSymbol(scs.getInitialConcentrationParameter(),sm.getGeometryClass()));
 				if(particleVariable instanceof VolumeParticleVariable)
 				{
-					initialDistribution = Expression.div(initialDistribution, new Expression(kMole, getNameScope()));
+					initialDistribution = Expression.mult(initialDistribution, unitFactor);
 				}
 				pic = new ParticleInitialConditionConcentration(initialDistribution);
 			} else {
@@ -823,7 +822,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
 					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
 				{
-					forwardRate = Expression.div(forwardRate, new Expression(kMole, getNameScope()));
+					forwardRate = Expression.mult(forwardRate, unitFactor);
 				}
 				else
 				{
@@ -834,9 +833,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					
 					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
 					if (N == 1) {
-						forwardRate = Expression.mult(forwardRate, new Expression(kMole, getNameScope()));
+						forwardRate = Expression.div(forwardRate, unitFactor);
 					} else if (N > 1) {
-						forwardRate = Expression.mult(forwardRate, Expression.power(new Expression(kMole, getNameScope()), new Expression((double)N)));
+						forwardRate = Expression.div(forwardRate, Expression.power(unitFactor, new Expression((double)N)));
 					}
 				}
 				
@@ -874,7 +873,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
 					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
 				{
-					reverseRate = Expression.div(reverseRate, new Expression(kMole, getNameScope()));
+					reverseRate = Expression.mult(reverseRate, unitFactor);
 				}
 				else 
 				{
@@ -885,9 +884,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					
 					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
 					if (N == 1) {
-						reverseRate = Expression.mult(reverseRate, new Expression(kMole, getNameScope()));
+						reverseRate = Expression.div(reverseRate, unitFactor);
 					} else if (N > 1) {
-						reverseRate = Expression.mult(reverseRate, Expression.power(new Expression(kMole, getNameScope()), new Expression((double)N)));
+						reverseRate = Expression.div(reverseRate, Expression.power(unitFactor, new Expression((double)N)));
 					}
 				}
 				

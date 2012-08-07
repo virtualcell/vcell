@@ -517,21 +517,21 @@ void refreshSpeciesContextSpecBoundaryUnits(StructureMapping structureMappings[]
 		for (int j = 0; j < structureMappings.length; j++){
 			if (structureMappings[j].getStructure().equals(scs.getSpeciesContext().getStructure())){
 				try {
-					FeatureMapping fm = null;
-					if (structureMappings[j] instanceof FeatureMapping){
-						fm = (FeatureMapping)structureMappings[j];
-					}else if (structureMappings[j] instanceof MembraneMapping){
-						//
-						// if a membrane, use boundary condition type from the enclosed volume compartment
-						// (e.g. Plasma membrane uses cytosol boundary condition types).
-						//
-						Feature insideFeature = ((MembraneMapping)structureMappings[j]).getMembrane().getInsideFeature();
-						for (int k = 0; k < structureMappings.length; k++){
-							if (structureMappings[k].getStructure() == insideFeature){
-								fm = (FeatureMapping)structureMappings[k];
-							}
-						}
-					}
+					StructureMapping fm = structureMappings[j]; //null;
+//					if (structureMappings[j] instanceof FeatureMapping){
+//						fm = (FeatureMapping)structureMappings[j];
+//					}else if (structureMappings[j] instanceof MembraneMapping){
+//						//
+//						// if a membrane, use boundary condition type from the enclosed volume compartment
+//						// (e.g. Plasma membrane uses cytosol boundary condition types).
+//						//
+//						Feature insideFeature = ((MembraneMapping)structureMappings[j]).getMembrane().getInsideFeature();
+//						for (int k = 0; k < structureMappings.length; k++){
+//							if (structureMappings[k].getStructure() == insideFeature){
+//								fm = (FeatureMapping)structureMappings[k];
+//							}
+//						}
+//					}
 					//
 					// SpeciesContextSpec is a volume species mapped to this resolved Feature
 					//

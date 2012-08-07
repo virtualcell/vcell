@@ -83,6 +83,10 @@ public class Issue implements java.io.Serializable, Matchable {
 		Smoldyn_Geometry_3DWarning,
 		
 		Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning,
+		
+		SBMLImport_UnsupportedAttributeOrElement, 
+		SBMLImport_Reaction, 
+		SBMLImport_MissingSpeciesInitCondition
 	}
 
 	//

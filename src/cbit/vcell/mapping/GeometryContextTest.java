@@ -40,9 +40,9 @@ public static GeometryContext getExample(int dim) throws Exception {
 		if (structure instanceof Feature){
 			Feature feature = (Feature)structure;
 			if (feature.getName().equals("extracellular") && geo.getDimension()>0){
-				geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
+				geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
 			}else{
-				geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
+				geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
 			}
 		}
 	}

@@ -10,6 +10,8 @@
 
 package cbit.vcell.model.gui;
 
+import cbit.vcell.model.Kinetics;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2002 4:59:42 PM)
@@ -256,8 +258,7 @@ private void updatePermeability() {
 		if (getGhkKinetics()==null){
 			return;
 		}
-		double z = getGhkKinetics().getReactionStep().getChargeCarrierValence().getConstantValue();
-
+		double z = getGhkKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence).getExpression().evaluateConstant();
 		double R = getGhkKinetics().getReactionStep().getModel().getGAS_CONSTANT().getConstantValue();
 		double T = 300;
 		double F = getGhkKinetics().getReactionStep().getModel().getFARADAY_CONSTANT().getConstantValue();

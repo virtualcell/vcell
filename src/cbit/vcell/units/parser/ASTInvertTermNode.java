@@ -17,8 +17,8 @@ public String toInfix(RationalNumber power) {
 	return jjtGetChild(0).toInfix(power.minus());
 }
 
-public String toSymbol(RationalNumber power) {
-	return jjtGetChild(0).toSymbol(power.minus());
+public String toSymbol(RationalNumber power, UnitTextFormat format) {
+	return jjtGetChild(0).toSymbol(power.minus(),format);
 }
 
 }

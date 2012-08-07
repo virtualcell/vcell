@@ -464,10 +464,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	 */
 	public static boolean isFunctionSaved(Function function) {
 		String name = function.getName();
-		if (!name.startsWith(MathMapping.PARAMETER_SURF_TO_VOL_PREFIX) && 
-			!name.startsWith(MathMapping.PARAMETER_VOL_FRACT_PREFIX) && 
-			!name.startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX) && 
-			!name.startsWith("Kflux_") &&
+		if (!name.startsWith("Kflux_") &&
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
 			!name.endsWith(MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
