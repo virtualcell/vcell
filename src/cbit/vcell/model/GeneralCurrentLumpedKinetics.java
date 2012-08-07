@@ -12,15 +12,12 @@ package cbit.vcell.model;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
-import org.openrdf.model.util.ModelUtil;
 import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitSystem;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2006 5:45:48 PM)
@@ -37,8 +34,9 @@ public GeneralCurrentLumpedKinetics(ReactionStep reactionStep) throws Expression
 	try {
 		KineticsParameter lumpedCurrentParm = new KineticsParameter(getDefaultParameterName(ROLE_LumpedCurrent),new Expression(0.0),ROLE_LumpedCurrent,null);
 		KineticsParameter lumpedReactionRateParm = new KineticsParameter(getDefaultParameterName(ROLE_LumpedReactionRate),new Expression(0.0),ROLE_LumpedReactionRate,null);
+		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
-		setKineticsParameters(new KineticsParameter[] { lumpedCurrentParm, lumpedReactionRateParm });
+		setKineticsParameters(new KineticsParameter[] { lumpedCurrentParm, lumpedReactionRateParm, chargeValence });
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (PropertyVetoException e){
@@ -122,6 +120,10 @@ protected void refreshUnits() {
 			if (currentParm != null){
 				currentParm.setUnitDefinition(modelUnitSystem.getCurrentUnit());
 			}
+			KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
+			if (chargeValenceParm!=null){
+				chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
+			}
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -143,7 +145,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, java.bea
 	}
 	
 	if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-		Expression z = new Expression(getReactionStep().getChargeCarrierValence().getConstantValue());
+		Expression z = getSymbolExpression(getKineticsParameterFromRole(ROLE_ChargeValence));
 		Model model = getReactionStep().getModel();
 		Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
 		Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());

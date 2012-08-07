@@ -41,11 +41,11 @@ public class ASTUnitSymbol extends SimpleNode {
 	}
   }
 
-public String toSymbol(RationalNumber power) {
+public String toSymbol(RationalNumber power, UnitTextFormat format) {
 	if (jjtGetNumChildren()==1){
-		return jjtGetChild(0).toSymbol(power);
+		return jjtGetChild(0).toSymbol(power,format);
 	}else {
-		return jjtGetChild(0).toSymbol(power)+" "+jjtGetChild(1).toSymbol(power);
+		return jjtGetChild(0).toSymbol(power,format)+" "+jjtGetChild(1).toSymbol(power,format);
 	}
 }
 

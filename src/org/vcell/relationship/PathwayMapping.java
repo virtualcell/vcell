@@ -33,7 +33,6 @@ import org.vcell.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
 import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -345,17 +344,12 @@ public class PathwayMapping {
 			
 			// add the existed speciesContext objects or new speciesContext objects to reaction participant list
 			if(ctr.participantType().equals("Reactant")){
-				if (reactionStep instanceof SimpleReaction) {
+				if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
 					rplist.add(new Reactant(null,(SimpleReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
-				} else if (reactionStep instanceof FluxReaction) {
-					rplist.add(new Flux(null, (FluxReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
-				}else{
 				}
 			}else if(ctr.participantType().equals("Product")){
-				if (reactionStep instanceof SimpleReaction) {
+				if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
 					rplist.add(new Product(null,(SimpleReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
-				} else if (reactionStep instanceof FluxReaction) {
-					rplist.add(new Flux(null, (FluxReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 				}
 			}
 		}
@@ -384,6 +378,7 @@ public class PathwayMapping {
 					//reactionStep.addCatalyst(bioModel.getModel().getSpeciesContext(safeId));
 					reactionStep.addReactionParticipant(new Catalyst(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId)));
 				}
+
 			}
 		}
 	}
@@ -560,10 +555,8 @@ public class PathwayMapping {
 				}
 			}
 			// add the existed speciesContext objects or new speciesContext objects to reaction participant list
-			if (reactionStep instanceof SimpleReaction) {
+			if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
 				rplist.add(new Reactant(null,(SimpleReaction) reactionStep, sc, stoichi));
-			} else if (reactionStep instanceof FluxReaction) {
-				rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
 			}
 		}
 		// create and add reaction participants to list for right-hand side of equation
@@ -600,10 +593,8 @@ public class PathwayMapping {
 					speciesContextMap.put(var, sc);
 				}
 			}
-			if (reactionStep instanceof SimpleReaction) {
+			if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
 				rplist.add(new Product(null,(SimpleReaction) reactionStep, sc, stoichi));
-			} else if (reactionStep instanceof FluxReaction) {
-				rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
 			}
 		}
 		return rplist.toArray(new ReactionParticipant[0]);

@@ -40,6 +40,11 @@ public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, V
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
+	
+	// store SBML unit for speciesContext from SBML species.
+//	private transient VCUnitDefinition sbmlSpeciesUnit = null;
+
+	
 public SpeciesContext(KeyValue key, String name, Species species, Structure structure) {
 	
 	this.key = key;
@@ -251,4 +256,16 @@ public void writeTokens(PrintWriter pw) {
 public String getTypeLabel() {
 	return "Species";
 }
+
+/*
+public VCUnitDefinition getSbmlSpeciesUnit() {
+	return sbmlSpeciesUnit;
+}
+
+
+public void setSbmlSpeciesUnit(VCUnitDefinition sbmlSpeciesUnit) {
+	this.sbmlSpeciesUnit = sbmlSpeciesUnit;
+}
+*/
+
 }

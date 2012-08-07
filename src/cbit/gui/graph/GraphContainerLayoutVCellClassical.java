@@ -34,7 +34,7 @@ import cbit.vcell.graph.MembraneShape;
 import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.ReactionStepShape;
 import cbit.vcell.graph.SpeciesContextShape;
-import cbit.vcell.graph.StructureMappingFeatureShape;
+import cbit.vcell.graph.StructureMappingStructureShape;
 import cbit.vcell.graph.StructureShape;
 import cbit.vcell.graph.SubVolumeContainerShape;
 import cbit.vcell.model.Structure;
@@ -59,8 +59,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 				return getPreferedSizeReactionContainerShape((ReactionContainerShape)shape, g);
 			} else if(shape instanceof MembraneShape) {
 				return getPreferedSizeMembraneShape((MembraneShape) shape, g);
-			} else if(shape instanceof StructureMappingFeatureShape) {
-				return getPreferedSizeStructureMappingFeatureShape((StructureMappingFeatureShape) shape, g);
+			} else if(shape instanceof StructureMappingStructureShape) {
+				return getPreferedSizeStructureMappingFeatureShape((StructureMappingStructureShape) shape, g);
 			} else if(shape instanceof FeatureShape) {
 				return getPreferedSizeFeatureShape((FeatureShape) shape, g);
 			} else {
@@ -72,7 +72,7 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	}
 	
 	public Dimension getPreferedSizeStructureMappingFeatureShape(
-			StructureMappingFeatureShape shape, Graphics2D g) 
+			StructureMappingStructureShape shape, Graphics2D g) 
 	throws GraphModel.NotReadyException {
 		FontMetrics fm = g.getFontMetrics();
 		shape.getLabelSize().height = fm.getMaxAscent() + fm.getMaxDescent();
@@ -127,10 +127,12 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		FontMetrics fm = g.getFontMetrics();
 		shape.setLabelSize(fm.stringWidth(shape.getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
 		// has 1 child (featureShape)
+		if (shape.childShapeList.size()==1){
 		FeatureShape featureShape = (FeatureShape)shape.childShapeList.get(0);
 		Dimension featureDim = getPreferedSize(featureShape, g);
 		shape.getSpaceManager().setSizePreferred((featureDim.width + MembraneShape.memSpacingX*2), 
 				(featureDim.height + MembraneShape.memSpacingY*2));
+		}
 		return shape.getSpaceManager().getSizePreferred();
 	}
 
@@ -311,7 +313,7 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	public Point getSeparatorDeepCount(Shape shape) {
 		if(shape instanceof SubVolumeContainerShape) {
 			return new Point(0,0);
-		} else if(shape instanceof StructureMappingFeatureShape) {
+		} else if(shape instanceof StructureMappingStructureShape) {
 			return getSeparatorDeepCountStructureMappingFeatureShape(shape);
 		} else if(shape instanceof SpeciesContextShape) {
 			return new Point(0,0);
@@ -416,8 +418,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 			return;
 		} else if(shape instanceof BioPaxShape) {
 			return;
-		} else if(shape instanceof MembraneShape) {
-			resizeMembraneShape((MembraneShape) shape, newSize, g);
+//		} else if(shape instanceof MembraneShape) {
+//			resizeMembraneShape((MembraneShape) shape, newSize, g);
 		} else {
 			resizeShape(shape, newSize, g);
 		}
@@ -469,11 +471,13 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		int deltaY = newSize.height - shape.getSpaceManager().getSize().height;
 		shape.getSpaceManager().setSize(newSize);
 		// allocate all extra new space to featureShape
-		FeatureShape featureShape = (FeatureShape) shape.childShapeList.get(0);
-		Dimension featureSize = new Dimension(featureShape.getSpaceManager().getSize());
-		featureSize.width += deltaX;
-		featureSize.height += deltaY;
-		resize(featureShape, featureSize, g);
+		if (shape.childShapeList.size()==1){
+			FeatureShape featureShape = (FeatureShape) shape.childShapeList.get(0);
+			Dimension featureSize = new Dimension(featureShape.getSpaceManager().getSize());
+			featureSize.width += deltaX;
+			featureSize.height += deltaY;
+			resize(featureShape, featureSize, g);
+		}
 		shape.refreshLayoutSelf();
 		refreshLayoutChildren(shape);
 	}
@@ -508,8 +512,8 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 			refreshLayoutChildrenSimpleContainerShape((SimpleContainerShape) shape);
 		} else if(shape instanceof ContainerContainerShape) {
 			refreshLayoutChildrenContainerContainerShape((ContainerContainerShape) shape);
-		} else if(shape instanceof StructureMappingFeatureShape) {
-			refreshLayoutChildrenStructureMappingFeatureShape((StructureMappingFeatureShape) shape);
+		} else if(shape instanceof StructureMappingStructureShape) {
+			refreshLayoutChildrenStructureMappingFeatureShape((StructureMappingStructureShape) shape);
 		} else if(shape instanceof FeatureShape) {
 			refreshLayoutChildrenFeatureShape((FeatureShape) shape);
 		} else if(shape instanceof MembraneShape) {
@@ -622,7 +626,7 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 	public void refreshLayoutChildrenContainerShape(ContainerShape shape) {
 	}
 
-	public void refreshLayoutChildrenStructureMappingFeatureShape(StructureMappingFeatureShape shape) {
+	public void refreshLayoutChildrenStructureMappingFeatureShape(StructureMappingStructureShape shape) {
 		// calculate total height and max width of Child compartments (membranes)
 		int memHeight = 0;
 		int memWidth = 0;
@@ -835,9 +839,11 @@ public class GraphContainerLayoutVCellClassical implements GraphContainerLayout 
 		// position featureShape (and label)
 		int centerX = shape.getSpaceManager().getSize().width/2;
 		int currentY = MembraneShape.memSpacingY;
-		featureShape.getSpaceManager().setRelPos(
-				centerX - featureShape.getSpaceManager().getSize().width/2, currentY);
-		currentY += featureShape.getSpaceManager().getSize().height + MembraneShape.memSpacingY;
+		if (featureShape!=null){
+			featureShape.getSpaceManager().setRelPos(
+					centerX - featureShape.getSpaceManager().getSize().width/2, currentY);
+			currentY += featureShape.getSpaceManager().getSize().height + MembraneShape.memSpacingY;
+		}
 		// position speciesContextShapes
 		// angle = 0 at north pole and increases counter clockwise
 		int numSpeciesContexts = shape.countChildren()-1;

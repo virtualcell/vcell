@@ -105,7 +105,7 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 			return getExpression(ste);
 		case COLUMN_UNIT:
 			if (ste.getUnitDefinition() != null) {
-				return ste.getUnitDefinition().getSymbol();
+				return ste.getUnitDefinition().getSymbolUnicode();
 			}
 			return null;
 		}

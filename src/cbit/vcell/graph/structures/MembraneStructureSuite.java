@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.vcell.sybil.util.lists.ListOfThree;
 
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 
@@ -22,11 +23,10 @@ public class MembraneStructureSuite extends StructureSuite {
 	protected Membrane membrane;
 	protected List<Structure> structures;
 	
-	public MembraneStructureSuite(Membrane membrane) {
+	public MembraneStructureSuite(Feature outsideFeature, Membrane membrane, Feature insideFeature) {
 		super(createTitle(membrane));
 		this.membrane = membrane;
-		structures = new ListOfThree<Structure>(membrane.getOutsideFeature(), membrane, 
-				membrane.getInsideFeature());
+		structures = new ListOfThree<Structure>(outsideFeature, membrane, insideFeature);
 	}
 	
 	public List<Structure> getStructures() { return structures; }

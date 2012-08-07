@@ -24,12 +24,56 @@ public class ASTRationalNumberExponent extends SimpleNode {
 		}
 	}
 
-	public String toSymbol(RationalNumber power) {
+	public String toSymbol(RationalNumber power, UnitTextFormat format) {
 		RationalNumber product = value.mult(power);
-		if (product.intValue() == product.doubleValue()) {
-			return product.infix();
+		double doubleValue = product.doubleValue();
+		int intValue = product.intValue();
+		switch (format) {
+			case plain:{
+				if (intValue == doubleValue) {
+					return product.infix();
+				} else {
+					return "(" + product.infix() + ")";
+				}
+			}
+			case unicode:{
+				if (intValue == doubleValue) {
+					if (Math.abs(intValue)<10){
+						String superScriptChar = superScripts_0_to_9[Math.abs(intValue)];
+						if (intValue<0){
+							return SUPER_MINUS+superScriptChar;
+						}else{
+							return superScriptChar;
+						}
+					}else{
+						return product.infix();
+					}
+				} else {
+					return "(" + product.infix() + ")";
+				}
+			}
+			default: {
+				throw new RuntimeException("format "+format.name()+" not yet supported by UnitSymbol");
+			}
+		}
+	}
+	
+	public static String getUnicodeExponent(RationalNumber exponent){
+		int intValue = exponent.intValue();
+		double doubleValue = exponent.doubleValue();
+		if (intValue == doubleValue) {
+			if (Math.abs(intValue)<10){
+				String superScriptChar = superScripts_0_to_9[Math.abs(intValue)];
+				if (intValue<0){
+					return SUPER_MINUS+superScriptChar;
+				}else{
+					return superScriptChar;
+				}
+			}else{
+				return exponent.infix();
+			}
 		} else {
-			return "(" + product.infix() + ")";
+			return "(" + exponent.infix() + ")";
 		}
 	}
 

@@ -57,6 +57,7 @@ import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * ScrollTable extends JTable and has a JScrollPane which encloses the table itself. The default cell renderer
@@ -292,6 +293,7 @@ public class ScrollTable extends JTable {
 	}
 
 	public void installCellEditors() {
+		setDefaultEditor(VCUnitDefinition.class,new TableCellEditorAutoCompletion(this));
 		setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(this));
 		setDefaultEditor(ReactionEquation.class,new TableCellEditorAutoCompletion(this));
 	}
@@ -307,6 +309,15 @@ public class ScrollTable extends JTable {
 		super.setAutoResizeMode(mode);
 		if (autoResizeMode == AUTO_RESIZE_OFF) {
 			setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+			setDefaultRenderer(VCUnitDefinition.class, new DefaultScrollTableCellRenderer(){
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (value instanceof VCUnitDefinition){
+						setText(((VCUnitDefinition)value).getSymbolUnicode());
+					}
+					return this;
+				}
+			});
 			
 			if (componentListener == null) {
 				componentListener  = new ComponentAdapter() {

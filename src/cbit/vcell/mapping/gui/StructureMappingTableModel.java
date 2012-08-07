@@ -43,6 +43,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
@@ -287,9 +288,10 @@ public Object getValueAt(int row, int col) {
 			case NONSPATIAL_COLUMN_VOLFRACT:{
 				if (structureMapping instanceof FeatureMapping){
 					FeatureMapping featureMapping = (FeatureMapping)structureMapping;
-					if (featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
-						Membrane membrane = featureMapping.getFeature().getMembrane();
-						MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
+					StructureTopology topology = getGeometryContext().getModel().getStructureTopology();
+					Membrane enclosingMembrane = topology.getMembrane(featureMapping.getFeature());
+					if (featureMapping.getFeature()!=null && enclosingMembrane!=null){
+						MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(enclosingMembrane);
 						if(membraneMapping.getVolumeFractionParameter().getExpression() != null)
 						{
 							try{
@@ -400,12 +402,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		// see if feature is distributed and has a membrane (not top)
 		//		
 		if (columnIndex == SPATIAL_COLUMN_SUBDOMAIN) {
-			return (sm instanceof FeatureMapping);
+			return ( (sm instanceof FeatureMapping) || (sm instanceof MembraneMapping));
 		}
 		if (columnIndex == SPATIAL_COLUMN_SIZERATIO){
 			GeometryClass gc = sm.getGeometryClass();
 			StructureMapping[] structureMappings = getGeometryContext().getStructureMappings(gc);
-			return structureMappings != null && structureMappings.length > 1;
+			boolean bDimensionless = 
+					sm.getUnitSizeParameter()!=null && 
+					sm.getUnitSizeParameter().getUnitDefinition()!=null && 
+					sm.getUnitSizeParameter().getUnitDefinition().isEquivalent(getGeometryContext().getModel().getUnitSystem().getInstance_DIMENSIONLESS());
+			return (structureMappings != null && structureMappings.length > 1) || !bDimensionless;
 		}
 		// bounday conditions are editable
 		if ((columnIndex >= SPATIAL_COLUMN_X_MINUS) && (columnIndex <= SPATIAL_COLUMN_Z_PLUS))
@@ -639,9 +645,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				} else if (aValue instanceof GeometryClass) {
 					geometryClass = (GeometryClass)aValue;
 				}
-				if (geometryClass!=null && (structure instanceof Feature)){
+				if (geometryClass!=null){
 					try {
-						getGeometryContext().assignFeature((Feature)structure, geometryClass);
+						getGeometryContext().assignStructure(structure, geometryClass);
 					} catch (PropertyVetoException e) {
 						e.printStackTrace(System.out);
 						PopupGenerator.showErrorDialog(ownerTable, e.getMessage());

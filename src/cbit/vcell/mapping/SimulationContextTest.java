@@ -41,9 +41,9 @@ public static SimulationContext getExample(int dimension) throws Exception {
 			if (structure instanceof cbit.vcell.model.Feature){
 				cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
 				if (feature.getName().equals("extracellular") && geo.getDimension()>0){
-					geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
+					geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
 				}else{
-					geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
+					geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
 				}
 			}
 		}
@@ -98,9 +98,9 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 			if (structure instanceof cbit.vcell.model.Feature){
 				cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature)structure;
 				if (feature.getName().equals("extracellular") && geo.getDimension()>0){
-					geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
+					geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("extracellular"));
 				}else{
-					geoContext.assignFeature(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
+					geoContext.assignStructure(feature,geo.getGeometrySpec().getSubVolume("cytosol"));
 				}
 			}
 		}

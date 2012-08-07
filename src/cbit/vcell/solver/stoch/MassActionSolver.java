@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -23,7 +24,6 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
@@ -33,7 +33,6 @@ import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Flux.FluxDirection;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -184,15 +183,6 @@ public class MassActionSolver {
 				reactants.add(rp[i]);
 			} else if(rp[i] instanceof Product) {
 				products.add(rp[i]);
-			} else if(rp[i] instanceof Flux) {
-				Flux flux = (Flux)rp[i];
-				if (flux.getFluxDirection().equals(FluxDirection.Reactant)) {
-					reactants.add(rp[i]);
-				} else if (flux.getFluxDirection().equals(FluxDirection.Product)) {
-					products.add(rp[i]);
-				} if (flux.getFluxDirection().equals(FluxDirection.Unknown)) {
-					throw new MathException("Unknown direction of flux participant '" + rp[i].getSpeciesContext().getName() + "' in flux '" + rxnName + "'");
-				}
 			} else if (rp[i] instanceof Catalyst) {
 				String catalystName = rp[i].getSpeciesContext().getName();
 				// check if the rateExp (duplicatedExp) contains catalystName. We can proceed to convert reaction kinetics to MassAction form

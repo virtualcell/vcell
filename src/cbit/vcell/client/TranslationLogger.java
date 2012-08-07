@@ -89,8 +89,9 @@ public class TranslationLogger extends VCLogger {
 			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.OK_OPTION}, TranslationLogger.OK_OPTION);
 			PopupGenerator.showWarningDialog(requester, null, userMessage, null);
 		} else if (messageLevel == TranslationLogger.HIGH_PRIORITY) {      
-			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.CANCEL_OPTION}, TranslationLogger.CANCEL_OPTION);
-			PopupGenerator.showWarningDialog(requester, null, userMessage, null);
+			PopupGenerator.showErrorDialog(requester, message);
+//			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.CANCEL_OPTION}, TranslationLogger.CANCEL_OPTION);
+//			PopupGenerator.showWarningDialog(requester, null, userMessage, null);
 			processException(messageType);                                        //regardless of the 'value'
 		}
 	}

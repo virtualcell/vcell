@@ -44,7 +44,6 @@ import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.graph.BioCartoonTool;
 import cbit.vcell.graph.BioCartoonTool.UserResolvedRxElements;
 import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
@@ -57,6 +56,7 @@ import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 
@@ -359,15 +359,13 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 							role = ReactionDescription.RX_ELEMENT_PRODUCT;
 						}else if(rpArr[i] instanceof Catalyst){
 							role = ReactionDescription.RX_ELEMENT_CATALYST;
-						}else if(rpArr[i] instanceof Flux){
-							role = ReactionDescription.RX_ELEMENT_FLUX;
 						}else{
 							throw new RuntimeException("Unsupported ReationParticiapnt="+rpArr[i].getClass().getName());
 						}
 						dbfr.addReactionElement(dbnfu,rpArr[i].getSpeciesContext().getName(),rpArr[i].getStoichiometry(),role);
 					}
 					if(dbfr.isFluxReaction()){//make sure flux is in right direction
-						Structure outsideStruct = ((Membrane)getReactionStep0().getStructure()).getOutsideFeature();
+						Structure outsideStruct = getModel().getStructureTopology().getOutsideFeature((Membrane)getReactionStep0().getStructure());
 						String defaultOutsideSCName = dbfr.getOrigSpeciesContextName(dbfr.getFluxIndexOutside());
 						for(int i=0;i < rpArr.length;i+= 1){
 							if(rpArr[i].getSpeciesContext().getName().equals(defaultOutsideSCName)){
@@ -2251,13 +2249,14 @@ private void initialize() {
  * @param sc cbit.vcell.model.SpeciesContext
  */
 private boolean isSCResolvable(SpeciesContext speciesContext) {
+	StructureTopology structTopology = getModel().getStructureTopology();
 	return
 		(getStructure().equals(speciesContext.getStructure())) ||
 	(
 		getStructure() instanceof Membrane &&
 		(
-			((Membrane)getStructure()).getOutsideFeature().equals(speciesContext.getStructure()) ||
-			((Membrane)getStructure()).getInsideFeature().equals(speciesContext.getStructure())
+			structTopology.getOutsideFeature((Membrane)getStructure()).equals(speciesContext.getStructure()) ||
+			structTopology.getInsideFeature((Membrane)getStructure()).equals(speciesContext.getStructure())
 		)
 	);
 
@@ -2372,7 +2371,7 @@ private void parameterNameSelectionChanged() {
 			
 			AsynchClientTask searchReactions = new AsynchClientTask("Getting Full Reaction", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				public void run(Hashtable<String, Object> hash) throws DataAccessException {
-					ReactionStep rStep = getDocumentManager().getReactionStep(reactionStepKey);
+					ReactionStep rStep = getDocumentManager().getReactionStepAsModel(reactionStepKey).getReactionSteps()[0];
 					if(rStep != null){
 						hash.put(RXSTEP_HASH_VALUE_KEY,rStep);
 					}
@@ -2391,7 +2390,6 @@ private void parameterNameSelectionChanged() {
 						for(int i=0;i < kpArr.length;i+= 1){
 							pvdlm.addElement("Parameter - "+kpArr[i].getName().toString()+" = "+kpArr[i].getExpression().infix());
 						}
-						pvdlm.addElement("ChargeCarrierValence="+rStep.getChargeCarrierValence().getExpression().infix());
 						pvdlm.addElement("PhysicsOption="+rStep.getPhysicsOptions());
 						for(int i=0;i < rpArr.length;i+= 1){
 							String role = "Unknown";
@@ -2401,20 +2399,18 @@ private void parameterNameSelectionChanged() {
 								role = "Product";
 							}else if(rpArr[i] instanceof Catalyst){
 								role = "Catalyst";
-							}else if(rpArr[i] instanceof Flux){
-								role = "Flux";
 							}
 							String fluxFlag = "";
-							if(rStep instanceof FluxReaction){
-								Membrane rStepStruct = (Membrane)rStep.getStructure();
-								if(rpArr[i] instanceof Flux){
-									if(rpArr[i].getStructure().equals(rStepStruct.getOutsideFeature())){
-										fluxFlag = "Outside";
-									}else{
-										fluxFlag = "Inside";
-									}
-								}
-							}
+//							if(rStep instanceof FluxReaction){
+//								Membrane rStepStruct = (Membrane)rStep.getStructure();
+//								if(rpArr[i] instanceof Flux){
+//									if(rpArr[i].getStructure().equals(getModel().getStructureTopology().getOutsideFeature(rStepStruct))){
+//										fluxFlag = "Outside";
+//									}else{
+//										fluxFlag = "Inside";
+//									}
+//								}
+//							}
 							pvdlm.addElement("RXParticipant("+role+") "+fluxFlag+" "+(rpArr[i].getSpecies().getDBSpecies() != null?"*":"-")+" "+rpArr[i].getSpeciesContext().getName());
 						}
 					}
@@ -2998,21 +2994,22 @@ private void setupRX(ReactionDescription dbfr) {
 		//rstjlabel.setBackground(java.awt.Color.white);
 		getRXParticipantsJPanel().add(rstjlabel,gbc);
 		//getRXParticipantsJPanel().add(new javax.swing.JLabel("Resolve to Model Compartment"),gbc);
+		StructureTopology structTopology = getModel().getStructureTopology();
 		for(int i=0;i<resolvedReaction.elementCount();i+= 1){
 			javax.swing.JComboBox jcb = new javax.swing.JComboBox();
 			jcb.setRenderer(structureListCellRenderer);
 			structureAssignmentJCB[i] = jcb;
 			if(resolvedReaction.isFluxReaction() && resolvedReaction.isFlux(i) && resolvedReaction.getFluxIndexOutside() == i){
-				jcb.addItem(((Membrane)getStructure()).getOutsideFeature()/*.getName()*/);
+				jcb.addItem(structTopology.getOutsideFeature((Membrane)getStructure())/*.getName()*/);
 				jcb.setEnabled(false);
 			}else if(resolvedReaction.isFluxReaction() && resolvedReaction.isFlux(i) && resolvedReaction.getFluxIndexInside() == i){
-				jcb.addItem(((Membrane)getStructure()).getInsideFeature()/*.getName()*/);
+				jcb.addItem((structTopology).getInsideFeature((Membrane)getStructure())/*.getName()*/);
 				jcb.setEnabled(false);
 			}else{
 				jcb.addItem(getStructure()/*.getName()*/);
 				if(getStructure() instanceof Membrane){
-					jcb.addItem(((Membrane)getStructure()).getOutsideFeature()/*.getName()*/);
-					jcb.addItem(((Membrane)getStructure()).getInsideFeature()/*.getName()*/);
+					jcb.addItem(structTopology.getOutsideFeature((Membrane)getStructure())/*.getName()*/);
+					jcb.addItem(structTopology.getInsideFeature((Membrane)getStructure())/*.getName()*/);
 				}else{
 					jcb.setEnabled(false);
 				}

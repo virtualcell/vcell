@@ -687,8 +687,11 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 	}
 	
 	public static Geometry resampleGeometry(GeometryThumbnailImageFactory geometryThumbnailImageFactory, Geometry origGeometry, ISize sampleSize) throws ImageException, PropertyVetoException, GeometryException, ExpressionException {
+		if (origGeometry.getDimension() < 3) {
+			throw new GeometryException("Presently, the Raycaster resampling works only for 3d geometries.");
+		}
 		GeometrySpec origGeometrySpec = origGeometry.getGeometrySpec();
-		VCImage origSubvolumeImage = origGeometry.getGeometrySpec().getSampledImage().getCurrentValue();
+		VCImage origSubvolumeImage = origGeometrySpec.getSampledImage().getCurrentValue();
 		if (origSubvolumeImage==null){	
 			throw new GeometryException("original geometry does not have a sampled image");
 		}

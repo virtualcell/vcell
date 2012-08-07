@@ -14,12 +14,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
+import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
@@ -35,11 +36,10 @@ import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
@@ -59,6 +59,66 @@ public class ReactStepDbDriver extends DbDriver {
 	private ModelDbDriver modelDB = null;
 	private DictionaryDbDriver dictDB = null;
 
+	
+	public static class Flux extends ReactionParticipant
+	{
+	/**
+	 * This method was created in VisualAge.
+	 * @param reactionStep cbit.vcell.model.ReactionStep
+	 */
+	public Flux(KeyValue key, FluxReaction fluxReaction, SpeciesContext speciesContext) {
+		super(key, fluxReaction, speciesContext, 1);
+	}
+
+
+	/**
+	 * This method was created in VisualAge.
+	 * @return boolean
+	 * @param obj java.lang.Object
+	 */
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof Flux){
+			Flux f = (Flux)obj;
+			return compareEqual0(f);
+		}else{
+			return false;
+		}
+	}
+
+
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param tokens java.util.StringTokenizer
+	 * @exception java.lang.Exception The exception description.
+	 */
+	@Override
+	public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
+
+		throw new Exception("not implemented");
+	}
+
+
+/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public String toString() {
+		String scName = (getSpeciesContext()!=null)?(getSpeciesContext().getName()):"null";
+		return "Flux(id="+getKey()+", speciesContext="+scName+"')";
+	}
+
+
+	/**
+	 * This method was created by a SmartGuide.
+	 * @param ps java.io.PrintStream
+	 * @exception java.lang.Exception The exception description.
+	 */
+	public void writeTokens(java.io.PrintWriter pw) {
+		System.out.println("not implemented");
+	}
+
+}	
+	
 /**
  * LocalDBManager constructor comment.
  */
@@ -136,17 +196,20 @@ private ReactionParticipant getReactionParticipant(QueryHashtable dbc, Connectio
 		throw new DataAccessException("PropertyVetoException: "+e.getMessage());
 	}
 	rp.setReactionStep(rs);
-	if (rp instanceof Flux && rs instanceof FluxReaction) {
-		try {
-			((FluxReaction) rs).setFluxCarrier(speciesContext.getSpecies(), null);
-		}catch (ModelException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("ModelException: "+e.getMessage());
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException("PropertyVetoException: "+e.getMessage());
-		}
-	}
+
+	// ========== Since there is no flux carrier in fluxReaction, this is not required?? ===========
+	
+//	if (rp instanceof Flux && rs instanceof FluxReaction) {
+//		try {
+//			((FluxReaction) rs).setFluxCarrier(speciesContext.getSpecies(), null);
+//		}catch (ModelException e){
+//			e.printStackTrace(System.out);
+//			throw new DataAccessException("ModelException: "+e.getMessage());
+//		}catch (PropertyVetoException e){
+//			e.printStackTrace(System.out);
+//			throw new DataAccessException("PropertyVetoException: "+e.getMessage());
+//		}
+//	}
 
 	//
 	// stick ReactionParticipant in object cache
@@ -204,7 +267,7 @@ private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connec
 /**
  * getModels method comment.
  */
-public ReactionStep getReactionStep(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey, Model model) throws SQLException, DataAccessException, PropertyVetoException {
+public cbit.vcell.model.Model getReactionStepAsModel(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
 
 	Field[] f =
 	{
@@ -224,9 +287,36 @@ public ReactionStep getReactionStep(QueryHashtable dbc, Connection con, User use
 		
 	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
 	
+	Model model = new Model("newModel");
 	ReactionStep[] rsArr = getReactionStepArray(dbc, con, model, sql);
 	if(rsArr != null && rsArr.length > 0){
-		return rsArr[0];
+		ReactionStep reactionStep = rsArr[0];
+		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
+			if (!model.contains(rp.getSpecies())){
+				model.addSpecies(rp.getSpecies());
+			}
+			if (!model.contains(rp.getSpeciesContext())){
+				model.addSpeciesContext(rp.getSpeciesContext());
+			}
+		}
+		ArrayList<Structure> structures = new ArrayList<Structure>();
+		structures.add(reactionStep.getStructure());
+		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
+			if (!structures.contains(rp.getStructure())){
+				structures.add(rp.getStructure());
+			}
+		}
+		model.setStructures(structures.toArray(new Structure[0]));
+		HashMap<KeyValue,KeyValue> structureParentMap = new HashMap<KeyValue, KeyValue>();
+		for (Structure structure : structures){
+			KeyValue parentKey = getStructureParentKey(dbc, con, structure.getKey());
+			if (parentKey!=null){
+				structureParentMap.put(structure.getKey(),parentKey);
+			}
+		}
+		populateStructureTopology(model, structureParentMap);
+		model.addReactionStep(reactionStep);
+		return model;
 	}
 	return null;
 }
@@ -254,7 +344,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	//
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(ReactStepTable.table.structRef.toString()));
 	
-	Structure structure = getStructureHeirarchy(dbc, con, structKey);
+	Structure structure = getStructure(dbc, con, structKey);
 	rs = reactStepTable.getReactionStep(structure, model, rsKey, rset, log);
 
 	//
@@ -282,7 +372,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
  */
 private ReactionStep[] getReactionStepArray(QueryHashtable dbc, Connection con, Model model, String sql) throws SQLException, DataAccessException, PropertyVetoException {
 
-	java.util.Vector reactStepList = new java.util.Vector();
+	Vector reactStepList = new Vector();
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -472,169 +562,162 @@ private Species getSpecies(QueryHashtable dbc, ResultSet rset,Connection con) th
 /**
  * Selects all structures that are topologically neighboring (according to the parentRef field)
  */
-public Structure getStructureHeirarchy(QueryHashtable dbc, Connection con,KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public Structure getStructure(QueryHashtable dbc, Connection con, KeyValue structureKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+	Object obj = dbc.get(structureKey);
+	if (obj instanceof Structure){
+		return (Structure)obj;
+	}
 	String sql;
 
 	//
 	// check if in global cache
 	//
-	Structure structure = (Structure)dbc.get(structKey);
-	if (structure!=null){
-		return structure;
+	if (dbc.get(structureKey)!=null){
+		return (Structure)dbc.get(structureKey);
 	}
 
 	//log.print("ReactStepDbDriver.getStructureHeirarchy(structKey=" + structKey + ")");
 	//
-	// get all 'touching' structures from the database and store in a temporaray hashtable
+	// get all structures belonging to the same model and store in temporary hashMap
 	// reconcile all references between Structures
 	// put final objects into global cache
 	//
 
-	//
-	// note:
-	//
-	// this heirarhical query always returns results in top-down order (first record has no parent ...)
-	//
-	
-	sql =	" SELECT * " +
+	sql =	" SELECT " + structTable.getTableName()+".* " +
 			" FROM " + structTable.getTableName() +
-			" START WITH "+ structTable.id + " = " +
-				"(SELECT "+ structTable.id +
-				" FROM  " + structTable.getTableName()+
-				" WHERE " + structTable.parentRef + " IS NULL " +
-				" START WITH " + structTable.id + " = " + structKey +
-				" CONNECT BY " + structTable.id + " = " + " PRIOR " + structTable.parentRef +
-				")" +
-			" CONNECT BY " + " PRIOR " + structTable.id + " = " + structTable.parentRef;
+			" WHERE " + structTable.id.getQualifiedColName() + " = " + structureKey;
 
 //System.out.println(sql);
 
 	Statement stmt = con.createStatement();
-
-	Hashtable tempHash = new Hashtable();
-	
+	Structure struct = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			try {
-				getStructureHeirarchy(con, rset, tempHash);
-			} catch (ModelException e) {
-				throw new DataAccessException("ModelException: " + e.getMessage());
-			}
+			KeyValue key = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
+			struct = structTable.getStructure(rset, log, key);
+			dbc.put(key, struct);
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
 
-	//
-	// for all membranes, must resolve innerFeature references (membranes point up AND down)
-	//
-	Enumeration enum1 = tempHash.elements();
-	while (enum1.hasMoreElements()){
-		Structure struct = (Structure)enum1.nextElement();
-		if (struct instanceof Membrane){
-			boolean bFound = false;
-			Membrane membrane = (Membrane)struct;
-			Enumeration enumInner = tempHash.elements();
-			while (enumInner.hasMoreElements()){
-				Structure innerStruct = (Structure)enumInner.nextElement();
-				if (innerStruct instanceof Feature && innerStruct.getParentStructure() == membrane){
-					Feature innerFeature = (Feature)innerStruct;
-					bFound = true;
-					membrane.setInsideFeature(innerFeature);
-				}
-			}
-			if (!bFound){
-				throw new DataAccessException("inner structure for membrane "+membrane+" not resolved");
+	return struct;
+}
+
+/**
+ * Selects all structures that are topologically neighboring (according to the parentRef field)
+ */
+public HashMap<KeyValue, KeyValue> getStructureParentMapByModel(QueryHashtable dbc, Connection con , KeyValue modelKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+	String sql;
+
+	// get all structures/parent relationships belonging to the same model
+	
+	sql =	" SELECT " + structTable.id.getQualifiedColName()+", " + structTable.parentRef.getQualifiedColName()+
+			" FROM " + structTable.getTableName() + ", "+modelStructLinkTable.getTableName() +
+			" WHERE " + structTable.id.getQualifiedColName() + " = " + modelStructLinkTable.structRef.getQualifiedColName() +
+			   " AND " + modelStructLinkTable.modelRef.getQualifiedColName() + " = " + modelKey;
+
+System.out.println(sql);
+
+	Statement stmt = con.createStatement();
+
+	HashMap<KeyValue,KeyValue> keyMap = new HashMap<KeyValue,KeyValue>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+
+		while (rset.next()) {
+			KeyValue key = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
+
+			java.math.BigDecimal parentKeyValue = rset.getBigDecimal(structTable.parentRef.toString());
+			if (!rset.wasNull()){
+				keyMap.put(key, new KeyValue(parentKeyValue));
 			}
 		}
+	} finally {
+		stmt.close(); // Release resources include resultset
 	}
-
-	//
-	// stick all structures on the global cache
-	//
-	enum1 = tempHash.elements();
-	while (enum1.hasMoreElements()){
-		Structure struct = (Structure)enum1.nextElement();
-		dbc.put(struct.getKey(),struct);
-	}
-
+	
 	//
 	// return the structure that you asked for
 	//
-	return (Structure)dbc.get(structKey);
+	return keyMap;
 }
 
 
 /**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Structure
- * @param rset java.sql.ResultSet
- * @exception java.sql.SQLException The exception description.
+ * Selects all structures that are topologically neighboring (according to the parentRef field)
  */
-private void getStructureHeirarchy(Connection con, ResultSet rset, Hashtable tempHash) throws SQLException, DataAccessException, ModelException {
-
-	//
-	// get next highest Structure (in heirarchy)
-	// parent should already exist in temporary hashtable
-	//
-	KeyValue structKey = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
-	Structure structure = structTable.getStructure(rset, log, structKey);
-
-	//
-	// set Structures parent (should be in hashtable)
-	//
-	Structure parent = null;
-	java.math.BigDecimal parentKeyValue = rset.getBigDecimal(structTable.parentRef.toString());
-	if (!rset.wasNull()){
-		KeyValue parentKey = new KeyValue(parentKeyValue);
-		parent = (Structure)tempHash.get(parentKey);
-		if (parent != null) {
-			structure.setParentStructure(parent);
-		}else{
-			throw new DataAccessException("parent structure wasn't in temporary hashtable (resolving heirarhical query)");
-		}
-	}
-	tempHash.put(structKey,structure);
-}
-
-
-/**
- * getModel method comment.
- */
-public Structure[] getStructures0(QueryHashtable dbc, Connection con) throws SQLException, DataAccessException, ObjectNotFoundException {
-	//log.print("ReactStepDbDriver.getStructures()");
+public KeyValue getStructureParentKey(QueryHashtable dbc, Connection con , KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	String sql;
-	sql =	" SELECT id " + 
-			" FROM " + structTable.getTableName();
 
-	//System.out.println(sql);
+	// get all structures/parent relationships belonging to the same model
+	
+	sql =	" SELECT " + structTable.parentRef.getQualifiedColName()+
+			" FROM " + structTable.getTableName() + 
+			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;
 
-	Vector structList = new Vector();
+System.out.println(sql);
+
 	Statement stmt = con.createStatement();
+	
+	KeyValue parentKey = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			Structure structure = null;
-			KeyValue structKey = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
-			structure = getStructureHeirarchy(dbc, con, structKey);
-			structList.addElement(structure);
+			java.math.BigDecimal parentKeyValue = rset.getBigDecimal(structTable.parentRef.toString());
+			if (!rset.wasNull()){
+				parentKey = new KeyValue(parentKeyValue);
+			}
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
-	if (structList.size() == 0) {
-		return null;
-	} else {
-		Structure structures[] = new Structure[structList.size()];
-		structList.copyInto(structures);
-		return structures;
+	return parentKey;
+}
+
+
+public static void populateStructureTopology(Model model, HashMap<KeyValue, KeyValue> parentsKeyMap) throws DataAccessException  {
+	//
+	// populate first pass (Feature parents only if directly present in database)
+	//
+	for (Structure structure : model.getStructures()) {
+		// get parent struct
+		KeyValue parentKey = parentsKeyMap.get(structure.getKey());
+		Structure parentStructure = null;
+		if (parentKey != null) {
+			for (Structure struct1 : model.getStructures()) {
+				if (struct1.getKey().equals(parentKey)) {
+					parentStructure = struct1;
+					break;
+				}
+			}
+		}
+		if (parentStructure != null) {
+			StructureTopology structureTopology = model.getStructureTopology();
+			if (structure instanceof Feature){
+				Feature feature = (Feature)structure;
+				if (parentStructure instanceof Feature){
+					// feature.setParentFeature((Feature)parent);
+					throw new DataAccessException("Feature is not permitted to be the parent of another feature");
+				}else if (parentStructure instanceof Membrane){
+					structureTopology.setInsideFeature((Membrane)parentStructure, feature);
+				}
+			}else if (structure instanceof Membrane){
+				Membrane membrane = (Membrane)structure;
+				if (parentStructure instanceof Feature){
+					structureTopology.setOutsideFeature(membrane, (Feature)parentStructure);
+				} else {
+					throw new DataAccessException("Membrane '" + membrane.getName() + "' is not permitted to be the parent of another membrane '" + parentStructure.getName());
+				}
+			}
+		}
 	}
 }
 
@@ -666,7 +749,7 @@ public Structure[] getStructuresFromModel(QueryHashtable dbc, Connection con,Key
 		while (rset.next()) {
 			Structure structure = null;
 			KeyValue structKey = new KeyValue(rset.getBigDecimal(modelStructLinkTable.structRef.toString()));
-			structure = getStructureHeirarchy(dbc, con, structKey);
+			structure = getStructure(dbc, con, structKey);
 			structList.addElement(structure);
 		}
 	} finally {
@@ -731,7 +814,7 @@ private void insertReactionParticipantSQL(InsertHashtable hash, Connection con, 
 /**
  * addModel method comment.
  */
-KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, ReactionStep reactionStep, KeyValue modelKey) 
+KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, ReactionStep reactionStep, KeyValue modelKey, StructureTopology structureTopology) 
 				throws SQLException, DataAccessException {
 			
 	//log.print("ReactStepDbDriver.insertReactionStep(user="+user+", reacitonStep="+reactionStep+")");
@@ -760,7 +843,7 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 		//
 		Structure structure = rp_Array[i].getStructure();
 		if (hash.getDatabaseKey(structure) == null) {
-			insertStructure(hash,con,structure);
+			insertStructure(hash,con,structure, structureTopology);
 		}		
 	}
 
@@ -769,7 +852,7 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 	//
 	Structure structure = reactionStep.getStructure();
 	if (hash.getDatabaseKey(structure) == null) {
-		insertStructure(hash,con,structure);
+		insertStructure(hash,con,structure, structureTopology);
 	}
 
 	//
@@ -848,18 +931,18 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 /**
  * addModel method comment.
  */
-public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell.model.Structure structure) throws SQLException,DataAccessException {
+public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell.model.Structure structure, StructureTopology structureTopology) throws SQLException,DataAccessException {
 	
 	//log.print("ReactStepDbDriver.insertStructure(structure=" + structure + ")");
 	
 	KeyValue parentKey = null;
-	Structure parentStructure = structure.getParentStructure();
+	Structure parentStructure = structureTopology.getParentStructure(structure);
 	if (parentStructure == null) {
 		parentKey = null;
 	} else {
 		parentKey = hash.getDatabaseKey(parentStructure);
 		if (parentKey == null) {
-			parentKey = insertStructure(hash,con,parentStructure);
+			parentKey = insertStructure(hash,con,parentStructure, structureTopology);
 			//throw new DataAccessException("parent Structure " + parentStructure + " doesn't have a key");
 		}
 	}
@@ -874,6 +957,12 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 	sql = "INSERT INTO " + structTable.getTableName() + " " + 
 			structTable.getSQLColumnList() + " VALUES " + 
 			structTable.getSQLValueList(key, structure,parentKey,cellTypeKey);
+	
+	
+//	sql = "UPDATE " + structTable.getTableName() + 
+//	" SET " + structTable.getSQLUpdateList(parentKey, insideKey, outsideKey) + 
+//	" WHERE " + structTable.id.getUnqualifiedColName() + " = " + structKey;
+
 //System.out.println(sql);
 
 	updateCleanSQL(con,sql);

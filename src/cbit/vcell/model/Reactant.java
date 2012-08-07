@@ -24,7 +24,7 @@ Reactant(KeyValue key, ReactionStep reactionStep) {
 }
 
 
-public Reactant(KeyValue key, SimpleReaction parent,SpeciesContext speciesContext,int stoichiometry){
+public Reactant(KeyValue key, ReactionStep parent,SpeciesContext speciesContext,int stoichiometry){
 	super(key, parent,speciesContext,stoichiometry);
 }   
 

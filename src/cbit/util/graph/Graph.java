@@ -509,6 +509,10 @@ public void remove(Edge newEdge) {
 	if (!edgeList.contains(newEdge)){
 		throw new RuntimeException("edge "+newEdge+" not found");
 	}
+	ArrayList<Edge> adjacentEdges = adjacentEdgeHash.get(newEdge.getNode1().getName());
+	adjacentEdges.remove(newEdge);
+	adjacentEdges = adjacentEdgeHash.get(newEdge.getNode2().getName());
+	adjacentEdges.remove(newEdge);
 	edgeList.remove(newEdge);
 }
 

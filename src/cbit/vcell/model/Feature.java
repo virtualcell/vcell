@@ -15,8 +15,6 @@ import org.vcell.util.document.KeyValue;
 
 public class Feature extends Structure
 {
-	private Membrane membrane = null;
-
 public Feature(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
 	setName(name);
@@ -44,64 +42,9 @@ public boolean compareEqual(Matchable obj) {
 	if (!compareEqual0(f)){
 		return false;
 	}
-	if ((getMembrane()!=null && f.getMembrane()==null) ||
-		(getMembrane()==null && f.getMembrane()!=null)){
-		return false;
-	}
-	if (getMembrane()!=null && !getMembrane().getName().equals(f.getMembrane().getName())){
-		return false;
-	}
 	return true;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
-public boolean enclosedBy(Structure parentStructure){
-	if (parentStructure == this){
-		return true;
-	}	
-	if (getMembrane() != null){
-		return getMembrane().enclosedBy(parentStructure);
-	}	
-	return false;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- */
-public Membrane getMembrane() {
-	return membrane;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Structure
- */
-public Structure getParentStructure() {
-	return getMembrane();
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getPriority() {
-	int priority = 1;
-	Feature feature = this;
-	while (feature.membrane!=null){
-		feature = feature.membrane.getOutsideFeature();
-		priority++;
-	}	
-	return priority;
-}
 
 /**
  * Insert the method's description here.
@@ -124,28 +67,32 @@ public int getPriority() {
 
 /**
  * This method was created by a SmartGuide.
- * @param feature cbit.vcell.model.Feature
+ * @return java.lang.String
  */
-public void setMembrane(Membrane membrane) {
-	this.membrane = membrane;
-	if (membrane != null && membrane.getInsideFeature()!=this){
-		membrane.setInsideFeature(this);
-	}
+public String toString() {
+	StringBuffer sb = new StringBuffer();
+	
+	sb.append("Feature@"+Integer.toHexString(hashCode())+"(name="+getName());
+	
+	sb.append(")");
+
+	return sb.toString();
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param structure cbit.vcell.model.Structure
- */
-public void setParentStructure(Structure structure) throws ModelException {
-	String err = checkNewParent(structure);
-	if (err != null) {
-		throw new ModelException(err);
-	}
-	setMembrane((Membrane)structure);
+
+@Override
+public int getDimension() {
+	return 3;
 }
 
+
+@Override
+public String getTypeName() {
+	return TYPE_NAME_FEATURE;
+}
+
+/* 
 public String checkNewParent(Structure structure) {
 	if (structure instanceof Membrane){
 		Membrane membrane = (Membrane)structure;
@@ -165,34 +112,5 @@ public String checkNewParent(Structure structure) {
 	return null;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
  */
-public String toString() {
-	StringBuffer sb = new StringBuffer();
-	
-	sb.append("Feature@"+Integer.toHexString(hashCode())+"(name="+getName());
-	
-	if (membrane != null){ 
-		sb.append(", membrane='"+membrane.getName()+"'");
-	}
-	sb.append(")");
-
-	return sb.toString();
-}
-
-
-
-@Override
-public int getDimension() {
-	return 3;
-}
-
-
-@Override
-public String getTypeName() {
-	return TYPE_NAME_FEATURE;
-}
 }

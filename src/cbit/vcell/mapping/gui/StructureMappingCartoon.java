@@ -17,20 +17,21 @@ import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.graph.FeatureMappingShape;
 import cbit.vcell.graph.FeatureShape;
 import cbit.vcell.graph.GeometryClassLegendShape;
 import cbit.vcell.graph.GeometryContextContainerShape;
 import cbit.vcell.graph.GeometryContextGeometryShape;
 import cbit.vcell.graph.GeometryContextStructureShape;
-import cbit.vcell.graph.StructureMappingFeatureShape;
+import cbit.vcell.graph.StructureMappingShape;
+import cbit.vcell.graph.StructureMappingStructureShape;
+import cbit.vcell.graph.StructureShape;
 import cbit.vcell.graph.SubVolumeContainerShape;
-import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 
 public class StructureMappingCartoon extends GraphModel implements PropertyChangeListener {
@@ -80,28 +81,26 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		}
 		GeometryContextGeometryShape geometryShape = 
 			new GeometryContextGeometryShape(this, getGeometryContext().getGeometry());
-		GeometryContextStructureShape structureShape = 
+		GeometryContextStructureShape structureContainerShape = 
 			new GeometryContextStructureShape(this, getGeometryContext().getModel());
 		GeometryContextContainerShape containerShape = 
-			new GeometryContextContainerShape(this, getGeometryContext(), structureShape, geometryShape);
+			new GeometryContextContainerShape(this, getGeometryContext(), structureContainerShape, geometryShape);
 		addShape(containerShape);
 		addShape(geometryShape);
-		addShape(structureShape);
+		addShape(structureContainerShape);
 		getGeometryContext().removePropertyChangeListener(this);
 		getGeometryContext().addPropertyChangeListener(this);
 		// create all StructureShapes
 		Structure structures[] = getGeometryContext().getModel().getStructures();
 		for (int i=0; i<structures.length; i++){
-			if (structures[i] instanceof Feature){
-				StructureMappingFeatureShape smShape = 
-					new StructureMappingFeatureShape((Feature)structures[i], 
+			StructureMappingStructureShape smShape = 
+					new StructureMappingStructureShape((Structure)structures[i], 
 							getGeometryContext().getModel(), this);
-				addShape(smShape);
-				containerShape.addChildShape(smShape);
-				structures[i].removePropertyChangeListener(this);
-				structures[i].addPropertyChangeListener(this);
-			}	
-		}
+			addShape(smShape);
+			structureContainerShape.addChildShape(smShape);
+			structures[i].removePropertyChangeListener(this);
+			structures[i].addPropertyChangeListener(this);
+		}	
 		// create all SubvolumeLegendShapes (for legend)
 		GeometryClass[] geometryClasses = getGeometryContext().getGeometry().getGeometryClasses();
 		for (int i=0;i<geometryClasses.length;i++){
@@ -123,45 +122,32 @@ public class StructureMappingCartoon extends GraphModel implements PropertyChang
 		StructureMapping structureMappings[] = getGeometryContext().getStructureMappings();
 		for (int i=0;i<structureMappings.length;i++){
 			StructureMapping structureMapping = structureMappings[i];
-			if (structureMapping instanceof FeatureMapping){
-				FeatureMapping featureMapping = (FeatureMapping)structureMapping;
-				structureMapping.removePropertyChangeListener(this);
-				structureMapping.addPropertyChangeListener(this);
-				if (featureMapping.getGeometryClass()!=null){
-					FeatureShape featureShape = 
-						(FeatureShape) getShapeFromModelObject(featureMapping.getFeature());
-					GeometryClassLegendShape geometryClassLegendShape = 
-						(GeometryClassLegendShape) getShapeFromModelObject(featureMapping.getGeometryClass());
-					FeatureMappingShape fmShape = 
-						new FeatureMappingShape(featureMapping,featureShape, geometryClassLegendShape, this);
-					addShape(fmShape);
-					containerShape.addChildShape(fmShape);
-				}
+			structureMapping.removePropertyChangeListener(this);
+			structureMapping.addPropertyChangeListener(this);
+			if (structureMapping.getGeometryClass()!=null){
+				StructureShape sShape = 
+					(StructureShape) getShapeFromModelObject(structureMapping.getStructure());
+				GeometryClassLegendShape geometryClassLegendShape = 
+					(GeometryClassLegendShape) getShapeFromModelObject(structureMapping.getGeometryClass());
+				StructureMappingShape smShape = 
+					new StructureMappingShape(structureMapping,sShape, geometryClassLegendShape, this);
+				addShape(smShape);
+				containerShape.addChildShape(smShape);
 			}
-		}	
-		// assign children to shapes according to heirarchy in Model
-		int nullParentCount=0;
-		Collection<Shape> shapes = getShapes();
-		for(Shape shape : shapes) {
-			// for each featureShape, find corresponding featureShape
-			if (shape instanceof FeatureShape){
-				FeatureShape fs = (FeatureShape)shape;
-				Membrane membrane = fs.getFeature().getMembrane();
-				if (membrane!=null){
-					// add this feature as child to parent feature
-					Feature parentFeature = membrane.getOutsideFeature();
-					FeatureShape parentFeatureShape = (FeatureShape) getShapeFromModelObject(parentFeature);
-					if (!parentFeatureShape.contains(fs)){
-						parentFeatureShape.addChildShape(fs);
-					}
-				} else {
-					if(!structureShape.contains(fs)) {
-						structureShape.addChildShape(fs);
-					}
-					nullParentCount++;
-				}		
-			}	
-		}	
+		}
+//		// assign children to shapes according to heirarchy in Model
+//		int nullParentCount=0;
+//		Collection<Shape> shapes = getShapes();
+//		for(Shape shape : shapes) {
+//			// for each featureShape, find corresponding featureShape
+//			if (shape instanceof StructureShape){
+//				StructureShape fs = (FeatureShape)shape;
+//				if(!structureContainerShape.contains(fs)) {
+//					structureContainerShape.addChildShape(fs);
+//				}
+//				nullParentCount++;
+//			}	
+//		}	
 		fireGraphChanged(new GraphEvent(this));
 	}
 

@@ -17,6 +17,8 @@ import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -44,10 +46,8 @@ import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.opt.solvers.OdeLSFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -56,12 +56,11 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.solver.stoch.MassActionSolver;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
 @SuppressWarnings("serial")
-public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, ScopedSymbolTable {
+public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable {
 	
 	public static interface Owner {
 		public Model getModel();
@@ -72,6 +71,8 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public static final String PROPERTY_NAME_SPECIES_CONTEXTS = "speciesContexts";
 	private static final String PROPERTY_NAME_SPECIES = "species";
 	
+	public static final String PROPERTY_NAME_RATERULEVARIABLES = "rateruleVariables";
+	
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");
@@ -80,15 +81,175 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private Structure[] fieldStructures = new Structure[0];
 	private Species[] fieldSpecies = new Species[0];
 	private SpeciesContext[] fieldSpeciesContexts = new SpeciesContext[0];
+//	private RateRuleVariable[] fieldRateRuleVariables = new RateRuleVariable[0];
 	private ReactionStep[] fieldReactionSteps = new ReactionStep[0];
 	private Diagram[] fieldDiagrams = new Diagram[0];
 	private ModelNameScope nameScope = new Model.ModelNameScope();
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
 	private Model.ReservedSymbol[] fieldReservedSymbols = new Model.ReservedSymbol[0];
-	private ModelUnitSystem unitSystem = null;
+	private final ModelUnitSystem unitSystem;
 	private transient VCMetaData vcMetaData = null;
+	private StructureTopology structureTopology = new StructureTopology();
+
+	public class StructureTopology implements Serializable {
+		private HashMap<Membrane,Feature> insideFeatures = new HashMap<Membrane, Feature>();
+		private HashMap<Membrane,Feature> outsideFeatures = new HashMap<Membrane, Feature>();
+		private HashMap<Feature,Membrane> enclosingMembrane = new HashMap<Feature, Membrane>();
+		
+		public StructureTopology(){
+		}
+		
+//		public List<Structure> getChildStructures(Structure structure) {
+//
+//			ArrayList<Structure> childList = new ArrayList<Structure>();
+//
+//			for (int i=0;i<fieldStructures.length;i++){
+//				if (getParentStructure(fieldStructures[i])==structure){
+//					childList.add(fieldStructures[i]);
+//				}
+//			}
+//			return childList;
+//		}
+
+		public Enumeration<Feature> getSubFeatures(Feature feature) 
+		{
+			Vector<Feature> subFeatures = new Vector<Feature>();
+			Structure[] structures = getStructures();
+			for (int i=0; i<structures.length; i++)
+			{
+				if((structures[i] instanceof Feature) && enclosedBy(structures[i], feature))
+				{
+					subFeatures.addElement((Feature)structures[i]);
+				}
+			}
+			return subFeatures.elements();
+		}
+
+		
+		public Membrane getMembrane(Feature feature1, Feature feature2){
+			for (int i = 0; i < fieldStructures.length; i++) {
+				if (fieldStructures[i] instanceof Membrane){
+					Membrane membrane = (Membrane)fieldStructures[i];
+					if (insideFeatures.get(membrane)==feature1 && outsideFeatures.get(membrane)==feature2){ 
+						return membrane;
+					}
+					if (insideFeatures.get(membrane)==feature2 && outsideFeatures.get(membrane)==feature1){
+						return membrane;
+					}
+				}
+			}
+			return null;
+		}
+
+		public Structure getParentStructure(Structure structure) {
+			if (structure instanceof Membrane){
+				return outsideFeatures.get(structure);
+			}else{
+				return enclosingMembrane.get(structure);
+			}
+		}
 
 
+		public void setInsideFeature(Membrane membrane, Feature insideFeature){
+			enclosingMembrane.put(insideFeature, membrane);
+			insideFeatures.put(membrane, insideFeature);
+		}
+		public void setOutsideFeature(Membrane membrane, Feature outsideFeature){
+			outsideFeatures.put(membrane, outsideFeature);
+		}
+		public void setMembrane(Feature feature, Membrane membrane){
+			enclosingMembrane.put(feature, membrane);
+			insideFeatures.put(membrane, feature);
+		}
+		
+		public Membrane getMembrane(Feature feature){
+			return enclosingMembrane.get(feature);
+		}
+
+		public Feature getInsideFeature(Membrane membrane) {
+			return insideFeatures.get(membrane);
+		}
+
+		public Feature getOutsideFeature(Membrane membrane) {
+			return outsideFeatures.get(membrane);
+		}
+		
+		
+		public boolean enclosedBy(Structure structure, Structure parentStructure){
+			if (structure instanceof Feature){
+				Feature feature = (Feature) structure;
+				if (parentStructure == feature){
+					return true;
+				}	
+				if (getMembrane(feature) != null){
+					return enclosedBy(getMembrane(feature),parentStructure);
+				}	
+				return false;
+			}else if (structure instanceof Membrane){
+				Membrane membrane = (Membrane)structure;
+				if (parentStructure == membrane){
+					return true;
+				}	
+				return enclosedBy(getOutsideFeature(membrane),parentStructure);
+			}else{
+				throw new IllegalArgumentException("unexpected argument of StructureTopology.enclosedBy()");
+			}
+		}
+
+		public String showStructureHierarchy() {
+			StringBuffer strbuffer = new StringBuffer();
+			ArrayList<Structure> structList = new ArrayList<Structure>(Arrays.asList(fieldStructures));
+
+			//
+			// gather top(s) ... should only have one
+			//
+			ArrayList<Structure> topList = new ArrayList<Structure>();
+			for (Structure s : structList){
+				if (getParentStructure(s) == null){
+					topList.add(s);
+				}
+			}
+			//
+			// for each top, print tree
+			//
+			Stack<Structure> stack = new Stack<Structure>();
+			for (int j=0;j<topList.size();j++){
+				Structure top = topList.get(j);
+				strbuffer.append(top.getName()+"\n");
+				stack.push(top);
+				while (true){
+					//
+					// find first remaining children of current parent and print
+					//
+					boolean bChildFound = false;
+					for (int i=0;i<structList.size() && stack.size()>0;i++){
+						Structure structure = structList.get(i);
+						if (getParentStructure(structure) == stack.peek()){
+							char padding[] = new char[4*stack.size()];
+							for (int k=0;k<padding.length;k++) padding[k] = ' ';
+							String pad = new String(padding);
+							strbuffer.append(pad+structure.getName()+"\n");
+							stack.push(structure);
+							structList.remove(structure);
+							bChildFound = true;
+							break;
+						}
+					}
+					if (stack.size()==0){
+						break;
+					}
+					if (bChildFound == false){
+						stack.pop();
+					}
+				}
+			}
+			return strbuffer.toString();
+		}
+		
+	}
+
+	
+	
 	public class ModelNameScope extends BioNameScope {
 		public ModelNameScope(){
 			super();
@@ -204,7 +365,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return getReservedSymbolByRole(ReservedSymbolRole.KMILLIVOLTS);
 		}
 
-
+		/** @deprecated : used only for backward compatibility */
 		public ReservedSymbol getKMOLE() {
 			return getReservedSymbolByRole(ReservedSymbolRole.KMOLE);
 		}
@@ -481,36 +642,43 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 	}
 	
-public Model(Version argVersion) {
-	this.version = argVersion;
-	if (argVersion != null){
-		fieldName = argVersion.getName();
-		fieldDescription = argVersion.getAnnot();
+	public Model(Version argVersion) {
+		this(argVersion, ModelUnitSystem.createDefaultVCModelUnitSystem());
 	}
-	addPropertyChangeListener(this);
-	addVetoableChangeListener(this);
 	
-	// initialize a unit system
-	this.unitSystem = new ModelUnitSystem();
+	public Model(Version argVersion, ModelUnitSystem argUnitSystem) {
+		this.version = argVersion;
+		if (argVersion != null){
+			fieldName = argVersion.getName();
+			fieldDescription = argVersion.getAnnot();
+		}
+		addPropertyChangeListener(this);
+		addVetoableChangeListener(this);
+		
+		// initialize a unit system
+			this.unitSystem = argUnitSystem;
+		
+		// initialize the reserved symbols
+		fieldReservedSymbols = createReservedSymbols();
+	}      	
 	
-	// initialize the reserved symbols
-	fieldReservedSymbols = createReservedSymbols();
+	public Model(String argName) {
+		this(argName, ModelUnitSystem.createDefaultVCModelUnitSystem());
+	}  
+
+
+	public Model(String argName, ModelUnitSystem argModelUnitSystem) {
+		this.fieldName = argName;
+		this.version = null;
+		addPropertyChangeListener(this);
+		addVetoableChangeListener(this);
 	
-}      
+		// initialize a unit system
+		this.unitSystem = argModelUnitSystem;
 
-
-public Model(String argName) {
-	this.fieldName = argName;
-	this.version = null;
-	addPropertyChangeListener(this);
-	addVetoableChangeListener(this);
-
-	// initialize a unit system
-	this.unitSystem = new ModelUnitSystem();
-
-	// initialize the reserved symbols
-	fieldReservedSymbols = createReservedSymbols();
-}      
+		// initialize the reserved symbols
+		fieldReservedSymbols = createReservedSymbols();
+	}      
 
 private ReservedSymbol[] createReservedSymbols() {
 	return  new ReservedSymbol[]{ 
@@ -528,71 +696,8 @@ private ReservedSymbol[] createReservedSymbols() {
 			new ReservedSymbol(ReservedSymbolRole.KMILLIVOLTS, "K_millivolts_per_volt","voltage scale", unitSystem.getK_mV_perV_Unit(), new Expression(1000)), 
 			new ReservedSymbol(ReservedSymbolRole.KMOLE, "KMOLE", "Flux unit conversion", unitSystem.getKMoleUnit(), new Expression(new RationalNumber(1, 602)))
 	};
-
 }
-public Feature addFeature(String featureName, Feature parent, String membraneName) throws ModelException, PropertyVetoException {
-	if (featureName.equals(membraneName)) {
-		throw new ModelException("Feature and Membrane can not have the same name.");
-	}
-	
-	Structure structure = getStructure(featureName);
-	
-	if (structure!=null) {
-		throw new ModelException("adding feature '"+featureName+"', structure already exists with that name");
-	}
 
-	structure = getStructure(membraneName);
-
-	if (structure!=null){
-		throw new ModelException("adding membrane '"+membraneName+"', structure already exists with that name");
-	}
-
-	//
-	// add feature
-	//
-	Feature newFeature = new Feature(featureName);
-	Structure newStructures[] = (Structure[])BeanUtils.addElement(fieldStructures,newFeature);
-	
-	//
-	// add feature to outside (becomes the new "Top" Feature)
-	//
-	if (parent==null){
-		//
-		// get current top feature
-		//
-		Feature currTopFeature = getTopFeature();
-		//
-		// current top becomes a child, so a membrane is added to the current top.
-		//
-		if (currTopFeature!=null){
-			String newMembraneName = null;
-			if(membraneName == null){
-				newMembraneName = currTopFeature.getName()+"_Membrane";
-			}else{
-				newMembraneName = membraneName;
-			}
-			Membrane membrane = new Membrane(newMembraneName);
-			newStructures = (Structure[])BeanUtils.addElement(newStructures,membrane);
-			membrane.setInsideFeature(currTopFeature);
-			membrane.setOutsideFeature(newFeature);
-			currTopFeature.setMembrane(membrane);
-		}
-	//
-	// add feature inside pick'ed feature
-	//
-	}else{
-		//
-		// add new feature and associated membrane
-		//
-		Membrane membrane = new Membrane(membraneName);
-		newStructures = (Structure[])BeanUtils.addElement(newStructures,membrane);
-		membrane.setInsideFeature(newFeature);
-		membrane.setOutsideFeature(parent);
-		newFeature.setMembrane(membrane);
-	}	
-	setStructures(newStructures);
-	return newFeature;
-}
 
 //public ModelParameter createModelParameter(String name, Expression expr, int role, VCUnitDefinition units) {
 //	ModelParameter modelParameter = new ModelParameter(name, expr, role, units);
@@ -614,6 +719,38 @@ public ModelParameter addModelParameter(Model.ModelParameter modelParameter) thr
 public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
+
+
+/**
+ * The addPropertyChangeListener method was generated to support the propertyChange field.
+ */
+public synchronized void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+	getPropertyChange().addPropertyChangeListener(propertyName, listener);
+}
+
+public Feature addFeature(String featureName) throws ModelException, PropertyVetoException {
+	Structure structure = getStructure(featureName);
+	if (structure!=null) {
+		throw new ModelException("adding feature '"+featureName+"', structure already exists with that name");
+	}
+	Feature newFeature = new Feature(featureName);
+	Structure newStructures[] = (Structure[])BeanUtils.addElement(fieldStructures,newFeature);
+	setStructures(newStructures);
+	return newFeature;
+}
+
+public Membrane addMembrane(String membraneName) throws ModelException, PropertyVetoException {
+	Structure structure = getStructure(membraneName);
+	if (structure!=null) {
+		throw new ModelException("adding membrane '"+membraneName+"', structure already exists with that name");
+	}
+	Membrane newMembrane = new Membrane(membraneName);
+	Structure newStructures[] = (Structure[])BeanUtils.addElement(fieldStructures,newMembrane);
+	setStructures(newStructures);
+	return newMembrane;
+}
+
+
 
 public ReactionStep addReactionStep(ReactionStep reactionStep) throws PropertyVetoException {
 	if (!contains(reactionStep)) {
@@ -740,6 +877,9 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	if (!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
+		return false;
+	}
+	if (!Compare.isEqual(unitSystem, model.unitSystem)){
 		return false;
 	}
 	
@@ -944,26 +1084,6 @@ public void gatherIssues(List<Issue> issueList) {
 
 
 /**
- * This method was created in VisualAge.
- * @return java.util.Enumeration
- * @param structure cbit.vcell.model.Structure
- */
-public Structure[] getChildStructures(Structure structure) {
-
-	Vector<Structure> childList = new Vector<Structure>();
-
-	for (int i=0;i<fieldStructures.length;i++){
-		if (fieldStructures[i].getParentStructure()==structure){
-			childList.addElement(fieldStructures[i]);
-		}
-	}
-	Structure structures[] = new Structure[childList.size()];
-	childList.copyInto(structures);
-	return structures;
-}
-
-
-/**
  * Gets the description property (java.lang.String) value.
  * @return The description property value.
  * @see #setDescription
@@ -1043,7 +1163,7 @@ public Feature createFeature(Feature parent) {
 		count++;
 	}
 	try {
-		return addFeature(featureName, parent, getFreeMembraneName());
+		return addFeature(featureName);
 	} catch (ModelException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
@@ -1543,7 +1663,8 @@ public SpeciesContext[] getSpeciesContexts(Structure structure) {
 public SpeciesContext[] getSpeciesContextsNeededByMovingMembrane(Membrane movingMembrane) {
 
 	//Find any species that are needed by reactions in the membrane of movingFeature
-	Feature outsideFeature = (Feature)movingMembrane.getParentStructure();
+	// Feature outsideFeature = (Feature)movingMembrane.getParentStructure();
+	Feature outsideFeature = (Feature)structureTopology.getParentStructure(movingMembrane);
 	SpeciesContext[] outSC = getSpeciesContexts(outsideFeature);
 	Vector<SpeciesContext> neededSC = new Vector<SpeciesContext>();
 	for(int i=0;i<fieldReactionSteps.length;i+= 1){
@@ -1617,19 +1738,8 @@ public Structure getStructure(int index) {
 	return getStructures()[index];
 }
 
-public Membrane getMembrane(Feature feature1, Feature feature2){
-	for (int i = 0; i < fieldStructures.length; i++) {
-		if (fieldStructures[i] instanceof Membrane){
-			Membrane membrane = (Membrane)fieldStructures[i];
-			if (membrane.getInsideFeature()==feature1 && membrane.getOutsideFeature()==feature2){ 
-				return membrane;
-			}
-			if (membrane.getInsideFeature()==feature2 && membrane.getOutsideFeature()==feature1){
-				return membrane;
-			}
-		}
-	}
-	return null;
+public StructureTopology getStructureTopology(){
+	return structureTopology ;
 }
 //wei's code
 public ArrayList<Membrane> getMembranes(){
@@ -1643,94 +1753,7 @@ public ArrayList<Membrane> getMembranes(){
 	return membranes;
 }
 // done
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- */
-public Feature getTopFeature() {
-	Feature topFeature = null;
-	int topCount = 0;
-	for (int i=0;i<fieldStructures.length;i++){
-		if (fieldStructures[i].getParentStructure()==null){
-			topCount++;
-			topFeature = (Feature)fieldStructures[i];
-		}
-	}
-	if (topCount>1){
-		throw new RuntimeException("Feature.getTopFeature(), there are more than one top level structures");
-	}
-	return topFeature;
-}
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2005 5:11:59 PM)
- * @return cbit.vcell.model.Feature[]
- * @param movingFeature cbit.vcell.model.Feature
- */
-public Feature[] getValidDestinationsForMovingFeature(Feature movingFeature) {
-	
-	if(movingFeature == null){
-		throw new IllegalArgumentException("moving feature cannot be null");
-	}
-	 if(!contains(movingFeature)){
-		 throw new IllegalArgumentException("Model does not contain moving or feature");
-	 }
-	if(movingFeature.getMembrane() == null){
-		return null;
-	}
-
-	//Following code adapted from GraphModel.showShapeHierarchyTopDown
-	//Destinations can't be child of moving feature
-	Vector<Feature> invalidDestinationFeatures = new Vector<Feature>();
-	invalidDestinationFeatures.add(movingFeature);
-	//Let's not put where we already are as a valid destination for moving
-	if(movingFeature.getMembrane() != null){
-		invalidDestinationFeatures.add((Feature)movingFeature.getMembrane().getParentStructure());
-	}
-	Vector<Feature> features = new Vector<Feature>();
-	for(int i=0;i<getStructures().length;i+= 1){
-		if(fieldStructures[i] instanceof Feature){
-			features.add((Feature)fieldStructures[i]);
-		}
-	}
-	Stack<Feature> stack = new Stack<Feature>();
-	stack.push(movingFeature);
-	features.remove(movingFeature);
-	while (stack.size()>0){
-		boolean bChildFound = false;
-		Feature currFeature = stack.peek();
-		for(int i=0;i<features.size();i+= 1){
-			Feature nextFeature = (Feature)features.elementAt(i);
-			if(nextFeature.getMembrane() != null && currFeature == nextFeature.getMembrane().getParentStructure()){
-				invalidDestinationFeatures.add(nextFeature);
-				stack.push(nextFeature);
-				features.remove(nextFeature);
-				bChildFound = true;
-				break;
-			}
-		}
-		if (bChildFound == false){
-			stack.pop();
-		}
-	}
-
-	Vector<Feature> validDestinationFeaturesV = new Vector<Feature>();
-	for(int i=0;i<fieldStructures.length;i+= 1){
-		if(fieldStructures[i] instanceof Feature && !invalidDestinationFeatures.contains(fieldStructures[i])){
-			validDestinationFeaturesV.add((Feature)fieldStructures[i]);
-		}
-	}
-
-	if(validDestinationFeaturesV.size() > 0){
-		Feature[] validDestinationFeaturesArr = new Feature[validDestinationFeaturesV.size()];
-		validDestinationFeaturesV.copyInto(validDestinationFeaturesArr);
-		return validDestinationFeaturesArr;
-	}
-	
-	return null;
-}
 
 
 /**
@@ -1777,68 +1800,6 @@ public boolean isUsed(SpeciesContext speciesContext) {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/22/2005 3:00:44 PM)
- * @param movingFeature cbit.vcell.model.Feature
- * @param destination cbit.vcell.model.Feature
- */
-public void moveFeature(Feature movingFeature, Feature destinationFeature) throws Exception{
-
-	if(movingFeature == null || destinationFeature == null){
-		throw new IllegalArgumentException("moving and destination feature cannot be null");
-	}
-	 if(!contains(movingFeature) || !contains(destinationFeature)){
-		 throw new IllegalArgumentException("Model does not contain moving or destination feature");
-	 }
-	if(movingFeature.getMembrane() == null){
-		throw new IllegalArgumentException("Can't move top feature");
-	}
-	if(movingFeature.getMembrane().getParentStructure() == destinationFeature){
-		return;//Already there
-	}
-
-	//Check if destination is valid
-	Feature[] validDestinationFeatures = getValidDestinationsForMovingFeature(movingFeature);
-	if(!BeanUtils.arrayContains(validDestinationFeatures,destinationFeature)){
-		throw new IllegalArgumentException("'"+destinationFeature.getName()+"' Not a valid destination for '"+movingFeature.getName()+"'");
-	}
-
-	//Add SpeciesContext that membrane reactions will need in the new location
-	SpeciesContext[] neededSC = getSpeciesContextsNeededByMovingMembrane(movingFeature.getMembrane());
-	if(neededSC != null){
-		for(int i=0;i<neededSC.length;i+= 1){
-			if(getSpeciesContext(neededSC[i].getSpecies(),destinationFeature) == null){
-				addSpeciesContext(neededSC[i].getSpecies(),destinationFeature);
-			}
-		}
-	}
-
-	//Update ReactionParticipants with their new location and refresh Reactions
-	movingFeature.getMembrane().setParentStructure(destinationFeature);
-	Structure[] structureArr = (Structure[])fieldStructures.clone();
-	setStructures(structureArr);
-	for(int i=0;i<fieldReactionSteps.length;i+= 1){
-		if(fieldReactionSteps[i].getStructure() == movingFeature.getMembrane()){
-			if(neededSC != null){
-				for(int j=0;j<neededSC.length;j+= 1){
-					ReactionParticipant[] rps = fieldReactionSteps[i].getReactionParticipants();
-					if(rps != null){
-						for (int k = 0; k < rps.length; k++){
-							if (rps[k].getSpeciesContext() == neededSC[j]) {
-								rps[k].setSpeciesContext(getSpeciesContext(neededSC[j].getSpecies(),destinationFeature));
-							}
-						}
-					}
-				}
-			}
-			fieldReactionSteps[i].rebindAllToModel(this);
-			fieldReactionSteps[i].refreshDependencies();
-		}
-	}
-}
-
-
-	/**
 	 * This method gets called when a bound property is changed.
 	 * @param evt A PropertyChangeEvent object describing the event source 
 	 *   	and the property that has changed.
@@ -2004,198 +1965,43 @@ private void refreshDiagrams() {
 }
 
 
-public void removeFeature(Feature removedFeature) throws PropertyVetoException {
+public void removeStructure(Structure removedStructure) throws PropertyVetoException {
 
-	if (removedFeature == null){
-		throw new RuntimeException("feature is null");
+	if (removedStructure == null){
+		throw new RuntimeException("structure is null");
 	}	
-	if (!contains(removedFeature)){
-		throw new RuntimeException("feature "+removedFeature.getName()+" not found");
+	if (!contains(removedStructure)){
+		throw new RuntimeException("structure "+removedStructure.getName()+" not found");
 	}
 	
 	//Check that the feature is empty
-	Structure checkThisStructure = removedFeature;
 	String errorMessage = null;
-	Feature topChildFeature = null;
-	Membrane topChildMembrane = null;
-	while(true){
 		for (int i=0;i<fieldReactionSteps.length;i++){
-			if (fieldReactionSteps[i].getStructure() == checkThisStructure){
+		if (fieldReactionSteps[i].getStructure() == removedStructure){
 				errorMessage = "cannot contain Reactions";
 				break;
 			}
 		}
 		for (int i=0;i<fieldSpeciesContexts.length;i++){
-			if (fieldSpeciesContexts[i].getStructure() == checkThisStructure){
+		if (fieldSpeciesContexts[i].getStructure() == removedStructure){
 				errorMessage = "cannot contain Species";
 				break;
 			}
 		}
 
 		if(errorMessage != null){
-			break;
+		throw new RuntimeException("Remove model compartment Error\nStructure to be removed '"+removedStructure.getName()+"' "+errorMessage+".");
 		}
-		if(checkThisStructure == removedFeature){
-			checkThisStructure = removedFeature.getMembrane();
-			if(checkThisStructure == null){//Top Feature
-				//Must have a child
-				if(fieldStructures.length == 1){
-					throw new RuntimeException(
-						"Remove model compartment Error\n"+
-						"Feature to be removed '"+removedFeature.getName()+"' "+
-						" is TopLevel and has no promotable children");
-				}
-				//Must be only 1 child
-				for (int i=0;i<fieldStructures.length;i++){
-					if (fieldStructures[i] instanceof Membrane && ((Membrane)fieldStructures[i]).getOutsideFeature() == removedFeature){
-						if(topChildFeature != null){
-							throw new RuntimeException(
-								"Remove model compartment Error\n"+
-								"Feature to be removed '"+removedFeature.getName()+"' "+
-								" is TopLevel and can have only 1 promotable child");
-						}
-						topChildMembrane = (Membrane)fieldStructures[i];
-						topChildFeature = topChildMembrane.getInsideFeature();
-					}
-				}
-				checkThisStructure = topChildMembrane;
-				
-			}
-		}else{
-			break;
-		}		
-	}
-	
-	if(errorMessage != null){
-		if(checkThisStructure == removedFeature){
-			throw new RuntimeException(
-				"Remove model compartment Error\nFeature to be removed '"+removedFeature.getName()+"' "+errorMessage+".");
-		}else if(checkThisStructure == removedFeature.getMembrane()){
-			throw new RuntimeException(
-				"Remove model compartment Error\nMembrane '"+removedFeature.getMembrane().getName()+
-				"' associated with Feature '"+removedFeature.getName()+"' "+errorMessage+
-				" because it will be removed along with compartment '"+removedFeature.getName()+"'");
-		}else if(checkThisStructure != null && checkThisStructure == topChildMembrane){
-			throw new RuntimeException(
-				"Remove model compartment '"+removedFeature.getName()+"' Error\nMembrane '"+topChildMembrane.getName()+
-				"' child of TopLevel Feature '"+removedFeature.getName()+"' "+errorMessage+
-				" because it will be removed when compartment '"+topChildFeature.getName()+"' is promoted to TopLevel.");
-		}else{
-			//We should never get here
-			throw new RuntimeException(
-				"Remove model compartment Error\nFeature to be removed '"+removedFeature.getName()+"' "+errorMessage+".\n"+
-				"associated structure = "+checkThisStructure);
-		}
-	}
-
-	
-	////
-	//// first, remove all reaction steps contained by this feature and bounding membrane
-	////
-	//ReactionStep newReactionSteps[] = (ReactionStep[])fieldReactionSteps.clone();
-	//for (int i=0;i<newReactionSteps.length;i++){
-		//if (newReactionSteps[i].getStructure()==removedFeature){
-			//newReactionSteps = (ReactionStep[])BeanUtils.removeElement(newReactionSteps,newReactionSteps[i]);
-			//i--;
-		//}
-	//}
-	//if (removedFeature.getMembrane()!=null){
-		//for (int i=0;i<newReactionSteps.length;i++){
-			//if (newReactionSteps[i].getStructure()==removedFeature.getMembrane()){
-				//newReactionSteps = (ReactionStep[])BeanUtils.removeElement(newReactionSteps,newReactionSteps[i]);
-				//i--;
-			//}
-		//}
-	//}
-	//setReactionSteps(newReactionSteps);
-
-	////
-	//// remove all species Contexts for this feature and accompanying membrane
-	//// this will fail if there are still ReactionSteps (outside the removed structures) that use them.
-	////
-	//// this is transactional
-	////
-	////
-	//SpeciesContext allSpeciesContexts[] = (SpeciesContext[])fieldSpeciesContexts.clone();
-	//SpeciesContext structureSpeciesContexts[] = getSpeciesContexts(removedFeature);
-	//for (int i=0;i<structureSpeciesContexts.length;i++){
-		//allSpeciesContexts = (SpeciesContext[])BeanUtils.removeElement(allSpeciesContexts,structureSpeciesContexts[i]);
-	//}
-	//if (removedFeature.getMembrane()!=null){
-		//structureSpeciesContexts = getSpeciesContexts(removedFeature.getMembrane());
-		//for (int i=0;i<structureSpeciesContexts.length;i++){
-			//allSpeciesContexts = (SpeciesContext[])BeanUtils.removeElement(allSpeciesContexts,structureSpeciesContexts[i]);
-		//}
-	//}
-	//setSpeciesContexts(allSpeciesContexts);
 
 	
 	//
-	// remove this feature and it's membrane
+	// remove this structure
 	//
 	Structure newStructures[] = (Structure[])fieldStructures.clone();
-	newStructures = (Structure[])BeanUtils.removeElement(newStructures,removedFeature);
-	
-	Feature parentFeature = null;
-	if (removedFeature.getMembrane()!=null){
-		// remove the corresponding membrane
-		parentFeature = removedFeature.getMembrane().getOutsideFeature();
-		newStructures = (Structure[])BeanUtils.removeElement(newStructures,removedFeature.getMembrane());
-	}else if(topChildMembrane == null){
-		//This should never happen, was checked earlier
-		throw new RuntimeException(
-			"Remove model compartment Error\nFeature to be removed '"+removedFeature.getName()+
-			" has no membrane and no promotable child");
-	}else{
-		//TopLevel remove immediate child membrane
-		newStructures = (Structure[])BeanUtils.removeElement(newStructures,topChildMembrane);
-		//Make child feature TopLevel
-		topChildFeature.setMembrane(null);
-	}
-	
-	//
-	// set children of 'feature' to parent of feature's membrane
-	//
-	if(parentFeature != null){
-		for (int i=0;i<newStructures.length;i++){
-			if (newStructures[i] instanceof Membrane){
-				Membrane m = (Membrane)newStructures[i];
-				Feature outsideFeature = m.getOutsideFeature();
-				if (outsideFeature == removedFeature){
-					m.setOutsideFeature(parentFeature);
-				}
-			}	
-		}
-	}
-	////
-	//// if there is no parent, then make first child a parent and remove that child's membrane
-	////
-	//for (int i=0;i<newStructures.length;i++){
-		//if (newStructures[i] instanceof Membrane){
-			//Membrane m = (Membrane)newStructures[i];
-			//Feature outsideFeature = m.getOutsideFeature();
-			//if (outsideFeature==null){
-				//parentFeature = m.getInsideFeature();
-				//parentFeature.setMembrane(null);
-				//newStructures = (Structure[])BeanUtils.removeElement(newStructures,m);
-				//break;
-			//}	
-		//}
-	//}	
-	////
-	//// make other orphaned children the children of parentFeature
-	////
-	//for (int i=0;i<newStructures.length;i++){
-		//if (newStructures[i] instanceof Membrane){
-			//Membrane m = (Membrane)newStructures[i];
-			//Feature outsideFeature = m.getOutsideFeature();
-			//if (outsideFeature==null){
-				//m.setOutsideFeature(parentFeature);
-			//}	
-		//}
-	//}
+	newStructures = (Structure[])BeanUtils.removeElement(newStructures,removedStructure);
 	setStructures(newStructures);
 }            
+
 
 
 public void removeModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException {
@@ -2481,6 +2287,10 @@ public void setSpeciesContexts(SpeciesContext[] speciesContexts) throws java.bea
 	SpeciesContext[] oldValue = fieldSpeciesContexts;
 	fireVetoableChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
 	fieldSpeciesContexts = speciesContexts;
+	for (int i=0;i<speciesContexts.length;i++){	
+		speciesContexts[i].setModel(this);
+	}
+
 	firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, oldValue, speciesContexts);
 
 	SpeciesContext newValue[] = speciesContexts;
@@ -2581,59 +2391,6 @@ public void setStructures(Structure[] structures) throws java.beans.PropertyVeto
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/22/01 12:12:10 PM)
- */
-public void showStructureHierarchy() {
-	Vector<Structure> structList = new Vector<Structure>(Arrays.asList(fieldStructures));
-
-	//
-	// gather top(s) ... should only have one
-	//
-	Vector<Structure> topList = new Vector<Structure>();
-	for (int i=0;i<structList.size();i++){
-		if (((Structure)structList.elementAt(i)).getParentStructure() == null){
-			topList.add(structList.elementAt(i));
-		}
-	}
-	//
-	// for each top, print tree
-	//
-	Stack<Structure> stack = new Stack<Structure>();
-	for (int j=0;j<topList.size();j++){
-		Structure top = (Structure)topList.elementAt(j);
-		System.out.println(top.getName());
-		stack.push(top);
-		while (true){
-			//
-			// find first remaining children of current parent and print
-			//
-			boolean bChildFound = false;
-			for (int i=0;i<structList.size() && stack.size()>0;i++){
-				Structure structure = (Structure)structList.elementAt(i);
-				if (structure.getParentStructure() == stack.peek()){
-					char padding[] = new char[4*stack.size()];
-					for (int k=0;k<padding.length;k++) padding[k] = ' ';
-					String pad = new String(padding);
-					System.out.println(pad+structure.getName());
-					stack.push(structure);
-					structList.remove(structure);
-					bChildFound = true;
-					break;
-				}
-			}
-			if (stack.size()==0){
-				break;
-			}
-			if (bChildFound == false){
-				stack.pop();
-			}
-		}
-	}	
-		
-			
-}
 
 
 /**
@@ -2778,59 +2535,6 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			}
 			structSymbolSet.add(newStructureSizeName);
 			validateNamingConflicts("StructureSize",StructureSize.class, newStructureSizeName, e);
-		}
-		
-		//
-		// verify topological constraints (soon to be removed).
-		//
-		int topCount = 0;
-		for (int i=0;i<newStructures.length;i++){
-			if (newStructures[i] instanceof Feature){
-				if (newStructures[i].getParentStructure()==null){
-					topStructure = newStructures[i];
-					topCount++;
-				}
-			}else if (newStructures[i] instanceof Membrane){
-				if (((Membrane)newStructures[i]).getInsideFeature()==null ||
-					((Membrane)newStructures[i]).getOutsideFeature()==null){
-					throw new PropertyVetoException("membrane '"+newStructures[i].getName()+"' should have inside and outside features",e);
-				}
-			}
-		}
-		if (topCount==0){
-			throw new PropertyVetoException("there are no top-level features",e);
-		}else if (topCount>1){
-			throw new PropertyVetoException("there is more than one top-level feature",e);
-		}
-		//
-		// make sure all members are children of the root and all children are in the array
-		//
-		for (int i=0;i<newStructures.length;i++){
-			if (newStructures[i] == topStructure) continue;
-			Structure parent = newStructures[i];
-			int loopCount = 0;
-			while (parent.getParentStructure() != null && loopCount<20){
-				//
-				// check that parent is in list
-				//
-				boolean bFound = false;
-				for (int j=0;j<newStructures.length;j++){
-					if (newStructures[j] == parent.getParentStructure()){
-						bFound = true;
-					}
-				}
-				if (!bFound){
-					throw new PropertyVetoException("Structure "+parent.getName()+"'s parent '"+parent.getParentStructure().getName()+"' is not in array",e);
-				}
-				parent = parent.getParentStructure();
-				loopCount++;
-			}
-			if (loopCount >= 20){
-				throw new PropertyVetoException("Structure "+newStructures[i].getName()+" has a cyclic ancestry",e);
-			}
-			if (parent != topStructure){
-				throw new PropertyVetoException("Structure "+parent.getName()+"'s parent '"+parent.getParentStructure().getName()+"' is not in array",e);
-			}
 		}
 	}
 	
@@ -3287,7 +2991,7 @@ public String isValidForStochApp()
 }
 
 	public void removeObject(Object object) throws PropertyVetoException {
-		if(object instanceof Feature) { removeFeature((Feature) object); }
+		if(object instanceof Feature || object instanceof Membrane) { removeStructure((Structure) object); }
 		else if(object instanceof ModelParameter) { removeModelParameter((ModelParameter) object); }
 		else if(object instanceof ReactionStep) { removeReactionStep((ReactionStep) object); }
 		else if(object instanceof Species) { removeSpecies((Species) object); }
@@ -3298,4 +3002,152 @@ public String isValidForStochApp()
 		return unitSystem;
 	}
 	
+	public Membrane createMembrane() {
+		int count=0;
+		String membraneName = null;
+		while (true) {
+			membraneName = "m" + count;
+			if (getStructure(membraneName) == null){
+				break;
+			}	
+			count++;
+		}
+		try {
+			return addMembrane(membraneName);
+		} catch (ModelException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+
+	/** 
+	 * RateRuleVariable related methods: 
+	 * 
+	 *    /
+	
+	public RateRuleVariable addRateRuleVariable(String name, Structure structure, ModelParameter parameter, int parameterRole) throws Exception {
+		RateRuleVariable rateRuleVar = getRateRuleVariable(name);
+		if (rateRuleVar != null){
+			throw new Exception("RateRuleVariable '" + name + "' already defined");
+		}
+		rateRuleVar = new RateRuleVariable(name, structure, parameter, parameterRole);
+		rateRuleVar.setModel(this);
+		return addRateRuleVariable(rateRuleVar);
+	}
+
+
+	public RateRuleVariable addRateRuleVariable(RateRuleVariable rateRuleVar) throws PropertyVetoException {
+		
+		if (rateRuleVar.getStructure() != null && !contains(rateRuleVar.getStructure())){
+			throw new RuntimeException("structure "+rateRuleVar.getStructure().getName()+" not found in model");
+		}
+		if (getRateRuleVariable(rateRuleVar.getName())!=null){
+			throw new RuntimeException("RateRuleVariable '"+ rateRuleVar.getName() + "' already defined");
+		}
+		if (!contains(rateRuleVar)){
+			RateRuleVariable[] newArray = (RateRuleVariable[])BeanUtils.addElement(fieldRateRuleVariables,rateRuleVar);
+			rateRuleVar.setModel(this);
+			setRateRuleVariables(newArray);
+		}
+		return rateRuleVar;
+	}
+
+	public void removeRateRuleVariable(RateRuleVariable rateRuleVar) throws PropertyVetoException {
+		if (contains(rateRuleVar)){
+			RateRuleVariable[] newRateRules = (RateRuleVariable[])BeanUtils.removeElement(fieldRateRuleVariables, rateRuleVar);
+			setRateRuleVariables(newRateRules);
+		}
+	}
+
+	public boolean contains(RateRuleVariable rateRuleVar) {
+		for (int i = 0; i < fieldRateRuleVariables.length; i++){
+			if (fieldRateRuleVariables[i] == rateRuleVar){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public RateRuleVariable[] getRateRuleVariables() {
+		return fieldRateRuleVariables;
+	}
+	
+	public RateRuleVariable getRateRuleVariable(int index) {
+		return getRateRuleVariables()[index];
+	}
+
+	public RateRuleVariable getRateRuleVariable(String rateRuleVarName) {
+		if (fieldRateRuleVariables != null) {
+			for (int i=0;i<fieldRateRuleVariables.length;i++){
+				if (fieldRateRuleVariables[i].getName().equals(rateRuleVarName)){
+					return fieldRateRuleVariables[i];
+				}
+			}
+		}
+		return null;
+	}
+
+	public void setRateRuleVariables(RateRuleVariable[] rateRuleVars) throws java.beans.PropertyVetoException {
+		RateRuleVariable[] oldValue = fieldRateRuleVariables;
+		fireVetoableChange(PROPERTY_NAME_RATERULEVARIABLES, oldValue, rateRuleVars);
+		fieldRateRuleVariables = rateRuleVars;
+		firePropertyChange(PROPERTY_NAME_RATERULEVARIABLES, oldValue, rateRuleVars);
+
+		RateRuleVariable newValue[] = rateRuleVars;
+		for (int i=0;i<oldValue.length;i++){	
+			oldValue[i].removePropertyChangeListener(this);
+			oldValue[i].removeVetoableChangeListener(this);
+			oldValue[i].setModel(null);
+		}
+		for (int i=0;i<newValue.length;i++){	
+			newValue[i].addPropertyChangeListener(this);
+			newValue[i].addVetoableChangeListener(this);
+			newValue[i].setModel(this);
+		}
+	}
+
+	public RateRuleVariable createRateRuleVariable(Structure structure) throws PropertyVetoException {
+		int count=0;
+		String rateRuleVarName = null;
+		while (true) {
+			rateRuleVarName = "rateRuleVar" + count;	
+			if (getRateRuleVariable(rateRuleVarName) == null) {
+				break;
+			}	
+			count++;
+		}
+		try {
+			RateRuleVariable rateRuleVar = null;
+			ModelParameter modelParameter = new ModelParameter(rateRuleVarName, new Expression(0.0), ROLE_UserDefined, getUnitSystem().getInstance_TBD());
+			if (structure == null) {
+				rateRuleVar = new RateRuleVariable(rateRuleVarName, modelParameter, RateRuleVariable.ROLE_VariableRate);
+			} else {
+				rateRuleVar = new RateRuleVariable(rateRuleVarName, structure, modelParameter, RateRuleVariable.ROLE_VariableRate);
+			}
+			addRateRuleVariable(rateRuleVar);
+			return rateRuleVar;
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+	
+	public String getFreeRateRuleVariableName() {
+		int count=0;
+		String rateRuleVarName = null;
+		while (true) {
+			rateRuleVarName = "r" + count;
+			if (getRateRuleVariable(rateRuleVarName) == null){
+				break;
+			}
+		
+			count++;
+		}
+		return rateRuleVarName;
+	}
+	
+	*/
 }

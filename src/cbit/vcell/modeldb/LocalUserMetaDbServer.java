@@ -42,7 +42,7 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
@@ -373,8 +373,8 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 /**
  * getReactionStepFromRXid method comment.
  */
-public ReactionStep getReactionStep(KeyValue reactionStepKey) throws DataAccessException {
-	return dbServerImpl.getReactionStep(user, reactionStepKey);
+public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
+	return dbServerImpl.getReactionStepAsModel(user, reactionStepKey);
 }
 
 

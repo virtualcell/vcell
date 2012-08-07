@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -34,6 +35,7 @@ import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -113,11 +115,11 @@ public void deleteVersionable(Connection con, User user, VersionableType vType, 
  * @return cbit.vcell.model.Diagram
  * @param rset java.sql.ResultSet
  */
-private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset) throws SQLException, DataAccessException {
+private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset, StructureTopology structureTopology) throws SQLException, DataAccessException {
 
 	KeyValue structKey = new KeyValue(rset.getBigDecimal(diagramTable.structRef.toString()));
 	Diagram diagram = diagramTable.getDiagram(rset,log);
-	diagram.setStructure(reactStepDB.getStructureHeirarchy(dbc, con,structKey));
+	diagram.setStructure(reactStepDB.getStructure(dbc, con,structKey));
 	
 	return diagram;
 }
@@ -126,7 +128,7 @@ private Diagram getDiagram(QueryHashtable dbc, Connection con,ResultSet rset) th
 /**
  * getModels method comment.
  */
-private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey) throws SQLException, DataAccessException {
+private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Connection con,KeyValue modelKey, StructureTopology structureTopology) throws SQLException, DataAccessException {
 	//log.print("ModelDbDriver.getDiagramsFromModel(modelKey=" + modelKey + ")");
 	String sql;
 	
@@ -145,7 +147,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 		// get all objects
 		//
 		while (rset.next()) {
-			Diagram diagram = getDiagram(dbc, con,rset);
+			Diagram diagram = getDiagram(dbc, con,rset, structureTopology);
 			diagramList.addElement(diagram);
 		}
 	} finally {
@@ -215,15 +217,18 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		// set structures for this model
 		//
+		StructureTopology structureTopology = model.getStructureTopology();
 		Structure structures[] = reactStepDB.getStructuresFromModel(dbc, con,modelKey);
 		if (structures!=null && structures.length>0){
 			model.setStructures(structures);
 		}
+		HashMap<KeyValue, KeyValue> structureParentMap = reactStepDB.getStructureParentMapByModel(dbc, con, modelKey);
+		ReactStepDbDriver.populateStructureTopology(model, structureParentMap);
 
 		//
 		// set species for this model
 		//
-		SpeciesContext speciesContexts[] = getSpeciesContextFromModel(dbc, con,user,modelKey);
+		SpeciesContext speciesContexts[] = getSpeciesContextFromModel(dbc, con,user,modelKey, structureTopology);
 		if (speciesContexts!=null){
 			Vector<Species> speciesList = new Vector<Species>();
 			for (int i=0;i<speciesContexts.length;i++){
@@ -272,8 +277,8 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 							//
 							if (reactSteps[i].getStructure().getName().equals(speciesContext.getStructure().getName()) ||
 								(reactSteps[i].getStructure() instanceof Membrane &&
-									(((Membrane)reactSteps[i].getStructure()).getInsideFeature().getName().equals(speciesContext.getStructure().getName()) ||
-									 ((Membrane)reactSteps[i].getStructure()).getOutsideFeature().getName().equals(speciesContext.getStructure().getName())))) {
+									(structureTopology.getInsideFeature((Membrane)reactSteps[i].getStructure()).getName().equals(speciesContext.getStructure().getName()) ||
+									 structureTopology.getOutsideFeature((Membrane)reactSteps[i].getStructure()).getName().equals(speciesContext.getStructure().getName())))) {
 								reactSteps[i].addCatalyst(speciesContext);
 								log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
 							}else{
@@ -301,7 +306,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		// add diagrams for this model
 		//
-		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey);
+		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey, structureTopology);
 		model.setDiagrams(diagrams);
 		
 		return model;
@@ -383,7 +388,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	//
 	// add objects corresponding to foreign keys
 	//
-	Structure structure = reactStepDB.getStructureHeirarchy(dbc, con,structKey);
+	Structure structure = reactStepDB.getStructure(dbc, con,structKey);
 	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
 	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure);
 
@@ -401,7 +406,7 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
  * @return cbit.vcell.model.SpeciesContext
  * @param speciesContextID cbit.sql.KeyValue
  */
-private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connection con,User user, KeyValue modelKey) throws SQLException, DataAccessException {
+private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connection con,User user, KeyValue modelKey, StructureTopology structureTopology) throws SQLException, DataAccessException {
 	if (user == null || modelKey == null) {
 		throw new IllegalArgumentException("Improper parameters for getSpeciesContextFromModel");
 	}
@@ -501,6 +506,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	//
 	// make sure all species are in the database and the hashtable
 	//
+	StructureTopology structureTopology = model.getStructureTopology();
 	Species speciesArray[] = model.getSpecies();
 	for (int i=0;i<speciesArray.length;i++){
 		KeyValue speciesKey = null;//speciesArray[i].getKey();
@@ -523,7 +529,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 		Structure structure = (Structure) structures[i];
 		KeyValue structureKey = null;
 		if (hash.getDatabaseKey(structure) == null) {
-			structureKey = reactStepDB.insertStructure(hash,con,structure);
+			structureKey = reactStepDB.insertStructure(hash,con,structure, structureTopology);
 		}
 		KeyValue linkKey = getNewKey(con);
 		insertModelStructLinkSQL(con, linkKey, newVersion.getVersionKey()/*modelKey*/, hash.getDatabaseKey(structure));
@@ -547,7 +553,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	for (int i=0;i<reactionSteps.length;i++){
 		ReactionStep rs = reactionSteps[i];
 		if (hash.getDatabaseKey(rs) == null){
-			reactStepDB.insertReactionStep(hash,con,user,rs,newVersion.getVersionKey());
+			reactStepDB.insertReactionStep(hash,con,user,rs,newVersion.getVersionKey(), structureTopology);
 		}
 	}
 

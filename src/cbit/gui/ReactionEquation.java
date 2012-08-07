@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -84,7 +80,7 @@ private void computeEquationString() {
 	ReactionParticipant[] reactantParticipants = reactionStep.getReactionParticipants();
 	ArrayList<ReactionParticipant> reactantList = new ArrayList<ReactionParticipant>();
 	ArrayList<ReactionParticipant> productList = new ArrayList<ReactionParticipant>();
-	if (reactionStep instanceof SimpleReaction) {
+//	if (reactionStep instanceof SimpleReaction) {
 		for (ReactionParticipant rp : reactantParticipants) {
 			if (rp instanceof Reactant) {
 				reactantList.add(rp);
@@ -92,20 +88,21 @@ private void computeEquationString() {
 				productList.add(rp);
 			}
 		}
-	} else {
-		Membrane membrane = (Membrane) ((FluxReaction)reactionStep).getStructure();
-		for (ReactionParticipant rp : reactantParticipants) {
-			if (rp instanceof Flux) {
-				Flux flux = (Flux)rp;
-				Feature scf = (Feature) flux.getSpeciesContext().getStructure();
-				if (membrane.getInsideFeature() == scf) {
-					productList.add(rp);
-				} else {
-					reactantList.add(rp);
-				}
-			}
-		}
-	}
+//	} else {
+//		Membrane membrane = (Membrane) ((FluxReaction)reactionStep).getStructure();
+//		StructureTopology structTopology = reactionStep.getModel().getStructureTopology();
+//		for (ReactionParticipant rp : reactantParticipants) {
+//			if (rp instanceof Flux) {
+//				Flux flux = (Flux)rp;
+//				Feature scf = (Feature) flux.getSpeciesContext().getStructure();
+//				if (structTopology.getInsideFeature(membrane) == scf) {
+//					productList.add(rp);
+//				} else {
+//					reactantList.add(rp);
+//				}
+//			}
+//		}
+//	}
 	StringBuffer sb = new StringBuffer();
 	for (ReactionParticipant r : reactantList) {
 		if (sb.length() > 0) {
@@ -181,11 +178,11 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 				speciesContextMap.put(var, sc);
 			}
 		}
-		if (reactionStep instanceof SimpleReaction) {
+//		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Reactant(null,(SimpleReaction) reactionStep, sc, stoichi));
-		} else if (reactionStep instanceof FluxReaction) {
-			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
-		}
+//		} else if (reactionStep instanceof FluxReaction) {
+//			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
+//		}
 	}
 	st = new StringTokenizer(rightHand, "+");
 	while (st.hasMoreElements()) {
@@ -220,11 +217,11 @@ public static ReactionParticipant[] parseReaction(ReactionStep reactionStep, Mod
 				speciesContextMap.put(var, sc);
 			}
 		}
-		if (reactionStep instanceof SimpleReaction) {
+//		if (reactionStep instanceof SimpleReaction) {
 			rplist.add(new Product(null,(SimpleReaction) reactionStep, sc, stoichi));
-		} else if (reactionStep instanceof FluxReaction) {
-			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
-		}
+//		} else if (reactionStep instanceof FluxReaction) {
+//			rplist.add(new Flux(null, (FluxReaction) reactionStep, sc));
+//		}
 	}
 	return rplist.toArray(new ReactionParticipant[0]);
 }

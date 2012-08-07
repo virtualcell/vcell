@@ -24,12 +24,9 @@ import cbit.vcell.model.ReactionStep;
 @SuppressWarnings("serial")
 public class ReactionElectricalPropertiesPanel extends javax.swing.JPanel {
 	private Kinetics fieldKinetics = null;
-	private javax.swing.JLabel ivjChargeValenceTitleLabel = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private Kinetics ivjkinetics1 = null;
-	private ChargeValenceComboBoxModel ivjChargeValenceComboBoxModel1 = null;
-	private javax.swing.JComboBox ivjChargeValenceComboBox = null;
 	private ReactionStep ivjReactionStep1 = null;
 	private javax.swing.JCheckBox ivjCurrentCheckbox = null;
 	private javax.swing.JCheckBox ivjMolecularCheckbox = null;
@@ -158,23 +155,6 @@ private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 /**
- * connEtoM1:  (ReactionElectricalPropertiesPanel.initialize() --> JComboBox1.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1() {
-	try {
-		// user code begin {1}
-		// user code end
-		getChargeValenceComboBox().setModel(getChargeValenceComboBoxModel1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
  * connEtoM11:  (MolecularCheckbox.item.itemStateChanged(java.awt.event.ItemEvent) --> ReactionStep1.physicsOptions)
  * @param arg1 java.awt.event.ItemEvent
  */
@@ -206,24 +186,6 @@ private void connEtoM12(java.awt.event.ItemEvent arg1) {
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		connEtoC5(ivjExc);
-	}
-}
-/**
- * connEtoM6:  (kinetics1.this --> ChargeValenceComboBoxModel1.kinetics)
- * @param value cbit.vcell.model.Kinetics
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(Kinetics value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getChargeValenceComboBoxModel1().setKinetics(getkinetics1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
 	}
 }
 /**
@@ -299,7 +261,6 @@ private void connPtoP2SetTarget() {
  */
 private void enableControls(Kinetics kinetics) {
 	Kinetics kt = kinetics;
-	boolean bEnableValence = true;
 	boolean bEnableMolecular = true;
 	boolean bEnableCurrent = true;
 
@@ -309,88 +270,13 @@ private void enableControls(Kinetics kinetics) {
 		}else{
 			bEnableMolecular = false;
 		}	
-		if (!getMolecularCheckbox().isSelected() && getCurrentCheckbox().isSelected() &&
-			kt.getKineticsDescription().isElectrical() && !kt.getKineticsDescription().needsValence()){
-			bEnableValence = false;
-		}
-		if (getMolecularCheckbox().isSelected() && !getCurrentCheckbox().isSelected()){
-			bEnableValence = false;
-		}
 	}else{
 		bEnableCurrent = false;
 		bEnableMolecular = false;
-		bEnableValence = false;
 	}
 	
-	getChargeValenceTitleLabel().setEnabled(bEnableValence);
-	getChargeValenceComboBox().setEnabled(bEnableValence);
 	getMolecularCheckbox().setEnabled(bEnableMolecular);
 	getCurrentCheckbox().setEnabled(bEnableCurrent);
-}
-/**
- * Return the JComboBox1 property value.
- * @return javax.swing.JComboBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getChargeValenceComboBox() {
-	if (ivjChargeValenceComboBox == null) {
-		try {
-			ivjChargeValenceComboBox = new javax.swing.JComboBox();
-			ivjChargeValenceComboBox.setName("ChargeValenceComboBox");
-			ivjChargeValenceComboBox.setPreferredSize(new java.awt.Dimension(40, 23));
-			ivjChargeValenceComboBox.setMaximumRowCount(10);
-			ivjChargeValenceComboBox.setMinimumSize(new java.awt.Dimension(40, 23));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjChargeValenceComboBox;
-}
-/**
- * Return the ChargeValenceComboBoxModel1 property value.
- * @return cbit.vcell.model.gui.ChargeValenceComboBoxModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ChargeValenceComboBoxModel getChargeValenceComboBoxModel1() {
-	if (ivjChargeValenceComboBoxModel1 == null) {
-		try {
-			ivjChargeValenceComboBoxModel1 = new ChargeValenceComboBoxModel();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjChargeValenceComboBoxModel1;
-}
-/**
- * Return the ChargeValenceTitleLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getChargeValenceTitleLabel() {
-	if (ivjChargeValenceTitleLabel == null) {
-		try {
-			ivjChargeValenceTitleLabel = new javax.swing.JLabel();
-			ivjChargeValenceTitleLabel.setName("ChargeValenceTitleLabel");
-			ivjChargeValenceTitleLabel.setText("charge valence:");
-			ivjChargeValenceTitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			ivjChargeValenceTitleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjChargeValenceTitleLabel;
 }
 /**
  * Return the CurrentOnlyRadioButton property value.
@@ -530,23 +416,10 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		add(getCurrentCheckbox(), gbc);
 		
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 3; 
-		gbc.gridy = 0;
-		add(getChargeValenceTitleLabel(), gbc);
-
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 4; 
-		gbc.gridy = 0;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gbc.weightx = 1.0;
-		add(getChargeValenceComboBox(), gbc);
-		
 		setBackground(Color.white);
 		getMolecularCheckbox().setBackground(Color.white);
 		getCurrentCheckbox().setBackground(Color.white);
 		initConnections();
-		connEtoM1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -598,7 +471,6 @@ private void setkinetics1(Kinetics newValue) {
 			Kinetics oldValue = getkinetics1();
 			ivjkinetics1 = newValue;
 			connPtoP2SetSource();
-			connEtoM6(ivjkinetics1);
 			connEtoM7(ivjkinetics1);
 			connEtoC2(ivjkinetics1);
 			firePropertyChange("kinetics", oldValue, newValue);

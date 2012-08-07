@@ -9,6 +9,39 @@ import cbit.vcell.matrix.RationalNumber;
    between nodes. */
 
 public interface Node {
+	public final static String MU = "\u03BC";
+	public final static String SUPER_PLUS  = "\u207A";
+	public final static String SUPER_MINUS = "\u207B";
+	
+	public final static String SUPER_0     = "\u2070";
+	public final static String SUPER_1     = "\u00B9";
+	public final static String SUPER_2     = "\u00B2";
+	public final static String SUPER_3     = "\u00B3";
+	public final static String SUPER_4     = "\u2074";
+	public final static String SUPER_5     = "\u2075";
+	public final static String SUPER_6     = "\u2076";
+	public final static String SUPER_7     = "\u2077";
+	public final static String SUPER_8     = "\u2078";
+	public final static String SUPER_9     = "\u2079";
+	
+	public final static String[] superScripts_0_to_9 = new String[] {
+		SUPER_0,
+		SUPER_1,
+		SUPER_2,
+		SUPER_3,
+		SUPER_4,
+		SUPER_5,
+		SUPER_6,
+		SUPER_7,
+		SUPER_8,
+		SUPER_9
+	};
+
+	public enum UnitTextFormat {
+		plain,
+		unicode,
+		html
+	};
 
   /** This method is called after the node has been made the current
     node.  It indicates that child nodes can now be added to it. */
@@ -36,9 +69,9 @@ public interface Node {
   
   String toInfix(RationalNumber power);
   
-  String toSymbol(RationalNumber power);
+  String toSymbol(RationalNumber power, UnitTextFormat format);
   
   public String toInfix();
   
-  public String toSymbol();
+  public String toSymbol(UnitTextFormat format);
 }

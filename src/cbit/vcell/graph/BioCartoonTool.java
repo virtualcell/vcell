@@ -26,7 +26,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -36,6 +35,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -251,6 +251,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		int counter = 0;
 		Structure currentStruct = pasteToStructure;
 		String copiedStructName = copyFromRxSteps[counter].getStructure().getName();
+		StructureTopology structTopology = copyFromRxSteps[counter].getModel().getStructureTopology();
 		IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 		IdentityHashMap<SpeciesContext, SpeciesContext> speciesContextHash = new IdentityHashMap<SpeciesContext, SpeciesContext>();
 		Vector<Issue> issueVector = new Vector<Issue>();
@@ -285,10 +286,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				Structure pasteToStruct = currentStruct;
 				if(toRxnStruct instanceof Membrane){
 					Membrane oldMembr = (Membrane)fromRxnStruct;
-					if(copyFromRxParticipantArr[i].getStructure().getName().equals(oldMembr.getOutsideFeature().getName())){
-						pasteToStruct = ((Membrane)currentStruct).getOutsideFeature();
-					}else if(copyFromRxParticipantArr[i].getStructure().getName().equals(oldMembr.getInsideFeature().getName())){
-						pasteToStruct = ((Membrane)currentStruct).getInsideFeature();
+					if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getOutsideFeature(oldMembr).getName())){
+						pasteToStruct = (structTopology.getOutsideFeature((Membrane)currentStruct));
+					}else if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
+						pasteToStruct = structTopology.getInsideFeature((Membrane)currentStruct);
 					}
 				}
 				// this adds the speciesContexts and species (if any) to the model)
@@ -306,19 +307,17 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					newReactionStep.addReactionParticipant(new Product(null, (SimpleReaction)newReactionStep, newSc, copyFromRxParticipantArr[i].getStoichiometry()));
 				} else if (copyFromRxParticipantArr[i] instanceof Catalyst) {
 					newReactionStep.addCatalyst(newSc);
-				} else if (copyFromRxParticipantArr[i] instanceof Flux) {
-					fluxCarrierSp = newSc.getSpecies(); 
 				}
 			}
 
-			// If 'newReactionStep' is a fluxRxn, set its fluxCarrier
-			if (newReactionStep instanceof FluxReaction) {
-				if (fluxCarrierSp != null) {
-					((FluxReaction)newReactionStep).setFluxCarrier(fluxCarrierSp, pasteToModel);
-				} else {
-					throw new RuntimeException("Could not set FluxCarrier species for the flux reaction to be pasted");
-				}
-			}
+//			// If 'newReactionStep' is a fluxRxn, set its fluxCarrier
+//			if (newReactionStep instanceof FluxReaction) {
+//				if (fluxCarrierSp != null) {
+//					((FluxReaction)newReactionStep).setFluxCarrier(fluxCarrierSp, pasteToModel);
+//				} else {
+//					throw new RuntimeException("Could not set FluxCarrier species for the flux reaction to be pasted");
+//				}
+//			}
 
 			// For each kinetic parameter expression for new kinetics, replace the proxyParams from old kinetics with proxyParams in new kinetics
 			// i.e., if the proxyParams are speciesContexts, replace with corresponding speciesContext in newReactionStep;
@@ -394,10 +393,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 								newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(toRxnStruct.getStructureSize().getName()));
 							} else {
 								if (fromRxnStruct instanceof Membrane) {
-									if (str.equals(((Membrane)fromRxnStruct).getOutsideFeature())) {
-										newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)toRxnStruct).getOutsideFeature().getStructureSize().getName()));
-									} else if (str.equals(((Membrane)fromRxnStruct).getInsideFeature())) {
-										newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(((Membrane)toRxnStruct).getInsideFeature().getStructureSize().getName()));
+									if (str.equals(structTopology.getOutsideFeature((Membrane)fromRxnStruct))) {
+										newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(structTopology.getOutsideFeature((Membrane)toRxnStruct).getStructureSize().getName()));
+									} else if (str.equals(structTopology.getInsideFeature((Membrane)fromRxnStruct))) {
+										newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(structTopology.getInsideFeature((Membrane)toRxnStruct).getStructureSize().getName()));
 									}
 								}
 							}
@@ -490,9 +489,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 
 			if(!copiedStructName.equals(fromRxnStruct.getName())){
 				if(currentStruct instanceof Feature){
-					currentStruct = ((Feature)currentStruct).getMembrane();
+					currentStruct = structTopology.getMembrane((Feature)currentStruct);
 				}else if (currentStruct instanceof Membrane){
-					currentStruct = ((Membrane)currentStruct).getInsideFeature();
+					currentStruct = structTopology.getInsideFeature((Membrane)currentStruct);
 				}
 			}
 			copiedStructName = fromRxnStruct.getName();

@@ -30,6 +30,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
@@ -138,7 +139,7 @@ public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_UNIT:{
-			return String.class;
+			return VCUnitDefinition.class;
 		}
 		case COLUMN_VALUE:{
 			return ScopedExpression.class;
@@ -225,7 +226,7 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_UNIT:{
 				if (parameter.getUnitDefinition()!=null){
-					return parameter.getUnitDefinition().getSymbol();
+					return parameter.getUnitDefinition();
 				}else{
 					return "null";
 				}

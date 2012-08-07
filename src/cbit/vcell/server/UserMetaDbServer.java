@@ -289,7 +289,7 @@ BigString getMathModelXML(KeyValue key) throws DataAccessException, java.rmi.Rem
 org.vcell.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.model.ReactionStep getReactionStep(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
+public cbit.vcell.model.Model getReactionStepAsModel(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
 
 
 public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException, java.rmi.RemoteException;

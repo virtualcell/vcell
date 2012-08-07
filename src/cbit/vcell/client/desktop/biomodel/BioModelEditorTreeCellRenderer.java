@@ -132,9 +132,9 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		case REACTION_DIAGRAM_NODE:
 	    			icon = VCellIcons.diagramIcon;
 	    			break;
-	    		case STRUCTURE_DIAGRAM_NODE:
-	    			icon = VCellIcons.structureIcon;
-	    			break;
+//	    		case STRUCTURE_DIAGRAM_NODE:
+//	    			icon = VCellIcons.structureIcon;
+//	    			break;
 	    		case GEOMETRY_NODE:
 	    			icon = VCellIcons.geometryIcon;
 	    			break;

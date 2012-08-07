@@ -28,7 +28,6 @@ import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.NodeReference;
@@ -139,15 +138,16 @@ public class ReactionCartoon extends ModelCartoon {
 		refreshAll();
 	}
 
-	private static Integer getStructureLevel(Structure s) {
-		Structure s0 = s;
-		int level = 0;
-		while (s0 != null) {
-			level += 1;
-			s0 = s0.getParentStructure();
-		}
-		return level;
-	}
+//	private static Integer getStructureLevel(Structure s) {
+//		Structure s0 = s;
+//		int level = 0;
+//		while (s0 != null) {
+//			level += 1;
+//			s0 = s0.getParentStructure();
+//		}
+//		return level;
+//	}
+
 	@Override
 	public void refreshAll() {
 		try {
@@ -160,11 +160,11 @@ public class ReactionCartoon extends ModelCartoon {
 			List<ReactionContainerShape> reactionContainerShapeList = 
 				new ArrayList<ReactionContainerShape>();
 			List<Structure> structureList = new ArrayList<Structure>(getStructureSuite().getStructures());
-			Collections.sort(structureList, new Comparator<Structure>() {
-				public int compare(Structure o1, Structure o2) {
-					 return getStructureLevel(o1).compareTo(getStructureLevel(o2));
-				}
-			});
+//			Collections.sort(structureList, new Comparator<Structure>() {
+//				public int compare(Structure o1, Structure o2) {
+//					 return getStructureLevel(o1).compareTo(getStructureLevel(o2));
+//				}
+//			});
 			// create all ReactionContainerShapes (one for each Structure)
 			for(Structure structure : structureList) {
 				if (structure instanceof Membrane) {
@@ -186,8 +186,7 @@ public class ReactionCartoon extends ModelCartoon {
 					reactionContainerShapeList.add(membraneShape);
 				}else if (structure instanceof Feature){
 					Feature feature = (Feature) structure;
-					ReactionContainerShape featureShape = 
-						(ReactionContainerShape) getShapeFromModelObject(feature);
+					ReactionContainerShape featureShape = (ReactionContainerShape) getShapeFromModelObject(feature);
 					if (featureShape == null) {
 						featureShape = new ReactionContainerShape(feature, structureSuite, this);
 						addShape(featureShape);
@@ -211,13 +210,11 @@ public class ReactionCartoon extends ModelCartoon {
 			unwantedShapes.remove(containerShape);
 			// add all species context shapes within the structures
 			for(Structure structure : getStructureSuite().getStructures()) {
+				ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
 				structure.removePropertyChangeListener(this);
 				structure.addPropertyChangeListener(this);
-				ReactionContainerShape reactionContainerShape = 
-					(ReactionContainerShape) getShapeFromModelObject(structure);
 				for(SpeciesContext structSpeciesContext : getModel().getSpeciesContexts(structure)) {
-					SpeciesContextShape ss = 
-						(SpeciesContextShape) getShapeFromModelObject(structSpeciesContext);
+					SpeciesContextShape ss = (SpeciesContextShape) getShapeFromModelObject(structSpeciesContext);
 					if (ss == null) {
 						ss = new SpeciesContextShape(structSpeciesContext, this);
 						ss.truncateLabelName(false);
@@ -241,31 +238,23 @@ public class ReactionCartoon extends ModelCartoon {
 				reactionStep.addPropertyChangeListener(this);
 				Structure structure = reactionStep.getStructure();
 				if(getStructureSuite().areReactionsShownFor(structure)) {
-					ReactionContainerShape reactionContainerShape = 
-						(ReactionContainerShape) getShapeFromModelObject(structure);
+					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
 					if(reactionContainerShape == null) {
 						System.out.println("Reaction container shape is null for structure " + structure +
 								" for reaction step " + reactionStep);
 					}
-					ReactionStepShape reactionStepShape =
-						(ReactionStepShape) getShapeFromModelObject(reactionStep);
+					ReactionStepShape reactionStepShape = (ReactionStepShape) getShapeFromModelObject(reactionStep);
 					if (reactionStepShape == null) {
 						if (reactionStep instanceof SimpleReaction) {
-							reactionStepShape = new SimpleReactionShape(
-									(SimpleReaction) reactionStep, this);
+							reactionStepShape = new SimpleReactionShape((SimpleReaction) reactionStep, this);
 						} else if (reactionStep instanceof FluxReaction) {
-							reactionStepShape = new FluxReactionShape(
-									(FluxReaction) reactionStep, this);
+							reactionStepShape = new FluxReactionShape((FluxReaction) reactionStep, this);
 						} else {
-							throw new RuntimeException(
-									"unknown type of ReactionStep '"
-									+ reactionStep.getClass()
-									.toString());
+							throw new RuntimeException("unknown type of ReactionStep '"	+ reactionStep.getClass().toString());
 						}
 						addShape(reactionStepShape);
 						reactionStep.addPropertyChangeListener(this);
-						reactionStepShape.getSpaceManager().setRelPos(
-								reactionContainerShape.getRandomPosition());
+						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 						reactionContainerShape.addChildShape(reactionStepShape);
 						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 					}
@@ -279,46 +268,30 @@ public class ReactionCartoon extends ModelCartoon {
 						Structure reactionStructure = reactionStep.getStructure();
 						if(getStructureSuite().getStructures().contains(speciesStructure) &&
 								getStructureSuite().areReactionsShownFor(reactionStructure)) {
-							SpeciesContext speciesContext = 
-								getModel().getSpeciesContext(participant.getSpecies(),
-										speciesStructure);
+							SpeciesContext speciesContext = getModel().getSpeciesContext(participant.getSpecies(), speciesStructure);
 							// add speciesContextShapes that are not in this structure, but are referenced from the reactionParticipants
 							// these are only when reactionParticipants are from features that are outside of the membrane being displayed
 							SpeciesContextShape speciesContextShape = 
 								(SpeciesContextShape) getShapeFromModelObject(speciesContext);
 							if (speciesContextShape == null) {
-								speciesContextShape = new SpeciesContextShape(
-										speciesContext, this);
+								speciesContextShape = new SpeciesContextShape(speciesContext, this);
 								speciesContextShape.truncateLabelName(false);
 								reactionContainerShape.addChildShape(speciesContextShape);
 								addShape(speciesContextShape);
-								speciesContextShape.getSpaceManager().setRelPos(
-										reactionContainerShape.getRandomPosition());
+								speciesContextShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 							}
 							speciesContextShape.refreshLabel();
 							unwantedShapes.remove(speciesContextShape);
-							ReactionParticipantShape reactionParticipantShape = 
-								(ReactionParticipantShape) getShapeFromModelObject(participant);
+							ReactionParticipantShape reactionParticipantShape = (ReactionParticipantShape) getShapeFromModelObject(participant);
 							if (reactionParticipantShape == null) {
 								if (participant instanceof Reactant) {
-									reactionParticipantShape = 
-										new ReactantShape((Reactant) participant, reactionStepShape, 
-												speciesContextShape, this);
+									reactionParticipantShape = new ReactantShape((Reactant) participant, reactionStepShape, speciesContextShape, this);
 								} else if (participant instanceof Product) {
-									reactionParticipantShape = 
-										new ProductShape((Product) participant, reactionStepShape, 
-												speciesContextShape, this);
+									reactionParticipantShape = new ProductShape((Product) participant, reactionStepShape, speciesContextShape, this);
 								} else if (participant instanceof Catalyst) {
-									reactionParticipantShape = 
-										new CatalystShape((Catalyst) participant, reactionStepShape, 
-												speciesContextShape, this);
-								} else if (participant instanceof Flux) {
-									reactionParticipantShape = 
-										new FluxShape((Flux) participant, reactionStepShape, speciesContextShape, 
-												this);
+									reactionParticipantShape = new CatalystShape((Catalyst) participant, reactionStepShape, speciesContextShape, this);
 								} else {
-									throw new RuntimeException("unsupported ReactionParticipant " + 
-											participant.getClass());
+									throw new RuntimeException("unsupported ReactionParticipant " + participant.getClass());
 								}
 								addShape(reactionParticipantShape);
 							}

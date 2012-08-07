@@ -69,7 +69,7 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		REACTIONS_NODE("Reactions"),
 		REACTION_DIAGRAM_NODE("Reaction Diagram"),
 		STRUCTURES_NODE("Structures"),
-		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
+//		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
 		SPECIES_NODE("Species"),
 		
 		PATHWAY_DIAGRAM_NODE("Pathway Diagram"),

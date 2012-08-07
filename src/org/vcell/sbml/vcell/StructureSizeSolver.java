@@ -11,25 +11,29 @@
 package org.vcell.sbml.vcell;
 import java.util.Enumeration;
 
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.util.TokenMangler;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Structure;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitDefinition;
+
+import cbit.vcell.constraints.AbstractConstraint;
+import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.GeneralConstraint;
-import cbit.vcell.constraints.ConstraintContainerImpl;
-import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.SimpleBounds;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 3:03:22 PM)
@@ -48,16 +52,18 @@ public static void updateAbsoluteStructureSizes(SimulationContext simContext, St
 	StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
-
+		StructureTopology structTopology = simContext.getModel().getStructureTopology();
 		for (int i = 0; i < structMappings.length; i++){
 			if (structMappings[i] instanceof MembraneMapping){
 				MembraneMapping membraneMapping = (MembraneMapping)structMappings[i];
 
-				String membraneSizeName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getName()+"_size");
+				Membrane membrane = membraneMapping.getMembrane();
+				String membraneSizeName = TokenMangler.mangleToSName(membrane.getName()+"_size");
 				ccImpl.addSimpleBound(new SimpleBounds(membraneSizeName,new RealInterval(0,100000),AbstractConstraint.PHYSICAL_LIMIT,"definition"));
 
-				String volFractName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_volFract");
-				String svRatioName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_svRatio");
+				Feature insideFeature = structTopology.getInsideFeature(membrane);
+				String volFractName = TokenMangler.mangleToSName(insideFeature.getName()+"_volFract");
+				String svRatioName = TokenMangler.mangleToSName(insideFeature.getName()+"_svRatio");
 				
 
 				cbit.vcell.mapping.StructureMapping.StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
@@ -72,10 +78,9 @@ public static void updateAbsoluteStructureSizes(SimulationContext simContext, St
 				// EC eclosing cyt, which contains er and golgi
 				// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size == 0"
 				//
-				Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 				Expression sumOfInsideVolumeExp = new Expression(0.0);
 				for (int j = 0; j < structMappings.length; j++){
-					if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(insideFeature)) {
+					if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), insideFeature)) {
 						Feature childFeatureOfInside = ((FeatureMapping)structMappings[j]).getFeature();
 						sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfInside.getName()+"_size")));
 					}
@@ -88,10 +93,10 @@ public static void updateAbsoluteStructureSizes(SimulationContext simContext, St
 				// EC eclosing cyt, which contains er and golgi
 				// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size) == 0
 				//
-				Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
+				Feature outsideFeature = structTopology.getOutsideFeature(membrane);
 				Expression sumOfParentVolumeExp = new Expression(0.0);
 				for (int j = 0; j < structMappings.length; j++){
-					if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(outsideFeature)){
+					if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), outsideFeature)){
 						Feature childFeatureOfParent = ((FeatureMapping)structMappings[j]).getFeature();
 						sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
 					}
@@ -207,16 +212,24 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 	
 	StructureMapping[] myStructMappings = simContext.getGeometryContext().getStructureMappings(geometryClass);
 	if (myStructMappings != null && myStructMappings.length == 1) {
-		try {
-			myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
-			return;
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
-		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+		// if the unitSizeParameter is dimensionless, then features are mapped to SubVolumes or Membranes are mapped to surfaces (should sum to 1)
+		boolean bDimensionless = myStructMappings[0].getUnitSizeParameter().getUnitDefinition().isEquivalent(simContext.getModel().getUnitSystem().getInstance_DIMENSIONLESS());
+		if (bDimensionless){
+			try {
+				myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
+				return;
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			}
 		}
+	}
+	if (myStructMappings!=null && myStructMappings.length==0){
+		// nothing to solve, there are no mappings for this geometryClass
+		return;
 	}
 	StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
@@ -224,6 +237,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 
 		Structure struct = null;
 		Expression totalVolExpr = new Expression(0.0);
+		StructureTopology structureTopology = simContext.getModel().getStructureTopology();
 		for (int i = 0; i < structMappings.length; i++){
 			if (structMappings[i].getGeometryClass()!=geometryClass){
 				continue;
@@ -238,12 +252,13 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			if (structMappings[i] instanceof MembraneMapping){
 				MembraneMapping membraneMapping = (MembraneMapping)structMappings[i];
 
-				String membraneSizeName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getName()+"_size");
+				Membrane membrane = membraneMapping.getMembrane();
+				String membraneSizeName = TokenMangler.mangleToSName(membrane.getName()+"_size");
 				ccImpl.addSimpleBound(new SimpleBounds(membraneSizeName,new RealInterval(0,100000),AbstractConstraint.PHYSICAL_LIMIT,"definition"));
+				Feature insideFeature = structureTopology.getInsideFeature(membrane);
 
-				String volFractName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_volFract");
-				String svRatioName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_svRatio");
-				
+				String volFractName = TokenMangler.mangleToSName(insideFeature.getName()+"_volFract");
+				String svRatioName = TokenMangler.mangleToSName(insideFeature.getName()+"_svRatio");
 
 				StructureMapping.StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
 				double volFractValue = volFractParameter.getExpression().evaluateConstant();
@@ -259,10 +274,9 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 					// EC eclosing cyt, which contains er and golgi
 					// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size == 0"
 					//
-					Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 					Expression sumOfInsideVolumeExp = new Expression(0.0);
 					for (int j = 0; j < structMappings.length; j++){
-						if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(insideFeature)) {
+						if (structMappings[j] instanceof FeatureMapping && structureTopology.enclosedBy(structMappings[j].getStructure(),insideFeature)) {
 							Feature childFeatureOfInside = ((FeatureMapping)structMappings[j]).getFeature();
 							if (simContext.getGeometryContext().getStructureMapping(childFeatureOfInside).getGeometryClass() == geometryClass) {
 								sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfInside.getName()+"_size")));
@@ -277,10 +291,10 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 					// EC eclosing cyt, which contains er and golgi
 					// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size) == 0
 					//
-					Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
+					Feature outsideFeature = structureTopology.getOutsideFeature(membrane);
 					Expression sumOfParentVolumeExp = new Expression(0.0);
 					for (int j = 0; j < structMappings.length; j++){
-						if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(outsideFeature)){
+						if (structMappings[j] instanceof FeatureMapping && structureTopology.enclosedBy(structMappings[j].getStructure(),outsideFeature)){
 							Feature childFeatureOfParent = ((FeatureMapping)structMappings[j]).getFeature();
 							if (simContext.getGeometryContext().getStructureMapping(childFeatureOfParent).getGeometryClass() == geometryClass) {
 								sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
@@ -421,13 +435,15 @@ public static void updateRelativeStructureSizes(SimulationContext simContext) th
 	StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		// This is rewritten in Feb 2008. Siblings and children are correctly taken into account when calculating the volume fractions.
+		StructureTopology structTopology = simContext.getModel().getStructureTopology(); 
 		for(int i =0; i< structureMappings.length; i++)
 		{
 			if(structureMappings[i] instanceof MembraneMapping)
 			{
 				//calculate the sum of features' sizes inside this membrane, this is used for calculating both surface volume ratio and volume fraction.
 				double sumOfSubFeatures = 0;
-				Enumeration<Feature> subFeatures = ((MembraneMapping)structureMappings[i]).getMembrane().getInsideFeature().getSubFeatures();
+				Membrane membrane = ((MembraneMapping)structureMappings[i]).getMembrane();
+				Enumeration<Feature> subFeatures = structTopology.getSubFeatures(structTopology.getInsideFeature(membrane));
 				while(subFeatures.hasMoreElements())
 				{
 					Feature feature = subFeatures.nextElement();
@@ -435,10 +451,10 @@ public static void updateRelativeStructureSizes(SimulationContext simContext) th
 				}
 				//calculate the sum of features's sizes inside the membrance's parent feature, this is used for calculating the volume fraction.
 				double sumOfParentMemSubFeatures = 0;
-				Feature parentFeature = ((MembraneMapping)structureMappings[i]).getMembrane().getOutsideFeature();
+				Feature parentFeature = structTopology.getOutsideFeature(membrane);
 				if(parentFeature != null)
 				{
-					Enumeration<Feature> parentSubFeatures = parentFeature.getSubFeatures();
+					Enumeration<Feature> parentSubFeatures = structTopology.getSubFeatures(parentFeature);
 					while(parentSubFeatures.hasMoreElements())
 					{
 						Feature feature = parentSubFeatures.nextElement();

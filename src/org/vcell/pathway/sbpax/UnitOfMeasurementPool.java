@@ -108,12 +108,12 @@ public class UnitOfMeasurementPool {
 
 	public static final String MU = "\u03bc";
 	
-	public static final UnitOfMeasurement MICROMOLAR = addUnit(BASE_URI + "Micromolar", MU + "M");
-	public static final UnitOfMeasurement MOLAR = addUnit(BASE_URI + "Molar", "M");
+//	public static final UnitOfMeasurement MICROMOLAR = addUnit(BASE_URI + "Micromolar", MU + "M");
+//	public static final UnitOfMeasurement MOLAR = addUnit(BASE_URI + "Molar", "M");
 	public static final UnitOfMeasurement MOLE_PER_SECOND = addUnit(BASE_URI + "MolePerSecond", "mol/s");
 	public static final UnitOfMeasurement PH = addUnit(BASE_URI + "PH", "pH");
 	public static final UnitOfMeasurement PER_MOLAR_SECOND = addUnit(BASE_URI + "PerMolarSecond", "M^(-1)*s^(-1)");
-	public static final UnitOfMeasurement PER_SECOND = addUnit(BASE_URI + "PerSecond", "s^(-1)");
-	public static final UnitOfMeasurement SECOND = addUnit(BASE_URI + "Second", "s");
+//	public static final UnitOfMeasurement PER_SECOND = addUnit(BASE_URI + "PerSecond", "s^(-1)");
+//	public static final UnitOfMeasurement SECOND = addUnit(BASE_URI + "Second", "s");
 	
 }

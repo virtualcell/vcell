@@ -15,9 +15,22 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.dictionary.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
+import cbit.vcell.dictionary.DBSpeciesTable;
+import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCMODL;
 /**
  * This type was created in VisualAge.
  */
@@ -90,7 +103,7 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 	ReactionStep rs = null;
 	try {
 		if (reactType.equals(ReactStepTable.REACTTYPE_FLUX)){
-			rs = new FluxReaction(model, (Membrane)structure,key,reactionStepName);
+			rs = new FluxReaction(model, (Membrane)structure, key,reactionStepName);
 		}else if (reactType.equals(ReactStepTable.REACTTYPE_SIMPLE)){
 			rs = new SimpleReaction(model, structure,key,reactionStepName);
 		}
@@ -106,11 +119,6 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 	int valenceValue = rset.getInt(ReactStepTable.table.chargeValence.toString());
 	if (rset.wasNull()){
 		throw new DataAccessException("unexpected null for chargeValence");
-	}
-	try {
-		rs.getChargeCarrierValence().setExpression(new cbit.vcell.parser.Expression(valenceValue));
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
 	}
 
 	//
@@ -156,6 +164,14 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 //		System.out.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
 //	}
 //}
+		try {
+			KineticsParameter chargeValenceParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+			if (chargeValenceParameter!=null){
+				chargeValenceParameter.setExpression(new cbit.vcell.parser.Expression(valenceValue));
+			}
+		}catch (java.beans.PropertyVetoException e){
+			e.printStackTrace(System.out);
+		}
 	}catch (Exception e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -517,7 +533,12 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
 	}
 	try {
-		buffer.append(((int)reactionStep.getChargeCarrierValence().getExpression().evaluateConstant())+",");
+		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+		int valence = 1;
+		if (chargeValenceParameter!=null){
+			valence = (int)chargeValenceParameter.getExpression().evaluateConstant();
+		}
+		buffer.append(valence+",");
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());

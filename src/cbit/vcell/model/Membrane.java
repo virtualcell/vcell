@@ -9,15 +9,13 @@
  */
 
 package cbit.vcell.model;
+
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
-
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
 public class Membrane extends Structure {
-	private Feature insideFeature = null;
-	private Feature outsideFeature = null;
 	private MembraneVoltage fieldMembraneVoltage = null;
 
 	public final static String MEMBRANE_VOLTAGE_REGION_NAME = "SpatialMembraneVoltage";	
@@ -84,20 +82,6 @@ public boolean compareEqual(Matchable obj) {
 		if (!compareEqual0(m)){
 			return false;
 		}
-		if ((getInsideFeature()!=null && m.getInsideFeature()==null) ||
-			(getInsideFeature()==null && m.getInsideFeature()!=null)){
-			return false;
-		}
-		if (getInsideFeature()!=null && !getInsideFeature().getName().equals(m.getInsideFeature().getName())){
-			return false;
-		}
-		if ((getOutsideFeature()!=null && m.getOutsideFeature()==null) ||
-			(getOutsideFeature()==null && m.getOutsideFeature()!=null)){
-			return false;
-		}
-		if (getOutsideFeature()!=null && !getOutsideFeature().getName().equals(m.getOutsideFeature().getName())){
-			return false;
-		}
 		if (!getMembraneVoltage().compareEqual(m.getMembraneVoltage())){
 			return false;
 		}
@@ -105,28 +89,6 @@ public boolean compareEqual(Matchable obj) {
 	}else{
 		return false;
 	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- * @param structure cbit.vcell.model.Structure
- */
-public boolean enclosedBy(Structure parentStructure){
-	if (parentStructure == this){
-		return true;
-	}	
-	return getOutsideFeature().enclosedBy(parentStructure);
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
- */
-public Feature getInsideFeature() {
-	return insideFeature;
 }
 
 
@@ -142,54 +104,30 @@ public MembraneVoltage getMembraneVoltage() {
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Feature
+ * @return java.lang.String
  */
-public Feature getOutsideFeature() {
-	return outsideFeature;
+public String toString() {
+	StringBuffer sb = new StringBuffer();
+	
+	sb.append("Membrane@"+Integer.toHexString(hashCode())+"(name='"+getName());
+	
+	sb.append(")");
+	
+	return sb.toString();
+}
+
+@Override
+public int getDimension() {
+	return 2;
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.model.Structure
- */
-public Structure getParentStructure() {
-	return getOutsideFeature();
+@Override
+public String getTypeName() {
+	return TYPE_NAME_MEMBRANE;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @param insideFeature cbit.vcell.model.Feature
- */
-public void setInsideFeature(Feature insideFeature) {
-	this.insideFeature = insideFeature;
-	if (insideFeature!=null && insideFeature.getMembrane() != this){
-		insideFeature.setMembrane(this);
-	}
-}
-
-/**
- * This method was created by a SmartGuide.
- * @param insideFeature cbit.vcell.model.Feature
- */
-public void setOutsideFeature(Feature outsideFeature) {
-	this.outsideFeature = outsideFeature;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @param structure cbit.vcell.model.Structure
- */
-public void setParentStructure(Structure structure) throws ModelException {
-	String err = checkNewParent(structure);
-	if (err != null) {
-		throw new ModelException(err);
-	}
-	setOutsideFeature((Feature) structure);
-}
-
+/*
 public String checkNewParent(Structure structure) {
 	if (structure instanceof Feature){
 		Feature feature = (Feature)structure;
@@ -208,31 +146,6 @@ public String checkNewParent(Structure structure) {
 	}
 	return null;
 }
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
  */
-public String toString() {
-	StringBuffer sb = new StringBuffer();
-	
-	sb.append("Membrane@"+Integer.toHexString(hashCode())+"(name='"+getName());
-	
-	if (insideFeature != null){ sb.append(", insideFeature = '"+insideFeature.getName()+"'"); }
-	if (outsideFeature != null){ sb.append(", outsideFeature = '"+outsideFeature.getName()+"'"); }
-	sb.append(")");
-	
-	return sb.toString();
-}
 
-@Override
-public int getDimension() {
-	return 2;
-}
-
-
-@Override
-public String getTypeName() {
-	return TYPE_NAME_MEMBRANE;
-}
 }

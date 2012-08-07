@@ -56,9 +56,9 @@ public class SBMLUnitTranslator {
 	private static ArrayList<String> SbmlBaseUnits = new ArrayList<String>();
     static {
 		SbmlBaseUnits.add("ampere");
+		SbmlBaseUnits.add("avogadro");
 		SbmlBaseUnits.add("becquerel");
 		SbmlBaseUnits.add("candela");
-		SbmlBaseUnits.add("Celsius");
 		SbmlBaseUnits.add("coulomb");
 		SbmlBaseUnits.add("dimensionless");
 		SbmlBaseUnits.add("farad");
@@ -224,6 +224,52 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 				System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
 				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " molecules" + unitExponent);
 			} else {
+				if (unit.isMetre()){
+					unitKind = "m";
+					if (unitMultiplier==1){
+						if (unitScale==-3){
+							return vcUnitSystem.getInstance("mm" + unitExponent);
+						}else if (unitScale==-6){
+							return vcUnitSystem.getInstance("um" + unitExponent);
+						}else if (unitScale==-9){
+							return vcUnitSystem.getInstance("nm" + unitExponent);
+						}
+					}
+				}
+				if (unit.isSecond()){
+					unitKind = "s";
+					if (unitMultiplier==1){
+						if (unitScale==-3){
+							return vcUnitSystem.getInstance("ms" + unitExponent);
+						}else if (unitScale==-6){
+							return vcUnitSystem.getInstance("us" + unitExponent);
+						}
+					}else if (unitMultiplier==60 && unitScale==0){
+						return vcUnitSystem.getInstance("minute");
+					}else if (unitMultiplier==3600 && unitScale==0){
+						return vcUnitSystem.getInstance("hour");
+					}else if (unitMultiplier==86400 && unitScale==0){
+						return vcUnitSystem.getInstance("day");
+					}
+				}
+				if (unit.isMole()){
+					unitKind = "mol";
+					if (unitMultiplier==1){
+						if (unitScale==-3){
+							return vcUnitSystem.getInstance("mmol" + unitExponent);
+						}else if (unitScale==-6){
+							return vcUnitSystem.getInstance("umol" + unitExponent);
+						}else if (unitScale==-9){
+							return vcUnitSystem.getInstance("nmol" + unitExponent);
+						}else if (unitScale==-12){
+							return vcUnitSystem.getInstance("pmol" + unitExponent);
+						}
+					}
+				}
+				if (unit.isItem()){
+					unitKind = "molecules";
+				}
+				
 				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + unitKind + unitExponent);
 			}
 		}

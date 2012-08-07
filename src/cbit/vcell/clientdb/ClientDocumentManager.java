@@ -779,18 +779,18 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 
 	public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception {
 		
-		java.io.ByteArrayOutputStream bos = ITextWriter.generateStructureImage(model, resolution);
-		try {
-			bos.flush();
-			bos.writeTo(fos);
-			fos.flush();
-			fos.close();
-			bos.close();
-		} catch (java.io.IOException e) {
-			System.err.println("Unable to print image to file.");
-			e.printStackTrace();
-			throw e;
-		}
+//		java.io.ByteArrayOutputStream bos = ITextWriter.generateStructureImage(model, resolution);
+//		try {
+//			bos.flush();
+//			bos.writeTo(fos);
+//			fos.flush();
+//			fos.close();
+//			bos.close();
+//		} catch (java.io.IOException e) {
+//			System.err.println("Unable to print image to file.");
+//			e.printStackTrace();
+//			throw e;
+//		}
 	}
 
 
@@ -1425,18 +1425,18 @@ public Preference[] getPreferences() throws DataAccessException{
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:10:41 PM)
  */
-public ReactionStep getReactionStep(KeyValue reactionStepKey) throws DataAccessException {
+public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
 	try {
-		ReactionStep rStep = sessionManager.getUserMetaDbServer().getReactionStep(reactionStepKey);
-		if(rStep != null){
+		Model reactionModel = sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
+		if(reactionModel != null){
 			try{
-				rStep = (ReactionStep)BeanUtils.cloneSerializable(rStep);
+				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
 			}catch(Exception e){
 				e.printStackTrace(System.out);
 				throw new DataAccessException(e.getMessage());
 			}
 		}
-		return rStep;
+		return reactionModel;
 		
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);

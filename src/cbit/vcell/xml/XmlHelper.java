@@ -25,8 +25,6 @@ import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sbml.vcell.SBMLSpatialExporter;
-import org.vcell.sbml.vcell.SBMLSpatialImporter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -54,6 +52,8 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.ModelUnitConverter;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.DivideByZeroException;
@@ -182,18 +182,36 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
         throw new XmlParseException("Invalid arguments for exporting SBML.");
     } 
 	if (vcDoc instanceof BioModel) {
-		SimulationContext clonedSimContext = applyOverridesForSBML((BioModel)vcDoc, simContext, simJob);
-		if (!isSpatial) { 
-		    SBMLExporter sbmlExporter = new SBMLExporter(clonedSimContext.getBioModel(), level, version);
-		    sbmlExporter.setSelectedSimContext(clonedSimContext);
-		    sbmlExporter.setSelectedSimulationJob(simJob);
-		    return sbmlExporter.getSBMLFile();
-		} else {
-			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter(clonedSimContext.getBioModel(), level, version);
-			sbmlSpatialExporter.setSelectedSimContext(clonedSimContext);
-			sbmlSpatialExporter.setSelectedSimulationJob(simJob);
-			return sbmlSpatialExporter.getSBMLFile();
-		}
+		
+//		if (!isSpatial) { 
+			try {
+				// create new Biomodel with new (SBML compatible)  unit system
+				// ModelUnitSystem forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLExportUnits();
+				ModelUnitSystem forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
+				BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
+				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
+				SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());
+				SimulationContext clonedSimContext = applyOverridesForSBML(modifiedBiomodel, simContextFromModifiedBioModel, simJob);
+				// extract sim (in simJob) from modified Biomodel, if not null
+				SimulationJob modifiedSimJob = null;
+				if (simJob != null) {
+					Simulation simFromModifiedBiomodel = clonedSimContext.getSimulation(simJob.getSimulation().getName());
+					modifiedSimJob = new SimulationJob(simFromModifiedBiomodel, simJob.getJobIndex(), null);
+				}
+				SBMLExporter sbmlExporter = new SBMLExporter(modifiedBiomodel, level, version, isSpatial);
+				sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
+				sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
+				return sbmlExporter.getSBMLFile();
+			} catch (ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e);
+			}
+//		} else {
+//			SBMLSpatialExporter sbmlSpatialExporter = new SBMLSpatialExporter(clonedSimContext.getBioModel(), level, version);
+//			sbmlSpatialExporter.setSelectedSimContext(clonedSimContext);
+//			sbmlSpatialExporter.setSelectedSimulationJob(simJob);
+//			return sbmlSpatialExporter.getSBMLFile();
+//		}
 	} else if (vcDoc instanceof MathModel) {
 		try {
 			return MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version);
@@ -404,13 +422,13 @@ public static VCDocument importSBML(VCLogger vcLogger, XMLSource xmlSource, bool
 		}
 	}
     VCDocument vcDoc = null;
-    if (!bSpatial) {
-		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger);
+//    if (!bSpatial) {
+		SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), vcLogger, bSpatial);
 		vcDoc = sbmlImporter.getBioModel();
-    } else {
-    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
-    	vcDoc = sbmlSpatialImporter.getBioModel();
-    }
+//    } else {
+//    	SBMLSpatialImporter sbmlSpatialImporter = new SBMLSpatialImporter(sbmlFile.getAbsolutePath(), vcLogger);
+//    	vcDoc = sbmlSpatialImporter.getBioModel();
+//    }
 
 	vcDoc.refreshDependencies();
     return vcDoc;
@@ -502,12 +520,18 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 
 
 public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {
+	return XMLToBioModel(xmlSource, true, null);
+}
 
-	return XMLToBioModel(xmlSource, true);
+/** @deprecated */
+public static BioModel cloneBioModelWithNewUnitSystem(BioModel origBiomodel, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
+	String biomodelXMLString = bioModelToXML(origBiomodel);
+	XMLSource newXMLSource = new XMLSource(biomodelXMLString);
+	return XMLToBioModel(newXMLSource, true, forcedModelUnitSystem);
 }
 
 
-	static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys) throws XmlParseException {
+	static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
 
 		long l0 = System.currentTimeMillis();
 		BioModel bioModel = null;
@@ -551,6 +575,9 @@ public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseExcepti
 		} else {
 			reader = new XmlReader(printkeys, ns);
 		}
+		if (forcedModelUnitSystem != null) {
+			reader.setForcedModelUnitSystem(forcedModelUnitSystem);
+		} 
 		bioModel = reader.getBioModel(root);
 
 		//long l1 = System.currentTimeMillis();

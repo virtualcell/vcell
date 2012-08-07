@@ -283,10 +283,10 @@ private void updateInterface() {
 		nameTextField.setText(structure.getName());
 		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
 		StructureSize structureSize = structure.getStructureSize();
-		sizeTextField.setText(structureSize.getName() + " [" + structureSize.getUnitDefinition().getSymbol() + "]");
+		sizeTextField.setText(structureSize.getName() + " [" + structureSize.getUnitDefinition().getSymbolUnicode() + "]");
 		if (bMembrane) {
 			MembraneVoltage memVoltage = ((Membrane)structure).getMembraneVoltage();
-			voltageTextField.setText(memVoltage.getName() + " [" + memVoltage.getUnitDefinition().getSymbol() + "]");
+			voltageTextField.setText(memVoltage.getName() + " [" + memVoltage.getUnitDefinition().getSymbolUnicode() + "]");
 		}
 	} else {
 		annotationTextArea.setText(null);

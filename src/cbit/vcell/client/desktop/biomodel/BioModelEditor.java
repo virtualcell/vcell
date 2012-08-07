@@ -629,7 +629,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE) {
+//				|| folderClass == DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE
+				) {
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.PATHWAY_OBJECTS_NODE
@@ -714,6 +715,7 @@ public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager
 	bioModelsNetPanel.setDocumentWindowManager(bioModelWindowManager);
 	getBioModelsNetPropertiesPanel().setDocumentWindowManager(bioModelWindowManager);
 	bioModelPropertiesPanel.setBioModelWindowManager(bioModelWindowManager);
+	bioModelParametersPanel.setBioModelWindowManager(bioModelWindowManager);
 	
 	DatabaseWindowManager dbWindowManager = new DatabaseWindowManager(databaseWindowPanel, bioModelWindowManager.getRequestManager());
 	databaseWindowPanel.setDatabaseWindowManager(dbWindowManager);

@@ -68,9 +68,9 @@ public static BioModel getExampleWithImage() throws Exception {
 	Geometry geo = GeometryTest.getImageExample2D();
 	geo.setName("Image_Geometry_"+Integer.toHexString(((new Random()).nextInt())));
 	SimulationContext sc2 = new SimulationContext(bioModel.getModel(),geo);
-	sc2.getGeometryContext().assignFeature(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("extracellular")),geo.getGeometrySpec().getSubVolume("er"));
-	sc2.getGeometryContext().assignFeature(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("cytosol")),geo.getGeometrySpec().getSubVolume("cytosol"));
-	sc2.getGeometryContext().assignFeature(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("er")),geo.getGeometrySpec().getSubVolume("cytosol"));
+	sc2.getGeometryContext().assignStructure(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("extracellular")),geo.getGeometrySpec().getSubVolume("er"));
+	sc2.getGeometryContext().assignStructure(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("cytosol")),geo.getGeometrySpec().getSubVolume("cytosol"));
+	sc2.getGeometryContext().assignStructure(((cbit.vcell.model.Feature)bioModel.getModel().getStructure("er")),geo.getGeometrySpec().getSubVolume("cytosol"));
 	for (StructureMapping sm : sc2.getGeometryContext().getStructureMappings()){
 		if (sm.getUnitSizeParameter().getExpression()==null){
 			sm.getUnitSizeParameter().setExpression(new Expression(1.0));

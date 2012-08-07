@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -29,6 +30,7 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 			KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),new Expression(0.0),ROLE_ReactionRate,null);
 			KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
 			KineticsParameter kOn = new KineticsParameter(getDefaultParameterName(ROLE_KOn),new Expression(0.0),ROLE_KOn,null);
+			KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
 
 			//user input parameters
 			KineticsParameter bindingRadius = new KineticsParameter(getDefaultParameterName(ROLE_Binding_Radius),new Expression(0.0),ROLE_Binding_Radius,null);
@@ -38,7 +40,7 @@ public class Microscopic_IRRKinetics extends DistributedKinetics {
 			KineticsParameter conc_reactant2 = new KineticsParameter(getDefaultParameterName(ROLE_Concentration_Reactant2),new Expression(0.0),ROLE_Concentration_Reactant2,null);
 			
 			if (reactionStep.getStructure() instanceof Membrane){
-				setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, bindingRadius, kOn, diff_reactant1, diff_reactant2, conc_reactant1, conc_reactant2 });
+				setKineticsParameters(new KineticsParameter[] { rateParm, currentParm, chargeValence, bindingRadius, kOn, diff_reactant1, diff_reactant2, conc_reactant1, conc_reactant2 });
 			}else{
 				throw new RuntimeException("Macroscopic_Irreversible kinetics not supported in a volumetric compartment.");
 			}

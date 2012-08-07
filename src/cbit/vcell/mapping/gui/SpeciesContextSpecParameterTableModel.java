@@ -163,7 +163,7 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_UNIT:{
 				if (parameter.getUnitDefinition()!=null){
-					return parameter.getUnitDefinition().getSymbol();
+					return parameter.getUnitDefinition().getSymbolUnicode();
 				}else{
 					return "null";
 				}

@@ -36,11 +36,11 @@ public class UOMEToVCUnitMapper {
 		vcell2uome.put(vcellUnit, uomeUnit);
 	}
 	
-	static {
-		put(UnitOfMeasurementPool.MICROMOLAR, ModelUnitSystem.UNITSYMBOL_uM);
-		put(UnitOfMeasurementPool.MOLAR, ModelUnitSystem.UNITSYMBOL_M);
-		put(UnitOfMeasurementPool.PER_SECOND, ModelUnitSystem.UNITSYMBOL_per_s);
-		put(UnitOfMeasurementPool.SECOND, ModelUnitSystem.UNITSYMBOL_s);
-	}
+//	static {
+//		put(UnitOfMeasurementPool.MICROMOLAR, ModelUnitSystem.UNITSYMBOL_uM);
+//		put(UnitOfMeasurementPool.MOLAR, ModelUnitSystem.UNITSYMBOL_M);
+//		put(UnitOfMeasurementPool.PER_SECOND, ModelUnitSystem.UNITSYMBOL_per_s);
+//		put(UnitOfMeasurementPool.SECOND, ModelUnitSystem.UNITSYMBOL_s);
+//	}
 	
 }

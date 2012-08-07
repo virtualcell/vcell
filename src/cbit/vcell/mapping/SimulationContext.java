@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -58,6 +57,10 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.AnalysisTask;
@@ -84,6 +87,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
 	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
+	// for rate rule
+	public static final String PROPERTY_NAME_RATERULES = "raterules";
+
 	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
@@ -264,6 +270,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private DataContext dataContext = new DataContext(getNameScope());
 	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimDataConstants.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
 	
+	// rate rules
+	private RateRule[] fieldRateRules = null;
+
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -456,6 +465,7 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
 	}
 	return bioEvent;
 }
+
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -868,6 +878,7 @@ public BioEvent[] getBioEvents() {
 	return fieldBioEvents;
 }
 
+
 /**
  * Gets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask) value.
  * @return The analysisTasks property value.
@@ -1082,7 +1093,7 @@ public OutputFunctionContext getOutputFunctionContext() {
  */
 public Model getModel() {
 	if  (geoContext != null) {
-		return geoContext.getModel();
+	return geoContext.getModel();
 	} else {
 		return null;
 	}
@@ -1426,6 +1437,12 @@ public void refreshDependencies() {
 			fieldBioEvents[i].refreshDependencies();
 		}
 	}
+
+	if (fieldRateRules != null) {
+		for (int i = 0; i < fieldRateRules.length; i++) {
+			fieldRateRules[i].refreshDependencies();
+		}
+	}
 }
 
 
@@ -1619,6 +1636,7 @@ public void setBioEvents(BioEvent[] bioEvents) throws java.beans.PropertyVetoExc
 	fieldBioEvents = bioEvents;
 	firePropertyChange(PROPERTY_NAME_BIOEVENTS, oldValue, bioEvents);
 }
+
 
 /**
  * Insert the method's description here.
@@ -1895,7 +1913,6 @@ public BioEvent getBioEvent(String name) {
 	return null;
 }
 
-
 public void checkValidity() throws MappingException
 {
 	//spatial
@@ -1903,34 +1920,43 @@ public void checkValidity() throws MappingException
 		//
 		// fail if any enabled Reactions have LumpedKinetics.
 		//
-		StringBuffer buffer = new StringBuffer();
-		ReactionSpec[] reactionSpecs = getReactionContext().getReactionSpecs();
-		for (int i = 0; i < reactionSpecs.length; i++) {
-			if (!reactionSpecs[i].isExcluded() && reactionSpecs[i].getReactionStep().getKinetics() instanceof LumpedKinetics){
-				buffer.append("reaction \""+reactionSpecs[i].getReactionStep().getName()+"\" in compartment \""+reactionSpecs[i].getReactionStep().getStructure().getName()+"\"\n");
-			}
-		}
-		if (buffer.length()>0){
-			throw new MappingException("Spatial application \""+getName()+"\" cannot process reactions with spatially lumped kinetics, see kinetics for :\n"+buffer.toString());			
-				
-		}
+//		StringBuffer buffer = new StringBuffer();
+//		ReactionSpec[] reactionSpecs = getReactionContext().getReactionSpecs();
+//		for (int i = 0; i < reactionSpecs.length; i++) {
+//			if (!reactionSpecs[i].isExcluded() && reactionSpecs[i].getReactionStep().getKinetics() instanceof LumpedKinetics){
+//				buffer.append("reaction \""+reactionSpecs[i].getReactionStep().getName()+"\" in compartment \""+reactionSpecs[i].getReactionStep().getStructure().getName()+"\"\n");
+//			}
+//		}
+//		if (buffer.length()>0){
+//			throw new MappingException("Spatial application \""+getName()+"\" cannot process reactions with spatially lumped kinetics, see kinetics for :\n"+buffer.toString());			
+//				
+//		}
 	}else{
-		// old-stle ODE models should still work
+		// old-style ODE models should still work
 		if (!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull()){
 			return; // old style ODE models
-		}
-		// ODE- where sizes are set, but relative sizes are not: 
-		if (!isStoch() && !getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedPositive()){
-			// the sizes are specified, but not the volFractions and surface-to-vol ratios, so run the structureSizeSolver to get the relative sizes
-			try {
-				StructureSizeSolver.updateRelativeStructureSizes(this);
-			} catch (Exception e) {
-				throw new MappingException(e.getMessage());
-			}
 		}
 		// otherwise, all sizes should be present and positive.
 		if (!getGeometryContext().isAllSizeSpecifiedPositive()){
 			throw new MappingException("Application "+getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		}
+		// if rate rules are present, if any species has a rate rules, it should not be a reaction participant in any reaction.
+		RateRule[] rateRules = getRateRules();
+		if (rateRules != null && rateRules.length > 0) {
+			if (getModel() != null) {
+				ReactionStep[] reactionSteps = getModel().getReactionSteps();
+				ReactionParticipant[] reactionParticipants = null;
+				for (ReactionStep rs : reactionSteps) {
+					reactionParticipants = rs.getReactionParticipants();
+					for (ReactionParticipant rp : reactionParticipants) {
+						if (rp instanceof Reactant || rp instanceof Product) {
+							if (getRateRule(rp.getSpeciesContext()) != null) {
+								throw new RuntimeException("Species '" + rp.getSpeciesContext().getName() + "' is a reactant/product in reaction '" + rs.getName() + "' ; cannot also have a rate rule." );
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -2160,4 +2186,83 @@ public void createDefaultParameterEstimationTask()
 		
 	}
 }
+
+
+public RateRule createRateRule(SymbolTableEntry varSTE) throws PropertyVetoException {
+	String rateRuleName = getFreeRateRuleName();
+	RateRule rateRule = new RateRule(rateRuleName, varSTE, new Expression(0.0), this);
+	return addRateRule(rateRule);
 }
+
+public RateRule addRateRule(RateRule rateRule) throws PropertyVetoException {
+	if (fieldRateRules == null){
+		setRateRules(new RateRule[] { rateRule });
+	}else{
+		RateRule[] newRateRules = (RateRule[])BeanUtils.addElement(fieldRateRules, rateRule);
+		setRateRules(newRateRules);
+	}
+	return rateRule;
+}
+
+public void removeRateRule(RateRule rateRule) throws PropertyVetoException {
+	boolean bFound = false;
+	for (int i = 0; fieldRateRules!=null && i < fieldRateRules.length; i++){
+		if (fieldRateRules[i] == rateRule){
+			bFound = true;
+			break;
+		}
+	}
+	if (!bFound){
+		throw new RuntimeException("rate rule '" + rateRule.getName() + "' not found.");
+	}
+	RateRule[] newRateRules = (RateRule[])BeanUtils.removeElement(fieldRateRules, rateRule);
+	setRateRules(newRateRules);
+}
+
+public RateRule[] getRateRules() {
+	return fieldRateRules;
+}
+
+
+public RateRule getRateRule(String rateRulename) {
+	if (fieldRateRules != null) {
+		for (RateRule rr : fieldRateRules) {
+			if (rr.getName().equals(rateRulename)) {
+				return rr;
+			}
+		}
+	}
+	return null;
+}
+
+public void setRateRules(RateRule[] rateRules) throws java.beans.PropertyVetoException {
+	RateRule[] oldValue = fieldRateRules;
+	fireVetoableChange(PROPERTY_NAME_RATERULES, oldValue, rateRules);
+	fieldRateRules = rateRules;
+	firePropertyChange(PROPERTY_NAME_RATERULES, oldValue, rateRules);
+}
+
+public String getFreeRateRuleName() {	
+	int count = 0;
+	while (true) {
+		String rateRuleName = "rateRule" + count;
+		if (getRateRule(rateRuleName) == null) {
+			return rateRuleName;
+		}
+		count ++;
+	}
+}
+
+public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
+	if (fieldRateRules != null) {
+		for (RateRule rr : fieldRateRules) {
+			if (rr.getRateRuleVar() == rateRuleVar) {
+				return rr;
+			}
+		}
+	}
+	return null;
+}
+
+}
+

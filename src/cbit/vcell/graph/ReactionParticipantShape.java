@@ -20,7 +20,6 @@ import java.awt.geom.Point2D;
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionParticipant;
 
 public abstract class ReactionParticipantShape extends EdgeShape {
@@ -91,13 +90,6 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 			p2ctrl.setLocation(end.getX()+tangentX, end.getY()+tangentY);	
 		} else if(this instanceof ReactantShape){
 			p2ctrl.setLocation(end.getX()-tangentX,end.getY()-tangentY);	
-		} else if(this instanceof FluxShape){
-			// choose side based on inner product with displacement vector between catalyst and reactionStep
-			if(((start.getX() - end.getX())*tangentX + (start.getY() - end.getY())*tangentY) > 0){
-				p2ctrl.setLocation(end.getX() + tangentX, end.getY() + tangentY);
-			} else {
-				p2ctrl.setLocation(end.getX() - tangentX, end.getY() - tangentY);
-			}
 		}
 
 		if(lastCurve != null && 
@@ -144,16 +136,6 @@ public abstract class ReactionParticipantShape extends EdgeShape {
 		}
 		if (this instanceof ReactantShape){
 			arrowDirection = -1;
-		}
-		if (this instanceof FluxShape){
-			FluxShape fluxShape = (FluxShape)this;
-			if (fluxShape.getReactionStepShape() != null && reactionParticipant != null) {
-				if (reactionParticipant.getSpeciesContext().getStructure() == ((Membrane)getReactionStepShape().getReactionStep().getStructure()).getInsideFeature()) {
-					arrowDirection = 1;
-				} else {
-					arrowDirection = -1;
-				}
-			}
 		}
 		if (arrowDirection == 1) {
 			double arcLength = integrateArcLength(cubicCurve, 0.0, 1.0, 10);

@@ -86,7 +86,7 @@ public Class<?> getColumnClass(int col) {
 		case COLUMN_EXPRESSION:
 			return ScopedExpression.class;
 		case COLUMN_UNIT:
-			return String.class;
+			return VCUnitDefinition.class;
 	}
 	return Object.class;
 }
@@ -171,10 +171,7 @@ public Object getValueAt(int row, int col) {
 				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, null);				
 			}
 			case COLUMN_UNIT:{
-				if (parameter.getUnitDefinition() != null) {
-					return parameter.getUnitDefinition().getSymbol();
-				}
-				return null;				
+				return parameter.getUnitDefinition();				
 			}			
 		}
 	} catch (Exception ex) {

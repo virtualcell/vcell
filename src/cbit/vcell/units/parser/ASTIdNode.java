@@ -19,8 +19,22 @@ public String toInfix(RationalNumber power) {
 	return name;
 }
 
-public String toSymbol(RationalNumber power) {
-	return  name;
+public String toSymbol(RationalNumber power, UnitTextFormat format) {
+	switch (format) {
+		case plain: {
+			return name;
+		}
+		case unicode: {
+			String unicodeString = name;
+			if (unicodeString.startsWith("u")){
+				unicodeString = MU+unicodeString.substring(1);
+			}
+			return unicodeString;
+		}
+		default:{
+			return name;
+		}
+	}
 }
 
 }

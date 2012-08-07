@@ -15,7 +15,6 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitSystem;
 
 /**
  * Insert the type's description here.
@@ -51,7 +50,7 @@ public MembraneElectricalDevice(MembraneMapping argMembraneMapping, cbit.vcell.m
 							DefaultNames[ROLE_Capacitance],
 							Expression.mult(new Expression(membraneMapping.getSpecificCapacitanceParameter(),mathMapping.getNameScope()), new Expression(membraneMapping.getSizeParameter(),mathMapping.getNameScope())), // given
 							ROLE_Capacitance,
-							modelUnitSystem.getSpecificCapacitanceUnit());
+							modelUnitSystem.getCapacitanceUnit());
 
 	setParameters(parameters);
 }

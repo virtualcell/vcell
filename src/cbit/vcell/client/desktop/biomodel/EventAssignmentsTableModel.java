@@ -116,7 +116,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 						}
 					}
 					case COLUMN_EVENTASSIGN_UNITS: {
-						return eventAssignment.getTarget().getUnitDefinition().getSymbol();
+						return eventAssignment.getTarget().getUnitDefinition().getSymbolUnicode();
 					} 
 					default: {
 						return null;

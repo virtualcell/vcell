@@ -24,14 +24,14 @@ public String toInfix(RationalNumber power) {
 	return buffer.toString();
 }
 
-public String toSymbol(RationalNumber power) {
+public String toSymbol(RationalNumber power, UnitTextFormat format) {
 	StringBuilder buffer = new StringBuilder();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		if (i>0){
 			buffer.append(".");
 		}
-		buffer.append(jjtGetChild(i).toSymbol(power));
+		buffer.append(jjtGetChild(i).toSymbol(power,format));
 	}
 	return buffer.toString();
 }

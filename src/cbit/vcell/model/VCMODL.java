@@ -85,6 +85,7 @@ public class VCMODL {
 	public final static String SpecificCapacitance			   = "SpecificCapacitance";	
 	public final static String Permeability					   = "Permeability";
 	public final static String Conductivity					   = "Conductivity";
+	public final static String ChargeValence				   = "ChargeValence";
 	public final static String ForwardRate					   = "ForwardRate";
 	public final static String ReverseRate					   = "ReverseRate";
 	public final static String DissociationConstant			   = "DissociationConstant";

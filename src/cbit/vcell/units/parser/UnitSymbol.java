@@ -7,6 +7,7 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
+import cbit.vcell.units.parser.Node.UnitTextFormat;
 
 public class UnitSymbol implements Serializable {
 
@@ -83,12 +84,22 @@ public class UnitSymbol implements Serializable {
 	}
 
 	public String getUnitSymbol() {
-		String unitString = rootNode.toSymbol();
+		String unitString = rootNode.toSymbol(UnitTextFormat.plain);
 		return unitString;
 	}
 
+	public String getUnitSymbolUnicode() {
+		String unitString = rootNode.toSymbol(UnitTextFormat.unicode);
+		return unitString;
+	}
+	
+	public String getUnitSymbolHtml() {
+		String unitString = rootNode.toSymbol(UnitTextFormat.html);
+		return unitString;
+	}
+	
 	void dump(String prefix){
 		rootNode.dump(prefix);
 	}
-	
+
 }
