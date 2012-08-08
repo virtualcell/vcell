@@ -17,6 +17,7 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.MathMapping.UnitFactorParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -29,6 +30,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.matrix.MatrixException;
@@ -837,6 +839,15 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		} // end of reaction step loop
 			
 		//
+		// include required UnitRateFactors
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+			}
+		}
+
+		//
 		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 		//
 		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
@@ -867,6 +878,19 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 				subDomain.addVarIniCondition(varIni);
 			}
 		}
+		
+		//
+		// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+				if (mathDesc.getVariable(variable.getName())==null){
+					mathDesc.addVariable(variable);
+				}
+			}
+		}
+		
 
 		if (!mathDesc.isValid()){
 			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());

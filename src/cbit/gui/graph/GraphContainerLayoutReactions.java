@@ -111,6 +111,9 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	
 	public void layout(GraphModel graphModel, Graphics2D g2d, Dimension size) 
 	throws GraphModel.NotReadyException {
+		if (graphModel.getNumShapes()==0){
+			return;
+		}
 		Shape topShape = graphModel.getTopShape();
 		//
 		// compute nominal sizes and positions of children

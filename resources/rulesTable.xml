@@ -10,6 +10,8 @@
 	<Rule TagName="Version" AttrName="Name"/>
 	<Rule TagName="Compound" AttrName="Name"/>
 	<Rule TagName="Membrane" AttrName="Name"/>
+	<Rule TagName="LocalizedCompoundSpec" AttrName="LocalizedCompoundRef"/>
+	<Rule TagName="ReactionSpec" AttrName="ReactionStepRef"/>
 <Rule TagName="LocalizedCompound" AttrName="Name"/>
 <Rule TagName="SimulationSpec" AttrName="Name"/>
 <Rule TagName="Diagram" AttrName="Structure"/>
