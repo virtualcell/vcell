@@ -813,8 +813,8 @@ private Expression adjustExpression(Expression valueExpr, Model model) throws Pr
  *		in a reaction. Virtual Cell now allows the import of such reactions.
  *		
 **/
-protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
-	SpeciesContext[] vcSpeciesContexts = simContext.getModel().getSpeciesContexts();
+private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
+	Model vcModel = simContext.getModel();
 
 	// for each species in the sbml model,
 	for (int i = 0; i < (int)sbmlModel.getNumSpecies(); i++){
@@ -829,22 +829,40 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		// get the matching speciesContext for the sbmlSpecies - loop thro' the speciesContext list to find a match 
 		// in the species name retrieved from the listofReactants or Pts. 
 		SpeciesContext speciesContext = null;
-		for (int j = 0; j < vcSpeciesContexts.length; j++) {
-			if (vcSpeciesContexts[j].getName().equals(sbmlSpecies.getId())) {
-				speciesContext =  vcSpeciesContexts[j];
-			}
-		}
+		String sbmlSpId = sbmlSpecies.getId();
+		speciesContext = vcModel.getSpeciesContext(sbmlSpId);
+		
 		
 		if (!(vcRxn instanceof FluxReaction)) {
 			// check if it is present as reactant, if so, how many reactants
 			for (int j = 0; j < (int)sbmlRxn.getNumReactants(); j++){
 				SpeciesReference spRef = sbmlRxn.getReactant(j);
 				// If stoichiometry of speciesRef is not an integer, it is not handled in the VCell at this time; no point going further
-				if ( ((int)(spRef.getStoichiometry()) != spRef.getStoichiometry()) || spRef.isSetStoichiometryMath()) {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+				
+				double stoichiometry = 0.0;
+				if (level < 3) {	// for sBML models < L3, default stoichiometry is 1, if field is not set.
+					stoichiometry = 1.0; 		// default value of stoichiometry, if not set.
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+						}
+					} 
+				} else {
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+						}
+					} else {
+						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");
+						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");
+					}
 				}
-				if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
-					reactantNum += (int)spRef.getStoichiometry();
+				if (spRef.getSpecies().equals(sbmlSpId)) {
+					reactantNum += (int)stoichiometry;
 					bSpeciesPresent = true;
 				}
 			}
@@ -860,11 +878,30 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 			for (int j = 0; j < (int)sbmlRxn.getNumProducts(); j++){
 				SpeciesReference spRef = sbmlRxn.getProduct(j);
 				// If stoichiometry of speciesRef is not an integer, it is not handled in the VCell at this time; no point going further
-				if ( ((int)(spRef.getStoichiometry()) != spRef.getStoichiometry()) || spRef.isSetStoichiometryMath()) {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+				double stoichiometry = 0.0;
+				if (level < 3) {	// for sBML models < L3, default stoichiometry is 1, if field is not set.
+					stoichiometry = 1.0; 		// default value of stoichiometry, if not set.
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+						}
+					} 
+				} else {
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+						}
+					} else {
+						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");
+						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");
+					}
 				}
-				if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
-					pdtNum  += (int)spRef.getStoichiometry();
+				if (spRef.getSpecies().equals(sbmlSpId)) {
+					pdtNum  += (int)stoichiometry;
 					bSpeciesPresent = true;
 				}
 			}
@@ -880,7 +917,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		// check if it is present as modifier, if so, how many modifiers
 		for (int j = 0; j < (int)sbmlRxn.getNumModifiers(); j++){
 			ModifierSpeciesReference spRef = sbmlRxn.getModifier(j);
-			if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
+			if (spRef.getSpecies().equals(sbmlSpId)) {
 				modifierNum++;
 			}
 		}
@@ -1520,7 +1557,8 @@ protected void addSpecies(VCMetaData metaData) {
 					// Get the species name from annotation and create the species.
 					if (embeddedElement.getName().equals(XMLTags.SpeciesTag)) {
 						String vcSpeciesName = embeddedElement.getAttributeValue(XMLTags.NameAttrTag);
-						if (vcSpeciesHash.get(vcSpeciesName) == null) {
+						vcSpecies = vcSpeciesHash.get(vcSpeciesName);
+						if (vcSpecies == null) {
 							vcSpecies = new Species(vcSpeciesName, vcSpeciesName);
 							vcSpeciesHash.put(vcSpeciesName, vcSpecies);
 						}
