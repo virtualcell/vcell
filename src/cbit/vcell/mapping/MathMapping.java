@@ -158,7 +158,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
 
-	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
+	protected MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private NameScope nameScope = new MathMappingNameScope();

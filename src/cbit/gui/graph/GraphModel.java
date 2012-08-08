@@ -291,6 +291,13 @@ public abstract class GraphModel {
 		}
 		return topShape;
 	}
+	
+	public int getNumShapes(){
+		if (objectShapeMap==null){
+			return 0;
+		}
+		return objectShapeMap.size();
+	}
 
 	public int getZoomPercent() {
 		return resizeManager.getZoomPercent();
