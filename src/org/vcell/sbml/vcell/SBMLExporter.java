@@ -1285,10 +1285,10 @@ public String getSBMLFile() {
 	sbmlDocument.printErrors(oStrStream);
 	System.out.println(oStrStream.str());
 
-	// validate generated sbml document
-	SBMLValidator sbmlValidator = new SBMLValidator();
-	long validationFailureCount = sbmlValidator.validate(sbmlDocument);
-	System.out.println("\nSBML Validator : # of validation failures : " + validationFailureCount);
+//	// validate generated sbml document
+//	SBMLValidator sbmlValidator = new SBMLValidator();
+//	long validationFailureCount = sbmlValidator.validate(sbmlDocument);
+//	System.out.println("\nSBML Validator : # of validation failures : " + validationFailureCount);
 	
 	// cleanup
 	sbmlModel.delete();
