@@ -258,7 +258,8 @@ private void initialize() {
 						} else if (bioPaxObject instanceof SBEntity) {		// TODO: kineticLaw
 							SBEntity sbE = (SBEntity)bioPaxObject;
 							if(sbE.getID().contains("kineticLaw")) {
-								String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+//								String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+								String url = "http://sabiork.h-its.org/kindatadirectiframe.jsp?kinlawid=" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
 								DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.", false);
 							}
 						}
