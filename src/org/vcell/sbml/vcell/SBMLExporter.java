@@ -41,7 +41,7 @@ import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLDocumentPlugin;
 import org.sbml.libsbml.SBMLNamespaces;
-import org.sbml.libsbml.SBMLValidator;
+//import org.sbml.libsbml.SBMLValidator;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.SBasePlugin;
