@@ -150,6 +150,8 @@ public class PathwayProducerBiopax3 {
 				biopaxElement.addContent(addObjectPathway(bpObject, className));
 			}else if (className.equals("BiochemicalReactionImpl")){
 				biopaxElement.addContent(addObjectBiochemicalReaction(bpObject, "BiochemicalReaction"));
+			}else if (className.equals("ConversionImpl")){
+				biopaxElement.addContent(addObjectConversion(bpObject, "Conversion"));
 			}else if (className.equals("CellularLocationVocabulary")){
 				biopaxElement.addContent(addObjectCellularLocationVocabulary(bpObject, className));
 			}else if (className.equals("CellVocabulary")){
@@ -705,6 +707,12 @@ public class PathwayProducerBiopax3 {
 		Element element = new Element(className, bp);
 		element = addAttributes(bpObject, element);
 		element = addContentBiochemicalReaction(bpObject, element);
+		return element;
+	}
+	private Element addObjectConversion(BioPaxObject bpObject, String className) {
+		Element element = new Element(className, bp);
+		element = addAttributes(bpObject, element);
+		element = addContentConversion(bpObject, element);
 		return element;
 	}
 

@@ -74,6 +74,7 @@ import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBPAXLabelUtil;
+import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.pathway.sbpax.UnitOfMeasurement;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -227,7 +228,7 @@ private void initialize() {
 					int ccol = table.columnAtPoint(pt);
 					BioPaxObjectProperty property = tableModel.getValueAt(crow);
 					if(property != null) {
-						final String htmlStart = "<html><font face = \"Arial\"><font size =\"-2\">";
+						final String htmlStart = "<html><font face = \"Arial\"><font size =\"-1\">";
 						final String htmlEnd = "</font></font></html>";
 						if(!property.getDetails().isEmpty()) {
 							details.setText(htmlStart + property.getDetails() + htmlEnd);
@@ -398,45 +399,6 @@ protected void refreshInterface() {
 		if(!role.isEmpty()) {
 			propertyList.add(new BioPaxObjectProperty("Role(s)", role));
 		}
-//		Set<SBEntity> kineticLaws = BioPAXUtil.getKineticLawsOfController(physicalEntity, bioModel);
-//		for(SBEntity kL : kineticLaws) {
-//			propertyList.add(new BioPaxObjectProperty("SBML for Kinetic Law", kL.getID(), kL));
-//			ArrayList<SBEntity> klProperties = kL.getSBSubEntity();
-//			for(SBEntity klProperty : klProperties) {
-//				if(klProperty instanceof SBMeasurable) {
-//					SBMeasurable m  = (SBMeasurable)klProperty;
-//					String str1 = "";
-//					String str2 = "";
-//					String str3 = "";
-//					if(!m.getSBTerm().isEmpty()) {
-//						str1 += m.getSBTerm().get(0).toString();
-//						str1 = str1.substring(str1.lastIndexOf('#'));
-//						str1 = str1.replace('#', ' ');
-//						str1 = str1.replace('\'', ' ');
-//						str1 = str1.replace("(proxy)", "");
-//						str1 = str1.replace(" ", "");
-//						str2 += m.getNumber() + "";
-//						str2 = str2.replace('[', ' ');
-//						str2 = str2.replace(']', ' ');
-//					}
-//					if(!m.getUnit().isEmpty()) {
-//						UnitOfMeasurement u = m.getUnit().get(0);
-//						if(u.getSymbols().isEmpty()) {
-//							str3 += u.getIDShort();
-//						} else {
-//							str3 += u.getSymbols().get(0);
-//						}
-//					}
-//					// str1 is an SBO id, for example "SBO:0000064"
-//					SBOTerm sboT = SBOListEx.sboMap.get(str1);
-//					
-//					propertyList.add(new BioPaxObjectProperty("   " + sboT.getSymbol() + "   (" + sboT.getName() + ")", 
-//							str2 + str3, sboT.getDescription()));
-//				} else {
-//					propertyList.add(new BioPaxObjectProperty("   " + klProperty.getIDShort(), klProperty.getTypeLabel()));
-//				}
-//			}
-//		}
 				
 		if(!(physicalEntity instanceof SmallMolecule)){
 			// physicalEntity::cellular location
@@ -534,6 +496,17 @@ protected void refreshInterface() {
 						}
 					}
 					String sDetails = "";
+					ArrayList<SBVocabulary> sbTerms = sbE.getSBTerm();
+					for(SBVocabulary sbv : sbTerms) {
+						String str1 = sbv.getID();
+						str1 = str1.substring(str1.lastIndexOf('#')+1);
+						System.out.println(str1);
+						SBOTerm sboT = SBOListEx.sboMap.get(str1);
+						sDetails += "<font color=\"#660000\"><b>" + sboT.getName() + "</b></font>" + "  " + 
+						"<font color=\"#006600\">" + sboT.getDescription() + "</font>";
+						sDetails += "<br>";
+					}
+					
 					ArrayList<SBEntity> klProperties = sbE.getSBSubEntity();
 					for(SBEntity klProperty : klProperties) {
 						if(klProperty instanceof SBMeasurable) {
