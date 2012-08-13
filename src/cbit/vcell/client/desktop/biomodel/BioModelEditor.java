@@ -84,6 +84,7 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelsNetPropertiesPanel bioModelsNetPropertiesPanel = null;
 	private BioModelEditorPathwayPanel bioModelEditorPathwayPanel = null;
 	private BioModelEditorPathwayCommonsPanel bioModelEditorPathwayCommonsPanel;
+	private BioModelEditorSabioPanel bioModelEditorSabioPanel;
 	private BioModelEditorPathwayDiagramPanel bioModelEditorPathwayDiagramPanel = null;
 	
 	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
@@ -415,7 +416,9 @@ private void initialize() {
 		bioModelsNetPanel = new BioModelsNetPanel();
 		bioModelEditorPathwayCommonsPanel = new BioModelEditorPathwayCommonsPanel();
 		leftBottomTabbedPane.addTab("BioModels.net", bioModelsNetPanel);
-		leftBottomTabbedPane.addTab("Pathway Commons", bioModelEditorPathwayCommonsPanel);
+		leftBottomTabbedPane.addTab("Pathway Comm", bioModelEditorPathwayCommonsPanel);
+		bioModelEditorSabioPanel = new BioModelEditorSabioPanel();
+		leftBottomTabbedPane.addTab("Sabio", bioModelEditorSabioPanel);
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
@@ -457,6 +460,7 @@ private void initialize() {
 		getBioModelEditorPathwayDiagramPanel().setSelectionManager(selectionManager);
 		bioModelsNetPanel.setSelectionManager(selectionManager);
 		bioModelEditorPathwayCommonsPanel.setSelectionManager(selectionManager);
+		bioModelEditorSabioPanel.setSelectionManager(selectionManager);
 		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
