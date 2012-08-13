@@ -1527,7 +1527,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				if (rateRuleVarTargets.contains(modelParameters[j])) {
 					RateRuleRateParameter rateParam = null;
 					try {
-						Expression origExp = simContext.getRateRule(modelParameters[j].getName()).getRateRuleExpression();
+						Expression origExp = simContext.getRateRule(modelParameters[j]).getRateRuleExpression();
 						VCUnitDefinition rateUnit = modelUnitSystem.getInstance_TBD();
 						if (paramUnit != null && !paramUnit.equals(modelUnitSystem.getInstance_TBD())) {
 							rateUnit = paramUnit.divideBy(timeUnit);

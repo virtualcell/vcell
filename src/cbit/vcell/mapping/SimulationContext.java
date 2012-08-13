@@ -327,11 +327,21 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	}
 	
 	if (!bStoch) {
+		// copy events
 		BioEvent[] bioEvents = simulationContext.getBioEvents();
 		if (bioEvents != null) {
 			fieldBioEvents = new BioEvent[bioEvents.length];
 			for (int i = 0; i < bioEvents.length; i++) {
 				fieldBioEvents[i] = new BioEvent(bioEvents[i], this);
+			}
+		}
+		
+		// copy rate rules
+		RateRule[] rateRules = simulationContext.getRateRules();
+		if (rateRules != null) {
+			fieldRateRules = new RateRule[rateRules.length];
+			for (int i = 0; i < rateRules.length; i++) {
+				fieldRateRules[i] = new RateRule(rateRules[i], this);
 			}
 		}
 	}
@@ -1736,6 +1746,9 @@ public void setGeometry(Geometry geometry) throws MappingException {
 			try {
 				if (fieldBioEvents != null) {
 					setBioEvents(null);
+				}
+				if (fieldRateRules != null) {
+					setRateRules(null);
 				}
 				if (fieldAnalysisTasks != null) {
 					setAnalysisTasks(null);
