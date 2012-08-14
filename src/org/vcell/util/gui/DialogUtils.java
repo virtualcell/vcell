@@ -15,7 +15,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.ScrollPane;
 import java.awt.Window;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -533,7 +536,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 			};
 			final JSortTable table = new JSortTable();
-			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+//			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			table.setModel(tableModel);
 			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
 			if(listSelectionModel_SelectMode != null){
@@ -568,11 +571,38 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 
 					}
 				};
-			}
+			}			
+			
 			if(listSelectionListener != null){
 				table.getSelectionModel().addListSelectionListener(listSelectionListener);
 			}
 			TableListResult tableListResult = new TableListResult();
+			
+			
+			// HACK to fix horizontal scrollbar not showing for large horizontal tables
+			// workaround code from: http://bugs.sun.com/view_bug.do?bug_id=4127936
+			final JScrollPane[] jScrollPaneArr = new JScrollPane[1];
+			Component[] components = table.getEnclosingScrollPane().getComponents();
+			for (int i = 0; i < components.length; i++) {
+				if(components[i] instanceof JScrollPane){
+					jScrollPaneArr[0] = (JScrollPane)components[i];
+					break;
+				}
+			}
+			if(jScrollPaneArr[0] != null){
+				jScrollPaneArr[0].addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					super.componentResized(e);
+					if (table.getPreferredSize().width <= jScrollPaneArr[0].getViewport().getExtentSize().width){
+						table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+					} else {
+						table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+					}
+				}
+				});
+			}
+			
 			if(options == null){
 				if(showComponentOKCancelDialog(requester, table.getEnclosingScrollPane(), title,tableListOKEnabler) != JOptionPane.OK_OPTION){
 					throw UserCancelException.CANCEL_GENERIC;
