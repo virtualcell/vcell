@@ -24,16 +24,23 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -44,13 +51,17 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -61,12 +72,20 @@ import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -1133,6 +1152,119 @@ private JSortTable getQueryResultTable() {
 			ivjQueryResultTable.setName("QueryResultTable");
 			ivjQueryResultTable.setModel(new JobTableModel());
 			ivjQueryResultTable.disableUneditableForeground();
+			
+			final JPopupMenu popup = new JPopupMenu();
+			JMenuItem viewMongoMenuItem = new JMenuItem("View Mongo Log Info...");
+		    popup.add(viewMongoMenuItem);
+
+		    viewMongoMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						Number simID = (Number)ivjQueryResultTable.getModel().getValueAt(ivjQueryResultTable.getSelectedRow(), JobTableModel.columnIndex_SimID);
+						String userid = (String)ivjQueryResultTable.getModel().getValueAt(ivjQueryResultTable.getSelectedRow(), JobTableModel.columnIndex_UserID);
+						System.out.println("----- user="+userid+" simID="+simID);
+						String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
+						int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+						Mongo m = new Mongo(mongoDbHost,mongoDbPort);
+						String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+						DB db = m.getDB(mongoDbDatabaseName);
+						String mongoDbLoggingCollectionName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);
+						DBCollection dbCollection = db.getCollection(mongoDbLoggingCollectionName);
+
+						BasicDBObject query = new BasicDBObject();
+
+						query.put(VCMongoMessage.MongoMessage_simId, simID.intValue()+"");
+
+						DBCursor cur = dbCollection.find(query);
+						TreeMap<String, Integer> mapKeyToColumnIndex = new TreeMap<String, Integer>();
+						Vector<DBObject> dbObjV = new Vector<DBObject>();
+						while(cur.hasNext()) {
+							DBObject dbObject = cur.next();
+							dbObjV.add(dbObject);
+						    Set<String> keys = dbObject.keySet();
+						    Iterator<String> iter = keys.iterator();
+						    while(iter.hasNext()){
+						    	String key = iter.next();
+						    	Integer columnIndex = mapKeyToColumnIndex.get(key);
+						    	if(columnIndex == null){
+						    		columnIndex = mapKeyToColumnIndex.size();
+						    		mapKeyToColumnIndex.put(key, columnIndex);
+						    	}
+						    }
+						}
+						int msgTimeColumnIndex = -1;
+						if(mapKeyToColumnIndex.size()>0){
+							String[] columnNames = new String[mapKeyToColumnIndex.size()];
+							Iterator<String> keyIter = mapKeyToColumnIndex.keySet().iterator();
+							while(keyIter.hasNext()){
+								String key = keyIter.next();
+								int columnIndex = mapKeyToColumnIndex.get(key);
+								columnNames[columnIndex] = key;
+								if(key.equals(VCMongoMessage.MongoMessage_msgTime)){
+									msgTimeColumnIndex = columnIndex;
+								}
+							}
+//							//Ask which columns to view
+//							Object[][] colrowdata = new Object[columnNames.length][1];
+//							for (int i = 0; i < colrowdata.length; i++) {
+//								colrowdata[i][0] = columnNames[i];
+//							}
+//							int[] showcolArr =
+//									DialogUtils.showComponentOKCancelTableList(ServerManageConsole.this, "Select Columns to View...", new String[] {"Column Names"}, colrowdata, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+							
+							Object[][] rowData = new Object[dbObjV.size()][columnNames.length];
+							for (int i = 0; i < rowData.length; i++) {
+								DBObject dbObj = dbObjV.get(i);
+								Set<String> keys = dbObj.keySet();
+							    Iterator<String> iter = keys.iterator();
+							    while(iter.hasNext()){
+							    	String key = iter.next();
+							    	rowData[i][mapKeyToColumnIndex.get(key)] = dbObj.get(key);
+							    }
+							}
+							//sort by msgtime
+							final int msgTimeColumnIndexFinal = msgTimeColumnIndex;
+							if(msgTimeColumnIndex != -1){
+								Arrays.sort(rowData, new Comparator<Object[]>() {
+									public int compare(Object[] o1, Object[] o2) {
+										Long o1Long = (Long)o1[msgTimeColumnIndexFinal];
+										Long o2Long = (Long)o2[msgTimeColumnIndexFinal];
+										int result = (int)(o2Long-o1Long);
+										return result;
+									}
+								});
+							}
+							DialogUtils.showComponentOKCancelTableList(ServerManageConsole.this, "Mongo Log Info ("+rowData.length+")", columnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
+						}else{
+							DialogUtils.showWarningDialog(ServerManageConsole.this, "No Mongo Log Info found for simID="+simID.intValue());
+						}
+					}  catch (UserCancelException uce) {
+						//ignore
+					}catch (Exception e1) {
+						e1.printStackTrace();
+					}
+
+				}
+			});
+
+			ivjQueryResultTable.addMouseListener( new MouseAdapter() {
+			    public void mouseReleased(MouseEvent e) 
+			    { 
+			        if (e.isPopupTrigger()) 
+			        { 
+			            JTable source = (JTable)e.getSource(); 
+			            int row = source.rowAtPoint( e.getPoint() ); 
+			            int column = source.columnAtPoint( e.getPoint() ); 
+			 
+			            if (! source.isRowSelected(row)) 
+			                source.changeSelection(row, column, false, false); 
+			 
+			            popup.show(e.getComponent(), e.getX(), e.getY()); 
+			        } 
+			    } 
+			}); 
+
+
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
