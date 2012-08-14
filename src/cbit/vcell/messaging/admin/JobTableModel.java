@@ -23,8 +23,8 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
  * @author: Fei Gao
  */
 public class JobTableModel extends VCellSortTableModel<ComparableObject> {
-	private final static int columnIndex_UserID = 0;
-	private final static int columnIndex_SimID = 1;
+	public final static int columnIndex_UserID = 0;
+	public final static int columnIndex_SimID = 1;
 	private final static int columnIndex_JobIndex = 2;
 	private final static int columnIndex_SolverType = 3;
 	private final static int columnIndex_Status = 4;
