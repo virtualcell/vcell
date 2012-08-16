@@ -29,6 +29,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.sbpax.impl.HashGraph;
 import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
@@ -82,7 +83,7 @@ public class VCMetaData implements Serializable {
 
 	protected IdentifiableProvider identifiableProvider;
 
-	protected Graph graph = new IndexedGraph();
+	protected Graph graph = new HashGraph();
 	protected Registry registry;
 	private IdentityHashMap<Entry, NonRDFAnnotation> nonRDFAnnotationMap =
 				new IdentityHashMap<Entry, NonRDFAnnotation>();
@@ -97,7 +98,7 @@ public class VCMetaData implements Serializable {
 	public Graph getRdfData() { return graph; }
 	
 	public Graph getRdfDataCopy() {
-		Graph rdfModelCopy = new IndexedGraph();
+		Graph rdfModelCopy = new HashGraph();
 		rdfModelCopy.addAll(getRdfData());
 		return rdfModelCopy;
 	}

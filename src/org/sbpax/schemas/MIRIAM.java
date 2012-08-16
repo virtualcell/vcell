@@ -19,11 +19,12 @@ import java.util.Set;
 
 import org.openrdf.model.Graph;
 import org.openrdf.model.URI;
+import org.sbpax.impl.HashGraph;
 import org.sbpax.impl.IndexedGraph;
 
 public class MIRIAM {
 	
-	public static Graph schema = new IndexedGraph();
+	public static Graph schema = new HashGraph();
 
 	public static URI createProperty(Set<URI> all, String ns, String name) {
 		URI property = schema.getValueFactory().createURI(ns + name);

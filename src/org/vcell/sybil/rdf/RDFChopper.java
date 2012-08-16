@@ -24,21 +24,22 @@ import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
+import org.sbpax.impl.HashGraph;
 import org.sbpax.impl.IndexedGraph;
 
 public class RDFChopper {
 	
 	protected Map<Resource, Graph> chops = new HashMap<Resource, Graph>();
 	protected Map<Resource, Set<Resource>> neighborhoods = new HashMap<Resource, Set<Resource>>();
-	protected Graph remains = new IndexedGraph();
+	protected Graph remains = new HashGraph();
 
 	public RDFChopper(Graph model, Set<Resource> resources) {
 		HashMap<Resource, Graph> chopsNew = new HashMap<Resource, Graph>();
 		HashMap<Resource, Set<Resource>> neighborhoodsNew = new HashMap<Resource, Set<Resource>>();
 		for(Resource resource : resources) {
-			chops.put(resource, new IndexedGraph());
+			chops.put(resource, new HashGraph());
 			neighborhoods.put(resource, new HashSet<Resource>());
-			chopsNew.put(resource, new IndexedGraph());
+			chopsNew.put(resource, new HashGraph());
 			Set<Resource> neighborhoodNew = new HashSet<Resource>();
 			neighborhoodNew.add(resource);
 			neighborhoodsNew.put(resource, neighborhoodNew);

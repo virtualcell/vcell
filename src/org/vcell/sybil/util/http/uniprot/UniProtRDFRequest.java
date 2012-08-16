@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
+import org.sbpax.impl.HashGraph;
 import org.sbpax.impl.IndexedGraph;
 import org.sbpax.util.SesameRioUtil;
 
@@ -60,7 +61,7 @@ public class UniProtRDFRequest {
 	public Response response() {
 		Response response = null;
 		try {
-			Graph model = new IndexedGraph();
+			Graph model = new HashGraph();
 			// print out debug messsage to console -------- can be uncommented later.
 			// Debug.message(urlRDF());
 			URL url = new URL(urlRDF());

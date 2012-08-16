@@ -22,6 +22,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.sbpax.impl.HashGraph;
 import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.NameSpace;
 import org.sbpax.schemas.util.OntUtil;
@@ -36,7 +37,7 @@ public class ProtegeDC {
 	public static final NameSpace nsDC = new NameSpace("dc", "http://purl.org/dc/elements/1.1/");	
 	public static final NameSpace nsDCTerms = new NameSpace("dcterms", "http://purl.org/dc/terms/");	
 	
-	public static final Graph schema = new IndexedGraph();
+	public static final Graph schema = new HashGraph();
 
 	public static final Set<NameSpace> NAMESPACES = SetUtil.newSet(ns, nsDC, 
 			new NameSpace("rdfs", RDFS.NAMESPACE), nsXSD, nsDCTerms, new NameSpace("owl", OWL.NAMESPACE),
