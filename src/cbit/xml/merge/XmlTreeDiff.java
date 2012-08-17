@@ -9,20 +9,18 @@
  */
 
 package cbit.xml.merge;
-import cbit.vcell.xml.VCMLComparator;
-import cbit.vcell.xml.XMLTags;
-import cbit.util.xml.XmlUtil;
-
-import org.jdom.Element;
-import org.jdom.Attribute;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
+
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.xml.VCMLComparator;
+import cbit.vcell.xml.XMLTags;
 /**
  * This class performs the comparision and merge of two XML documents.
  * Creation date: (8/29/2001 12:33:52 PM)
@@ -42,12 +40,21 @@ public class XmlTreeDiff {
  */
 public XmlTreeDiff() throws java.io.IOException {
 	super();
-	final String RULES_FILENAME = "/rulesTable.xml";
-	InputStream tableInputStream = getClass().getResourceAsStream(RULES_FILENAME);
-	if (tableInputStream==null){
-		throw new FileNotFoundException(RULES_FILENAME+" not found");
-	}
-	readTable(tableInputStream);
+	
+	elementTable.put("Function","Name");
+	elementTable.put("Constant","Name");
+	elementTable.put("VolumeVariable","Name");
+	elementTable.put("Feature","Name");
+	elementTable.put("OdeEquation","Name");
+	elementTable.put("Version","Name");
+	elementTable.put("Compound","Name");
+	elementTable.put("Membrane","Name");
+	elementTable.put("LocalizedCompoundSpec","LocalizedCompoundRef");
+	elementTable.put("ReactionSpec","ReactionStepRef");
+	elementTable.put("LocalizedCompound","Name");
+	elementTable.put("SimulationSpec","Name");
+	elementTable.put("Diagram","Structure");
+	elementTable.put("BoundaryType","Boundary");
 }
 
 
@@ -368,32 +375,6 @@ private List mergeElementList(List list1, List list2, String comparisonSetting) 
 
     return result;
 }
-
-
-/**
- * This method reads the table from the specified location.
- * Creation date: (8/29/2001 6:37:13 PM)
- * @param location java.lang.String
- */
-private void readTable(java.io.InputStream tableInputStream) throws java.io.IOException {
-
-	//Process the rules files
-	org.jdom.input.SAXBuilder saxparser = new org.jdom.input.SAXBuilder(false);
-	org.jdom.Document doctable = null;
-	try {
-		doctable = saxparser.build(tableInputStream);
-	} catch (org.jdom.JDOMException e) {
-		e.printStackTrace();
-		throw new java.io.IOException("An error occurred when trying to parse the rules file ");
-	}
-	Iterator ruleiterator = doctable.getRootElement().getChildren().iterator();
-	while (ruleiterator.hasNext()) {
-		Element temp = (Element) ruleiterator.next();
-		//System.out.println(temp.getAttributeValue("TagName") + ":" + temp.getAttributeValue("AttrName"));
-		elementTable.put(temp.getAttributeValue("TagName"), temp.getAttributeValue("AttrName"));
-	}
-}
-
 
 	private ArrayList sortElementList(List list) {
 
