@@ -473,14 +473,22 @@ public static int[] showComponentOKCancelTableList(final Component requester,fin
 			throws UserCancelException{
 	return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null,null).selectedTableRows;
 }
-public static class  TableListResult{
-	public String selectedOption;
-	public int[] selectedTableRows;
-}
 public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
 		final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
 		final ListSelectionListener listSelectionListener,
 		final String[] options,final String initOption,final Comparator<Object> rowSortComparator)
+			throws UserCancelException{
+	return showComponentOptionsTableList(requester, title, columnNames, rowDataOrig, listSelectionModel_SelectMode, listSelectionListener,options,initOption,rowSortComparator,true);
+}
+public static class  TableListResult{
+	public String selectedOption;
+	public int[] selectedTableRows;
+}
+
+public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
+		final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
+		final ListSelectionListener listSelectionListener,
+		final String[] options,final String initOption,final Comparator<Object> rowSortComparator,final boolean bModal)
 			throws UserCancelException{
 	
 //	//Create hidden column with original row index so original row index can
@@ -604,8 +612,19 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			
 			if(options == null){
-				if(showComponentOKCancelDialog(requester, table.getEnclosingScrollPane(), title,tableListOKEnabler) != JOptionPane.OK_OPTION){
-					throw UserCancelException.CANCEL_GENERIC;
+				if(bModal){
+					if(showComponentOKCancelDialog(requester, table.getEnclosingScrollPane(), title,tableListOKEnabler) != JOptionPane.OK_OPTION){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+				}else{
+					//display non-modal
+					JOptionPane jOptionPane = new JOptionPane(table.getEnclosingScrollPane(),JOptionPane.INFORMATION_MESSAGE);
+					JDialog jDialog = jOptionPane.createDialog(requester, title);
+					jDialog.setResizable(true);
+					jDialog.setModal(false);
+					jDialog.pack();
+					jDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					jDialog.setVisible(true);					
 				}
 				tableListResult.selectedTableRows = table.getSelectedRows();
 			}else{

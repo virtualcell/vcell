@@ -1237,7 +1237,7 @@ private JSortTable getQueryResultTable() {
 									}
 								});
 							}
-							DialogUtils.showComponentOKCancelTableList(ServerManageConsole.this, "Mongo Log Info ("+rowData.length+")", columnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
+							DialogUtils.showComponentOptionsTableList(ServerManageConsole.this, "Mongo Log Info ("+rowData.length+") "+userid+" "+simID, columnNames, rowData, ListSelectionModel.SINGLE_SELECTION,null,null,null,null,false);
 						}else{
 							DialogUtils.showWarningDialog(ServerManageConsole.this, "No Mongo Log Info found for simID="+simID.intValue());
 						}
