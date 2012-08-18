@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="VCell_Admin_Scripts/Fei/Deploy/jar/Alpha/vcellAll_5.2_alpha_25.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VCell_Deployment/vcellAll.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/VCell_Deployment/resources/zoom.gif"/>
+        <file path="/VCell_Deployment/resources/vcellDoc/topics/chapter_3/Specifications/SpecificationsOverview.html"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil.images.biopax"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.PropertiesPanes"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.JavaHelpSearch"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;icons"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.Appendix"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.uome"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.originalImages"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_4"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Simulations"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.Errors"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.Lists"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples.old.sgmp"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3"/>
+        <file path="/VCell_Deployment/resources/planet.gif"/>
+        <file path="/VCell_Deployment/resources/pan.gif"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_5"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil.images.layout"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_6.PathwayObjects"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Nonspatial"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples.metacyc"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples.sgmp"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples.old.sabio"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_6"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil"/>
+        <file path="/VCell_Deployment/resources/bioModelsNetInfo.xml"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil.images.edit"/>
+        <javaElement handleIdentifier="=VCell_Deployment/src"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Protocols"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;images"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_7"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.ParameterEstimation"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_6.PathwayDiagram"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbo"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_1"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil.images.files"/>
+        <javaElement handleIdentifier="=VCell_Deployment/src_vfrap"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Geometry"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources_vfrap"/>
+        <file path="/VCell_Deployment/resources/vcellDoc/topics/chapter_3/Specifications/SpeciesSpecifications.html"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Spatial"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.Definitions"/>
+        <file path="/VCell_Deployment/resources/data_exporter_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_2"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_6.BiopaxSummary"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sbpax3.examples.sabio"/>
+        <file path="/VCell_Deployment/resources/vcellDoc/topics/chapter_3/Specifications/ReactionsSpecifications.html"/>
+        <file path="/VCell_Deployment/resources/data_sets_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.image"/>
+    </selectedElements>
+</jardesc>
