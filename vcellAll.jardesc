@@ -34,7 +34,6 @@
         <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/GeometryOverview.html"/>
         <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_3.ParameterEstimation"/>
         <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc.topics.chapter_6.PathwayObjects"/>
-        <file path="/VCell_5.1/resources/rulesTable.xml"/>
         <javaElement handleIdentifier="=VCell_5.1/resources&lt;vcellDoc"/>
         <file path="/VCell_5.1/resources/vcellDoc/topics/chapter_3/Geometry/geom_Analytic.html"/>
         <file path="/VCell_5.1/resources/bioModelsNetInfo.xml"/>
