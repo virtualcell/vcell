@@ -24,6 +24,8 @@ public class Executable {
 	private Integer exitValue = null;
 	private ExecutableStatus status = null;
 	private long timeoutMS = 0;
+	private File workingDir = null;
+	private String[] execEnvVars = null;
 
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -94,7 +96,11 @@ protected void executeProcess() throws org.vcell.util.ExecutableException {
 		setErrorString("");
 		setExitValue(null);
 		// start the process
-		setProcess(Runtime.getRuntime().exec(command));
+		if(workingDir == null && execEnvVars == null){
+			setProcess(Runtime.getRuntime().exec(command));
+		}else{
+			setProcess(Runtime.getRuntime().exec(command,execEnvVars,workingDir));
+		}
 		// monitor the process; blocking call
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
@@ -396,5 +402,21 @@ public final void stop() {
 	if (getProcess() != null) {
 		getProcess().destroy();
 	}
+}
+
+public File getWorkingDir() {
+	return workingDir;
+}
+
+public void setWorkingDir(File workingDir) {
+	this.workingDir = workingDir;
+}
+
+public String[] getExecEnvVars() {
+	return execEnvVars;
+}
+
+public void setExecEnvVars(String[] execEnvVars) {
+	this.execEnvVars = execEnvVars;
 }
 }
