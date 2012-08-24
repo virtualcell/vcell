@@ -52,6 +52,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvFunctionDefinition;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
 import cbit.vcell.math.FastSystem;
@@ -60,6 +61,7 @@ import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -68,17 +70,19 @@ import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.Event.Delay;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
@@ -88,9 +92,6 @@ import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -2542,6 +2543,17 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	while (volVarsIter.hasNext()) {
 		VolVariable volVar = volVarsIter.next();
 		EventAssignmentInitParameter eap = eventVolVarHash.get(volVar);
+		//check event initial condition, it shouldn't contain vars, we have to do it here, coz we want to substitute functions...etc.
+		Expression eapExp = MathUtilities.substituteFunctions(eap.getExpression(), mathDesc);
+		if(eapExp.getSymbols() != null){
+			for(String symbol:eapExp.getSymbols()){
+				SymbolTableEntry ste = eapExp.getSymbolBinding(symbol);
+				if(ste instanceof VolVariable || ste instanceof MemVariable){
+					throw new MathException("Variables are not allowed in Event assignment initial condition.\nEvent assignment target: " + volVar.getName()  + " has variable (" +symbol+ ") in its expression.");
+				}
+					
+			}
+		}
 		Expression rateExpr = new Expression(0.0);
 		Equation equation = new OdeEquation(volVar, new Expression(getMathSymbol(eap, null)), rateExpr);
 		subDomain.addEquation(equation);
