@@ -10,10 +10,20 @@
 
 package cbit.image;
 
-import java.awt.image.*;
-import cbit.image.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.awt.image.IndexColorModel;
+import java.awt.image.MemoryImageSource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 /**
  * This type was created in VisualAge.
  */
@@ -42,12 +52,19 @@ private static byte[] gifFromImage(byte[] image, ImageFilter imageFilter) throws
  * @param vci VCImage
  */
 private static byte[] gifFromImageProducer(ImageProducer ip, ImageFilter imageFilter) throws IOException {
-	ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	FilteredImageSource fis = new FilteredImageSource(ip, imageFilter);
-	Acme.JPM.Encoders.ImageEncoder ge = new Acme.JPM.Encoders.GifEncoder(fis, bos);
-	ge.encode();
-	byte[] newgif = bos.toByteArray();
-	return newgif;
+	Image image = Toolkit.getDefaultToolkit().createImage(fis);
+	return createGifFromImage(image);
+}
+private static byte[] createGifFromImage(Image image) throws IOException{
+	image = new ImageIcon(image).getImage();
+	BufferedImage bi = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB);
+	Graphics g = bi.createGraphics();
+	g.drawImage(image, 0, 0, null);
+	g.dispose();
+	ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	ImageIO.write(bi, "gif", bos);
+	return bos.toByteArray();
 }
 /**
  * This method was created in VisualAge.
@@ -110,13 +127,7 @@ public static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.I
 			xw = 150;
 		}
 		java.awt.Image browseImage = imageTemp.getScaledInstance(xw, yw, java.awt.Image.SCALE_REPLICATE);
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(8192);
-		byte[] browseGif;
-		Acme.JPM.Encoders.GifEncoder ge = new Acme.JPM.Encoders.GifEncoder(browseImage, bos);
-		ge.encode();
-		bos.flush();
-		browseGif = bos.toByteArray();
-		return browseGif;
+		return createGifFromImage(browseImage);
 	}catch (IOException e){
 		e.printStackTrace(System.out);
 		throw new ImageException(e.getMessage());
