@@ -15,9 +15,11 @@ import java.util.Vector;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
@@ -48,6 +50,12 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 		
 		initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
 		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
+		for(String symbol:initExpr.getSymbols()){
+			SymbolTableEntry ste = initExpr.getSymbolBinding(symbol);
+			if( !ste.equals(ReservedVariable.X) && !ste.equals(ReservedVariable.Y) && !ste.equals(ReservedVariable.Z)){
+				throw new MathException("Variables are not allowed in initial condition.\nInitial condition of variable:" + stateVar.getVariable().getName() + " has variable(" +symbol+ ") in expression."); 
+			}
+		}
 		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 		
 		Vector<Discontinuity> v = rateExpr.getDiscontinuities();		

@@ -64,6 +64,7 @@ import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -2597,6 +2598,17 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	while (volVarsIter.hasNext()) {
 		VolVariable volVar = volVarsIter.next();
 		EventAssignmentOrRateRuleInitParameter initParam = eventOrRateRuleVolVarHash.get(volVar);
+		//check event initial condition, it shouldn't contain vars, we have to do it here, coz we want to substitute functions...etc.
+		Expression eapExp = MathUtilities.substituteFunctions(initParam.getExpression(), mathDesc);
+		if(eapExp.getSymbols() != null){
+			for(String symbol:eapExp.getSymbols()){
+				SymbolTableEntry ste = eapExp.getSymbolBinding(symbol);
+				if(ste instanceof VolVariable || ste instanceof MemVariable){
+					throw new MathException("Variables are not allowed in Event assignment initial condition.\nEvent assignment target: " + volVar.getName()  + " has variable (" +symbol+ ") in its expression.");
+				}
+					
+			}
+		}
 		Expression rateExpr = new Expression(0.0);
 		RateRuleRateParameter rateParam = rateRuleRateParamHash.get(volVar);
 		if (rateParam != null) {
