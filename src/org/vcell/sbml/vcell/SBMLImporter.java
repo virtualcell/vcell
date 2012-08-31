@@ -97,12 +97,10 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.BioModelChildSummary;
-
-import sun.rmi.transport.proxy.CGIHandler;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
@@ -116,7 +114,6 @@ import cbit.util.graph.Tree;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
@@ -133,6 +130,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
@@ -170,7 +168,6 @@ import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.ode.FastAlgebraicSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
@@ -2480,7 +2477,7 @@ public void translateSBMLModel() {
 	// Add Reactions
 	addReactions(vcMetaData);
 	// Sort VCell-model Structures in structure array according to reaction adjacency and parentCompartment.
-	Structure[] sortedStructures = sortStructures(simContext.getModel());
+	Structure[] sortedStructures = AllStructureSuite.sortStructures(simContext.getModel());
 	try {
 		simContext.getModel().setStructures(sortedStructures);
 	} catch (PropertyVetoException e1) {
@@ -2503,133 +2500,6 @@ public void translateSBMLModel() {
 		addGeometry();
 	}
 }
-
-private static class StructureRelationshipEdge extends Edge {
-	int numConnections = 0;
-	boolean bParentChild = false;
-	
-	public StructureRelationshipEdge(Node node1, Node node2) {
-		super(node1, node2);
-	}
-	
-	public String toString(){
-		return super.toString() + ", nc="+numConnections+", p="+bParentChild;
-	}
-}
-
-public static Structure[] sortStructures(Model model) {
-	Graph graph = new Graph();
-	// add all structures to the graph
-	for (Structure structure : model.getStructures()){
-		graph.addNode(new Node(structure.getName(), structure));
-	}
-	// add an edge
-	for (Structure structure : model.getStructures()){
-		Structure parentStructure = null;
-		if (structure.getSbmlParentStructure()!=null){
-			parentStructure = structure.getSbmlParentStructure();
-		}else if (model.getStructureTopology().getParentStructure(structure)!=null){
-			parentStructure = model.getStructureTopology().getParentStructure(structure);
-		}
-		if (parentStructure!=null){
-			int index1 = graph.getIndex(graph.getNode(structure.getName()));
-			int index2 = graph.getIndex(graph.getNode(parentStructure.getName()));
-			StructureRelationshipEdge edge = getStructureRelationshipEdge(graph, index1, index2);
-			edge.bParentChild = true;
-		}
-	}
-	for (ReactionStep rs : model.getReactionSteps()){
-		int index1 = graph.getIndex(graph.getNode(rs.getStructure().getName()));
-		for (ReactionParticipant rp : rs.getReactionParticipants()){
-			if (rp.getStructure()!=rs.getStructure()){
-				int index2 = graph.getIndex(graph.getNode(rp.getStructure().getName()));
-				StructureRelationshipEdge edge = getStructureRelationshipEdge(graph, index2, index1);
-				edge.numConnections++;
-			}
-		}
-	}
-	// remove edges such that all nodes have degree <= 2
-	for (Node node : graph.getNodes()){
-		Edge[] adjacentEdges = graph.getAdjacentEdges(node);
-		while (adjacentEdges.length>2){
-			StructureRelationshipEdge lowestCostEdge = getLowestCodeEdge(Arrays.asList(adjacentEdges));
-			graph.remove(lowestCostEdge);
-			adjacentEdges = graph.getAdjacentEdges(node);
-		}
-	}
-	
-	// for each dependency loop, remove edge with lowest cost
-	Path[] fundamentalCycles = graph.getFundamentalCycles();
-	while (fundamentalCycles.length>0){
-		StructureRelationshipEdge lowestCostEdge = getLowestCodeEdge(Arrays.asList(fundamentalCycles[0].getEdges()));
-		graph.remove(lowestCostEdge);
-		fundamentalCycles = graph.getFundamentalCycles();
-	}
-	
-	// all graphs in the forest are linear now ... find path from first to last and line up all trees in list.
-	Tree[] spanningForest = graph.getSpanningForest();
-	ArrayList<Structure> structures = new ArrayList<Structure>();
-	for (Tree tree : spanningForest){
-		if (tree.getNodes().length>1){
-			Node start = null;
-			Node end = null;
-			for (Node node : tree.getNodes()){
-				if (tree.getDegree(node) == 1){
-					if (start == null){
-						start = node;
-					}else if (end == null){
-						end = node;
-					}else{
-						break;
-					}
-				}
-			}
-			Path path = tree.getTreePath(start, end);
-			for (Node node : path.getNodesTraversed()){
-				structures.add((Structure)node.getData());
-			}
-		}else{
-			structures.add((Structure)tree.getNodes()[0].getData());
-		}
-	}
-	return structures.toArray(new Structure[structures.size()]);
-}
-
-private static StructureRelationshipEdge getLowestCodeEdge(List<Edge> structureRelationshipEdgeList){
-	StructureRelationshipEdge lowestCostEdge = null;
-	for (Edge e : structureRelationshipEdgeList){
-		StructureRelationshipEdge currentEdge = (StructureRelationshipEdge)e;
-		if (lowestCostEdge==null){
-			lowestCostEdge = currentEdge;
-		}else{
-			if (lowestCostEdge.bParentChild && !currentEdge.bParentChild){
-				lowestCostEdge = currentEdge;
-			}else if (lowestCostEdge.numConnections > currentEdge.numConnections){
-				lowestCostEdge = currentEdge;
-			}
-		}
-	}
-	return lowestCostEdge;
-}
-
-private static StructureRelationshipEdge getStructureRelationshipEdge(Graph graph,	int index1, int index2) {
-	StructureRelationshipEdge edge = null;	
-	if (index1 > index2){
-		edge = (StructureRelationshipEdge)graph.getEdge(index2, index1);
-		if (edge==null){
-			edge = new StructureRelationshipEdge(graph.getNodes()[index2],graph.getNodes()[index1]);
-			graph.addEdge(edge);
-		}
-	}else{
-		edge = (StructureRelationshipEdge)graph.getEdge(index1, index2);		
-		if (edge==null){
-			edge = new StructureRelationshipEdge(graph.getNodes()[index1],graph.getNodes()[index2]);
-			graph.addEdge(edge);
-		}
-	}
-	return edge;
-}
-
 
 private void checkIdentifiersNameLength() throws Exception {
 	// Check compartment name lengths
