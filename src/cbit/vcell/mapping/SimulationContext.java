@@ -1905,8 +1905,15 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			if (nameSet.contains(name)){
 				throw new PropertyVetoException("multiple bioevents with same name '"+name+"' defined",evt);
 			}
-			if (ReservedBioSymbolEntries.getEntry(name)!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+name+"' as a bioevent name",evt);
+			try {
+				// if (ReservedBioSymbolEntries.getEntry(name)!=null){
+				// event name should not be a name used in the model already, not just reserved symbol.
+				if (getEntry(name) != null){
+					throw new PropertyVetoException("Cannot use '"+name+"' as a bioevent name.\nName '" + name + "' is already being used by another model entity.",evt);
+				}
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Unable to get symbol table entry for '" + name + "'.");
 			}
 			nameSet.add(name);
 		}
