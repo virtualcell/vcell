@@ -79,6 +79,21 @@ public class PBSConstants {
 		"Job failed due to a bad password"
 	};
 	
+
+	static final int PBS_SIMULATION_JOB = 1;
+	static final int PBS_SERVICE_JOB = 2;
+	
+	static final String PBS_JOB_TEMPLATE = 
+		    "#PBS -m a\r\n"
+			+"#PBS -M schaff@neuron.uchc.edu\r\n"
+			+"#PBS -j oe\r\n"
+			+"#PBS -k oe\r\n"
+			+"#PBS -r n\r\n"
+			+"#PBS -l nice=10\r\n"
+			+"\r\n"
+			+"export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\r\n"
+			+"export LD_LIBRARY_PATH=/share/apps/sonic/mq8.5.1:$LD_LIBRARY_PATH\r\n";
+	
 	final static String JOB_CMD_SUBMIT = "qsub";
 	final static String JOB_CMD_DELETE = "qdel";
 	final static String JOB_CMD_STATUS = "qstat";	
