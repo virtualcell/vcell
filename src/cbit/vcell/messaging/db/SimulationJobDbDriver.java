@@ -12,7 +12,6 @@ package cbit.vcell.messaging.db;
 import java.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import java.util.ArrayList;
@@ -87,10 +86,10 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 			
 			
 	sql += " AND "
-			+ jobTable.schedulerStatus + " in (" + SchedulerStatus.QUEUED.getDatabaseNumber() // in job queue
-			+ ","  + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
-			+ "," + SchedulerStatus.RUNNING.getDatabaseNumber()  // worker running it
-			+ "," + SchedulerStatus.WAITING.getDatabaseNumber() // waiting
+			+ jobTable.schedulerStatus + " in (" + SimulationJobStatus.SCHEDULERSTATUS_QUEUED // in job queue
+			+ ","  + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
+			+ "," + SimulationJobStatus.SCHEDULERSTATUS_RUNNING  // worker running it
+			+ "," + SimulationJobStatus.SCHEDULERSTATUS_WAITING // waiting
 			+ ")";
 
 	// AND upper(serverID) in ('serverid1', serverid2');
@@ -136,8 +135,8 @@ public SimulationJobStatus getNextObsoleteSimulation(Connection con, long interv
 	String sql = new String(standardJobStatusSQL);
 	sql += " AND (sysdate-" + jobTable.latestUpdateDate + ")*86400>" + intervalSeconds
 		+ " AND (" + jobTable.serverID + "='" + VCellServerID.getSystemServerID() + "')"
-		+ " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber() // running
-		+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
+		+ " AND (" + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_RUNNING // running
+		+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
 		+ ") and rownum<2 order by " + jobTable.submitDate;	
 			
 	Statement stmt = con.createStatement();
@@ -313,9 +312,9 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bAct
 	}
 
 	if (bActiveOnly) {
-		sql += " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.QUEUED.getDatabaseNumber() // in job queue
-			+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
-			+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber()  // worker running it
+		sql += " AND (" + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_QUEUED // in job queue
+			+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
+			+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_RUNNING  // worker running it
 			+ ")";
 	}
 	
@@ -396,25 +395,6 @@ public void updateSimulationJobStatus(Connection con, SimulationJobStatus simula
 	log.print("SimulationJobDbDriver.updateSimulationJobStatus(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
 	
 	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.getSQLUpdateList(simulationJobStatus) + 
-			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +
-			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex();
-	//log.print(sql);			
-	executeUpdate(con,sql);
-}
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-public void touchSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException {
-	if (simulationJobStatus == null || con == null){
-		throw new IllegalArgumentException("Improper parameters for touchSimulationJobStatus()");
-	}
-
-	log.print("SimulationJobDbDriver.touch(simKey="+simulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+")");
-	
-	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.latestUpdateDate.getUnqualifiedColName()+"=sysdate " + 
 			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +
 			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex();
 	//log.print(sql);			

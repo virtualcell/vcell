@@ -19,7 +19,6 @@ import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 /**
  * Insert the type's description here.
@@ -49,7 +48,7 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
 			}
 			// no job for the same simulation running				
 			// update the job status in the database and local memory
-			SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimID, jobIndex, null, SchedulerStatus.DISPATCHED, taskID, startMsg, 
+			SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED, taskID, startMsg, 
 				new SimulationQueueEntryStatus(null, MessageConstants.PRIORITY_DEFAULT, MessageConstants.QUEUE_ID_NULL), null);
 				
 			if (oldJobStatus == null) {

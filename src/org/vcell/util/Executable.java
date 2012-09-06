@@ -24,7 +24,6 @@ public class Executable {
 	private Integer exitValue = null;
 	private ExecutableStatus status = null;
 	private long timeoutMS = 0;
-	private long pollingIntervalMS = 1000;
 	private File workingDir = null;
 	private String[] execEnvVars = null;
 	
@@ -85,9 +84,6 @@ public Executable(String[] command, long arg_timeoutMS) {
 	timeoutMS = arg_timeoutMS;
 }
 
-public void setPollingIntervalMS(long pollingIntervalMS){
-	this.pollingIntervalMS = pollingIntervalMS;
-}
 
 /**
  * This method was created by a SmartGuide.
@@ -109,7 +105,7 @@ protected void executeProcess() throws org.vcell.util.ExecutableException {
 		// monitor the process; blocking call
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
-		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), pollingIntervalMS);
+		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 1000);
 		setExitValue(new Integer(exitCode));
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {

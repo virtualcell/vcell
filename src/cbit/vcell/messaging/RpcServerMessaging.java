@@ -19,7 +19,6 @@ import java.io.Serializable;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.messaging.server.RpcServer;
 import cbit.vcell.messaging.server.RpcRequest;
-import cbit.vcell.mongodb.VCMongoMessage;
 
 /**
  * Insert the type's description here.
@@ -180,10 +179,9 @@ public void publishExportStatus(ExportEvent event) throws JMSException  {
  * Creation date: (11/19/2001 5:29:47 PM)
  */
 protected void reconnect() throws JMSException {
-	VCMongoMessage.sendAlert("starting RpcServerMessaging.super.reconnect()  1 of 3");
 	super.reconnect();
-	VCMongoMessage.sendAlert("starting RpcServerMessaging.reconnect()  2 of 3");
-	clientRequestReceiver = jmsConn.getTransactedSession(); // transactional
+	
+	clientRequestReceiver = jmsConn.getTransactedSession(); // transactional	
 	int servicePrefetchCount = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.jmsServicePrefetchCount, "-1"));
 	if (servicePrefetchCount > 0) {
 		log.print("servicePrefetchCount=" + servicePrefetchCount);
@@ -191,7 +189,6 @@ protected void reconnect() throws JMSException {
 	}
 	clientRequestReceiver.setupQueueListener(queueName, msgSelector, new QueueMessageCollector(this));
 	jmsConn.startConnection();
-	VCMongoMessage.sendAlert("starting RpcServerMessaging.reconnect()  3 of 3");
 }
 
 
@@ -200,9 +197,7 @@ protected void reconnect() throws JMSException {
  * Creation date: (11/19/2001 5:29:47 PM)
  */
 public void startListening() throws JMSException {
-	VCMongoMessage.sendAlert("starting RpcServerMessaging.startListening() 1 of 2");
 	log.print("I am starting to take requests!");
 	jmsConn.startConnection();
-	VCMongoMessage.sendAlert("starting RpcServerMessaging.startListening() 2 of 2");
 }
 }

@@ -242,7 +242,7 @@ public class VCComprehensiveStatistics {
 							for (int scan = 0; scan < sim.getScanCount(); scan ++) {
 								SimulationJobStatus jobStatus = ss.getJobStatus(scan);
 								if (jobStatus != null) {
-									if (jobStatus.getSchedulerStatus().isCompleted()) {								
+									if (jobStatus.getSchedulerStatus() == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {								
 										bHasCompletedSim = true;
 										long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 										if (elapsed < 2 * MINUTE_IN_MS) {
@@ -376,7 +376,7 @@ public class VCComprehensiveStatistics {
 								for (int scan = 0; scan < sim.getScanCount(); scan ++) {
 									SimulationJobStatus jobStatus = ss.getJobStatus(scan);
 									if (jobStatus != null) {
-										if (jobStatus.getSchedulerStatus().isCompleted()) {								
+										if (jobStatus.getSchedulerStatus() == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {								
 											bHasCompletedSim = true;
 											long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 											if (elapsed < 2 * MINUTE_IN_MS) {

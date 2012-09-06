@@ -15,8 +15,6 @@ import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 
-import cbit.htc.PBSConstants.PBSJobExitCode;
-import cbit.htc.PBSConstants.PBSJobStatus;
 import cbit.htc.PBSUtils;
 import cbit.htc.PbsJobID;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -72,7 +70,7 @@ private PbsJobID submit2PBS() throws SolverException, ExecutableException {
  * 
  */
 @Deprecated
-private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
+private void babysitPBSSubmission(PbsJobID jobid) throws SolverException{
 
 	// if PBS has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
@@ -80,7 +78,7 @@ private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
 	// to avoid this, kill the job, ask the user to try again later if the jobs
 	// are not in running status 2 minutes after submission.
 	long t = System.currentTimeMillis();
-	PBSJobStatus status;
+	int status;
 	while (true) {
 		try {
 			Thread.sleep(1000);
@@ -89,8 +87,8 @@ private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
 		
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"done waiting 1 second, getting pbs status");
 		status = PBSUtils.getJobStatus(jobid);
-		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbsStatus = "+status.getPBSCommandLetter());
-		if (status.isExiting()){
+		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbsStatus = "+PBSUtils.getJobStatusDescription(status));
+		if (PBSUtils.isJobExiting(status)){
 			// pbs command tracejob takes more than 1 minute to get exit status after the job exists. 
 			// we don't want to spend so much time on a job, especially when the job is very short. 
 			// However, if dispatcher restarted the simulation, which means the first run failed, 
@@ -102,15 +100,14 @@ private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
 				} catch (InterruptedException ex) {
 				}
 				VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"getting pbs status");
-				PBSJobExitCode exitCode = PBSUtils.getPbsTraceJobExitCode(jobid);
-				if (!exitCode.isOK()) {
+				if (!PBSUtils.isJobExecOK(jobid)) {
 					VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status indicates exit status");
-					throw new SolverException("Job [" + jobid + "] exited unexpectedly: [" + exitCode.getDescription() + "]");			
+					throw new SolverException("Job [" + jobid + "] exited unexpectedly: [" + PBSUtils.getJobExecStatus(jobid));			
 				}
 			}
 			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status Okay");
 			break;
-		} else if (status.isRunning()) {
+		} else if (PBSUtils.isJobRunning(status)) {
 			//check to see if it exits soon after it runs
 			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"Job is running, waiting 1 second before getting pbs status");
 			try {
@@ -118,18 +115,17 @@ private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
 			} catch (InterruptedException ex) {
 			}
 			status = PBSUtils.getJobStatus(jobid);
-			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status = "+status.getDescription());
-			if (status.isExiting()) {
+			VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status = "+PBSUtils.getJobStatusDescription(status));
+			if (PBSUtils.isJobExiting(status)) {
 				if ((simulationTask.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) != 0) {
 					VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"status indicates exiting and retry>0, waiting 1 minute");
 					try {
 						Thread.sleep(MessageConstants.MINUTE_IN_MS); // have to sleep at least one minute to get tracejob exist status;
 					} catch (InterruptedException ex) {
 					}
-					PBSJobExitCode exitCode = PBSUtils.getPbsTraceJobExitCode(jobid);
-					if (!exitCode.isOK()) {
+					if (!PBSUtils.isJobExecOK(jobid)) {
 						VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"pbs status indicates exit status");
-						throw new SolverException("Job [" + jobid + "] exited unexpectedly: " + exitCode.getDescription());
+						throw new SolverException("Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid));			
 					}
 				}
 			}
@@ -141,8 +137,8 @@ private void babysitPBSSubmission(PbsJobID jobid) throws Exception{
 			throw new SolverException("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 		}
 	}
-	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + status.getDescription());
-	VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + status.getDescription());
+	System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
+	VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobid,"It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status " + PBSUtils.getJobStatusDescription(status));
 }
 
 @Override

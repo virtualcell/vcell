@@ -103,7 +103,6 @@ public static ServerPerformance getDaemonPerformance() {
 		}
 		try {
 			Executable executable = new Executable(new String[]{PROGRAM});
-			executable.setPollingIntervalMS(0);
 			executable.start();
 			String stdout = executable.getStdoutString();
 			java.util.StringTokenizer tokens = new java.util.StringTokenizer(stdout);
@@ -140,7 +139,6 @@ public static String getEnvVariable(String keyword, org.vcell.util.SessionLog lo
 	
 	try {
 		Executable exe = new Executable(command);
-		exe.setPollingIntervalMS(0);
 		exe.start();
 		value = exe.getStdoutString().trim();
 	} catch (Exception e) {

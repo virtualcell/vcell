@@ -10,7 +10,6 @@
 
 package cbit.vcell.server;
 import cbit.vcell.messaging.db.*;
-
 import java.sql.*;
 
 import org.vcell.util.DataAccessException;
@@ -84,7 +83,4 @@ SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatu
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus updateSimulationJobStatus(Connection con, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException;
-
-
-void touchSimulationJobStatus(Connection connection, SimulationJobStatus simulationJobStatus)  throws DataAccessException;
 }
