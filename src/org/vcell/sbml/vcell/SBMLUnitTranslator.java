@@ -207,22 +207,10 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 	 */
 	private static VCUnitDefinition getVCUnit(org.sbml.libsbml.Unit unit, VCUnitSystem vcUnitSystem) {
 		// Get the attributes of the unit 'element', 'kind', 'multiplier', 'scale', 'offset', etc.
-		String unitKind = null;
-		if (unit.isSetKind()){
-			unitKind = org.sbml.libsbml.libsbml.UnitKind_toString(unit.getKind());
-		}
-		int unitExponent = 1;
-		if (unit.isSetExponent()){
-			unitExponent = unit.getExponent();
-		}
-		int unitScale = 1;
-		if (unit.isSetScale()){
-			unitScale = unit.getScale();
-		}
-		double unitMultiplier = 1.0;
-		if (unit.isSetMultiplier()){
-			unitMultiplier = unit.getMultiplier();
-		}
+		String unitKind = org.sbml.libsbml.libsbml.UnitKind_toString(unit.getKind());
+		int unitExponent = unit.getExponent();
+		int unitScale = unit.getScale();
+		double unitMultiplier = unit.getMultiplier();
 		String vcScaleStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
 
 		VCUnitDefinition vcUnit = null;
@@ -235,10 +223,8 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 			if (unit.isItem()) {
 				System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
 				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " molecules" + unitExponent);
-			} else if (unitKind != null){
-				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + unitKind + unitExponent);
 			} else {
-				vcUnit = vcUnitSystem.getInstance(vcScaleStr);
+				vcUnit = vcUnitSystem.getInstance(vcScaleStr + " " + unitKind + unitExponent);
 			}
 		}
 		return vcUnit;
