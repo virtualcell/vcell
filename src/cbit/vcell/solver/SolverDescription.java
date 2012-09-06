@@ -171,7 +171,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Hybrid (Gibson + Milstein Method)",
 		"Hybrid (Adaptive Gibson + Milstein Method)",
 		"CVODE (Variable Order, Variable Time Step)",
-		"Semi-Implicit Finite Volume, Regular Grid (Fixed Time Step)",
+		"Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)",
 		"Combined Stiff Solver (IDA/CVODE)",
 		"Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
 		"Smoldyn (Spatial Stochastic Simulator)",

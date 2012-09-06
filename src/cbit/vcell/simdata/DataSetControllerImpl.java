@@ -901,7 +901,7 @@ private static HashMap<String, String> getHDF5Attributes(HObject hObject) throws
 		for (int j = 0; j < metaDataL.size(); j++) {
     		Attribute attr = (Attribute)metaDataL.get(j);
     		String attrValue = attr.toString(",");
-    		System.out.print(" "+attr.getName()+"='"+attrValue+"'");
+    		//System.out.print(" "+attr.getName()+"='"+attrValue+"'");
     		attrHashMap.put(attr.getName(),attr.toString(","));
 		}
 	}
