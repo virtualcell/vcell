@@ -104,7 +104,6 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellServer;
@@ -2175,7 +2174,6 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {		
 		PropertyLoader.loadProperties();
-		VCMongoMessage.serviceStartup(ServiceName.console, 0, args);
 		
 		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 		ServerManageConsole aServerManageConsole = new ServerManageConsole();		

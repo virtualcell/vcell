@@ -56,16 +56,6 @@ public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) thr
 	parseMessage(dispatcher, message0);
 }
 
-public static String getWorkerEventSelector_ProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
-			"("+WORKEREVENT_STATUS+" IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
-}
-
-public static String getWorkerEventSelector_NotProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
-			"("+WORKEREVENT_STATUS+" NOT IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
-}
-
 
 /**
  * Insert the method's description here.

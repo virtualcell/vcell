@@ -150,15 +150,4 @@ public SimulationJobStatus updateSimulationJobStatus(java.sql.Connection con, Si
 		throw new DataAccessException("failure updating SimulationJobStatus: "+oldSimulationJobStatus);
 	}
 }
-
-/**
- */
-public void touchSimulationJobStatus(java.sql.Connection con, SimulationJobStatus simulationJobStatus) throws DataAccessException {
-	try {
-		adminDbTop.touchSimulationJobStatus(con, simulationJobStatus);
-	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException("failure touch SimulationJobStatus: "+simulationJobStatus);
-	}
-}
 }
