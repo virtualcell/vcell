@@ -66,11 +66,8 @@ public static void main(java.lang.String[] args) {
 			}
 		}
 	}
-	boolean bHostsSpecified = false;
 	if (hosts == null) {
 		hosts = new String[1];
-	} else {
-		bHostsSpecified = true;
 	}
 	String user = null;
 	String password = null;
@@ -84,9 +81,7 @@ public static void main(java.lang.String[] args) {
 	}else if (args.length==1){
 		hosts[0] = args[0];
 	}else if (args.length==2 && args[0].equals("-open")){
-		if (!bHostsSpecified) {
-			hosts[0] = "-local";
-		}
+//		hosts[0] = "-local";
 		String filename = args[1];
 		try {
 			Document xmlDoc = XmlUtil.readXML(new File(filename));
@@ -102,7 +97,7 @@ public static void main(java.lang.String[] args) {
 		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | (-open filename) )");
 		System.exit(1);
 	}
-	if (hosts[0].equalsIgnoreCase("-local")) {
+	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
 		csInfo = ClientServerInfo.createLocalServerInfo(user, password);
 	} else {
 		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user, password);
