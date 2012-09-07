@@ -250,45 +250,80 @@ public static void killJob(PbsJobID jobid) {
  */
 public static void main(String[] args) {		
 	
-	try {		
-		PropertyLoader.loadProperties();
-		
-		PbsJobID jobid = new PbsJobID("29908"); //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
-		int status = PBSUtils.getJobStatus(jobid);
-		System.out.println("jobid=" + jobid);
-		System.out.println("status=" + PBS_JOB_STATUS[status]);
-		System.out.println("pendingreason=" + getPendingReason(jobid));
-		int code = PBSUtils.getJobExitCode(jobid);
-		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
-	} catch (Exception ex) {
-		ex.printStackTrace();
-	}
+//	try {		
+//		PropertyLoader.loadProperties();
+//		
+//		PbsJobID jobid = new PbsJobID("29908"); //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
+//		int status = PBSUtils.getJobStatus(jobid);
+//		System.out.println("jobid=" + jobid);
+//		System.out.println("status=" + PBS_JOB_STATUS[status]);
+//		System.out.println("pendingreason=" + getPendingReason(jobid));
+//		int code = PBSUtils.getJobExitCode(jobid);
+//		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
+//	} catch (Exception ex) {
+//		ex.printStackTrace();
+//	}
+	
+	
+//	try {
+//		PropertyLoader.loadProperties();
+//		submitServiceJob ("Resource", "T_Db1", "C:\\Users\\eboyce\\Desktop\\testTemplate.sub", "dir", "*.*", 5, 128);
+//	} catch (ExecutableException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	} catch (IOException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
+	
+	
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 8:04:51 AM)
- * @param command java.lang.String
- */
-public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {	
+
+
+
+
+public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SIMULATION_JOB);
+}
+
+public static PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SERVICE_JOB);
+}
+
+private static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, int jobCategory) throws ExecutableException {	
 	try {	
-		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
 		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
+		pw.println("# Generated without file template.");
 		pw.println("#PBS -N " + jobName);
 		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb");
-		
-		while (true) {
-			String line = br.readLine();
-			if (line == null) {
-				break;
-			}
-			pw.println(line);
+		String pbsQueueNameString = "#PBS -q ";
+		String siteNameString = null;
+		String siteNAMEString = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty).trim();
+		if (siteNAMEString.toUpperCase().equals("ALPHA")) {siteNameString = "Alpha";} 
+		else if  (siteNAMEString.toUpperCase().equals("BETA")) {siteNameString = "Beta";} 
+		else if  (siteNAMEString.toUpperCase().equals("REL")) {siteNameString = "Rel";} 
+		else if  (siteNAMEString.toUpperCase().equals("TEST")) {siteNameString = "Test";} 
+		else {
+			pw.close();
+			throw new ExecutableException("Invalid Server Site ID String: \""+siteNAMEString+"\"");
 		}
 		
-		pw.println(executable + " " + cmdArguments);
+		if (jobCategory==PBSConstants.PBS_SIMULATION_JOB) {
+			pbsQueueNameString = pbsQueueNameString+"workq"+siteNameString;
+		}
+		else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
+			pbsQueueNameString = pbsQueueNameString+"serviceq"+siteNameString;
+		} else {
+			pw.close();
+			throw new ExecutableException("Invalid jobCategory: "+Integer.toString(jobCategory));
+		}
+		
+		pw.println(pbsQueueNameString);
+		pw.print(PBSConstants.PBS_JOB_TEMPLATE);
 		pw.println();
+		pw.println(executable + " " + cmdArguments);
 		pw.close();
-		br.close();
 	} catch (IOException ex) {
 		ex.printStackTrace(System.out);
 		return null;
