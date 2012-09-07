@@ -51,11 +51,14 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 		
 		initExpr = MathUtilities.substituteFunctions(initExpr, varsSymbolTable).flatten();
 		initExpr.substituteInPlace(new Expression("t"), new Expression(0.0));
-		for(String symbol:initExpr.getSymbols()){
-			SymbolTableEntry ste = initExpr.getSymbolBinding(symbol);
-			if( !ste.equals(ReservedVariable.X) && !ste.equals(ReservedVariable.Y) && !ste.equals(ReservedVariable.Z) 
-				&&  !ste.equals(ReservedSymbol.X) && !ste.equals(ReservedSymbol.Y) && !ste.equals(ReservedSymbol.Z)){
-				throw new MathException("Variables are not allowed in initial condition.\nInitial condition of variable:" + stateVar.getVariable().getName() + " has variable(" +symbol+ ") in expression."); 
+		String[] symbols0 = initExpr.getSymbols();
+		if(symbols0 != null){
+			for(String symbol:symbols0){
+				SymbolTableEntry ste = initExpr.getSymbolBinding(symbol);
+				if( !ste.equals(ReservedVariable.X) && !ste.equals(ReservedVariable.Y) && !ste.equals(ReservedVariable.Z) 
+					&&  !ste.equals(ReservedSymbol.X) && !ste.equals(ReservedSymbol.Y) && !ste.equals(ReservedSymbol.Z)){
+					throw new MathException("Variables are not allowed in initial condition.\nInitial condition of variable:" + stateVar.getVariable().getName() + " has variable(" +symbol+ ") in expression."); 
+				}
 			}
 		}
 		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
