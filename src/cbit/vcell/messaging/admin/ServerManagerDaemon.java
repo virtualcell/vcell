@@ -203,7 +203,7 @@ private PbsJobID submit2PBS(ServiceStatus service) throws IOException, Executabl
 	
 	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
-	return PBSUtils.submitJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB());
+	return PBSUtils.submitServiceJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB());
 }
 /**
  * This method was created in VisualAge.
