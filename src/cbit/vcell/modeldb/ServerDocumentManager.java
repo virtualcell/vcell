@@ -293,6 +293,7 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 		try {
 			simArray[i] = (Simulation)BeanUtils.cloneSerializable(sim);
 		}catch (Throwable e){
+			e.printStackTrace(System.out);
 			throw new RuntimeException("exception cloning Simulation: "+e.getMessage());
 		}
 	}
@@ -305,7 +306,9 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 		//
 		try {
 			scArray[i] = (SimulationContext)BeanUtils.cloneSerializable(sc);
+			scArray[i].setModel(model);
 		}catch (Throwable e){
+			e.printStackTrace(System.out);
 			throw new RuntimeException("exception cloning Application: "+e.getMessage());
 		}
 		if (!scArray[i].getModel().getKey().compareEqual(modelKey)){

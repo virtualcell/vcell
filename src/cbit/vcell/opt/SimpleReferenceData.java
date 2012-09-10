@@ -135,7 +135,16 @@ public SimpleReferenceData(ReferenceData argReferenceData) {
 	super();
 	
 	this.dataNames = (String[])argReferenceData.getColumnNames().clone();
-	this.weights = argReferenceData.getWeights().clone();
+	if(argReferenceData.getWeights() instanceof VariableWeights){
+		this.weights = new VariableWeights((VariableWeights)argReferenceData.getWeights()); 
+	} else if(argReferenceData.getWeights() instanceof ElementWeights){
+		this.weights = new ElementWeights((ElementWeights)argReferenceData.getWeights()); 
+	} else if(argReferenceData.getWeights() instanceof TimeWeights){
+		this.weights = new TimeWeights((TimeWeights)argReferenceData.getWeights()); 
+	} else{
+		throw new IllegalArgumentException("Unknown weight type: " + argReferenceData.getWeights().getClass().getName() + ".");
+	}
+		
 	for (int i = 0; i < argReferenceData.getNumDataRows(); i++){
 		this.rowData.add(argReferenceData.getDataByRow(i).clone());
 	}
