@@ -81,7 +81,7 @@ public class CopasiOptimizationSolver {
 		}
 	}
 	
-	public static class CopasiOptimizationParameter {
+	public static class CopasiOptimizationParameter implements java.io.Serializable{
 		private CopasiOptimizationParameterType type;
 		private double value;
 		
@@ -123,7 +123,7 @@ public class CopasiOptimizationSolver {
 		}
 	}
 	
-	public static class CopasiOptimizationMethod {
+	public static class CopasiOptimizationMethod implements java.io.Serializable {
 		private CopasiOptimizationMethodType type;
 		private CopasiOptimizationParameter[] realParameters;
 		

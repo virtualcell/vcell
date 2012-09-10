@@ -10,6 +10,8 @@
 
 package cbit.vcell.opt;
 
+import java.io.Serializable;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 /**
@@ -17,7 +19,8 @@ import org.vcell.util.Matchable;
  * Can be used for SimpleReferenceData, SpatialReferenceData
  * @author Tracy Li
  */
-public class TimeWeights implements Weights {
+@SuppressWarnings("serial")
+public class TimeWeights implements Weights, Serializable {
 
 	double[] weights = null;
 	
@@ -28,8 +31,7 @@ public class TimeWeights implements Weights {
 	     
 	public TimeWeights(TimeWeights argTimeWeights)
 	{
-		double[] argWeightData = argTimeWeights.getWeightData();
-		this.weights = argWeightData.clone();
+		this.weights = argTimeWeights.getWeightData().clone();
 	}
 	
 	public int getNumWeights()
@@ -58,9 +60,5 @@ public class TimeWeights implements Weights {
 		}
 		return false;
 	}
-	
-	public TimeWeights clone()
-	{
-		return new TimeWeights(this);
-	}
+		
 }

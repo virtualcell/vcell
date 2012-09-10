@@ -10,6 +10,8 @@
 
 package cbit.vcell.opt;
 
+import java.io.Serializable;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 /**
@@ -18,7 +20,8 @@ import org.vcell.util.Matchable;
  * It can be considered as the columnWeights in SimpleReferenceData.
  * @author Tracy Li
  */
-public class VariableWeights implements Weights {
+@SuppressWarnings("serial")
+public class VariableWeights implements Weights, Serializable {
 	double[] weights = null;
 	
 	public VariableWeights(double[] argVarWeights)
@@ -28,8 +31,7 @@ public class VariableWeights implements Weights {
 
 	public VariableWeights(VariableWeights argVariableWeights)
 	{
-		double[] argWeightData = argVariableWeights.getWeightData();
-		this.weights = argWeightData.clone();
+		this.weights = argVariableWeights.getWeightData().clone();
 	}
 	
 	public int getNumWeights() {
@@ -57,9 +59,5 @@ public class VariableWeights implements Weights {
 		}
 		return false;
 	}
-
-	public VariableWeights clone()
-	{
-		return new VariableWeights(this);
-	}
+	
 }

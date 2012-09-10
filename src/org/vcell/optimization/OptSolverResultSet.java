@@ -37,7 +37,7 @@ public class OptSolverResultSet implements java.io.Serializable {
 		}
 	}
 	//nested class
-	public static class OptRunResultSet {
+	public static class OptRunResultSet implements java.io.Serializable{
 		private double[] fieldParameterValues = null;
 		private Double fieldObjectiveFunctionValue = null;
 		private long numObjFunctionEvaluations = 0;		
