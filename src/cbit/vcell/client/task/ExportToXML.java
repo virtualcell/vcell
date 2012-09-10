@@ -29,6 +29,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Quadrilateral;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -54,7 +55,7 @@ public class ExportToXML extends AsynchClientTask {
  * Insert the method's description here.
  * Creation date: (7/26/2004 12:29:53 PM)
  */
-private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws ExpressionException, MathException {
+private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws ExpressionException, MathException, MappingException {
 	Simulation sim = new Simulation(mathDesc);
 	MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
 	java.io.StringWriter sw = new java.io.StringWriter();
@@ -63,9 +64,7 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
 	if (functionName.endsWith(".m")){
 		functionName = functionName.substring(0,functionName.length()-2);
 	}
-	if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription())){
-		coder.write_V5_OdeFile(pw,functionName);
-	}else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
+	if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
 		coder.write_V6_MFile(pw,functionName);
 	}
 	pw.flush();
@@ -88,16 +87,19 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	if (documentToExport instanceof BioModel) {
 		BioModel bioModel = (BioModel)documentToExport;
 		// check format requested
-		if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) ||
-			fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
+		if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
 			// matlab from application; get application
 			Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
 			SimulationContext chosenSimContext = bioModel.getSimulationContext(chosenSimContextIndex.intValue());
 			// regenerate a fresh MathDescription
 			MathMapping mathMapping = chosenSimContext.createNewMathMapping();
 			MathDescription mathDesc = mathMapping.getMathDescription();
-			// do export
-			resultString = exportMatlab(exportFile, fileFilter, mathDesc);
+			if(mathDesc != null && !mathDesc.isSpatial() && !mathDesc.isNonSpatialStoch()){
+				// do export
+				resultString = exportMatlab(exportFile, fileFilter, mathDesc);
+			}else{
+				throw new Exception("Matlab export failed: NOT an non-spatial deterministic application!");
+			}
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {   
 			FileOutputStream fos = null;
 			try {
@@ -179,10 +181,15 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	} else if (documentToExport instanceof MathModel) {
 		MathModel mathModel = (MathModel)documentToExport;
 		// check format requested
-		if (fileFilter.equals(FileFilters.FILE_FILTER_MATLABV5) ||
-			fileFilter.equals(FileFilters.FILE_FILTER_MATLABV6)){
-			MathDescription mathDesc = mathModel.getMathDescription();
-			resultString = exportMatlab(exportFile, fileFilter, mathDesc);
+		if (fileFilter.equals(FileFilters.FILE_FILTER_MATLABV6)){
+			//check if it's ODE
+			if(mathModel.getMathDescription() != null && 
+			  (!mathModel.getMathDescription().isSpatial() && !mathModel.getMathDescription().isNonSpatialStoch())){
+				MathDescription mathDesc = mathModel.getMathDescription();
+				resultString = exportMatlab(exportFile, fileFilter, mathDesc);
+			}else{
+				throw new Exception("Matlab export failed: NOT an non-spatial deterministic model.");
+			}
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
 			FileOutputStream fos = new FileOutputStream(exportFile);
 			documentManager.generatePDF(mathModel, fos);
