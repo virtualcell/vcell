@@ -19,7 +19,6 @@ public interface FileFilters {
 	//public static final FileFilter FILE_FILTER_RTF 		= new ExtensionFilter(".rtf",	"RTF Files (*.rtf)");
 	public static final FileFilter FILE_FILTER_PDF 		= new ExtensionFilter(".pdf",	"Report (*.pdf)");
 	//public static final FileFilter FILE_FILTER_HTM 		= new ExtensionFilter(".htm",	"HTML Files (*.htm)");
-	public static final FileFilter FILE_FILTER_MATLABV5 = new ExtensionFilter(".m",		"Matlab v5.0 odefile (*.m)");
 	public static final FileFilter FILE_FILTER_MATLABV6 = new ExtensionFilter(".m",		"Matlab v6.0 ode function (*.m)");
 	public static final FileFilter FILE_FILTER_CSV 		= new ExtensionFilter(".csv",	"CSV Files (*.csv)");
 	public static final FileFilter FILE_FILTER_MOV 		= new ExtensionFilter(".mov",	"MOV Files (*.mov)");
