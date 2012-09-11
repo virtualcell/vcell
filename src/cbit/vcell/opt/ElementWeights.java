@@ -10,10 +10,13 @@
 
 package cbit.vcell.opt;
 
+import java.io.Serializable;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-public class ElementWeights implements Weights {
+@SuppressWarnings("serial")
+public class ElementWeights implements Weights, Serializable {
 	double[][] weights = null;
 	//first dimension is number of rows, second dimension is number of columns
 	public ElementWeights(double[][] argElementWeights)
@@ -24,7 +27,7 @@ public class ElementWeights implements Weights {
 	public ElementWeights(ElementWeights argElementWeights)
 	{
 		double[][] argWeightData = argElementWeights.getWeightData();
-		this.weights = new double[argWeightData.length][argWeightData[0].length];
+		this.weights = new double[argWeightData.length][];
 		for(int i=0; i<argWeightData.length; i++)
 		{
 			weights[i] = argWeightData[i].clone();
@@ -68,9 +71,4 @@ public class ElementWeights implements Weights {
 		return true;
 	}
 	
-	public ElementWeights clone()
-	{
-		return new ElementWeights(this);
-	}
-
 }
