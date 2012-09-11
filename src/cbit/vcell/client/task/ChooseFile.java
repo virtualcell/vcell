@@ -101,7 +101,6 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 	// remove all selector
@@ -144,8 +143,6 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV5 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
@@ -164,7 +161,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				throw new Exception("At least one application must be created in order to export to this format");
 			}				
 			Vector<String> applicableAppNameList = new Vector<String>();
-			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription()) || 
+			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) ||
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) || 
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) ) {
@@ -458,7 +455,6 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 	// set the default file filter...
@@ -497,8 +493,6 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_23 && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV5 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {

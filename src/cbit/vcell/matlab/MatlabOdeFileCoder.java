@@ -15,6 +15,8 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
@@ -55,158 +57,7 @@ public MatlabOdeFileCoder(Simulation argSimulation, RationalNumberMatrix argStoi
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws MathException, ExpressionException {
-	MathDescription mathDesc = simulation.getMathDescription();
-	if (!mathDesc.isValid()){
-		throw new MathException("invalid math description\n" + mathDesc.getWarning());
-	}
-	if (mathDesc.isSpatial()){
-		throw new MathException("spatial math description, cannot create ode file");
-	}
-	if (mathDesc.hasFastSystems()){
-		throw new MathException("math description contains algebraic constraints, cannot create ode file");
-	}
-
-	//
-	// print function declaration
-	//
-	pw.println("function varargout = "+odeFileName+"(t,y,flag)");
-	
-	//
-	// print constants
-	//
-	pw.println("% Constants");
-	Variable variables[] = simulationSymbolTable.getVariables();
-	for (int i = 0; i < variables.length; i++){
-		Variable var = (Variable)variables[i];
-		if (var instanceof Constant){
-			Constant constant = (Constant)var;
-			pw.println(TokenMangler.getEscapedTokenMatlab(constant.getName())+" = "+constant.getExpression().infix_Matlab()+";");
-		}
-	}
-
-	//pw.println("SIZEY = size(y);");
-	//pw.println("if SIZEY ~= 0");
-	Vector<VolVariable> volVarList = new Vector<VolVariable>();
-	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof VolVariable){
-			volVarList.addElement((VolVariable)variables[i]);
-		}
-	}
-	VolVariable volVars[] = (VolVariable[])BeanUtils.getArray(volVarList,VolVariable.class);
-	CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
-	//
-	// print volVariables (in order and assign to var vector)
-	//
-	pw.println("% Variables");
-	pw.println("% need this for time=0 (initial conditions) when y is empty");
-	for (int i = 0; i < volVars.length; i++){
-		Expression initialExp = subDomain.getEquation(volVars[i]).getInitialExpression();
-		pw.println(TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
-	}
-	pw.println("SIZEY = size(y);");
-	pw.println("if SIZEY ~= 0\t\t% when y is not empty");
-	for (int i = 0; i < volVars.length; i++){
-		pw.println("\t"+TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+"y("+(i+1)+");");
-	}
-	pw.println("end");
-
-	//
-	// print functions
-	//
-	pw.println("% Functions");
-	for (int i = 0; i < variables.length; i++){
-		Variable var = (Variable)variables[i];
-		if (var instanceof Function){
-			Function function = (Function)var;
-			pw.println(TokenMangler.getEscapedTokenMatlab(function.getName())+" = "+function.getExpression().infix_Matlab()+";");
-		}
-	}
-	
-	//
-	// print switch statement
-	//
-	pw.println("switch flag");
-	
-	//
-	// print ode-rate
-	//
-	pw.println("\tcase ''");
-	pw.println("\t\tdydt = [");
-	for (int i=0;i<volVars.length;i++){
-		pw.println("\t\t\t"+subDomain.getEquation(volVars[i]).getRateExpression().infix_Matlab()+";    % rate for "+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName()));
-	}
-	pw.println("\t\t];");
-	pw.println("\t\tvarargout{1} = dydt;");
-
-	//
-	// print initial values
-	//
-	pw.println("\tcase 'init'");
-	double beginTime = 0.0;
-	double endTime = simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
-		pw.println("\t\ttspan = ["+beginTime+" "+endTime+"];");
-	pw.print("\t\ty0 = [");
-	for (int j=0;j<volVars.length;j++){
-		pw.println("\t\t\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+",\t\t% set above under variables");
-	}
-	pw.println("\t\t];");
-	pw.println("\t\toptions = odeset('maxorder',5);");
-
-	pw.println("\t\tvarargout{1} = tspan;");
-	pw.println("\t\tvarargout{2} = y0;");
-	pw.println("\t\tvarargout{3} = options;");
-		
-	//
-	// print jacobian
-	//
-	pw.println("\tcase 'jacobian'");
-	pw.println("\t\tdfdy = [");
-	for (int i=0;i<volVars.length;i++){
-		for (int j=0;j<volVars.length;j++){
-			Expression rate = subDomain.getEquation(volVars[i]).getRateExpression();
-			rate.bindExpression(simulationSymbolTable);
-			rate = simulationSymbolTable.substituteFunctions(rate);
-			Expression differential = rate.differentiate(volVars[j].getName());
-			differential.bindExpression(simulationSymbolTable);
-			differential = differential.flatten();
-			pw.println("\t\t\t"+differential.infix_Matlab()+","); //    % d "+volVars[i].getName())+"' / d "+volVars[j].getName()));
-		}
-		pw.println("\t\t\t;");
-	}
-	pw.println("\t\t];");
-	pw.println("\t\tvarargout{1} = dfdy;");
-
-	if (stoichMatrix != null){
-		//
-		// print stoichiometry matrix if supplied
-		//
-		pw.println("\tcase 'stoichiometry'");
-		pw.println("\t\tstoich = [");
-		int numRows = stoichMatrix.getNumRows();
-		int numCols = stoichMatrix.getNumCols();
-		for (int i=0;i<numRows;i++){
-			for (int j=0;j<numCols;j++){
-				pw.print(stoichMatrix.get_elem(i,j)+",");
-			}
-			pw.println(";");
-		}
-		pw.println("\t\t];");
-		pw.println("\t\tvarargout{1} = stoich;");
-	}
-	//
-	// else unhandled
-	//
-	pw.println("\totherwise");
-	pw.println("\t\terror(['Unknown flag ''' flag '''.']);");
-	pw.println("\tend");
-	pw.println("");
-}
-/**
- * Insert the method's description here.
- * Creation date: (3/8/00 10:31:52 PM)
- */
-public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws MathException, ExpressionException {
+public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws MathException, ExpressionException, MappingException{
 	MathDescription mathDesc = simulation.getMathDescription();
 	if (!mathDesc.isValid()){
 		throw new MathException("invalid math description\n" + mathDesc.getWarning());
@@ -236,7 +87,12 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("%     param is the parameter vector that was used");
 	pw.println("%");
 	
-	Variable variables[] = simulationSymbolTable.getVariables();
+	VariableHash varHash = new VariableHash();
+	for(Variable var:simulationSymbolTable.getVariables()){
+		varHash.addVariable(var);
+	}
+	Variable variables[] = varHash.getTopologicallyReorderedVariables();
+	
 	CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
 
 	//
