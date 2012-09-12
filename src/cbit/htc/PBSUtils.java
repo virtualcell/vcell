@@ -299,7 +299,9 @@ private static PbsJobID submitJob(String computeResource, String jobName, String
 		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb");
 		String pbsQueueNameString = "#PBS -q ";
 		String siteNameString = null;
-		String siteNAMEString = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty).trim();
+		String siteNAMEString = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String pbsServiceQueueNamePrefix = PropertyLoader.getProperty("pbsServiceQueuePrefix", PBSConstants.PBS_SERVICE_QUEUE_PREFIX);
+		String pbsWorkQueueNamePrefix = PropertyLoader.getProperty("pbsWorkQueuePrefix", PBSConstants.PBS_WORK_QUEUE_PREFIX);
 		if (siteNAMEString.toUpperCase().equals("ALPHA")) {siteNameString = "Alpha";} 
 		else if  (siteNAMEString.toUpperCase().equals("BETA")) {siteNameString = "Beta";} 
 		else if  (siteNAMEString.toUpperCase().equals("REL")) {siteNameString = "Rel";} 
@@ -308,12 +310,12 @@ private static PbsJobID submitJob(String computeResource, String jobName, String
 			pw.close();
 			throw new ExecutableException("Invalid Server Site ID String: \""+siteNAMEString+"\"");
 		}
-		
+	
 		if (jobCategory==PBSConstants.PBS_SIMULATION_JOB) {
-			pbsQueueNameString = pbsQueueNameString+"workq"+siteNameString;
+			pbsQueueNameString = pbsQueueNameString+pbsWorkQueueNamePrefix+siteNameString;
 		}
 		else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
-			pbsQueueNameString = pbsQueueNameString+"serviceq"+siteNameString;
+			pbsQueueNameString = pbsQueueNameString+pbsServiceQueueNamePrefix+siteNameString;
 		} else {
 			pw.close();
 			throw new ExecutableException("Invalid jobCategory: "+Integer.toString(jobCategory));

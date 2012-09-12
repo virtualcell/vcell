@@ -83,6 +83,8 @@ public class PBSConstants {
 	static final int PBS_SIMULATION_JOB = 1;
 	static final int PBS_SERVICE_JOB = 2;
 	
+	static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
+	static final String PBS_WORK_QUEUE_PREFIX = "workq";
 	static final String PBS_JOB_TEMPLATE = 
 		    "#PBS -m a\r\n"
 			+"#PBS -M schaff@neuron.uchc.edu\r\n"
