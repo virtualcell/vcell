@@ -156,12 +156,13 @@ public class PropertyLoader {
 	
 	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
 	
-	public static final String htcSubmitTemplates = "vcell.htc.submittemplates";		
 	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
 	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
 	public static final String htcComputeResources = "vcell.htc.computeresources";
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
+	public static final String pbsServiceQueuePrefix = "vcell.pbs.pbsServiceQueuePrefix";
+	public static final String pbsWorkQueuePrefix = "vcell.pbs.pbsWorkQueuePrefix";
 	
 	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
@@ -295,12 +296,12 @@ public class PropertyLoader {
 		vcellClientTimeoutMS,
 		
 		lsfJobQueue,
-		
-		htcSubmitTemplates,		
+				
 		htcComputeResources,
 		htcPartitionMaximumJobs,
 		htcPartitionShareServerIDs,		
 		pbsHomeDir,
+
 		
 		limitJobMemoryMB,
 		
