@@ -75,7 +75,7 @@ public User getUserFromUserid(Connection con, String userid) throws SQLException
  * @param imageName java.lang.String
  */
 public User getUserFromUseridAndPassword(Connection con, String userid, UserLoginInfo.DigestedPassword digestedPassword) throws SQLException {
-	Statement stmt;
+	Statement stmt = null;
 	String sql;
 	ResultSet rset;
 	log.print("UserDbDriver.getUserFromUseridAndPassword(userid='" + userid+",xxx)");
@@ -84,13 +84,15 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
 			
 	//System.out.println(sql);
-	stmt = con.createStatement();
+	
 	User user = null;
 	try {
+		stmt = con.createStatement();
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
+			boolean bUserAuthenticated = false;
 			KeyValue userKey = new KeyValue(rset.getBigDecimal(UserTable.table.id.toString()));
-			UserLoginInfo.DigestedPassword dbDigestedPassword = null;
+			UserLoginInfo.DigestedPassword userDBDigestedPassword = null;
 			String dbpwStr = rset.getString(UserTable.table.digestPW.toString());
 			if(rset.wasNull() || dbpwStr == null || dbpwStr.length() == 0){
 				//user created account with VCell version that didn't make digestPassword, so make one
@@ -100,16 +102,28 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 					throw new SQLException("Database contains no password for user "+userid);
 				}
 				//create digestedPassword
-				dbDigestedPassword = updatePasswords(con, userKey, clearTextPassword);
+				userDBDigestedPassword = updatePasswords(con, userKey, clearTextPassword);
 			}else{
-				dbDigestedPassword = UserLoginInfo.DigestedPassword.createAlreadyDigested(dbpwStr);
+				userDBDigestedPassword = UserLoginInfo.DigestedPassword.createAlreadyDigested(dbpwStr);
 			}
-			if(digestedPassword.equals(dbDigestedPassword)){
+			if(digestedPassword.equals(userDBDigestedPassword)){
+				bUserAuthenticated = true;
+			}else{
+				//lookup administrator password and match for any user
+				rset.close();
+				sql = "SELECT "+UserTable.table.digestPW +" FROM "+userTable.getTableName()+" WHERE "+UserTable.table.id +" = "+PropertyLoader.ADMINISTRATOR_ID;
+				ResultSet adminRset = stmt.executeQuery(sql);
+				if(adminRset.next()){
+					String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
+					bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+				}
+			}
+			if(bUserAuthenticated){
 				user = new User(userid, userKey);
 			}
 		}
 	} finally {
-		stmt.close();
+		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
 	}
 	return user;
 }
