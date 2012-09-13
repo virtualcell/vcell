@@ -34,6 +34,7 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;
+import cbit.vcell.server.UserLoginInfo;
 
 public class MathGenerationDebugger extends JPanel {
 	private JTextField simContextTextField;
@@ -165,7 +166,7 @@ public class MathGenerationDebugger extends JPanel {
 		try {
 			new Thread() {
 				public void run(){
-					ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo(vcellUserID,vcellUserPassword);
+					ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo(vcellUserID,new UserLoginInfo.DigestedPassword(vcellUserPassword));
 					VCellClient.startClient(mathGenerationResults.bioModelFromDB, clientServerInfo);
 				}
 			}.start();

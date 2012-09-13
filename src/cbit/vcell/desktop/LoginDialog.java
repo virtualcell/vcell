@@ -24,6 +24,7 @@ import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import cbit.util.*;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserRegistrationOP;
 
 /**
@@ -554,8 +555,8 @@ private javax.swing.JTextField getJTextFieldUser() {
  * Gets the password property (java.lang.String) value.
  * @return The password property value.
  */
-public java.lang.String getPassword() {
-	return fieldPassword;
+public UserLoginInfo.DigestedPassword getDigestedPassword() {
+	return new UserLoginInfo.DigestedPassword(fieldPassword);
 }
 
 

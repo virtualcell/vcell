@@ -31,6 +31,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -79,7 +80,7 @@ XmlTreeDiff compareWithSaved(VCDocument document);
  * Creation date: (5/27/2004 2:12:25 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-void connectAs(String user, String password, TopLevelWindowManager requester);
+void connectAs(String user,DigestedPassword digestedPassword, TopLevelWindowManager requester);
 
 
 /**

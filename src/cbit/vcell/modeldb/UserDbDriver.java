@@ -74,29 +74,68 @@ public User getUserFromUserid(Connection con, String userid) throws SQLException
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public User getUserFromUseridAndPassword(Connection con, String userid, String password) throws SQLException {
-	Statement stmt;
+public User getUserFromUseridAndPassword(Connection con, String userid, UserLoginInfo.DigestedPassword digestedPassword) throws SQLException {
+	Statement stmt = null;
 	String sql;
 	ResultSet rset;
-	log.print("UserDbDriver.getUserFromUseridAndPassword(userid='" + userid + "', password='"+password+"')");
-	sql = 	"SELECT " + UserTable.table.id + 
+	log.print("UserDbDriver.getUserFromUseridAndPassword(userid='" + userid+",xxx)");
+	sql = 	"SELECT " + UserTable.table.id + ","+UserTable.table.digestPW+","+UserTable.table.password+
 			" FROM " + userTable.getTableName() + 
-			" WHERE " + UserTable.table.userid + " = '" + userid + "'" +
-			" AND " + UserTable.table.password + " = '" + password + "'";
+			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
 			
 	//System.out.println(sql);
-	stmt = con.createStatement();
+	
 	User user = null;
 	try {
+		stmt = con.createStatement();
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
+			boolean bUserAuthenticated = false;
 			KeyValue userKey = new KeyValue(rset.getBigDecimal(UserTable.table.id.toString()));
-			user = new User(userid, userKey);
+			UserLoginInfo.DigestedPassword userDBDigestedPassword = null;
+			String dbpwStr = rset.getString(UserTable.table.digestPW.toString());
+			if(rset.wasNull() || dbpwStr == null || dbpwStr.length() == 0){
+				//user created account with VCell version that didn't make digestPassword, so make one
+				String clearTextPassword = rset.getString(UserTable.table.password.toString());
+				if(rset.wasNull() || clearTextPassword == null || clearTextPassword.length() == 0){
+					//this should never happen
+					throw new SQLException("Database contains no password for user "+userid);
+				}
+				//create digestedPassword
+				userDBDigestedPassword = updatePasswords(con, userKey, clearTextPassword);
+			}else{
+				userDBDigestedPassword = UserLoginInfo.DigestedPassword.createAlreadyDigested(dbpwStr);
+			}
+			if(digestedPassword.equals(userDBDigestedPassword)){
+				bUserAuthenticated = true;
+			}else{
+				//lookup administrator password and match for any user
+				rset.close();
+				sql = "SELECT "+UserTable.table.digestPW +" FROM "+userTable.getTableName()+" WHERE "+UserTable.table.id +" = "+PropertyLoader.ADMINISTRATOR_ID;
+				ResultSet adminRset = stmt.executeQuery(sql);
+				if(adminRset.next()){
+					String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
+					bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+				}
+			}
+			if(bUserAuthenticated){
+				user = new User(userid, userKey);
+			}
 		}
 	} finally {
-		stmt.close();
+		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
 	}
 	return user;
+}
+private UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue id,String clearTextPassword) throws SQLException{
+	UserLoginInfo.DigestedPassword dbDigestedPassword = new UserLoginInfo.DigestedPassword(clearTextPassword);
+	DbDriver.updateCleanSQL(
+			con,"UPDATE " + userTable.getTableName() +
+			" SET " + 
+				userTable.digestPW.getUnqualifiedColName()+" = '" + dbDigestedPassword.getString() + "',"+
+				userTable.password.getUnqualifiedColName()+" = '" + clearTextPassword +"' WHERE " + userTable.id + " = " + id);
+
+	return dbDigestedPassword;
 }
 
 public void sendLostPassword(Connection con,String userid) throws SQLException, DataAccessException, ObjectNotFoundException {
@@ -105,7 +144,11 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 		throw new ObjectNotFoundException("User name "+userid+" not found.");
 	}
 	UserInfo userInfo = getUserInfo(con, user.getID());
+	String clearTextPassword = "VC"+System.currentTimeMillis()+"";
 	try {
+		//Reset User Password
+		updatePasswords(con,userInfo.id,clearTextPassword);
+		//Send new password to user
 		PropertyLoader.loadProperties();
 		BeanUtils.sendSMTP(
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
@@ -113,7 +156,7 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 			userInfo.email,
 			"re: VCell Info",
-			userInfo.password
+			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible."
 		);
 	} catch (Exception e) {
 		e.printStackTrace();

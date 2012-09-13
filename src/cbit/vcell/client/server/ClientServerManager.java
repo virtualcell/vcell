@@ -33,6 +33,7 @@ import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * Insert the type's description here.
@@ -284,15 +285,15 @@ public void connect(TopLevelWindowManager requester, ClientServerInfo clientServ
  * Creation date: (5/17/2004 6:26:14 PM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(TopLevelWindowManager requester, String user, String password) {
+public void connectAs(TopLevelWindowManager requester, String user, DigestedPassword digestedPassword) {
 	ClientServerInfo clientServerInfo = null;
 	switch (getClientServerInfo().getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
-			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, password);
+			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
 			break;
 		}
 		case ClientServerInfo.SERVER_REMOTE: {
-			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getHosts(), user, password);
+			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getHosts(), user, digestedPassword);
 			break;
 		}
 	}

@@ -23,22 +23,22 @@ public class RMIVCellServerFactory implements VCellServerFactory {
 	private String connectString = null;
 	private static final String SERVICE_NAME = "VCellBootstrapServer";
 	private User user = null;
-	private String password = null;
+	private UserLoginInfo.DigestedPassword digestedPassword = null;
 /**
  * RMIVCellConnectionFactory constructor comment.
  */
-public RMIVCellServerFactory(String host, int port, User user, String password) {
+public RMIVCellServerFactory(String host, int port, User user, UserLoginInfo.DigestedPassword digestedPassword) {
 	this.connectString = "//"+host+":"+port+"/"+SERVICE_NAME;
 	this.user = user;
-	this.password = password;
+	this.digestedPassword = digestedPassword;
 }
 /**
  * RMIVCellConnectionFactory constructor comment.
  */
-public RMIVCellServerFactory(String host, User user, String password) {
+public RMIVCellServerFactory(String host, User user,UserLoginInfo.DigestedPassword digestedPassword) {
 	this.connectString = "//"+host+"/"+SERVICE_NAME;
 	this.user = user;
-	this.password = password;
+	this.digestedPassword = digestedPassword;
 }
 /**
  * This method was created in VisualAge.
@@ -98,7 +98,7 @@ private void reconnect() throws ConnectionException, AuthenticationException {
 					
 	vcellServer = null;
 	try {
-		vcellServer = vcellBootstrap.getVCellServer(user,password);
+		vcellServer = vcellBootstrap.getVCellServer(user,digestedPassword);
 		if (vcellServer==null){
 			throw new AuthenticationException("cannot login to server, check userid and password");
 		}

@@ -1769,7 +1769,7 @@ private JDialog getLoginDialog() {
 		ActionListener listener = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
-					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
+					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getDigestedPassword());
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
 					loginDialog.dispose();
 					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), true);

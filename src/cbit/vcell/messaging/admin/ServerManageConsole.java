@@ -105,6 +105,7 @@ import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.ServerInfo;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.solver.Simulation;
@@ -2668,7 +2669,7 @@ private void reconnect() throws JMSException {
 	listenSession.setupTopicListener(JmsUtils.getTopicDaemonControl(), filter, new ControlMessageCollector(this));
 	jmsConn.startConnection();
 }
-
+private String VCellDBAdminpassword;
 private void refresh () {
 	int count = getServiceStatusTable().getRowCount();
 	boolean bAll = false;
@@ -2749,7 +2750,13 @@ private void refresh () {
 		try {
 			if (vcellBootstrap == null) {
 				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(getLocalVCellBootstrapUrl());
-				vcellServer = vcellBootstrap.getVCellServer(new User("Administrator",new KeyValue("2")), "icnia66");
+				String clearTextPassword = null;
+				if(VCellDBAdminpassword == null){
+					clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
+				}
+				vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
+				//everything OK, save cache password
+				VCellDBAdminpassword = clearTextPassword;
 			}		
 			
 			ServerInfo serverInfo = vcellServer.getServerInfo();

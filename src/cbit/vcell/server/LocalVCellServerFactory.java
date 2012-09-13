@@ -28,18 +28,18 @@ public class LocalVCellServerFactory implements VCellServerFactory {
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
-public LocalVCellServerFactory(String userid, String password, String hostName, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
-	this(userid, password, hostName, null, conFactory, keyFactory, sessionLog);
+public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword digestedPassword, String hostName, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
+	this(userid, digestedPassword, hostName, null, conFactory, keyFactory, sessionLog);
 }
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
-public LocalVCellServerFactory(String userid, String password, String hostName, JmsConnectionFactory jmsConnFactory, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
+public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword digestedPassword, String hostName, JmsConnectionFactory jmsConnFactory, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
 	try {
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,sessionLog);
 		User adminUser = null;
-		if (userid!=null && password!=null){			
-			adminUser = adminDbServer.getUser(userid,password);
+		if (userid!=null && digestedPassword!=null){			
+			adminUser = adminDbServer.getUser(userid,digestedPassword);
 			if (adminUser==null){
 				throw new PermissionException("failed to authenticate user userid "+userid);
 			}

@@ -26,6 +26,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.TokenMangler;
@@ -764,7 +765,7 @@ public static class MathGenerationResults{
 
 public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, ObjectNotFoundException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
 
-	User adminUser = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+	User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
     SessionLog userLog = new org.vcell.util.StdoutSessionLog(adminUser.toString());
 
     userLog.print("Testing SimContext with key '" + simContextKey + "'");
@@ -1161,7 +1162,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 	
 
-	User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+	User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 	SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
@@ -1410,7 +1411,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     calendar.set(2002, java.util.Calendar.JANUARY, 1);
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
-    User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+    User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
     SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");

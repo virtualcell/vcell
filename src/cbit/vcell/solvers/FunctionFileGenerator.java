@@ -12,6 +12,7 @@ package cbit.vcell.solvers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -68,17 +69,18 @@ public FunctionFileGenerator(String argFileName, Vector<AnnotatedFunction> argAn
  */
 
 public void generateFunctionFile() throws Exception {
-	java.io.FileOutputStream osFunc = null;
+	PrintWriter functionFile = null;
 	try {
-		osFunc = new java.io.FileOutputStream(basefileName);
+		FileOutputStream osFunc = new java.io.FileOutputStream(basefileName);
+		functionFile = new PrintWriter(osFunc);
+		writefunctionFile(functionFile);
 	}catch (java.io.IOException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException("error opening code file '"+basefileName+": "+e.getMessage());
-	}	
+	}finally{
+		if(functionFile != null){try{functionFile.close();}catch(Exception e){e.printStackTrace();}}		
+	}
 		
-	PrintWriter functionFile = new PrintWriter(osFunc);
-	writefunctionFile(functionFile);
-	functionFile.close();
 }
 
 
