@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import java.util.Vector;
 
@@ -288,18 +289,18 @@ SimulationStatus getSimulationStatus(KeyValue simKey, boolean bEnableRetry) thro
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-User getUser(String userid, String password, boolean bEnableRetry) 
+User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return userDB.getUserFromUseridAndPassword(con, userid, password);
+		return userDB.getUserFromUseridAndPassword(con, userid, digestedPassword);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getUser(userid, password, false);
+			return getUser(userid, digestedPassword, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

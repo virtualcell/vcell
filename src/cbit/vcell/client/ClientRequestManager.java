@@ -157,6 +157,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
@@ -628,7 +629,7 @@ public XmlTreeDiff compareWithSaved(VCDocument document) {
  * Creation date: (6/16/2004 11:07:33 AM)
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connectAs(final String user,  final String password, final TopLevelWindowManager requester) {
+public void connectAs(final String user,  final DigestedPassword digestedPassword, final TopLevelWindowManager requester) {
 	String confirm = PopupGenerator.showWarningDialog(requester, getUserPreferences(), UserMessage.warn_changeUser,null);
 	if (confirm.equals(UserMessage.OPTION_CANCEL)){
 		return;
@@ -679,7 +680,7 @@ public void connectAs(final String user,  final String password, final TopLevelW
 			AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					getClientServerManager().connectAs(requester, user, password);
+					getClientServerManager().connectAs(requester, user, digestedPassword);
 				}
 			};
 			AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
