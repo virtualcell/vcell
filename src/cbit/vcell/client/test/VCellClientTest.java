@@ -25,6 +25,7 @@ import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -94,9 +95,9 @@ public static void main(java.lang.String[] args) {
 		System.exit(1);
 	}
 	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
-		csInfo = ClientServerInfo.createLocalServerInfo(user, password);
+		csInfo = ClientServerInfo.createLocalServerInfo(user, (password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	} else {
-		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user, password);
+		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {
 		VCMongoMessage.enabled = false; // comment out to enable logging to MongoDB.
