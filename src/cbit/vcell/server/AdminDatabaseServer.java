@@ -61,7 +61,7 @@ User getUser(String userid) throws RemoteException, DataAccessException;
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-User getUser(String userid, String password) throws RemoteException, DataAccessException;
+User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword) throws RemoteException, DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User

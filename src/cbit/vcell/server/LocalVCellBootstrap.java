@@ -85,20 +85,20 @@ public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws Da
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-public VCellServer getVCellServer(User user, String password) throws DataAccessException, AuthenticationException, PermissionException {
+public VCellServer getVCellServer(User user, UserLoginInfo.DigestedPassword digestedPassword) throws DataAccessException, AuthenticationException, PermissionException {
 	//
 	// Authenticate User
 	//
 	boolean bAuthenticated = false;
 	
 	try{
-		bAuthenticated = adminDbServer.getUser(user.getName(),password).compareEqual(user);
+		bAuthenticated = adminDbServer.getUser(user.getName(),digestedPassword).compareEqual(user);
 	}catch(RemoteException e){
 		sessionLog.exception(e);
 		throw new DataAccessException("Failure authenticating user "+user.getName()+", RemoteException: " + e.getMessage());
 	}
 	if (!bAuthenticated){
-		sessionLog.print("LocalVCellBootstrap.getVCellServer(" + user + "," + password + "), didn't authenticate");
+		sessionLog.print("LocalVCellBootstrap.getVCellServer(" + user +"), didn't authenticate");
 		throw new AuthenticationException("Authentication Failed for user " + user.getName());
 	}else if (user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
 		sessionLog.print("LocalVCellBootstrap.getVCellServer(" + user + "), returning remote copy of VCellServer");

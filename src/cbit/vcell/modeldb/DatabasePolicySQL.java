@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 
 import cbit.sql.Table;
@@ -126,7 +127,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  */ 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(org.vcell.util.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue("2"));
+	boolean isAdministrator = user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}

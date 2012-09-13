@@ -43,10 +43,12 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 
 public class UserRegistrationOP implements Serializable{
 	
@@ -77,19 +79,6 @@ public class UserRegistrationOP implements Serializable{
 		return userRegistrationOP;
 	}
 
-//	public static UserRegistrationOP createGetUserInfoOP(String userID,String password){
-//		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
-//		userRegistrationOP.operationType = USERREGOP_GETINFO;
-//		userRegistrationOP.userid  = userID;
-//		userRegistrationOP.password = password;
-//		return userRegistrationOP;		
-//	}
-//	public static UserRegistrationOP createNewRegisterOP(UserInfo userInfo){
-//		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
-//		userRegistrationOP.operationType = USERREGOP_NEWREGISTER;
-//		userRegistrationOP.userInfo = userInfo;
-//		return userRegistrationOP;		
-//	}
 	public static UserRegistrationOP createUpdateRegisterOP(UserInfo userInfo){
 		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
 		userRegistrationOP.operationType = USERREGOP_UPDATE;
@@ -217,14 +206,14 @@ public class UserRegistrationOP implements Serializable{
 		}
 		
 		final RegistrationProvider finalRegistrationProvider = registrationProvider;
-		
+		final String ORIGINAL_USER_INFO_HOLDER = "originalUserInfoHolder";
 		AsynchClientTask gatherInfoTask = new AsynchClientTask("gathering user info for updating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				if(userAction.equals(LoginManager.USERACTION_EDITINFO)){
 					UserInfo originalUserInfoHolder = finalRegistrationProvider.getUserInfo(clientServerManager.getUser().getID());
-					hashTable.put("originalUserInfoHolder", originalUserInfoHolder);
+					hashTable.put(ORIGINAL_USER_INFO_HOLDER, originalUserInfoHolder);
 				}
 			}			
 		};
@@ -240,7 +229,7 @@ public class UserRegistrationOP implements Serializable{
 						registrationPanel.reset();
 					}
 				}
-				UserInfo originalUserInfoHolder = (UserInfo)hashTable.get("originalUserInfoHolder");;
+				UserInfo originalUserInfoHolder = (UserInfo)hashTable.get(ORIGINAL_USER_INFO_HOLDER);;
 				if(userAction.equals(LoginManager.USERACTION_EDITINFO) && originalUserInfoHolder != null) {
 					registrationPanel.setUserInfo(originalUserInfoHolder,true);					
 				}
@@ -250,10 +239,20 @@ public class UserRegistrationOP implements Serializable{
 					if (result != JOptionPane.OK_OPTION) {
 						throw UserCancelException.CANCEL_GENERIC;
 					}
-					UserInfo newUserInfo = registrationPanel.getUserInfo();
+					NewPasswordUserInfo newUserInfo = registrationPanel.getUserInfo();
+					if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
+						//User editing registration info but did not enter new clear text password in gui,
+						//set existing digestPassword
+						if(newUserInfo.digestedPassword0 == null && originalUserInfoHolder.digestedPassword0 != null){
+							newUserInfo.digestedPassword0 = originalUserInfoHolder.digestedPassword0;
+						}
+						if(newUserInfo.otherDigestedPassword == null && originalUserInfoHolder.digestedPassword0 != null){
+							newUserInfo.otherDigestedPassword = originalUserInfoHolder.digestedPassword0;
+						}						
+					}
 			
 					try {
-						if(!checkUserInfo(currWindowManager, originalUserInfoHolder,newUserInfo)){
+						if(!checkUserInfo(currWindowManager, originalUserInfoHolder,newUserInfo,userAction)){
 							PopupGenerator.showInfoDialog(currWindowManager, "No registration information has changed.");
 							continue;
 						}
@@ -293,7 +292,7 @@ public class UserRegistrationOP implements Serializable{
 				try {					
 					if (userAction.equals(LoginManager.USERACTION_REGISTER)) {
 						try{
-							ClientServerInfo newClientServerInfo = VCellClient.createClientServerInfo(currentClientServerInfo, registeredUserInfo.userid, registeredUserInfo.password);
+							ClientServerInfo newClientServerInfo = VCellClient.createClientServerInfo(currentClientServerInfo, registeredUserInfo.userid, registeredUserInfo.digestedPassword0);
 							requestManager.connectToServer(currWindowManager, newClientServerInfo);
 						}finally{
 							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
@@ -313,19 +312,28 @@ public class UserRegistrationOP implements Serializable{
 		
 		ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask}, false);
 	}
-
 	public static boolean hasIllegalCharacters(String apo){
 		if((apo.indexOf('\'') != -1) || (apo.indexOf('<') != -1) || (apo.indexOf('>') != -1) || (apo.indexOf('&') != -1) || (apo.indexOf('\"') != -1)){
 			return true;
 		}
 		return false;
 	}
-	private static boolean checkUserInfo(DocumentWindowManager currWindowManager, UserInfo origUserInfo,UserInfo newUserInfo) throws Exception{
+
+	public static class NewPasswordUserInfo extends UserInfo{
+		public DigestedPassword otherDigestedPassword;
+	}
+	private static boolean checkUserInfo(DocumentWindowManager currWindowManager, UserInfo origUserInfo,NewPasswordUserInfo newUserInfo,String userAction) throws Exception{
 		TokenMangler.checkLoginID(newUserInfo.userid);
-		
+		boolean bEditing = userAction.equals(LoginDialog.USERACTION_EDITINFO);
 		String emptyMessge = " can not be empty";	
 		if(newUserInfo.userid == null || newUserInfo.userid.length() == 0){throw new Exception("Registration Info: userid" + emptyMessge);}
-		if(newUserInfo.password == null || newUserInfo.password.length() == 0 || !newUserInfo.password.equals(newUserInfo.password2)){throw new Exception("Registration Info: both passwords must be the same and" + emptyMessge);}
+		if(newUserInfo.digestedPassword0 == null || !newUserInfo.digestedPassword0.equals(newUserInfo.otherDigestedPassword)){
+			if(bEditing){
+				throw new Exception("Registration Info: password fields don't match, clear both to keep existing password or enter same text in both to create new password");
+			}else{
+				throw new Exception("Registration Info: both passwords must be the same and" + emptyMessge);
+			}
+		}
 		if(newUserInfo.email == null || newUserInfo.email.length() == 0 || newUserInfo.email.indexOf("@") < 0){throw new Exception("please type in a valid email address.");}
 		if(newUserInfo.firstName == null || newUserInfo.firstName.length() == 0){throw new Exception("Registration Info: firstName" + emptyMessge);}
 		if(newUserInfo.lastName == null || newUserInfo.lastName.length() == 0){throw new Exception("Registration Info: lastName" + emptyMessge);}
@@ -341,7 +349,7 @@ public class UserRegistrationOP implements Serializable{
 		String hasIllegalMessage = " has illegal character '<>&\"";
 		//Check Illegal characters
 		if(hasIllegalCharacters(newUserInfo.userid)){throw new Exception("Registration Info: userid" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.password)){throw new Exception("Registration Info: password" + hasIllegalMessage);}
+//		if(hasIllegalCharacters(newUserInfo.password)){throw new Exception("Registration Info: password" + hasIllegalMessage);}
 		if(hasIllegalCharacters(newUserInfo.email)){throw new Exception("Registration Info: email" + hasIllegalMessage);}
 		if(hasIllegalCharacters(newUserInfo.firstName)){throw new Exception("Registration Info: firstName" + hasIllegalMessage);}
 		if(hasIllegalCharacters(newUserInfo.lastName)){throw new Exception("Registration Info: lastName" + hasIllegalMessage);}
@@ -358,7 +366,7 @@ public class UserRegistrationOP implements Serializable{
 			String[] columnNames = new String[] {"Field","Original","New Value"};
 			Vector<String[]> tableRow = new Vector<String[]>();
 			if(!newUserInfo.userid.equals(origUserInfo.userid)){tableRow.add(new String[] {"userid",origUserInfo.userid,newUserInfo.userid});}
-			if(!newUserInfo.password.equals(origUserInfo.password)){tableRow.add(new String[] {"password","---","changed"});}//{origVal.add("password");newVal.add("password changed");}
+			if(!newUserInfo.digestedPassword0.equals(origUserInfo.digestedPassword0)){tableRow.add(new String[] {"password","---","changed"});}
 			if(!newUserInfo.email.equals(origUserInfo.email)){tableRow.add(new String[] {"email",origUserInfo.email,newUserInfo.email});}
 			if(!newUserInfo.firstName.equals(origUserInfo.firstName)){tableRow.add(new String[] {"firstName",origUserInfo.firstName,newUserInfo.firstName});}
 			if(!newUserInfo.lastName.equals(origUserInfo.lastName)){tableRow.add(new String[] {"lastName",origUserInfo.lastName,newUserInfo.lastName});}

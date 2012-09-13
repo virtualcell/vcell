@@ -11,11 +11,21 @@
 package cbit.vcell.desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
 import org.vcell.util.document.User;
+
+import cbit.vcell.server.UserLoginInfo;
 
 /**
  * Insert the type's description here.
@@ -552,8 +562,8 @@ private javax.swing.JTextField getJTextFieldUser() {
  * Gets the password property (java.lang.String) value.
  * @return The password property value.
  */
-public java.lang.String getPassword() {
-	return fieldPassword;
+public UserLoginInfo.DigestedPassword getDigestedPassword() {
+	return new UserLoginInfo.DigestedPassword(fieldPassword);
 }
 
 

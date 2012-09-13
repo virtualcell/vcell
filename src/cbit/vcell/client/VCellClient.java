@@ -31,6 +31,8 @@ import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
+import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserRegistrationOP;
 /**
  * Insert the type's description here.
@@ -288,13 +290,13 @@ public static void login(final RequestManager requestManager, final ClientServer
 	final LoginManager loginManager = new LoginManager();
 	LoginDelegate loginDelegate = new LoginDelegate() {
 		
-		public void login(final String userid, final String password)
+		public void login(final String userid, final UserLoginInfo.DigestedPassword digestedPassword)
 		{
 			AsynchClientTask task1 = new AsynchClientTask("connect to server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, userid, password);
+					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, userid, digestedPassword);
 					requestManager.connectToServer(currWindowManager, newClientServerInfo);
 				}	
 			};
@@ -349,13 +351,13 @@ public static void login(final RequestManager requestManager, final ClientServer
 }
 
 
-public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,String password){
+public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
 	switch (clientServerInfo.getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
-			return ClientServerInfo.createLocalServerInfo(userid,password);
+			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);
 		}
 		case ClientServerInfo.SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHosts(),userid,password);
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHosts(),userid,digestedPassword);
 		}
 	};
 	return null;

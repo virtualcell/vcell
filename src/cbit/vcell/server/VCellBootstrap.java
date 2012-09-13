@@ -33,7 +33,7 @@ public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws Re
  * @return cbit.vcell.server.VCellConnection
  * @exception java.rmi.RemoteException The exception description.
  */
-public VCellServer getVCellServer(User user,String password) throws RemoteException, DataAccessException, AuthenticationException, PermissionException;
+public VCellServer getVCellServer(User user,UserLoginInfo.DigestedPassword digestedPassword) throws RemoteException, DataAccessException, AuthenticationException, PermissionException;
 /**
  * Insert the method's description here.
  * Creation date: (6/8/2006 2:50:55 PM)

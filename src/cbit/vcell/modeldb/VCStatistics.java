@@ -64,15 +64,20 @@ public class VCStatistics {
 			return sb.toString();
 		}
 	}
-	private VCStatistics() throws Exception {
+	private VCStatistics(String dbServer,String dbName,String dbUserid,String dbPassword) throws Exception {
 		oracleConnection = new OracleConnectionPoolDataSource();
+		String dbConnectURL = "jdbc:oracle:thin:@"+dbServer+":1521:"+dbName;
 		oracleConnection.setURL(dbConnectURL);
 		oracleConnection.setUser(dbUserid);
 		oracleConnection.setPassword(dbPassword);		
 	}
 	public static void main(String[] args) {
+		if(args.length != 4){
+			System.out.println("Usage: VCStatistics dbServer dbName dbUserID dbPassword");
+			System.exit(1);
+		}
 		try {
-			VCStatistics vcstat = new VCStatistics();
+			VCStatistics vcstat = new VCStatistics(args[0],args[1],args[2],args[3]);
 			vcstat.startStatistics();			
 		} catch (Exception ex) {
 			ex.printStackTrace();

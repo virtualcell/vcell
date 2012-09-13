@@ -10,6 +10,7 @@
 
 package org.vcell.util.document;
 
+import cbit.vcell.server.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.
@@ -18,8 +19,7 @@ package org.vcell.util.document;
 public class UserInfo implements java.io.Serializable,java.lang.Cloneable {	
 	public KeyValue id = null;
 	public String userid = null;
-	public String password = null;
-	public transient String password2 = null;
+	public UserLoginInfo.DigestedPassword digestedPassword0;
 	public String email = null;
 	public String firstName = null;
 	public String lastName = null;
@@ -47,6 +47,7 @@ public class UserInfo implements java.io.Serializable,java.lang.Cloneable {
 	public static int FIELDLENGTH_STATE = 255;
 	public static int FIELDLENGTH_COUNTRY = 255;
 	public static int FIELDLENGTH_ZIP = 255;
+	
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.UserInfo
@@ -90,53 +91,8 @@ System.out.println("other="+userInfo.toString());
 /**
  * This method was created in VisualAge.
  */
-public static UserInfo getExample1() {
-	UserInfo userInfo = new UserInfo();
-
-	userInfo.userid = "schaff";
-	userInfo.password = "me&jan";
-	userInfo.email = "schaff@panda";
-	userInfo.firstName = "Jim";
-	userInfo.lastName = "Schaff";
-	userInfo.title = "???";
-	userInfo.company = "uchc";
-	userInfo.address1 = "here";
-	userInfo.address2 = "there";
-	userInfo.city = "Farmington";
-	userInfo.state = "CT";
-	userInfo.country = "USA";
-	userInfo.zip = "06030";
-//	userInfo.notify = "yes";
-
-	return userInfo;
-}
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String toHTML() {
-	StringBuffer buffer = new StringBuffer();
-
-	User user = new User(userid,id);
-	
-	buffer.append("<TR ALIGN=LEFT VALIGN=TOP>");
-	buffer.append("<TD>"+user+" '"+password+"'</TD>\n");
-	buffer.append("<TD>"+email+" / notify "+notify+"</TD>\n");
-	buffer.append("<TD>"+firstName+" "+lastName+" / "+title+"</TD>\n");
-	buffer.append("<TD>"+company+"\n");
-	buffer.append("<BR>"+address1+"\n");
-	buffer.append("<BR>"+address2+"\n");
-	buffer.append("<BR>"+city+", "+state+", "+country+" "+zip+"\n");
-	buffer.append("<BR>"+insertDate+"</TD>\n");
-	buffer.append("</TR>");
-
-	return buffer.toString();
-}
-/**
- * This method was created in VisualAge.
- */
 public String toString() {
-	return "["+id+","+userid+","+password+","+email+","+firstName+","+lastName+","+title+","+company+","+address1+","+address2+","+
+	return "["+id+","+userid+","+/*password+*/","+email+","+firstName+","+lastName+","+title+","+company+","+address1+","+address2+","+
 				city+","+state+","+country+","+zip+","+notify+","+insertDate+"]";
 }
 }

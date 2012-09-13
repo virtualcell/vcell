@@ -11,6 +11,7 @@
 package cbit.vcell.client.server;
 
 import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 
 /**
  * Insert the type's description here.
@@ -61,8 +62,8 @@ public static ClientServerInfo createFileBasedServerInfo() {
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createLocalServerInfo(String userName, String password) {
-	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER},new UserLoginInfo(userName, password));
+public static ClientServerInfo createLocalServerInfo(String userName, DigestedPassword digestedPassword) {
+	ClientServerInfo csi = new ClientServerInfo(new String[] {LOCAL_SERVER},new UserLoginInfo(userName, digestedPassword));
 	csi.setServerType(SERVER_LOCAL);
 	return csi;
 }
@@ -80,8 +81,8 @@ public UserLoginInfo getUserLoginInfo(){
  * @param username java.lang.String
  * @param password java.lang.String
  */
-public static ClientServerInfo createRemoteServerInfo(String[] host, String userName, String password) {
-	ClientServerInfo csi = new ClientServerInfo(host,new UserLoginInfo(userName, password));
+public static ClientServerInfo createRemoteServerInfo(String[] host, String userName,DigestedPassword digestedPassword) {
+	ClientServerInfo csi = new ClientServerInfo(host,new UserLoginInfo(userName, digestedPassword));
 	csi.setServerType(SERVER_REMOTE);
 	return csi;
 }
@@ -160,11 +161,11 @@ public String toString() {
 	String details = null;
 	switch (getServerType()) {
 		case SERVER_LOCAL: {
-			details = "SERVER_LOCAL, user:" + getUsername() + ", password:" + userLoginInfo.getPassword();
+			details = "SERVER_LOCAL, user:" + getUsername();
 			break;
 		}
 		case SERVER_REMOTE: {
-			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername() + ", password:" + userLoginInfo.getPassword();
+			details = "SERVER_REMOTE, host:" + activeHost + ", user:" + getUsername();
 			break;
 		}
 		case SERVER_FILE: {
