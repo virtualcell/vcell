@@ -31,8 +31,6 @@ public class UserTable extends cbit.sql.Table {
 	public static final int 	VOID_ID = 0;
 	public static final String 	VOID_USERID = "void";
 
-	public static final String 	ADMINISTRATOR_ID = PropertyLoader.ADMINISTRATOR_ID;
-	public static final String 	ADMINISTRATOR_USERID = PropertyLoader.ADMINISTRATOR_ACCOUNT;
 //
 	private static final String TABLE_NAME = "vc_userinfo";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
