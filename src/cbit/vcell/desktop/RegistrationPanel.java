@@ -27,6 +27,8 @@ import javax.swing.JTextField;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.client.GuiConstants;
+import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.server.UserRegistrationOP.NewPasswordUserInfo;
 
 
 public class RegistrationPanel extends JPanel {
@@ -401,8 +403,8 @@ public class RegistrationPanel extends JPanel {
 		textFieldLoginID.setText(userInfo.userid);
 		textFieldLoginID.setEnabled(!bLoggedIn);
 		
-		textFieldPassword1.setText(userInfo.password);
-		textFieldPassword2.setText(userInfo.password);
+		textFieldPassword1.setText("");
+		textFieldPassword2.setText("");
 		textFieldEMail.setText(userInfo.email);
 		textFieldFirstName.setText(userInfo.firstName);
 		textFieldLastName.setText(userInfo.lastName);
@@ -417,11 +419,13 @@ public class RegistrationPanel extends JPanel {
 		checkBoxNoEmail.setSelected(!userInfo.notify);
 	}
 
-	public UserInfo getUserInfo(){
-		UserInfo userInfo = new UserInfo();
+	public NewPasswordUserInfo getUserInfo(){
+		NewPasswordUserInfo userInfo = new NewPasswordUserInfo();
 		userInfo.userid = textFieldLoginID.getText();
-		userInfo.password = new String(textFieldPassword1.getPassword());
-		userInfo.password2 = new String(textFieldPassword2.getPassword());
+		char[] password1Char = textFieldPassword1.getPassword();
+		userInfo.digestedPassword0 = (password1Char==null || password1Char.length==0?null:new UserLoginInfo.DigestedPassword(new String(password1Char)));
+		char[] password2Char = textFieldPassword2.getPassword();
+		userInfo.otherDigestedPassword = (password2Char==null || password2Char.length==0?null:new UserLoginInfo.DigestedPassword(new String(password2Char)));
 		userInfo.email = textFieldEMail.getText();
 		userInfo.firstName = textFieldFirstName.getText();
 		userInfo.lastName = textFieldLastName.getText();

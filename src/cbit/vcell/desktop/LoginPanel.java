@@ -22,6 +22,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.server.UserLoginInfo;
 
 /**
  * Insert the type's description here.
@@ -50,13 +51,9 @@ public class LoginPanel extends JPanel {
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == LoginPanel.this.getJTextFieldUser()) {
+			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || e.getSource() == LoginPanel.this.getJButtonOK()) {
 				updateFields();
-				loginDelegate.login(fieldUser, fieldPassword);
-			}
-			if (e.getSource() == LoginPanel.this.getJPasswordFieldPassword()) {
-				updateFields();
-				loginDelegate.login(fieldUser, fieldPassword);
+				loginDelegate.login(fieldUser, new UserLoginInfo.DigestedPassword(fieldPassword));
 			}
 			if (e.getSource() == LoginPanel.this.getJButtonRegister()) {
 				loginDelegate.registerRequest();
@@ -67,10 +64,6 @@ class IvjEventHandler implements java.awt.event.ActionListener {
 			}
 			if (e.getSource() == LoginPanel.this.getJButtonCancel()){
 				loginDelegate.userCancel();
-			}
-			if (e.getSource() == LoginPanel.this.getJButtonOK()){
-				updateFields();
-				loginDelegate.login(fieldUser, fieldPassword);
 			}
 		};
 	};

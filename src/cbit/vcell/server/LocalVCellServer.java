@@ -232,7 +232,7 @@ VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteExc
 	//Authenticate User
 	User user = null;
 	synchronized (adminDbServer) {
-		user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getPassword());
+		user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getDigestedPassword());
 	}
 	if (user == null){
 		throw new AuthenticationException(VCellErrorMessages.getErrorMessage(VCellErrorMessages.AUTHEN_FAIL_MESSAGE, userLoginInfo.getUserName()));

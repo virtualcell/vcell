@@ -10,12 +10,16 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -26,8 +30,10 @@ public class UserTable extends cbit.sql.Table {
 	//
 	public static final int 	VOID_ID = 0;
 	public static final String 	VOID_USERID = "void";
-	public static final String	VOID_PASSWORD = "vcellvoidpasssword";
-	//
+
+	public static final String 	ADMINISTRATOR_ID = PropertyLoader.ADMINISTRATOR_ID;
+	public static final String 	ADMINISTRATOR_USERID = PropertyLoader.ADMINISTRATOR_ACCOUNT;
+//
 	private static final String TABLE_NAME = "vc_userinfo";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
@@ -46,9 +52,10 @@ public class UserTable extends cbit.sql.Table {
 	public final Field zip			= new Field("ZIP",			"varchar(255)",255,		"NOT NULL");
 	public final Field notify		= new Field("NOTIFY",		"varchar(255)",255,		"NOT NULL");
 	public final Field insertDate	= new Field("insertDate",	"date",				"NOT NULL");
+	public final Field digestPW		= new Field("DIGESTPW",		"varchar(255)",255,		"NOT NULL");
 
 	private final Field fields[] = {userid, password, email, firstName, lastName, title, companyName, 
-											address1, address2, city, state, country, zip, notify, insertDate };
+											address1, address2, city, state, country, zip, notify, insertDate,digestPW };
 	
 	public static final UserTable table = new UserTable();
 /**
@@ -64,17 +71,32 @@ private UserTable() {
  * @return java.lang.String
  */
 public final static String getCreateVoidUserSQL() {
+	long password = System.currentTimeMillis();
 	String sql = "INSERT INTO "+UserTable.table.getTableName()+
 			" VALUES ( "+
 			UserTable.VOID_ID+","+
 			"'"+UserTable.VOID_USERID+"'"+","+
-			"'"+UserTable.VOID_PASSWORD+"'"+","+
+			"'"+password+"'"+","+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
-			"SYSDATE"+
+			"SYSDATE,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
 			" )";
 	return sql;
 }
+public final static String getCreateAdministratorUserSQL() {
+	long password = System.currentTimeMillis();
+	String sql = "INSERT INTO "+UserTable.table.getTableName()+
+			" VALUES ( "+
+			PropertyLoader.ADMINISTRATOR_ID+","+
+			"'"+PropertyLoader.ADMINISTRATOR_ACCOUNT+"'"+","+
+			"'"+password+"'"+","+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"SYSDATE,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
+			" )";
+	return sql;
+}
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -83,7 +105,7 @@ public final static String getCreateVoidUserSQL() {
  */
 public String getSQLUpdateList(UserInfo userInfo) {
 	StringBuffer buffer = new StringBuffer();
-	buffer.append(password+"='"+userInfo.password+"',");
+	buffer.append(digestPW+"='"+userInfo.digestedPassword0.getString()+"',");
 	buffer.append(email+"='"+userInfo.email+"',");
 	buffer.append(firstName+"='"+userInfo.firstName+"',");
 	buffer.append(lastName+"='"+userInfo.lastName+"',");
@@ -109,7 +131,7 @@ public String getSQLValueList(KeyValue key, UserInfo userInfo) {
 	buffer.append("(");
 	buffer.append(key.toString()+",");
 	buffer.append("'"+userInfo.userid+"',");
-	buffer.append("'"+userInfo.password+"',");
+	buffer.append("'"+userInfo.digestedPassword0.getString()+"',");//need this for now
 	buffer.append("'"+userInfo.email+"',");
 	buffer.append("'"+userInfo.firstName+"',");
 	buffer.append("'"+userInfo.lastName+"',");
@@ -122,7 +144,8 @@ public String getSQLValueList(KeyValue key, UserInfo userInfo) {
 	buffer.append("'"+userInfo.country+"',");
 	buffer.append("'"+userInfo.zip+"',");
 	buffer.append("'"+(userInfo.notify?UserTable.NOTIFY_TRUE:UserTable.NOTIFY_FALSE)+"',");
-	buffer.append(VersionTable.formatDateToOracle(new java.util.Date()));
+	buffer.append(VersionTable.formatDateToOracle(new java.util.Date())+",");
+	buffer.append("'"+userInfo.digestedPassword0.getString()+"'");
 	buffer.append(")");
 	return buffer.toString();
 }
@@ -137,7 +160,7 @@ public UserInfo getUserInfo(ResultSet rset) throws SQLException {
 
 	userInfo.id = 		new KeyValue(rset.getBigDecimal(id.toString()));
 	userInfo.userid =	rset.getString(userid.toString());
-	userInfo.password =	rset.getString(password.toString());
+	userInfo.digestedPassword0 = UserLoginInfo.DigestedPassword.createAlreadyDigested((rset.getString(digestPW.toString())));
 	userInfo.email =	rset.getString(email.toString());
 	userInfo.firstName =rset.getString(firstName.toString());
 	userInfo.lastName =	rset.getString(lastName.toString());
@@ -160,7 +183,7 @@ public UserInfo getUserInfo(ResultSet rset) throws SQLException {
 	}
 
 	//
-	// Do this stuff because ResultSet only returns java.sql.Date without time information
+	// Format Date
 	//
 	java.sql.Date DBDate = rset.getDate(insertDate.toString());
 	java.sql.Time DBTime = rset.getTime(insertDate.toString());

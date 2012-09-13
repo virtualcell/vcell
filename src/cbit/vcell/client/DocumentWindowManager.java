@@ -31,6 +31,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
@@ -176,8 +177,8 @@ public void compareWithSaved() {
  * Creation date: (5/24/2004 2:48:52 AM)
  * @return java.lang.String
  */
-public void connectAs(String user, String password) {
-	getRequestManager().connectAs(user, password, this);
+public void connectAs(String user, DigestedPassword digestedPassword) {
+	getRequestManager().connectAs(user, digestedPassword, this);
 }
 
 
