@@ -19,7 +19,8 @@ import java.util.Vector;
 
 public class PropertyLoader {
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
-
+	public static final String ADMINISTRATOR_ID = "2";
+	
 	public static final String propertyFileProperty			= "vcell.propertyfile";
 	
 	public static final String vcellServerIDProperty        = "vcell.server.id";

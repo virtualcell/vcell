@@ -18,7 +18,7 @@ import org.vcell.util.document.User;
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {
 	private String userName;
-	private String password;
+	private DigestedPassword digestedPassword;//obfuscate password
 	private String os_name;//os.name Operating system name 
 	private String os_arch;// os.arch Operating system architecture 
 	private String os_version;// os.version Operating system version
@@ -28,16 +28,67 @@ public class UserLoginInfo implements Serializable {
 	// clientId to indentify machine so that
 	// same user can login at the same time.
 	private final long clientId = System.currentTimeMillis();
-	public UserLoginInfo(String userName,String password) {
+	public UserLoginInfo(String userName,DigestedPassword digestedPassword) {
 		super();
 		this.userName = userName;
-		this.password = password;
+		this.digestedPassword = digestedPassword;
 		os_name = System.getProperty("os.name");
 		os_arch = System.getProperty("os.arch");
 		os_version = System.getProperty("os.version");
 		java_version = System.getProperty("java.version");
 		vcellSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	}
+	public static class DigestedPassword implements Serializable {
+		private String digestedPasswordStr;
+		public DigestedPassword(){
+			
+		}
+		public DigestedPassword(String clearTextPassword){
+			this.digestedPasswordStr = createdDigestPassword(clearTextPassword);
+		}
+		private static String createdDigestPassword(String clearTextPassword){
+			if(clearTextPassword == null || clearTextPassword.length() == 0){
+				throw new RuntimeException("Empty password not allowed");
+			}
+			java.security.MessageDigest messageDigest = null;
+			try {
+				messageDigest = java.security.MessageDigest.getInstance("SHA-1");
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException("Error processing password, Couldn't get instance of MessageDigest "+e.getMessage());
+			}
+			messageDigest.reset();
+			messageDigest.update(clearTextPassword.getBytes());
+			byte[] digestedPasswordBytes = messageDigest.digest();
+			StringBuffer sb = new StringBuffer(digestedPasswordBytes.length * 2);
+			for (int i = 0; i < digestedPasswordBytes.length; i++){
+				int v = digestedPasswordBytes[i] & 0xff;
+				if (v < 16) {
+					sb.append('0');
+				}
+				sb.append(Integer.toHexString(v));
+			}
+			return sb.toString().toUpperCase();
+		}
+		public static DigestedPassword createAlreadyDigested(String alreadyDigestedPassword){
+			DigestedPassword newDigestedPassword = new DigestedPassword();
+			newDigestedPassword.digestedPasswordStr = alreadyDigestedPassword;
+			return newDigestedPassword;
+			
+		}
+		public String getString(){
+			return digestedPasswordStr;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if(obj instanceof DigestedPassword){
+				return ((DigestedPassword)obj).digestedPasswordStr.equals(this.digestedPasswordStr);
+			}
+			return false;
+		}
+		
+	}
+	
 	public String getOs_name() {
 		return os_name;
 	}
@@ -53,8 +104,8 @@ public class UserLoginInfo implements Serializable {
 	public String getUserName() {
 		return userName;
 	}
-	public String getPassword() {
-		return password;
+	public DigestedPassword getDigestedPassword() {
+		return digestedPassword;
 	}
 	public String getVCellSoftwareVersion(){
 		return vcellSoftwareVersion;
