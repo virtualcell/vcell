@@ -67,14 +67,7 @@ public static String mangle(String param) {
  * @param param java.lang.String
  */
 public static String mangleExpression(Expression expression) {
-	Expression tempExp = new Expression(expression);
-	try {
-		tempExp.bindExpression(null);
-		tempExp = tempExp.flatten();
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-	}
-	return mangle(tempExp.infix());
+	return mangle(expression.infix());
 }
 
 
@@ -128,14 +121,6 @@ public static String unMangle(String param) {
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
-		}
-		//
-		// if flatten fails, it's ok (maybe a divide-by-zero ... but this shouldn't be judgemental on expression quality)
-		//
-		try {
-			tempExp = tempExp.flatten();
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
 		}
 		
 		return tempExp;
