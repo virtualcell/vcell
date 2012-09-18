@@ -202,16 +202,8 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("param = [");
 	int paramIndex = 0;
 	for (int i = 0; i < constants.length; i++){
-		boolean isInitialCondition = false;
-		for (int j = 0; j < volVars.length; j++){
-			if (constants[i].getName().startsWith(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
-				isInitialCondition = true;
-			}
-		}
-		if (!isInitialCondition){
-			pw.println("\t"+constants[i].getExpression().infix_Matlab()+";\t\t% param("+(paramIndex+1)+") is '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+"'");
-			paramIndex++;
-		}
+		pw.println("\t"+constants[i].getExpression().infix_Matlab()+";\t\t% param("+(paramIndex+1)+") is '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+"'");
+		paramIndex++;
 	}
 	pw.println("];");
 	pw.println("if nargin >= 3");
