@@ -187,12 +187,14 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
 		if (simulationContext.isValidForFitting()) {
-			tabbedPane.setEnabledAt(index, true);
+			if (index < 0) {
+				tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			}
 			parameterEstimationPanel.setSimulationContext(simulationContext);
 		} else {
 			if (index >= 0) {
 				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.setEnabledAt(index, false);
+				tabbedPane.remove(tab.component);
 				if (selectedComponent == tab.component) {
 					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
 						if (tabbedPane.isEnabledAt(i)) {
