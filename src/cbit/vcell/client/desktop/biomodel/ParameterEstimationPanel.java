@@ -154,7 +154,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	protected void initialize() {
 		super.initialize();
 		
-		setName("AnalysisPanel");
+		setName("Parameter Estimation");
 		setLayout(new java.awt.BorderLayout());
 		
 		referenceDataPanel = new ReferenceDataPanel();
