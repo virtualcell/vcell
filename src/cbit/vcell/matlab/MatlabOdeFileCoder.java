@@ -249,27 +249,8 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("\t% Constants");
 	paramIndex = 0;
 	for (int i = 0; i < constants.length; i++){
-		//
-		// check for initial value constants (e.g. A_init) and replace with A|t=0
-		//
-		int initialConditionIndex = -1;
-		for (int j = 0; j < volVars.length; j++){
-			if (constants[i].getName().startsWith(volVars[j].getName() + "_init_")){
-				initialConditionIndex = j;
-			}
-		}
-		if (initialConditionIndex>=0){
-			//
-			// this constant is not a parameter, it is really the initial condition of one of the state variables
-			//
-			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = y0("+(initialConditionIndex+1)+");\t\t% note: initial condition used as a constant");
-		}else{
-			//
-			// this constant is a regular parameter, resolve to the parameter vector
-			//
-			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
-			paramIndex++;
-		}
+		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
+		paramIndex++;
 	}
 	//
 	// print variables
@@ -302,30 +283,8 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("\t% Constants");
 	paramIndex = 0;
 	for (int i = 0; i < constants.length; i++){
-		//
-		// check for initial value constants (e.g. A_init) and replace with A|t=0
-		//
-		int initialConditionIndex = -1;
-		for (int j = 0; j < volVars.length; j++){
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2)){
-				initialConditionIndex = j;
-			}
-			if (constants[i].getName().equals(volVars[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM)){
-				initialConditionIndex = j;
-			}
-		}
-		if (initialConditionIndex>=0){
-			//
-			// this constant is not a parameter, it is really the initial condition of one of the state variables
-			//
-			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = y0("+(initialConditionIndex+1)+");\t\t% note: initial condition used as a constant");
-		}else{
-			//
-			// this constant is a regular parameter, resolve to the parameter vector
-			//
-			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
-			paramIndex++;
-		}
+		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
+		paramIndex++;
 	}
 	//
 	// print variables
