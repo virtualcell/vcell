@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,9 +61,20 @@ public class PathwayModel {
 		}
 		HashSet<BioPaxObject> newBiopaxObjects = new HashSet<BioPaxObject>();
 		for (BioPaxObject bpObject : biopaxObjects){
-			if(diagramObjectsID.contains(bpObject.getID())) {
-				newBiopaxObjects.add(bpObject);
+			String bpObjectID = bpObject.getID();
+			// for some obscure reason the diagramObjectISs have a "http://vcell.org/biopax/#" prefix
+			// hence there'll be no match if we simply use diagramObjectsID.contains(bpObjectID)
+			Iterator iterator = diagramObjectsID.iterator();
+			while(iterator.hasNext()) {
+				String doid = (String)iterator.next();
+				if(doid.contains(bpObjectID)) {
+					newBiopaxObjects.add(bpObject);
+				}
 			}
+//			String bpObjectID = "http://vcell.org/biopax/#" + bpObject.getID();
+//			if(diagramObjectsID.contains(bpObjectID)) {
+//				newBiopaxObjects.add(bpObject);
+//			}
 		}
 		biopaxObjects = newBiopaxObjects;
 	}
@@ -249,6 +261,7 @@ public class PathwayModel {
 			hideUtilityClassObjects();
 			cleanupUnresolvedProxies();
 			ConvertModulationToCatalysis();
+//			System.out.println(show(false));
 			setDisableUpdate(false);
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		}finally{
