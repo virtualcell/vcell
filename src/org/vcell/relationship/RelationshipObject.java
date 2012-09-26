@@ -58,7 +58,11 @@ public class RelationshipObject implements Identifiable{
 	}
 	
 	public static RelationshipObject createRelationshipObject(VCID bioModelObjectID, VCID bioPaxObjectID, IdentifiableProvider provider){
-		return new RelationshipObject((BioModelEntityObject)provider.getIdentifiableObject(bioModelObjectID), 
-										(BioPaxObject)provider.getIdentifiableObject(bioPaxObjectID));
+		if(bioModelObjectID == null || bioPaxObjectID == null) {
+			return null;
+		}
+		BioModelEntityObject bmo = (BioModelEntityObject)provider.getIdentifiableObject(bioModelObjectID);
+		BioPaxObject bpo = (BioPaxObject)provider.getIdentifiableObject(bioPaxObjectID);
+		return new RelationshipObject(bmo, bpo);
 	}
 }
