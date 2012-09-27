@@ -396,7 +396,7 @@ private javax.swing.JPanel getMainPanel() {
  * @return cbit.vcell.messaging.admin.VCellServiceConfig
  */
 public ServiceSpec getServiceSpec() {
-	String site = getSiteField().getText();
+	VCellServerID site = VCellServerID.getServerID(getSiteField().getText());
 	ServiceType stype = (ServiceType)getTypeCombo().getSelectedItem();
 	int ordinal = 0;
 	try {
@@ -455,7 +455,7 @@ private void initialize() {
 public void modifyService(ServiceSpec ss) {
 	this.setTitle("Modify Service");
 	getNewButton().setText("Modify");	 
-	getSiteField().setText(ss.getServerID());
+	getSiteField().setText(ss.getServerID().toString());
 	getSiteField().setEditable(false);
 	getSiteField().setBackground(Color.white);
 	getTypeCombo().setSelectedItem(ss.getType());

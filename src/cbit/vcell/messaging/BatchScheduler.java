@@ -45,11 +45,11 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 	for (int i = 0; i < allActiveJobs.length; i++){
 		jobStatus = allActiveJobs[i].getSimJobStatus();
 
-		if (!jobStatus.isActive()) {
+		if (!jobStatus.getSchedulerStatus().isActive()) {
 			continue;
 		}
 		
-		if (jobStatus.isWaiting()) {
+		if (jobStatus.getSchedulerStatus().isWaiting()) {
 			continue;  // we only do statistics on running jobs;
 		}
 		
@@ -79,7 +79,7 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 	for (int i = 0; i < allActiveJobs.length; i++){
 		jobStatus = allActiveJobs[i].getSimJobStatus();
 			
-		if (!jobStatus.isWaiting()) {
+		if (!jobStatus.getSchedulerStatus().isWaiting()) {
 			continue; // ignore non-waiting job
 		}
 			

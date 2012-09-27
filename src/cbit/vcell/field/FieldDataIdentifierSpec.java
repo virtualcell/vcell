@@ -10,6 +10,7 @@
 
 package cbit.vcell.field;
 
+import org.vcell.util.Matchable;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.vcell.parser.ExpressionException;
@@ -20,7 +21,7 @@ import cbit.vcell.simdata.SimDataConstants;
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
-public class FieldDataIdentifierSpec implements java.io.Serializable  {
+public class FieldDataIdentifierSpec implements java.io.Serializable, Matchable  {
 	private FieldFunctionArguments fieldFuncArgs;
 	private ExternalDataIdentifier extDataID;
 
@@ -90,5 +91,15 @@ public boolean equals(Object obj) {
 		getFieldFuncArgs().equals(fdiSpec.getFieldFuncArgs())
 		&&
 		getExternalDataIdentifier().equals(fdiSpec.getExternalDataIdentifier());
+}
+
+public boolean compareEqual(Matchable obj) {
+	if (obj instanceof FieldDataIdentifierSpec){
+		FieldDataIdentifierSpec other = (FieldDataIdentifierSpec)obj;
+		if (other.toCSVString().equals(toCSVString())){
+			return true;
+		}
+	}
+	return false;
 }
 }

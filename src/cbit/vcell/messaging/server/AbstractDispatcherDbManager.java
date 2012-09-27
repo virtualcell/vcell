@@ -11,6 +11,7 @@
 package cbit.vcell.messaging.server;
 import cbit.htc.PbsJobID;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.SimulationMessage;
@@ -20,6 +21,7 @@ import java.util.Date;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
@@ -48,13 +50,13 @@ SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJ
 	// new queue status
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
 	SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), 
-		oldQueueStatus.getQueuePriority(), MessageConstants.QUEUE_ID_NULL);
+		oldQueueStatus.getQueuePriority(), SimulationQueueID.QUEUE_ID_NULL);
 	
 	// new exe status
 	SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(null, computeHost, null,	null, false, startMsg.getPbsJobId());
 
 	// new job status
-	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED,
+	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), SchedulerStatus.DISPATCHED,
 			oldJobStatus.getTaskID(), startMsg, newQueueStatus, newExeStatus);
 
 	return newJobStatus;
@@ -67,13 +69,13 @@ SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJ
  * @param simKey cbit.sql.KeyValue
  */
 SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex, 
-		String hostName, int status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
+		String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 
 	// new queue status
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus == null ? null : oldJobStatus.getSimulationQueueEntryStatus();
 	SimulationQueueEntryStatus newQueueStatus = oldQueueStatus;
-	if (oldQueueStatus != null && oldQueueStatus.getQueueID() != MessageConstants.QUEUE_ID_NULL) {		
-		newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), oldQueueStatus.getQueuePriority(), MessageConstants.QUEUE_ID_NULL);
+	if (oldQueueStatus != null && oldQueueStatus.getQueueID() != SimulationQueueID.QUEUE_ID_NULL) {		
+		newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), oldQueueStatus.getQueuePriority(), SimulationQueueID.QUEUE_ID_NULL);
 	}
 
 	// new exe status
@@ -82,12 +84,12 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
 	boolean hasData = false;
 	
 	if (oldExeStatus == null) {
-		if (status == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {
+		if (status == SchedulerStatus.COMPLETED) {
 			hasData = true;
 		}
 		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData, solverMsg.getPbsJobId());				
 	} else {
-		if (status == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {
+		if (status == SchedulerStatus.COMPLETED) {
 			hasData = true;
 		} else {
 			hasData = oldExeStatus.hasData();
@@ -153,8 +155,8 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	// new queue status		
 	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
 	SimulationQueueEntryStatus newQueueStatus = oldQueueStatus;
-	if (oldQueueStatus.getQueueID() != MessageConstants.QUEUE_ID_NULL) {
-		newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), oldQueueStatus.getQueuePriority(), MessageConstants.QUEUE_ID_NULL);
+	if (oldQueueStatus.getQueueID() != SimulationQueueID.QUEUE_ID_NULL) {
+		newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), oldQueueStatus.getQueuePriority(), SimulationQueueID.QUEUE_ID_NULL);
 	}
 
 	// new exe status
@@ -162,7 +164,7 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	SimulationExecutionStatus newExeStatus = null;
 	if (oldExeStatus == null) {
 		newExeStatus = new SimulationExecutionStatus(null, hostName, null, null, hasData, solverMsg.getPbsJobId());
-	} else if (!oldJobStatus.isRunning() || !oldExeStatus.hasData() && hasData) {
+	} else if (!oldJobStatus.getSchedulerStatus().isRunning() || !oldExeStatus.hasData() && hasData) {
 		PbsJobID pbsJobID = oldExeStatus.getPbsJobID();
 		if (solverMsg.getPbsJobId()!=null){
 			pbsJobID = solverMsg.getPbsJobId();
@@ -174,7 +176,7 @@ SimulationJobStatus getNewStatus_updateRunningStatus(SimulationJobStatus oldJobS
 	
 	// new job status
 	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), 
-		SimulationJobStatus.SCHEDULERSTATUS_RUNNING, oldJobStatus.getTaskID(), solverMsg, newQueueStatus, newExeStatus);
+			SchedulerStatus.RUNNING, oldJobStatus.getTaskID(), solverMsg, newQueueStatus, newExeStatus);
 
 	return newJobStatus;
 }
@@ -203,7 +205,7 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
 		VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
 	try {
 
-		if (oldJobStatus != null && !oldJobStatus.isDone()) {
+		if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 			
 			SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, startMsg);
 
@@ -226,9 +228,9 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
-		int jobIndex, String hostName, int status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
+		int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 	try {
-		if (oldJobStatus != null && !oldJobStatus.isDone()) {		
+		if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {		
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, hostName, status, solverMsg);
 			
@@ -252,7 +254,7 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
 public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
 		int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 	try {
-		if (oldJobStatus != null && !oldJobStatus.isDone()) {
+		if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
 			SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex, simulationMessage);
 			
@@ -274,7 +276,7 @@ public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDataba
 public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, String hostName, 
 		VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException {
 	try {
-		if (oldJobStatus != null && !oldJobStatus.isDone()) {
+		if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 			if (oldJobStatus == newJobStatus) { // running statuses, don't always store into the database				

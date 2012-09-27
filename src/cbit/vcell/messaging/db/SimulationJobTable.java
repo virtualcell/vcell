@@ -12,6 +12,7 @@ package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
@@ -19,6 +20,7 @@ import org.vcell.util.document.VCellServerID;
 import cbit.htc.PbsJobID;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
@@ -90,7 +92,8 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//taskID
 	int parsedTaskID = rset.getInt(taskID.toString());
 	//schedulerStatus
-	int parsedSchedulerStatus = rset.getInt(schedulerStatus.toString());	
+	int parsedSchedulerStatusInt = rset.getInt(schedulerStatus.toString());
+	SchedulerStatus parsedSchedulerStatus = SchedulerStatus.fromDatabaseNumber(parsedSchedulerStatusInt);
 	//statusMsg
 	String parsedStatusMsg = TokenMangler.getSQLRestoredString(rset.getString(statusMsg.toString()));
 	
@@ -110,7 +113,9 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	if (rset.wasNull()) {
 		parsedQueueID = -1;
 	}
-	SimulationQueueEntryStatus simQueueEntryStatus = new SimulationQueueEntryStatus(parsedQueuedDate,parsedQueuePriority,parsedQueueID);	
+	SimulationQueueID simulationQueueID = SimulationQueueID.fromDatabaseNumber(parsedQueueID);
+	
+	SimulationQueueEntryStatus simQueueEntryStatus = new SimulationQueueEntryStatus(parsedQueuedDate,parsedQueuePriority,simulationQueueID);	
 	
 	//
 	// read solver stuff
@@ -169,7 +174,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//taskID
 	buffer.append(taskID + "=" + simulationJobStatus.getTaskID() + ",");
 	//schedulerStatus
-	buffer.append(schedulerStatus + "=" + simulationJobStatus.getSchedulerStatus() + ",");
+	buffer.append(schedulerStatus + "=" + simulationJobStatus.getSchedulerStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	String message = simulationJobStatus.getSimulationMessage().toSerialization();
 	buffer.append(statusMsg + "='" + TokenMangler.getSQLEscapedString(message, 4000) + "',");
@@ -183,7 +188,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	if (simQueueEntryStatus != null && simQueueEntryStatus.getQueueDate() != null){
 		buffer.append(VersionTable.formatDateToOracle(simQueueEntryStatus.getQueueDate()) + ",");
 	} else {
-		if (simulationJobStatus.inQueue()) {
+		if (simulationJobStatus.getSchedulerStatus().inQueue()) {
 			buffer.append("sysdate,");
 		} else {
 			buffer.append("null,");
@@ -199,7 +204,12 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//queueID
 	buffer.append(queueID + "=");
 	if (simQueueEntryStatus != null){
-		buffer.append(simQueueEntryStatus.getQueueID() + ",");
+		SimulationQueueID simQueueID = simQueueEntryStatus.getQueueID();
+		if (simQueueID!=null){
+			buffer.append(simQueueEntryStatus.getQueueID().getDatabaseNumber() + ",");
+		}else{
+			buffer.append("null,");
+		}
 	} else {
 		buffer.append("null,");
 	}
@@ -213,7 +223,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	if (simExecutionStatus != null && simExecutionStatus.getStartDate() != null){
 		buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getStartDate()) + ",");
 	} else {	
-		if (simulationJobStatus.isWaiting()) {	
+		if (simulationJobStatus.getSchedulerStatus().isWaiting()) {	
 			buffer.append("null,");
 		} else {
 			buffer.append("sysdate,");
@@ -234,7 +244,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	if (simExecutionStatus != null && simExecutionStatus.getEndDate() != null){
 		buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getEndDate()) + ",");
 	} else {
-		if (simulationJobStatus.isDone()) {
+		if (simulationJobStatus.getSchedulerStatus().isDone()) {
 			buffer.append("sysdate,");
 		} else {
 			buffer.append("null,");
@@ -296,7 +306,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	//taskID
 	buffer.append(simulationJobStatus.getTaskID() + ",");
 	//schedulerStatus
-	buffer.append(simulationJobStatus.getSchedulerStatus() + ",");
+	buffer.append(simulationJobStatus.getSchedulerStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	String message = simulationJobStatus.getSimulationMessage().toSerialization();
 	buffer.append("'" + TokenMangler.getSQLEscapedString(message, 4000) + "',");
@@ -304,7 +314,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	// queue stuff
 	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
 	//queueDate
-	if (simulationJobStatus.inQueue()) {
+	if (simulationJobStatus.getSchedulerStatus().inQueue()) {
 		buffer.append("sysdate,");
 	} else {		
 		if (simQueueEntryStatus != null && simQueueEntryStatus.getQueueDate() != null) {
@@ -320,7 +330,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 		//queuePriority
 		buffer.append(simQueueEntryStatus.getQueuePriority() + ",");
 		//queueID
-		buffer.append(simQueueEntryStatus.getQueueID() + ",");
+		buffer.append(simQueueEntryStatus.getQueueID().getDatabaseNumber() + ",");
 	}
 	
 	// execution stuff
@@ -332,7 +342,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 		if (simExecutionStatus.getStartDate() != null) {
 			buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getStartDate()) + ",");
 		} else {
-			if (simulationJobStatus.getSchedulerStatus() == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {
+			if (simulationJobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {
 				buffer.append("sysdate,");
 			} else {
 				buffer.append("null,");
@@ -350,7 +360,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 		if (simExecutionStatus.getEndDate() != null) {
 			buffer.append(VersionTable.formatDateToOracle(simExecutionStatus.getEndDate()) + ",");
 		} else {
-			if (simulationJobStatus.isDone()) {
+			if (simulationJobStatus.getSchedulerStatus().isDone()) {
 				buffer.append("sysdate,");
 			} else {
 				buffer.append("null,");

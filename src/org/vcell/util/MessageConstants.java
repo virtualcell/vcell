@@ -41,9 +41,9 @@ public interface MessageConstants {
 	public static final String MESSAGE_TYPE_RPC_SERVICE_VALUE = "RPCService";
 	public static final String MESSAGE_TYPE_EXPORT_EVENT_VALUE = "ExportEvent";
 	public static final String MESSAGE_TYPE_DATA_EVENT_VALUE = "DataEvent";
+	public static final String MESSAGE_TYPE_STOPSIMULATION_VALUE	= "StopSimulation";	
 	
 	public static final String MESSAGE_TYPE_PROPERTY	= "MessageType";
-	public static final String MESSAGE_TYPE_STOPSIMULATION_VALUE	= "StopSimulation";	
 
 	public static final String COMPUTE_RESOURCE_PROPERTY	= "ComputeResource";	
 	
@@ -87,9 +87,32 @@ public interface MessageConstants {
 	public static final int PRIORITY_DEFAULT = 5;
 	public static final int PRIORITY_HIGH = 9;
 
-	public static final int QUEUE_ID_WAITING = 0;
-	public static final int QUEUE_ID_SIMULATIONJOB = 1;
-	public static final int QUEUE_ID_NULL = 2;
+	public enum SimulationQueueID {
+		QUEUE_ID_WAITING(0),
+		QUEUE_ID_SIMULATIONJOB(1),
+		QUEUE_ID_NULL(2);
+		
+		private int databaseNumber;
+		private SimulationQueueID(int databaseNumber){
+			this.databaseNumber = databaseNumber;
+		}
+		
+		public int getDatabaseNumber(){
+			return this.databaseNumber;
+		}
+		
+		public static SimulationQueueID fromDatabaseNumber(int databaseNumber){
+			if (databaseNumber == QUEUE_ID_NULL.databaseNumber){
+				return QUEUE_ID_NULL;
+			}else if (databaseNumber == QUEUE_ID_SIMULATIONJOB.databaseNumber){
+				return QUEUE_ID_SIMULATIONJOB;
+			}else if (databaseNumber == QUEUE_ID_WAITING.databaseNumber){
+				return QUEUE_ID_WAITING;
+			}else{
+				return null;
+			}
+		}
+	};
 
 	public static final int SECOND_IN_MS = 1000; // in milliseconds
 	public static final int MINUTE_IN_S = 60;

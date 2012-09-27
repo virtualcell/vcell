@@ -553,13 +553,11 @@ public static Model getExample_Wagner() throws Exception {
 	model.addFeature("extracellular");
 	Feature extracellular = (Feature)model.getStructure("extracellular");
 
-	model.addFeature("cytosol");
-	Feature cytosol = (Feature)model.getStructure("cytosol");
-	Membrane plasmaMem = (Membrane)model.getStructure("plasmaMembrane");
+	Feature cytosol = model.addFeature("cytosol");
+	Membrane plasmaMem = model.addMembrane("plasmaMembrane");
 
-	model.addFeature("er");
-	Feature ER = (Feature)model.getStructure("er");
-	Membrane ERmem = (Membrane)model.getStructure("erMembrane");
+	Feature ER = model.addFeature("er");
+	Membrane ERmem = model.addMembrane("erMembrane");
 	
 	
 	model.addSpeciesContext(Ca,cytosol);

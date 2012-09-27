@@ -33,7 +33,7 @@ public abstract class JmsRpcServer extends AbstractJmsServiceProvider implements
  * Scheduler constructor comment.
  */
 public JmsRpcServer(ServiceType serviceType, int serviceOrdinal, String queueName, String filter, String logdir) throws Exception {
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), serviceType, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
 	log = new org.vcell.util.StdoutSessionLog(serviceInstanceStatus.getID());	

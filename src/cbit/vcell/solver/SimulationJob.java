@@ -9,9 +9,12 @@
  */
 
 package cbit.vcell.solver;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.field.FieldDataIdentifierSpec;
 
-public class SimulationJob implements java.io.Serializable {
+public class SimulationJob implements java.io.Serializable, Matchable {
 	private Simulation sim = null;
 	private int jobIndex = -1;				// expect non-negative value.
 	private FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
@@ -97,5 +100,30 @@ public final SimulationSymbolTable getSimulationSymbolTable() {
 		simulationSymbolTable = new SimulationSymbolTable(sim, jobIndex);
 	}
 	return simulationSymbolTable;
+}
+
+public boolean compareEqual(Matchable obj) {
+	if (obj instanceof SimulationJob){
+		SimulationJob other = (SimulationJob)obj;
+		if (!Compare.isEqual(getSimulation(), other.getSimulation())){
+			return false;
+		}
+		if (!Compare.isEqual(getJobIndex(), other.getJobIndex())){
+			return false;
+		}
+		FieldDataIdentifierSpec[] thisFDIS = null;
+		if (this.fieldDataIdentifierSpecs!=null && this.fieldDataIdentifierSpecs.length>0){
+			thisFDIS = this.fieldDataIdentifierSpecs;
+		}
+		FieldDataIdentifierSpec[] otherFDIS = null;
+		if (other.fieldDataIdentifierSpecs!=null && other.fieldDataIdentifierSpecs.length>0){
+			otherFDIS = other.fieldDataIdentifierSpecs;
+		}
+		if (!Compare.isEqualOrNull(thisFDIS,otherFDIS)){
+			return false;
+		}
+		return true;
+	}
+	return false;
 }
 }

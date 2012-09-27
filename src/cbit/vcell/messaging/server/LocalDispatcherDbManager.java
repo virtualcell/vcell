@@ -11,9 +11,11 @@
 package cbit.vcell.messaging.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.SimulationMessage;
@@ -40,7 +42,7 @@ public LocalDispatcherDbManager() {
  */
 public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
 	try {
-		if (oldJobStatus == null || oldJobStatus.isDone()) {	
+		if (oldJobStatus == null || oldJobStatus.getSchedulerStatus().isDone()) {	
 			int taskID = 0;
 			VCellServerID serverID = VCellServerID.getSystemServerID();
 			if (oldJobStatus != null) {
@@ -48,8 +50,8 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
 			}
 			// no job for the same simulation running				
 			// update the job status in the database and local memory
-			SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED, taskID, startMsg, 
-				new SimulationQueueEntryStatus(null, MessageConstants.PRIORITY_DEFAULT, MessageConstants.QUEUE_ID_NULL), null);
+			SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimID, jobIndex, null, SchedulerStatus.DISPATCHED, taskID, startMsg, 
+				new SimulationQueueEntryStatus(null, MessageConstants.PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_NULL), null);
 				
 			if (oldJobStatus == null) {
 				newJobStatus = adminDb.insertSimulationJobStatus(newJobStatus);

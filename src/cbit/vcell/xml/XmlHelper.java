@@ -15,12 +15,15 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.Text;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
@@ -44,6 +47,7 @@ import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -51,6 +55,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelUnitConverter;
 import cbit.vcell.model.ModelUnitSystem;
@@ -847,6 +852,120 @@ public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLS
 	ReplaceVFrapNamesWithSymbolNames(bioModel);
 	return bioModel;
 }
+
+private static final String SimulationTask_tag = "SimulationTask";
+private static final String FieldFunctionIdentifierSpec_tag = "FieldFunctionIdentifierSpec"; 
+private static final String ComputeResource_tag = "ComputeResource";
+private static final String TaskId_attr = "TaskId";
+private static final String JobIndex_attr = "JobIndex";
+
+public static String simTaskToXML(SimulationTask simTask) throws XmlParseException {
+
+	String simTaskString = null;
+	
+	if (simTask == null) {
+		throw new XmlParseException("Invalid input for SimulationTask: " + simTask);
+	}
+	Xmlproducer xmlProducer = new Xmlproducer(true);
+	
+	SimulationJob simJob = simTask.getSimulationJob();
+	Simulation sim = simJob.getSimulation();
+	
+	Element container = new Element(SimulationTask_tag); 
+	int taskId = simTask.getTaskID();
+	container.setAttribute(TaskId_attr, ""+taskId);
+	int jobIndex = simJob.getJobIndex();
+	container.setAttribute(JobIndex_attr, ""+jobIndex);
+
+	String computeResource = simTask.getComputeResource();
+	if (computeResource!=null){
+		Element computeResourceElement = new Element(ComputeResource_tag);
+		Text text = new Text(computeResource);
+		computeResourceElement.addContent(text);
+		container.addContent(computeResourceElement);
+	}
+
+	FieldDataIdentifierSpec[] fdisSpecs = simJob.getFieldDataIdentifierSpecs();
+	if (fdisSpecs!=null){
+		for (FieldDataIdentifierSpec fdisSpec : fdisSpecs){
+			Element fdisElement = new Element(FieldFunctionIdentifierSpec_tag);
+			fdisElement.setText(fdisSpec.toCSVString());
+			container.addContent(fdisElement);
+		}
+	}
+	
+	MathDescription md = sim.getMathDescription();
+	Element mathElement = xmlProducer.getXML(md);
+	container.addContent(mathElement);
+
+	Element simElement = xmlProducer.getXML(sim);
+	container.addContent(simElement);
+
+	Geometry geom = md.getGeometry();    
+	if (geom != null) {
+		Element geomElement = xmlProducer.getXML(geom);
+		container.addContent(geomElement);
+	} else {
+		System.err.println("No corresponding geometry for the simulation: " + sim.getName());
+	}
+	
+	container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS));		
+	simTaskString = XmlUtil.xmlToString(container);
+	
+	return simTaskString;
+}
+
+public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseException, ExpressionException {
+
+	Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
+	
+	try {
+		if (xmlString == null || xmlString.length() == 0) {
+			throw new XmlParseException("Invalid xml for Simulation: " + xmlString);
+		}
+		Element root =  (XmlUtil.stringToXML(xmlString, null)).getRootElement();     //default parser and no validation
+		if (!root.getName().equals(SimulationTask_tag)){
+			throw new RuntimeException("expecting top level element to be "+SimulationTask_tag);
+		}
+		int taskId = Integer.parseInt(root.getAttributeValue(TaskId_attr));
+		int jobIndex = Integer.parseInt(root.getAttributeValue(JobIndex_attr));
+		String computeResource = root.getChildTextTrim(ComputeResource_tag, ns);
+		
+		List children = root.getChildren(FieldFunctionIdentifierSpec_tag, ns);
+		ArrayList<FieldDataIdentifierSpec> fdisArrayList = new ArrayList<FieldDataIdentifierSpec>();
+		for (Object child : children){
+			if (child instanceof Element){
+				String fdisText = ((Element)child).getTextTrim();
+				FieldDataIdentifierSpec fdis = FieldDataIdentifierSpec.fromCSVString(fdisText);
+				fdisArrayList.add(fdis);
+			}
+		}
+		FieldDataIdentifierSpec[] fdisArray = fdisArrayList.toArray(new FieldDataIdentifierSpec[0]);
+		
+		Element simElement = root.getChild(XMLTags.SimulationTag, ns);
+		Element mdElement = root.getChild(XMLTags.MathDescriptionTag, ns);
+		Element geomElement = root.getChild(XMLTags.GeometryTag, ns);
+		XmlReader reader = new XmlReader(true, ns);
+		MathDescription md = reader.getMathDescription(mdElement);
+		if (geomElement != null) {
+			Geometry geom = reader.getGeometry(geomElement);
+			md.setGeometry(geom);
+		}
+		Simulation sim = reader.getSimulation(simElement, md);
+		sim.refreshDependencies();
+		
+		SimulationJob simJob = new SimulationJob(sim,jobIndex,fdisArray);
+		SimulationTask simTask = new SimulationTask(simJob,taskId,computeResource);
+		return simTask;
+		
+	} catch (PropertyVetoException pve) {
+		pve.printStackTrace();
+		throw new XmlParseException("Unable to parse simulation string.", pve);
+	}
+}
+
+
+
 
 }
 

@@ -70,7 +70,6 @@ public Expression(RationalNumber value) {
 	ASTFloatNode denominator = new ASTFloatNode(value.getDenBigInteger().doubleValue());
 	invNode.jjtAddChild(denominator);
 	this.rootNode.jjtAddChild(invNode, 1);
-	this.normalizedInfixString = value.toString();
 }
 
 

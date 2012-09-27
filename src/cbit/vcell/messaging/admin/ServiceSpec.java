@@ -16,16 +16,17 @@ import java.io.Serializable;
 import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.document.VCellServerID;
 
 
 public class ServiceSpec implements Matchable, Serializable, ComparableObject {
-	private String serverID;
+	private VCellServerID serverID;
 	private ServiceType type;
 	private int ordinal;
 	private int startupType;
 	private int memoryMB;	
 	
-	public ServiceSpec(String sID, ServiceType t, int o, int st, int mm) {
+	public ServiceSpec(VCellServerID sID, ServiceType t, int o, int st, int mm) {
 		super();
 		this.serverID = sID;
 		this.type = t;
@@ -42,7 +43,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		return ordinal;
 	}
 
-	public String getServerID() {
+	public VCellServerID getServerID() {
 		return serverID;
 	}
 
@@ -61,8 +62,8 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	public String getID() {
 		return getServiceID(serverID, type, ordinal);
 	}
-	public static String getServiceID(String serverID, ServiceType type, int ordinal) {
-		return serverID.charAt(0) + "_" + type.getName() + "_" + ordinal;
+	public static String getServiceID(VCellServerID serverID, ServiceType type, int ordinal) {
+		return serverID + "_" + type.getName() + "_" + ordinal;
 	}
 	
 	public Object[] toObjects() {

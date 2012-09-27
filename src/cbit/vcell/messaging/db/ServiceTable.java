@@ -17,6 +17,7 @@ import java.sql.*;
 
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
 
 public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";
@@ -57,7 +58,8 @@ private ServiceTable() {
  */
 public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {	
 	//serverID
-	String parsedServerID = rset.getString(serverID.toString());
+	String parsedServerIDString = rset.getString(serverID.toString());
+	VCellServerID parsedServerID = VCellServerID.getServerID(parsedServerIDString);
 	//type
 	String parsedType = rset.getString(type.toString());
 	//ordinal
