@@ -630,7 +630,7 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_simId,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_taskId, newSimulationJobStatus.getTaskID());
 		dbObject.put(MongoMessage_jobIndex, newSimulationJobStatus.getJobIndex());
-		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatusDescription());
+		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatus().getDescription());
 		dbObject.put(MongoMessage_serverId, newSimulationJobStatus.getServerID().toString());
 		if (newSimulationJobStatus.getTimeDateStamp()!=null){
 			dbObject.put(MongoMessage_simJobStatusTimeStamp,newSimulationJobStatus.getTimeDateStamp().getTime());

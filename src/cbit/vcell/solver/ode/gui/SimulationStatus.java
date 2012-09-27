@@ -141,7 +141,7 @@ public String getFailedMessage() {
 	}
 	int failCount = 0;
 	for (SimulationJobStatus jobStatus : jobStatuses) {
-		if (jobStatus.isFailed()) {
+		if (jobStatus.getSchedulerStatus().isFailed()) {
 			failCount ++;
 		}
 	}
@@ -169,7 +169,7 @@ public Double getProgress() {
 	double progress = 0;
 	for (int i = 0; i < jobStatuses.length; i++){
 		if (jobStatuses[i] != null) {
-			if (jobStatuses[i].isDone()) {
+			if (jobStatuses[i].getSchedulerStatus().isDone()) {
 				progress += 1;
 				bAllNullProgress = false;
 			} else {
@@ -249,23 +249,23 @@ private void initStatus() {
 			hasData = hasData  || jobStatuses[i].hasData();			
 			
 			int currentStatus = status;
-			if (jobStatuses[i].isWaiting()) {
+			if (jobStatuses[i].getSchedulerStatus().isWaiting()) {
 				status = Math.max(status, WAITING);
 				bRunning = true;
-			} else if (jobStatuses[i].isQueued()) {
+			} else if (jobStatuses[i].getSchedulerStatus().isQueued()) {
 				status = Math.max(status, QUEUED);
 				bRunning = true;
-			} else if (jobStatuses[i].isDispatched()) {			
+			} else if (jobStatuses[i].getSchedulerStatus().isDispatched()) {			
 				status = Math.max(status, DISPATCHED);
 				bRunning = true;
-			} else if (jobStatuses[i].isRunning()) {
+			} else if (jobStatuses[i].getSchedulerStatus().isRunning()) {
 				status = Math.max(status, RUNNING);
 				bRunning = true;
-			} else if (jobStatuses[i].isCompleted()) {
+			} else if (jobStatuses[i].getSchedulerStatus().isCompleted()) {
 				status = Math.max(status, COMPLETED);
-			} else if (jobStatuses[i].isStopped()) {
+			} else if (jobStatuses[i].getSchedulerStatus().isStopped()) {
 				status = Math.max(status, STOPPED);
-			} else if (jobStatuses[i].isFailed()) {
+			} else if (jobStatuses[i].getSchedulerStatus().isFailed()) {
 				status = Math.max(status, FAILED);
 			}
 			if (status > currentStatus) highStatusIndex = i;
@@ -311,7 +311,7 @@ public boolean isJob0Completed() {
 	// only one simulation is considered, the jobindex is 0; hence we are checking the first jobStatus in the list of
 	// SimulationJobStatuses corresponding to this simulationstatus.
 	//
-	return getJobStatuses()[0].isCompleted();
+	return getJobStatuses()[0].getSchedulerStatus().isCompleted();
 }
 
 
@@ -397,11 +397,13 @@ public boolean isUnknown() {
  */
 public static SimulationStatus newNeverRan(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(NEVER_RAN, false, jobCount);
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NEVER RAN <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
 public static SimulationStatus newNotSaved(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(NOT_SAVED, false, jobCount);
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW NOT SAVED <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -415,6 +417,7 @@ public static SimulationStatus newNotSaved(int jobCount) {
  */
 public static SimulationStatus newStartRequest(int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(START_REQUESTED, false, jobCount);
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -429,6 +432,7 @@ public static SimulationStatus newStartRequest(int jobCount) {
 public static SimulationStatus newStartRequestFailure(String failMsg, int jobCount) {
 	SimulationStatus newStatus = new SimulationStatus(FAILED, false, jobCount);
 	newStatus.details = failMsg;
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST FAILURE <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
@@ -444,6 +448,7 @@ public static SimulationStatus newStopRequest(SimulationStatus currentStatus) {
 	SimulationStatus newStatus = new SimulationStatus(currentStatus);
 	newStatus.status = STOP_REQUESTED;
 	newStatus.details = null;
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW STOP REQUEST <<<< ###########   oldstatus=" + currentStatus + "\n###########  newstatus=" + newStatus + "\n###########");
 	return newStatus;
 }
 
@@ -469,7 +474,7 @@ public static SimulationStatus newUnknown(int jobCount) {
 public int numberOfJobsDone() {
 	int done = 0;
 	for (int i = 0; i < getJobStatuses().length; i++){
-		if (getJobStatuses()[i] != null && getJobStatuses()[i].isDone()) {
+		if (getJobStatuses()[i] != null && getJobStatuses()[i].getSchedulerStatus().isDone()) {
 			done ++;
 		}
 	}
@@ -478,7 +483,7 @@ public int numberOfJobsDone() {
 
 public boolean isCompleted() {
 	for (int i = 0; i < getJobStatuses().length; i++){
-		if (getJobStatuses()[i] == null || !getJobStatuses()[i].isCompleted()) {
+		if (getJobStatuses()[i] == null || !getJobStatuses()[i].getSchedulerStatus().isCompleted()) {
 			return false;
 		}
 	}
@@ -497,7 +502,7 @@ public String toString() {
 
 public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, SimulationJobStatusEvent simJobStatusEvent) {
 	SimulationStatus newstatus = updateFromJobEvent0(oldStatus, simJobStatusEvent);
-	System.out.println("###########oldstatus=" + oldStatus + "\n###########newstatus=" + newstatus + "\n###########jobstatusevent=" + simJobStatusEvent.getJobStatus());
+	System.out.println("##  ##  ##  ##  ##  ##  ##  ##    >>>> NEW SIMULATION STATUS <<<< ###########   oldstatus=" + oldStatus + "\n###########  newstatus=" + newstatus + "\n###########  jobstatusevent=" + simJobStatusEvent.getJobStatus());
 	return newstatus;	
 }
 /**

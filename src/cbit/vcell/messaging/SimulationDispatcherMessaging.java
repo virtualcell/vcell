@@ -20,6 +20,7 @@ import javax.jms.ObjectMessage;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -30,6 +31,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.RpcRequest;
@@ -145,7 +147,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 
 									// new job status is failed.
 									SimulationJobStatus	newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(),
-										SimulationJobStatus.SCHEDULERSTATUS_FAILED, jobStatus.getTaskID(),
+										SchedulerStatus.FAILED, jobStatus.getTaskID(),
 										SimulationMessage.MESSAGE_JOB_FAILED_TOOMANYRETRIES,
 										jobStatus.getSimulationQueueEntryStatus(), jobStatus.getSimulationExecutionStatus());
 									//update the database
@@ -161,7 +163,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 
 									// increment taskid, new job status is queued
 									SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(), 
-										SimulationJobStatus.SCHEDULERSTATUS_QUEUED, jobStatus.getTaskID() + 1, 
+											SchedulerStatus.QUEUED, jobStatus.getTaskID() + 1, 
 										SimulationMessage.MESSAGE_JOB_QUEUED_RETRY, jobStatus.getSimulationQueueEntryStatus(), null);
 									
 									//update the database
@@ -312,7 +314,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 							double requiredMemMB = simTask.getEstimatedMemorySizeMB();
 							if (requiredMemMB > Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB))) {						
 								SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
-										jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, 
+										jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SchedulerStatus.FAILED, 
 										SimulationMessage.jobFailed("Simulation [" + simTask.getSimulationInfo().getName() + ", " + jobStatus.getJobIndex() + "] requires approximately " + requiredMemMB + "mb memory. Exceeds current memory limit."));
 								
 								// tell client
@@ -324,7 +326,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								taskMsg.sendSimulationTask(waitingJobDispatcher);
 								//update database
 								SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
-									jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), MessageConstants.QUEUE_ID_SIMULATIONJOB, simTask.getTaskID(), false);						
+									jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), SimulationQueueID.QUEUE_ID_SIMULATIONJOB, simTask.getTaskID(), false);						
 								// tell client
 								StatusMessage statusMsg = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
 								statusMsg.sendToClient(waitingJobDispatcher);
@@ -516,7 +518,7 @@ private void do_failed(Connection con, SimulationJobStatus oldJobStatus, String 
 	// if the job is in simJob queue, get it out	
 	
 	// update database
-	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, failMsg);
+	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SchedulerStatus.FAILED, failMsg);
 	
 	// tell client
 	StatusMessage message = new StatusMessage(newJobStatus, username, null, null);
@@ -529,10 +531,10 @@ private void do_failed(Connection con, SimulationJobStatus oldJobStatus, String 
  * Creation date: (10/24/2001 11:08:09 PM)
  * @param simulation cbit.vcell.solver.Simulation
  */
-private void do_start(Connection con, SimulationJobStatus oldJobStatus, SimulationTask simTask, int queueID) 
+private void do_start(Connection con, SimulationJobStatus oldJobStatus, SimulationTask simTask, SimulationQueueID queueID) 
 	throws JMSException, DataAccessException, XmlParseException {
 	// send to simulation queue, for waiting jobs, only update the database
-	if (queueID == MessageConstants.QUEUE_ID_SIMULATIONJOB) {
+	if (queueID == SimulationQueueID.QUEUE_ID_SIMULATIONJOB) {
 		SimulationTaskMessage taskMsg = new SimulationTaskMessage(simTask);
 		taskMsg.sendSimulationTask(mainJobDispatcher);
 		log.print("do_start(): send job " + simTask.getSimulationJobIdentifier() + " to simJob queue");
@@ -562,7 +564,7 @@ private void do_stop(Connection con, SimulationJobStatus oldJobStatus, String us
 	
 	// if the job is in simJob queue, get it out
 	KeyValue simKey = vcSimID.getSimulationKey();
-	if (oldJobStatus.isQueued()) {
+	if (oldJobStatus.getSchedulerStatus().isQueued()) {
 		String queueName = JmsUtils.getQueueSimJob();
 		String filter =  MessageConstants.USERNAME_PROPERTY + "='" + username + "' AND " + MessageConstants.SIMKEY_PROPERTY + "=" + simKey
 			+ " AND " + MessageConstants.JOBINDEX_PROPERTY + "=" + jobIndex;		
@@ -573,7 +575,7 @@ private void do_stop(Connection con, SimulationJobStatus oldJobStatus, String us
 	
 	// update database
 	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
+			SchedulerStatus.STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 	
 	// tell client
 	if (!newJobStatus.compareEqual(oldJobStatus)) {
@@ -718,7 +720,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 	if (!user.equals(vcSimID.getOwner())) {
 		log.alert(user + " is not authorized to start simulation " + vcSimID);
 		StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.MESSAGE_JOB_FAILED_NOTAUTHORIZED, null, null), user.getName(), null, null);
+			SchedulerStatus.FAILED, 0, SimulationMessage.MESSAGE_JOB_FAILED_NOTAUTHORIZED, null, null), user.getName(), null, null);
 		message.sendToClient(mainJobDispatcher);
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
@@ -729,7 +731,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 		} catch (DataAccessException ex) {
 			log.alert("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Failed to dispatch simuation: " + ex.getMessage()), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Failed to dispatch simuation: " + ex.getMessage()), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 			return;
 		}
@@ -737,7 +739,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 			if (simulation.getScanCount() > Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxJobsPerScan))) {
 				log.alert("Too many simulations (" + simulation.getScanCount() + ") for parameter scan." + vcSimID);
 				StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-					SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Too many simulations (" + simulation.getScanCount() 
+					SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Too many simulations (" + simulation.getScanCount() 
 							+ ") for parameter scan."), null, null), user.getName(), null, null);
 				message.sendToClient(mainJobDispatcher);
 				return;
@@ -753,12 +755,12 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 					return;
 				}
 				// if already started by another thread
-				if (oldJobStatus != null && !oldJobStatus.isDone()) {
+				if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 					log.alert("Can't start, simulation[" + vcSimID + "] job [" + i + "] is running already");
 				} else {
 					int newTaskID = oldJobStatus == null ? 0 : (oldJobStatus.getTaskID() & MessageConstants.TASKID_USERCOUNTER_MASK) + MessageConstants.TASKID_USERINCREMENT;
 					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, i, fdis), newTaskID);
-					int queueID = MessageConstants.QUEUE_ID_WAITING;
+					SimulationQueueID queueID = SimulationQueueID.QUEUE_ID_WAITING;
 					// put all the jobs to waiting first, let dispatch thread decide which to dispatch
 					do_start(con, oldJobStatus, simTask, queueID);
 				}
@@ -766,7 +768,7 @@ private void startSimulation(Connection con, User user, VCSimulationIdentifier v
 		} else {
 			log.alert("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 		}
 	}
@@ -799,7 +801,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 	if (!user.equals(vcSimID.getOwner())) {
 		log.alert(user + " is not authorized to stop simulation " + vcSimID);
 		StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
-			SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
+			SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
 		message.sendToClient(mainJobDispatcher);			
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
@@ -809,7 +811,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		} catch (DataAccessException ex) {
 			log.alert("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed(ex.getMessage()), null, null), user.getName(), null, null);
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed(ex.getMessage()), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 			return;
 		}
@@ -818,7 +820,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 				SimulationJobStatus jobStatus = jobAdminXA.getSimulationJobStatus(con, vcSimID.getSimulationKey(), i);
 
 				if (jobStatus != null) {
-					if (!jobStatus.isDone()) {
+					if (!jobStatus.getSchedulerStatus().isDone()) {
 						do_stop(con, jobStatus, user.getName(), vcSimID, i);
 					} else {
 						log.alert("Can't stop, simulation [" + vcSimID + "] job [" + i + "] already finished");
@@ -830,7 +832,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		} else {
 			log.alert("Can't stop, simulation [" + vcSimID + "] doesn't exist in database");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, SimulationMessage.jobFailed("Can't stop, simulation [" + 
+				SchedulerStatus.FAILED, 0, SimulationMessage.jobFailed("Can't stop, simulation [" + 
 						vcSimID + "] doesn't exist"), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobDispatcher);
 		}

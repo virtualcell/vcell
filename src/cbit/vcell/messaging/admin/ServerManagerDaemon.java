@@ -61,7 +61,7 @@ public class ServerManagerDaemon implements ControlTopicListener {
 public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSException {
 	super();	
 	
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	try {
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);

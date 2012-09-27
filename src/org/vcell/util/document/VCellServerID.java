@@ -87,4 +87,9 @@ public int hashCode() {
 public String toString() {
 	return serverID;
 }
+
+
+public String toCamelCase() {
+	return serverID.toUpperCase().charAt(0)+serverID.substring(1).toLowerCase();
+}
 }

@@ -12,6 +12,7 @@ package cbit.vcell.messaging.server;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.AdminDatabaseServerXA;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 
@@ -21,6 +22,7 @@ import cbit.vcell.solver.SimulationMessage;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.document.VCellServerID;
 
 
@@ -45,7 +47,7 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
 		String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) 
 			throws DataAccessException, UpdateSynchronizationException {
 
-	if (oldJobStatus != null && !oldJobStatus.isDone()) {
+	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 		
 		SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, startMsg);
 
@@ -64,9 +66,9 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, String hostName, int status, SimulationMessage solverMsg) 
+		VCSimulationIdentifier vcSimID, int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) 
 			throws DataAccessException, UpdateSynchronizationException {
-	if (oldJobStatus == null ||  oldJobStatus != null && !oldJobStatus.isDone()) {		
+	if (oldJobStatus == null ||  oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {		
 
 		SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, hostName, status, solverMsg);
 
@@ -89,7 +91,7 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
 public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
 		VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 
-	if (oldJobStatus != null && !oldJobStatus.isDone()) {
+	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
 		SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex, simulationMessage);
 		
@@ -107,15 +109,15 @@ public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDataba
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDb, Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, int queueID, int taskID, boolean firstSubmit) 
+		VCSimulationIdentifier vcSimID, int jobIndex, SimulationQueueID queueID, int taskID, boolean firstSubmit) 
 			throws DataAccessException, UpdateSynchronizationException {
-	if (oldJobStatus == null || oldJobStatus.isDone() || oldJobStatus.isWaiting()) {	
+	if (oldJobStatus == null || oldJobStatus.getSchedulerStatus().isDone() || oldJobStatus.getSchedulerStatus().isWaiting()) {	
 		// no job for the same simulation running						
 		Date submitDate = firstSubmit ? null : oldJobStatus.getSubmitDate();
-		int schedulerStatus = SimulationJobStatus.SCHEDULERSTATUS_WAITING;
+		SchedulerStatus schedulerStatus = SchedulerStatus.WAITING;
 		SimulationMessage simulationMessage = SimulationMessage.MESSAGE_JOB_WAITING;
-		if (queueID == MessageConstants.QUEUE_ID_SIMULATIONJOB) {
-			schedulerStatus = SimulationJobStatus.SCHEDULERSTATUS_QUEUED;
+		if (queueID == SimulationQueueID.QUEUE_ID_SIMULATIONJOB) {
+			schedulerStatus = SchedulerStatus.QUEUED;
 			simulationMessage = SimulationMessage.MESSAGE_JOB_QUEUED;
 		}
 
@@ -142,7 +144,7 @@ public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, A
  */
 public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, String hostName, 
 		VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
-	if (oldJobStatus != null && !oldJobStatus.isDone()) {
+	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
 		SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 

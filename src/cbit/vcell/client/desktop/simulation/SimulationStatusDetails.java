@@ -70,7 +70,7 @@ Object getSimulationStatusDisplay(int index) {
 		SimulationJobStatus jobStatus = simStatus.getJobStatus(index);
 		Double progress = simStatus.getProgressAt(index);
 		if (jobStatus != null) {
-			if (progress != null && jobStatus.isRunning() && progress.doubleValue() > 0 ) {
+			if (progress != null && jobStatus.getSchedulerStatus().isRunning() && progress.doubleValue() > 0 ) {
 				statusBars[index].setValue((int)(progress.doubleValue() * 100));
 				return statusBars[index];
 			} else {

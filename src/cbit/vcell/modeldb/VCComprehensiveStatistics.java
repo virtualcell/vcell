@@ -39,6 +39,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
@@ -242,7 +243,7 @@ public class VCComprehensiveStatistics {
 							for (int scan = 0; scan < sim.getScanCount(); scan ++) {
 								SimulationJobStatus jobStatus = ss.getJobStatus(scan);
 								if (jobStatus != null) {
-									if (jobStatus.getSchedulerStatus() == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {								
+									if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 										bHasCompletedSim = true;
 										long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 										if (elapsed < 2 * MINUTE_IN_MS) {
@@ -376,7 +377,7 @@ public class VCComprehensiveStatistics {
 								for (int scan = 0; scan < sim.getScanCount(); scan ++) {
 									SimulationJobStatus jobStatus = ss.getJobStatus(scan);
 									if (jobStatus != null) {
-										if (jobStatus.getSchedulerStatus() == SimulationJobStatus.SCHEDULERSTATUS_COMPLETED) {								
+										if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 											bHasCompletedSim = true;
 											long elapsed = jobStatus.getEndDate().getTime() - jobStatus.getStartDate().getTime();
 											if (elapsed < 2 * MINUTE_IN_MS) {

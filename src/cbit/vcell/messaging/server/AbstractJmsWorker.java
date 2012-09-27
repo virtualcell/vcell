@@ -47,7 +47,7 @@ public AbstractJmsWorker(ServiceType wt, int workerOrdinal, int workerMem, Strin
 	serviceType = wt;
 	maxMemoryMB = workerMem;	
 			
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), serviceType, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
 	log = new StdoutSessionLog(serviceInstanceStatus.getID());

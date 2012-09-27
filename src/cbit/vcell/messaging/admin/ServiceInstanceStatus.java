@@ -16,17 +16,18 @@ import java.util.Date;
 import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
 import org.vcell.util.MessageConstants.ServiceType;
+import org.vcell.util.document.VCellServerID;
 
 
 public class ServiceInstanceStatus implements Matchable, Serializable, ComparableObject {
-	private String serverID;
+	private VCellServerID serverID;
 	private ServiceType type;
 	private int ordinal;
 	private Date startDate;
 	private String hostname;	
 	private boolean bRunning = false;
 		
-	public ServiceInstanceStatus(String sID, ServiceType t, int o, String h, Date d, boolean br) {
+	public ServiceInstanceStatus(VCellServerID sID, ServiceType t, int o, String h, Date d, boolean br) {
 		super();
 		this.serverID = sID;
 		this.type = t;
@@ -40,7 +41,7 @@ public class ServiceInstanceStatus implements Matchable, Serializable, Comparabl
 		return ordinal;
 	}
 
-	public String getServerID() {
+	public VCellServerID getServerID() {
 		return serverID;
 	}
 

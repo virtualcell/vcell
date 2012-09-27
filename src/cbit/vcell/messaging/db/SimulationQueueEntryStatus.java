@@ -12,6 +12,8 @@ package cbit.vcell.messaging.db;
 
 import java.util.Date;
 
+import org.vcell.util.MessageConstants.SimulationQueueID;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/31/2003 11:21:39 AM)
@@ -20,7 +22,7 @@ import java.util.Date;
 public class SimulationQueueEntryStatus implements org.vcell.util.Matchable, java.io.Serializable {
 	private int fieldQueuePriority = 0;
 	private Date fieldQueueDate = null;
-	private int fieldQueueID;
+	private SimulationQueueID fieldQueueID;
 /**
  * SimulationQueueEntryStatus constructor comment.
  * @param simKey cbit.sql.KeyValue
@@ -30,7 +32,10 @@ public class SimulationQueueEntryStatus implements org.vcell.util.Matchable, jav
  * @param queueDate java.util.Date
  * @param queueID java.lang.Integer
  */
-public SimulationQueueEntryStatus(Date queueDate, int queuePriority, int queueID) {
+public SimulationQueueEntryStatus(Date queueDate, int queuePriority, SimulationQueueID queueID) {
+	if (queueID==null){
+		throw new RuntimeException("queueID must not be null");
+	}
 	this.fieldQueueDate = queueDate;
 	this.fieldQueuePriority = queuePriority;	
 	this.fieldQueueID = queueID;
@@ -74,7 +79,7 @@ public Date getQueueDate() {
  * Creation date: (1/31/2003 11:23:56 AM)
  * @return int
  */
-public int getQueueID() {
+public SimulationQueueID getQueueID() {
 	return fieldQueueID;
 }
 /**
@@ -90,7 +95,10 @@ public int getQueuePriority() {
  * Creation date: (5/29/2003 10:03:41 AM)
  * @param newFieldQueueID int
  */
-public void setQueueID(int newFieldQueueID) {
+public void setQueueID(SimulationQueueID newFieldQueueID) {
+	if (newFieldQueueID==null){
+		throw new RuntimeException("queueID must not be null");
+	}
 	fieldQueueID = newFieldQueueID;
 }
 /**

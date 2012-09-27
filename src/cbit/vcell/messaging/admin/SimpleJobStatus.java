@@ -40,7 +40,7 @@ public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTas
 	if (getStartDate()!=null){
 		if (getEndDate()!=null){
 			this.elapsedTime = ((getEndDate().getTime()-getStartDate().getTime()));
-		}else if (jobStatus.isRunning()){
+		}else if (jobStatus.getSchedulerStatus().isRunning()){
 			this.elapsedTime = ((System.currentTimeMillis()-getStartDate().getTime()));
 		}
 	}
@@ -184,7 +184,7 @@ public VCSimulationIdentifier getVCSimulationIdentifier() {
  * @return boolean
  */
 public boolean isDone() {
-	return jobStatus.isDone();
+	return jobStatus.getSchedulerStatus().isDone();
 }
 
 
@@ -194,7 +194,7 @@ public boolean isDone() {
  * @return boolean
  */
 public boolean isRunning() {
-	return jobStatus.isRunning();
+	return jobStatus.getSchedulerStatus().isRunning();
 }
 
 

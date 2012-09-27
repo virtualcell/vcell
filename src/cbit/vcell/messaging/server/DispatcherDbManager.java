@@ -14,6 +14,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.SimulationMessage;
@@ -32,7 +33,7 @@ public interface DispatcherDbManager {
 
 
 	SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 
-		int jobIndex, String hostName, int status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException;
+		int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException;
 
 
 	void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, VCSimulationIdentifier vcSimID, 

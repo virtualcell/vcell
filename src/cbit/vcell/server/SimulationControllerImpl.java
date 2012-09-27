@@ -35,6 +35,7 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;
@@ -207,17 +208,17 @@ private void handleException(VCSimulationIdentifier vcSimulationIdentifier, int 
 		}
 		SimulationJobStatus newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, SimulationMessage.solverAborted(ex.getMessage()));
 		if (newJobStatus == null) {
-			newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(ex.getMessage()), null, null);
+			newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SchedulerStatus.FAILED, -1, SimulationMessage.jobFailed(ex.getMessage()), null, null);
 		}
 		
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	} catch (DataAccessException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SchedulerStatus.FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	} catch (RemoteException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SchedulerStatus.FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);
 	}	
@@ -238,7 +239,7 @@ public void onWorkerEvent(WorkerEvent workerEvent) {
 		SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimulationIdentifier.getSimulationKey(), jobIndex);
 		SimulationJobStatus newJobStatus = null;
 
-		if (oldJobStatus == null || oldJobStatus.isDone()) {
+		if (oldJobStatus == null || oldJobStatus.getSchedulerStatus().isDone()) {
 			return;
 		}
 		
@@ -255,9 +256,9 @@ public void onWorkerEvent(WorkerEvent workerEvent) {
 			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
 			
 		} else if (workerEvent.isStartingEvent()) {
-			if (oldJobStatus.isQueued() || oldJobStatus.isDispatched()) {
+			if (oldJobStatus.getSchedulerStatus().isQueued() || oldJobStatus.getSchedulerStatus().isDispatched()) {
 				newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
-			} else if (oldJobStatus.isRunning()) {
+			} else if (oldJobStatus.getSchedulerStatus().isRunning()) {
 				newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), oldJobStatus.getVCSimulationIdentifier(), oldJobStatus.getJobIndex(), oldJobStatus.getSubmitDate(), 
 					oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), workerEvent.getSimulationMessage(), oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
 			}				
@@ -426,7 +427,7 @@ private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobS
 	synchronized (solverController) {
 		String host = (solverController != null) ? solverController.getHost() : null;
 		
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_COMPLETED, simulationMessage);		
+		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SchedulerStatus.COMPLETED, simulationMessage);		
 	}
 }
 
@@ -465,7 +466,7 @@ private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStat
 	synchronized (solverController) {		
 		String host = (solverController != null) ? solverController.getHost() : null;
 		
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_FAILED, solverMsg);
+		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SchedulerStatus.FAILED, solverMsg);
 	}
 }
 
@@ -500,10 +501,10 @@ private SimulationJobStatus updateStoppedJobStatus(SimulationJobStatus oldJobSta
 	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
 	if (solverController != null) {
 		synchronized (solverController) {
-			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
+			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SchedulerStatus.STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 		}
 	} else {
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
+		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SchedulerStatus.STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
 	}	
 }
 }
