@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
+import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
@@ -63,18 +64,14 @@ public class PathwayModel {
 		for (BioPaxObject bpObject : biopaxObjects){
 			String bpObjectID = bpObject.getID();
 			// for some obscure reason the diagramObjectISs have a "http://vcell.org/biopax/#" prefix
-			// hence there'll be no match if we simply use diagramObjectsID.contains(bpObjectID)
-			Iterator iterator = diagramObjectsID.iterator();
+			// hence there'll be no match if we simply use   diagramObjectsID.contains(bpObjectID)
+			Iterator<String> iterator = diagramObjectsID.iterator();
 			while(iterator.hasNext()) {
-				String doid = (String)iterator.next();
-				if(doid.contains(bpObjectID)) {
+				String doid = URIUtil.getLocalName(iterator.next());
+				if(doid.equals(bpObjectID)) {
 					newBiopaxObjects.add(bpObject);
 				}
 			}
-//			String bpObjectID = "http://vcell.org/biopax/#" + bpObject.getID();
-//			if(diagramObjectsID.contains(bpObjectID)) {
-//				newBiopaxObjects.add(bpObject);
-//			}
 		}
 		biopaxObjects = newBiopaxObjects;
 	}
