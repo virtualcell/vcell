@@ -31,6 +31,7 @@ import org.vcell.pathway.persistence.PathwayIOUtil;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsKeyword;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayCommonsVersion;
@@ -55,7 +56,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 	JComboBox categoryList2 = new JComboBox(criteriaStrings);
 //	JTextField entityName1 = new JTextField("JAK-STAT");
 //	JTextField entityName2 = new JTextField("cytosol");
-	JTextField entityName1 = new JTextField("");
+	JTextField entityName1 = new JTextField("11427");
 	JTextField entityName2 = new JTextField("");
 	private JButton showPathwayButton = null;
 	String command = "";
@@ -98,7 +99,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		// ------- panel 1 ---------------
 		JLabel categoryLabel1 = new JLabel("Category");
 //		categoryList1.setSelectedIndex(1);		// select Pathway
-		categoryList1.setSelectedIndex(0);		// select Pathway
+		categoryList1.setSelectedIndex(3);		// select SabioReactionID
 		categoryList1.addActionListener(eventHandler);
 		
 		JLabel entityLabel1 = new JLabel("Entity");
@@ -107,7 +108,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 //		p.add(new Label(" "));
 		
 		panel1 = new JPanel();
-		panel1.setBorder(BorderFactory.createTitledBorder("Search Criteria 1:"));
+		panel1.setBorder(BorderFactory.createTitledBorder("Search Criteria:"));
 		panel1.setLayout(new GridBagLayout());
 		
 		gbc = new GridBagConstraints();
@@ -146,7 +147,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		
 		// ------- panel 2 -----------------
 		JLabel categoryLabel2 = new JLabel("Category");
-		categoryList2.setSelectedIndex(1);		// select CellularLocation
+		categoryList2.setSelectedIndex(0);
 //		categoryList2.setSelectedIndex(21);		// select CellularLocation
 		categoryList2.addActionListener(eventHandler);
 		
@@ -154,7 +155,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		entityName2.addActionListener(eventHandler);
 		
 		panel2 = new JPanel();
-		panel2.setBorder(BorderFactory.createTitledBorder("Search criteria 2:"));
+		panel2.setBorder(BorderFactory.createTitledBorder("Additional search criteria:"));
 		panel2.setLayout(new GridBagLayout());
 		
 		gbc = new GridBagConstraints();
@@ -225,14 +226,17 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		// %28Pathway:JAK-STAT%20AND%20CellularLocation:cytosol%29
 
 		
-		if(entity1.isEmpty()) {
-			System.out.println("Entity1 empty");
+		if(entity1.isEmpty() && entity2.isEmpty()) {
+			DialogUtils.showWarningDialog(this, "No search criteria specified.");
 			return;
 		}
-		if(!entity2.isEmpty()) {
-			command += "%28" + category1 + ":" + entity1 + "%20AND%20" + category2 + ":" + entity2 + "%29";
-		} else {
+		
+		if(!entity1.isEmpty() && entity2.isEmpty()) {
 			command += category1 + ":" + entity1;
+		} else if(entity1.isEmpty() && !entity2.isEmpty()) {
+			command += category2 + ":" + entity2;
+		} else {	// both entities present
+			command += "%28" + category1 + ":" + entity1 + "%20AND%20" + category2 + ":" + entity2 + "%29";
 		}
 
 		AsynchClientTask task1 = new AsynchClientTask("Importing Kinetic Laws", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
