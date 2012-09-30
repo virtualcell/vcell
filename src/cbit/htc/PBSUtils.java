@@ -35,6 +35,7 @@ import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.VCellServerID;
 
 public class PBSUtils {
 	private static SessionLog pbsLog = new StdoutSessionLog("PBS-Command");
@@ -248,7 +249,7 @@ public static void killJob(PbsJobID jobid) {
  * Creation date: (9/26/2003 3:06:31 PM)
  * @param args java.lang.String[]
  */
-public static void main(String[] args) {		
+public static void main(String[] args) throws Exception{		
 	
 //	try {		
 //		PropertyLoader.loadProperties();
@@ -283,41 +284,28 @@ public static void main(String[] args) {
 
 
 
-public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws Exception {
 	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SIMULATION_JOB);
 }
 
-public static PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+public static PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws Exception {
 	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SERVICE_JOB);
 }
 
-private static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, int jobCategory) throws ExecutableException {	
+private static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, int jobCategory) throws Exception {	
+	PrintWriter pw = null;
 	try {	
-		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
+		pw = new PrintWriter(new FileOutputStream(sub_file));
 		pw.println("# Generated without file template.");
 		pw.println("#PBS -N " + jobName);
 		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb");
 		String pbsQueueNameString = "#PBS -q ";
-		String siteNameString = null;
-		String siteNAMEString = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-		String pbsServiceQueueNamePrefix = PropertyLoader.getProperty("pbsServiceQueuePrefix", PBSConstants.PBS_SERVICE_QUEUE_PREFIX);
-		String pbsWorkQueueNamePrefix = PropertyLoader.getProperty("pbsWorkQueuePrefix", PBSConstants.PBS_WORK_QUEUE_PREFIX);
-		if (siteNAMEString.toUpperCase().equals("ALPHA")) {siteNameString = "Alpha";} 
-		else if  (siteNAMEString.toUpperCase().equals("BETA")) {siteNameString = "Beta";} 
-		else if  (siteNAMEString.toUpperCase().equals("REL")) {siteNameString = "Rel";} 
-		else if  (siteNAMEString.toUpperCase().equals("TEST")) {siteNameString = "Test";} 
-		else {
-			pw.close();
-			throw new ExecutableException("Invalid Server Site ID String: \""+siteNAMEString+"\"");
-		}
-	
+		String siteNameString = VCellServerID.getSystemServerID().toCamelCase();		
 		if (jobCategory==PBSConstants.PBS_SIMULATION_JOB) {
-			pbsQueueNameString = pbsQueueNameString+pbsWorkQueueNamePrefix+siteNameString;
-		}
-		else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
-			pbsQueueNameString = pbsQueueNameString+pbsServiceQueueNamePrefix+siteNameString;
-		} else {
-			pw.close();
+			pbsQueueNameString = pbsQueueNameString+"workq"+siteNameString;
+		}else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
+			pbsQueueNameString = pbsQueueNameString+"serviceq"+siteNameString;
+		}else {
 			throw new ExecutableException("Invalid jobCategory: "+Integer.toString(jobCategory));
 		}
 		
@@ -325,10 +313,8 @@ private static PbsJobID submitJob(String computeResource, String jobName, String
 		pw.print(PBSConstants.PBS_JOB_TEMPLATE);
 		pw.println();
 		pw.println(executable + " " + cmdArguments);
-		pw.close();
-	} catch (IOException ex) {
-		ex.printStackTrace(System.out);
-		return null;
+	}finally{
+		if(pw != null){try{pw.close();}catch(Exception e){e.printStackTrace();}}
 	}
 	
 	String[] completeCommand = new String[] {JOB_CMD_SUBMIT, sub_file};

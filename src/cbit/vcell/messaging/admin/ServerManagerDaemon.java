@@ -191,7 +191,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	adminDbTop.updateServiceStatus(service, tso, true);
 }	
 
-private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+private PbsJobID submit2PBS(ServiceStatus service) throws Exception {
 	killService(service);
 	
 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);

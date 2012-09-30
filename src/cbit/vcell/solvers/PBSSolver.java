@@ -47,7 +47,7 @@ public PBSSolver(SimulationTask simTask, java.io.File directory, SessionLog sess
  * @throws SolverException 
  * @throws ExecutableException 
  */
-private PbsJobID submit2PBS() throws SolverException, ExecutableException {
+private PbsJobID submit2PBS() throws Exception {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
 	String cmd = getExecutableCommand();
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
