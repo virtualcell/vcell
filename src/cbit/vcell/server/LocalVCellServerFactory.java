@@ -18,8 +18,12 @@ import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.messaging.JmsConnectionFactory;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.ResultSetCrawler;
 /**
  * This type was created in VisualAge.
  */
@@ -47,8 +51,14 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 				throw new PermissionException("userid "+userid+" does not have sufficient privilage");
 			}
 		}
-		vcServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, sessionLog);
+		ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, sessionLog);
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
+		SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl, sessionLog);
+		
+		vcServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer, simulationDatabase);
 	} catch (java.rmi.RemoteException e){
+		e.printStackTrace(System.out);
 	}
 }
 /**

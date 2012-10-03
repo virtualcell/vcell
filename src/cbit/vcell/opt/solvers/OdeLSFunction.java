@@ -22,6 +22,7 @@ import cbit.function.DefaultScalarFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
@@ -107,7 +108,7 @@ private double calculateWeightedError(double[] x) {
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
+		IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
 		idaFileWriter.write(unscaledParameterNames);
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();

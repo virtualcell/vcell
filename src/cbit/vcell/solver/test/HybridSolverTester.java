@@ -41,6 +41,7 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -108,10 +109,10 @@ public class HybridSolverTester {
 				sim.getSolverTaskDescription().getSmoldynSimulationOptions().setRandomSeed(new Integer(startTrialNo + i));
 				//create sim job
 				int jobIndex = startTrialNo + i;
-				SimulationJob simJob = new SimulationJob(sim,jobIndex, null);
+				SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, null),0);
 				ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 				
-				FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simDataDir,new StdoutSessionLog(sim.getVersion().getOwner().getName()),false);		
+				FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simDataDir,new StdoutSessionLog(sim.getVersion().getOwner().getName()),false);		
 				fvSolver.startSolver();
 				
 				SolverStatus status = fvSolver.getSolverStatus();

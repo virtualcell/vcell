@@ -222,16 +222,17 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int index, boolean lockRowForUpdate) throws SQLException {
+public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
-	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + index;
+	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + jobIndex;
+	sql += " AND " + jobTable.taskID.getQualifiedColName() + " = " + taskID;
 		
 	if (lockRowForUpdate){
 		sql += " FOR UPDATE OF " + jobTable.getTableName() + ".id";
 	}
-	//log.print(sql);
+//	log.print(sql);
 	Statement stmt = con.createStatement();
 	SimulationJobStatus simJobStatus = null;
 	try {
@@ -242,7 +243,38 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
 	} finally {
 		stmt.close();
 	}
+	log.print("retrieved simJobStatus = "+simJobStatus);
 	return simJobStatus;
+}
+
+/**
+ * This method was created in VisualAge.
+ * @return int
+ * @param user java.lang.String
+ * @param imageName java.lang.String
+ */
+public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex, boolean lockRowForUpdate) throws SQLException {
+	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
+	String sql = new String(standardJobStatusSQL);	
+	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
+	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + jobIndex;
+		
+	if (lockRowForUpdate){
+		sql += " FOR UPDATE OF " + jobTable.getTableName() + ".id";
+	}
+	//log.print(sql);
+	Statement stmt = con.createStatement();
+	ArrayList<SimulationJobStatus> simulationJobStatusArrayList = new ArrayList<SimulationJobStatus>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			simulationJobStatusArrayList.add(simJobStatus);
+		}
+	} finally {
+		stmt.close();
+	}
+	return simulationJobStatusArrayList.toArray(new SimulationJobStatus[0]);
 }
 
 
@@ -377,7 +409,7 @@ public void insertSimulationJobStatus(Connection con, SimulationJobStatus simula
 	String sql = "INSERT INTO " + jobTable.getTableName() + " " + jobTable.getSQLColumnList() + " VALUES " 
 		+ jobTable.getSQLValueList(key, simulationJobStatus);
 
-	//log.print(sql);			
+	log.print(sql);			
 	executeUpdate(con,sql);
 }
 
@@ -397,7 +429,8 @@ public void updateSimulationJobStatus(Connection con, SimulationJobStatus simula
 	
 	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.getSQLUpdateList(simulationJobStatus) + 
 			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +
-			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex();
+			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex() +
+			" AND " + jobTable.taskID + "=" + simulationJobStatus.getTaskID();
 	//log.print(sql);			
 	executeUpdate(con,sql);
 }

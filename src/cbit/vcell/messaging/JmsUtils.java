@@ -162,7 +162,4 @@ public static final int getMaxPdeJobsPerUser() {
 }
 
 
-public static final String getQueueBNGReq() {
-	return PropertyLoader.getRequiredProperty(PropertyLoader.jmsBNGRequestQueue);
-}
 }

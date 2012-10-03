@@ -27,6 +27,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -65,8 +66,8 @@ public class HybridSolver extends AbstractCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
-	super(simulationJob, directory, sessionLog, b_Msging);
+public HybridSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
+	super(simTask, directory, sessionLog, b_Msging);
 	integratorType = type;
 }
 
@@ -268,7 +269,7 @@ private ODESolverResultSet getHybridSolverResultSet()
 	 *No function columns for the results of multiple stochastic trials.
 	 *In stochastic simulation the functions include probability functions and clamped variable.
 	 */
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	if(simSymbolTable.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
 		Function functions[] = simSymbolTable.getFunctions();
@@ -330,13 +331,12 @@ protected void initialize() throws SolverException
 	writeFunctionsFile();
 	writeLogFile();
 	
-	
 	//
-	String inputFilename = getBaseName() + ".nc";//file used by precompiled solver.
+	String inputFilename = getInputFilename();//file used by precompiled solver.
 	//
 	sessionLog.print("HybridSolver.initialize() baseName = " + getBaseName());
 	//
-	NetCDFWriter ncWriter = new NetCDFWriter(simulationJob,inputFilename, bMessaging);
+	NetCDFWriter ncWriter = new NetCDFWriter(simTask,inputFilename, bMessaging);
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
@@ -359,6 +359,15 @@ protected void initialize() throws SolverException
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
 	//Hybrid solver's usage: ProgramName <NetCDF Filename> <epsilon> <lambda> <MSR_Tolerance> <SDE_Tolerance> <SDE_dt> [-R <Random Seed>] [-OV]
+	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
+}
+
+private String getInputFilename(){
+	return getBaseName() + ".nc";//file used by precompiled solver.
+}
+
+@Override
+public String[] getMathExecutableCommand() {
 	String executableName = "";
 	String randomNumber = "";
 	//if one of the following paras is applied, all the paras in front of it must be set.
@@ -369,7 +378,7 @@ protected void initialize() throws SolverException
 	String SDE_dt = " 0.1";
 	String paraString = "";
 
-	SolverTaskDescription solverTaskDescription = simulationJob.getSimulation().getSolverTaskDescription();
+	SolverTaskDescription solverTaskDescription = simTask.getSimulation().getSolverTaskDescription();
 	if(solverTaskDescription.getStochOpt() instanceof StochHybridOptions)
 	{
 		StochHybridOptions sho = ((StochHybridOptions)solverTaskDescription.getStochOpt());
@@ -400,13 +409,13 @@ protected void initialize() throws SolverException
 	
 	ArrayList<String> commandList = new ArrayList<String>();
 	commandList.add(executableName);
-	commandList.add(inputFilename);
+	commandList.add(getInputFilename());
 	String argumentString = paraString.toLowerCase() +randomNumber + " -OV";
 	StringTokenizer st = new StringTokenizer(argumentString);
 	while (st.hasMoreTokens()) {
 		commandList.add(st.nextToken());
 	}	
-	setMathExecutable(new MathExecutable(commandList.toArray(new String[0])));
+	return commandList.toArray(new String[0]);
 }
 
 
@@ -521,7 +530,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){

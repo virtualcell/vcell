@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SimulationJob;
@@ -45,8 +46,8 @@ public class RungeKuttaFehlbergSolver extends RungeKuttaSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param numVectors int
  */
-public RungeKuttaFehlbergSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog, 3, 6);
+public RungeKuttaFehlbergSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
+	super(simTask, directory, sessionLog, 3, 6);
 }
 public double calculateErrorTerm(int i) {
 	int I = getVariableIndex(i);
@@ -59,7 +60,7 @@ protected void integrate() throws cbit.vcell.solver.SolverException, UserStopExc
 		final double epsilon = DBL_EPSILON;
 		final double twentySixEpsilon = 26 * epsilon;
 		//
-		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simTask.getSimulation().getSolverTaskDescription();
 		double startingTime = taskDescription.getTimeBounds().getStartingTime();
 		double endingTime = taskDescription.getTimeBounds().getEndingTime();
 		double relativeErrorTolerance = taskDescription.getErrorTolerance().getRelativeErrorTolerance();

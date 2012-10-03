@@ -23,6 +23,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationJob;
@@ -38,10 +39,10 @@ public class CppClassCoderMembraneRegionVarContext extends CppClassCoderAbstract
 protected CppClassCoderMembraneRegionVarContext(CppCoderVCell argCppCoderVCell,
 												Equation argEquation,
 												MembraneSubDomain argMembraneSubDomain,
-												SimulationJob argSimulationJob, 
+												SimulationTask simTask, 
 												String argParentClass) throws Exception
 {
-	super(argCppCoderVCell,argEquation,argMembraneSubDomain,argSimulationJob,argParentClass);
+	super(argCppCoderVCell,argEquation,argMembraneSubDomain,simTask,argParentClass);
 }
 
 
@@ -91,7 +92,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	try {
 		Expression ic = getEquation().getInitialExpression();
-		ic.bindExpression(simulationJob.getSimulationSymbolTable());
+		ic.bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
 		double value = ic.evaluateConstant();
 		out.println("\tinitialValue = new double;");
 		out.println("\t*initialValue = " + value + ";");
@@ -130,7 +131,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	try {
 		Expression ic = getEquation().getInitialExpression();
-		ic.bindExpression(simulationJob.getSimulationSymbolTable());
+		ic.bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
 		out.println("\tvirtual double getInitialValue(MembraneElement *memElement);");

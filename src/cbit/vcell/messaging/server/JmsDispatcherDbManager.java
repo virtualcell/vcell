@@ -12,9 +12,9 @@ package cbit.vcell.messaging.server;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.AdminDatabaseServerXA;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 import java.sql.Connection;
 import java.util.Date;
@@ -44,12 +44,12 @@ public JmsDispatcherDbManager() {
  * updateDispatchedStatus method comment.
  */
 public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-		String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) 
+		String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage startMsg) 
 			throws DataAccessException, UpdateSynchronizationException {
 
 	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 		
-		SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, startMsg);
+		SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, taskID, startMsg);
 
 		newJobStatus = adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
 
@@ -66,11 +66,11 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) 
+		VCSimulationIdentifier vcSimID, int jobIndex, int taskID, String hostName, SchedulerStatus status, SimulationMessage solverMsg) 
 			throws DataAccessException, UpdateSynchronizationException {
 	if (oldJobStatus == null ||  oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {		
 
-		SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, hostName, status, solverMsg);
+		SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, taskID, hostName, status, solverMsg);
 
 		if (oldJobStatus == null) {
 			newJobStatus = adminDbXA.insertSimulationJobStatus(con, newJobStatus);
@@ -89,11 +89,11 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
  * updateLatestUpdateDate method comment.
  */
 public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
+		VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 
 	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
-		SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex, simulationMessage);
+		SimulationJobStatus	newJobStatus = getNewStatus_updateLatestUpdateDate(oldJobStatus, vcSimID, jobIndex, taskID, simulationMessage);
 		
 		if (newJobStatus != null) {
 			adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
@@ -109,7 +109,7 @@ public void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDataba
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDb, Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, SimulationQueueID queueID, int taskID, boolean firstSubmit) 
+		VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationQueueID queueID, boolean firstSubmit) 
 			throws DataAccessException, UpdateSynchronizationException {
 	if (oldJobStatus == null || oldJobStatus.getSchedulerStatus().isDone() || oldJobStatus.getSchedulerStatus().isWaiting()) {	
 		// no job for the same simulation running						
@@ -143,13 +143,13 @@ public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, A
  * updateRunningStatus method comment.
  */
 public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, String hostName, 
-		VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
+		VCSimulationIdentifier vcSimID, int jobIndex, int taskID, boolean hasData, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 	if (oldJobStatus != null && !oldJobStatus.getSchedulerStatus().isDone()) {
 
 		SimulationJobStatus newJobStatus = getNewStatus_updateRunningStatus(oldJobStatus, hostName, vcSimID, jobIndex, hasData, solverMsg);
 
 		if (oldJobStatus == newJobStatus) { // running statuses, don't always store into the database		
-			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, solverMsg);
+			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, taskID, solverMsg);
 			return oldJobStatus;
 		} else {
 			newJobStatus = adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);

@@ -28,6 +28,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -44,20 +45,20 @@ public class IDAFileWriter extends OdeFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public IDAFileWriter(PrintWriter pw, SimulationJob simJob) {
-	this(pw, simJob, false);
+public IDAFileWriter(PrintWriter pw, SimulationTask simTask) {
+	this(pw, simTask, false);
 }
 
 
-public IDAFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging) {
-	super(pw, simJob, bUseMessaging);
+public IDAFileWriter(PrintWriter pw, SimulationTask simTask, boolean bUseMessaging) {
+	super(pw, simTask, bUseMessaging);
 }
 /**
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
 protected String writeEquations(HashMap<Discontinuity, String> discontinuityNameMap) throws MathException, ExpressionException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 		
 	StringBuffer sb = new StringBuffer();
 	MathDescription mathDescription = simulation.getMathDescription();
@@ -65,7 +66,7 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 		//
 		// define vector of original variables
 		//
-		SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+		SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 		
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDescription.getSubDomains().nextElement();
 		FastSystem fastSystem = subDomain.getFastSystem();

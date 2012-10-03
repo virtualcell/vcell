@@ -83,6 +83,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -300,22 +301,22 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private CartesianMesh cartesianMesh = null;
 	private String baseFileName = null;
 
-public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationJob arg_simulationJob, boolean bMessaging) 
+public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging) 
 {
-	super(pw, arg_simulationJob, bMessaging);
+	super(pw, simTask, bMessaging);
 	this.bGraphicOpenGL = bGraphic;
 	baseFileName = baseName;
 	this.outputFile = new File(baseFileName + SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION); 
 	
 	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
-	SmoldynSimulationOptions smoldynSimulationOptions = arg_simulationJob.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
+	SmoldynSimulationOptions smoldynSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
 	if (smoldynSimulationOptions.getRandomSeed() != null) {
 		this.randomSeed = smoldynSimulationOptions.getRandomSeed();
 	} else {
 		this.randomSeed = System.currentTimeMillis();
 	}
 	//We add jobindex to the random seed in case there is a parameter scan.
-	randomSeed = randomSeed + simulationJob.getJobIndex();
+	randomSeed = randomSeed + simTask.getSimulationJob().getJobIndex();
 	dist.reSeed(randomSeed);
 }
 
@@ -344,9 +345,9 @@ private void writeMeshFile() throws SolverException {
 }
 
 private void init() throws SolverException {
-	simulation = simulationJob.getSimulation();
+	simulation = simTask.getSimulation();
 	mathDesc = simulation.getMathDescription();
-	simulationSymbolTable = simulationJob.getSimulationSymbolTable();
+	simulationSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 
 	particleVariableList = new ArrayList<ParticleVariable>();
 	Variable[] variables = simulationSymbolTable.getVariables();
@@ -626,7 +627,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 }
 
 private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
 		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + DataProcessingInstructions.ROI_TIME_SERIES);
@@ -648,7 +649,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 			throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
 		}
 		double[] origData = simDataBlock.getData();	
-		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simTask.getSimulationJob().getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
 		
 		File fdatFile = new File(userDirectory, filename);
 		
@@ -707,7 +708,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				{
 					if(subdomain instanceof MembraneSubDomain)
 					{
-						rateDefinition = new Expression(FiniteVolumeFileWriter.replaceVolumeVariable(getSimulationJob(), (MembraneSubDomain)subdomain, rateDefinition));
+						rateDefinition = new Expression(FiniteVolumeFileWriter.replaceVolumeVariable(getSimulationTask(), (MembraneSubDomain)subdomain, rateDefinition));
 					}
 				}
 			}else{
@@ -1969,7 +1970,7 @@ private void writeSpecies() throws MathException {
 }
 
 private void writeJms(Simulation simulation) {
-	if (simulationJob  != null) {
+	if (simTask != null) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms"); 
 		printWriter.println(JmsUtils.getJmsProvider() + " " + JmsUtils.getJmsUrl()
@@ -1978,7 +1979,7 @@ private void writeJms(Simulation simulation) {
 			+ " " + JmsUtils.getTopicServiceControl()
 			+ " " + simulation.getVersion().getOwner().getName()
 			+ " " + simulation.getVersion().getVersionKey()
-			+ " " + simulationJob.getJobIndex());
+			+ " " + simTask.getSimulationJob().getJobIndex());
 		printWriter.println("end_jms");
 		printWriter.println();
 	}

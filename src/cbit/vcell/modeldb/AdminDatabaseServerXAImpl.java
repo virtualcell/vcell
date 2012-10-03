@@ -84,9 +84,19 @@ public SimulationJobStatus getNextObsoleteSimulation(java.sql.Connection con, lo
  * @param jobIndex int
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-public SimulationJobStatus getSimulationJobStatus(java.sql.Connection con, org.vcell.util.document.KeyValue simKey, int jobIndex) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatusArray(java.sql.Connection con, org.vcell.util.document.KeyValue simKey, int jobIndex) throws DataAccessException {
 	try {
-		SimulationJobStatus jobStatus = adminDbTop.getSimulationJobStatus(con, simKey, jobIndex);
+		SimulationJobStatus[] jobStatus = adminDbTop.getSimulationJobStatusArray(con, simKey, jobIndex);
+		return jobStatus;
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure getting SimulationJobStatus for ["+simKey+"]["+jobIndex+"]");
+	}
+}
+
+public SimulationJobStatus getSimulationJobStatus(java.sql.Connection con, org.vcell.util.document.KeyValue simKey, int jobIndex, int taskID) throws DataAccessException {
+	try {
+		SimulationJobStatus jobStatus = adminDbTop.getSimulationJobStatus(con, simKey, jobIndex, taskID);
 		return jobStatus;
 	}catch (Throwable e){
 		log.exception(e);

@@ -41,7 +41,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * @author: Jim Schaff
  */
 public class ResultSetCrawler {
-	private AdminDatabaseServer adminDbServer = null;
+	private AdminDBTopLevel adminDbTopLevel = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
 	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
@@ -74,18 +74,18 @@ public class ResultSetCrawler {
 /**
  * ResultSetCrawler constructor comment.
  */
-public ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog) throws SQLException {
-	this(argConFactory, argAdminDbServer, argSessionLog, null);
+public ResultSetCrawler(ConnectionFactory argConFactory, AdminDBTopLevel adminDbTopLevel, SessionLog argSessionLog) throws SQLException {
+	this(argConFactory, adminDbTopLevel, argSessionLog, null);
 }
 
 
 /**
  * ResultSetCrawler constructor comment.
  */
-private ResultSetCrawler(ConnectionFactory argConFactory, AdminDatabaseServer argAdminDbServer, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
+private ResultSetCrawler(ConnectionFactory argConFactory, AdminDBTopLevel adminDbTopLevel, SessionLog argSessionLog, String argOutputDirName) throws SQLException {
 	this.conFactory = argConFactory;
 	this.log = argSessionLog;
-	this.adminDbServer = argAdminDbServer;
+	this.adminDbTopLevel = adminDbTopLevel;
 	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log);
 	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
 	outputDirName = argOutputDirName;
@@ -296,10 +296,10 @@ public static void main(String[] args) {
 		SessionLog log = new org.vcell.util.StdoutSessionLog("ResultSetCrawler");		
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		
-		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
+		DbDriver.setKeyFactory(keyFactory);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 			
-		ResultSetCrawler crawler = new ResultSetCrawler(conFactory, adminDbServer, log, outputdir);
+		ResultSetCrawler crawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log, outputdir);
 		if (SCAN_SINGLE) {
 			crawler.scanAUser(username, SCAN_ONLY);
 		} else {
@@ -468,7 +468,7 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	org.vcell.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	org.vcell.util.document.UserInfo userInfos[] = adminDbTopLevel.getUserInfos(true);	
 	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log);
 
 	File userDir = null;
@@ -505,7 +505,7 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 			// find all the user simulations
 			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);
 			SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
-			ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
+			ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 			scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
 		} catch (Exception ex) {
 			log.exception(ex);
@@ -532,7 +532,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 		log.print("----------------------------------------------------------");
 		log.print("USER: " + userDir.getName());
 
-		User user = adminDbServer.getUser(username);
+		User user = adminDbTopLevel.getUser(username,true);
 		
 		if (user == null) {
 			log.alert("User " + user + " doesn't exit!!");
@@ -544,7 +544,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 		// find all the user simulations
 		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);
 		SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
-		ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
+		ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 		scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
 		log.print("----------------------------------------------------------");
 	} catch (Exception ex) {

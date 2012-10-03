@@ -13,6 +13,8 @@ package cbit.vcell.solver.ode;
 import java.io.*;
 
 import org.vcell.util.SessionLog;
+
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.*;
 /**
@@ -27,8 +29,8 @@ public class ForwardEulerSolver extends DefaultODESolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param numVectors int
  */
-public ForwardEulerSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog)  throws SolverException {
-	super(simulationJob, directory, sessionLog, 2);
+public ForwardEulerSolver(SimulationTask simTask, File directory, SessionLog sessionLog)  throws SolverException {
+	super(simTask, directory, sessionLog, 2);
 }
 /**
  * Integrate over time step using the forward Euler method (1st order explicit)

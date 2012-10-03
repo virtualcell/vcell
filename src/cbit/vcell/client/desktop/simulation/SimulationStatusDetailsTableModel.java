@@ -25,8 +25,10 @@ public class SimulationStatusDetailsTableModel extends javax.swing.table.Abstrac
 	private final static int COLUMN_SUBMITDATE = 4;
 	private final static int COLUMN_STARTDATE = 5;
 	private final static int COLUMN_ENDDATE = 6;
+	private final static int COLUMN_PBSID = 7;
+	private final static int COLUMN_TASKID = 8;
 	
-	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date"};
+	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date", "PBS ID", "Task ID"};
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
 
@@ -169,6 +171,18 @@ public Object getValueAt(int row, int col) {
 					return null;
 				}
 				return jobStatus.getEndDate();
+			}
+			case COLUMN_PBSID : {
+				if (jobStatus == null || jobStatus.getSimulationExecutionStatus()==null || jobStatus.getSimulationExecutionStatus().getPbsJobID()==null) {
+					return null;
+				}
+				return jobStatus.getSimulationExecutionStatus().getPbsJobID().getID();
+			}
+			case COLUMN_TASKID : {
+				if (jobStatus == null) {
+					return null;
+				}
+				return jobStatus.getTaskID();
 			}
 			default: {
 				if (jobStatus == null) {

@@ -31,6 +31,7 @@ import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.solver.Simulation;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
@@ -41,7 +42,8 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DbDriver;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.DBCacheTable;
@@ -75,7 +77,7 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
 	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
 	private JmsClientMessaging clientMessaging = null;
-	private LocalAdminDbServer adminDbServer = null;
+	private AdminDBTopLevel adminDbTopLevel = null;
 	
 	private boolean bStop = false;		
 	private SimulationDispatcherMessaging dispatcherMessaging = null;
@@ -91,16 +93,16 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
  * Scheduler constructor comment.
  */
 public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception {	
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
-			ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 	initLog(logdir);
 
 	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	
 	conFactory = new OraclePoolingConnectionFactory(log);
 	keyFactory = new OracleKeyFactory();		
-	adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-	rsCrawler = new ResultSetCrawler(conFactory, adminDbServer, log);	
+	DbDriver.setKeyFactory(keyFactory);
+	adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
+	rsCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log);	
 
 	dispatcherMessaging = new SimulationDispatcherMessaging(this, conFactory, keyFactory, log);	
 }
@@ -255,8 +257,9 @@ public Simulation getSimulation(User user, KeyValue simKey) throws JMSException,
  * Creation date: (2/3/2004 8:34:36 AM)
  * @return cbit.vcell.messaging.SimulationTask
  * @param simKey cbit.sql.KeyValue
+ * @throws SQLException 
  */
-public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws DataAccessException, JMSException {
+public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws DataAccessException, JMSException, SQLException {
 	VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 	User user = getUser(vcSimID.getSimulationKey(), null);				
 	Simulation sim = getSimulation(user, vcSimID.getSimulationKey());
@@ -271,8 +274,9 @@ public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws Da
  * Creation date: (6/3/2003 2:56:43 PM)
  * @return cbit.vcell.server.User
  * @param simKey cbit.sql.KeyValue
+ * @throws SQLException 
  */
-public User getUser(KeyValue simKey, String username) throws DataAccessException {
+public User getUser(KeyValue simKey, String username) throws DataAccessException, SQLException {
 	User user = null;
 
 	synchronized(simUserMap) {
@@ -284,9 +288,9 @@ public User getUser(KeyValue simKey, String username) throws DataAccessException
 			
 		if (user == null) {
 			if (username != null) {
-				user = adminDbServer.getUser(username);
+				user = adminDbTopLevel.getUser(username,true);
 			} else {
-				user = adminDbServer.getUserFromSimulationKey(simKey);
+				user = adminDbTopLevel.getUserFromSimulationKey(simKey,true);
 			}
 			if (user != null) {
 				simUserMap.put(simKey, user);
@@ -335,7 +339,7 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 	
 	try {
 		workerEventMessage = new WorkerEventMessage(this, receivedMsg);
-	} catch (RuntimeException ex) {
+	} catch (Exception ex) {
 		// parse error, wrong message
 		log.exception(ex);
 		return;
@@ -356,7 +360,7 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 		return;
 	}		
 	KeyValue simKey = vcSimDataID.getSimulationKey();
-	SimulationJobStatus oldJobStatus = adminDbXA.getSimulationJobStatus(con, simKey, jobIndex);	
+	SimulationJobStatus oldJobStatus = adminDbXA.getSimulationJobStatus(con, simKey, jobIndex, taskID);	
 	
 	if (oldJobStatus == null || taskID != oldJobStatus.getTaskID() || oldJobStatus.getSchedulerStatus().isDone()){
 		log.print("Outdated message: taskID=" + taskID + "::" + oldJobStatus);
@@ -367,14 +371,14 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 	
 	if (workerEvent.isAcceptedEvent()) {
 		if (!oldJobStatus.getSchedulerStatus().isRunning()) {			
-			newJobStatus = updateDispatchedStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, workerEvent.getSimulationMessage());
+			newJobStatus = updateDispatchedStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, taskID, workerEvent.getSimulationMessage());
 		}
 		
 	} else if (workerEvent.isStartingEvent()) {
 		// only update database when the job event changes from started to runinng. The later progress event will not be recorded.
 		SimulationMessage startMsg = workerEvent.getSimulationMessage();
 		if (oldJobStatus.getSchedulerStatus().isQueued() || oldJobStatus.getSchedulerStatus().isDispatched()) {
-			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, false, startMsg);
+			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, taskID, false, startMsg);
 		} else if (oldJobStatus.getSchedulerStatus().isRunning()) {
 			newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), oldJobStatus.getVCSimulationIdentifier(), oldJobStatus.getJobIndex(), oldJobStatus.getSubmitDate(), 
 				oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), startMsg, oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
@@ -383,27 +387,27 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 	} else if (workerEvent.isNewDataEvent()) {
 		if (workerEvent.getTimePoint() != null) {
 			dataMoved(vcSimDataID, workerEvent.getUser(), workerEvent.getTimePoint().doubleValue());
-			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, true, workerEvent.getSimulationMessage());
+			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, taskID, true, workerEvent.getSimulationMessage());
 		}
 			
 	} else if (workerEvent.isProgressEvent()) {
 		newJobStatus = oldJobStatus;
 		if (oldJobStatus.getSchedulerStatus().isQueued() || oldJobStatus.getSchedulerStatus().isDispatched()) {
-			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, false, workerEvent.getSimulationMessage());
+			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, taskID, false, workerEvent.getSimulationMessage());
 		} else {
-			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, workerEvent.getSimulationMessage());
+			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, taskID, workerEvent.getSimulationMessage());
 		}
 		
 	} else if (workerEvent.isCompletedEvent()) {			
-		newJobStatus = updateEndStatus(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, hostName, SchedulerStatus.COMPLETED, workerEvent.getSimulationMessage());
+		newJobStatus = updateEndStatus(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, taskID, hostName, SchedulerStatus.COMPLETED, workerEvent.getSimulationMessage());
 
 	} else if (workerEvent.isFailedEvent()) {						
 		SimulationMessage failMsg = workerEvent.getSimulationMessage();
-		newJobStatus = updateEndStatus(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, hostName, SchedulerStatus.FAILED, failMsg);	
+		newJobStatus = updateEndStatus(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, taskID, hostName, SchedulerStatus.FAILED, failMsg);	
 			
 	} else if (workerEvent.isWorkerAliveEvent()) {
 		if (oldJobStatus.getSchedulerStatus().isRunning()) {
-			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, workerEvent.getSimulationMessage());
+			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimDataID.getVcSimID(), jobIndex, taskID, workerEvent.getSimulationMessage());
 		}
 	}
 
@@ -463,9 +467,9 @@ public final void stop() {
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-private SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
+private SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
 //	log.print("updateDispatchedStatus[" + vcSimID + "][" + jobIndex + "]");
-	return dispatcherDbManager.updateDispatchedStatus(oldJobStatus, adminDbXA, con, computeHost, vcSimID, jobIndex, startMsg);
+	return dispatcherDbManager.updateDispatchedStatus(oldJobStatus, adminDbXA, con, computeHost, vcSimID, jobIndex, taskID, startMsg);
 }
 
 
@@ -474,9 +478,9 @@ private SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobSta
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCSimulationIdentifier vcSimID, int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
+public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException {
 //	log.print("updateEndStatus[" + vcSimID + "][" + jobIndex + "]");
-	return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, hostName, status, solverMsg);
+	return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, taskID, hostName, status, solverMsg);
 }
 
 
@@ -486,9 +490,9 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
  * @param simKey cbit.sql.KeyValue
  */
 private void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, 
-		VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
+		VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException {
 //	log.print("updateLatestUpdateDate[" + vcSimID + "][" + jobIndex + "]");
-	dispatcherDbManager.updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, simulationMessage);
+	dispatcherDbManager.updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, taskID, simulationMessage);
 }
 
 
@@ -497,9 +501,9 @@ private void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatab
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCSimulationIdentifier vcSimID, int jobIndex, SimulationQueueID queueID, int taskID, boolean firstSubmit) throws DataAccessException, UpdateSynchronizationException {
+public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationQueueID queueID, boolean firstSubmit) throws DataAccessException, UpdateSynchronizationException {
 //	log.print("updateQueueStatus[" + vcSimID + "][" + jobIndex + "]");
-	return dispatcherDbManager.updateQueueStatus(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, queueID, taskID, firstSubmit);		// update SimulationJobTable
+	return dispatcherDbManager.updateQueueStatus(oldJobStatus, adminDbXA, con, vcSimID, jobIndex, taskID, queueID, firstSubmit);		// update SimulationJobTable
 }
 
 
@@ -508,8 +512,8 @@ public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, A
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-private SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException {
+private SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException {
 //	log.print("updateExeRunningStatus[" + vcSimID + "][" + jobIndex + "]");
-	return dispatcherDbManager.updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimID, jobIndex, hasData, solverMsg);
+	return dispatcherDbManager.updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimID, jobIndex, taskID, hasData, solverMsg);
 }
 }

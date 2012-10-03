@@ -9,7 +9,9 @@
  */
 
 package cbit.vcell.messaging.server;
+import org.vcell.util.Compare;
 import org.vcell.util.ISize;
+import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -28,7 +30,7 @@ import cbit.vcell.solver.SolverDescription;
  * Creation date: (10/24/2001 10:44:09 PM)
  * @author: Jim Schaff
  */
-public class SimulationTask implements java.io.Serializable {
+public class SimulationTask implements java.io.Serializable, Matchable {
 	private SimulationJob simulationJob = null;
 	private int taskID = 0;
 	private String computeResource = null;
@@ -129,7 +131,7 @@ public SimulationJob getSimulationJob() {
  * Creation date: (10/24/2001 10:45:58 PM)
  * @return cbit.vcell.solver.Simulation
  */
-public String getSimulationJobIdentifier() {
+public String getSimulationJobID() {
 	return simulationJob.getSimulationJobID();
 }
 
@@ -175,10 +177,31 @@ public java.lang.String getUserName() {
  * @return java.lang.String
  */
 public String toString() {
-	return "[" + getSimulationJobIdentifier() + "," + taskID + "]";
+	return "[" + getSimulationJobID() + "," + taskID + "]";
 }
 
 public String getComputeResource() {
 	return computeResource;
+}
+
+public boolean compareEqual(Matchable obj) {
+	if (obj instanceof SimulationTask){
+		SimulationTask other = (SimulationTask)obj;
+		if (!Compare.isEqual(getSimulationJob(), other.getSimulationJob())){
+			return false;
+		}
+		if (!Compare.isEqual(getTaskID(), other.getTaskID())){
+			return false;
+		}
+		if (!Compare.isEqualOrNull(getComputeResource(), other.getComputeResource())){
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+public Simulation getSimulation() {
+	return getSimulationJob().getSimulation();
 }
 }

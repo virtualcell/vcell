@@ -34,6 +34,7 @@ import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.Constraint;
@@ -440,7 +441,7 @@ public class OptXmlWriter {
 				simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 				simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 				StringWriter simulationInputStringWriter = new StringWriter();
-				IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationJob(simulation, 0, null));
+				IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
 				idaFileWriter.write(parameterNames);
 				simulationInputStringWriter.close();
 				modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_IDA);
@@ -458,7 +459,7 @@ public class OptXmlWriter {
 				simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, refDataEndTime));
 				simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.CVODE);
 				StringWriter simulationInputStringWriter = new StringWriter();
-				CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationJob(simulation, 0, null));
+				CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(new PrintWriter(simulationInputStringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
 				cvodeFileWriter.write(parameterNames);
 				simulationInputStringWriter.close();
 				modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_CVODE);
@@ -516,10 +517,10 @@ public class OptXmlWriter {
 				e.printStackTrace();
 				throw new SolverException(e.getMessage());
 			}	
-			SimulationJob simJob = new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs());
+			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs()),0);
 			
 			StringWriter simulationInputStringWriter = new StringWriter();
-			FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simJob, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory());		
+			FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simTask, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory());		
 			fvFileWriter.write(parameterNames);
 			simulationInputStringWriter.close();
 			modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_FVSOLVER);

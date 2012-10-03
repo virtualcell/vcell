@@ -10,6 +10,7 @@
 
 package cbit.vcell.solvers;
 
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;
@@ -33,12 +34,12 @@ public class CombinedSundialsSolver extends AbstractCompiledSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public CombinedSundialsSolver(SimulationJob simJob, File directory, SessionLog sessionLog, boolean bMessaging) throws cbit.vcell.solver.SolverException {
-	super(simJob, directory, sessionLog, bMessaging);
-	if (simulationJob.getSimulation().getMathDescription().hasFastSystems()) {
-		realSolver = new IDASolverStandalone(simJob, directory, sessionLog, bMessaging);
+public CombinedSundialsSolver(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMessaging) throws cbit.vcell.solver.SolverException {
+	super(simTask, directory, sessionLog, bMessaging);
+	if (simTask.getSimulation().getMathDescription().hasFastSystems()) {
+		realSolver = new IDASolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else {
-		realSolver = new CVodeSolverStandalone(simJob, directory, sessionLog, bMessaging);
+		realSolver = new CVodeSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	}
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		
@@ -90,12 +91,17 @@ protected void initialize() throws SolverException {
 }
 
 @Override
-protected MathExecutable getMathExecutable() {	
+public MathExecutable getMathExecutable() {	
 	return realSolver.getMathExecutable();
 }
 
 @Override
 public Vector<AnnotatedFunction> createFunctionList() {
 	return realSolver.createFunctionList();
+}
+
+@Override
+public String[] getMathExecutableCommand() {
+	return realSolver.getMathExecutableCommand();
 }
 }

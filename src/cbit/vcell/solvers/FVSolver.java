@@ -31,6 +31,7 @@ import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.Variable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -64,13 +65,13 @@ public class FVSolver extends AbstractCompiledSolver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolver (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(argSimulationJob, dir, sessionLog, bMsging);
-	if (! simulationJob.getSimulation().isSpatial()) {
+public FVSolver (SimulationTask simTask, File dir, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(simTask, dir, sessionLog, bMsging);
+	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
 	}
-	this.simResampleInfoProvider = (VCSimulationDataIdentifier)argSimulationJob.getVCDataIdentifier();
-	this.cppCoderVCell = new CppCoderVCell((new File(getBaseName())).getName(), getSaveDirectory(), argSimulationJob);
+	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
+	this.cppCoderVCell = new CppCoderVCell((new File(getBaseName())).getName(), getSaveDirectory(), simTask);
 }
 
 
@@ -287,14 +288,14 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//Try to save existing user defined functions
 	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
 	try{
-		annotatedFunctionVector = simulationJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());
+		annotatedFunctionVector = simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
 		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
 		File existingFunctionFile = new File(functionFileName);
 		if(existingFunctionFile.exists()){
 			Vector<AnnotatedFunction> oldUserDefinedFunctions =
 				new Vector<AnnotatedFunction>();
 			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simulationJob.getSimulationJobID());
+				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJob().getSimulationJobID());
 			for(int i = 0; i < allOldFunctionV.size(); i += 1){
 				if(allOldFunctionV.elementAt(i).isOldUserDefined()){
 					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
@@ -328,8 +329,8 @@ protected ApplicationMessage getApplicationMessage(String message) {
 	}else if (message.startsWith(PROGRESS_PREFIX)){
 		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
 		double progress = Double.parseDouble(progressString)/100.0;
-		double startTime = simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endTime = simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+		double startTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
+		double endTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
 		setCurrentTime(startTime + (endTime-startTime)*progress);
 		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
 	}else{
@@ -360,9 +361,9 @@ protected void initialize() throws SolverException {
 	
 	autoCode(false);
 	
-	String baseName = cppCoderVCell.getBaseFilename();
-	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
-	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
+//	String baseName = cppCoderVCell.getBaseFilename();
+//	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
+//	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
 	boolean bCORBA = false;
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
@@ -375,18 +376,28 @@ protected void initialize() throws SolverException {
 		throw new RuntimeException("MathExecutableCORBA not supported");
 		//executable = new MathExecutableCORBA(exeFile,mathDesc.getSimulationID(),getSessionLog());
 	}else{
-		setMathExecutable(new MathExecutable(new String[] {exeFile.getAbsolutePath()}));
+		setMathExecutable(new MathExecutable(getMathExecutableCommand()));
 	}
 
 }
+
+@Override
+public String[] getMathExecutableCommand() {
+	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
+	String baseName = cppCoderVCell.getBaseFilename();
+	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
+	return new String[] { exeFile.getAbsolutePath() };
+}
+
+
 
 public Geometry getResampledGeometry() throws SolverException {
 	if (resampledGeometry == null) {
 		// clone and resample geometry
 		try {
-			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simulationJob.getSimulation().getMathDescription().getGeometry());
+			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simTask.getSimulation().getMathDescription().getGeometry());
 			GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
-			ISize newSize = simulationJob.getSimulation().getMeshSpecification().getSamplingSize();
+			ISize newSize = simTask.getSimulation().getMeshSpecification().getSamplingSize();
 			geoSurfaceDesc.setVolumeSampleSize(newSize);
 			geoSurfaceDesc.updateAll();		
 		} catch (Exception e) {
@@ -402,18 +413,18 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 	
 	try {
 		// write subdomains file
-		SubdomainInfo.write(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
+		SubdomainInfo.write(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
 		
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+SimDataConstants.VCG_FILE_EXTENSION)));
 		GeometryFileWriter.write(pw, getResampledGeometry());
 		pw.close();
 				
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
+		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
 		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
 			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
 			
 			FieldFunctionArguments psfFieldFunc = null;
-			Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+			Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 			if (var != null) {
 				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 				if (ffas == null || ffas.length == 0) {
@@ -436,7 +447,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 			boolean bResample[] = new boolean[argFieldDataIDSpecs.length];
 			Arrays.fill(bResample, true);
 			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
-				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simulationJob.getSimulationSymbolTable());
+				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
 				if (argFieldDataIDSpecs[i].getFieldFuncArgs().equals(psfFieldFunc)) {
 					bResample[i] = false;
 				}
@@ -445,7 +456,7 @@ protected void writeVCGAndResampleFieldData() throws SolverException {
 			int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
 			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
 					getResampledGeometry().getExtent(),
-					simulationJob.getSimulation().getMeshSpecification().getSamplingSize(),
+					simTask.getSimulation().getMeshSpecification().getSamplingSize(),
 					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
 			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);			
 			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),

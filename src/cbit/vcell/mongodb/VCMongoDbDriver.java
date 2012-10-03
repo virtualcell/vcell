@@ -27,6 +27,7 @@ public class VCMongoDbDriver implements Runnable {
 	private SessionLog log = new StdoutSessionLog("mongoDbDriver");
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
+	private Thread messageProcessingThread = null;
 
 	public static VCMongoDbDriver getInstance(){
 		if (mongoDriverSingleton == null){
@@ -47,12 +48,12 @@ public class VCMongoDbDriver implements Runnable {
 		return log;
 	}
 	
-	private void sendMessages() {
+	private synchronized void sendMessages() {
     	VCMongoMessage[] queuedMessages = messageOutbox.toArray(new VCMongoMessage[0]);
    		
    		if (queuedMessages!=null && queuedMessages.length>0){
    			try {
-	   			// remove the messages whether the save is sucessfull or not.
+	   			// remove the messages whether the save is successful or not.
 	   			messageOutbox.removeAll(Arrays.asList(queuedMessages));
 	 
 	   			// create DBObjects for each message (to send to MongoDB)
@@ -144,7 +145,7 @@ public class VCMongoDbDriver implements Runnable {
         if(!processing )
         {
             processing = true;
-            Thread messageProcessingThread = new Thread(this,"MongoDB Process Thread");
+            messageProcessingThread = new Thread(this,"MongoDB Process Thread");
             messageProcessingThread.setDaemon(true);
             messageProcessingThread.start();
         }
@@ -160,7 +161,7 @@ public class VCMongoDbDriver implements Runnable {
         return processing;
     }
     
-    public synchronized void addMessage(VCMongoMessage message)
+    public void addMessage(VCMongoMessage message)
     {
     	messageOutbox.add(message);
     	log.print("VCMongoMessage queued : "+message);
@@ -169,9 +170,16 @@ public class VCMongoDbDriver implements Runnable {
     	}
     }
     
-
-
-
+    public void flush() {
+    	if (!processing){
+    		return;
+    	}
+    	if (this.messageProcessingThread!=null){
+    		this.messageProcessingThread.interrupt();
+    	}
+        sendMessages();
+    }
+    
 	/**
 	 * @param args
 	 */
@@ -213,6 +221,5 @@ public class VCMongoDbDriver implements Runnable {
 		}
 	}
 
-	
 
 }

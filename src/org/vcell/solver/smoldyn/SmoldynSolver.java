@@ -18,6 +18,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SimulationJob;
@@ -36,8 +37,8 @@ import cbit.vcell.solvers.SubdomainInfo;
  */
 public class SmoldynSolver extends AbstractCompiledSolver {
 
-public SmoldynSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simulationJob, directory, sessionLog, bMsging);
+public SmoldynSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(simTask, directory, sessionLog, bMsging);
 }
 
 
@@ -88,7 +89,7 @@ protected void initialize() throws SolverException
 	
 	// write subdomains file
 	try {
-		SubdomainInfo.write(new File(getBaseName() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simulationJob.getSimulation().getMathDescription());
+		SubdomainInfo.write(new File(getBaseName() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
 	} catch (IOException e1) {
 		e1.printStackTrace();
 		throw new SolverException(e1.getMessage());
@@ -97,7 +98,7 @@ protected void initialize() throws SolverException
 		throw new SolverException(e1.getMessage());
 	}
 
-	String inputFilename = getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;	
+	String inputFilename = getInputFilename();
 	sessionLog.print("SmoldynSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
@@ -106,7 +107,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simulationJob, bMessaging);
+		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
@@ -120,9 +121,19 @@ protected void initialize() throws SolverException
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.smoldynExecutableProperty);
-	setMathExecutable(new MathExecutable(new String[] {executableName, inputFilename}));	
+	setMathExecutable(new MathExecutable(getMathExecutableCommand()));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
+}
+
+private String getInputFilename(){
+	return getBaseName() + SMOLDYN_INPUT_FILE_EXTENSION;
+}
+
+@Override
+public String[] getMathExecutableCommand() {
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.smoldynExecutableProperty);
+	String inputFilename = getInputFilename();
+	return new String[] { executableName, inputFilename };
 }
 
 /**

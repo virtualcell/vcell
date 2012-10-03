@@ -16,6 +16,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Date;
 import java.util.Vector;
 
+import javax.jms.JMSException;
+
 
 
 import org.vcell.util.BeanUtils;
@@ -27,6 +29,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
 import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -49,6 +52,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private JmsConnectionFactory fieldJmsConnFactory = null;
 	private ExportServiceImpl exportServiceImpl = null;
 	private java.util.Date bootTime = new java.util.Date();
+	private SimulationDatabase simulationDatabase = null;
 
 	private long CLEANUP_INTERVAL = 600*1000;	
 	
@@ -56,7 +60,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory, AdminDatabaseServer dbServer) throws RemoteException, FileNotFoundException {
+public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellServer,0));
 	this.hostName = argHostName;
 	this.fieldJmsConnFactory = jmsConnFactory;
@@ -66,7 +70,8 @@ public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory,
 	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
-	this.simControllerImpl = new SimulationControllerImpl(sessionLog,adminDbServer, this);
+	this.simulationDatabase = simulationDatabase;
+//	this.simControllerImpl = new SimulationControllerImpl(sessionLog, this.simulationDatabase, this);
 	this.exportServiceImpl = new ExportServiceImpl(sessionLog);
 	
 	if (fieldJmsConnFactory != null) {
@@ -84,12 +89,13 @@ public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory,
  * This method was created in VisualAge.
  * @param userid java.lang.String
  * @param password java.lang.String
+ * @throws JMSException 
  */
-private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
+private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException, JMSException {
 	if (getVCellConnection0(userLoginInfo) == null) {
 		VCellConnection localConn = null;
 		if (fieldJmsConnFactory == null){
-			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), this);
+			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), simulationDatabase, getDataSetControllerImpl(), getExportServiceImpl());
 		} else {
 			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), fieldJmsConnFactory, this);
 			VCMongoMessage.sendClientConnectionNew(localConn.getUserLoginInfo());

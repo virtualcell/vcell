@@ -15,6 +15,7 @@ import java.io.File;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
 
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.ForwardEulerSolver;
@@ -38,44 +39,44 @@ public class SolverFactory {
 /**
  * create Solvers according to the solver description.
  */
-public static Solver createSolver(SessionLog sessionLog, File directory, SimulationJob simJob, boolean bMessaging) throws SolverException {
-	SolverDescription solverDescription = simJob.getSimulation().getSolverTaskDescription().getSolverDescription();
+public static Solver createSolver(SessionLog sessionLog, File directory, SimulationTask simTask, boolean bMessaging) throws SolverException {
+	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
 	}
 	Solver solver = null;
 	if (solverDescription.equals(SolverDescription.ForwardEuler)) {
-		solver = new ForwardEulerSolver(simJob, directory, sessionLog);
+		solver = new ForwardEulerSolver(simTask, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.RungeKutta2)) {
-		solver = new RungeKuttaTwoSolver(simJob, directory, sessionLog);
+		solver = new RungeKuttaTwoSolver(simTask, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.RungeKutta4)) {
-		solver = new RungeKuttaFourSolver(simJob, directory, sessionLog);
+		solver = new RungeKuttaFourSolver(simTask, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.AdamsMoulton)) {
-		solver = new AdamsMoultonFiveSolver(simJob, directory, sessionLog);
+		solver = new AdamsMoultonFiveSolver(simTask, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.RungeKuttaFehlberg)) {
-		solver = new RungeKuttaFehlbergSolver(simJob, directory, sessionLog);
+		solver = new RungeKuttaFehlbergSolver(simTask, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.IDA)) {
-		solver = new IDASolverStandalone(simJob, directory, sessionLog, bMessaging);
+		solver = new IDASolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
-		solver = new CVodeSolverStandalone(simJob, directory, sessionLog, bMessaging);
+		solver = new CVodeSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
-		solver = new CombinedSundialsSolver(simJob, directory, sessionLog, bMessaging);
+		solver = new CombinedSundialsSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
-		solver = new FVSolver(simJob, directory, sessionLog, bMessaging);
+		solver = new FVSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
-		solver = new FVSolverStandalone(simJob, directory, sessionLog, bMessaging);
+		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.SundialsPDE)) {
-		solver = new FVSolverStandalone(simJob, directory, sessionLog, bMessaging);
+		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
-		solver = new GibsonSolver(simJob, directory, sessionLog, bMessaging);
+		solver = new GibsonSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.EMIntegrator, bMessaging);
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.EMIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridMilstein)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.MilsteinIntegrator, bMessaging);
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.MilsteinIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridMilAdaptive)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator, bMessaging);
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.Smoldyn)) {
-		solver = new SmoldynSolver(simJob, directory, sessionLog, bMessaging);
+		solver = new SmoldynSolver(simTask, directory, sessionLog, bMessaging);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

@@ -31,7 +31,10 @@ import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
+import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
 import cbit.vcell.visit.VisitConnectionInfo;
 /**
@@ -43,6 +46,9 @@ import cbit.vcell.visit.VisitConnectionInfo;
 @SuppressWarnings("serial")
 public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener, DataJobListener {
 	private SimulationController simulationController = null;
+	private SimulationControllerImpl simulationControllerImpl = null;
+	private ExportServiceImpl exportServiceImpl = null;
+	private DataSetControllerImpl dataSetControllerImpl = null;
 	private UserMetaDbServer userMetaDbServer = null;
 	private SimpleMessageService messageService = new SimpleMessageService();
 	private SimpleMessageCollector messageCollector = new SimpleMessageCollector();
@@ -57,7 +63,6 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
 
 	
 	private SessionLog fieldSessionLog = null;
-	private LocalVCellServer fieldLocalVCellServer = null;
 	private String fieldHost = null;
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
 	private LocalDataSetController localDataSetController;
@@ -66,18 +71,20 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, LocalVCellServer aLocalVCellServer) throws RemoteException, java.sql.SQLException, FileNotFoundException {
+public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws RemoteException, java.sql.SQLException, FileNotFoundException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
 	this.userLoginInfo = userLoginInfo;
 	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
-	this.fieldLocalVCellServer = aLocalVCellServer;
+	this.simulationControllerImpl = new SimulationControllerImpl(sessionLog, simulationDatabase, this);
 	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
 	
 	messageCollector.addMessageListener(messageService);
 	
-	getLocalVCellServer().getExportServiceImpl().addExportListener(this);
-	getLocalVCellServer().getDataSetControllerImpl().addDataJobListener(this);
+	this.exportServiceImpl = exportServiceImpl;
+	this.dataSetControllerImpl = dataSetControllerImpl;
+	this.exportServiceImpl.addExportListener(this);
+	this.dataSetControllerImpl.addDataJobListener(this);
 
 	performanceMonitoringFacility = new PerformanceMonitoringFacility(this.userLoginInfo.getUser(), sessionLog);	
 }
@@ -109,7 +116,7 @@ public VisitConnectionInfo createNewVisitConnection() {
 public DataSetController getDataSetController() throws RemoteException, DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getDataSetController()");
 	if (localDataSetController == null) {
-		localDataSetController = new LocalDataSetController(this, getSessionLog(), getLocalVCellServer().getDataSetControllerImpl(), getLocalVCellServer().getExportServiceImpl(), getUserLoginInfo().getUser());
+		localDataSetController = new LocalDataSetController(this, getSessionLog(), dataSetControllerImpl, exportServiceImpl, getUserLoginInfo().getUser());
 	}
 
 	return localDataSetController;
@@ -123,17 +130,6 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
  */
 public String getHost() {
 	return fieldHost;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/29/2000 1:14:39 PM)
- * @author: John Wagner
- * @return: the <code>LocalVCellServer</code> associated with this connection.
- */
-private LocalVCellServer getLocalVCellServer() {
-	return (fieldLocalVCellServer);
 }
 
 
@@ -167,11 +163,7 @@ private SessionLog getSessionLog() {
  */
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationController == null){
-		try {
-			simulationController = new LocalSimulationController(getUserLoginInfo(),getSessionLog(),getLocalVCellServer().getAdminDatabaseServer(), getLocalVCellServer().getSimulationControllerImpl(),getUserMetaDbServer());
-		}catch (DataAccessException e){
-			throw new RuntimeException("DataAccessException creating LocalSimulationController, :"+e.getMessage());
-		}
+		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl,getSessionLog());
 	}
 	return simulationController;
 }

@@ -30,6 +30,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationJob;
@@ -50,10 +51,10 @@ public abstract class CppClassCoderAbstractVarContext extends CppClassCoder {
 protected CppClassCoderAbstractVarContext(CppCoderVCell cppCoderVCell, 
 											Equation argEquation, 
 											SubDomain argSubDomain, 
-											SimulationJob argSimulationJob, 
+											SimulationTask simTask, 
 											String argParentClass) throws Exception
 {
-	super(argSimulationJob, cppCoderVCell,argParentClass+argSubDomain.getName()+argEquation.getVariable().getName(), argParentClass);
+	super(simTask, cppCoderVCell,argParentClass+argSubDomain.getName()+argEquation.getVariable().getName(), argParentClass);
 	this.equation = argEquation;
 	this.variable = argEquation.getVariable();
 	this.subDomain = argSubDomain;
@@ -77,7 +78,7 @@ public Equation getEquation() {
  */
 protected Variable[] getRequiredVariables() throws Exception {
 
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	//
 	// default implementation (need to override in VolumeVarContext)
 	//
@@ -158,7 +159,7 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
 	out.println("double "+getClassName()+"::"+functionName+"(ContourElement *contourElement)");
 	out.println("{");
 
-	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
+	Expression exp2 = simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeContourFunctionDeclarations(out,"contourElement",exp2);
 
 	out.println("\treturn "+infix_C(exp2)+";");
@@ -175,7 +176,7 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
 protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String contourElementString, Expression exp) throws Exception {
 
 	boolean wc_defined = false;
-	Enumeration<Variable> enum1 = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simTask.getSimulationJob().getSimulationSymbolTable().getRequiredVariables(exp);
 	
 	String compute_wc =	
 		  "\tWorldCoord wc_begin = " + contourElementString + "->wc_begin;\n"	
@@ -258,7 +259,7 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 	out.println("double "+getClassName()+"::"+functionName+"(MembraneElement *memElement)");
 	out.println("{");
 
-	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
+	Expression exp2 = simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeMembraneFunctionDeclarations(out,"memElement",exp2,bFlipInsideOutside,"   ");
 
 	out.println("\treturn "+infix_C(exp2)+";");
@@ -275,7 +276,7 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, String membraneElementString, Expression exp, boolean bFlipInsideOutside, String pad) throws Exception {
 
 	boolean wc_defined = false;
-	Enumeration<Variable> enum1 = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simTask.getSimulationJob().getSimulationSymbolTable().getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -352,7 +353,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
 	out.println("double "+getClassName()+"::"+functionName+"(MembraneRegion *memRegion)");
 	out.println("{");
 
-	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
+	Expression exp2 = simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	writeMembraneRegionFunctionDeclarations(out,"memRegion",exp2);
 
 	out.println("\treturn "+infix_C(exp2)+";");
@@ -368,7 +369,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
  */
 protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter out, String membraneRegionString, Expression exp) throws Exception {
 
-	Enumeration<Variable> enum1 = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simTask.getSimulationJob().getSimulationSymbolTable().getRequiredVariables(exp);
 	
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -450,8 +451,8 @@ protected final void writeVolumeConstantFunction(java.io.PrintWriter out, String
 	out.println("double "+getClassName()+"::"+functionName+"()");
 	out.println("{");
 
-	exp.bindExpression(simulationJob.getSimulationSymbolTable());
-	Expression exp2 = simulationJob.getSimulationSymbolTable().substituteFunctions(exp).flatten();
+	exp.bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
+	Expression exp2 = simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(exp).flatten();
 	try {
 		exp2.evaluateConstant();
 	} catch (Exception ex) {
@@ -477,7 +478,7 @@ protected final void writeVolumeFunction(java.io.PrintWriter out, String functio
 	out.println("double "+getClassName()+"::"+functionName+"(long volumeIndex)");
 	out.println("{");
 
-	exp.bindExpression(simulationJob.getSimulationSymbolTable());
+	exp.bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
 	Expression exp2 = substituteFunctions(exp).flatten();
 	writeVolumeFunctionDeclarations(out,exp2,"volumeIndex");
 
@@ -499,7 +500,7 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expr
 	}	
 
 	boolean wc_defined = false;
-	Enumeration<Variable> enum1 = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simTask.getSimulationJob().getSimulationSymbolTable().getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -557,7 +558,7 @@ protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String f
 	out.println("double "+getClassName()+"::"+functionName+"(VolumeRegion *volumeRegion)");
 	out.println("{");
 
-	exp.bindExpression(simulationJob.getSimulationSymbolTable());
+	exp.bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
 	Expression exp2 = substituteFunctions(exp).flatten();
 	writeVolumeRegionFunctionDeclarations(out,exp2,"volumeRegion");
 
@@ -580,7 +581,7 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 
 	String regionIndexString = "regionIndex";
 	out.println("\tlong "+regionIndexString+" = "+volumeRegionString+"->getId();");
-	Enumeration<Variable> enum1 = simulationJob.getSimulationSymbolTable().getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simTask.getSimulationJob().getSimulationSymbolTable().getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
 		Variable var = enum1.nextElement();
@@ -606,6 +607,6 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 }
 
 Expression substituteFunctions(Expression exp) throws MathException, ExpressionException {
-	return simulationJob.getSimulationSymbolTable().substituteFunctions(exp);
+	return simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(exp);
 }
 }

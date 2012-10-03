@@ -76,6 +76,7 @@ public TimeSeriesJobResults getTimeSeriesJobResults(){
 	return timeSeriesJobResults;
 }
 
+@Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof DataJobEvent){
 		DataJobEvent dataJobEvent = (DataJobEvent)messageEvent;

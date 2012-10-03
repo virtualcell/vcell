@@ -13,6 +13,7 @@ import java.util.*;
 
 
 import cbit.vcell.math.*;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
 /**
@@ -29,12 +30,12 @@ public class CppClassCoderVolumeVarContext extends CppClassCoderAbstractVarConte
 protected CppClassCoderVolumeVarContext(CppCoderVCell argCppCoderVCell,
 												Equation argEquation,
 												CompartmentSubDomain argVolumeSubDomain,
-												SimulationJob argSimulationJob, 
+												SimulationTask simTask, 
 												String argParentClass) throws Exception
 {
-	super(argCppCoderVCell, argEquation, argVolumeSubDomain, argSimulationJob, argParentClass);
+	super(argCppCoderVCell, argEquation, argVolumeSubDomain, simTask, argParentClass);
 	Vector<MembraneSubDomain> membraneSubDomainOwnedList = new Vector<MembraneSubDomain>();
-	MembraneSubDomain membranes[] = simulationJob.getSimulation().getMathDescription().getMembraneSubDomains(argVolumeSubDomain);
+	MembraneSubDomain membranes[] = simTask.getSimulation().getMathDescription().getMembraneSubDomains(argVolumeSubDomain);
 	for (int i = 0; i < membranes.length; i++){
 		//
 		// determine membrane "owner" for reasons of code generation (owner compartment is that which has a greater priority ... now this is arbitrary)
@@ -77,7 +78,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 	//
 	// 
 	//
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Variable requiredVariables[] = super.getRequiredVariables();
 	if (getEquation() instanceof PdeEquation){
 		for (int i = 0;membraneSubDomainsOwned!=null && i < membraneSubDomainsOwned.length; i++){
@@ -117,7 +118,7 @@ protected Variable[] getRequiredVariables() throws Exception {
  * @param out java.io.PrintWriter
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature, string& AspeciesName)");
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
@@ -183,7 +184,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("\tvoid resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
-	int dimension = simulationJob.getSimulation().getMathDescription().getGeometry().getDimension();
+	int dimension = simTask.getSimulation().getMathDescription().getGeometry().getDimension();
 	if (getEquation() instanceof PdeEquation){
 		PdeEquation pdeEqu = (PdeEquation)getEquation();
 		if (pdeEqu.getBoundaryXm()!=null){
@@ -255,7 +256,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		}	
 	}		
 	
-	SymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	try {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(simSymbolTable );
@@ -382,7 +383,7 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 			//out.println("   printf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
 			out.println("\tswitch(outsideHandle){");
 			for (int i = 0; i < membraneSubDomainsOwned.length; i++){
-				cbit.vcell.geometry.GeometrySpec geoSpec = simulationJob.getSimulation().getMathDescription().getGeometry().getGeometrySpec();
+				cbit.vcell.geometry.GeometrySpec geoSpec = simTask.getSimulation().getMathDescription().getGeometry().getGeometrySpec();
 				boolean bFlipInsideOutside = (membraneSubDomainsOwned[i].getOutsideCompartment() == getCompartmentSubDomain());
 				cbit.vcell.geometry.SubVolume outsideSubVolume = null;
 				if (bFlipInsideOutside){
@@ -453,7 +454,7 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	out.println("");
 	writeGetFlux(out,"getFlux");
 	out.println("");
-	int dimension = simulationJob.getSimulation().getMathDescription().getGeometry().getDimension();
+	int dimension = simTask.getSimulation().getMathDescription().getGeometry().getDimension();
 	if (getEquation() instanceof PdeEquation){
 		PdeEquation pde = (PdeEquation)getEquation();
 		BoundaryConditionType bc = getCompartmentSubDomain().getBoundaryConditionXm();
