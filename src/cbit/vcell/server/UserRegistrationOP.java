@@ -143,7 +143,7 @@ public class UserRegistrationOP implements Serializable{
 				if(localAdminDbServer != null){
 					return localAdminDbServer.getUserInfo(userKey);
 				}else if(vcellBootstrap != null){
-					return vcellBootstrap.getUserInfo(userKey);
+					throw new DataAccessException("UserInfo not provided by VCellBootstrap");
 				}else{
 					return 
 						clientServerManager.getUserMetaDbServer().userRegistrationOP(
