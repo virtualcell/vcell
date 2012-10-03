@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import org.vcell.util.SessionLog;
 
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -43,8 +44,8 @@ public abstract class AbstractJavaSolver extends AbstractSolver {
 /**
  * AbstractIntegrator constructor comment.
  */
-public AbstractJavaSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
-	super(simulationJob, directory, sessionLog);
+public AbstractJavaSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
+	super(simTask, directory, sessionLog);
 }
 
 
@@ -133,7 +134,7 @@ protected final void printToFile(double progress) throws IOException {
 			// write file and fire event
 			if (this instanceof ODESolver) {
 				ODESolverResultSet odeSolverResultSet = ((ODESolver)this).getODESolverResultSet();
-				Simulation simulation = simulationJob.getSimulation();
+				Simulation simulation = simTask.getSimulationJob().getSimulation();
 				OutputTimeSpec outputTimeSpec = simulation.getSolverTaskDescription().getOutputTimeSpec();
 				if (outputTimeSpec.isDefault()) {
 					odeSolverResultSet.trimRows(((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());

@@ -25,6 +25,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -50,8 +51,8 @@ public class GibsonSolver extends AbstractCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
-	super(simulationJob, directory, sessionLog, bMessaging);
+public GibsonSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
+	super(simTask, directory, sessionLog, bMessaging);
 }
 
 
@@ -175,7 +176,7 @@ public ODESolverResultSet getStochSolverResultSet()
 	Add appropriate Function columns to result set if the stochastic simulation is to display the trajectory.
 	No function columns for the results of multiple stochastic trials
 	*/
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	if(simSymbolTable.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
 		Function functions[] = simSymbolTable.getFunctions();
@@ -217,8 +218,7 @@ protected void initialize() throws SolverException
 	writeFunctionsFile();
 	writeLogFile();
 
-	String inputFilename = getBaseName() + STOCHINPUT_DATA_EXTENSION;	
-	String outputFileName = getBaseName() + IDA_DATA_EXTENSION;
+	String inputFilename = getInputFilename();
 	sessionLog.print("StochSolver.initialize() baseName = " + getBaseName());
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
@@ -227,7 +227,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		StochFileWriter stFileWriter = new StochFileWriter(pw, simulationJob, bMessaging);
+		StochFileWriter stFileWriter = new StochFileWriter(pw, simTask, bMessaging);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
@@ -241,11 +241,25 @@ protected void initialize() throws SolverException
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.stochExecutableProperty);
-	setMathExecutable(new MathExecutable(new String[] {executableName, "gibson", inputFilename, outputFileName}));	
+	setMathExecutable(new MathExecutable(getMathExecutableCommand()));	
 	//setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " gibson " + getBaseName() + ".stochInput" + " " + getBaseName() + ".stoch"));
 }
 
+private String getInputFilename(){
+	return getBaseName() + STOCHINPUT_DATA_EXTENSION;	
+}
+
+private String getOutputFilename(){
+	return getBaseName() + IDA_DATA_EXTENSION;
+}
+
+@Override
+public String[] getMathExecutableCommand() {
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.stochExecutableProperty);
+	String inputFilename = getInputFilename();
+	String outputFilename = getOutputFilename();
+	return new String[] { executableName, "gibson", inputFilename, outputFilename };
+}
 
 /**
  * Write out the log file and result binary file.
@@ -271,7 +285,7 @@ private final void printStochFile() throws IOException
 //	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
 //	stSimData.writeODELogFile(logFile, dataFile);
 	// fire event to inform that solver has data printed. however, for gibson multiple trial and hybrid solvers, we don't show intermediate results
-	if(simulationJob.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+	if(simTask.getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 		fireSolverPrinted(getCurrentTime());
 }
 
@@ -358,7 +372,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (SimulationSymbolTable.isFunctionSaved(functions[i])){

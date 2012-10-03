@@ -120,7 +120,7 @@ private void start() {
 		Simulation simulation = XmlHelper.XMLToSim(xmlString);
 		simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, null), taskID);
 		
-		log = new StdoutSessionLog(simulationTask.getSimulationJobIdentifier());	
+		log = new StdoutSessionLog(simulationTask.getSimulationJobID());	
 		
 		log.print("Start keep alive thread");
 		new KeepAliveThread().start();
@@ -151,7 +151,7 @@ protected void reconnect() throws JMSException {
 }
 
 private void runSimulation() throws SolverException {
-	solver = SolverFactory.createSolver(log, new File(userDirectory), simulationTask.getSimulationJob(), true);
+	solver = SolverFactory.createSolver(log, new File(userDirectory), simulationTask, true);
 	solver.addSolverListener(this);
 	solver.startSolver();
 	
@@ -220,7 +220,7 @@ public void onControlTopicMessage(Message message) throws JMSException {
 private void sendAlive() {
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendWorkerAlive(" + simulationTask.getSimulationJobIdentifier() + ")");
+		log.print("sendWorkerAlive(" + simulationTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, simulationTask, ManageUtils.getHostName(), SimulationMessage.MESSAGE_WORKEREVENT_WORKERALIVE);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
@@ -231,7 +231,7 @@ private void sendAlive() {
 
 private void sendFailed(SimulationMessage failureMessage) {		
 	try {
-		log.print("sendFailure(" + simulationTask.getSimulationJobIdentifier() + "," + failureMessage +")");
+		log.print("sendFailure(" + simulationTask.getSimulationJobID() + "," + failureMessage +")");
 		WorkerEventMessage.sendFailed(workerEventSession, this, simulationTask, ManageUtils.getHostName(), failureMessage);
 	} catch (JMSException ex) {
         log.exception(ex);
@@ -242,7 +242,7 @@ private void sendNewData(double progress, double timeSec, SimulationMessage simu
 	try {
 		long t = System.currentTimeMillis();
 		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
-			log.print("sendNewData(" + simulationTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
+			log.print("sendNewData(" + simulationTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");		
 			WorkerEventMessage.sendNewData(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 		
 			lastMsgTimeStamp = System.currentTimeMillis();
@@ -263,7 +263,7 @@ private void sendProgress(double progress, double timeSec, SimulationMessage sim
 		long t = System.currentTimeMillis();
 		if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 				|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
-			log.print("sendProgress(" + simulationTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
+			log.print("sendProgress(" + simulationTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");
 			WorkerEventMessage.sendProgress(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
@@ -277,7 +277,7 @@ private void sendProgress(double progress, double timeSec, SimulationMessage sim
 private void sendCompleted(double progress, double timeSec, SimulationMessage simulationMessage) {
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendComplete(" + simulationTask.getSimulationJobIdentifier() + ")");
+		log.print("sendComplete(" + simulationTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendCompleted(workerEventSession, this, simulationTask, ManageUtils.getHostName(),  progress, timeSec, simulationMessage);
 	} catch (JMSException jmse) {
         log.exception(jmse);
@@ -286,7 +286,7 @@ private void sendCompleted(double progress, double timeSec, SimulationMessage si
 
 private void sendStarting(SimulationMessage startingMessage) {
 	try {
-		log.print("sendStarting(" + simulationTask.getSimulationJobIdentifier() + ")");
+		log.print("sendStarting(" + simulationTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendStarting(workerEventSession, this, simulationTask, ManageUtils.getHostName(), startingMessage);
 	} catch (JMSException e) {
         log.exception(e);

@@ -17,6 +17,7 @@ import java.util.Vector;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -40,12 +41,12 @@ public class FVSolverStandalone extends FVSolver implements Solver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog) throws SolverException {
-	this(argSimulationJob, dir, sessionLog, true);
+public FVSolverStandalone (SimulationTask simTask, File dir, SessionLog sessionLog) throws SolverException {
+	this(simTask, dir, sessionLog, true);
 }
 	
-public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog sessionLog, boolean arg_bMessaging) throws SolverException {
-	super(argSimulationJob, dir, sessionLog, arg_bMessaging);
+public FVSolverStandalone (SimulationTask simTask, File dir, SessionLog sessionLog, boolean arg_bMessaging) throws SolverException {
+	super(simTask, dir, sessionLog, arg_bMessaging);
 }
 
 /**
@@ -53,21 +54,21 @@ public FVSolverStandalone (SimulationJob argSimulationJob, File dir, SessionLog 
  */
 protected void initialize() throws SolverException {
 	try {
-		Simulation sim = simulationJob.getSimulation();
+		Simulation sim = simTask.getSimulation();
 		if (sim.isSerialParameterScan()) {
 			//write functions file for all the simulations in the scan
 			for (int scan = 0; scan < sim.getScanCount(); scan ++) {
-				SimulationJob simJob = new SimulationJob(sim, scan, simulationJob.getFieldDataIdentifierSpecs());
+				SimulationJob simJob = new SimulationJob(sim, scan, simTask.getSimulationJob().getFieldDataIdentifierSpecs());
 				// ** Dumping the functions of a simulation into a '.functions' file.
 				String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();
 				String functionFileName = basename + FUNCTIONFILE_EXTENSION;
 				
-				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simulationJob.getSimulation().getMathDescription());				
+				Vector<AnnotatedFunction> funcList = simJob.getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());				
 				//Try to save existing user defined functions	
 				try{
 					File existingFunctionFile = new File(functionFileName);
 					if (existingFunctionFile.exists()){
-						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simulationJob.getSimulationJobID());
+						Vector<AnnotatedFunction> oldFuncList = FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJobID());
 						for(AnnotatedFunction func : oldFuncList){
 							if(func.isOldUserDefined()){
 								funcList.add(func);
@@ -100,22 +101,33 @@ protected void initialize() throws SolverException {
 	
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 			
-		File fvinputFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fvinput");
+		File fvinputFile = new File(getInputFilename());
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, simulationJob, getResampledGeometry(), getSaveDirectory(), bMessaging).write();
+			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), bMessaging).write();
 		} finally {
 			if (pw != null) {
 				pw.close();
 			}
 		}
 	
-		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
-		setMathExecutable(new MathExecutable(new String[] {executableName, fvinputFile.getAbsolutePath()}));
+		setMathExecutable(new MathExecutable(getMathExecutableCommand()));
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new SolverException(ex.getMessage());
 	}
 }
+
+private String getInputFilename(){
+	return new File(getSaveDirectory(),cppCoderVCell.getBaseFilename()+".fvinput").getAbsolutePath();
+}
+
+@Override
+public String[] getMathExecutableCommand() {
+	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
+	String inputFilename = getInputFilename();
+	return new String[] { executableName, inputFilename };
+}
+
 }

@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.MathException;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SimulationJob;
@@ -36,8 +37,8 @@ public class AdamsMoultonFiveSolver extends AdamsSolver {
  * @param valueVectorCount int
  * @param temporaryVectorCount int
  */
-public AdamsMoultonFiveSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog)  throws SolverException {
-	super(simulationJob, directory, sessionLog, 2, 5);
+public AdamsMoultonFiveSolver(SimulationTask simTask, File directory, SessionLog sessionLog)  throws SolverException {
+	super(simTask, directory, sessionLog, 2, 5);
 }
 protected void initialize() throws SolverException {
 	super.initialize();
@@ -51,7 +52,7 @@ protected void initialize() throws SolverException {
  */
 protected void integrate() throws SolverException, UserStopException, IOException {
 	try {
-		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simTask.getSimulation().getSolverTaskDescription();
 		double timeStep = taskDescription.getTimeStep().getDefaultTimeStep();
 		fieldCurrentTime = taskDescription.getTimeBounds().getStartingTime();
 

@@ -14,6 +14,7 @@ import java.io.*;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
@@ -27,7 +28,7 @@ public abstract class CppClassCoder {
 	private String className = null;
 	private String parentClassName = null;
 	protected CppCoder cppCoder = null;
-	protected final SimulationJob simulationJob;
+	protected final SimulationTask simTask;
 
 	private static final String C_FIELDVAR_PREFIX = "vcell_fieldvar_";
 	private static final String C_LOCALVAR_PREFIX = "vcell_localvar_";
@@ -37,8 +38,8 @@ public abstract class CppClassCoder {
  * This method was created by a SmartGuide.
  * @param className java.lang.String
  */
-public CppClassCoder (SimulationJob simJob, CppCoder cppCoder, String className, String parentClassName) {
-	simulationJob = simJob;
+public CppClassCoder (SimulationTask simTask, CppCoder cppCoder, String className, String parentClassName) {
+	this.simTask = simTask;
 	this.cppCoder = cppCoder;
 	this.className = className;
 	this.parentClassName = parentClassName;

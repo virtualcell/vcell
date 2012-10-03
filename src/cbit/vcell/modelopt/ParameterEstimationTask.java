@@ -26,6 +26,7 @@ import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -463,7 +464,7 @@ public RowColumnResultSet getRowColumnRestultSetByBestEstimations(String[] param
 	}
 	//get input model string
 	StringWriter stringWriter = new StringWriter();
-	IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationJob(simulation, 0, null));
+	IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
 	idaFileWriter.write();
 	stringWriter.close();
 	StringBuffer buffer = stringWriter.getBuffer();

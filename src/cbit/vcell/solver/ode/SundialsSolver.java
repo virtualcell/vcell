@@ -32,6 +32,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -61,9 +62,9 @@ public abstract class SundialsSolver extends AbstractCompiledSolver implements O
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public SundialsSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
-	super(simulationJob, directory, sessionLog, bMessaging);
-	if (simulationJob.getSimulation().isSpatial()) {
+public SundialsSolver(SimulationTask simTask, File directory, SessionLog sessionLog, boolean bMessaging) throws SolverException {
+	super(simTask, directory, sessionLog, bMessaging);
+	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}
 }
@@ -93,7 +94,7 @@ public void cleanup() {
 private StateVariable[] createStateVariables() throws MathException, ExpressionException {
 	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
 	// get Ode's from MathDescription and create ODEStateVariables
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	MathDescription mathDescription = simSymbolTable.getSimulation().getMathDescription();
 	Enumeration<Equation> enum1 = ((SubDomain)mathDescription.getSubDomains().nextElement()).getEquations();
@@ -156,7 +157,7 @@ protected ApplicationMessage getApplicationMessage(String message) {
 	if (message.startsWith(PROGRESS_PREFIX)){
 		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
 		double progress = Double.parseDouble(progressString)/100.0;
-		TimeBounds timeBounds = simulationJob.getSimulation().getSolverTaskDescription().getTimeBounds();
+		TimeBounds timeBounds = simTask.getSimulation().getSolverTaskDescription().getTimeBounds();
 		double startTime = timeBounds.getStartingTime();
 		double endTime = timeBounds.getEndingTime();
 		setCurrentTime(startTime + (endTime-startTime)*progress);
@@ -187,7 +188,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 	//
 	// add appropriate Function columns to result set
 	//
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Function functions[] = simSymbolTable.getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
@@ -269,7 +270,7 @@ public int getSaveToFileInterval() {
  * @return int
  */
 public Constant getSensitivityParameter() {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Constant origSensParam = simSymbolTable.getSimulation().getSolverTaskDescription().getSensitivityParameter();
 	//
 	// sensitivity parameter from solverTaskDescription will have the non-overridden nominal value.
@@ -426,7 +427,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 	//
 	// add appropriate Function columns to result set
 	//
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
 	
 	cbit.vcell.math.Function functions[] = simSymbolTable.getFunctions();
@@ -498,7 +499,7 @@ private void writeLogFile() throws SolverException {
 		pw.println(IDA_DATA_IDENTIFIER);
 		pw.println(IDA_DATA_FORMAT_ID);
 		pw.println(ideDataFileName);
-		OutputTimeSpec outputTimeSpec = simulationJob.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+		OutputTimeSpec outputTimeSpec = simTask.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
 		if (outputTimeSpec.isDefault()) {	
 			pw.println(KEEP_MOST + " " + ((DefaultOutputTimeSpec)outputTimeSpec).getKeepAtMost());
 		}		

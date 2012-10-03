@@ -47,7 +47,10 @@ SimulationJobStatus getNextObsoleteSimulation(Connection con, long intervalSecon
  * @param jobIndex int
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex) throws DataAccessException;
+SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID) throws DataAccessException;
+
+
+SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex) throws DataAccessException;
 
 
 /**

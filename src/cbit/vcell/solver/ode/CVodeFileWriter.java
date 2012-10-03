@@ -16,6 +16,7 @@ import java.util.Vector;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -28,12 +29,12 @@ import cbit.vcell.solver.SimulationJob;
  */
 public class CVodeFileWriter extends OdeFileWriter {
 
-public CVodeFileWriter(PrintWriter pw, SimulationJob simJob) {
-	super(pw, simJob, false);
+public CVodeFileWriter(PrintWriter pw, SimulationTask simTask) {
+	super(pw, simTask, false);
 }
 	
-public CVodeFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging) {
-	super(pw, simJob, bUseMessaging);
+public CVodeFileWriter(PrintWriter pw, SimulationTask simTask, boolean bUseMessaging) {
+	super(pw, simTask, bUseMessaging);
 }
 
 /**

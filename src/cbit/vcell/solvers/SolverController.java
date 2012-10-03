@@ -32,11 +32,11 @@ String getHost() throws RemoteException, org.vcell.util.DataAccessException;
 public double getProgress() throws RemoteException, SolverNotRunningException, org.vcell.util.DataAccessException;	
 
 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.solver.Simulation
- */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException, org.vcell.util.DataAccessException;
+///**
+// * This method was created by a SmartGuide.
+// * @return cbit.vcell.solver.Simulation
+// */
+//public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException, org.vcell.util.DataAccessException;
 
 
 /**

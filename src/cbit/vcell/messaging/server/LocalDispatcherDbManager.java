@@ -15,12 +15,12 @@ import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 /**
  * Insert the type's description here.
@@ -35,34 +35,4 @@ public LocalDispatcherDbManager() {
 	super();
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/28/2003 3:39:37 PM)
- * @param simKey cbit.sql.KeyValue
- */
-public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServer adminDb, String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException {
-	try {
-		if (oldJobStatus == null || oldJobStatus.getSchedulerStatus().isDone()) {	
-			int taskID = 0;
-			VCellServerID serverID = VCellServerID.getSystemServerID();
-			if (oldJobStatus != null) {
-				taskID = oldJobStatus.getTaskID() + 1;
-			}
-			// no job for the same simulation running				
-			// update the job status in the database and local memory
-			SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimID, jobIndex, null, SchedulerStatus.DISPATCHED, taskID, startMsg, 
-				new SimulationQueueEntryStatus(null, MessageConstants.PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_NULL), null);
-				
-			if (oldJobStatus == null) {
-				newJobStatus = adminDb.insertSimulationJobStatus(newJobStatus);
-			} else {
-				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
-			}
-			return newJobStatus;
-		}
-		return oldJobStatus;
-	} catch (java.rmi.RemoteException ex) {
-		throw new DataAccessException("updateDispatchedStatus " + ex.getMessage());
-	}
-}
 }

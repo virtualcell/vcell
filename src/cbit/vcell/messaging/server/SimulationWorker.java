@@ -22,7 +22,7 @@ import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 
-import cbit.htc.PBSUtils;
+import cbit.vcell.message.server.pbs.PbsProxyLocal;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -120,7 +120,7 @@ protected void doJob() throws JMSException, SolverException, XmlParseException {
 //}
 
 private void doSolverJob(File userdir) throws SolverException {
-	currentSolver = cbit.vcell.solver.SolverFactory.createSolver(log,userdir,currentTask.getSimulationJob(), true);
+	currentSolver = cbit.vcell.solver.SolverFactory.createSolver(log,userdir,currentTask, true);
 	currentSolver.addSolverListener(this);
 	currentSolver.startSolver();
 	
@@ -178,7 +178,7 @@ public static void main(java.lang.String[] args) {
 		int serviceOrdinal = Integer.parseInt(args[1]);	
 		
 		if (args[0].equalsIgnoreCase("-pbs")) { // submit everything to PBS
-			PBSUtils.checkServerStatus();
+			new PbsProxyLocal().checkServerStatus();
 			workerType = ServiceType.PBSCOMPUTE;
 			VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
 		} else if (args[0].equalsIgnoreCase("-local")) { // run everything locally
@@ -233,7 +233,7 @@ public void onControlTopicMessage(Message message) throws JMSException {
  * Creation date: (12/9/2003 8:07:04 AM)
  */
 private void doPBSJob(File userdir) throws XmlParseException, SolverException, JMSException {
-	currentSolver = new PBSSolver(currentTask, userdir,log);
+	currentSolver = new PBSSolver(new PbsProxyLocal(), currentTask, userdir,log);
 	currentSolver.addSolverListener(this);
 	currentSolver.startSolver();
 }

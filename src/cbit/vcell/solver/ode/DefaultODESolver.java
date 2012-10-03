@@ -28,6 +28,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -64,9 +65,9 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
  * is not to be performed...
  * @param simContext cbit.vcell.math.MathDescription
  */
-public DefaultODESolver(SimulationJob simJob, File directory, SessionLog sessionLog, int valueVectorCount)  throws SolverException {
-	super(simJob, directory, sessionLog);
-	if (simulationJob.getSimulation().isSpatial()) {
+public DefaultODESolver(SimulationTask simTask, File directory, SessionLog sessionLog, int valueVectorCount)  throws SolverException {
+	super(simTask, directory, sessionLog);
+	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use DefaultODESolver on spatial simulation");
 	}
 	fieldValueVectorCount = valueVectorCount;
@@ -107,7 +108,7 @@ protected void check(double values[]) throws SolverException {
  * This method was created in VisualAge.
  */
 private Vector<Variable> createIdentifiers() throws MathException, ExpressionException {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	// create list of possible identifiers (including reserved x,y,z,t)
 	Vector<Variable> identifiers = new Vector<Variable>();
@@ -153,7 +154,7 @@ private Vector<Variable> createIdentifiers() throws MathException, ExpressionExc
 /**
  */
 private ODESolverResultSet createODESolverResultSet() throws ExpressionException {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	//
 	// create symbol table for binding expression
@@ -248,7 +249,7 @@ private Vector<SensVariable> createSensitivityVariables() throws MathException, 
  * This method was created in VisualAge.
  */
 private Vector<StateVariable> createStateVariables() throws MathException, ExpressionException {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Simulation sim = simSymbolTable.getSimulation();
 	
 	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
@@ -350,7 +351,7 @@ public final ODESolverResultSet getODESolverResultSet() {
  * @return double
  */
 public double getProgress() {
-	Simulation sim = simulationJob.getSimulation();
+	Simulation sim = simTask.getSimulation();
 
 	double currTime = getCurrentTime();
 	TimeBounds timeBounds = sim.getSolverTaskDescription().getTimeBounds();
@@ -372,7 +373,7 @@ public double getProgress() {
  * @see #setSensitivityParameter
  */
 public Constant getSensitivityParameter() {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	Constant origSensParam = simSymbolTable.getSimulation().getSolverTaskDescription().getSensitivityParameter();
 	//
@@ -425,7 +426,7 @@ public int getStateVariableIndex(String variableName) {
  * @return The timeIndex property value.
  */
 protected SubDomain getSubDomain() {
-	return ((SubDomain) simulationJob.getSimulation().getMathDescription().getSubDomains().nextElement());
+	return ((SubDomain) simTask.getSimulation().getMathDescription().getSubDomains().nextElement());
 }
 
 
@@ -473,7 +474,7 @@ protected final int getVariableIndex(int i) {
  * @exception SolverException The exception description.
  */
 protected void initialize() throws SolverException {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	Simulation sim = simSymbolTable.getSimulation();
 	try {
 		// create a fast system if necessary
@@ -529,7 +530,7 @@ protected void initialize() throws SolverException {
  */
 protected void integrate() throws SolverException, UserStopException, IOException {
 	try {
-		SolverTaskDescription taskDescription = simulationJob.getSimulation().getSolverTaskDescription();
+		SolverTaskDescription taskDescription = simTask.getSimulation().getSolverTaskDescription();
 		double timeStep = taskDescription.getTimeStep().getDefaultTimeStep();
 		fieldCurrentTime = taskDescription.getTimeBounds().getStartingTime();
 		// before computation begins, settle fast equilibrium
@@ -605,7 +606,7 @@ protected final void updateResultSet() throws IOException, ExpressionException {
 		results.addRow (values);
 	}
 	//setSolverStatus(new SolverStatus (SolverStatus.SOLVER_RUNNING));
-	Simulation sim = simulationJob.getSimulation();
+	Simulation sim = simTask.getSimulation();
 	double t = getCurrentTime();
 	TimeBounds timeBounds = sim.getSolverTaskDescription().getTimeBounds();
 	double t0 = timeBounds.getStartingTime();

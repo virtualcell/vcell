@@ -21,6 +21,7 @@ import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.SimulationJob;
 /**
@@ -35,11 +36,11 @@ public class CppClassCoderFastSystem extends CppClassCoder {
  * @param name java.lang.String
  */
 protected CppClassCoderFastSystem(CppCoderVCell cppCoderVCell, FastSystem fastSystem,
-								SubDomain subDomain,SimulationJob arg_simJob,String parentClass) throws Exception
+								SubDomain subDomain,SimulationTask simTask,String parentClass) throws Exception
 {
-	super(arg_simJob, cppCoderVCell,parentClass+subDomain.getName(), parentClass);
+	super(simTask, cppCoderVCell,parentClass+subDomain.getName(), parentClass);
 	this.subDomain = subDomain;
-	this.fs_analyzer = new FastSystemAnalyzer(fastSystem, simulationJob.getSimulationSymbolTable());
+	this.fs_analyzer = new FastSystemAnalyzer(fastSystem, simTask.getSimulationJob().getSimulationSymbolTable());
 }
 /**
  * This method was created by a SmartGuide.
@@ -230,7 +231,7 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 	Enumeration<PseudoConstant> enum2 = fs_analyzer.getPseudoConstants();
 	while (enum2.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum2.nextElement();
-		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = " + infix_C(simulationJob.getSimulationSymbolTable().substituteFunctions(pc.getPseudoExpression()).flatten())+";");
+		out.println("\t" + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + " = " + infix_C(simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(pc.getPseudoExpression()).flatten())+";");
 		invariantCount++;
 	}
 		
@@ -357,7 +358,7 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 		out.println("\tdouble " + CppClassCoder.getEscapedLocalVariableName_C(pc.getName()) + " = " + CppClassCoder.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}
 	
-	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simulationJob.getSimulationSymbolTable().getSimulation().getMathDescription());
+	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simTask.getSimulationJob().getSimulationSymbolTable().getSimulation().getMathDescription());
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
 		String localvarname = CppClassCoder.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);

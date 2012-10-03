@@ -55,6 +55,7 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XmlHelper;
@@ -334,6 +335,18 @@ public BioModelInfo getBioModelInfo(User user, KeyValue key) throws DataAccessEx
  */
 public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAccessException {
 	return (BioModelInfo[])getVersionInfos(user, null, VersionableType.BioModelMetaData, bAll, true);
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return SimulationInfo
+ * @param key KeyValue
+ * @exception org.vcell.util.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public SimulationInfo getSimulationInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return ((SimulationInfo[])getVersionInfos(user, key, VersionableType.Simulation, true, true))[0];
 }
 
 
@@ -917,6 +930,10 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
 			VCImageInfo[] imgInfos = new VCImageInfo[vector.size()];
 			vector.copyInto(imgInfos);
 			return imgInfos;
+		} else if (vType.equals(VersionableType.Simulation)) {
+			SimulationInfo[] simInfos = new SimulationInfo[vector.size()];
+			vector.copyInto(simInfos);
+			return simInfos;
 		} else {
 			throw new IllegalArgumentException("Wrong VersinableType vType:" + vType);
 		}		

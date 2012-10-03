@@ -12,6 +12,7 @@ package cbit.vcell.solver;
 import java.io.*;
 
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.server.SimulationTask;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -20,8 +21,8 @@ import cbit.vcell.messaging.JmsUtils;
 public abstract class SolverFileWriter {
 	protected PrintWriter printWriter = null;
 	protected boolean bUseMessaging = true;
-	protected final SimulationJob simulationJob;
-
+	protected final SimulationTask simTask;
+	
 	enum SolverInputFileKeyword {
 		JMS_PARAM_BEGIN,
 		JMS_BROKER,
@@ -36,9 +37,9 @@ public abstract class SolverFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public SolverFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
+public SolverFileWriter(PrintWriter pw, SimulationTask simTask, boolean messaging) {
 	printWriter = pw;
-	simulationJob = simJob;
+	this.simTask = simTask;
 	bUseMessaging = messaging;
 }
 
@@ -69,17 +70,17 @@ protected void writeJMSParamters() {
 	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
 	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + JmsUtils.getQueueWorkerEvent());  
 		printWriter.println(SolverInputFileKeyword.JMS_TOPIC + " " + JmsUtils.getTopicServiceControl());
-		printWriter.println(SolverInputFileKeyword.VCELL_USER + " " + simulationJob.getSimulation().getVersion().getOwner().getName());
-		printWriter.println(SolverInputFileKeyword.SIMULATION_KEY + " " + simulationJob.getSimulation().getVersion().getVersionKey());
-		printWriter.println(SolverInputFileKeyword.JOB_INDEX + " " + simulationJob.getJobIndex());
+		printWriter.println(SolverInputFileKeyword.VCELL_USER + " " + simTask.getSimulation().getVersion().getOwner().getName());
+		printWriter.println(SolverInputFileKeyword.SIMULATION_KEY + " " + simTask.getSimulation().getVersion().getVersionKey());
+		printWriter.println(SolverInputFileKeyword.JOB_INDEX + " " + simTask.getSimulationJob().getJobIndex());
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_END);
 		printWriter.println();
 	}
 }
 
-public SimulationJob getSimulationJob()
+public SimulationTask getSimulationTask()
 {
-	return simulationJob;
+	return simTask;
 }
 
 }

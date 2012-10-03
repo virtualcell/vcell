@@ -19,15 +19,7 @@ import org.vcell.util.document.User;
 public abstract class MessageEvent extends java.util.EventObject {
 	private MessageSource messageSource = null;
 	private MessageData messageData = null;
-	
-	public static final int JOB_ACCEPTED = 998;
-	public static final int JOB_STARTING = 999;
-	public static final int JOB_DATA = 1000;
-	public static final int JOB_PROGRESS = 1001;
-	public static final int JOB_FAILURE = 1002;
-	public static final int JOB_COMPLETED = 1003;
-	public static final int JOB_WORKER_ALIVE = 1004;
-	
+		
 	public final static int EXPORT_PROGRESS = 1004;
 	public final static int EXPORT_FAILURE = 1005;
 	public final static int EXPORT_COMPLETE = 1006;

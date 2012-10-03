@@ -15,6 +15,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
@@ -23,41 +26,18 @@ import cbit.vcell.solver.*;
  */
 public class LocalSimulationController extends java.rmi.server.UnicastRemoteObject implements SimulationController {
 	private SessionLog sessionLog = null;
-	private UserLoginInfo userLoginInfo = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
-	private UserMetaDbServer userMetaDbServer = null;
-	private AdminDatabaseServer adminDbServer = null;
+	private User user = null;
 
 /**
  * LocalSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-protected LocalSimulationController(UserLoginInfo argUserLoginInfo, SessionLog argSessionLog, AdminDatabaseServer adminDbServer0, SimulationControllerImpl argSimulationControllerImpl, UserMetaDbServer argUserMetaDbServer) throws java.rmi.RemoteException {
+protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl, SessionLog argSessionLog) throws java.rmi.RemoteException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSimulationController,0));
-	sessionLog = argSessionLog;
-	userLoginInfo = argUserLoginInfo;
-	adminDbServer = adminDbServer0;
-	simulationControllerImpl = argSimulationControllerImpl;
-	userMetaDbServer = argUserMetaDbServer;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/28/01 1:30:46 PM)
- * @return cbit.vcell.solver.Simulation
- * @param simulationInfo cbit.vcell.solver.SimulationInfo
- */
-private Simulation getSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException, ObjectNotFoundException, RemoteException {
-	String simulationXML = userMetaDbServer.getSimulationXML(vcSimulationIdentifier.getSimulationKey()).toString();
-	Simulation simulation = null;
-	try {
-		simulation = cbit.vcell.xml.XmlHelper.XMLToSim(simulationXML);
-	}catch (cbit.vcell.xml.XmlParseException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(e.getMessage());
-	}
-	return simulation;
+	this.sessionLog = argSessionLog;
+	this.simulationControllerImpl = simulationControllerImpl;
+	this.user = user;
 }
 
 
@@ -68,8 +48,8 @@ private Simulation getSimulation(VCSimulationIdentifier vcSimulationIdentifier) 
 public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
 	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
-		Simulation simulation = getSimulation(vcSimulationIdentifier);
-		simulationControllerImpl.startSimulation(userLoginInfo,simulation,sessionLog);
+		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
+		simulationControllerImpl.startSimulation(simulation,sessionLog);
 	}catch (RemoteException e){
 		sessionLog.exception(e);
 		throw e;
@@ -90,8 +70,8 @@ public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throw
 public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
 	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
 	try {
-		Simulation simulation = getSimulation(vcSimulationIdentifier);
-		simulationControllerImpl.stopSimulation(userLoginInfo,simulation);
+		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
+		simulationControllerImpl.stopSimulation(simulation);
 	}catch (RemoteException e){
 		sessionLog.exception(e);
 		throw e;

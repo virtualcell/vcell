@@ -28,10 +28,14 @@ import org.vcell.util.document.UserInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.JmsConnectionFactoryImpl;
+import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 /**
@@ -47,10 +51,10 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, JmsConnectionFactory jmsConnFactory) throws RemoteException, FileNotFoundException, DataAccessException {
+private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, JmsConnectionFactory jmsConnFactory,  SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException, DataAccessException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellBootstrap,0));
 	this.adminDbServer = adminDbServer;
-	this.localVCellServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer);
+	this.localVCellServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer, simulationDatabase);
 }
 /**
  * This method was created by a SmartGuide.
@@ -186,7 +190,12 @@ public static void main(java.lang.String[] args) {
 		LocalVCellConnection.setDatabaseResources(conFactory,keyFactory);
 		
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
-		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,jmsConnFactory);
+		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+		ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log);
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+		SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl, log);
+
+		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,jmsConnFactory, simulationDatabase);
 		
 		//
 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)

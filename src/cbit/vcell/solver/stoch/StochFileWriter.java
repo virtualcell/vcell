@@ -23,6 +23,7 @@ import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -45,9 +46,9 @@ public class StochFileWriter extends SolverFileWriter
 /**
  * StochFileWriter constructor comment.
  */
-public StochFileWriter(PrintWriter pw, SimulationJob arg_simulationJob, boolean bMessaging) 
+public StochFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
 {
-	super(pw, arg_simulationJob, bMessaging);
+	super(pw, simTask, bMessaging);
 }
 
 
@@ -72,7 +73,7 @@ private Vector<String> getDependencies(JumpProcess process, List<JumpProcess> pr
 			if(!process.compareEqual(processList.get(i)))//to avoid comparing with it's own
 			{
 				Expression probExp = processList.get(i).getProbabilityRate();
-				probExp = simulationJob.getSimulationSymbolTable().substituteFunctions(probExp).flatten();
+				probExp = simTask.getSimulationJob().getSimulationSymbolTable().substituteFunctions(probExp).flatten();
 				String[] vars = probExp.getSymbols();
 				if((vars != null)&&(vars.length>0))
 				{				
@@ -116,7 +117,7 @@ private boolean hasCommonElement(String[] oriArray, String[] comArray)
  */
 public void initialize() throws Exception
 {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	//check variables
 	if(!simulation.getMathDescription().getVariables().hasMoreElements())
 	{
@@ -144,7 +145,7 @@ public void initialize() throws Exception
  */
 public boolean isValidProbabilityExpression(Expression probExp)
 {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	
 	String[] symbols = probExp.getSymbols();
 	for(int i=0; symbols != null && i<symbols.length; i++)
@@ -163,8 +164,8 @@ public boolean isValidProbabilityExpression(Expression probExp)
  */
 public void write(String[] parameterNames) throws Exception,ExpressionException
 {
-	Simulation simulation = simulationJob.getSimulation();
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable(); 
+	Simulation simulation = simTask.getSimulation();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable(); 
 	
 	initialize();
 	

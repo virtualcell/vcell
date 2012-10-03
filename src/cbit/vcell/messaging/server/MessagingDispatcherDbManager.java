@@ -28,21 +28,21 @@ import cbit.vcell.solver.SimulationMessage;
  */
 public interface MessagingDispatcherDbManager extends DispatcherDbManager {
 	SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-			String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException;
+			String computeHost, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage startMsg) throws DataAccessException, UpdateSynchronizationException;
 
 
 	SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-			VCSimulationIdentifier vcSimID, int jobIndex, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException;
+			VCSimulationIdentifier vcSimID, int jobIndex, int taskID, String hostName, SchedulerStatus status, SimulationMessage solverMsg) throws DataAccessException, UpdateSynchronizationException;
 
 
 	void updateLatestUpdateDate(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, 
-			VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException;
+			VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage simulationMessage) throws DataAccessException, UpdateSynchronizationException;
 
 
 	SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDb, Connection con, 
-			VCSimulationIdentifier vcSimID, int jobIndex, SimulationQueueID queueID, int taskID, boolean firstSubmit) throws DataAccessException, UpdateSynchronizationException;
+			VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationQueueID queueID, boolean firstSubmit) throws DataAccessException, UpdateSynchronizationException;
 
 
 	SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, Connection con, String hostName, 
-			VCSimulationIdentifier vcSimID, int jobIndex, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException;
+			VCSimulationIdentifier vcSimID, int jobIndex, int taskID, boolean hasData, SimulationMessage solverMsg)	throws DataAccessException, UpdateSynchronizationException;
 }

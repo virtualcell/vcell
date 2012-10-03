@@ -13,6 +13,7 @@ package cbit.vcell.solvers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
@@ -34,7 +35,7 @@ import cbit.vcell.xml.XmlParseException;
  */
 public abstract class HTCSolver extends AbstractSolver {
 	protected AbstractSolver realSolver = null;
-	protected java.lang.String cmdArguments = "";
+	protected ArrayList<String> cmdArguments = new ArrayList<String>();
 	protected SimulationTask simulationTask = null;
 
 /**
@@ -45,10 +46,10 @@ public abstract class HTCSolver extends AbstractSolver {
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
 public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-	super(simTask.getSimulationJob(), directory, sessionLog);
+	super(simTask, directory, sessionLog);
 	simulationTask = simTask;
-	if (!simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
-		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob(), true);
+	if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
+		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask, true);
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
 				fireSolverAborted(event.getSimulationMessage());
@@ -81,14 +82,15 @@ public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) 
 			
 		});	
 	}
-	cmdArguments = "-tid " + String.valueOf(simTask.getTaskID());
+	cmdArguments.add("-tid");
+	cmdArguments.add(String.valueOf(simTask.getTaskID()));
 }
 
 /**
  *  This method takes the place of the old runUnsteady()...
  */
 protected void initialize() throws SolverException {
-	if (simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
+	if (simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
 		writeJavaInputFile();
 	} else {
 		realSolver.initialize(); 
@@ -100,7 +102,7 @@ protected void writeJavaInputFile() throws SolverException {
 	try {
 		File inputFile = new File(getBaseName() + JAVA_INPUT_EXTENSION);
 		if (!inputFile.exists()) {	// write input file which is just xml				
-			String xmlString = XmlHelper.simToXML(simulationJob.getSimulation());
+			String xmlString = XmlHelper.simToXML(simTask.getSimulation());
 			pw = new PrintWriter(inputFile);
 			pw.println(xmlString);
 			pw.close();

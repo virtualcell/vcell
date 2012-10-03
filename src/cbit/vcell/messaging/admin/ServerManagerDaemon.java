@@ -9,25 +9,59 @@
  */
 
 package cbit.vcell.messaging.admin;
-import static cbit.vcell.messaging.admin.ManageConstants.*;
-import java.io.*;
-import java.sql.SQLException;
-import java.util.*;
-import javax.jms.*;
+import static cbit.vcell.messaging.admin.ManageConstants.INTERVAL_PING_RESPONSE;
+import static cbit.vcell.messaging.admin.ManageConstants.INTERVAL_PING_SERVICE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
+import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_ID_PROPERTY;
+import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC;
+import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STATUS_FAILED;
+import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STATUS_RUNNING;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+
+import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PBSUtils;
+import cbit.htc.PBSConstants.PBSJobStatus;
 import cbit.htc.PbsJobID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.messaging.*;
+import cbit.vcell.message.server.pbs.PbsProxy;
+import cbit.vcell.message.server.pbs.PbsProxy.PbsJobNotFoundException;
+import cbit.vcell.message.server.pbs.PbsProxyLocal;
+import cbit.vcell.messaging.ControlMessageCollector;
+import cbit.vcell.messaging.ControlTopicListener;
+import cbit.vcell.messaging.JmsConnection;
+import cbit.vcell.messaging.JmsConnectionFactory;
+import cbit.vcell.messaging.JmsConnectionFactoryImpl;
+import cbit.vcell.messaging.JmsSession;
+import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
@@ -40,6 +74,7 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
  * @author: Fei Gao
  */
 public class ServerManagerDaemon implements ControlTopicListener {
+	private PbsProxy pbsProxy = new PbsProxyLocal();
 	private org.vcell.util.SessionLog log = null;
 	private JmsConnection jmsConn = null;
 	private JmsConnectionFactory jmsConnFactory = null;
@@ -73,6 +108,9 @@ public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSExce
 		throw new RuntimeException(e.getMessage());
 	} catch (InstantiationException e) {
 		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	} catch (ConfigurationException e) {
+		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}
 	keyFactory = new cbit.sql.OracleKeyFactory();	
@@ -159,24 +197,24 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
 			} else {
 				long t = System.currentTimeMillis();
-				int status;
+				PBSJobStatus status;
 				while (true) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException ex) {
 					}
 					
-					status = PBSUtils.getJobStatus(jobid);
-					if (PBSUtils.isJobExiting(status)){
+					status = pbsProxy.getJobStatus(jobid);
+					if (status!=null && status.isExiting()){
 						// should never happen
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
 						break;
-					} else if (PBSUtils.isJobRunning(status)) {						
+					} else if (status!=null && status.isRunning()) {						
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
 						break;
 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
-						String pendingReason = PBSUtils.getPendingReason(jobid);
-						PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+						String pendingReason = pbsProxy.getPendingReason(jobid);
+						pbsProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
 								"PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")",
 								jobid);						
@@ -191,19 +229,27 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	adminDbTop.updateServiceStatus(service, tso, true);
 }	
 
-private PbsJobID submit2PBS(ServiceStatus service) throws Exception {
-	killService(service);
+private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+	try {
+		killService(service);
+	}catch (PbsJobNotFoundException e){
+		log.alert(service.toString()+" not found, cannot kill job");
+	}
 	
 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
 	
 	ServiceType type = service.getServiceSpec().getType();
 	int ordinal = service.getServiceSpec().getOrdinal();
-	String cmdArguments = VCellServerID.getSystemServerID().toString().toLowerCase() + " " 
-		+ type.getName() + " " + ordinal + " " + service.getServiceSpec().getMemoryMB(); // site, type, ordinal, memory
-	
+	// site, type, ordinal, memory
+	String[] command = new String[] {
+			executable,
+			VCellServerID.getSystemServerID().toString().toLowerCase(),
+			type.getName(),
+			String.valueOf(ordinal),
+			String.valueOf(service.getServiceSpec().getMemoryMB())};
 	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
-	return PBSUtils.submitServiceJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB());
+	return pbsProxy.submitServiceJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), command, 1, service.getServiceSpec().getMemoryMB());
 }
 /**
  * This method was created in VisualAge.
@@ -235,7 +281,6 @@ public void onControlTopicMessage(Message message) {
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");			
 		} else if (msgType.equals(MESSAGE_TYPE_IAMALIVE_VALUE)) {
 			on_iamalive(message);			
-		} else if (msgType.equals(MESSAGE_TYPE_STARTSERVICE_VALUE)) {
 		} else if (msgType.equals(MESSAGE_TYPE_STOPSERVICE_VALUE)) {
 			on_stopservice(message);
 		} else if (msgType.equals(MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE)) {
@@ -309,14 +354,22 @@ private void on_stopservice(Message message) throws JMSException {
 				ServiceStatus service = iter.next();		
 				if (service.getServiceSpec().getID().equals(serviceID)) {
 					PbsJobID pbsJobId = service.getPbsJobId();
-					if (pbsJobId != null && PBSUtils.isJobRunning(pbsJobId)) {
+					if (pbsJobId != null){
 						try {
-							Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
-						} catch (InterruptedException ex) {							
-						}					
-						// if the service is not stopped, kill it from PBS
-						if (PBSUtils.isJobRunning(pbsJobId)) {
-							PBSUtils.killJob(pbsJobId);
+							PBSJobStatus pbsJobStatus = pbsProxy.getJobStatus(pbsJobId);
+							if (pbsJobStatus!=null && pbsJobStatus.isRunning()) {
+								try {
+									Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
+								} catch (InterruptedException ex) {							
+								}					
+								// if the service is not stopped, kill it from PBS
+								pbsJobStatus = pbsProxy.getJobStatus(pbsJobId);
+								if (pbsJobStatus!=null && pbsJobStatus.isRunning()) {
+									pbsProxy.killJob(pbsJobId);
+								}
+							}
+						} catch (Exception e) {
+							log.exception(e);
 						}
 					}
 					break;
@@ -384,9 +437,9 @@ private void pingAll() throws JMSException {
 	}
 }
 
-private void killService(ServiceStatus service) {
+private void killService(ServiceStatus service) throws ExecutableException, PbsJobNotFoundException {
 	if (service.getPbsJobId() != null) {
-		PBSUtils.killJob(service.getPbsJobId());
+		pbsProxy.killJob(service.getPbsJobId());
 	}
 }
 /**

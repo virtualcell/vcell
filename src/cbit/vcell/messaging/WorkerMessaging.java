@@ -153,7 +153,7 @@ public void sendCompleted(double progress, double timeSec, SimulationMessage sim
 
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendComplete(" + currentTask.getSimulationJobIdentifier() + ")");
+		log.print("sendComplete(" + currentTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask, ManageUtils.getHostName(),  progress, timeSec, simulationMessage);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
@@ -173,7 +173,7 @@ public void sendFailed(SimulationMessage failureMessage) {
 	}
 		
 	try {
-		log.print("sendFailure(" + currentTask.getSimulationJobIdentifier() + "," + failureMessage +")");
+		log.print("sendFailure(" + currentTask.getSimulationJobID() + "," + failureMessage +")");
 		WorkerEventMessage.sendFailed(workerEventSession, this, currentTask, ManageUtils.getHostName(), failureMessage);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
@@ -195,7 +195,7 @@ public void sendNewData(double progress, double timeSec, SimulationMessage simul
 	try {
 		long t = System.currentTimeMillis();
 		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
-			log.print("sendNewData(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
+			log.print("sendNewData(" + currentTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");		
 			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 		
 			lastMsgTimeStamp = System.currentTimeMillis();
@@ -220,7 +220,7 @@ public void sendProgress(double progress, double timeSec, SimulationMessage simu
 		long t = System.currentTimeMillis();
 	if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 		|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
-			log.print("sendProgress(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
+			log.print("sendProgress(" + currentTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");
 			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
@@ -242,7 +242,7 @@ public void sendStarting(SimulationMessage startingMessage) {
 	}
 	
 	try {
-		log.print("sendStarting(" + currentTask.getSimulationJobIdentifier() + ")");
+		log.print("sendStarting(" + currentTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendStarting(workerEventSession, this, currentTask, ManageUtils.getHostName(), startingMessage);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
@@ -263,7 +263,7 @@ void sendWorkerAlive() {
 
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendWorkerAlive(" + currentTask.getSimulationJobIdentifier() + ")");
+		log.print("sendWorkerAlive(" + currentTask.getSimulationJobID() + ")");
 		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask, ManageUtils.getHostName(), SimulationMessage.MESSAGE_WORKEREVENT_WORKERALIVE);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();

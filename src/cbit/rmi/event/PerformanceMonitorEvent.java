@@ -82,7 +82,7 @@ public User getUser() {
 	return user;
 }
 
-
+@Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
 	return false;
 }
