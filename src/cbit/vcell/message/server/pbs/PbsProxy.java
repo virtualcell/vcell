@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import org.vcell.util.ExecutableException;
@@ -24,6 +23,7 @@ import cbit.htc.PBSConstants.PBSJobCategory;
 import cbit.htc.PBSConstants.PBSJobExitCode;
 import cbit.htc.PBSConstants.PBSJobStatus;
 import cbit.htc.PbsJobID;
+import cbit.vcell.messaging.db.SimulationJobStatus;
 
 public abstract class PbsProxy {
 
@@ -38,6 +38,7 @@ public abstract class PbsProxy {
 	public class RunningPbsJobRecord {
 		private int pbsJobId;
 		private String pbsJobName;
+		private SimulationJobStatus.SchedulerStatus lastKnownSchedulerStatus = null;   // null means the database knows nothing about it
 		
 		public RunningPbsJobRecord(int pbsJobIdArg, String pbsJobNameArg){
 			pbsJobId = pbsJobIdArg;
@@ -62,6 +63,17 @@ public abstract class PbsProxy {
 		
 		public int getPbsJobId(){
 			return pbsJobId;
+		}
+		
+
+		public SimulationJobStatus.SchedulerStatus getLastKnownSchedulerStatus() {
+			return lastKnownSchedulerStatus;
+		}
+
+
+		public void setSchedulerStatus(
+				SimulationJobStatus.SchedulerStatus schedulerStatus) {
+			this.lastKnownSchedulerStatus = schedulerStatus;
 		}
 	
 		
@@ -360,7 +372,7 @@ public abstract class PbsProxy {
 			pw.println(CommandOutput.concatCommandStrings(command));
 			if (secondCommand!=null){
 				String secondCommandString = "if [ \"$?\" = \"0\" ] ; then "+CommandOutput.concatCommandStrings(secondCommand);
-				secondCommandString = secondCommandString+" ; fi\n";
+				secondCommandString = secondCommandString+"\n"+"else exit $? ; fi\n";
 				pw.println(secondCommandString);
 			}
 			pw.close();
@@ -398,7 +410,8 @@ public abstract class PbsProxy {
 	public abstract CommandOutput command(String[] command) throws ExecutableException;
 	
 	public ArrayList<RunningPbsJobRecord> getRunningPBSJobs() throws ExecutableException {
-		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList();
+		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList<RunningPbsJobRecord>();
+
 		try{
 			
 			String[] commandArray = new String[]{PBSConstants.QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+PBSConstants.PBS_SIMULATION_JOB_NAME_PREFIX};

@@ -13,7 +13,6 @@ import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_V
 import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
 import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
 import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STARTSERVICE_VALUE;
 import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
 
 import java.awt.BorderLayout;
@@ -26,7 +25,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,7 +39,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.jms.JMSException;
@@ -68,28 +65,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.vcell.util.BigString;
-import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -114,6 +102,13 @@ import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
 
 /**
  * Insert the type's description here.
@@ -2666,7 +2661,6 @@ private void reconnect() throws JMSException {
 		+ "('" + MESSAGE_TYPE_IAMALIVE_VALUE + "'" 
 		+ ",'" + MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'" 
 		+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
-		+ ",'" + MESSAGE_TYPE_STARTSERVICE_VALUE + "'"
 		+ ",'" + MESSAGE_TYPE_STOPSERVICE_VALUE + "'"
 		+ ")";
 	listenSession.setupTopicListener(JmsUtils.getTopicDaemonControl(), filter, new ControlMessageCollector(this));

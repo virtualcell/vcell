@@ -26,7 +26,7 @@ public interface ManageConstants {
 	public static final String MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE	= "AskPerformance";
 	public static final String MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE	= "RefreshServerManager";
 	public static final String MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE	= "ReplyPerformance";
-	public static final String MESSAGE_TYPE_STARTSERVICE_VALUE	= "StartService";
+//	public static final String MESSAGE_TYPE_STARTSERVICE_VALUE	= "StartService";
 	public static final String MESSAGE_TYPE_STOPSERVICE_VALUE	= "StopService";
 
 	public static final String MESSAGE_TYPE_BROADCASTMESSAGE_VALUE	= "BroadcastMessage";
