@@ -57,7 +57,8 @@ public interface MessageConstants {
 		DISPATCH ("Dsptch"),
 		PBSCOMPUTE ("PbsC"),	// submit everything to PBS
 		LOCALCOMPUTE ("LclC"),   // local pde and ode
-		SERVERMANAGER ("ServerManager");
+		SERVERMANAGER ("ServerManager"),
+		TESTING_SERVICE ("TestingService");
 		
 		private final String typeName;
 		ServiceType(String tn) {

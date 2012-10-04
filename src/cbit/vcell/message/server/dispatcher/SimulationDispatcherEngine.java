@@ -25,7 +25,6 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
