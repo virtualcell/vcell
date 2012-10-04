@@ -339,7 +339,7 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 	
 	try {
 		workerEventMessage = new WorkerEventMessage(this, receivedMsg);
-	} catch (Exception ex) {
+	} catch (RuntimeException ex) {
 		// parse error, wrong message
 		log.exception(ex);
 		return;

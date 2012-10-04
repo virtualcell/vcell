@@ -53,9 +53,8 @@ public WorkerEventMessage(WorkerEvent event) {
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
- * @throws SQLException 
  */
-public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, DataAccessException, SQLException {
+public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, DataAccessException {
 	parseMessage(dispatcher, message0);
 }
 
@@ -74,9 +73,8 @@ public cbit.rmi.event.WorkerEvent getWorkerEvent() {
  * Insert the method's description here.
  * Creation date: (2/5/2004 2:19:48 PM)
  * @param message javax.jms.Message
- * @throws SQLException 
  */
-private void parseMessage(SimulationDispatcher dispatcher, Message message) throws JMSException, SQLException {
+private void parseMessage(SimulationDispatcher dispatcher, Message message) throws JMSException {
 	if (message == null) {
 		throw new RuntimeException("Null message");
 	}	
@@ -120,6 +118,8 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
 					throw new RuntimeException("Null Simulation"); //wrong message	
 				}
 			} catch (DataAccessException ex) {
+				throw new RuntimeException("Null Simulation"); // wrong message
+			} catch (SQLException e) {
 				throw new RuntimeException("Null Simulation"); // wrong message
 			}
 			

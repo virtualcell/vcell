@@ -18,8 +18,8 @@ import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
+import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -38,7 +38,7 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
-public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword digestedPassword, String hostName, JmsConnectionFactory jmsConnFactory, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
+public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword digestedPassword, String hostName, VCMessagingService vcMessagingService, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
 	try {
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,sessionLog);
 		User adminUser = null;
@@ -55,10 +55,10 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 		ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, sessionLog);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
 		SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl, sessionLog);
-		
-		vcServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer, simulationDatabase);
+		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase);
 	} catch (java.rmi.RemoteException e){
-		e.printStackTrace(System.out);
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage(),e);
 	}
 }
 /**

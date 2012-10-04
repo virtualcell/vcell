@@ -28,9 +28,8 @@ import org.vcell.util.document.UserInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.messaging.JmsConnectionFactory;
-import cbit.vcell.messaging.JmsConnectionFactoryImpl;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -51,10 +50,10 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, JmsConnectionFactory jmsConnFactory,  SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException, DataAccessException {
+private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, VCMessagingService vcMessagingService, SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException, DataAccessException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellBootstrap,0));
 	this.adminDbServer = adminDbServer;
-	this.localVCellServer = new LocalVCellServer(hostName, jmsConnFactory, adminDbServer, simulationDatabase);
+	this.localVCellServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase);
 }
 /**
  * This method was created by a SmartGuide.
@@ -79,9 +78,6 @@ public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws Da
 	}catch (java.sql.SQLException e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
-	} catch (javax.jms.JMSException ex) {
-		sessionLog.exception(ex);
-		throw new DataAccessException(ex.getMessage());
 	}
 }
 /**
@@ -177,7 +173,8 @@ public static void main(java.lang.String[] args) {
 		if (!serverConfig.equals(MESSAGING)){
 			throw new Exception("expecting '" + MESSAGING + "' as third argument");
 		}
-		JmsConnectionFactory jmsConnFactory = new JmsConnectionFactoryImpl();
+		//VCMessagingService vcMessagingService = new VCMessagingServiceSonicMQ();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
 		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
 		
@@ -194,9 +191,8 @@ public static void main(java.lang.String[] args) {
 		ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl, log);
+		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase);
 
-		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,jmsConnFactory, simulationDatabase);
-		
 		//
 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)
 		//

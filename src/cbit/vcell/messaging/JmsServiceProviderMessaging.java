@@ -61,7 +61,6 @@ private final String getDaemonControlFilter() {
 		+ "('" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
 		+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
 		+ ",'" + MESSAGE_TYPE_IAMALIVE_VALUE + "'"
-		+ ",'" + MESSAGE_TYPE_STARTSERVICE_VALUE + "'"
 		+ ")";		
 }
 

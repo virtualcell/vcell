@@ -9,42 +9,21 @@
  */
 
 package cbit.vcell.messaging.admin;
-import static cbit.vcell.messaging.admin.ManageConstants.INTERVAL_PING_RESPONSE;
-import static cbit.vcell.messaging.admin.ManageConstants.INTERVAL_PING_SERVICE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_ID_PROPERTY;
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC;
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STATUS_FAILED;
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STATUS_RUNNING;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import static cbit.vcell.messaging.admin.ManageConstants.*;
+import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import javax.jms.*;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.ObjectMessage;
+import oracle.ucp.UniversalConnectionPoolException;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.htc.PBSConstants.PBSJobStatus;
@@ -54,14 +33,7 @@ import cbit.sql.KeyFactory;
 import cbit.vcell.message.server.pbs.PbsProxy;
 import cbit.vcell.message.server.pbs.PbsProxy.PbsJobNotFoundException;
 import cbit.vcell.message.server.pbs.PbsProxyLocal;
-import cbit.vcell.messaging.ControlMessageCollector;
-import cbit.vcell.messaging.ControlTopicListener;
-import cbit.vcell.messaging.JmsConnection;
-import cbit.vcell.messaging.JmsConnectionFactory;
-import cbit.vcell.messaging.JmsConnectionFactoryImpl;
-import cbit.vcell.messaging.JmsSession;
-import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.messaging.MessagePropertyNotFoundException;
+import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
@@ -110,6 +82,9 @@ public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSExce
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	} catch (ConfigurationException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
+	} catch (UniversalConnectionPoolException e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}

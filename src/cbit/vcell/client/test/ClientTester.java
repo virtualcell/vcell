@@ -1,17 +1,12 @@
 package cbit.vcell.client.test;
 
-import cbit.sql.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.awt.Frame;
 
-import cbit.vcell.server.UserLoginInfo;
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnectionFactory;
+import cbit.sql.ConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -158,8 +153,8 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory = new cbit.vcell.messaging.JmsConnectionFactoryImpl();
-		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",jmsConnFactory,conFactory,keyFactory,log);
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
 	}
 	return vcServerFactory;
 }
