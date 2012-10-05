@@ -44,7 +44,5 @@ public VCellServer getVCellServer(User user,UserLoginInfo.DigestedPassword diges
 String getVCellSoftwareVersion() throws RemoteException;
 
 public UserInfo insertUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException;
-public UserInfo updateUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException;
-public UserInfo getUserInfo(KeyValue userKey)throws RemoteException, DataAccessException;
 public void sendLostPassword(String userid) throws RemoteException, DataAccessException;
 }
