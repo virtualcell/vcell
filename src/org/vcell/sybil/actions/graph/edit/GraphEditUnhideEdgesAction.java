@@ -48,7 +48,7 @@ extends GraphAction<S, G> {
 			updateUI();
 		} else {
 			S shape = graph().chosenShape();
-			if(shape instanceof GraphShape) {
+			if((UIShape<?>)shape instanceof GraphShape) {
 				graph().unhideEdges(shape.graphComp(), Visibility.hiderSelection);
 				updateUI();					
 			}
