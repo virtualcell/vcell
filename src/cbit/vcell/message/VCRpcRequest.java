@@ -20,8 +20,6 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.server.RpcRequest;
-
 
 /**
  * Insert the type's description here.
@@ -194,11 +192,6 @@ public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccess
 		log.exception(e);
 		throw new RuntimeException("IllegalAccessException for rpc(method=" + methodName);
 	}
-}
-
-public static VCRpcRequest fromRpcRequest(RpcRequest rpcRequest) {
-	VCRpcRequest vcRpcRequest = new VCRpcRequest(rpcRequest.getUser(), rpcRequest.getRequestedServiceType(), rpcRequest.getMethodName(), rpcRequest.getArguments());
-	return vcRpcRequest;
 }
 
 }

@@ -23,7 +23,7 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.*;
-import cbit.vcell.messaging.admin.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;

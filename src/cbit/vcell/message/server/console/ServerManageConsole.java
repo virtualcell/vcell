@@ -9,11 +9,11 @@
  */
 
 package cbit.vcell.message.server.console;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -83,20 +83,13 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.server.ManageConstants;
+import cbit.vcell.message.server.ServiceInstanceStatus;
+import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
-import cbit.vcell.messaging.admin.AddNewServiceDialog;
-import cbit.vcell.messaging.admin.DatePanel;
-import cbit.vcell.messaging.admin.JobTableModel;
-import cbit.vcell.messaging.admin.ManageConstants;
-import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.admin.ServiceInstanceStatusTableModel;
-import cbit.vcell.messaging.admin.ServiceSpec;
-import cbit.vcell.messaging.admin.ServiceStatus;
-import cbit.vcell.messaging.admin.ServiceStatusTableModel;
-import cbit.vcell.messaging.admin.SimpleJobStatus;
-import cbit.vcell.messaging.admin.SimpleUserConnection;
-import cbit.vcell.messaging.admin.UserConnectionTableModel;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;

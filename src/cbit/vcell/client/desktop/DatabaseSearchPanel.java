@@ -42,7 +42,7 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.messaging.admin.DatePanel;
+import cbit.vcell.message.server.console.DatePanel;
 
 @SuppressWarnings("serial")
 public class DatabaseSearchPanel extends CollapsiblePanel {

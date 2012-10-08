@@ -43,7 +43,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.messaging.server.LocalDispatcherDbManager;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -106,8 +105,6 @@ public class SimulationControllerImpl implements WorkerEventListener {
 	private LocalVCellConnection localVCellConnection = null;
 	private SimulationDatabase simulationDatabase = null;
 	private EventListenerList listenerList = new javax.swing.event.EventListenerList();
-	
-	LocalDispatcherDbManager dispatcherDbManager;
 	
 	private SimulationDispatcherEngine simulationDispatcherEngine = new SimulationDispatcherEngine();
 	

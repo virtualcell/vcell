@@ -32,7 +32,7 @@ import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.WorkerEventMessage;
-import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.Simulation;

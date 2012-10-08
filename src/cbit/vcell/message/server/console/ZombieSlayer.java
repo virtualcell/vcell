@@ -8,7 +8,6 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -20,7 +19,6 @@ import cbit.vcell.message.server.pbs.PbsProxy.RunningPbsJobRecord;
 import cbit.vcell.message.server.pbs.PbsProxyLocal;
 import cbit.vcell.message.server.pbs.PbsProxySsh;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;

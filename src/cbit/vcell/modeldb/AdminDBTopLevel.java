@@ -9,8 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.vcell.messaging.admin.ServiceStatus;
-import cbit.vcell.messaging.admin.SimpleJobStatus;
+import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,6 +29,7 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;

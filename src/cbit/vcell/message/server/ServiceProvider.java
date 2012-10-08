@@ -9,14 +9,14 @@
  */
 
 package cbit.vcell.message.server;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_ID_PROPERTY;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.SERVICE_ID_PROPERTY;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +35,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 
 /**
  * Insert the type's description here.
