@@ -24,7 +24,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.modeldb.UserTable;
 
 /**

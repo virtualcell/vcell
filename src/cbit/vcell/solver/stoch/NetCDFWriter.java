@@ -16,7 +16,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.commons.math.random.RandomDataImpl;
 import org.vcell.util.Compare;
+import org.vcell.util.PropertyLoader;
 
 import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
@@ -35,18 +37,16 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.Variable;
-import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-
-import org.apache.commons.math.random.RandomDataImpl;
 
 /**
  * This class is used to write input file for stochastic hybrid solvers.
@@ -254,15 +254,15 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					jmsString.setString(JmsUtils.getJmsUrl());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
 					ncfile.write("JMS_BROKER", jmsString);
-					jmsString.setString(JmsUtils.getJmsUserID());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
 					ncfile.write("JMS_USER", jmsString);
-					jmsString.setString(JmsUtils.getJmsPassword());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
 					ncfile.write("JMS_PASSWORD", jmsString);
-					jmsString.setString(JmsUtils.getQueueWorkerEvent());
+					jmsString.setString(VCellQueue.WorkerEventQueue.getName());
 					ncfile.write("JMS_QUEUE", jmsString);
-					jmsString.setString(JmsUtils.getTopicServiceControl());
+					jmsString.setString(VCellTopic.ServiceControlTopic.getName());
 					ncfile.write("JMS_TOPIC", jmsString);
 					jmsString.setString(simulation.getVersion().getOwner().getName());
 					ncfile.write("VCELL_USER", jmsString);

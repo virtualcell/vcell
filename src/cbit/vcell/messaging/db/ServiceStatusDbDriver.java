@@ -17,7 +17,7 @@ import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.admin.ServiceStatus;
+import cbit.vcell.message.server.ServiceStatus;
 
 /**
  * Insert the type's description here.

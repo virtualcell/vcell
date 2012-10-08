@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Enumeration;
 
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.VCellServerID;
@@ -18,24 +17,21 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.StatusMessage;
+import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.pbs.PbsProxy;
 import cbit.vcell.message.server.pbs.PbsProxy.CommandOutput;
-import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
-import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationMessage.DetailedState;
 import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.AbstractSolver;
 
 import com.mongodb.BasicDBObject;
@@ -481,23 +477,6 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
 
-			addObject(dbObject,workerEventMessage);
-				
-			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
-		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
-		}
-	}
-
-	public static void sendWorkerEvent(cbit.vcell.message.messages.WorkerEventMessage workerEventMessage) {
-		if (!enabled){
-			return;
-		}
-		try {
-			BasicDBObject dbObject = new BasicDBObject();
-
-			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
-
 			addObject(dbObject,workerEventMessage.getWorkerEvent());
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
@@ -583,23 +562,6 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendRpcRequestReceived(RpcRequest rpcRequest) {
-		if (!enabled){
-			return;
-		}
-		try {
-			BasicDBObject dbObject = new BasicDBObject();
-
-			addHeader(dbObject,MongoMessage_msgtype_rpcRequestReceived);
-
-			addObject(dbObject,rpcRequest);
-			
-			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
-		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
-		}
-	}
-
 	public static void sendRpcRequestReceived(VCRpcRequest rpcRequest) {
 		if (!enabled){
 			return;
@@ -610,26 +572,6 @@ public final class VCMongoMessage {
 			addHeader(dbObject,MongoMessage_msgtype_rpcRequestReceived);
 
 			addObject(dbObject,rpcRequest);
-			
-			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
-		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
-		}
-	}
-
-	public static void sendRpcRequestSent(RpcRequest rpcRequest, UserLoginInfo userLoginInfo) {
-		if (!enabled){
-			return;
-		}
-		try {
-			
-			BasicDBObject dbObject = new BasicDBObject();
-
-			addHeader(dbObject,MongoMessage_msgtype_rpcRequestSent);
-
-			addObject(dbObject,rpcRequest);
-			
-			addObject(dbObject,userLoginInfo);
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
@@ -766,25 +708,6 @@ public final class VCMongoMessage {
 		if (simJobStatusEvent.getTimepoint()!=null){
 			dbObject.put(MongoMessage_simTime, simJobStatusEvent.getTimepoint());
 		}			
-	}
-	
-	private static void addObject(BasicDBObject dbObject, RpcRequest rpcRequest){
-		dbObject.put(MongoMessage_rpcRequestArgs,Arrays.asList(rpcRequest.getArguments()).toString());
-		for (Object arg : rpcRequest.getArguments()){
-			//
-			// look for simulation IDs in rpcRequest arguments ... add to field.
-			//
-			if (arg instanceof VCSimulationIdentifier){
-				dbObject.put(MongoMessage_simId, ((VCSimulationIdentifier)arg).getSimulationKey().toString());
-			}else if (arg instanceof VCSimulationDataIdentifier){
-				dbObject.put(MongoMessage_simId, ((VCSimulationDataIdentifier)arg).getSimulationKey().toString());
-			}else if (arg instanceof VCSimulationDataIdentifierOldStyle){
-				dbObject.put(MongoMessage_simId, ((VCSimulationDataIdentifierOldStyle)arg).getSimulationKey().toString());
-			}
-		}
-		dbObject.put(MongoMessage_rpcRequestMethod,rpcRequest.getMethodName());
-		dbObject.put(MongoMessage_rpcRequestService,rpcRequest.getRequestedServiceType().getName());
-		dbObject.put(MongoMessage_userName,rpcRequest.getUserName());
 	}
 	
 	private static void addObject(BasicDBObject dbObject, VCRpcRequest rpcRequest){

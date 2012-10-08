@@ -9,9 +9,12 @@
  */
 
 package cbit.vcell.solver;
-import java.io.*;
+import java.io.PrintWriter;
 
-import cbit.vcell.messaging.JmsUtils;
+import org.vcell.util.PropertyLoader;
+
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 /**
  * Insert the type's description here.
@@ -66,10 +69,10 @@ protected void writeJMSParamters() {
 	if (bUseMessaging) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_BEGIN);
-		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + JmsUtils.getJmsUrl());
-	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword());
-	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + JmsUtils.getQueueWorkerEvent());  
-		printWriter.println(SolverInputFileKeyword.JMS_TOPIC + " " + JmsUtils.getTopicServiceControl());
+		printWriter.println(SolverInputFileKeyword.JMS_BROKER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
+	    printWriter.println(SolverInputFileKeyword.JMS_USER + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+	    printWriter.println(SolverInputFileKeyword.JMS_QUEUE + " " + VCellQueue.WorkerEventQueue.getName());  
+		printWriter.println(SolverInputFileKeyword.JMS_TOPIC + " " + VCellTopic.ServiceControlTopic.getName());
 		printWriter.println(SolverInputFileKeyword.VCELL_USER + " " + simTask.getSimulation().getVersion().getOwner().getName());
 		printWriter.println(SolverInputFileKeyword.SIMULATION_KEY + " " + simTask.getSimulation().getVersion().getVersionKey());
 		printWriter.println(SolverInputFileKeyword.JOB_INDEX + " " + simTask.getSimulationJob().getJobIndex());

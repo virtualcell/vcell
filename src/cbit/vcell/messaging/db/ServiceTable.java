@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.messaging.db;
-import cbit.vcell.messaging.admin.ServiceSpec;
-import cbit.vcell.messaging.admin.ServiceStatus;
+import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceStatus;
 import cbit.htc.PbsJobID;
 import cbit.sql.*;
 import java.sql.*;

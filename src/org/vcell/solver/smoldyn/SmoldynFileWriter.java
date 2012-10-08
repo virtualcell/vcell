@@ -82,7 +82,8 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -1973,10 +1974,10 @@ private void writeJms(Simulation simulation) {
 	if (simTask != null) {
 		printWriter.println("# JMS_Paramters");
 		printWriter.println("start_jms"); 
-		printWriter.println(JmsUtils.getJmsProvider() + " " + JmsUtils.getJmsUrl()
-			+ " " + JmsUtils.getJmsUserID() + " " + JmsUtils.getJmsPassword()
-			+ " " + JmsUtils.getQueueWorkerEvent()  
-			+ " " + JmsUtils.getTopicServiceControl()
+		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)
+			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword)
+			+ " " + VCellQueue.WorkerEventQueue.getName()  
+			+ " " + VCellTopic.ServiceControlTopic.getName()
 			+ " " + simulation.getVersion().getOwner().getName()
 			+ " " + simulation.getVersion().getVersionKey()
 			+ " " + simTask.getSimulationJob().getJobIndex());

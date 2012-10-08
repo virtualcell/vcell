@@ -11,7 +11,7 @@
 package cbit.vcell.message.server.console;
 import javax.swing.BorderFactory;
 
-import cbit.vcell.messaging.admin.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 
 /**
  * Insert the type's description here.

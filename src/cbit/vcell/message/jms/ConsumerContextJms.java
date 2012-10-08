@@ -27,7 +27,6 @@ import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.mongodb.VCMongoMessage;
 
 public class ConsumerContextJms implements Runnable {
@@ -77,14 +76,12 @@ public class ConsumerContextJms implements Runnable {
 						}
 						ObjectMessage objectMessage = (ObjectMessage)jmsMessage;
 						Serializable object = objectMessage.getObject();
-						if (!(object instanceof VCRpcRequest) && !(object instanceof RpcRequest)){
+						if (!(object instanceof VCRpcRequest)){
 							jmsSession.commit();
 							throw new VCMessagingException("expecting RpcRequest in message");
 						}
 						VCRpcRequest vcRpcRequest = null;
-						if (object instanceof RpcRequest){
-							vcRpcRequest = VCRpcRequest.fromRpcRequest(((RpcRequest)object));
-						} else if (object instanceof VCRpcRequest){
+						if (object instanceof VCRpcRequest){
 							vcRpcRequest = (VCRpcRequest)object;
 						}
 						
