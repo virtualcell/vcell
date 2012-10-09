@@ -1341,7 +1341,9 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					//Create default name for image
-					geomHolder[0].getGeometrySpec().getImage().setName("img_"+ClientRequestManager.generateDateTimeString());
+					String dateTimeString = ClientRequestManager.generateDateTimeString();
+					geomHolder[0].getGeometrySpec().getImage().setName("img_"+dateTimeString);
+					geomHolder[0].setName("geom_"+dateTimeString);
 					//cause update in this thread so later swing threads won't be delayed
 					geomHolder[0].precomputeAll();
 					hashTable.put("doc", geomHolder[0]);
