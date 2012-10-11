@@ -11,8 +11,7 @@
 package cbit.vcell.server;
 import java.io.FileNotFoundException;
 import java.net.URL;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -44,7 +43,7 @@ import cbit.vcell.visit.VisitConnectionInfo;
  * @author: Jim Schaff.
  */
 @SuppressWarnings("serial")
-public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener, DataJobListener {
+public class LocalVCellConnection implements VCellConnection, ExportListener, DataJobListener {
 	private SimulationController simulationController = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
@@ -71,8 +70,7 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws RemoteException, java.sql.SQLException, FileNotFoundException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
+public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog sessionLog, SimulationDatabase simulationDatabase, DataSetControllerImpl dataSetControllerImpl, ExportServiceImpl exportServiceImpl) throws SQLException, FileNotFoundException {
 	this.userLoginInfo = userLoginInfo;
 	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
@@ -113,7 +111,7 @@ public VisitConnectionInfo createNewVisitConnection() {
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
  */
-public DataSetController getDataSetController() throws RemoteException, DataAccessException {
+public DataSetController getDataSetController() throws DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getDataSetController()");
 	if (localDataSetController == null) {
 		localDataSetController = new LocalDataSetController(this, getSessionLog(), dataSetControllerImpl, exportServiceImpl, getUserLoginInfo().getUser());
@@ -161,7 +159,7 @@ private SessionLog getSessionLog() {
  * @param mathDesc cbit.vcell.math.MathDescription
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationController getSimulationController() throws RemoteException {
+public SimulationController getSimulationController() {
 	if (simulationController == null){
 		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl,getSessionLog());
 	}
@@ -201,7 +199,7 @@ public UserLoginInfo getUserLoginInfo() {
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
+public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServer == null) {
 		userMetaDbServer = new LocalUserMetaDbServer(conFactory, keyFactory, getUserLoginInfo().getUser(), getSessionLog());
@@ -214,7 +212,7 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
  * This method was created in VisualAge.
  * @param conFactory cbit.sql.ConnectionFactory
  */
-static void setDatabaseResources(ConnectionFactory argConFactory, KeyFactory argKeyFactory) {
+public static void setDatabaseResources(ConnectionFactory argConFactory, KeyFactory argKeyFactory) {
 	conFactory = argConFactory;
 	keyFactory = argKeyFactory;
 }
@@ -227,16 +225,16 @@ public void dataJobMessage(DataJobEvent event) {
 }
 
 
-public void sendErrorReport(Throwable exception) throws RemoteException {
+public void sendErrorReport(Throwable exception) {
 	BeanUtils.sendErrorReport(exception);
 }
 
-public MessageEvent[] getMessageEvents() throws RemoteException {
+public MessageEvent[] getMessageEvents() {
 	return messageService.getMessageEvents();
 }
 
 
-public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteException {
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) {
 	performanceMonitoringFacility.performanceMonitorEvent(performanceMonitorEvent);
 	
 }

@@ -819,9 +819,9 @@ public final class BeanUtils {
 		Transport.send(msg);
 	}
 
-	public static void sendErrorReport(Throwable exception) throws RemoteException {
+	public static void sendErrorReport(Throwable exception) throws RuntimeException {
 		if (exception == null) {
-			throw new RemoteException("Send Error Report, exception is null");
+			throw new RuntimeException("Send Error Report, exception is null");
 		}
 		String smtpHost = PropertyLoader.getProperty(PropertyLoader.vcellSMTPHostName, null);
 		if (smtpHost == null) {
@@ -843,10 +843,10 @@ public final class BeanUtils {
 			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);
 		} catch (AddressException e) {
 			e.printStackTrace();
-			throw new RemoteException(e.getMessage());
+			throw new RuntimeException(e.getMessage());
 		} catch (MessagingException e) {
 			e.printStackTrace();
-			throw new RemoteException(e.getMessage());
+			throw new RuntimeException(e.getMessage());
 		}
 	}
 

@@ -21,14 +21,6 @@ public interface VCellServer extends java.rmi.Remote {
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.server.AdminDatabaseServer
- * @exception java.rmi.RemoteException The exception description.
- */
-AdminDatabaseServer getAdminDatabaseServer() throws RemoteException;
-
-
-/**
- * This method was created in VisualAge.
  * @return CacheStatus
  */
 CacheStatus getCacheStatus() throws RemoteException;

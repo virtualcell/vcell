@@ -9,22 +9,18 @@
  */
 
 package cbit.vcell.server;
-import java.rmi.*;
-
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.solver.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/01 12:55:29 PM)
  * @author: Jim Schaff
  */
-public class LocalSimulationController extends java.rmi.server.UnicastRemoteObject implements SimulationController {
+public class LocalSimulationController implements SimulationController {
 	private SessionLog sessionLog = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private User user = null;
@@ -33,8 +29,7 @@ public class LocalSimulationController extends java.rmi.server.UnicastRemoteObje
  * LocalSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl, SessionLog argSessionLog) throws java.rmi.RemoteException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSimulationController,0));
+protected LocalSimulationController(User user, SimulationControllerImpl simulationControllerImpl, SessionLog argSessionLog) {
 	this.sessionLog = argSessionLog;
 	this.simulationControllerImpl = simulationControllerImpl;
 	this.user = user;
@@ -45,14 +40,11 @@ protected LocalSimulationController(User user, SimulationControllerImpl simulati
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
+public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
 	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.startSimulation(simulation,sessionLog);
-	}catch (RemoteException e){
-		sessionLog.exception(e);
-		throw e;
 	}catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -67,14 +59,11 @@ public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throw
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
+public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
 	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.stopSimulation(simulation);
-	}catch (RemoteException e){
-		sessionLog.exception(e);
-		throw e;
 	}catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());

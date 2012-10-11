@@ -52,7 +52,6 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.LocalSolverController;
-import cbit.vcell.solvers.SolverController;
 
 /**
  * Insert the type's description here.
@@ -100,7 +99,7 @@ public class SimulationControllerImpl implements WorkerEventListener {
 			return "SimTaskInfo("+simKey.toString()+","+jobIndex+","+taskID+")";
 		}
 	}
-	private java.util.Hashtable<SimulationTaskInfo, SolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskInfo, SolverController>();
+	private java.util.Hashtable<SimulationTaskInfo, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskInfo, LocalSolverController>();
 	private SessionLog adminSessionLog = null;
 	private LocalVCellConnection localVCellConnection = null;
 	private SimulationDatabase simulationDatabase = null;
@@ -161,7 +160,7 @@ public SimulationDatabase getSimulationDatabase(){
  * @throws SolverException 
  * @throws ConfigurationException 
  */
-private SolverController createNewSolverController(SimulationTask simTask, SessionLog userSessionLog) throws RemoteException, FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
+private LocalSolverController createNewSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
 	//
 	// either no appropriate slave server or THIS IS A SLAVE SERVER (can't pass the buck).
 	//
@@ -209,7 +208,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * @throws SQLException 
  * @throws FileNotFoundException 
  */
-SolverController getSolverController(SimulationTask simTask, SessionLog userSessionLog) throws RemoteException, FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
+LocalSolverController getSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
 	Simulation simulation = simTask.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
@@ -219,7 +218,7 @@ SolverController getSolverController(SimulationTask simTask, SessionLog userSess
 		throw new PermissionException("insufficient privilege: startSimulation()");
 	}
 	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simTask);
-	SolverController solverController = solverControllerHash.get(simTaskInfo);
+	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
 		solverController = createNewSolverController(simTask,userSessionLog);
 		solverControllerHash.put(simTaskInfo,solverController);
@@ -232,9 +231,9 @@ SolverController getSolverController(SimulationTask simTask, SessionLog userSess
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public SolverStatus getSolverStatus(SimulationInfo simulationInfo, int jobIndex, int taskID) throws RemoteException, PermissionException, DataAccessException {
+public SolverStatus getSolverStatus(SimulationInfo simulationInfo, int jobIndex, int taskID) throws PermissionException, DataAccessException {
 	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simulationInfo, jobIndex, taskID);
-	SolverController solverController = solverControllerHash.get(simTaskInfo);
+	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
 		return new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	}
@@ -299,7 +298,7 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
 		SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 		simTask = simTaskMessage.getSimulationTask();
 		
-		SolverController solverController = getSolverController(simTask,adminSessionLog);
+		LocalSolverController solverController = getSolverController(simTask,adminSessionLog);
 		
 		solverController.startSimulationJob(); // can only start after updating the database is done
 		
@@ -319,7 +318,7 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(Simulation simulation, SessionLog userSessionLog) throws RemoteException, Exception {
+public void startSimulation(Simulation simulation, SessionLog userSessionLog) throws Exception {
 
 	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 		
@@ -354,7 +353,7 @@ private void onServiceControlTopic_StopSimulation(VCMessage message){
 	try {
 		simTask = new SimulationTask(simulationDatabase.getSimulationJob(simKey,jobIndex),taskID);
 		
-		SolverController solverController = getSolverController(simTask,adminSessionLog);
+		LocalSolverController solverController = getSolverController(simTask,adminSessionLog);
 		
 		solverController.stopSimulationJob(); // can only start after updating the database is done
 		
@@ -377,7 +376,7 @@ private void onServiceControlTopic_StopSimulation(VCMessage message){
  * @exception java.rmi.RemoteException The exception description.
  * @throws VCMessagingException 
  */
-public void stopSimulation(Simulation simulation) throws RemoteException, FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException, VCMessagingException {	
+public void stopSimulation(Simulation simulation) throws FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException, VCMessagingException {	
 	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 		
 		public void onLocalVCMessage(VCDestination destination, VCMessage objectMessage) {
