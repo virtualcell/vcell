@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -245,11 +246,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 }	
 
 private HtcJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException, HtcException {
-	try {
-		killService(service);
-	}catch (HtcJobNotFoundException e){
-		log.alert(service.toString()+" not found, unable to kill");
-	}
+	killService(service);
 	
 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
 	
@@ -443,9 +440,33 @@ private void pingAll() throws VCMessagingException {
 }
 
 private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
-	if (service.getHtcJobId() != null) {
-		htcProxy.killJob(service.getHtcJobId());
-	}
+	 TreeMap<HtcJobID, String>  jobIdMapJobName = htcProxy.getServiceJobIDs(VCellServerID.getSystemServerID());
+	 HtcJobID foundJobID = null;
+	 for(HtcJobID jobID : jobIdMapJobName.keySet()){
+		 if(jobIdMapJobName.get(jobID).equals(service.getServiceSpec().getID())){
+			 foundJobID = jobID;
+			 break;
+		 }
+	 }
+	 if(foundJobID == null){
+		 return;
+	 }
+	 htcProxy.killJob(foundJobID);
+	 long TIMEOUT = 60000;
+	 long startTime = System.currentTimeMillis();
+	 while((System.currentTimeMillis()-startTime) < TIMEOUT){
+		 HtcJobStatus htcJobStatus = htcProxy.getJobStatus(foundJobID);
+		 if(htcJobStatus == null || !htcJobStatus.isRunning()){
+			 return;
+		 }
+		 try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	 }
+	 throw new HtcException("Timeout Error: failed to kill service "+service.getServiceSpec().getID()+" jobid="+foundJobID);
 }
 /**
 * Insert the method's description here.
