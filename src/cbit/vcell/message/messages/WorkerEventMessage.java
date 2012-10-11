@@ -16,13 +16,13 @@ import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.htc.PbsJobID;
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -107,7 +107,7 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 			
 	Object obj = message.getObjectContent();
 	if (obj!=null){
-		// from Java executable or pbsWorker
+		// from Java executable or htcWorker
 		if (!(obj instanceof WorkerEvent)) {
 			throw new IllegalArgumentException("Expecting object message with object " + WorkerEvent.class.getName() + ", found object :"+obj.getClass().getName());
 		}
@@ -198,9 +198,9 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
  * @param param javax.jms.Message
  * @throws VCMessagingException 
  */
-public static WorkerEventMessage sendAccepted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, PbsJobID pbsJobID) throws VCMessagingException {
+public static WorkerEventMessage sendAccepted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, HtcJobID htcJobID) throws VCMessagingException {
 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, source, simTask, hostName, SimulationMessage.MESSAGE_JOB_ACCEPTED);
-	workerEvent.setPbsJobID(pbsJobID);
+	workerEvent.setHtcJobID(htcJobID);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 

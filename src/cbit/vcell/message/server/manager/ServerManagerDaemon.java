@@ -43,8 +43,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PBSConstants.PBSJobStatus;
-import cbit.htc.PbsJobID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessage;
@@ -58,10 +56,17 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceStatus;
-import cbit.vcell.message.server.pbs.PbsProxy;
-import cbit.vcell.message.server.pbs.PbsProxy.PbsJobNotFoundException;
-import cbit.vcell.message.server.pbs.PbsProxyLocal;
-import cbit.vcell.message.server.pbs.PbsProxySsh;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.htc.HtcException;
+import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+import cbit.vcell.message.server.htc.HtcJobStatus;
+import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.pbs.PbsProxy;
+import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
@@ -75,7 +80,7 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
  */
 public class ServerManagerDaemon {
 	private org.vcell.util.SessionLog log = null;
-	private PbsProxy pbsProxy = null;
+	private HtcProxy htcProxy = null;
 	private VCMessagingService vcMessagingService = null;
 	private VCMessageSession topicProducerSession = null;
 	private VCTopicConsumer daemonControlTopicConsumer = null;
@@ -95,12 +100,12 @@ public class ServerManagerDaemon {
  * @param vcMessagingService
  * @param serviceInstanceStatus
  */
-public ServerManagerDaemon(PbsProxy pbsProxy, ServiceInstanceStatus serviceInstanceStatus, VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTop, SessionLog log) {
+public ServerManagerDaemon(HtcProxy htcProxy, ServiceInstanceStatus serviceInstanceStatus, VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTop, SessionLog log) {
 	this.serviceInstanceStatus = serviceInstanceStatus;
 	this.vcMessagingService = vcMessagingService;
 	this.adminDbTop = adminDbTop;
 	this.log = log;
-	this.pbsProxy = pbsProxy;
+	this.htcProxy = htcProxy;
 }
 
 private void init() {
@@ -201,20 +206,20 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	log.print("starting service " + service);
 	AdminDBTopLevel.TransactionalServiceOperation tso = new AdminDBTopLevel.TransactionalServiceOperation() {
 		public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception {
-			PbsJobID jobid = submit2PBS(oldStatus);
+			HtcJobID jobid = submit2PBS(oldStatus);
 			ServiceStatus newServiceStatus = null;
 			if (jobid == null) {
 				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
 			} else {
 				long t = System.currentTimeMillis();
-				PBSJobStatus status;
+				HtcJobStatus status;
 				while (true) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException ex) {
 					}
 					
-					status = pbsProxy.getJobStatus(jobid);
+					status = htcProxy.getJobStatus(jobid);
 					if (status!=null && status.isExiting()){
 						// should never happen
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
@@ -223,8 +228,8 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
 						break;
 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
-						String pendingReason = pbsProxy.getPendingReason(jobid);
-						pbsProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+						String pendingReason = htcProxy.getPendingReason(jobid);
+						htcProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
 								"PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")",
 								jobid);						
@@ -239,10 +244,10 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 	adminDbTop.updateServiceStatus(service, tso, true);
 }	
 
-private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+private HtcJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException, HtcException {
 	try {
 		killService(service);
-	}catch (PbsJobNotFoundException e){
+	}catch (HtcJobNotFoundException e){
 		log.alert(service.toString()+" not found, unable to kill");
 	}
 	
@@ -260,7 +265,7 @@ private PbsJobID submit2PBS(ServiceStatus service) throws IOException, Executabl
 	
 	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getName());
-	return pbsProxy.submitServiceJob((String)null, service.getServiceSpec().getID(), sub_file.getName(), command, 1, service.getServiceSpec().getMemoryMB());
+	return htcProxy.submitServiceJob(service.getServiceSpec().getID(), sub_file.getName(), command, 1, service.getServiceSpec().getMemoryMB());
 }
 /**
  * This method was created in VisualAge.
@@ -303,16 +308,24 @@ public static void main(String[] args) {
 			System.setErr(ps);			
 		}
 
-		PbsProxy pbsProxy = null;
+		CommandService commandService = null;
 		if (args.length==4){
-			String pbsHost = args[1];
-			String pbsUser = args[2];
-			String pbsPswd = args[3];
-			pbsProxy = new PbsProxySsh(pbsHost,pbsUser,pbsPswd);
+			String htcHost = args[1];
+			String htcUser = args[2];
+			String htcPswd = args[3];
+			commandService = new CommandServiceSsh(htcHost,htcUser,htcPswd);
 		}else{
-			pbsProxy = new PbsProxyLocal();
+			commandService = new CommandServiceLocal();
 		}
-
+		BatchSystemType batchSystemType = BatchSystemType.valueOf(PropertyLoader.getRequiredProperty(PropertyLoader.htcBatchSystemType));
+		HtcProxy htcProxy = null;
+		if (batchSystemType == BatchSystemType.PBS){
+			htcProxy = new PbsProxy(commandService);
+		}else if (batchSystemType == BatchSystemType.SGE){
+			htcProxy = new SgeProxy(commandService);
+		}else{
+			throw new RuntimeException("unsupported batch system "+batchSystemType);
+		}
 		org.vcell.util.PropertyLoader.loadProperties();
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
@@ -334,7 +347,7 @@ public static void main(String[] args) {
 		AdminDBTopLevel adminDbTop = new AdminDBTopLevel(conFactory,log);
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
-		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(pbsProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
+		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(htcProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
 		serverManagerDaemon.init();
 		serverManagerDaemon.serviceMonitorLoop();
 	} catch (Throwable exc) {
@@ -370,25 +383,25 @@ private void on_stopservice(VCMessage message) throws Exception {
 		while (iter.hasNext()) {
 			ServiceStatus service = iter.next();		
 			if (service.getServiceSpec().getID().equals(serviceID)) {
-				final PbsJobID pbsJobId = service.getPbsJobId();
-				if (pbsJobId != null){
+				final HtcJobID htcJobId = service.getHtcJobId();
+				if (htcJobId != null){
 					
-					String threadName = "Kill Thread for ServiceID "+serviceID+", pbsID: "+pbsJobId;
+					String threadName = "Kill Thread for ServiceID "+serviceID+", htcID: "+htcJobId.toDatabase();
 					Runnable serviceKillTask = new Runnable() {
 						@Override
 						public void run() {
 							try {
-								PbsProxy threadLocalPbsProxy = pbsProxy.clone();
-								PBSJobStatus jobStatus = threadLocalPbsProxy.getJobStatus(pbsJobId);
+								HtcProxy threadsafeHtcProxy = htcProxy.cloneThreadsafe();
+								HtcJobStatus jobStatus = threadsafeHtcProxy.getJobStatus(htcJobId);
 								if (jobStatus!=null && jobStatus.isRunning()){
 									try {
 										Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
 									} catch (InterruptedException ex) {							
 									}					
 									// if the service is not stopped, kill it from PBS
-									jobStatus = threadLocalPbsProxy.getJobStatus(pbsJobId);
+									jobStatus = threadsafeHtcProxy.getJobStatus(htcJobId);
 									if (jobStatus!=null && jobStatus.isRunning()) {
-										threadLocalPbsProxy.killJob(pbsJobId);
+										threadsafeHtcProxy.killJob(htcJobId);
 									}
 								}
 							} catch (Exception e) {
@@ -429,9 +442,9 @@ private void pingAll() throws VCMessagingException {
 	}
 }
 
-private void killService(ServiceStatus service) throws ExecutableException, PbsJobNotFoundException {
-	if (service.getPbsJobId() != null) {
-		pbsProxy.killJob(service.getPbsJobId());
+private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
+	if (service.getHtcJobId() != null) {
+		htcProxy.killJob(service.getHtcJobId());
 	}
 }
 /**

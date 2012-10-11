@@ -149,9 +149,9 @@ public class SimulationDispatcher extends ServiceProvider {
 //				}
 //				
 //				SimulationJobStatus jobStatus = simulationDatabase.getNextObsoleteSimulation(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
-//				PbsJobID pbsJobID = jobStatus.getSimulationExecutionStatus().getPbsJobID();
+//				HtcJobID htcJobID = jobStatus.getSimulationExecutionStatus().getHtcJobID();
 //				if (pbsJobID!=null){
-//					PBSUtils.killJob(pbsJobID);
+//					PBSUtils.killJob(htcJobID);
 //				}
 //
 //				// too many retries

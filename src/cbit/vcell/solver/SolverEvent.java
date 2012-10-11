@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver;
 
-import cbit.htc.PbsJobID;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.solvers.AbstractSolver;
 
 /**
@@ -36,18 +36,18 @@ public class SolverEvent extends java.util.EventObject implements java.io.Serial
 	private SimulationMessage fieldSimulationMessage = null;
 	private double fieldTimePoint = -1;
 	private double fieldProgress = -1;
-	private PbsJobID fieldPbsJobId = null;
+	private HtcJobID fieldHtcJobId = null;
 /**
  * IntegratorEvent constructor comment.
  * @param source java.lang.Object
  */
-public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint, PbsJobID pbsJobId) {
+public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint, HtcJobID htcJobId) {
 	super(source);
 	this.fieldSimulationMessage = simulationMessage;
 	this.fieldType = type;
 	this.fieldProgress = progress;
 	this.fieldTimePoint = timePoint;
-	this.fieldPbsJobId = pbsJobId;
+	this.fieldHtcJobId = htcJobId;
 }
 /**
  * Insert the method's description here.
@@ -81,8 +81,8 @@ public int getType() {
 	return fieldType;
 }
 
-public PbsJobID getPbsJobId(){
-	return fieldPbsJobId;
+public HtcJobID getPbsJobId(){
+	return fieldHtcJobId;
 }
 /**
  * Insert the method's description here.

@@ -1,9 +1,7 @@
-package cbit.vcell.message.server.pbs;
+package cbit.vcell.message.server.cmd;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
@@ -17,13 +15,13 @@ import org.vcell.util.ExecutableException;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 
-public class PbsProxySsh extends PbsProxy {
+public class CommandServiceSsh extends CommandService {
 	private SSHClient ssh = null;
 	private String remoteHostName = null;
 	private String username = null;
 	private String password = null;
 	
-	public PbsProxySsh(String remoteHostName, String username, String password) throws IOException{
+	public CommandServiceSsh(String remoteHostName, String username, String password) throws IOException{
 		super();
 		this.remoteHostName = remoteHostName;
 		this.username = username;
@@ -52,7 +50,7 @@ public class PbsProxySsh extends PbsProxy {
 			long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 			CommandOutput commandOutput = new CommandOutput(commandStrings, standardOutput, standardError, exitStatus, elapsedTimeMS);
 			
-			VCMongoMessage.sendPbsCall(this,commandOutput);
+			VCMongoMessage.sendCommandServiceCall(commandOutput);
 
 			System.out.println("Command: " + commandOutput.getCommand());
 			System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
@@ -78,9 +76,9 @@ public class PbsProxySsh extends PbsProxy {
 	}
 
 	@Override
-	public PbsProxy clone() {
+	public CommandService clone() {
 		try {
-			return new PbsProxySsh(remoteHostName, username, password);
+			return new CommandServiceSsh(remoteHostName, username, password);
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
@@ -122,30 +120,16 @@ public class PbsProxySsh extends PbsProxy {
 			}
 		}
 	}
-	
-	public static void main(String[] args){
-		PbsProxySsh thisProxy = null;
-		ArrayList<RunningPbsJobRecord> records = null;
-		try {
-			thisProxy = new PbsProxySsh(args[0], args[1], args[2]);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+	@Override
+	public void close() {
+		if (ssh!=null){
+			try {
+				ssh.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		try {
-			 records = thisProxy.getRunningPBSJobs();
-		} catch (ExecutableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		System.out.println("PBS JobID , JobName,  SimID  , JobIndex");
-		Iterator<RunningPbsJobRecord> iter = records.iterator();
-		while (iter.hasNext()){
-			RunningPbsJobRecord record = iter.next();
-			System.out.println(record.getPbsJobId()+"   ,    "+record.getPbsJobName()+" ,  "+ record.getSimID().toString()+"  ,  "+record.getSimJobIndex());
-		}
-		System.out.println("done");
 	}
 	
 }

@@ -13,7 +13,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PbsJobID;
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.message.VCMessage;
@@ -23,6 +22,7 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
@@ -94,7 +94,7 @@ public class SimulationStateMachine {
 				simTaskProcessState.computeHost = simulationExecutionStatus.getComputeHost();
 				simTaskProcessState.endDate = simulationExecutionStatus.getEndDate();
 				simTaskProcessState.latestUpdateDate = simulationExecutionStatus.getLatestUpdateDate();
-				simTaskProcessState.pbsJobID = simulationExecutionStatus.getPbsJobID();
+				simTaskProcessState.htcJobID = simulationExecutionStatus.getHtcJobID();
 				simTaskProcessState.startDate = simulationExecutionStatus.getStartDate();
 				simTaskProcessStates.add(simTaskProcessState);
 			}
@@ -234,7 +234,7 @@ public class SimulationStateMachine {
 		Date lastUpdateDate = null;
 		Date endDate = null;
 		boolean hasData = false;
-		PbsJobID pbsJobID = null;
+		HtcJobID htcJobID = null;
 		String computeHost = null;
 		VCellServerID vcServerID = VCellServerID.getSystemServerID();
 		Date submitDate = null;
@@ -262,8 +262,8 @@ public class SimulationStateMachine {
 		if (oldSimExeStatus!=null && oldSimExeStatus.getComputeHost()!=null){
 			computeHost = oldSimExeStatus.getComputeHost();
 		}
-		if (oldSimExeStatus!=null && oldSimExeStatus.getPbsJobID()!=null){
-			pbsJobID = oldSimExeStatus.getPbsJobID();
+		if (oldSimExeStatus!=null && oldSimExeStatus.getHtcJobID()!=null){
+			htcJobID = oldSimExeStatus.getHtcJobID();
 		}
 		vcServerID = oldSimulationJobStatus.getServerID();
 		submitDate = oldSimulationJobStatus.getSubmitDate();
@@ -281,15 +281,15 @@ public class SimulationStateMachine {
 		//
 		// update using new information from event
 		//
-		if (workerEvent.getPbsJobID()!=null){
-			pbsJobID = workerEvent.getPbsJobID();
+		if (workerEvent.getHtcJobID()!=null){
+			htcJobID = workerEvent.getHtcJobID();
 		}
 		if (workerEvent.getHostName()!=null){
 			computeHost = workerEvent.getHostName();
 		}
 		SimulationMessage workerEventSimulationMessage = workerEvent.getSimulationMessage();
-		if (workerEventSimulationMessage.getPbsJobId()!=null){
-			pbsJobID = workerEventSimulationMessage.getPbsJobId();
+		if (workerEventSimulationMessage.getHtcJobId()!=null){
+			htcJobID = workerEventSimulationMessage.getHtcJobId();
 		}
 		
 		
@@ -298,7 +298,7 @@ public class SimulationStateMachine {
 
 		if (workerEvent.isAcceptedEvent()) {
 			//
-			// job message accepted by PbsSimulationWorker and sent to PBS (with a pbsJobID) ... previous state should be "WAITING"
+			// job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE) (with a htcJobID) ... previous state should be "WAITING"
 			//
 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued()) {
 				// new queue status
@@ -308,7 +308,7 @@ public class SimulationStateMachine {
 				lastUpdateDate = new Date();
 				startDate = lastUpdateDate;
 				endDate = null;
-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 				
 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.DISPATCHED,
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -325,7 +325,7 @@ public class SimulationStateMachine {
 				if (startDate == null){
 					startDate = lastUpdateDate;
 				}
-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 				
 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -347,7 +347,7 @@ public class SimulationStateMachine {
 						startDate = lastUpdateDate;
 					}
 					hasData = true;
-					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 					newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 							taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -366,7 +366,7 @@ public class SimulationStateMachine {
 					if (startDate == null){
 						startDate = lastUpdateDate;
 					}
-					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 					newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 							taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -378,7 +378,7 @@ public class SimulationStateMachine {
 						if (sysDate.getTime() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER * 3 / 5) {
 							// new queue status		
 							SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
-							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 							newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 									taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -398,7 +398,7 @@ public class SimulationStateMachine {
 
 				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
 				
-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.COMPLETED,
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -416,7 +416,7 @@ public class SimulationStateMachine {
 
 				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
 				
-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
@@ -505,10 +505,10 @@ public class SimulationStateMachine {
 		String computeHost = null;
 		Date startDate = null;
 		Date endDate = null;
-		PbsJobID pbsJobID = null;
+		HtcJobID htcJobID = null;
 		boolean hasData = false;
 		
-		SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+		SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 		
 		VCellServerID vcServerID = VCellServerID.getSystemServerID();
 		Date submitDate = currentDate;

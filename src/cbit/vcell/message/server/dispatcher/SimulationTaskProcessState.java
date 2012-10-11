@@ -4,9 +4,7 @@ import java.util.Date;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.htc.PBSConstants.PBSJobExitCode;
-import cbit.htc.PBSConstants.PBSJobStatus;
-import cbit.htc.PbsJobID;
+import cbit.vcell.message.server.htc.HtcJobID;
 
 public class SimulationTaskProcessState {
 	final KeyValue simKey;
@@ -21,9 +19,9 @@ public class SimulationTaskProcessState {
 	Double progress = null;
 	Double timePoint = null;
 	
-	PbsJobID pbsJobID;
-	PBSJobStatus pbsJobStatus;
-	PBSJobExitCode pbsJobExitCode;
+	HtcJobID htcJobID;
+	//PBSJobStatus pbsJobStatus;
+	//PBSJobExitCode pbsJobExitCode;
 	
 	String computeHost;
 	
@@ -43,9 +41,9 @@ public class SimulationTaskProcessState {
 		this.hasData = simTaskProcessState.hasData;
 		this.progress = simTaskProcessState.progress;
 		this.timePoint = simTaskProcessState.timePoint;
-		this.pbsJobID = simTaskProcessState.pbsJobID;
-		this.pbsJobStatus = simTaskProcessState.pbsJobStatus;
-		this.pbsJobExitCode = simTaskProcessState.pbsJobExitCode;
+		this.htcJobID = simTaskProcessState.htcJobID;
+		//this.pbsJobStatus = simTaskProcessState.pbsJobStatus;
+		//this.pbsJobExitCode = simTaskProcessState.pbsJobExitCode;
 		this.computeHost = simTaskProcessState.computeHost;
 	}
 

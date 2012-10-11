@@ -9,7 +9,6 @@ import java.util.Date;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PbsJobID;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.WorkerEvent;
@@ -18,8 +17,8 @@ import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
-import cbit.vcell.message.server.pbs.PbsProxy;
-import cbit.vcell.message.server.pbs.PbsProxy.CommandOutput;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
@@ -77,7 +76,7 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_msgtype_clientTimeout						= "clientTimeout";
 	public final static String MongoMessage_msgtype_jmsMessageReceived					= "jmsMessageReceived";
 	public final static String MongoMessage_msgtype_jmsMessageSent						= "jmsMessageSent";
-	public final static String MongoMessage_msgtype_pbsCall								= "pbsCall";
+	public final static String MongoMessage_msgtype_commandServiceCall					= "pbsCall";
 	public final static String MongoMessage_msgtype_infoMsg								= "infoMsg";
 	public final static String MongoMessage_msgTime				= "msgTime";
 	public final static String MongoMessage_msgTimeNice			= "msgTimeNice";
@@ -117,8 +116,8 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_solverEventType		= "solverEventType";
 	public final static String MongoMessage_simComputeResource	= "simComputeResource";
 	public final static String MongoMessage_simEstMemory		= "simEstMemory";
-	public final static String MongoMessage_pbsJobID			= "pbsJobID";
-	public final static String MongoMessage_pbsWorkerMsg		= "pbsWorkerMsg";
+	public final static String MongoMessage_htcJobID			= "htcJobID";
+	public final static String MongoMessage_htcWorkerMsg		= "htcWorkerMsg";
 	public final static String MongoMessage_rpcRequestMethod	= "rpcMethod";
 	public final static String MongoMessage_rpcRequestArgs		= "rpcArgs";
 	public final static String MongoMessage_rpcRequestService	= "rpcService";
@@ -485,7 +484,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendPBSWorkerMessage(SimulationTask simulationTask, PbsJobID pbsJobID, String pbsWorkerMsg) {
+	public static void sendPBSWorkerMessage(SimulationTask simulationTask, HtcJobID htcJobID, String htcWorkerMsg) {
 		if (!enabled){
 			return;
 		}
@@ -494,9 +493,9 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
 
-			dbObject.put(MongoMessage_pbsWorkerMsg, pbsWorkerMsg);
-			if (pbsJobID!=null){
-				dbObject.put(MongoMessage_pbsJobID, pbsJobID.getID());
+			dbObject.put(MongoMessage_htcWorkerMsg, htcWorkerMsg);
+			if (htcJobID!=null){
+				dbObject.put(MongoMessage_htcJobID, htcJobID.toDatabase());
 			}
 	
 			addObject(dbObject,simulationTask);
@@ -545,14 +544,14 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendPbsCall(PbsProxy pbsProxyLocal, CommandOutput commandOutput) {
+	public static void sendCommandServiceCall(CommandOutput commandOutput) {
 		if (!enabled){
 			return;
 		}
 		try {
 			BasicDBObject dbObject = new BasicDBObject();
 
-			addHeader(dbObject,MongoMessage_msgtype_pbsCall);
+			addHeader(dbObject,MongoMessage_msgtype_commandServiceCall);
 
 			addObject(dbObject, commandOutput);
 			
@@ -782,8 +781,8 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_simId,workerEvent.getVCSimulationDataIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_jobIndex, workerEvent.getJobIndex());
 		dbObject.put(MongoMessage_taskId, workerEvent.getTaskID());
-		if (workerEvent.getPbsJobID()!=null){
-			dbObject.put(MongoMessage_pbsJobID, workerEvent.getPbsJobID().toString());
+		if (workerEvent.getHtcJobID()!=null){
+			dbObject.put(MongoMessage_htcJobID, workerEvent.getHtcJobID().toDatabase());
 		}
 		//workerEvent.getEventTypeID();
 		//workerEvent.getMessageData();
@@ -841,8 +840,8 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_latestUpdateTime, simExeStatus.getLatestUpdateDate().getTime());
 			dbObject.put(MongoMessage_latestUpdateTimeNice, simExeStatus.getLatestUpdateDate().toString());
 		}
-		if (simExeStatus.getPbsJobID()!=null){
-			dbObject.put(MongoMessage_pbsJobID, simExeStatus.getPbsJobID().getID());
+		if (simExeStatus.getHtcJobID()!=null){
+			dbObject.put(MongoMessage_htcJobID, simExeStatus.getHtcJobID().toDatabase());
 		}
 	}
 	
@@ -853,8 +852,8 @@ public final class VCMongoMessage {
 		DetailedState detailedState = simMessage.getDetailedState();
 		dbObject.put(MongoMessage_simMessageState,detailedState.name());
 		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
-		if (simMessage.getPbsJobId()!=null){
-			dbObject.put(MongoMessage_pbsJobID,simMessage.getPbsJobId().getID());
+		if (simMessage.getHtcJobId()!=null){
+			dbObject.put(MongoMessage_htcJobID,simMessage.getHtcJobId().toDatabase());
 		}
 	}
 

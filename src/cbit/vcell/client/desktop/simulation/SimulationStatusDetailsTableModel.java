@@ -25,10 +25,10 @@ public class SimulationStatusDetailsTableModel extends javax.swing.table.Abstrac
 	private final static int COLUMN_SUBMITDATE = 4;
 	private final static int COLUMN_STARTDATE = 5;
 	private final static int COLUMN_ENDDATE = 6;
-	private final static int COLUMN_PBSID = 7;
+	private final static int COLUMN_HTCID = 7;
 	private final static int COLUMN_TASKID = 8;
 	
-	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date", "PBS ID", "Task ID"};
+	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date", "HTC ID", "Task ID"};
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
 
@@ -172,11 +172,11 @@ public Object getValueAt(int row, int col) {
 				}
 				return jobStatus.getEndDate();
 			}
-			case COLUMN_PBSID : {
-				if (jobStatus == null || jobStatus.getSimulationExecutionStatus()==null || jobStatus.getSimulationExecutionStatus().getPbsJobID()==null) {
+			case COLUMN_HTCID : {
+				if (jobStatus == null || jobStatus.getSimulationExecutionStatus()==null || jobStatus.getSimulationExecutionStatus().getHtcJobID()==null) {
 					return null;
 				}
-				return jobStatus.getSimulationExecutionStatus().getPbsJobID().getID();
+				return jobStatus.getSimulationExecutionStatus().getHtcJobID().toDatabase();
 			}
 			case COLUMN_TASKID : {
 				if (jobStatus == null) {

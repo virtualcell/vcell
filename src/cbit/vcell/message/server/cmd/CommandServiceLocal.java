@@ -1,4 +1,4 @@
-package cbit.vcell.message.server.pbs;
+package cbit.vcell.message.server.cmd;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,9 +9,9 @@ import org.vcell.util.FileUtils;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 
-public class PbsProxyLocal extends PbsProxy {
+public class CommandServiceLocal extends CommandService {
 	
-	public PbsProxyLocal(){
+	public CommandServiceLocal(){
 		super();
 	}
 
@@ -22,7 +22,8 @@ public class PbsProxyLocal extends PbsProxy {
 		exe.start();
 		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
-		VCMongoMessage.sendPbsCall(this,commandOutput);
+
+		VCMongoMessage.sendCommandServiceCall(commandOutput);
 
 		System.out.println("Command: " + commandOutput.getCommand());
 		System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
@@ -33,8 +34,8 @@ public class PbsProxyLocal extends PbsProxy {
 	}
 
 	@Override
-	public PbsProxy clone() {
-		return new PbsProxyLocal();
+	public CommandService clone() {
+		return new CommandServiceLocal();
 	}
 
 	@Override
@@ -46,26 +47,8 @@ public class PbsProxyLocal extends PbsProxy {
 		FileUtils.deleteFile(remoteFilePath);
 	}
 
-//	public static void main(String[] args){
-//		PbsProxyLocal thisProxy = null;
-//		ArrayList<RunningPbsJobRecord> records = null;
-//
-//		thisProxy = new PbsProxyLocal();
-//
-//		try {
-//			 records = thisProxy.getRunningPBSJobs();
-//		} catch (ExecutableException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println("PBS JobID , SimID");
-//		Iterator<RunningPbsJobRecord> iter = records.iterator();
-//		while (iter.hasNext()){
-//			RunningPbsJobRecord record = iter.next();
-//			System.out.println(record.getPbsJobId()+"   ,    "+record.getPbsJobName());
-//		}
-//		System.out.println("done");
-//	}
-	
+	@Override
+	public void close() {
+	}
+
 }

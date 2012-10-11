@@ -17,9 +17,9 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PbsJobID;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
@@ -131,13 +131,13 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//hasData
 	String parsedHasData = rset.getString(hasData.toString());
 	
-	PbsJobID parsedPbsJobID = null;
-	String pbsJobIDString = rset.getString(pbsJobID.toString());
-	if (!rset.wasNull() && pbsJobIDString!=null && pbsJobIDString.length()>0){
-		parsedPbsJobID = new PbsJobID(pbsJobIDString);
+	HtcJobID parsedHtcJobID = null;
+	String htcJobIDString = rset.getString(pbsJobID.toString());
+	if (!rset.wasNull() && htcJobIDString!=null && htcJobIDString.length()>0){
+		parsedHtcJobID = HtcJobID.fromDatabase(htcJobIDString);
 	}
 	
-	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedPbsJobID);
+	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);
 
 	VCSimulationIdentifier parsedVCSimID = new VCSimulationIdentifier(parsedSimKey,owner);
 	//jobIndex
@@ -272,8 +272,8 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	
 	//pbsJobID
 	buffer.append(pbsJobID + "=");
-	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID() != null) {
-		buffer.append("'" + simExecutionStatus.getPbsJobID().getID() + "'");
+	if (simExecutionStatus!=null && simExecutionStatus.getHtcJobID() != null) {
+		buffer.append("'" + simExecutionStatus.getHtcJobID().toDatabase() + "'");
 	} else {
 		buffer.append("null");
 	}
@@ -372,8 +372,8 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	buffer.append(simulationJobStatus.getServerID() == null? "null," : "'" + simulationJobStatus.getServerID() + "',");
 	buffer.append(simulationJobStatus.getJobIndex()+",");
 	
-	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID()!=null){
-		buffer.append("'"+simExecutionStatus.getPbsJobID().getID()+"'");
+	if (simExecutionStatus!=null && simExecutionStatus.getHtcJobID()!=null){
+		buffer.append("'"+simExecutionStatus.getHtcJobID().toDatabase()+"'");
 	}else{
 		buffer.append("null");
 	}

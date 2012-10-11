@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 import org.vcell.util.Compare;
 
-import cbit.htc.PbsJobID;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 public class SimulationMessage implements Serializable {
@@ -113,7 +113,7 @@ public class SimulationMessage implements Serializable {
 	
 	private final DetailedState detailedState;
 	private final String message;
-	private PbsJobID pbsJobId;
+	private HtcJobID htcJobId;
 	private SimulationMessage(DetailedState detailedState, String message){
 		this.detailedState = detailedState;
 		this.message = message;
@@ -239,9 +239,9 @@ public class SimulationMessage implements Serializable {
 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
 	}
 
-	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, PbsJobID pbsJobId){
+	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){
 		SimulationMessage simMessage = new SimulationMessage(DetailedState.SOLVEREVENT_STARTING_SUBMITTED,submitMsg);
-		simMessage.pbsJobId = pbsJobId;
+		simMessage.htcJobId = htcJobId;
 		return simMessage;
 	}
 	
@@ -257,8 +257,8 @@ public class SimulationMessage implements Serializable {
 		return detailedState;
 	}
 	
-	public PbsJobID getPbsJobId(){
-		return pbsJobId;
+	public HtcJobID getHtcJobId(){
+		return htcJobId;
 	}
 	
 	@Override

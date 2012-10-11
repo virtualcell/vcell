@@ -86,7 +86,7 @@ public synchronized void addSolverListener(cbit.vcell.solver.SolverListener list
  */
 protected void fireSolverAborted(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getPbsJobId());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getHtcJobId());
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
@@ -162,7 +162,7 @@ protected void fireSolverProgress(double progress) {
  */
 protected void fireSolverStarting(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getPbsJobId());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getHtcJobId());
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
