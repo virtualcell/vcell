@@ -258,7 +258,7 @@ private HtcJobID submit2PBS(ServiceStatus service) throws IOException, Executabl
 	// site, type, ordinal, memory
 	String[] command = new String[] { 
 			executable, 
-			VCellServerID.getSystemServerID().toString().toLowerCase(), 
+//			VCellServerID.getSystemServerID().toString().toLowerCase(), 
 			type.getName(), 
 			String.valueOf(ordinal), 
 			String.valueOf(service.getServiceSpec().getMemoryMB()) };

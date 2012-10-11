@@ -9,6 +9,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
@@ -65,7 +66,7 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 	
-	public abstract List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+	public abstract TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;

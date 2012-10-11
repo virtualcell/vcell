@@ -1,6 +1,7 @@
 package cbit.vcell.message.server.htc.test;
 
 import java.util.List;
+import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.VCellServerID;
@@ -44,8 +45,8 @@ public class HtcTest {
 	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
 		try {
 			System.out.println("getting services");
-			List<HtcJobID> jobIDs = htcProxy.getServiceJobIDs(serverID);
-			for (HtcJobID jobID : jobIDs){
+			TreeMap<HtcJobID, String> jobIDs = htcProxy.getServiceJobIDs(serverID);
+			for (HtcJobID jobID : jobIDs.keySet()){
 				if (jobID instanceof PbsJobID){
 					System.out.println("serviceJobID : "+((PbsJobID)jobID).getPbsJobID());
 					htcProxy.killJob(jobID);

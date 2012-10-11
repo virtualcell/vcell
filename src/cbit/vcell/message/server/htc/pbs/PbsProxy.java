@@ -1,13 +1,16 @@
 package cbit.vcell.message.server.htc.pbs;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
@@ -294,19 +297,29 @@ public final class PbsProxy extends HtcProxy {
 	}
 	
 	@Override
-	public List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
-		String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
-		CommandOutput commandOutput = commandService.command(cmd);
-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
-		
-		String output = commandOutput.getStandardOutput();
-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
-		while (st.hasMoreTokens()) {
-			String line = st.nextToken().trim();
-			int pbsJobID = Integer.parseInt(line.substring(0, line.indexOf('.')));
-			serviceJobIDs.add(new PbsJobID(String.valueOf(pbsJobID)));
+	public TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		try {
+			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
+			CommandOutput commandOutput = commandService.command(cmd);
+			TreeMap<HtcJobID, String> pbsJobIDMapServiceType = new TreeMap<HtcJobID, String>();
+			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+			String line = null;
+			while((line = br.readLine()) != null){
+				StringTokenizer st = new StringTokenizer(line," \t");
+				String pbsJobInfo = st.nextToken();
+				Integer pbsJobID = new Integer(pbsJobInfo.substring(0,pbsJobInfo.indexOf('.')));
+				String serviceJobName = st.nextToken();
+				pbsJobIDMapServiceType.put(new PbsJobID(String.valueOf(pbsJobID)), serviceJobName);
+			}
+			return pbsJobIDMapServiceType;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(e instanceof ExecutableException){
+				throw (ExecutableException)e;
+			}else{
+				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+			}
 		}
-		return serviceJobIDs;
 	}
 
 
