@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -301,7 +302,13 @@ public final class PbsProxy extends HtcProxy {
 		try {
 			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
 			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDMapServiceType = new TreeMap<HtcJobID, String>();
+			TreeMap<HtcJobID, String> pbsJobIDMapServiceType =
+				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
+					@Override
+					public int compare(HtcJobID o1, HtcJobID o2) {
+						return Integer.parseInt(((PbsJobID)o2).getPbsJobID())-Integer.parseInt(((PbsJobID)o1).getPbsJobID());
+					}
+				});
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
 			while((line = br.readLine()) != null){

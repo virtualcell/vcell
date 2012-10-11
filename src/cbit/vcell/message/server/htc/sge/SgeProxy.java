@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -395,7 +396,13 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 		try{
 			String[] cmd = new String[]{JOB_CMD_STATUS, "-xml"};//get running jobs in XML format
 			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDMapServiceType = new TreeMap<HtcJobID, String>();
+			TreeMap<HtcJobID, String> pbsJobIDMapServiceType =
+				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
+					@Override
+					public int compare(HtcJobID o1, HtcJobID o2) {
+						return Integer.parseInt(((SgeJobID)o2).getSgeJobID())-Integer.parseInt(((SgeJobID)o1).getSgeJobID());
+					}
+				});
 			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
 			Element rootElement = qstatDoc.getRootElement();
 			List<Element> qstatInfoChildren = rootElement.getChild("queue_info").getChildren("job_list");
