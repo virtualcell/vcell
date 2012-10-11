@@ -10,13 +10,11 @@
 
 package cbit.vcell.solvers;
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.HashSet;
 
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.WorkerEvent;
@@ -34,7 +32,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, SolverListener {
+public class LocalSolverController implements SolverListener {
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
 	private SessionLog log = null;
@@ -52,8 +50,7 @@ public class LocalSolverController extends java.rmi.server.UnicastRemoteObject i
  * @exception java.rmi.RemoteException The exception description.
  * @throws SolverException 
  */
-public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog sessionLog, SimulationTask simTask, File dataDirectory) throws RemoteException, SolverException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSolverController,0));
+public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog sessionLog, SimulationTask simTask, File dataDirectory) throws SolverException {
 	this.log = sessionLog;
 	this.vcConn = vcellConnection;
 	solverControllerImpl = new SolverControllerImpl(vcellConnection, sessionLog, simTask, dataDirectory);

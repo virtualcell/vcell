@@ -27,12 +27,13 @@ import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.
  */
-public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.AdminDatabaseServer {
+public class LocalAdminDbServer implements AdminDatabaseServer {
 	private SessionLog log = null;
 	private AdminDBTopLevel adminDbTop = null;
 
@@ -43,7 +44,6 @@ public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject impl
 public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) 
 		throws RemoteException, DataAccessException {
 
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortAdminDbServer,0));
 	this.log = sessionLog;
 	DbDriver.setKeyFactory(keyFactory);
 	try {

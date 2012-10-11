@@ -10,8 +10,6 @@
 
 package cbit.vcell.client;
 
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobResults;
@@ -53,54 +51,54 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 			this.dataServerImpl = new DataServerImpl(log, dsci, esi);
 		}
 
-		public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteException, DataAccessException {
+		public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 			return dataServerImpl.fieldDataFileOperation(user,fieldDataFileOperationSpec);
 		}
 
-		public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+		public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getDataIdentifiers(outputContext, user, vcdataID);
 			}
 
-		public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+		public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getDataSetTimes(user, vcdataID);
 		}
 
-		public AnnotatedFunction[] getFunctions(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException,	RemoteException {
+		public AnnotatedFunction[] getFunctions(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getFunctions(outputContext,user, vcdataID);
 		}
 
-		public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time, SpatialSelection spatialSelection) throws RemoteException, DataAccessException {
+		public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
 			return dataServerImpl.getLineScan(outputContext, user, vcdataID, varName, time, spatialSelection);
 			}
 
-		public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+		public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getMesh(user, vcdataID);
 			}
 
-		public ODESimData getODEData(VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
+		public ODESimData getODEData(VCDataIdentifier vcdataID)	throws DataAccessException {
 			return dataServerImpl.getODEData(user, vcdataID);
 		}
 
-		public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException, RemoteException {
+		public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException {
 			return dataServerImpl.getParticleDataBlock(user, vcdataID, time);
 		}
 
-		public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+		public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getDataProcessingOutput(user, vcdataID);		}
 
-		public boolean getParticleDataExists(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+		public boolean getParticleDataExists(VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getParticleDataExists(user, vcdataID);
 			}
 
-		public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException { 		
+		public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws DataAccessException { 		
 			return dataServerImpl.getSimDataBlock(outputContext, user, vcdataID, varName, time);		
 			}
 
-		public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID, TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException {
+		public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 			return dataServerImpl.getTimeSeriesValues(outputContext, user, vcdataID, timeSeriesJobSpec);
 		}
 
-		public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException, RemoteException {
+		public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException {
 			return dataServerImpl.makeRemoteFile(outputContext,user, exportSpecs);
 		}
 	}

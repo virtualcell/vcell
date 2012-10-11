@@ -146,7 +146,7 @@ public void cleanupConnections() {
  * This method was created in VisualAge.
  * @return cbit.vcell.server.AdminDatabaseServer
  */
-public AdminDatabaseServer getAdminDatabaseServer() {
+private AdminDatabaseServer getAdminDatabaseServer() {
 	try {
 		return adminDbServer;
 	}catch (Throwable e){
@@ -234,7 +234,7 @@ public ServerInfo getServerInfo() {
  * @throws FileNotFoundException 
  * @exception java.lang.Exception The exception description.
  */
-VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, DataAccessException, AuthenticationException, FileNotFoundException, SQLException {
+public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, DataAccessException, AuthenticationException, FileNotFoundException, SQLException {
 	VCellConnection localConnection = null;
 	//Authenticate User
 	User user = null;

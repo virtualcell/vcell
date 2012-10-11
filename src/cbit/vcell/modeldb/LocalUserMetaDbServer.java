@@ -9,13 +9,10 @@
  */
 
 package cbit.vcell.modeldb;
-import java.rmi.RemoteException;
-
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
@@ -57,16 +54,14 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * This type was created in VisualAge.
  */
-public class LocalUserMetaDbServer extends java.rmi.server.UnicastRemoteObject implements UserMetaDbServer {
+public class LocalUserMetaDbServer implements UserMetaDbServer {
 	private DatabaseServerImpl dbServerImpl = null;
 	private User user = null;
 
 /**
  * This method was created in VisualAge.
  */
-public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, User argUser, SessionLog sessionLog) 
-						throws RemoteException, DataAccessException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortUserMetaDbServer,0));
+public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, User argUser, SessionLog sessionLog) throws DataAccessException {
 	this.user = argUser;
 	dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory, sessionLog);
 }
@@ -79,11 +74,11 @@ public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+public VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException {
 	return dbServerImpl.curate(user,curateSpec);
 }
 
-public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException {
 	return dbServerImpl.userRegistrationOP(user,userRegistrationOP);
 }
 
@@ -142,7 +137,7 @@ public void deleteVCImage(KeyValue key) throws DataAccessException, ObjectNotFou
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException, java.rmi.RemoteException {
+public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
 
 	return dbServerImpl.doTestSuiteOP(user, tsop);
 }
@@ -155,7 +150,7 @@ public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessExcep
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException {
 	return dbServerImpl.findReferences(user, rqs);
 }
 
@@ -435,7 +430,7 @@ public BigString getSimulationXML(KeyValue key) throws DataAccessException {
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException, java.rmi.RemoteException {
+public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException {
 
 	return dbServerImpl.getTestSuite(user,getThisTS);
 }
@@ -448,7 +443,7 @@ public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAcce
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException, java.rmi.RemoteException {
+public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
 
 	return dbServerImpl.getTestSuiteInfos(user);
 }
