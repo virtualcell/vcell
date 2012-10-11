@@ -127,7 +127,7 @@ public String getExecutableCommand() {
 	} else {
 		File inputFile = new File(getBaseName() + JAVA_INPUT_EXTENSION);
 		Executable exe = new Executable(new String[]{PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
-				VCellServerID.getSystemServerID().toString(), inputFile.getParent(), inputFile.getName(), getJobIndex()+""});
+				/*VCellServerID.getSystemServerID().toString(),*/ inputFile.getParent(), inputFile.getName(), getJobIndex()+""});
 		return exe.getCommand();
 	}
 }

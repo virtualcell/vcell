@@ -1,17 +1,27 @@
 package cbit.vcell.message.server.htc.sge;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcException;
@@ -19,6 +29,8 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.pbs.PbsJobID;
+import cbit.vcell.xml.XmlHelper;
 
 public class SgeProxy extends HtcProxy {
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
@@ -379,23 +391,29 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 	}
 
 	@Override
-	public List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
-/*
-   6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
-   6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
- */
-		String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
-		CommandOutput commandOutput = commandService.command(cmd);
-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
-		
-		String output = commandOutput.getStandardOutput();
-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
-		while (st.hasMoreTokens()) {
-			String line = st.nextToken().trim();
-			StringTokenizer lineTokens = new StringTokenizer(line," \t");
-			serviceJobIDs.add(new SgeJobID(lineTokens.nextToken()));
+	public TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		try{
+			String[] cmd = new String[]{JOB_CMD_STATUS, "-xml"};//get running jobs in XML format
+			CommandOutput commandOutput = commandService.command(cmd);
+			TreeMap<HtcJobID, String> pbsJobIDMapServiceType = new TreeMap<HtcJobID, String>();
+			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
+			Element rootElement = qstatDoc.getRootElement();
+			List<Element> qstatInfoChildren = rootElement.getChild("queue_info").getChildren("job_list");
+			for(Element jobInfoElement : qstatInfoChildren){
+				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+				String jobName = jobInfoElement.getChildText("JB_name").trim();
+				if(jobName.startsWith(serverID.toString().toUpperCase()+"_"))
+				pbsJobIDMapServiceType.put(new SgeJobID(jobID), jobName);
+			}
+			return pbsJobIDMapServiceType;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(e instanceof ExecutableException){
+				throw (ExecutableException)e;
+			}else{
+				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+			}
 		}
-		return serviceJobIDs;
 	}
 
 }

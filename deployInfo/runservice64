@@ -1,0 +1,143 @@
+printusage() {
+	echo "Usage: runservice64 -h"
+	echo "Usage: runservice64 -help"
+	echo "Usage: runservice64 {Db|Data|Exprt|Dsptch|HtcC|OdeC|LclC} ordinal mem"
+	exit 1
+}
+
+getnodeindex() {
+	nodeindex=${nodename}
+	nodeindex=${nodeindex%.local}
+	nodeindex=`expr match "${nodeindex}" '.*-\(.*\)'`
+}
+
+# main code
+g++ -v
+if [ -z "$1" ] ; then 
+	printusage
+fi
+if [ "$1" = "-h" ] ; then
+	printusage
+fi
+if [ "$1" = "-help" ] ; then
+	printusage
+fi
+if [ -z "$2" ] ; then 
+	printusage
+fi
+if [ -z "$3" ] ; then 
+	printusage
+fi
+site=GENERATED
+
+servicetype=$1
+
+if [ "${servicetype}" != "Db" ] ; then
+	if [ "${servicetype}" != "Data" ] ; then
+		if [ "${servicetype}" != "Exprt" ] ; then
+			if [ "${servicetype}" != "Dsptch" ] ; then
+				if [ "${servicetype}" != "PbsC" ] ; then
+					if [ "${servicetype}" != "LclC" ] ; then
+						printusage
+					fi
+				fi
+			fi
+		fi
+	fi
+fi
+ordinal=$2
+memoryMB=$3
+
+#siteUpperCase=`echo ${site} | tr [:lower:] [:upper:]` 
+
+# not used for this script. get node index since we only run limited number of database and dispatch services
+nodename=`hostname`
+getnodeindex
+
+# set up cmd and cmd rguments
+siteRootDir=/share/apps/vcell/deployed/${site}
+siteResDir=${siteRootDir}/resources
+siteCfgDir=${siteRootDir}/configs
+siteLibDir=${siteRootDir}/lib
+logdir=/share/apps/vcell/logs/${site}
+jvmmem=-Xmx500M
+
+# define arguments
+
+# pbs pde only
+if [ "${servicetype}" = "PbsC" ] ; then
+	mainclass=cbit.vcell.message.server.sim.HtcSimulationWorker
+	arguments="${ordinal} ${logdir} SGE" 
+fi
+
+# ode and local pde
+if [ "${servicetype}" = "LclC" ] ; then
+	mainclass=cbit.vcell.message.server.sim.LocalSimulationWorker
+	arguments="${ordinal} ${logdir}"
+	jvmmem=-Xmx1000M
+fi
+
+# Database
+if [ "${servicetype}" = "Db" ] ; then
+	mainclass=cbit.vcell.message.server.db.DatabaseServer
+	arguments="${ordinal} ${logdir}"
+	jvmmem=-Xmx800M
+fi
+
+# Data
+if [ "${servicetype}" = "Data" ] ; then
+	mainclass=cbit.vcell.message.server.data.SimDataServer
+	arguments="${ordinal} ${logdir}"
+	jvmmem=-Xmx800M
+fi
+
+# Export
+if [ "${servicetype}" = "Exprt" ] ; then
+	mainclass=cbit.vcell.message.server.data.SimDataServer
+	arguments="${ordinal} EXPORTONLY ${logdir}"
+	jvmmem=-Xmx800M
+fi
+
+# Dispatch
+if [ "${servicetype}" = "Dsptch" ] ; then
+	mainclass=cbit.vcell.message.server.dispatcher.SimulationDispatcher
+	arguments="${ordinal} ${logdir}"
+fi
+serviceid=${site}_${servicetype}_${ordinal}
+# kill running instance
+echo "killing running instance for ${serviceid}"
+ps ux | grep "${mainclass} ${arguments}" | grep -v grep | awk '{ print "killing "$2; system("kill -9 " $2)}'
+
+# remove log file
+rm ${logdir}/*_${servicetype}_${ordinal}_*
+
+# copy jar files to local dir
+#localServiceDir=/cm/local/vcell/${site}/${serviceid}
+#mkdir -p ${localServiceDir}
+
+#if [ ! -e ${localServiceDir} ] ; then
+#	echo "can NOT create local service directory ${localServiceDir}"
+#	exit 1
+#fi
+
+#rm -f ${localServiceDir}/* 
+#cp -f ${siteResDir}/*.jar ${localServiceDir}
+#cp -f ${siteResDir}/*.zip ${localServiceDir}
+#cp -f ${siteLibDir}/*.so ${localServiceDir}
+
+# add gcc and sonic to path
+#export PATH=/share/apps/gcc/3.4.4/bin:/usr/pbs/bin:$PATH
+export LD_LIBRARY_PATH=${siteLibDir}:$LD_LIBRARY_PATH
+
+localServiceDir=${siteResDir}
+jre=java 
+jvm_jars=GENERATED
+#:${localServiceDir}/.jar
+#jvmprop="-Xmx${memoryMB}M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+jvmprop="${jvmmem} -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+
+echo "starting ${serviceid} on ${nodename}"
+nice ${jre} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments}
+
+exit 0
+
