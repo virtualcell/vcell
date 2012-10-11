@@ -9,14 +9,14 @@
  */
 
 package cbit.vcell.messaging.db;
-import cbit.htc.PbsJobID;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import java.util.Date;
 import java.io.Serializable;
+import java.util.Date;
 
 import org.vcell.util.Compare;
 import org.vcell.util.document.VCellServerID;
+
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.

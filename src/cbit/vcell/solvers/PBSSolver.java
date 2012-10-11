@@ -15,9 +15,8 @@ import java.util.ArrayList;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.SessionLog;
 
-import cbit.htc.PBSConstants;
-import cbit.htc.PbsJobID;
-import cbit.vcell.message.server.pbs.PbsProxy;
+import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.SimulationMessage;
@@ -31,7 +30,7 @@ import cbit.vcell.solver.SolverStatus;
  */
 public class PBSSolver extends HTCSolver {
 	private static String PBS_SUBMIT_FILE_EXT = ".pbs.sub";
-	private PbsProxy pbsProxy = null;
+	private HtcProxy htcProxy = null;
 /**
  * CondorSolver constructor comment.
  * @param simTask cbit.vcell.messaging.server.SimulationTask
@@ -39,9 +38,9 @@ public class PBSSolver extends HTCSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public PBSSolver(PbsProxy pbsProxy, SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public PBSSolver(HtcProxy htcProxy, SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, sessionLog);
-	this.pbsProxy = pbsProxy;
+	this.htcProxy = htcProxy;
 }
 
 /**
@@ -50,15 +49,15 @@ public PBSSolver(PbsProxy pbsProxy, SimulationTask simTask, java.io.File directo
  * @throws SolverException 
  * @throws ExecutableException 
  */
-private PbsJobID submit2PBS() throws Exception {
+private HtcJobID submit2PBS() throws Exception {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
 	String cmd = getExecutableCommand();
 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
-	String jobname = PBSConstants.createPBSSimJobName(simulationTask.getSimKey(), simulationTask.getSimulationJob().getJobIndex());  //"S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
+	String jobname = HtcProxy.createHtcSimJobName(simulationTask.getSimKey(), simulationTask.getSimulationJob().getJobIndex());  //"S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 	ArrayList<String> command = new ArrayList<String>();
 	command.add(cmd);
 	command.addAll(cmdArguments);
-	PbsJobID jobid = pbsProxy.submitJob(simulationTask.getComputeResource(), jobname, subFile, command.toArray(new String[0]), 1, simulationTask.getEstimatedMemorySizeMB());
+	HtcJobID jobid = htcProxy.submitJob(jobname, subFile, command.toArray(new String[0]), 1, simulationTask.getEstimatedMemorySizeMB());
 	if (jobid == null) {
 		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
 		return null;
@@ -161,7 +160,7 @@ public void startSolver() {
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.initialize()");
 		initialize();
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.submit2PBS()");
-		PbsJobID jobID = submit2PBS();
+		HtcJobID jobID = submit2PBS();
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobID, "PBSSolver.submit2PBS() returned");
 	} catch (Throwable throwable) {
 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "PBSSolver.startSolver() exception: "+throwable.getClass().getName()+" "+throwable.getMessage());

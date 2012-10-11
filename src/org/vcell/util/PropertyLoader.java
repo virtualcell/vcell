@@ -13,6 +13,8 @@ package org.vcell.util;
 import java.util.Arrays;
 import java.util.Vector;
 
+import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+
 
 
 
@@ -139,6 +141,9 @@ public class PropertyLoader {
 
 	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
 	
+	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
+	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
+	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
 	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
 	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
 	public static final String htcComputeResources = "vcell.htc.computeresources";

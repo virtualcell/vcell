@@ -31,7 +31,7 @@ public class ServiceStatusTableModel extends VCellSortTableModel<ComparableObjec
  * ServiceStatusTableModel constructor comment.
  */
 public ServiceStatusTableModel() {
-	super(new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "PBS Job ID"});
+	super(new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "HTC Job ID"});
 }
 
 /**

@@ -265,7 +265,7 @@ public class VCMessageJms implements VCMessage {
 			if (jmsMessage instanceof TextMessage){
 				buffer.append("  textContent='");
 				String textContent = ((TextMessage)jmsMessage).getText();
-				if (textContent.length()>maxContentLength){
+				if (textContent!=null && textContent.length()>maxContentLength){
 					buffer.append(textContent.substring(0, maxContentLength-3)+"...");
 				}else{
 					buffer.append(textContent);
@@ -273,7 +273,7 @@ public class VCMessageJms implements VCMessage {
 				buffer.append("'");
 			}else if (jmsMessage instanceof ObjectMessage){
 				buffer.append("  objectContent='");
-				String text = ((ObjectMessage)jmsMessage).getObject().toString();
+				String text = ""+((ObjectMessage)jmsMessage).getObject();
 				if (text.length()>maxContentLength){
 					buffer.append(text.substring(0, maxContentLength-3)+"...");
 				}else{

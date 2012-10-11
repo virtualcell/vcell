@@ -9,15 +9,18 @@
  */
 
 package cbit.vcell.messaging.db;
-import cbit.vcell.message.server.ServiceSpec;
-import cbit.vcell.message.server.ServiceStatus;
-import cbit.htc.PbsJobID;
-import cbit.sql.*;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceStatus;
+import cbit.vcell.message.server.htc.HtcJobID;
 
 public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";
@@ -81,13 +84,13 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 		parsedStatusMsg = null;
 	}
 	//host
-	PbsJobID parsedPBSJobId = null;
-	String parsedPBSJobIdString = rset.getString(pbsjobid.toString());
-	if (!rset.wasNull() && parsedPBSJobIdString!=null && parsedPBSJobIdString.length()>0) {
-		parsedPBSJobId = new PbsJobID(parsedPBSJobIdString);
+	HtcJobID parsedHtcJobId = null;
+	String parsedHtcJobDatabaseString = rset.getString(pbsjobid.toString());
+	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
+		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
 	}
 	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
-			parsedDate, parsedStatus, parsedStatusMsg, parsedPBSJobId);
+			parsedDate, parsedStatus, parsedStatusMsg, parsedHtcJobId);
 	
 	return serviceStatus;
 }
@@ -121,8 +124,8 @@ public String getSQLUpdateList(ServiceStatus serviceStatus){
 	buffer.append(statusMsg + "='" + serviceStatus.getStatusMsg() + "',");
 	//host
 	buffer.append(pbsjobid + "=");
-	if (serviceStatus.getPbsJobId() != null){
-		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+	if (serviceStatus.getHtcJobId() != null){
+		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
 	} else {
 		buffer.append("null");
 	}
@@ -160,8 +163,8 @@ public String getSQLValueList(KeyValue key, ServiceStatus serviceStatus) {
 	//statusMsg
 	buffer.append("'" + serviceStatus.getStatusMsg() + "',");
 	//host
-	if (serviceStatus.getPbsJobId() != null){
-		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+	if (serviceStatus.getHtcJobId() != null){
+		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
 	} else {
 		buffer.append("null");
 	}

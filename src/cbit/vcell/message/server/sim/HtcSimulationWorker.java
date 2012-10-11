@@ -26,8 +26,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PBSConstants;
-import cbit.htc.PbsJobID;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
@@ -43,9 +41,14 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.pbs.PbsProxy;
-import cbit.vcell.message.server.pbs.PbsProxyLocal;
-import cbit.vcell.message.server.pbs.PbsProxySsh;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.pbs.PbsProxy;
+import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -63,9 +66,8 @@ import cbit.vcell.xml.XmlParseException;
  * Creation date: (10/25/2001 4:14:09 PM)
  * @author: Jim Schaff
  */
-public class PbsSimulationWorker extends ServiceProvider  {
-	private static String PBS_SUBMIT_FILE_EXT = ".pbs.sub";
-	private PbsProxy pbsProxy = null;
+public class HtcSimulationWorker extends ServiceProvider  {
+	private HtcProxy htcProxy = null;
 
 	private VCQueueConsumer queueConsumer = null;
 	/**
@@ -74,9 +76,9 @@ public class PbsSimulationWorker extends ServiceProvider  {
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public PbsSimulationWorker(PbsProxy pbsProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
+public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
 	super(vcMessagingService, serviceInstanceStatus, log);
-	this.pbsProxy = pbsProxy;
+	this.htcProxy = htcProxy;
 }
 
 public final String getJobSelector() {
@@ -97,12 +99,12 @@ public final String getJobSelector() {
 	return jobSelector;
 }
 
-private PbsJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
+private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
 
-	PbsJobID jobid = null;
+	HtcJobID jobid = null;
 	
-	String subFile = simTask.getSimulationJob().getSimulationJobID() + PBS_SUBMIT_FILE_EXT;
-	String jobname = PBSConstants.createPBSSimJobName(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex());   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex();
+	String subFile = simTask.getSimulationJob().getSimulationJobID() + htcProxy.getSubmissionFileExtension();
+	String jobname = HtcProxy.createHtcSimJobName(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex());   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex();
 	
 	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
 	
@@ -110,11 +112,11 @@ private PbsJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
 		String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+simTask.getTaskID()+".simtask.xml").toString());
 
-		if (pbsProxy instanceof PbsProxySsh){
+		if (htcProxy.getCommandService() instanceof CommandServiceSsh){
 			// write simTask file locally, and send it to server, and delete local copy.
 			File tempFile = File.createTempFile("simTask", "xml");
 			XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
-			this.pbsProxy.pushFile(tempFile, simTaskFilePath);
+			this.htcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
 			tempFile.delete();
 		}else{
 			// write final file directly.
@@ -135,7 +137,7 @@ private PbsJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
 		
-		jobid = pbsProxy.submitJob(simTask.getComputeResource(), jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
+		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -153,7 +155,7 @@ private PbsJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 				String.valueOf(simTask.getTaskID())
 		};
 
-		jobid = pbsProxy.submitJob(simTask.getComputeResource(), jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
+		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -180,14 +182,14 @@ private void initQueueConsumer() {
 				simTask = simTaskMessage.getSimulationTask();
 				File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),simTask.getUserName());
 				
-				PbsJobID pbsId = submit2PBS(simTask, userdir);
+				HtcJobID pbsId = submit2PBS(simTask, userdir);
 				
-				WorkerEventMessage.sendAccepted(session, PbsSimulationWorker.this, simTask, ManageUtils.getHostName(), pbsId);
+				WorkerEventMessage.sendAccepted(session, HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), pbsId);
 			} catch (Exception e) {
 				log.exception(e);
 				if (simTask!=null){
 					try {
-						WorkerEventMessage.sendFailed(session,  PbsSimulationWorker.this, simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
+						WorkerEventMessage.sendFailed(session,  HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
 					} catch (VCMessagingException e1) {
 						log.exception(e1);
 					}
@@ -209,8 +211,8 @@ private void initQueueConsumer() {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	if (args.length != 2 && args.length != 5) {
-		System.out.println("Missing arguments: " + PbsSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) [pbshost userid pswd] ");
+	if (args.length != 3 && args.length != 6) {
+		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
 		System.exit(1);
 	}
  		
@@ -223,16 +225,28 @@ public static void main(java.lang.String[] args) {
 		int serviceOrdinal = Integer.parseInt(args[0]);	
 		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
 		String logdir = args[1];
-
-		PbsProxy pbsProxy = null;
-		if (args.length==5){
-			String pbsHost = args[2];
-			String pbsUser = args[3];
-			String pbsPswd = args[4];
-			pbsProxy = new PbsProxySsh(pbsHost,pbsUser,pbsPswd);
+		BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
+		
+		CommandService commandService = null;
+		if (args.length==6){
+			String pbsHost = args[3];
+			String pbsUser = args[4];
+			String pbsPswd = args[5];
+			commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
 			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
 		}else{
-			pbsProxy = new PbsProxyLocal();
+			commandService = new CommandServiceLocal();
+		}
+		HtcProxy htcProxy = null;
+		switch(batchSystemType){
+			case PBS:{
+				htcProxy = new PbsProxy(commandService);
+				break;
+			}
+			case SGE:{
+				htcProxy = new SgeProxy(commandService);
+				break;
+			}
 		}
 		
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
@@ -240,10 +254,10 @@ public static void main(java.lang.String[] args) {
 		
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-		pbsProxy.checkServerStatus();
+		htcProxy.checkServerStatus();
 
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-		PbsSimulationWorker simulationWorker = new PbsSimulationWorker(pbsProxy, vcMessagingService, serviceInstanceStatus, log);
+		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log);
 		simulationWorker.initControlTopicListener();
 		simulationWorker.initQueueConsumer();
 	} catch (Throwable e) {

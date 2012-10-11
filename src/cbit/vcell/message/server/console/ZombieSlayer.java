@@ -1,6 +1,5 @@
 package cbit.vcell.message.server.console;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -13,11 +12,12 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.message.server.pbs.PbsProxy;
-import cbit.vcell.message.server.pbs.PbsProxy.RunningPbsJobRecord;
-import cbit.vcell.message.server.pbs.PbsProxyLocal;
-import cbit.vcell.message.server.pbs.PbsProxySsh;
+import cbit.vcell.message.server.htc.pbs.PbsProxy;
+import cbit.vcell.message.server.htc.pbs.PbsProxy.RunningPbsJobRecord;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -70,15 +70,6 @@ public class ZombieSlayer {
 		}
 	}
 		
-
-   private static PbsProxy init(String hostname,String username,String password, boolean isLocaLRun) throws IOException{
-	   if (isLocaLRun){
-		   return new PbsProxyLocal();
-	   } else {
-		  return new PbsProxySsh(hostname, username, password);
-	   }   
-   }
-	
 	public static void main(String[] args) {
 
 		if ((args.length !=0) && (args.length !=3)) {
@@ -101,16 +92,18 @@ public class ZombieSlayer {
 		    ArrayList<SuspectSimJobID> zombieCandidateIDs = new ArrayList<SuspectSimJobID>();
 		    ArrayList<RunningPbsJobRecord> runningPbsJobRecords = null;
 
-		    PbsProxy pbsProxy = null;
-	
-		
 			//now query qstat via PbsProxy
 			//initialize PbsProxy
+		    CommandService commandService = null;
 			if (args.length == 0) {
-				pbsProxy = init(null, null, null, true);
+				commandService = new CommandServiceLocal();
 			} else {
-				pbsProxy = init(args[0], args[1], args[2], false);
+				String remoteHostName = args[0];
+				String username = args[1];
+				String password = args[2];
+				commandService = new CommandServiceSsh(remoteHostName, username, password);
 			}
+			PbsProxy pbsProxy = new PbsProxy(commandService);
 			runningPbsJobRecords = pbsProxy.getRunningPBSJobs();
 
 		

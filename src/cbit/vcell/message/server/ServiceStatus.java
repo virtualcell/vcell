@@ -17,7 +17,7 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.htc.PbsJobID;
+import cbit.vcell.message.server.htc.HtcJobID;
 
 import static cbit.vcell.message.server.ManageConstants.*;
 
@@ -26,15 +26,15 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 	private Date date = null;
 	private int status;
 	private String statusMsg;
-	private PbsJobID pbsJobId;
+	private HtcJobID htcJobId;
 	
-	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, PbsJobID pbsJobID) {
+	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, HtcJobID htcJobID) {
 		super();
 		this.serviceSpec = ss;
 		this.date = d;
 		this.status = s;
 		this.statusMsg = sm;
-		this.pbsJobId = pbsJobID;
+		this.htcJobId = htcJobID;
 	}
 
 	public Date getDate() {
@@ -58,7 +58,7 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 	}
 	public Object[] toObjects(){
 		return new Object[]{serviceSpec.getServerID(), serviceSpec.getType(), serviceSpec.getOrdinal(), 
-				SERVICE_STARTUP_TYPES[serviceSpec.getStartupType()], serviceSpec.getMemoryMB(), date, SERVICE_STATUSES[status], statusMsg, pbsJobId};		
+				SERVICE_STARTUP_TYPES[serviceSpec.getStartupType()], serviceSpec.getMemoryMB(), date, SERVICE_STATUSES[status], statusMsg, htcJobId};		
 	}
 
 	public boolean equals(Object obj) {
@@ -84,7 +84,7 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 			if (!statusMsg.equals(ss.statusMsg)) {
 				return false;
 			}
-			if (!Compare.isEqualOrNull(pbsJobId, ss.pbsJobId)) {
+			if (!Compare.isEqualOrNull(htcJobId, ss.htcJobId)) {
 				return false;
 			}
 			return true;
@@ -92,8 +92,8 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 		return false;
 	}
 
-	public PbsJobID getPbsJobId() {
-		return pbsJobId;
+	public HtcJobID getHtcJobId() {
+		return htcJobId;
 	}
 	
 	public String toString() {

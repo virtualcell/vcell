@@ -12,7 +12,7 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
-import cbit.htc.PbsJobID;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -43,7 +43,7 @@ public class WorkerEvent extends MessageEvent {
 	private Double progress = null;
 	private Double timePoint = null;
 	private SimulationMessage eventMessage = null;
-	private PbsJobID pbsJobID = null;
+	private HtcJobID htcJobID = null;
 
 public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
 	super(source, new MessageSource(source, Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));
@@ -146,8 +146,8 @@ public Double getTimePoint() {
 	return timePoint;
 }
 
-public PbsJobID getPbsJobID(){
-	return pbsJobID;
+public HtcJobID getHtcJobID(){
+	return htcJobID;
 }
 /**
  * Insert the method's description here.
@@ -275,8 +275,8 @@ public boolean isWorkerAliveEvent() {
 	return eventType == JOB_WORKER_ALIVE;
 }
 
-public void setPbsJobID(PbsJobID pbsJobID) {
-	this.pbsJobID = pbsJobID;
+public void setHtcJobID(HtcJobID htcJobID) {
+	this.htcJobID = htcJobID;
 }
 
 public String show(){
