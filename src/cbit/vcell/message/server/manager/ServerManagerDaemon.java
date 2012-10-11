@@ -308,6 +308,7 @@ public static void main(String[] args) {
 			System.setErr(ps);			
 		}
 
+		org.vcell.util.PropertyLoader.loadProperties();
 		CommandService commandService = null;
 		if (args.length==4){
 			String htcHost = args[1];
@@ -326,7 +327,6 @@ public static void main(String[] args) {
 		}else{
 			throw new RuntimeException("unsupported batch system "+batchSystemType);
 		}
-		org.vcell.util.PropertyLoader.loadProperties();
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 		ConnectionFactory conFactory = null;
