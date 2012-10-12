@@ -126,7 +126,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
 		String[] preprocessorCmd = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
-				serviceInstanceStatus.getServerID().toString().toLowerCase(), 
+//				serviceInstanceStatus.getServerID().toString().toLowerCase(), 
 				simTaskFilePath, 
 				forceUnixPath(userdir.getAbsolutePath())
 		};
