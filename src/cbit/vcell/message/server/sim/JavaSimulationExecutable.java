@@ -59,8 +59,6 @@ public class JavaSimulationExecutable  {
 	
 	private String userDirectory = null;
 	private String inputFile = null;
-	int jobIndex = 0;
-	int taskID = 0;
 	
 	SessionLog log = null;
 	
@@ -99,28 +97,16 @@ public JavaSimulationExecutable(VCMessagingService vcMessagingService, String[] 
 
 private void start() {
 	try {
-		if (arguments.length != 6) {
-			throw new RuntimeException("Missing arguments: " + JavaSimulationExecutable.class.getName() + "{alpha|beta|rel} userDir inputFile jobIndex -tid taskID");
+		if (arguments.length != 2) {
+			throw new RuntimeException("Missing arguments: " + JavaSimulationExecutable.class.getName() + " simTaskFile userDir");
 		}
 		
 		int argCount = 0;
-		String serverID = arguments[argCount ++];
-		if (!serverID.equalsIgnoreCase(VCellServerID.getSystemServerID().toString())) {
-			throw new IllegalArgumentException("wrong server id : " + arguments[argCount]);
-		}
-		userDirectory = arguments[argCount ++];
 		inputFile = arguments[argCount ++];
-		jobIndex = Integer.parseInt(arguments[argCount ++]);
-		String tid = arguments[argCount ++];
-		if (tid.equals("-tid")) {
-			taskID = Integer.parseInt(arguments[argCount ++]);
-		} else {
-			throw new IllegalArgumentException("wrong arguments : " + tid);
-		}
+		userDirectory = arguments[argCount ++];
 		
-		String xmlString = FileUtils.readFileToString(new File(userDirectory, inputFile));
-		Simulation simulation = XmlHelper.XMLToSim(xmlString);
-		simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, null), taskID);
+		String xmlString = FileUtils.readFileToString(new File(inputFile));
+		simulationTask = XmlHelper.XMLToSimTask(xmlString);
 		
 		log = new StdoutSessionLog(simulationTask.getSimulationJobID());	
 		
