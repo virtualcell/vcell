@@ -147,7 +147,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		File inputFile = new File(getBaseName(userdir,simTask)+SimDataConstants.JAVA_INPUT_EXTENSION);
 		String[] command = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
-				VCellServerID.getSystemServerID().toString(), 
+//				VCellServerID.getSystemServerID().toString(), 
 				forceUnixPath(inputFile.getParent()), 
 				forceUnixPath(inputFile.getName()), 
 				String.valueOf(simTask.getSimulationJob().getJobIndex()),
