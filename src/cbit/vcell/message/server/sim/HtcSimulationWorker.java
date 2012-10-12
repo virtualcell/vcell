@@ -108,25 +108,25 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 	
 	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
 	
-	if (realSolver instanceof AbstractCompiledSolver) {
-		String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-		String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
+	String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	
+	if (htcProxy.getCommandService() instanceof CommandServiceSsh){
+		// write simTask file locally, and send it to server, and delete local copy.
+		File tempFile = File.createTempFile("simTask", "xml");
+		XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
+		this.htcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
+		tempFile.delete();
+	}else{
+		// write final file directly.
+		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
+	}
 
-		if (htcProxy.getCommandService() instanceof CommandServiceSsh){
-			// write simTask file locally, and send it to server, and delete local copy.
-			File tempFile = File.createTempFile("simTask", "xml");
-			XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
-			this.htcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
-			tempFile.delete();
-		}else{
-			// write final file directly.
-			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
-		}
+	if (realSolver instanceof AbstractCompiledSolver) {
 		
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
 		String[] preprocessorCmd = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
-//				serviceInstanceStatus.getServerID().toString().toLowerCase(), 
 				simTaskFilePath, 
 				forceUnixPath(userdir.getAbsolutePath())
 		};
@@ -144,15 +144,10 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		
 	} else {
 		
-		File inputFile = new File(getBaseName(userdir,simTask)+SimDataConstants.JAVA_INPUT_EXTENSION);
 		String[] command = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
-//				VCellServerID.getSystemServerID().toString(), 
-				forceUnixPath(inputFile.getParent()), 
-				forceUnixPath(inputFile.getName()), 
-				String.valueOf(simTask.getSimulationJob().getJobIndex()),
-				"-tid", 
-				String.valueOf(simTask.getTaskID())
+				simTaskFilePath,
+				forceUnixPath(userdir.getAbsolutePath())
 		};
 
 		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
@@ -166,11 +161,6 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 private String forceUnixPath(String filePath){
 	return filePath.replace("C:","").replace("D:","").replace("\\","/");
 }
-
-private String getBaseName(File userdir, SimulationTask simTask) {
-	return (new File(userdir, simTask.getSimulationJob().getSimulationJobID()).getPath());
-}
-
 
 private void initQueueConsumer() {
 	QueueListener listener = new QueueListener() {

@@ -1,5 +1,5 @@
 printusage() {
-	echo "Usage: JavaPreprocessor64 simtaskfile userdir"
+	echo "Usage: JavaPreprocessor64 simTaskFile userdir"
 	exit 1
 }
 
@@ -11,6 +11,7 @@ site=GENERATED
 
 # set up cmd and cmd rguments
 mainclass=GENERATED
+#SolverPreprocessor
 arguments=$*
 
 siteRootDir=/share/apps/vcell/deployed/${site}
