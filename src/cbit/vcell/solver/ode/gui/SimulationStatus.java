@@ -9,14 +9,16 @@
  */
 
 package cbit.vcell.solver.ode.gui;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.MessageConstants;
 
+import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.solver.*;
-import cbit.rmi.event.*;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -48,6 +50,7 @@ public class SimulationStatus implements java.io.Serializable {
 	private String details = null;
 	private boolean hasData = false;
 	private SimulationJobStatus[] jobStatuses = null;
+	private SimulationJobStatus[] oldJobStatuses = null;		// historical entries ... for debugging and administrative use (currently unused).
 
 /**
  * Insert the method's description here.
@@ -58,7 +61,22 @@ public class SimulationStatus implements java.io.Serializable {
  * @param hasData boolean
  */
 public SimulationStatus(SimulationJobStatus[] jobStatuses0) {
-	this.jobStatuses = jobStatuses0;
+	//
+	// list of jobStatus passed in contain status
+	//
+	HashMap<Integer, SimulationJobStatus> currentJobStatusMap = new HashMap<Integer,SimulationJobStatus>();
+	ArrayList<SimulationJobStatus> oldJobStatusList = new ArrayList<SimulationJobStatus>();
+	for (SimulationJobStatus status : jobStatuses0){
+		SimulationJobStatus currentJobStatus = currentJobStatusMap.get(status.getJobIndex());
+		if (currentJobStatus==null || status.getTaskID()>currentJobStatus.getTaskID()){
+			SimulationJobStatus oldStatus = currentJobStatusMap.put(status.getJobIndex(),status);
+			if (oldStatus!=null){
+				oldJobStatusList.add(oldStatus);
+			}
+		}
+	}
+	this.jobStatuses = currentJobStatusMap.values().toArray(new SimulationJobStatus[0]);
+	this.oldJobStatuses = oldJobStatusList.toArray(new SimulationJobStatus[0]);
 	initStatus();
 }
 
