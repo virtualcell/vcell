@@ -123,8 +123,8 @@ public class SimulationDispatcherEngine {
 			}catch (UpdateSynchronizationException e){
 				simStateMachine.onStartRequest(user, simulation, fdis, simulationDatabase, session, log);
 			}
-			SimulationTaskProcessState latestSimTaskProcessState = simStateMachine.getLatestSimTaskProcessState();
-			simStateMachine.onDispatch(vcSimID, latestSimTaskProcessState.taskID, simulationDatabase, dispatcherQueueSession, log);
+			int taskID = simStateMachine.getLatestKnownTaskID();
+			simStateMachine.onDispatch(vcSimID, taskID, simulationDatabase, dispatcherQueueSession, log);
 		}
 	}
 

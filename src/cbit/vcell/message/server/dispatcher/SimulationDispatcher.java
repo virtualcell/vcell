@@ -164,7 +164,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				} catch (Exception e1) {
 					log.exception(e1);
 				}
-				long endFlushTimeMS = System.currentTimeMillis() - startFlushTimeMS;
+				long endFlushTimeMS = System.currentTimeMillis();
 				long messageFlushTimeMS = endFlushTimeMS - startFlushTimeMS;
 				
 				//
@@ -186,8 +186,8 @@ public class SimulationDispatcher extends ServiceProvider {
 		private void flushWorkerEventQueue() throws VCMessagingException{
 			VCMessage message = simMonitorThreadSession.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
 			message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
-			simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message);
 			synchronized (notifyObject) {
+				simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message);
 				try {
 					long waitTime = MessageConstants.MINUTE_IN_MS*5;
 					long startWaitTime = System.currentTimeMillis();
@@ -208,10 +208,13 @@ public class SimulationDispatcher extends ServiceProvider {
 					String simJobName = runningSimulations.get(htcJobID);
 					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
 					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+					String failureMessage = null;
 					boolean killJob = false;
 					if (simJobStatus==null){
+						failureMessage = "no jobStatus found in database for running htc job";
 						killJob = true;
 					}else if (simJobStatus.getSchedulerStatus().isDone()){
+						failureMessage = "jobStatus Done in database for running htc job";
 						if (simJobStatus.getSimulationExecutionStatus()==null){
 							killJob = true;
 						}else{
@@ -222,6 +225,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						}
 					}
 					if (killJob){
+						VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
 						htcProxy.killJob(htcJobID);
 					}
 				}catch (Exception e){
@@ -238,9 +242,14 @@ public class SimulationDispatcher extends ServiceProvider {
 			// because of this, we don't have to worry about killing jobs prematurely.
 			//
 			
+			long currentTimeMS = System.currentTimeMillis();
 			SimulationJobStatus[] jobStatusArray = simulationDatabase.getObsoleteSimulations(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL_SECONDS + (messageFlushTimeMS/1000));
 			for (SimulationJobStatus jobStatus : jobStatusArray){
 				String failureMessage = "failed: timed out";
+				System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
+				SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
+				System.out.println(simStateMachine.show());
+				VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
 				simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
 				if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 					HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
