@@ -164,8 +164,8 @@ public class SimulationDatabase {
 		}
 	}
 	
-	public SimulationJobStatus getNextObsoleteSimulation(long interval) throws SQLException{
-		return adminDbTopLevel.getNextObsoleteSimulation(interval,true);
+	public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
+		return adminDbTopLevel.getObsoleteSimulations(interval,true);
 	}
 
 	public User getUser(KeyValue simKey, String username) throws DataAccessException, SQLException {

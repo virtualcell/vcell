@@ -9,12 +9,11 @@
  */
 
 package cbit.vcell.modeldb;
-import java.rmi.*;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -22,7 +21,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.sql.*;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
@@ -97,8 +97,8 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
 	}
 }
 
-public SimulationJobStatus getNextObsoleteSimulation(long interval) throws SQLException{
-	return adminDbTop.getNextObsoleteSimulation(interval,true);
+public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
+	return adminDbTop.getObsoleteSimulations(interval,true);
 }
 
 /**

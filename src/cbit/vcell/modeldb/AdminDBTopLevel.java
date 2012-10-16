@@ -9,14 +9,8 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.vcell.message.server.ServiceStatus;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.sql.Connection;
 import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -28,13 +22,18 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.sql.ConnectionFactory;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * This type was created in VisualAge.
@@ -109,23 +108,23 @@ public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolea
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:03:51 PM)
  */
-SimulationJobStatus getNextObsoleteSimulation(Connection con, long interval) throws SQLException {
-	SimulationJobStatus jobStatus = jobDB.getNextObsoleteSimulation(con, interval);
-	return jobStatus;
+SimulationJobStatus[] getObsoleteSimulations(Connection con, long interval) throws SQLException {
+	SimulationJobStatus[] jobStatusArray = jobDB.getObsoleteSimulations(con, interval);
+	return jobStatusArray;
 }
 
 
-public SimulationJobStatus getNextObsoleteSimulation(long interval, boolean bEnableRetry) throws java.sql.SQLException {
+public SimulationJobStatus[] getObsoleteSimulations(long interval, boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus jobStatus = jobDB.getNextObsoleteSimulation(con, interval);
+		SimulationJobStatus[] jobStatus = jobDB.getObsoleteSimulations(con, interval);
 		return jobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getNextObsoleteSimulation(interval,false);
+			return getObsoleteSimulations(interval,false);
 		}else{
 			handle_SQLException(e);
 			return null; // never gets here;

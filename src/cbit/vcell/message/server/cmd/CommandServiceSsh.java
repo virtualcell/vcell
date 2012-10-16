@@ -128,6 +128,8 @@ public class CommandServiceSsh extends CommandService {
 				ssh.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				ssh = null;
 			}
 		}
 	}

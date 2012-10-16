@@ -9,11 +9,14 @@
  */
 
 package cbit.vcell.message.server.dispatcher;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
+import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
@@ -31,6 +34,7 @@ import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
@@ -40,6 +44,16 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.htc.HtcException;
+import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.pbs.PbsProxy;
+import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -49,6 +63,7 @@ import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.AbstractSolver;
 
 /**
  * Insert the type's description here.
@@ -66,7 +81,11 @@ public class SimulationDispatcher extends ServiceProvider {
 	private SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
 	private DispatchThread dispatchThread = null;
+	private SimulationMonitorThread simMonitorThread = null;
 	private VCMessageSession dispatcherQueueSession = null;
+	private VCMessageSession simMonitorThreadSession = null;
+	
+	private HtcProxy htcProxy = null;
 
 	public class DispatchThread extends Thread {
 		public DispatchThread() {
@@ -117,96 +136,135 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 	}
 
-//	class SimulationMonitorThread extends Thread {
-//
-//		public SimulationMonitorThread() {
-//			super();
-//			setDaemon(true);
-//			setName("Simulation Monitor Thread");
-//		}
-//		
-//		public void run() {
-//
-//			while (true){
-//				
-//				//
-//				// for first 10 minutes of dispatcher uptime, don't check for obsolete messages.
-//				// as a startup transient, let the dispatchers catch up with worker messages before passing
-//				// judgement on the health of jobs.
-//				//
-//				// a better way of doing it is to wait until the worker messages have caught-up (message.date > startup.date).
-//				//
-//				// also, now that things are in memory, we can check memory for those jobs that are not well behaved.
-//				//
-//				long uptime = System.currentTimeMillis() - VCMongoMessage.getServiceStartupTime();
-//				final int UPTIME_WAIT = 1000*60*10;
-//				if (uptime < UPTIME_WAIT){
-//					try {
-//						Thread.sleep(UPTIME_WAIT - uptime);
-//					}catch (Exception e){
-//					}
-//					continue;  // for first 10 minutes of uptime, don't obsolete any jobs
-//				}
-//				
-//				SimulationJobStatus jobStatus = simulationDatabase.getNextObsoleteSimulation(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
-//				HtcJobID htcJobID = jobStatus.getSimulationExecutionStatus().getHtcJobID();
-//				if (pbsJobID!=null){
-//					PBSUtils.killJob(htcJobID);
-//				}
-//
-//				// too many retries
-//				if ((jobStatus.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) >= MessageConstants.TASKID_MAX_RETRIES) {							
-//					log.print("##MT too many retries " + jobStatus);
-//
-//					// new job status is failed.
-//					SimulationJobStatus	newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(),
-//						SchedulerStatus.FAILED, jobStatus.getTaskID(),
-//						SimulationMessage.MESSAGE_JOB_FAILED_TOOMANYRETRIES,
-//						jobStatus.getSimulationQueueEntryStatus(), jobStatus.getSimulationExecutionStatus());
-//					//update the database
-//					this.simulationDispatcherMessaging.jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
-//					// tell client
-//					StatusMessage statusMsg = new StatusMessage(newJobStatus, jobStatus.getVCSimulationIdentifier().getOwner().getName(), null, null);
-//					statusMsg.sendToClient(obsoleteJobDispatcher);
-//					
-//				} else {
-//					SimulationTask simTask = this.simulationDispatcherMessaging.simDispatcher.getSimulationTask(jobStatus);
-//					
-//					log.print("##MT requeued " + simTask);
-//
-//					// increment taskid, new job status is queued
-//					SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(), 
-//						SchedulerStatus.QUEUED, jobStatus.getTaskID() + 1, 
-//						SimulationMessage.MESSAGE_JOB_QUEUED_RETRY, jobStatus.getSimulationQueueEntryStatus(), null);
-//					
-//					//update the database
-//					this.simulationDispatcherMessaging.jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
-//					// send to simulation queue
-//					Simulation sim = simTask.getSimulationJob().getSimulation();
-//					SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, newJobStatus.getJobIndex(), this.simulationDispatcherMessaging.simDispatcher.getFieldDataIdentifierSpecs(sim)), newJobStatus.getTaskID());
-//					SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);
-//					taskMsg.sendSimulationTask(obsoleteJobDispatcher);
-//					// tell client
-//					StatusMessage statusMsg = new StatusMessage(newJobStatus, newSimTask.getUserName(), null, null);
-//					statusMsg.sendToClient(obsoleteJobDispatcher);
-//				}
-//				// start next check after some time
-//				try {
-//					sleep(MessageConstants.INTERVAL_PING_SERVER);
-//				} catch (InterruptedException ex) {
-//					log.exception(ex);
-//				}
-//				
-//			} // first while (true);
-//		}
-//	}
+	class SimulationMonitorThread extends Thread {
+
+		Object notifyObject = new Object();
+		
+		public SimulationMonitorThread(HtcProxy htcProxy) {
+			super();
+			setDaemon(true);
+			setName("Simulation Monitor Thread");
+		}
+		
+		public void run() {
+			while (true){
+
+				try {
+					killZombieProcesses();
+				} catch (ExecutableException e1) {
+					log.exception(e1);
+				}
+				
+				//
+				// flush the message queue and measure processing time.
+				//
+				long startFlushTimeMS = System.currentTimeMillis();
+				try {
+					flushWorkerEventQueue();
+				} catch (Exception e1) {
+					log.exception(e1);
+				}
+				long endFlushTimeMS = System.currentTimeMillis() - startFlushTimeMS;
+				long messageFlushTimeMS = endFlushTimeMS - startFlushTimeMS;
+				
+				//
+				// abort unresponsive jobs
+				//
+				try {
+					abortStalledSimulationTasks(messageFlushTimeMS);
+				} catch (Exception e1) {
+					log.exception(e1);
+				}
+				
+				//
+				// sleep 30 seconds and try again
+				//
+				try { sleep(MessageConstants.MINUTE_IN_MS*2); } catch (InterruptedException e){}
+			}
+		}
+		
+		private void flushWorkerEventQueue() throws VCMessagingException{
+			VCMessage message = simMonitorThreadSession.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
+			message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
+			simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message);
+			synchronized (notifyObject) {
+				try {
+					long waitTime = MessageConstants.MINUTE_IN_MS*5;
+					long startWaitTime = System.currentTimeMillis();
+					notifyObject.wait(waitTime);
+					long endWaitTime = System.currentTimeMillis();
+					if ((endWaitTime-startWaitTime)>=waitTime){
+						throw new VCMessagingException("worker event queue flush timed out (>"+waitTime+" s), considerable message backlog?");
+					}
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		
+		private void killZombieProcesses() throws ExecutableException{
+			TreeMap<HtcJobID, String> runningSimulations = htcProxy.getRunningSimulationJobIDs();
+			for (HtcJobID htcJobID : runningSimulations.keySet()){
+				try {
+					String simJobName = runningSimulations.get(htcJobID);
+					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
+					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+					boolean killJob = false;
+					if (simJobStatus==null){
+						killJob = true;
+					}else if (simJobStatus.getSchedulerStatus().isDone()){
+						if (simJobStatus.getSimulationExecutionStatus()==null){
+							killJob = true;
+						}else{
+							long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+							if (elapsedTimeMS > 10000){
+								killJob = true;
+							}
+						}
+					}
+					if (killJob){
+						htcProxy.killJob(htcJobID);
+					}
+				}catch (Exception e){
+					log.exception(e);
+				}
+			}
+		}
+		
+		private void abortStalledSimulationTasks(long messageFlushTimeMS) throws SQLException{
+			
+			//
+			// message queue has already been flushed ... and the time it took was recorded in messageFlushTimeMS
+			//
+			// because of this, we don't have to worry about killing jobs prematurely.
+			//
+			
+			SimulationJobStatus[] jobStatusArray = simulationDatabase.getObsoleteSimulations(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL_SECONDS + (messageFlushTimeMS/1000));
+			for (SimulationJobStatus jobStatus : jobStatusArray){
+				String failureMessage = "failed: timed out";
+				simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+				if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
+					HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
+					try {
+						htcProxy.killJob(htcJobId);
+					} catch (HtcJobNotFoundException e) {
+						e.printStackTrace();
+					} catch (ExecutableException e) {
+						e.printStackTrace();
+					} catch (HtcException e) {
+						e.printStackTrace();
+					}
+				}
+			}			
+		}
+	}
 
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public SimulationDispatcher(VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, SessionLog log) throws Exception {
+	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, SessionLog log) throws Exception {
 		super(vcMessagingService,serviceInstanceStatus,log);
 		this.simulationDatabase = simulationDatabase;
+		this.htcProxy = htcProxy;
 	}
 
 
@@ -244,6 +302,10 @@ public class SimulationDispatcher extends ServiceProvider {
 		this.dispatchThread.start();
 		
 		initControlTopicListener();
+		
+		this.simMonitorThreadSession = vcMessagingService.createProducerSession();
+		this.simMonitorThread = new SimulationMonitorThread(htcProxy);
+		this.simMonitorThread.start();
 	}
 
 
@@ -289,9 +351,25 @@ public class SimulationDispatcher extends ServiceProvider {
 	 */
 	private void onWorkerEventMessage(VCMessage vcMessage, VCMessageSession session) {
 		try {
+			//
+			// process WorkerEventQueue flush message
+			//
+			if (vcMessage.propertyExists(MessageConstants.MESSAGE_TYPE_PROPERTY) && vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_FLUSH_VALUE)){
+				if (simMonitorThread!=null){
+					try {
+						synchronized (simMonitorThread.notifyObject){
+							simMonitorThread.notifyObject.notify();
+						}
+					}catch (IllegalMonitorStateException e){
+						e.printStackTrace();
+					}
+					VCMongoMessage.sendInfo("flushed worker event queue");
+				}
+				return;
+			}
+
 			WorkerEventMessage workerEventMessage = new WorkerEventMessage(simulationDatabase, vcMessage);
 			WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
-
 			simDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, session, log);
 
 		} catch (Exception ex) {
@@ -338,8 +416,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
-		if (args.length < 1) {
-			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal [logdir]");
+		if (args.length != 3 && args.length != 6) {
+			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
 			System.exit(1);
 		}
 
@@ -351,6 +429,33 @@ public class SimulationDispatcher extends ServiceProvider {
 			if (args.length > 1) {
 				logdir = args[1];
 			}
+			
+			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
+			CommandService commandService = null;
+			if (args.length==6){
+				String pbsHost = args[3];
+				String pbsUser = args[4];
+				String pbsPswd = args[5];
+				commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
+				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+			}else{
+				commandService = new CommandServiceLocal();
+			}
+			HtcProxy htcProxy = null;
+			switch(batchSystemType){
+				case PBS:{
+					htcProxy = new PbsProxy(commandService);
+					break;
+				}
+				case SGE:{
+					htcProxy = new SgeProxy(commandService);
+					break;
+				}
+				default: {
+					throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
+				}
+			}
+			
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
@@ -368,7 +473,7 @@ public class SimulationDispatcher extends ServiceProvider {
 
 			VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 
-			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(vcMessagingService, serviceInstanceStatus, simulationDatabase, log);
+			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, log);
 			simulationDispatcher.init();
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);

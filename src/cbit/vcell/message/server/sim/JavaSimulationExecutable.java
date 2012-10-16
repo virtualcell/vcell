@@ -20,7 +20,6 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCMessage;
@@ -35,8 +34,6 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverEvent;
@@ -71,12 +68,12 @@ public class JavaSimulationExecutable  {
 		public void run() {
 			while (true) {
 				try {
-					sleep(MessageConstants.INTERVAL_PING_SERVER);
+					sleep(MessageConstants.INTERVAL_PING_SERVER_MS);
 				} catch (InterruptedException ex) {
 				}
 		
 				long t = System.currentTimeMillis();
-				if (lastMsgTimeStamp != 0 && t - lastMsgTimeStamp > MessageConstants.INTERVAL_PING_SERVER) {
+				if (lastMsgTimeStamp != 0 && t - lastMsgTimeStamp > MessageConstants.INTERVAL_PING_SERVER_MS) {
 					log.print("@@@@Worker:Sending alive message");
 					sendAlive();
 				}
@@ -280,7 +277,7 @@ private void sendFailed(SimulationMessage failureMessage) {
 private void sendNewData(double progress, double timeSec, SimulationMessage simulationMessage) {	
 	try {
 		long t = System.currentTimeMillis();
-		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
+		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE_MS) { // don't send data message too frequently
 			log.print("sendNewData(" + simulationTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");		
 			WorkerEventMessage.sendNewData(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);
 		
@@ -300,7 +297,7 @@ private void sendNewData(double progress, double timeSec, SimulationMessage simu
 private void sendProgress(double progress, double timeSec, SimulationMessage simulationMessage) {
 	try {
 		long t = System.currentTimeMillis();
-		if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
+		if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE_MS 
 				|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
 			log.print("sendProgress(" + simulationTask.getSimulationJobID() + "," + (progress * 100) + "%," + timeSec + ")");
 			WorkerEventMessage.sendProgress(workerEventSession, this, simulationTask, ManageUtils.getHostName(), progress, timeSec, simulationMessage);

@@ -9,12 +9,21 @@
  */
 
 package cbit.vcell.message.server.sim;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
+import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
+import static cbit.vcell.message.server.ManageConstants.SERVICE_ID_PROPERTY;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -24,6 +33,7 @@ import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.util.xml.XmlUtil;
@@ -34,7 +44,10 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCTopicConsumer;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
+import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
@@ -44,8 +57,10 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
@@ -70,6 +85,7 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private HtcProxy htcProxy = null;
 
 	private VCQueueConsumer queueConsumer = null;
+	private VCTopicConsumer serviceControlTopicConsumer = null;
 	/**
 	 * SimulationWorker constructor comment.
 	 * @param argName java.lang.String
@@ -104,7 +120,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 	HtcJobID jobid = null;
 	
 	String subFile = simTask.getSimulationJob().getSimulationJobID() + htcProxy.getSubmissionFileExtension();
-	String jobname = HtcProxy.createHtcSimJobName(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex());   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex();
+	String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
 	
 	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
 	
@@ -161,6 +177,76 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 private String forceUnixPath(String filePath){
 	return filePath.replace("C:","").replace("D:","").replace("\\","/");
 }
+
+private void initServiceControlTopicListener() {
+	TopicListener listener = new TopicListener() {
+
+		public void onTopicMessage(VCMessage message, VCMessageSession session) {
+			try {
+				String msgType = message.getStringProperty(MESSAGE_TYPE_PROPERTY);
+				
+				if (msgType == null) {
+					return;
+				}
+				
+				if (msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE)) {			
+					final long simID = message.getLongProperty(MessageConstants.SIMKEY_PROPERTY);
+					final int jobIndex = message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY);
+					final int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
+					String htcJobIdString = null;
+					if (message.propertyExists(MessageConstants.HTCJOBID_PROPERTY)){
+						htcJobIdString = message.getStringProperty(MessageConstants.HTCJOBID_PROPERTY);
+					}
+					final HtcJobID htcJobId = (htcJobIdString!=null) ? HtcJobID.fromDatabase(htcJobIdString) : null;
+					
+					Runnable runnable = new Runnable(){
+						public void run() {
+							HtcProxy threadLocalHtcProxy = htcProxy.cloneThreadsafe();
+							try {
+								try {
+									Thread.sleep(10000); // sleep 10 seconds once ... give job time to kill itself gracefully
+								} catch (InterruptedException e1) {
+								}
+								if (htcJobId!=null){
+									threadLocalHtcProxy.killJob(htcJobId);
+								}else{
+									//
+									// should only return one running job with this name (sim/job/task) (but handles more than one).
+									//
+									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
+									TreeMap<HtcJobID, String> runningJobs = threadLocalHtcProxy.getRunningJobs(simJobName);
+									for (HtcJobID htcJobID : runningJobs.keySet()){
+										try {
+											threadLocalHtcProxy.killJob(htcJobID);
+										} catch (Exception e) {
+											log.exception(e);
+										}
+									}
+								}
+							} catch (Exception e) {
+								log.exception(e);
+							} finally {
+								threadLocalHtcProxy.getCommandService().close();
+							}
+						}
+					};
+					Thread killSimulationThread = new Thread(runnable, "Kill Simulation Thread (sim="+simID+", job="+jobIndex+", taskid="+taskID);
+					killSimulationThread.setDaemon(true);
+					killSimulationThread.start();
+				}
+			} catch (Exception ex) {
+				log.exception(ex);
+			}	
+		}
+
+	};
+	VCMessageSelector selector = null;
+	String threadName = "Service Control Topic Consumer (for killing sims)";
+	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName);
+	vcMessagingService.addMessageConsumer(serviceControlTopicConsumer);
+}
+
+
 
 private void initQueueConsumer() {
 	QueueListener listener = new QueueListener() {

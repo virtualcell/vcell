@@ -440,7 +440,7 @@ private void pingAll() throws VCMessagingException {
 }
 
 private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
-	 TreeMap<HtcJobID, String>  jobIdMapJobName = htcProxy.getServiceJobIDs(VCellServerID.getSystemServerID());
+	 TreeMap<HtcJobID, String>  jobIdMapJobName = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
 	 HtcJobID foundJobID = null;
 	 for(HtcJobID jobID : jobIdMapJobName.keySet()){
 		 if(jobIdMapJobName.get(jobID).equals(service.getServiceSpec().getID())){

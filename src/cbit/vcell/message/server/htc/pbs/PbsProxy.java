@@ -298,11 +298,21 @@ public final class PbsProxy extends HtcProxy {
 	}
 	
 	@Override
-	public TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		return getRunningJobs(serverID.toString().toUpperCase()+"_");
+	}
+
+	@Override
+	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
+		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
+	}
+
+	@Override
+	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
 		try {
-			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
+			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix};
 			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDMapServiceType =
+			TreeMap<HtcJobID, String> pbsJobIDNameMap =
 				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
 					@Override
 					public int compare(HtcJobID o1, HtcJobID o2) {
@@ -315,16 +325,16 @@ public final class PbsProxy extends HtcProxy {
 				StringTokenizer st = new StringTokenizer(line," \t");
 				String pbsJobInfo = st.nextToken();
 				Integer pbsJobID = new Integer(pbsJobInfo.substring(0,pbsJobInfo.indexOf('.')));
-				String serviceJobName = st.nextToken();
-				pbsJobIDMapServiceType.put(new PbsJobID(String.valueOf(pbsJobID)), serviceJobName);
+				String jobName = st.nextToken();
+				pbsJobIDNameMap.put(new PbsJobID(String.valueOf(pbsJobID)), jobName);
 			}
-			return pbsJobIDMapServiceType;
+			return pbsJobIDNameMap;
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ExecutableException){
 				throw (ExecutableException)e;
 			}else{
-				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+				throw new ExecutableException("Error getRunningJobs(): "+e.getMessage());
 			}
 		}
 	}

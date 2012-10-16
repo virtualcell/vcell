@@ -61,13 +61,13 @@ siteCfgDir=${siteRootDir}/configs
 siteLibDir=${siteRootDir}/lib
 logdir=/share/apps/vcell/logs/${site}
 jvmmem=-Xmx500M
-
+batchSystemType=GENERATED
 # define arguments
 
 # pbs pde only
 if [ "${servicetype}" = "PbsC" ] ; then
 	mainclass=cbit.vcell.message.server.sim.HtcSimulationWorker
-	arguments="${ordinal} ${logdir} SGE" 
+	arguments="${ordinal} ${logdir} ${batchSystemType}" 
 fi
 
 # ode and local pde
@@ -101,7 +101,7 @@ fi
 # Dispatch
 if [ "${servicetype}" = "Dsptch" ] ; then
 	mainclass=cbit.vcell.message.server.dispatcher.SimulationDispatcher
-	arguments="${ordinal} ${logdir}"
+	arguments="${ordinal} ${logdir} ${batchSystemType}"
 fi
 serviceid=${site}_${servicetype}_${ordinal}
 # kill running instance
