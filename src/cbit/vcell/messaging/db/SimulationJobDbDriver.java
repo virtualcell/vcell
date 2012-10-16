@@ -131,25 +131,25 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus getNextObsoleteSimulation(Connection con, long intervalSeconds) throws SQLException {
+public SimulationJobStatus[] getObsoleteSimulations(Connection con, long intervalSeconds) throws SQLException {
 	String sql = new String(standardJobStatusSQL);
 	sql += " AND (sysdate-" + jobTable.latestUpdateDate + ")*86400>" + intervalSeconds
 		+ " AND (" + jobTable.serverID + "='" + VCellServerID.getSystemServerID() + "')"
 		+ " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber() // running
 		+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
-		+ ") and rownum<2 order by " + jobTable.submitDate;	
+		+ ") order by " + jobTable.submitDate;	
 			
 	Statement stmt = con.createStatement();
-	SimulationJobStatus simJobStatus = null;
+	ArrayList<SimulationJobStatus> simJobStatusList = new ArrayList<SimulationJobStatus>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
-		if (rset.next()) {
-			simJobStatus = jobTable.getSimulationJobStatus(rset);
+		while (rset.next()){
+			simJobStatusList.add(jobTable.getSimulationJobStatus(rset));
 		}
 	} finally {
 		stmt.close();
 	}
-	return simJobStatus;
+	return simJobStatusList.toArray(new SimulationJobStatus[0]);
 }
 
 

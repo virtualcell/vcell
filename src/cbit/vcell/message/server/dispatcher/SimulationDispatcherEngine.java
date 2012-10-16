@@ -160,4 +160,16 @@ public class SimulationDispatcherEngine {
 		}
 	}
 
+
+	public void onSystemAbort(SimulationJobStatus jobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) {
+		try {
+			KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
+			int jobIndex = jobStatus.getJobIndex();
+			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
+			simStateMachine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, session, log);
+		} catch (Exception ex) {
+			log.exception(ex);
+		}
+	}
+
 }

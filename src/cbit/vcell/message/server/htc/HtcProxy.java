@@ -3,12 +3,14 @@ package cbit.vcell.message.server.htc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
@@ -36,7 +38,20 @@ public abstract class HtcProxy {
 		HTC_SIMULATION_JOB,
 		HTC_SERVICE_JOB;
 	}
-	protected final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	
+	public static class SimTaskInfo {
+		public final KeyValue simId;
+		public final int jobIndex;
+		public final int taskId;
+	
+		public SimTaskInfo(KeyValue simId, int jobIndex, int taskId){
+			this.simId = simId;
+			this.jobIndex = jobIndex;
+			this.taskId = taskId;
+		}
+	}
+	
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
 	protected CommandService commandService = null;
 
 	
@@ -66,14 +81,44 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 	
-	public abstract TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+	public abstract TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+
+	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
+
+	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;
 	}
 
-	public static String createHtcSimJobName(KeyValue simKey, int simJobIndex) {
-		return HTC_SIMULATION_JOB_NAME_PREFIX+simKey.toString()+"_"+simJobIndex;
+	public static SimTaskInfo getSimTaskInfoFromSimJobName(String simJobName) throws HtcException{
+		if (simJobName.startsWith(HTC_SIMULATION_JOB_NAME_PREFIX)){
+			String restOfName = simJobName.substring(HTC_SIMULATION_JOB_NAME_PREFIX.length());
+			StringTokenizer tokens = new StringTokenizer(restOfName,"_");
+			String simIdString = null;
+			if (tokens.hasMoreTokens()){
+				simIdString = tokens.nextToken();
+			}
+			String jobIndexString = null;
+			if (tokens.hasMoreTokens()){
+				jobIndexString = tokens.nextToken();
+			}
+			String taskIdString = null;
+			if (tokens.hasMoreTokens()){
+				taskIdString = tokens.nextToken();
+			}
+			if (simIdString!=null && jobIndexString!=null && taskIdString!=null){
+				KeyValue simId = new KeyValue(simIdString);
+				int jobIndex = Integer.valueOf(jobIndexString);
+				int taskId = Integer.valueOf(taskIdString);
+				return new SimTaskInfo(simId,jobIndex,taskId);
+			}
+		}
+		throw new HtcException("simJobName : "+simJobName+" not in expected format for a simulation job name");
+	}
+
+	public static String createHtcSimJobName(SimTaskInfo simTaskInfo) {
+		return HTC_SIMULATION_JOB_NAME_PREFIX+simTaskInfo.simId.toString()+"_"+simTaskInfo.jobIndex+"_"+simTaskInfo.taskId;
 	}
 
 	public static void writeUnixStyleTextFile(File file, String javaString)

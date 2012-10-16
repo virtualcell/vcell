@@ -1,23 +1,16 @@
 package cbit.vcell.message.server.htc.sge;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCellServerID;
@@ -30,8 +23,6 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.pbs.PbsJobID;
-import cbit.vcell.xml.XmlHelper;
 
 public class SgeProxy extends HtcProxy {
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
@@ -392,11 +383,21 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 	}
 
 	@Override
-	public TreeMap<HtcJobID, String> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		return getRunningJobs(serverID.toString().toUpperCase()+"_");
+	}
+
+	@Override
+	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
+		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
+	}
+
+	@Override
+	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
 		try{
 			String[] cmd = new String[]{JOB_CMD_STATUS, "-xml"};//get running jobs in XML format
 			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDMapServiceType =
+			TreeMap<HtcJobID, String> pbsJobIDMapJobName =
 				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
 					@Override
 					public int compare(HtcJobID o1, HtcJobID o2) {
@@ -409,16 +410,16 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 			for(Element jobInfoElement : qstatInfoChildren){
 				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
 				String jobName = jobInfoElement.getChildText("JB_name").trim();
-				if(jobName.startsWith(serverID.toString().toUpperCase()+"_"))
-				pbsJobIDMapServiceType.put(new SgeJobID(jobID), jobName);
+				if(jobName.startsWith(jobNamePrefix))
+				pbsJobIDMapJobName.put(new SgeJobID(jobID), jobName);
 			}
-			return pbsJobIDMapServiceType;
+			return pbsJobIDMapJobName;
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ExecutableException){
 				throw (ExecutableException)e;
 			}else{
-				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+				throw new ExecutableException("Error getRunningJobs: "+e.getMessage());
 			}
 		}
 	}
