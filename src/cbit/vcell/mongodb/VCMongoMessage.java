@@ -18,6 +18,7 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -78,6 +79,8 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_msgtype_jmsMessageSent						= "jmsMessageSent";
 	public final static String MongoMessage_msgtype_commandServiceCall					= "pbsCall";
 	public final static String MongoMessage_msgtype_infoMsg								= "infoMsg";
+	public final static String MongoMessage_msgtype_obsoleteJob							= "obsoleteJob";
+	public final static String MongoMessage_msgtype_zombieJob							= "zombieJob";
 	public final static String MongoMessage_msgTime				= "msgTime";
 	public final static String MongoMessage_msgTimeNice			= "msgTimeNice";
 	
@@ -146,6 +149,7 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_stderr				= "stderr";
 	public final static String MongoMessage_exitCode			= "exitCode";
 	public final static String MongoMessage_info				= "info";
+	public final static String MongoMessage_simStateMachineDump = "simStateMachine";
 	private BasicDBObject doc = null;
 	
 	VCMongoMessage(BasicDBObject doc){
@@ -360,6 +364,46 @@ public final class VCMongoMessage {
 			addObject(newSimJobStatusObject, newSimulationJobStatus);
 			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
 	
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendZombieJob(SimulationJobStatus jobStatus, String failureMessage, HtcJobID htcJobID) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_zombieJob);
+
+			dbObject.put(MongoMessage_info,failureMessage);
+			dbObject.put(MongoMessage_htcJobID,htcJobID.toDatabase());
+			
+			addObject(dbObject,jobStatus);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendObsoleteJob(SimulationJobStatus jobStatus, String failureMessage, SimulationStateMachine simStateMachine) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_obsoleteJob);
+
+			dbObject.put(MongoMessage_info,failureMessage);
+			dbObject.put(MongoMessage_simStateMachineDump,simStateMachine.show());
+			
+			addObject(dbObject,jobStatus);
+			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);

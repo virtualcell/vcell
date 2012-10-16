@@ -3,6 +3,9 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import javax.media.TransitionEvent;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.MessageConstants;
@@ -40,8 +43,20 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public class SimulationStateMachine {
 	private KeyValue simKey;
 	private int jobIndex;
-	private ArrayList<SimulationTaskProcessState> simTaskProcessStates = new ArrayList<SimulationTaskProcessState>();
-	private ArrayList<AbstractStateMachineEvent> stateMachineEvents = new ArrayList<AbstractStateMachineEvent>();
+	private ArrayList<StateMachineTransition> stateMachineTransitions = new ArrayList<StateMachineTransition>();
+	public static class StateMachineTransition {
+		public final AbstractStateMachineEvent event;
+		public final SimulationJobStatus oldSimJobStatus;
+		public final SimulationJobStatus newSimJobStatus;
+		public StateMachineTransition(AbstractStateMachineEvent event, SimulationJobStatus oldSimJobStatus, SimulationJobStatus newSimJobStatus){
+			this.event = event;
+			this.oldSimJobStatus = oldSimJobStatus;
+			this.newSimJobStatus = newSimJobStatus;
+		}
+		public String toString(){
+			return "event=("+event+") : oldJobStatus=("+oldSimJobStatus+") : newJobStatus=("+newSimJobStatus+")";
+		}
+	}
 	
 	//==============================================================
 	//
@@ -49,38 +64,65 @@ public class SimulationStateMachine {
 	//
 	//==============================================================
 	public abstract class AbstractStateMachineEvent {
-		final long timestampMS = System.currentTimeMillis();		
+		final long timestampMS = System.currentTimeMillis();
+		final Integer taskID;
+		public AbstractStateMachineEvent(Integer taskID){
+			this.taskID = taskID;
+		}
+		protected String getTimeAndTaskString(){
+			return "timeStampMS="+timestampMS+",elaspedTimeS="+((System.currentTimeMillis()-timestampMS)/1000)+", taskID='"+taskID+"'";
+		}
 	}
 	public class WorkerStateMachineEvent extends AbstractStateMachineEvent {
 		final WorkerEvent workerEvent;
-		public WorkerStateMachineEvent(WorkerEvent workerEvent){
+		public WorkerStateMachineEvent(Integer taskID, WorkerEvent workerEvent){
+			super(taskID);
 			this.workerEvent = workerEvent;
+		}
+		public String toString(){
+			return "WorkerStateMachineEvent("+getTimeAndTaskString()+",workerEvent='"+workerEvent.toString()+"')";
 		}
 	}
 	public class StartStateMachineEvent extends AbstractStateMachineEvent {
-		final User user;
-		public StartStateMachineEvent(User user){
-			this.user = user;
+		public StartStateMachineEvent(Integer taskID){
+			super(taskID);
+		}
+		public String toString(){
+			return "StartStateMachineEvent("+getTimeAndTaskString()+")";
 		}
 	}
 	public class StopStateMachineEvent extends AbstractStateMachineEvent {
-		final User user;
-		public StopStateMachineEvent(User user){
-			this.user = user;
+		public StopStateMachineEvent(Integer taskID){
+			super(taskID);
+		}
+		public String toString(){
+			return "StopStateMachineEvent("+getTimeAndTaskString()+")";
 		}
 	}
 	public class PreloadStateMachineEvent extends AbstractStateMachineEvent {
-		final SimulationJobStatus simJobStatus;
-		public PreloadStateMachineEvent(SimulationJobStatus simJobStatus){
-			this.simJobStatus = simJobStatus;
+		public PreloadStateMachineEvent(Integer taskID){
+			super(taskID);
+		}
+		public String toString(){
+			return "PreloadStateMachineEvent("+getTimeAndTaskString()+")";
 		}
 	}
 	public class DispatchStateMachineEvent extends AbstractStateMachineEvent {
-		public DispatchStateMachineEvent(){
+		public DispatchStateMachineEvent(Integer taskID){
+			super(taskID);
+		}
+		public String toString(){
+			return "DispatchStateMachineEvent("+getTimeAndTaskString()+")";
 		}
 	}
 	public class AbortStateMachineEvent extends AbstractStateMachineEvent {
-		public AbortStateMachineEvent(){
+		public final String failureMessage;
+		public AbortStateMachineEvent(Integer taskID, String failureMessage){
+			super(taskID);
+			this.failureMessage = failureMessage;
+		}
+		public String toString(){
+			return "AbortStateMachineEvent("+getTimeAndTaskString()+")";
 		}
 	}
 
@@ -93,18 +135,8 @@ public class SimulationStateMachine {
 	public SimulationStateMachine(SimulationJobStatus[] simJobStatus) {
 		this.simKey = simJobStatus[0].getVCSimulationIdentifier().getSimulationKey();
 		this.jobIndex = simJobStatus[0].getJobIndex();
-		for (SimulationJobStatus simulationJobStatus : simJobStatus){
-			SimulationExecutionStatus simulationExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();
-			if (simulationExecutionStatus!=null){
-				SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(simKey,jobIndex,simulationJobStatus.getTaskID());
-				simTaskProcessState.computeHost = simulationExecutionStatus.getComputeHost();
-				simTaskProcessState.endDate = simulationExecutionStatus.getEndDate();
-				simTaskProcessState.latestUpdateDate = simulationExecutionStatus.getLatestUpdateDate();
-				simTaskProcessState.htcJobID = simulationExecutionStatus.getHtcJobID();
-				simTaskProcessState.startDate = simulationExecutionStatus.getStartDate();
-				simTaskProcessStates.add(simTaskProcessState);
-			}
-			addStateMachineEvent(new PreloadStateMachineEvent(simulationJobStatus));
+		for (SimulationJobStatus jobStatus : simJobStatus){
+			addStateMachineTransition(new StateMachineTransition(new PreloadStateMachineEvent(jobStatus.getTaskID()), null, jobStatus));
 		}
 	}
 	
@@ -116,98 +148,26 @@ public class SimulationStateMachine {
 		return jobIndex;
 	}
 
-	public ArrayList<SimulationTaskProcessState> getSimTaskProcessStates() {
-		return simTaskProcessStates;
+	public List<StateMachineTransition> getStateMachineTransitions() {
+		return stateMachineTransitions;
+	}
+	
+	public String show(){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("SimulationStateMachine for SimID='"+simKey+"', jobIndex="+jobIndex+"\n");
+		for (StateMachineTransition stateMachineTransition : stateMachineTransitions){
+			buffer.append(stateMachineTransition+"\n");
+		}
+		return buffer.toString();
 	}
 
-	public SimulationTaskProcessState getLatestSimTaskProcessState() {
-		int taskID = -1;
-		SimulationTaskProcessState simTaskProcessState = null;
-		for (SimulationTaskProcessState taskState : simTaskProcessStates){
-			if (taskState.taskID > taskID){
-				taskID = taskState.taskID;
-				simTaskProcessState = taskState;
-			}
-		}
-		return simTaskProcessState;
+	private void addStateMachineTransition(StateMachineTransition stateMachineTransition){
+		stateMachineTransitions.add(stateMachineTransition);
 	}
 
-	private void addStateMachineEvent(AbstractStateMachineEvent stateMachineEvent){
-		stateMachineEvents.add(stateMachineEvent);
-	}
-	
-	public SimulationTaskProcessState getSimTaskProcessState(int taskID){
-		for (SimulationTaskProcessState taskState : simTaskProcessStates){
-			if (taskState.taskID == taskID){
-				return taskState;
-			}
-		}
-		SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(simKey,  jobIndex, taskID);
-		simTaskProcessStates.add(simTaskProcessState);
-		return simTaskProcessState;
-	}
-	
-	private void addOrReplaceSimTaskProcessState(SimulationTaskProcessState newSimTaskProcessState){
-		SimulationTaskProcessState foundSimTaskProcState = null;
-		for (SimulationTaskProcessState taskState : simTaskProcessStates){
-			if (taskState.taskID == newSimTaskProcessState.taskID){
-				foundSimTaskProcState = taskState;
-			}
-		}
-		if (foundSimTaskProcState!=null){
-			simTaskProcessStates.remove(foundSimTaskProcState);
-		}
-		simTaskProcessStates.add(newSimTaskProcessState);
-	}
-
-	private SimulationTaskProcessState getNewTaskState_StopSimulation(int taskID){
-		SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(getSimTaskProcessState(taskID));
-		simTaskProcessState.endDate = null;
-		simTaskProcessState.hasData = false;
-		simTaskProcessState.latestUpdateDate = new Date();
-		simTaskProcessState.progress = null;
-		simTaskProcessState.startDate = null;
-		return simTaskProcessState;
-	}
-	
-	private SimulationTaskProcessState getNewTaskState_StartSimulation(int taskID){
-		SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(getSimTaskProcessState(taskID));
-		simTaskProcessState.endDate = null;
-		simTaskProcessState.hasData = false;
-		simTaskProcessState.latestUpdateDate = new Date();
-		simTaskProcessState.progress = null;
-		simTaskProcessState.startDate = null;
-		return simTaskProcessState;
-	}
-	
-	private SimulationTaskProcessState getNewTaskState_WorkerEvent(int taskID, WorkerEvent workerEvent){
-		SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(getSimTaskProcessState(taskID));
-		if (workerEvent.getHostName()!=null){
-			simTaskProcessState.computeHost = workerEvent.getHostName();
-		}
-		if (workerEvent.getProgress()!=null){
-			simTaskProcessState.progress = workerEvent.getProgress();
-		}
-		if (workerEvent.getTimePoint()!=null){
-			simTaskProcessState.timePoint = workerEvent.getTimePoint();
-		}		
-		return simTaskProcessState;
-	}
-
-	private SimulationTaskProcessState getNewTaskState_Dispatch(int taskID){
-		SimulationTaskProcessState simTaskProcessState = new SimulationTaskProcessState(getSimTaskProcessState(taskID));
-		simTaskProcessState.endDate = null;
-		simTaskProcessState.hasData = false;
-		simTaskProcessState.latestUpdateDate = new Date();
-		simTaskProcessState.progress = null;
-		simTaskProcessState.startDate = null;
-		return simTaskProcessState;
-	}
-	
 	public synchronized void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
 		WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 		VCMongoMessage.sendWorkerEvent(workerEventMessage);
-		addStateMachineEvent(new WorkerStateMachineEvent(workerEvent));
 		
 		String userName = workerEvent.getUserName(); // as the filter of the client
 		int taskID = workerEvent.getTaskID();
@@ -300,7 +260,6 @@ public class SimulationStateMachine {
 		
 		
 		SimulationJobStatus newJobStatus = null;
-		final SimulationTaskProcessState newTaskState = getNewTaskState_WorkerEvent(taskID, workerEvent);
 
 		if (workerEvent.isAcceptedEvent()) {
 			//
@@ -426,13 +385,9 @@ public class SimulationStateMachine {
 
 			}
 		}
-
-		if (newTaskState!=null){
-			addOrReplaceSimTaskProcessState(newTaskState);
-		}
+		SimulationJobStatus updatedSimJobStatus = null;
 		if (newJobStatus!=null){
-			SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus, newJobStatus);
-
+			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus, newJobStatus);
 			if (!newJobStatus.compareEqual(oldSimulationJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()) {		
 				Double progress = workerEvent.getProgress();
 				Double timepoint = workerEvent.getTimePoint();
@@ -447,17 +402,18 @@ public class SimulationStateMachine {
 		}else if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()){
 			Double progress = workerEvent.getProgress();
 			Double timepoint = workerEvent.getTimePoint();
-			StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
+			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus, oldSimulationJobStatus);
+			StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, progress, timepoint);
 			msgForClient.sendToClient(session);
 			log.print("Send status to client: " + msgForClient);
 		}else{
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
 		}
+		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(updatedSimJobStatus.getTaskID(), workerEvent), oldSimulationJobStatus, updatedSimJobStatus));
+
 	}
 
 	public synchronized void onStartRequest(User user, Simulation simulation, FieldDataIdentifierSpec[] fieldDataIdentifierSpecs, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
-
-		addStateMachineEvent(new StartStateMachineEvent(user));
 
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, simulation.getVersion().getOwner());
 		if (!user.equals(vcSimID.getOwner())) {
@@ -496,9 +452,7 @@ public class SimulationStateMachine {
 			// first task, start with 0
 			newTaskID = 0;
 		}
-		
-		addOrReplaceSimTaskProcessState(getNewTaskState_StartSimulation(newTaskID));
-		
+				
 		Date currentDate = new Date();
 		// new queue status
 		SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, MessageConstants.PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_WAITING);
@@ -520,6 +474,7 @@ public class SimulationStateMachine {
 				newTaskID, SimulationMessage.MESSAGE_JOB_WAITING, newQueueStatus, newExeStatus);
 		
 		SimulationJobStatus updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newJobStatus);
+		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(updatedSimJobStatus.getTaskID()), oldSimulationJobStatus, updatedSimJobStatus));
 			
 		StatusMessage message = new StatusMessage(updatedSimJobStatus, user.getName(), null, null);
 		message.sendToClient(session);
@@ -528,8 +483,6 @@ public class SimulationStateMachine {
 
 	public synchronized void onDispatch(VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 
-		addStateMachineEvent(new DispatchStateMachineEvent());
-		
 		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getSimulationJobStatus(simKey, jobIndex, taskID);
 		if (oldSimulationJobStatus == null) {
 			VCMongoMessage.sendInfo("onDispatch("+vcSimID.getID()+") Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "], status not found)");
@@ -546,6 +499,7 @@ public class SimulationStateMachine {
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		double allowableMemMB = Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB));
+		SimulationJobStatus updatedSimJobStatus = null;
 		
 		if (requiredMemMB > allowableMemMB) {						
 			//
@@ -560,7 +514,7 @@ public class SimulationStateMachine {
 					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed"),
 					newQueueStatus,newSimExeStatus);
 			
-			SimulationJobStatus updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newSimJobStatus);
+			updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newSimJobStatus);
 			
 			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);
@@ -580,18 +534,17 @@ public class SimulationStateMachine {
 			SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(simulationTask);
 			simTaskMessage.sendSimulationTask(session);
 			
-			SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
+			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
 			
 			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);
 		
-			addOrReplaceSimTaskProcessState(getNewTaskState_Dispatch(taskID));
 		}
+		addStateMachineTransition(new StateMachineTransition(new DispatchStateMachineEvent(updatedSimJobStatus.getTaskID()), oldSimulationJobStatus, updatedSimJobStatus));
+
 	}
 
 	public synchronized void onStopRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
-		
-		addStateMachineEvent(new StopStateMachineEvent(user));
 		
 		if (!user.equals(vcSimID.getOwner())) {
 			log.alert(user + " is not authorized to stop simulation (key=" + simKey + ")");
@@ -609,7 +562,6 @@ public class SimulationStateMachine {
 		for (SimulationJobStatus oldJobStatus : oldJobStatusArray){
 			SchedulerStatus schedulerStatus = oldJobStatus.getSchedulerStatus();
 			int taskID = oldJobStatus.getTaskID();
-			addOrReplaceSimTaskProcessState(getNewTaskState_StopSimulation(taskID));
 	
 			if (schedulerStatus.isActive()){
 				SimulationQueueEntryStatus simQueueEntryStatus = oldJobStatus.getSimulationQueueEntryStatus();
@@ -633,7 +585,8 @@ public class SimulationStateMachine {
 				session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);	
 				
 				SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldJobStatus, newJobStatus);
-				
+				addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(updatedSimJobStatus.getTaskID()), oldJobStatus, updatedSimJobStatus));
+
 				// update client
 				StatusMessage message = new StatusMessage(updatedSimJobStatus, user.getName(), null, null);
 				message.sendToClient(session);
@@ -642,11 +595,8 @@ public class SimulationStateMachine {
 	}
 
 	public synchronized void onSystemAbort(SimulationJobStatus oldJobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, UpdateSynchronizationException, DataAccessException, SQLException {
-		addStateMachineEvent(new AbortStateMachineEvent());
 		
-		SchedulerStatus schedulerStatus = oldJobStatus.getSchedulerStatus();
 		int taskID = oldJobStatus.getTaskID();
-		addOrReplaceSimTaskProcessState(getNewTaskState_StopSimulation(taskID));
 
 		//
 		// status information (initialized as if new record)
@@ -698,6 +648,7 @@ public class SimulationStateMachine {
 				taskID, SimulationMessage.jobFailed(failureMessage), newQueueStatus, newExeStatus);
 		
 		SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldJobStatus, newJobStatus);
+		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(updatedSimJobStatus.getTaskID(), failureMessage), oldJobStatus, updatedSimJobStatus));
 
 		String userName = "all";
 		SimulationJob simulationJob = simulationDatabase.getSimulationJob(simKey, jobIndex);
@@ -710,6 +661,19 @@ public class SimulationStateMachine {
 		StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, null, null);
 		msgForClient.sendToClient(session);
 		log.print("Send status to client: " + msgForClient);
+	}
+
+	public int getLatestKnownTaskID() {
+		int taskID = -1;
+		for (StateMachineTransition transition : stateMachineTransitions){
+			if (transition.event.taskID!=null && transition.event.taskID>taskID){
+				taskID = transition.event.taskID;
+			}
+			if (transition.newSimJobStatus!=null && transition.newSimJobStatus.getTaskID()>taskID){
+				taskID = transition.newSimJobStatus.getTaskID();
+			}
+		}
+		return taskID;
 	}
 
 }
