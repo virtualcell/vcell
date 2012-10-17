@@ -13,8 +13,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
@@ -25,7 +27,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.vcell.util.BeanUtils;
@@ -36,6 +41,7 @@ import org.vcell.util.Origin;
 
 import cbit.gui.graph.GraphContainerLayout;
 import cbit.gui.graph.GraphContainerLayoutVCellClassical;
+import cbit.gui.graph.Shape;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -43,6 +49,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.ReactionCartoonTool;
+import cbit.vcell.graph.ReactionContainerShape;
 import cbit.vcell.graph.StructureCartoon;
 import cbit.vcell.graph.structures.MembraneStructureSuite;
 import cbit.vcell.graph.structures.SingleStructureSuite;
@@ -458,6 +466,20 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		return bos;
 	}
 
+	public static ByteArrayOutputStream encodeJPEG(BufferedImage bufferedImage) throws Exception{
+		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(byteArrayOutputStream);
+		imageWriter.setOutput(imageOutputStream);
+		ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
+		imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		imageWriteParam.setCompressionQuality(1.0f);  // quality 0(very compressed, lossy) -> 1.0(less compressed,loss-less)
+		IIOImage iioImage = new IIOImage(bufferedImage, null, null);
+		imageWriter.write(null, iioImage, imageWriteParam);
+		imageOutputStream.close();
+		imageWriter.dispose();
+		return byteArrayOutputStream;
+	}
 
 //pretty similar to its static counterpart
 	protected ByteArrayOutputStream generateDocStructureImage(Model model, String resolution) throws Exception {
@@ -727,67 +749,39 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	}
 
 
-	public static ByteArrayOutputStream generateReactionsImage(Model model, Structure struct, String resolution) throws Exception {
-			      
-		final int SIZE_INC = 10; 
-        if (model == null || struct == null || !model.contains(struct) || !isValidResolutionSetting(resolution)) {
-	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for structure: " + struct.getName() + 
-		    									" in model: " + model.getName());
-        }
-	    ByteArrayOutputStream bos;
-		ReactionCartoon rcartoon = new ReactionCartoon();
-		rcartoon.setModel(model);
-		StructureSuite layout;
-		if(struct instanceof Membrane) {
-			layout = new MembraneStructureSuite(((Membrane) struct));
-		} else {
-			layout = new SingleStructureSuite(struct);
-		}
-		StructureSuite structureSuite = layout;
-		rcartoon.setStructureSuite(structureSuite);
-		rcartoon.refreshAll();
-		int zoom = ITextWriter.getZoom(resolution);
-		System.out.println(resolution + " " + zoom);
-		rcartoon.getResizeManager().setZoomPercent(rcartoon.getResizeManager().getZoomPercent()*zoom);
-		//dummy settings to get the real dimensions.
-		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
-		int width = (int)prefDim.getWidth()*110/100 + SIZE_INC;           
-		int height = (int)prefDim.getHeight()*110/100 + SIZE_INC;
-		BufferedImage bufferedImage;
-		Graphics2D g;
-		while (true) {
-			System.out.println("Image width: " + width + " height: " + height);
-			bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+	public static ByteArrayOutputStream generateReactionsImage(ReactionCartoonTool reactionCartoonToolIN) throws Exception {
+		
+		Shape selectedShape = null;
+//		try {
+			Point relPosition = reactionCartoonToolIN.getReactionCartoon().getTopShape().getRelPos();
+			int zoomPercent = reactionCartoonToolIN.getReactionCartoon().getResizeManager().getZoomPercent();
+			
+			//unselect reactioncontainershape to remove highlights
+			selectedShape = reactionCartoonToolIN.getReactionCartoon().getSelectedShape();
+			if((selectedShape instanceof ReactionContainerShape)){
+				reactionCartoonToolIN.getReactionCartoon().clearSelection();
+			}
+			ByteArrayOutputStream bos;
+			//dummy settings to get the real dimensions.
+			BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+			Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
+			Dimension prefDim = reactionCartoonToolIN.getReactionCartoon().getPreferedCanvasSize(dummyGraphics);
+			BufferedImage bufferedImage;
+			Graphics2D g;
+			bufferedImage = new BufferedImage(prefDim.width/*-relPosition.x*/, prefDim.height/*-relPosition.y*/, BufferedImage.TYPE_3BYTE_BGR);
 			g = (Graphics2D)bufferedImage.getGraphics();
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
-			containerLayout.layout(rcartoon, g, new Dimension(width,height));
-			break;
-		}
-		g.setBackground(java.awt.Color.white);
-		g.clearRect(0, 0, width, height);
-		g.setColor(java.awt.Color.red);
-		rcartoon.paint(g, null);
-		bos = new ByteArrayOutputStream();
-
-		ImageOutputStream imageOut = null;
-
-		try {
-			imageOut = ImageIO.createImageOutputStream(bos);
-		} catch (java.io.IOException ioe) {
-			ioe.printStackTrace(System.out);
-		}
-		
-		JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-		imageWriter.setOutput(imageOut);
-		imageWriter.write(bufferedImage);
-		
-		bos.flush();
-		
-		return bos;
+			g.setFont(reactionCartoonToolIN.getGraphPane().getFont());
+			AffineTransform xform = g.getTransform();
+			xform.translate(-relPosition.x*zoomPercent/100,-relPosition.y*zoomPercent/100);
+			g.setTransform(xform);
+			reactionCartoonToolIN.getReactionCartoon().paint(g, reactionCartoonToolIN.getGraphPane());
+			bos = encodeJPEG(bufferedImage);
+			return bos;
+//		}finally{
+//			if(selectedShape != null){reactionCartoonToolIN.getReactionCartoon().selectShape(selectedShape);}
+//		}
 	}
 
 

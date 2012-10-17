@@ -49,6 +49,16 @@ import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.MenuSelectionManager;
 
+import org.vcell.util.BeanUtils;
+
+import cbit.gui.graph.actions.CartoonToolEditActions;
+import cbit.gui.graph.actions.CartoonToolGroupActions;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.actions.CartoonToolPaintingActions;
+import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
+import cbit.gui.graph.actions.GraphViewAction;
+import cbit.gui.graph.groups.VCGroupManager;
+
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
 
@@ -68,8 +78,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		CartoonToolMiscActions.getDefaultActions(this);
 	protected final List<GraphViewAction> editActions = 
 		CartoonToolEditActions.getDefaultActions(this);
-	protected final List<GraphViewAction> saveAsImageActions = 
-		CartoonToolSaveAsImageActions.getDefaultActions(this);
 	
 	public static enum Mode { SELECT("select"), FEATURE("feature"), SPECIES("species"), LINE("line"), 
 		LINEDIRECTED("lineDirected"), LINECATALYST("lineCatalyst"), STEP("step"), FLUX("flux"), 
@@ -84,7 +92,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	private List<JMenuItem> lastMenuList = null;
 
 	// reaction and structure cartoon image menus
-	JMenuItem saveAsImageMenu = new JMenu(CartoonToolSaveAsImageActions.getMenuAction(this));
+	JMenuItem saveAsImageMenu = new JMenuItem(CartoonToolSaveAsImageActions.getMenuAction(this));
 
 	protected List<JMenuItem> miscMenuItems = new ArrayList<JMenuItem>();
 	protected List<JMenuItem> editMenuItems = new ArrayList<JMenuItem>();
@@ -102,9 +110,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 			editMenuItems.add(new JMenuItem(editAction));
 		}
 		menuItems.addAll(editMenuItems);
-		for(GraphViewAction saveAsImageAction : CartoonToolSaveAsImageActions.getDefaultActions(this)) {
-			saveAsImageMenu.add(new JMenuItem(saveAsImageAction));
-		}
 		menuItems.add(saveAsImageMenu);
 		for(GraphViewAction paintingAction : paintingActions) {
 			paintingMenuItems.add(new JMenuItem(paintingAction));

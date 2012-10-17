@@ -232,18 +232,9 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 //				showReactionSlicesCartoonEditorPanel((StructureShape) shape);
 //			}
 
-		} else if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolSaveAsImageActions.MenuAction.MENU_ACTION)) {
 			try {
-				String resType = null;
-				if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)) {
-					resType = ITextWriter.HIGH_RESOLUTION;
-				} else if (menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)) {
-					resType = ITextWriter.MEDIUM_RESOLUTION;
-				} else if (menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
-					resType = ITextWriter.LOW_RESOLUTION;
-				}
+				String resType = ITextWriter.LOW_RESOLUTION;
 				if (shape instanceof StructureShape) {
 					showSaveStructureImageDialog(((StructureShape) shape).getModel(), resType);
 				}
@@ -572,9 +563,7 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 					|| menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.AddGlobalParameter.MENU_ACTION)
 					|| menuAction.equals(CartoonToolMiscActions.ShowParameters.MENU_ACTION)
-					|| menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
-					|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
-					|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
+					|| menuAction.equals(CartoonToolSaveAsImageActions.MenuAction.MENU_ACTION)) {
 				return true;
 			}
 		}
