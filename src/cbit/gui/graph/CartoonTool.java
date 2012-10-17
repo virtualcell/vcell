@@ -11,16 +11,6 @@
 package cbit.gui.graph;
 
 
-import org.vcell.util.BeanUtils;
-
-import cbit.gui.graph.actions.CartoonToolEditActions;
-import cbit.gui.graph.actions.CartoonToolMiscActions;
-import cbit.gui.graph.actions.CartoonToolGroupActions;
-import cbit.gui.graph.actions.CartoonToolPaintingActions;
-import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
-import cbit.gui.graph.actions.GraphViewAction;
-import cbit.gui.graph.groups.VCGroupManager;
-
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -39,7 +29,6 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
-import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -47,6 +36,16 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.MenuSelectionManager;
+
+import org.vcell.util.BeanUtils;
+
+import cbit.gui.graph.actions.CartoonToolEditActions;
+import cbit.gui.graph.actions.CartoonToolGroupActions;
+import cbit.gui.graph.actions.CartoonToolMiscActions;
+import cbit.gui.graph.actions.CartoonToolPaintingActions;
+import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
+import cbit.gui.graph.actions.GraphViewAction;
+import cbit.gui.graph.groups.VCGroupManager;
 
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
@@ -67,8 +66,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		CartoonToolMiscActions.getDefaultActions(this);
 	protected final List<GraphViewAction> editActions = 
 		CartoonToolEditActions.getDefaultActions(this);
-	protected final List<GraphViewAction> saveAsImageActions = 
-		CartoonToolSaveAsImageActions.getDefaultActions(this);
 	
 	public static enum Mode { SELECT("select"), FEATURE("feature"), SPECIES("species"), LINE("line"), 
 		LINEDIRECTED("lineDirected"), LINECATALYST("lineCatalyst"), STEP("step"), FLUX("flux"), 
@@ -83,7 +80,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	private List<JMenuItem> lastMenuList = null;
 
 	// reaction and structure cartoon image menus
-	JMenuItem saveAsImageMenu = new JMenu(CartoonToolSaveAsImageActions.getMenuAction(this));
+	JMenuItem saveAsImageMenu = new JMenuItem(CartoonToolSaveAsImageActions.getMenuAction(this));
 
 	protected List<JMenuItem> miscMenuItems = new ArrayList<JMenuItem>();
 	protected List<JMenuItem> editMenuItems = new ArrayList<JMenuItem>();
@@ -101,9 +98,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 			editMenuItems.add(new JMenuItem(editAction));
 		}
 		menuItems.addAll(editMenuItems);
-		for(GraphViewAction saveAsImageAction : CartoonToolSaveAsImageActions.getDefaultActions(this)) {
-			saveAsImageMenu.add(new JMenuItem(saveAsImageAction));
-		}
 		menuItems.add(saveAsImageMenu);
 		for(GraphViewAction paintingAction : paintingActions) {
 			paintingMenuItems.add(new JMenuItem(paintingAction));
