@@ -26,16 +26,14 @@ import java.util.IdentityHashMap;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
 import javax.swing.JViewport;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
@@ -73,7 +71,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureUtil;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.publish.ITextWriter;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
@@ -433,21 +430,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			} catch (Exception e) {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage(), e);
 			}
-		} else if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
+		} else if (menuAction.equals(CartoonToolSaveAsImageActions.MenuAction.MENU_ACTION)) {
 			try {
 				String resType = null;
-				if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)) {
-					resType = ITextWriter.HIGH_RESOLUTION;
-				} else if (menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)) {
-					resType = ITextWriter.MEDIUM_RESOLUTION;
-				} else if (menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
-					resType = ITextWriter.LOW_RESOLUTION;
-				}
 				if (shape instanceof ReactionContainerShape) {
-					showSaveReactionImageDialog(
-							((ReactionContainerShape) shape).getStructure(), resType);
+					showSaveReactionImageDialog();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -1673,9 +1660,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 		}
 
-		if (menuAction.equals(CartoonToolSaveAsImageActions.HighRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.MedRes.MENU_ACTION)
-				|| menuAction.equals(CartoonToolSaveAsImageActions.LowRes.MENU_ACTION)) {
+		if (menuAction.equals(CartoonToolSaveAsImageActions.MenuAction.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
 				return true;
 			}
@@ -1776,32 +1761,16 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 
 	// TO DO: allow user preferences for directory selection.
-	public void showSaveReactionImageDialog(Structure struct, String resLevel)
-			throws Exception {
-		if (struct == null || getModel() == null) { // or
-			// throw
-			// exception?
-			System.err
-					.println("Insufficient params for generating reactions image.");
-			return;
-		}
-		if (resLevel == null) { // default resolution.
-			resLevel = ITextWriter.HIGH_RESOLUTION;
-		}
-		System.out.println("Processing save as Image request for: "
-				+ struct.getName() + " " + getModel().getName() + "(" + resLevel
-				+ ")");
+	public void showSaveReactionImageDialog() throws Exception {
 		// set file filter
-		SimpleFilenameFilter gifFilter = new SimpleFilenameFilter("gif");
-		final java.io.File defaultFile = new java.io.File(getModel().getName() + "_"
-				+ struct.getName() + ".gif");
-		ClientServerManager csm = (ClientServerManager) getDocumentManager()
-				.getSessionManager();
+		SimpleFilenameFilter jpgFilter = new SimpleFilenameFilter("jpg");
+		final java.io.File defaultFile = new java.io.File(getModel().getName()+".jpg");
+		ClientServerManager csm = (ClientServerManager) getDocumentManager().getSessionManager();
 		UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 		VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.addChoosableFileFilter(gifFilter);
+		fileChooser.addChoosableFileFilter(jpgFilter);
 		fileChooser.setSelectedFile(defaultFile);
 		fileChooser.setDialogTitle("Save Image As...");
 		// a hack to fix the jdk 1.2 problem (?) of losing the selected file
@@ -1830,8 +1799,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 				//System.out.println("Saving reactions image to file: " + selectedFile.toString());
-				getDocumentManager().generateReactionsImage(getModel(), struct, resLevel, 
-						new FileOutputStream(selectedFile));
+				getDocumentManager().generateReactionsImage(new FileOutputStream(selectedFile),this);
 				//reset the user preference for the default path, if needed.
 				String newPath = selectedFile.getParent();
 				if (!newPath.equals(defaultPath)) {
