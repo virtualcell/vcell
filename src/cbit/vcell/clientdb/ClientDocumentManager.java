@@ -71,14 +71,13 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionStepInfo;
-import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
@@ -760,9 +759,9 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 	}
 
 
-	public void generateReactionsImage(Model model, Structure struct, String resolution, java.io.FileOutputStream fos) throws Exception {
+	public void generateReactionsImage(java.io.FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN) throws Exception {
 
-		java.io.ByteArrayOutputStream bos = ITextWriter.generateReactionsImage(model, struct, resolution);
+		java.io.ByteArrayOutputStream bos = ITextWriter.generateReactionsImage(reactionCartoonToolIN);
 		try {
 			bos.flush();
 			bos.writeTo(fos);
