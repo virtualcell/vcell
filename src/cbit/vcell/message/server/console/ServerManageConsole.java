@@ -2753,6 +2753,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
 		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
+		userLoginInfo.setUser(user);
 		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
 		BigString simxml = dbProxy.getSimulationXML(simKey);
 		if (simxml == null) {
@@ -3004,7 +3005,9 @@ private void stopService(ServiceSpec ss) {
 public void stopSimulation(String userid, KeyValue simKey) {
 	try {
 		User user = adminDbTop.getUser(userid, true);
-		RpcDbServerProxy dbProxy = new RpcDbServerProxy(new UserLoginInfo(user.getName(),null),vcMessaging_rpcProducerSession,log);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(user.getName(),null);
+		userLoginInfo.setUser(user);
+		RpcDbServerProxy dbProxy = new RpcDbServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
 		BigString simxml = dbProxy.getSimulationXML(simKey);
 		if (simxml == null) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -3015,7 +3018,7 @@ public void stopSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		RpcSimServerProxy simProxy = new RpcSimServerProxy(new UserLoginInfo(user.getName(),null),vcMessaging_rpcProducerSession,log);
+		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
 		simProxy.stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
