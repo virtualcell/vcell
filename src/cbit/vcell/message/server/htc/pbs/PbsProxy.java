@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
@@ -339,7 +340,52 @@ public final class PbsProxy extends HtcProxy {
 		}
 	}
 
-
+	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+		try{
+			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
+			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
+			Vector<String> cmdV = new Vector<String>();
+			cmdV.add(JOB_CMD_STATUS);
+			cmdV.add("-f");
+			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
+				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
+			}
+			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+			String line = null;
+			PbsJobID latestpbsJobID = null;
+			String latestJobName = null;
+			String latestErrorPath = null;
+			while((line = br.readLine()) != null){
+				StringTokenizer st = new StringTokenizer(line," \t");
+				if(line.startsWith("Job Id:")){
+					st.nextToken();st.nextToken();
+					latestpbsJobID = new PbsJobID(st.nextToken());
+				}else if(latestpbsJobID != null){
+					if(line.trim().startsWith("Job_Name =")){
+						st.nextToken();st.nextToken();
+						latestJobName = st.nextToken();
+					}else if(line.trim().startsWith("Error_Path = ")){
+						st.nextToken();st.nextToken();
+						latestErrorPath = st.nextToken();
+					}else if(line.trim().startsWith("Output_Path =")){
+						st.nextToken();st.nextToken();
+						String latestOutputPath = st.nextToken();
+						serviceJobInfos.add(new ServiceJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+					}
+				}
+			}
+			return serviceJobInfos;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(e instanceof ExecutableException){
+				throw (ExecutableException)e;
+			}else{
+				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+			}
+		}
+	}
+	
 	public ArrayList<RunningPbsJobRecord> getRunningPBSJobs() throws ExecutableException {
 		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList<RunningPbsJobRecord>();
 

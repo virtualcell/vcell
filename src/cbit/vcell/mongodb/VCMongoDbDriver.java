@@ -128,7 +128,7 @@ public class VCMongoDbDriver implements Runnable {
             try {
                 sendMessages();
                 try {
-                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbThreadSleepMS));
+                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
 					Thread.sleep(sleepTimeMS);
 				} catch (InterruptedException e) {
 				}

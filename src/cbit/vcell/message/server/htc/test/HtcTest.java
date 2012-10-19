@@ -21,6 +21,7 @@ public class HtcTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		CommandServiceSsh cmdssh = null;
 		try {
 			if (args.length != 2){
 				System.out.println("Usage: HtcTest username password");
@@ -28,18 +29,34 @@ public class HtcTest {
 			}
 			String username = args[0];
 			String password = args[1];
-//			HtcProxy htcProxy = new PbsProxy(new CommandServiceSsh("sigcluster.cam.uchc.edu", username, password));
-			HtcProxy htcProxy = new SgeProxy(new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password));
+			cmdssh = new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password);
+//			HtcProxy htcProxy = new PbsProxy(cmdssh);
+			HtcProxy htcProxy = new SgeProxy(cmdssh);
 //			testHtcProxy1cmd(htcProxy);
 //			testHtcProxy2cmd(htcProxy);
 			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
-			htcProxy.getCommandService().close();
-			
+			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
+//			htcProxy.getCommandService().close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			if(cmdssh != null){cmdssh.close();}
 		}
 	}
 
+	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
+		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
+		java.util.Vector<cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo> sjinfos = htcProxy.getServiceJobInfos(serverID);
+		for(cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo sjInfo : sjinfos){
+			String jobID = null;
+			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
+				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
+			}else if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.sge.SgeJobID){
+				jobID = ((cbit.vcell.message.server.htc.sge.SgeJobID)sjInfo.getHtcJobID()).getSgeJobID();
+			}
+			System.out.println(sjInfo.getServiceJobName()+" "+jobID+" "+sjInfo.getOutputPath()+" "+sjInfo.getErrorPath());
+		}
+	}
 	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
 		try {
 			System.out.println("getting services");

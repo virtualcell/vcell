@@ -12,6 +12,7 @@ import java.nio.charset.CharsetEncoder;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
@@ -34,6 +35,30 @@ public abstract class HtcProxy {
 	 *
 	 */
 	
+	public static class ServiceJobInfo{
+		private HtcJobID htcJobID;
+		private String serviceJobName;
+		private String errorPath;
+		private String outputPath;
+		public ServiceJobInfo(HtcJobID htcJobID, String serviceJobName,String errorPath,String outputPath) {
+			this.htcJobID = htcJobID;
+			this.serviceJobName = serviceJobName;
+			this.errorPath = errorPath;
+			this.outputPath = outputPath;
+		}
+		public HtcJobID getHtcJobID() {
+			return htcJobID;
+		}
+		public String getServiceJobName(){
+			return serviceJobName;
+		}
+		public String getErrorPath() {
+			return errorPath;
+		}
+		public String getOutputPath() {
+			return outputPath;
+		}
+	}
 	protected enum HtcJobCategory {
 		HTC_SIMULATION_JOB,
 		HTC_SERVICE_JOB;
@@ -86,6 +111,7 @@ public abstract class HtcProxy {
 	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
 
 	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
+	public abstract Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;
