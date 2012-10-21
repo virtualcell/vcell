@@ -15,6 +15,8 @@ import org.vcell.util.document.VCellServerID;
 
 public abstract class CommandService {
 
+	public static boolean bQuiet = false;
+	
 	public static class CommandOutput {
 		private String[] commandStrings;
 		private String standardOutput;
