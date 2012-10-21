@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -21,10 +22,13 @@ import com.mongodb.WriteResult;
 
 public class VCMongoDbDriver implements Runnable {
 	
+	public static boolean bQuiet = false;
+	
 	private static VCMongoDbDriver mongoDriverSingleton = null;
 
 	private Mongo m = null;
 	private SessionLog log = new StdoutSessionLog("mongoDbDriver");
+	private NullSessionLog nullSessionLog = new NullSessionLog();
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
 	private Thread messageProcessingThread = null;
@@ -45,6 +49,9 @@ public class VCMongoDbDriver implements Runnable {
 	}
 	
 	public SessionLog getSessionLog(){
+		if(bQuiet){
+			return nullSessionLog;
+		}
 		return log;
 	}
 	
@@ -82,11 +89,11 @@ public class VCMongoDbDriver implements Runnable {
 	        	String errorString = writeResult.getError();////???????
 	        	if (errorString !=null && errorString.length()>0){
 	        		for (VCMongoMessage message : queuedMessages){
-	        			log.alert("VCMongoMessage failedToSend : "+message);
+	        			getSessionLog().alert("VCMongoMessage failedToSend : "+message);
 	        		}
 	        	}else{
 		    		for (VCMongoMessage message : queuedMessages){
-		    			log.alert("VCMongoMessage sent : "+message);
+		    			getSessionLog().alert("VCMongoMessage sent : "+message);
 		    		}
 	        	}
 //   			} catch (MongoException e){
@@ -105,10 +112,10 @@ public class VCMongoDbDriver implements Runnable {
    					m = null;
    				}
    				final int minutesToWaitUponFailure = 20;
-   				log.alert("MongoDB failure ... waiting "+minutesToWaitUponFailure+" minutes before trying to connect again");
+   				getSessionLog().alert("MongoDB failure ... waiting "+minutesToWaitUponFailure+" minutes before trying to connect again");
    				for (VCMongoMessage msg : queuedMessages){
    					try {
-   						log.alert("MongoDB failure: discarding message: "+msg);
+   						getSessionLog().alert("MongoDB failure: discarding message: "+msg);
    					}catch (Exception e4){
    						e4.printStackTrace(System.out);
    					}
@@ -123,7 +130,7 @@ public class VCMongoDbDriver implements Runnable {
     
     public void run()
     {
-		log.print("Starting MongoDB Thread");
+		getSessionLog().print("Starting MongoDB Thread");
         while(processing && VCMongoMessage.enabled) {
             try {
                 sendMessages();
@@ -136,7 +143,7 @@ public class VCMongoDbDriver implements Runnable {
 				e.printStackTrace(System.out);
 			}
         }
-        log.print("Ended MongoDB Thread");
+        getSessionLog().print("Ended MongoDB Thread");
     }
 
 
@@ -164,7 +171,7 @@ public class VCMongoDbDriver implements Runnable {
     public void addMessage(VCMongoMessage message)
     {
     	messageOutbox.add(message);
-    	log.print("VCMongoMessage queued : "+message);
+    	getSessionLog().print("VCMongoMessage queued : "+message);
     	if (!IsProcessing()){
     		startProcessing();
     	}

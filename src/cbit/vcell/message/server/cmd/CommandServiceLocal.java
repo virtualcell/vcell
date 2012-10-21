@@ -26,10 +26,10 @@ public class CommandServiceLocal extends CommandService {
 		VCMongoMessage.sendCommandServiceCall(commandOutput);
 
 		System.out.println("Command: " + commandOutput.getCommand());
-		System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
+		if(!bQuiet){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
 		System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
 		System.out.println("Command: exit = " + commandOutput.getExitStatus());
-
+		
 		return commandOutput;
 	}
 
