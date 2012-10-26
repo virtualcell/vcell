@@ -63,6 +63,16 @@
       </list>
 	</para>
 	<para>
+	The mouse popup menu provides several functions depending on the current selection (compartment,reactions,species):
+	<list>
+	<item>Save snapshot image of whole reaction diagram to file (zooming reaction diagram view increases resolution).</item>
+	<item>Search for reactions in public models shared by other VCell users.</item>
+	<item>Copy, cut, delete, annotate and 'hide' selected reactions and species.</item>
+	<item>Paste copied reactions and species into selected compartments.</item>
+	<item>Unhide (make visible) all 'hidden' reactions and species ('Hiding' temporarily removes selected reactions and species from view).</item>
+	</list>
+	</para>
+	<para>
 	The <bold>search text field</bold> allows the user to select multiple components that have a similar name.
 	</para>
 	<para>
