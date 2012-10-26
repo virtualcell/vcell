@@ -27,10 +27,6 @@ public class Executable {
 	private File workingDir = null;
 	private String[] execEnvVars = null;
 	
-	public static final int MAX_OUTPUT_UNLIMITED = -1;
-	private static final int MAX_OUTPUT_DEFAULT = 10000;
-	private int maxOutputSize = MAX_OUTPUT_DEFAULT;
-	
 
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -82,16 +78,12 @@ public Executable(String[] command) {
 /**
  * Executable constructor comment.
  */
-public Executable(String[] command, long timeoutMS) {
-	this(command,timeoutMS,MAX_OUTPUT_DEFAULT);
-}
-
-public Executable(String[] command, long timeoutMS,int maxOutputSize) {
+public Executable(String[] command, long arg_timeoutMS) {
 	setCommand(command);
 	setStatus(ExecutableStatus.READY);
-	this.timeoutMS = timeoutMS;
-	this.maxOutputSize = maxOutputSize;
+	timeoutMS = arg_timeoutMS;
 }
+
 
 /**
  * This method was created by a SmartGuide.
@@ -254,76 +246,72 @@ public static void main(java.lang.String[] args) {
  * This method was created in VisualAge.
  */
 protected final int monitorProcess(InputStream inputStreamOut, InputStream inputStreamErr, long pollingIntervalMS) throws ExecutableException {
-	InputStreamReader inputStreamReaderOut = null;
-	InputStreamReader inputStreamReaderErr = null;
-	try{
-		long t = System.currentTimeMillis();
-		char charArrayOut[] = new char[MAX_OUTPUT_DEFAULT];
-		char charArrayErr[] = new char[MAX_OUTPUT_DEFAULT];
-		String outString = new String();
-		String errString = new String();
-		int numReadOut = 0; int numReadErr = 0; int exitValue = 0;
-		inputStreamReaderOut = new InputStreamReader(inputStreamOut);
-		inputStreamReaderErr = new InputStreamReader(inputStreamErr);
+	long t = System.currentTimeMillis();
 	
-		boolean running = true;
-		while (running || (numReadOut > 0) || (numReadErr > 0)) {
-			if (timeoutMS > 0 && System.currentTimeMillis() - t > timeoutMS) {
-				throw new ExecutableException("Process timed out");
-			}
-			try {
-				exitValue = getProcess().exitValue();
-				running = false;
-			} catch (IllegalThreadStateException e) {
-				// process didn't exit yet, do nothing
-			}
-			try {
-				if (pollingIntervalMS > 0) Thread.sleep(pollingIntervalMS);
-			} catch (InterruptedException e) {
-			}
-			try {
-				if (inputStreamOut.available() > 0) {
-					numReadOut = inputStreamReaderOut.read(charArrayOut, 0, charArrayOut.length);
-				} else {
-					numReadOut = 0;
-				}
-			} catch (IOException ioexc) {
-				System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdOut: " + ioexc.getMessage());
+	char charArrayOut[] = new char[10000];
+	char charArrayErr[] = new char[10000];
+	String outString = new String();
+	String errString = new String();
+	int numReadOut = 0; int numReadErr = 0; int exitValue = 0;
+	InputStreamReader inputStreamReaderOut = new InputStreamReader(inputStreamOut);
+	InputStreamReader inputStreamReaderErr = new InputStreamReader(inputStreamErr);
+
+	boolean running = true;
+	while (running || (numReadOut > 0) || (numReadErr > 0)) {
+		if (timeoutMS > 0 && System.currentTimeMillis() - t > timeoutMS) {
+			throw new ExecutableException("Process timed out");
+		}
+		try {
+			exitValue = getProcess().exitValue();
+			running = false;
+		} catch (IllegalThreadStateException e) {
+			// process didn't exit yet, do nothing
+		}
+		try {
+			if (pollingIntervalMS > 0) Thread.sleep(pollingIntervalMS);
+		} catch (InterruptedException e) {
+		}
+		try {
+			if (inputStreamOut.available() > 0) {
+				numReadOut = inputStreamReaderOut.read(charArrayOut, 0, charArrayOut.length);
+			} else {
 				numReadOut = 0;
 			}
-			try {
-				if (inputStreamErr.available() > 0) {
-					numReadErr = inputStreamReaderErr.read(charArrayErr, 0, charArrayErr.length);
-				} else {
-					numReadErr = 0;
-				}
-			} catch (IOException ioexc) {
-				System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdErr: " + ioexc.getMessage());
+		} catch (IOException ioexc) {
+			System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdOut: " + ioexc.getMessage());
+			numReadOut = 0;
+		}
+		try {
+			if (inputStreamErr.available() > 0) {
+				numReadErr = inputStreamReaderErr.read(charArrayErr, 0, charArrayErr.length);
+			} else {
 				numReadErr = 0;
 			}
-			if (numReadOut > 0) {
-				outString = enforceOutputSize(charArrayOut, numReadOut, outString);
-			}
-			if (numReadErr > 0) {
-				errString = enforceOutputSize(charArrayErr, numReadErr, errString);
-			}
-			setOutputString(outString);
-			setErrorString(errString);
+		} catch (IOException ioexc) {
+			System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdErr: " + ioexc.getMessage());
+			numReadErr = 0;
 		}
-		return exitValue;
-	}finally{
-		if(inputStreamReaderOut != null){try{inputStreamReaderOut.close();}catch(Exception e){e.printStackTrace();}}
-		if(inputStreamReaderErr != null){try{inputStreamReaderErr.close();}catch(Exception e){e.printStackTrace();}}
+		if (numReadOut > 0) {
+			String newInput = new String(charArrayOut, 0, numReadOut);
+			outString += newInput;
+		}
+		if (numReadErr > 0) {
+			String newInput = new String(charArrayErr, 0, numReadErr);
+			errString += newInput;
+		}
+		setOutputString(outString);
+		setErrorString(errString);
 	}
+	try {
+		inputStreamReaderOut.close();
+		inputStreamReaderErr.close();
+	} catch (IOException ioexc) {
+		System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while closing streams: " + ioexc.getMessage());
+		numReadOut = 0;
+	}
+	return exitValue;
 }
 
-private String enforceOutputSize(char[] newlyRead,int newlyReadSize,String outAccum) throws ExecutableException{
-	if((maxOutputSize != MAX_OUTPUT_UNLIMITED) && ((outAccum.length()+newlyReadSize) > maxOutputSize)){
-		throw new ExecutableException("MaxOutputSize exceeded "+(outAccum.length()+newlyReadSize)+" > "+(maxOutputSize));
-	}
-	return outAccum + new String(newlyRead, 0, newlyReadSize);	
-	
-}
 
 /**
  * Insert the method's description here.
