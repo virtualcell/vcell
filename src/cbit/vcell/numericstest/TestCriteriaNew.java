@@ -144,4 +144,10 @@ public BigDecimal getTCritKey() {
 public cbit.vcell.solver.test.VariableComparisonSummary[] getVarComparisonSummaries() {
 	return varComparisonSummaries;
 }
+
+
+public int getScanCount() {
+	return 1;
+}
+
 }

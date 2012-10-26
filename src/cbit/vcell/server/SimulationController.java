@@ -20,7 +20,7 @@ public interface SimulationController extends java.rmi.Remote {
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws RemoteException;
+public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws RemoteException;
 
 
 /**

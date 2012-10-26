@@ -19,12 +19,13 @@ public interface MessageConstants {
 	
 	public static final String METHOD_NAME_PROPERTY	= "MethodName";	
 	public static final String USERNAME_PROPERTY	= "UserName";
+	public static final String 		USERNAME_PROPERTY_VALUE_ALL = "All";
 	public static final String SIZE_MB_PROPERTY		= "SizeMB";
 	public static final String SIMKEY_PROPERTY		= "SimKey";
 	public static final String JOBINDEX_PROPERTY		= "JobIndex";
 	public static final String TASKID_PROPERTY		= "TaskID";
 	public static final String FIELDDATAID_PROPERTY		= "FieldDataID";
-	public static final String HTCJOBID_PROPERTY 	= "HtcJobID";	
+	public static final String HTCJOBID_PROPERTY 	= "HtcJobID";
 
 	// bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
 	// bits 0-3: retry count

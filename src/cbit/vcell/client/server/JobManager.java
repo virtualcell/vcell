@@ -48,7 +48,7 @@ void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws Dat
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException;
+void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws DataAccessException;
 
 
 /**

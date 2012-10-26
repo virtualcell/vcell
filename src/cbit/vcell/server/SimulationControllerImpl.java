@@ -208,7 +208,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * @throws SQLException 
  * @throws FileNotFoundException 
  */
-LocalSolverController getSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
+LocalSolverController getOrCreateSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
 	Simulation simulation = simTask.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
@@ -298,7 +298,7 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
 		SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 		simTask = simTaskMessage.getSimulationTask();
 		
-		LocalSolverController solverController = getSolverController(simTask,adminSessionLog);
+		LocalSolverController solverController = getOrCreateSolverController(simTask,adminSessionLog);
 		
 		solverController.startSimulationJob(); // can only start after updating the database is done
 		
@@ -340,26 +340,36 @@ public void startSimulation(Simulation simulation, SessionLog userSessionLog) th
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
-	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulationDatabase, vcMessageSession, vcMessageSession, adminSessionLog);
+	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession, adminSessionLog);
 	vcMessageSession.deliverAll();
+	for (int jobIndex = 0; jobIndex < simulation.getScanCount(); jobIndex++){
+		int taskID = -1;
+		SimulationJobStatus[] simJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simulation.getKey(), jobIndex);
+		for (SimulationJobStatus simJobStatus : simJobStatusArray){
+			if (simJobStatus.getTaskID()>taskID){
+				taskID = simJobStatus.getTaskID();
+			}
+		}
+		simulationDispatcherEngine.onDispatch(vcSimID, jobIndex , taskID, simulationDatabase, vcMessageSession, adminSessionLog);
+		vcMessageSession.deliverAll();
+	}
 }
 
 private void onServiceControlTopic_StopSimulation(VCMessage message){
 	KeyValue simKey = new KeyValue(String.valueOf(message.getLongProperty(MessageConstants.SIMKEY_PROPERTY)));
 	int jobIndex = message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY);
 	int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
-	SimulationTask simTask = null;
 	
 	try {
-		simTask = new SimulationTask(simulationDatabase.getSimulationJob(simKey,jobIndex),taskID);
-		
-		LocalSolverController solverController = getSolverController(simTask,adminSessionLog);
-		
-		solverController.stopSimulationJob(); // can only start after updating the database is done
+		SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simKey, jobIndex, taskID);
+		LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
+		if (solverController!=null){
+			solverController.stopSimulationJob(); // can only start after updating the database is done
+		}
 		
 	} catch (Exception e) {
 		adminSessionLog.exception(e);
-		VCSimulationIdentifier vcSimID = simTask.getSimulationJob().getVCDataIdentifier().getVcSimID();
+		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, localVCellConnection.getUserLoginInfo().getUser());
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
 		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null);
 		fireSimulationJobStatusEvent(event);

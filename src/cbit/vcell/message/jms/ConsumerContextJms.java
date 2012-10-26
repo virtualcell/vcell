@@ -85,8 +85,6 @@ public class ConsumerContextJms implements Runnable {
 							vcRpcRequest = (VCRpcRequest)object;
 						}
 						
-						VCMongoMessage.sendRpcRequestReceived(vcRpcRequest);
-						
 						java.io.Serializable returnValue = null;
 						try {
 							//
@@ -125,6 +123,7 @@ public class ConsumerContextJms implements Runnable {
 						replyProducer.send(replyMessage);
 						replyProducer.close();
 						jmsSession.commit();		//commit		
+						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest);
 					}
 				}else{
 //						System.out.println(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");

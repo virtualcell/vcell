@@ -31,6 +31,9 @@ public class VCRpcRequest implements java.io.Serializable {
 	private Object[] args = null;
 	private ServiceType requestedServiceType = null; // refer to "databaseServer", "dataServer", "***";
 	private String methodName = null;	
+	private Long requestTimestampMS;
+	private Long beginProcessingTimestampMS;
+	private Long endProcessingTimestampMS;
 /**
  * SimpleTask constructor comment.
  * @param argName java.lang.String
@@ -38,10 +41,11 @@ public class VCRpcRequest implements java.io.Serializable {
  * @param argUserid java.lang.String
  */
 public VCRpcRequest(User user0, ServiceType st, String methodName0, Object[] arglist) {
-	user = user0;
+	this.user = user0;
 	this.requestedServiceType = st;
-	methodName = methodName0;
-	this.args = arglist;	
+	this.methodName = methodName0;
+	this.args = arglist;
+	this.requestTimestampMS = System.currentTimeMillis();
 }
 /**
  * Insert the method's description here.
@@ -86,6 +90,17 @@ public java.lang.String getUserName() {
 	}
 	
 	return user.getName();
+}
+
+
+public Long getRequestTimestampMS() {
+	return requestTimestampMS;
+}
+public Long getBeginProcessingTimestampMS() {
+	return beginProcessingTimestampMS;
+}
+public Long getEndProcessingTimestampMS() {
+	return endProcessingTimestampMS;
 }
 /**
  * Insert the method's description here.
@@ -173,9 +188,11 @@ public final Object rpc(Object rpcServiceImpl, SessionLog log) throws DataAccess
 			exceptionMessage += ")";
 			throw new DataAccessException(exceptionMessage);
 		}
-				
-		return method.invoke(rpcServiceImpl, getArguments());
-
+		beginProcessingTimestampMS = System.currentTimeMillis();
+		Object result = method.invoke(rpcServiceImpl, getArguments());
+		endProcessingTimestampMS = System.currentTimeMillis();
+		return result;
+		
 	} catch (InvocationTargetException ex) {
 		log.exception(ex);
 	 	Throwable targetExcepton = ex.getTargetException();

@@ -8,10 +8,6 @@ public class SgeJobID extends HtcJobID {
 		super(jobID,BatchSystemType.SGE);
 	}
 		
-	public String toString(){
-		return "<<<DONT CALL TOSTRING()>>>";
-	}
-
 	public String getSgeJobID() {
 		return getJobID();
 	}

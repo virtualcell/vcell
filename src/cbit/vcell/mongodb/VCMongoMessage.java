@@ -124,6 +124,8 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_rpcRequestMethod	= "rpcMethod";
 	public final static String MongoMessage_rpcRequestArgs		= "rpcArgs";
 	public final static String MongoMessage_rpcRequestService	= "rpcService";
+	public final static String MongoMessage_rpcRequestDelay		= "rpcDelay";
+	public final static String MongoMessage_rpcServiceTime		= "rpcServiceTime";
 	public final static String MongoMessage_userName			= "user";
 	public final static String MongoMessage_host				= "host";
 	public final static String MongoMessage_serviceName			= "serviceName";
@@ -605,7 +607,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendRpcRequestReceived(VCRpcRequest rpcRequest) {
+	public static void sendRpcRequestProcessed(VCRpcRequest rpcRequest) {
 		if (!enabled){
 			return;
 		}
@@ -770,6 +772,12 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_rpcRequestMethod,rpcRequest.getMethodName());
 		dbObject.put(MongoMessage_rpcRequestService,rpcRequest.getRequestedServiceType().getName());
 		dbObject.put(MongoMessage_userName,rpcRequest.getUserName());
+		if (rpcRequest.getRequestTimestampMS()!=null && rpcRequest.getBeginProcessingTimestampMS()!=null){
+			dbObject.put(MongoMessage_rpcRequestDelay,rpcRequest.getBeginProcessingTimestampMS().longValue() - rpcRequest.getRequestTimestampMS().longValue());
+		}
+		if (rpcRequest.getBeginProcessingTimestampMS()!=null && rpcRequest.getEndProcessingTimestampMS()!=null){
+			dbObject.put(MongoMessage_rpcServiceTime,rpcRequest.getEndProcessingTimestampMS().longValue() - rpcRequest.getBeginProcessingTimestampMS().longValue());
+		}
 	}
 		
 	private static void addObject(BasicDBObject dbObject, SimulationTask simulationTask){

@@ -2766,7 +2766,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 			return;
 		}
 		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo, vcMessaging_rpcProducerSession, log);
-		simProxy.startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
+		simProxy.startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
@@ -2786,8 +2786,8 @@ public void sendMessageButton_ActionPerformed(java.awt.event.ActionEvent actionE
 		VCMessage msg = vcMessaging_clientTopicProducerSession.createObjectMessage(new BigString(getBroadcastMessageTextArea().getText()));
 		String username = getBroadcastMessageToTextField().getText();
 
-		if (username.equalsIgnoreCase("All")) {
-			username = "All";
+		if (username.equalsIgnoreCase(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)) {
+			username = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
 		}
 			
 		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE);
