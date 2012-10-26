@@ -170,8 +170,8 @@ public class VCMongoDbDriver implements Runnable {
     
     public void addMessage(VCMongoMessage message)
     {
+//    	getSessionLog().print("VCMongoMessage queued : "+message);
     	messageOutbox.add(message);
-    	getSessionLog().print("VCMongoMessage queued : "+message);
     	if (!IsProcessing()){
     		startProcessing();
     	}

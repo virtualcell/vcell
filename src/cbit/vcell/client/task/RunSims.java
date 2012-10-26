@@ -258,7 +258,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					//
 					// translate to common ancestral simulation (oldest mathematically equivalent simulation)
 					//
-					jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier());
+					jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
 					// updateStatus
 					clientSimManager.updateStatusFromStartRequest(sim, false, null);
 				} else {

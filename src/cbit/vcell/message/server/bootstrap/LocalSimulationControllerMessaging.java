@@ -40,9 +40,9 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessage
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimID) {
+public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
-	simServerProxy.startSimulation(vcSimID);
+	simServerProxy.startSimulation(vcSimID,numSimulationScanJobs);
 }
 
 

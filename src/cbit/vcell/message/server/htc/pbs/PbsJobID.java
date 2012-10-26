@@ -12,7 +12,4 @@ public class PbsJobID extends HtcJobID {
 		return getJobID();
 	}
 		
-	public String toString(){
-		return "<<<DONT CALL TOSTRING()>>>";
-	}
 }

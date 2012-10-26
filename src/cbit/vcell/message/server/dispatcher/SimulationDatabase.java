@@ -211,24 +211,6 @@ public class SimulationDatabase {
 		return simInfo;
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (2/3/2004 8:34:36 AM)
-	 * @return cbit.vcell.messaging.SimulationTask
-	 * @param simKey cbit.sql.KeyValue
-	 * @throws XmlParseException 
-	 * @throws DataAccessException 
-	 * @throws ObjectNotFoundException 
-	 * @throws SQLException 
-	 */
-	public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws XmlParseException, ObjectNotFoundException, DataAccessException, SQLException {
-		VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
-		User user = getUser(vcSimID.getSimulationKey(), null);				
-		Simulation sim = getSimulation(user, vcSimID.getSimulationKey());
-		SimulationTask simTask = new SimulationTask(new SimulationJob(sim, jobStatus.getJobIndex(), getFieldDataIdentifierSpecs(sim)), jobStatus.getTaskID());
-
-		return simTask;
-	}
 
 	public int getNumSimulationJobs(User user, KeyValue simKey) throws DataAccessException {
 		Simulation sim = getSimulation(user, simKey);
@@ -249,12 +231,6 @@ public class SimulationDatabase {
 		} catch (Throwable e){
 			log.exception(e);
 		}
-	}
-
-	public SimulationJob getSimulationJob(KeyValue simKey, int jobIndex) throws DataAccessException, SQLException {
-		User user = getUser(simKey, null);				
-		Simulation sim = getSimulation(user, simKey);
-		return new SimulationJob(sim, jobIndex, getFieldDataIdentifierSpecs(sim));
 	}
 
 }

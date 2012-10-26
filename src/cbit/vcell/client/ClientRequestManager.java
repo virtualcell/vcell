@@ -2717,11 +2717,11 @@ public void revertToSaved(DocumentWindowManager documentWindowManager) {
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void runSimulation(final SimulationInfo simInfo) throws DataAccessException{
+public void runSimulation(final SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException{
 
 	getClientServerManager().
 		getJobManager().
-			startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier());
+			startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(), numSimulationScanJobs);
 }		
 
 

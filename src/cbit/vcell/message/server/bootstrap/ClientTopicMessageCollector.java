@@ -149,6 +149,10 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
 					
 			StatusMessage statusMessage = new StatusMessage(message);
+			String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
+			if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
+				userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			}
 			
 			SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
 			if (newJobStatus == null) {
@@ -187,7 +191,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
  */
 public void init() {
 	String clientMessageFilter = (user == null ? "" : MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR ");
-	clientMessageFilter += MessageConstants.USERNAME_PROPERTY + "='All'";
+	clientMessageFilter += MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
 	VCTopicConsumer topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
 	vcMessagingService.addMessageConsumer(topicConsumer);

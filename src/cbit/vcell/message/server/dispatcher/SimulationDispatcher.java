@@ -47,6 +47,7 @@ import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
@@ -88,6 +89,9 @@ public class SimulationDispatcher extends ServiceProvider {
 	private HtcProxy htcProxy = null;
 
 	public class DispatchThread extends Thread {
+
+		Object notifyObject = new Object();
+		
 		public DispatchThread() {
 			super();
 			setDaemon(true);
@@ -97,29 +101,27 @@ public class SimulationDispatcher extends ServiceProvider {
 		public void run() {
 			
 			while (true) {
+				
+				boolean bDispatchedAnyJobs = false;
 
 				try {
-					SimulationJobStatusInfo[] allActiveJobs = simulationDatabase.getActiveJobs(getHTCPartitionShareServerIDs());
-					ArrayList<SimulationJobStatusInfo> allActiveJobsList = new ArrayList<SimulationJobStatusInfo>(Arrays.asList(allActiveJobs));
+					final SimulationJobStatusInfo[] allActiveJobs = simulationDatabase.getActiveJobs(getHTCPartitionShareServerIDs());
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
 						int htcMaxJobs = getHTCPartitionMaximumJobs();
 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
 						VCellServerID serverID = VCellServerID.getSystemServerID();
 						
-						SimulationJobStatusInfo nextJob = BatchScheduler.schedule(allActiveJobsList.toArray(new SimulationJobStatusInfo[0]), htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
+						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
 						
-						while (nextJob != null) {
-							
-							SimulationJobStatus jobStatus = nextJob.getSimJobStatus();
+						for (WaitingJob waitingJob : waitingJobs){
+							SimulationJobStatus jobStatus = waitingJob.simJobStatusInfo.getSimJobStatus();
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 							
 							simDispatcherEngine.onDispatch(vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(), simulationDatabase, dispatcherQueueSession, log);
+							bDispatchedAnyJobs = true;
 							
 							Thread.yield();
-							
-							allActiveJobsList.remove(nextJob);
-							nextJob = BatchScheduler.schedule(allActiveJobsList.toArray(new SimulationJobStatusInfo[0]), htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
 						}
 					}
 				} catch (Exception ex) {
@@ -128,9 +130,14 @@ public class SimulationDispatcher extends ServiceProvider {
 
 				// if there are no messages or no qualified jobs or exceptions, sleep for a while
 				// this will be interrupted if there is a start request.
-				try {
-					sleep(10 * MessageConstants.SECOND_IN_MS);
-				} catch (InterruptedException ex) {
+				if (!bDispatchedAnyJobs){
+					synchronized (notifyObject) {
+						try {
+							long waitTime = 5 * MessageConstants.SECOND_IN_MS;
+							notifyObject.wait(waitTime);
+						} catch (InterruptedException ex) {
+						}
+					}
 				}
 			} // while(true)
 		}
@@ -193,7 +200,9 @@ public class SimulationDispatcher extends ServiceProvider {
 					long startWaitTime = System.currentTimeMillis();
 					notifyObject.wait(waitTime);
 					long endWaitTime = System.currentTimeMillis();
-					if ((endWaitTime-startWaitTime)>=waitTime){
+					long elapsedFlushTime = endWaitTime-startWaitTime;
+					VCMongoMessage.sendInfo("flushed worker event queue: elapsedTime="+(elapsedFlushTime/1000.0)+" s");
+					if (elapsedFlushTime >= waitTime){
 						throw new VCMessagingException("worker event queue flush timed out (>"+waitTime+" s), considerable message backlog?");
 					}
 				} catch (InterruptedException e) {
@@ -336,14 +345,29 @@ public class SimulationDispatcher extends ServiceProvider {
 
 			VCRpcRequest request = (VCRpcRequest)objectContent;
 
-			VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
 			User user = request.getUser();
 
 			if (request.getMethodName().equals(METHOD_NAME_STARTSIMULATION)) {
+
+				VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
+				Integer numSimulationScanJobs = (Integer)request.getArguments()[1];
 				
-				simDispatcherEngine.onStartRequest(vcSimID, user, simulationDatabase, session, dispatcherQueueSession, log);
+				simDispatcherEngine.onStartRequest(vcSimID, user, numSimulationScanJobs.intValue(), simulationDatabase, session, dispatcherQueueSession, log);
+
+				// wake up dispatcher thread
+				if (dispatchThread!=null){
+					try {
+						synchronized (dispatchThread.notifyObject){
+							dispatchThread.notifyObject.notify();
+						}
+					}catch (IllegalMonitorStateException e){
+						e.printStackTrace();
+					}
+				}
 
 			} else if (request.getMethodName().equals(METHOD_NAME_STOPSIMULATION)) {
+
+				VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
 				
 				simDispatcherEngine.onStopRequest(vcSimID, user, simulationDatabase, session, log);
 
@@ -372,7 +396,6 @@ public class SimulationDispatcher extends ServiceProvider {
 					}catch (IllegalMonitorStateException e){
 						e.printStackTrace();
 					}
-					VCMongoMessage.sendInfo("flushed worker event queue");
 				}
 				return;
 			}

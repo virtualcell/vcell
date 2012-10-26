@@ -81,9 +81,9 @@ private void rpcNoWait(String methodName, Object[] args) throws DataAccessExcept
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimID) {
+public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
 	try {
-		rpcNoWait("startSimulation",new Object[]{vcSimID});
+		rpcNoWait("startSimulation",new Object[]{vcSimID, new Integer(numSimulationScanJobs)});
 	}catch (DataAccessException e){
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());

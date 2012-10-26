@@ -413,9 +413,8 @@ public class SimulationStateMachine {
 
 	}
 
-	public synchronized void onStartRequest(User user, Simulation simulation, FieldDataIdentifierSpec[] fieldDataIdentifierSpecs, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onStartRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 
-		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, simulation.getVersion().getOwner());
 		if (!user.equals(vcSimID.getOwner())) {
 			log.alert(user + " is not authorized to start simulation (key=" + simKey + ")");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
@@ -650,14 +649,7 @@ public class SimulationStateMachine {
 		SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(updatedSimJobStatus.getTaskID(), failureMessage), oldJobStatus, updatedSimJobStatus));
 
-		String userName = "all";
-		SimulationJob simulationJob = simulationDatabase.getSimulationJob(simKey, jobIndex);
-		if (simulationJob!=null){
-			Version version = simulationJob.getSimulation().getVersion();
-			if (version!=null){
-				userName = version.getOwner().getName();
-			}
-		}
+		String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
 		StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, null, null);
 		msgForClient.sendToClient(session);
 		log.print("Send status to client: " + msgForClient);

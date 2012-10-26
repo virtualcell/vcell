@@ -174,14 +174,14 @@ public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) thr
  * Insert the method's description here.
  * Creation date: (6/4/2004 3:22:42 PM)
  */
-public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
+public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws DataAccessException {
 	try {
-		getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier);
+		getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
 	} catch (RemoteException rexc) {
 		handleRemoteException(rexc);
 		// once more before we fail
 		try {
-			getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier);
+			getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
 		} catch (RemoteException rexc2) {
 			handleRemoteException(rexc2);
 			throw new DataAccessException("Start simulation '"+vcSimulationIdentifier+"' failed\n"+rexc2.getMessage());

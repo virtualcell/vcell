@@ -39,7 +39,7 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	}
 	
 	public String toString(){
-		return "<<<DONT CALL TOSTRING()>>>";
+		return toDatabase();
 	}
 	
 	protected String getJobID(){
