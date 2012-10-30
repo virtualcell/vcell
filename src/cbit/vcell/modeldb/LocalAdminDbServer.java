@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.vcell.util.DataAccessException;
@@ -95,10 +94,6 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
 		log.exception(e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
-}
-
-public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
-	return adminDbTop.getObsoleteSimulations(interval,true);
 }
 
 /**

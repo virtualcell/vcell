@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BigString;
@@ -26,15 +27,12 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
@@ -164,8 +162,8 @@ public class SimulationDatabase {
 		}
 	}
 	
-	public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
-		return adminDbTopLevel.getObsoleteSimulations(interval,true);
+	public Set<KeyValue> getUnreferencedSimulations() throws SQLException{
+		return adminDbTopLevel.getUnreferencedSimulations(true);
 	}
 
 	public User getUser(KeyValue simKey, String username) throws DataAccessException, SQLException {

@@ -10,18 +10,19 @@
 
 package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.MessageConstants;
 import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
@@ -56,6 +57,7 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -175,10 +177,10 @@ public class SimulationDispatcher extends ServiceProvider {
 				long messageFlushTimeMS = endFlushTimeMS - startFlushTimeMS;
 				
 				//
-				// abort unresponsive jobs
+				// abort unresponsive or unreferenced jobs
 				//
 				try {
-					abortStalledSimulationTasks(messageFlushTimeMS);
+					abortStalledOrUnreferencedSimulationTasks(messageFlushTimeMS);
 				} catch (Exception e1) {
 					log.exception(e1);
 				}
@@ -243,33 +245,52 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 		}
 		
-		private void abortStalledSimulationTasks(long messageFlushTimeMS) throws SQLException{
+		private void abortStalledOrUnreferencedSimulationTasks(long messageFlushTimeMS) throws SQLException, DataAccessException{
 			
 			//
 			// message queue has already been flushed ... and the time it took was recorded in messageFlushTimeMS
 			//
 			// because of this, we don't have to worry about killing jobs prematurely.
 			//
-			
+			// here we want to kill jobs that are:
+			//
+			//  1) "timed out" (same VCellServerID)  ("Running" or "Dispatched")   (last update older than 10 minutes + flush time)
+			//
+			// or
+			//
+			//  2) "unreferenced" (same VCellServerID)   ("Waiting" or "Queued" or "Dispatched" or "Running")   (not referenced by BioModel, MathModel, or Simulation parent reference)
+			//
+			//
 			long currentTimeMS = System.currentTimeMillis();
-			SimulationJobStatus[] jobStatusArray = simulationDatabase.getObsoleteSimulations(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL_SECONDS + (messageFlushTimeMS/1000));
-			for (SimulationJobStatus jobStatus : jobStatusArray){
-				String failureMessage = "failed: timed out";
-				System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
-				SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
-				System.out.println(simStateMachine.show());
-				VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
-				simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
-				if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
-					HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
-					try {
-						htcProxy.killJob(htcJobId);
-					} catch (HtcJobNotFoundException e) {
-						e.printStackTrace();
-					} catch (ExecutableException e) {
-						e.printStackTrace();
-					} catch (HtcException e) {
-						e.printStackTrace();
+			SimulationJobStatusInfo[] activeJobStatusInfoArray = simulationDatabase.getActiveJobs(new VCellServerID[] { VCellServerID.getSystemServerID() });
+			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
+			for (SimulationJobStatusInfo activeJobStatus : activeJobStatusInfoArray){
+				SimulationJobStatus jobStatus = activeJobStatus.getSimJobStatus();
+				SchedulerStatus schedulerStatus = jobStatus.getSchedulerStatus();
+				long timeSinceLastUpdateMS = currentTimeMS - jobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+				
+				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
+
+				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+				
+				if (bTimedOutSimulation || bUnreferencedSimulation){
+					String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
+					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
+					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
+					System.out.println(simStateMachine.show());
+					VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
+					simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+					if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
+						HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
+						try {
+							htcProxy.killJob(htcJobId);
+						} catch (HtcJobNotFoundException e) {
+							e.printStackTrace();
+						} catch (ExecutableException e) {
+							e.printStackTrace();
+						} catch (HtcException e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}			

@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -104,27 +105,17 @@ public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolea
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/6/2005 3:03:51 PM)
- */
-SimulationJobStatus[] getObsoleteSimulations(Connection con, long interval) throws SQLException {
-	SimulationJobStatus[] jobStatusArray = jobDB.getObsoleteSimulations(con, interval);
-	return jobStatusArray;
-}
-
-
-public SimulationJobStatus[] getObsoleteSimulations(long interval, boolean bEnableRetry) throws java.sql.SQLException {
+public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus[] jobStatus = jobDB.getObsoleteSimulations(con, interval);
-		return jobStatus;
+		Set<KeyValue> unreferencedSimulations = jobDB.getUnreferencedSimulations(con);
+		return unreferencedSimulations;
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getObsoleteSimulations(interval,false);
+			return getUnreferencedSimulations(false);
 		}else{
 			handle_SQLException(e);
 			return null; // never gets here;
@@ -133,7 +124,6 @@ public SimulationJobStatus[] getObsoleteSimulations(long interval, boolean bEnab
 		conFactory.release(con,lock);
 	}
 }
-
 
 
 /**
