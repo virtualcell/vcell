@@ -13,10 +13,14 @@ import java.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.modeldb.BioModelSimulationLinkTable;
+import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -123,6 +127,33 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 	
 	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
 }
+
+
+public Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
+	String sql = 
+		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
+		" MINUS "+
+		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+		" MINUS "+
+		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+		" MINUS "+
+		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
+			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+			
+	HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
+	Statement stmt = con.createStatement();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()){
+			KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
+			unreferencedSimKeys.add(simKey);
+		}
+	} finally {
+		stmt.close();
+	}
+	return unreferencedSimKeys;
+}
+
 
 
 /**
