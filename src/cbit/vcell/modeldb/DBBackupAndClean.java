@@ -15,9 +15,14 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.vcell.util.document.KeyValue;
 
 import oracle.jdbc.pool.OracleDataSource;
 
@@ -258,6 +263,35 @@ public class DBBackupAndClean {
 		}
 	}
 	
+	private static final String selectUnreferencedSimKeySQL = 
+		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
+		" MINUS "+
+		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+		" MINUS "+
+		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+		" MINUS "+
+		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
+			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+
+
+	public static Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
+		String sql = selectUnreferencedSimKeySQL;
+				
+		HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
+		Statement stmt = con.createStatement();
+		try {
+			ResultSet rset = stmt.executeQuery(sql);
+			while (rset.next()){
+				KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
+				unreferencedSimKeys.add(simKey);
+			}
+		} finally {
+			stmt.close();
+		}
+		return unreferencedSimKeys;
+	}
+
+	
 	private static void cleanRemoveUnreferencedSimulations(Connection con, StringBuffer logStringBuffer) throws Exception{
 		//
 		//Remove Simulations not pointed to by MathModels or BioModels
@@ -266,16 +300,7 @@ public class DBBackupAndClean {
 		final String SIMID = "SIMID";
 		final String SIMDATE = "SIMDATE";
 		String UNREFERENCED_SIMS_CLAUSE = 
-			SimulationTable.table.id.getQualifiedColName()+" IN ("+
-			" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM vc_simulation "+
-			" MINUS "+
-			" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
-			" MINUS "+
-			" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
-			" MINUS "+
-			" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
-				" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL"+
-			")";
+			SimulationTable.table.id.getQualifiedColName() + " IN (" + selectUnreferencedSimKeySQL + ")";
 
 		String sql =
 			"SELECT "+

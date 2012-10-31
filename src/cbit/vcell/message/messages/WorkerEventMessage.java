@@ -27,6 +27,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -304,5 +305,14 @@ private VCMessage toMessage(VCMessageSession session) {
 	VCMessage message = session.createObjectMessage(workerEvent);
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	return message;
+}
+
+
+public static WorkerEventMessage sendWorkerExit(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+	workerEventMessage.sendWorkerEvent(session);
+
+	return workerEventMessage;
 }
 }

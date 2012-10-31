@@ -58,6 +58,7 @@ public class SimulationMessage implements Serializable {
 		JOB_RUNNING,
 		SOLVEREVENT_PROGRESS,
 		WORKEREVENT_PROGRESS,
+		WORKEREVENT_WORKEREXIT,
 		SOLVEREVENT_FINISHED,
 		SOLVER_FINISHED,
 		WORKEREVENT_COMPLETED,
@@ -237,6 +238,10 @@ public class SimulationMessage implements Serializable {
 
 	public static SimulationMessage jobFailed(String failureMessage){
 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
+	}
+
+	public static SimulationMessage WorkerExited(int solverExitCode){
+		return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT,"solver exited (code="+solverExitCode+")");
 	}
 
 	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){

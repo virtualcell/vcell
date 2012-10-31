@@ -109,7 +109,7 @@ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws jav
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		Set<KeyValue> unreferencedSimulations = jobDB.getUnreferencedSimulations(con);
+		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con);
 		return unreferencedSimulations;
 	} catch (Throwable e) {
 		log.exception(e);

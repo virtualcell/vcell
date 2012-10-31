@@ -128,62 +128,6 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
 }
 
-
-public Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
-	String sql = 
-		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
-		" MINUS "+
-		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
-		" MINUS "+
-		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
-		" MINUS "+
-		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
-			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
-			
-	HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		while (rset.next()){
-			KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
-			unreferencedSimKeys.add(simKey);
-		}
-	} finally {
-		stmt.close();
-	}
-	return unreferencedSimKeys;
-}
-
-
-
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
-public SimulationJobStatus[] getObsoleteSimulations(Connection con, long intervalSeconds) throws SQLException {
-	String sql = new String(standardJobStatusSQL);
-	sql += " AND (sysdate-" + jobTable.latestUpdateDate + ")*86400>" + intervalSeconds
-		+ " AND (" + jobTable.serverID + "='" + VCellServerID.getSystemServerID() + "')"
-		+ " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber() // running
-		+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
-		+ ") order by " + jobTable.submitDate;	
-			
-	Statement stmt = con.createStatement();
-	ArrayList<SimulationJobStatus> simJobStatusList = new ArrayList<SimulationJobStatus>();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		while (rset.next()){
-			simJobStatusList.add(jobTable.getSimulationJobStatus(rset));
-		}
-	} finally {
-		stmt.close();
-	}
-	return simJobStatusList.toArray(new SimulationJobStatus[0]);
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return int
