@@ -14,10 +14,10 @@ import java.util.Comparator;
 import java.util.Date;
 
 import org.vcell.util.ComparableObject;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.gui.sorttable.ColumnComparator;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 
 /**

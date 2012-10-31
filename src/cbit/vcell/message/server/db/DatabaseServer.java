@@ -11,7 +11,6 @@
 package cbit.vcell.message.server.db;
 import java.util.Date;
 
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -28,6 +27,7 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;

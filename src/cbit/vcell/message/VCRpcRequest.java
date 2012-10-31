@@ -15,10 +15,11 @@ import java.lang.reflect.InvocationTargetException;
 import javax.jms.JMSException;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 
 /**

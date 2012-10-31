@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.messages;
 
-import org.vcell.util.MessageConstants;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.message.VCMessage;

@@ -12,13 +12,14 @@ package cbit.vcell.message.server.console;
 
 import java.awt.Color;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.message.server.ManageConstants;
 import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 
 /**
@@ -297,8 +298,8 @@ private javax.swing.JComboBox getStartupCombo() {
 	if (ivjStartupCombo == null) {
 		try {
 			ivjStartupCombo = new javax.swing.JComboBox();
-			for (int i = 0; i < ManageConstants.SERVICE_STARTUP_TYPES.length; i ++) {
-				ivjStartupCombo.addItem(ManageConstants.SERVICE_STARTUP_TYPES[i]);
+			for (ServiceStartupType serviceStartupType : ServiceStartupType.values()){
+				ivjStartupCombo.addItem(serviceStartupType.getDescription());
 			}			
 			ivjStartupCombo.setSelectedIndex(0);
 			// user code begin {1}
@@ -407,7 +408,7 @@ public ServiceSpec getServiceSpec() {
 	} catch (NumberFormatException ex) {
 		throw new RuntimeException("Ordinal must be a number!");		
 	}
-	int startup = getStartupCombo().getSelectedIndex();
+	ServiceStartupType startup = ServiceStartupType.fromDescription((String)getStartupCombo().getSelectedItem());
 	int memoryMB = Integer.parseInt(getMemoryMBField().getText());
 
 	return new ServiceSpec(site, stype, ordinal, startup, memoryMB);
@@ -467,7 +468,7 @@ public void modifyService(ServiceSpec ss) {
 	getOrdinalCombo().setSelectedItem(ss.getOrdinal());
 	getOrdinalCombo().setEnabled(false);
 	getOrdinalCombo().setBackground(Color.white);
-	getStartupCombo().setSelectedIndex(ss.getStartupType());
+	getStartupCombo().setSelectedItem(ss.getStartupType().getDescription());
 	getMemoryMBField().setText(ss.getMemoryMB() + "");
 }
 /**

@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.MessageConstants;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -553,12 +553,12 @@ private static SimulationStatus updateFromJobEvent0(SimulationStatus oldStatus, 
 	// figure out task ID ordinality...
 	int someOldID = oldStatus.getJobStatuses()[0].getTaskID(); // doesn't matter which one, should all be on same block
 	int newID = newJobStatus.getTaskID();
-	if (newID - newID % MessageConstants.TASKID_USERINCREMENT > someOldID) {
+	if (newID - newID % SimulationStateMachine.TASKID_USERINCREMENT > someOldID) {
 		// upper block; event comes from a new submission; discard all old stuff
 		newSimStatus = new SimulationStatus(new SimulationJobStatus[] {newJobStatus});
 		newSimStatus.progressHash.put(newJobStatus.getJobIndex(), newProgress);
 		return newSimStatus;
-	} else if (someOldID - someOldID % MessageConstants.TASKID_USERINCREMENT > newID) {
+	} else if (someOldID - someOldID % SimulationStateMachine.TASKID_USERINCREMENT > newID) {
 		// lower block; event comes from an old submission; ignore
 		return oldStatus;
 	}

@@ -14,7 +14,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.Session;
 
-import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 
@@ -27,6 +26,7 @@ import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 
 public class ConsumerContextJms implements Runnable {

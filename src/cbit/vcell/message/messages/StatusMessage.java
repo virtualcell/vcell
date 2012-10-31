@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.messages;
 
-import org.vcell.util.MessageConstants;
 
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCMessage;
@@ -29,9 +28,6 @@ public class StatusMessage {
 	private Double timePoint = null;
 	private Double progress = null;
 
-	public static final String SIMULATION_STATUS_PROGRESS_PROPERTY	= "SimulationStatusProgress";
-	public static final String SIMULATION_STATUS_TIMEPOINT_PROPERTY = "SimulationStatusTimePoint";
-	
 	private java.lang.String userName = null;
 
 /**
@@ -137,12 +133,12 @@ private void parseMessage(VCMessage message) {
 	}
 
 	jobStatus = (SimulationJobStatus)obj;
-	if (message.propertyExists(SIMULATION_STATUS_PROGRESS_PROPERTY)){
-		progress = message.getDoubleProperty(SIMULATION_STATUS_PROGRESS_PROPERTY);
+	if (message.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
+		progress = message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY);
 	}
 	
-	if (message.propertyExists(SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
-		timePoint = message.getDoubleProperty(SIMULATION_STATUS_TIMEPOINT_PROPERTY);
+	if (message.propertyExists(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
+		timePoint = message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY);
 	}
 	
 }
@@ -172,10 +168,10 @@ private VCMessage toMessage(VCMessageSession session) {
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE);
 	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, userName);
 	if (progress != null) {
-		message.setDoubleProperty(SIMULATION_STATUS_PROGRESS_PROPERTY, progress.doubleValue());
+		message.setDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY, progress.doubleValue());
 	}
 	if (timePoint != null) {
-		message.setDoubleProperty(SIMULATION_STATUS_TIMEPOINT_PROPERTY, timePoint.doubleValue());
+		message.setDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY, timePoint.doubleValue());
 	}
 
 	return message;

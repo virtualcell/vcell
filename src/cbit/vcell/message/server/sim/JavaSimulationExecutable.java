@@ -15,7 +15,6 @@ import java.io.File;
 import javax.jms.JMSException;
 
 import org.vcell.util.FileUtils;
-import org.vcell.util.MessageConstants;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -30,6 +29,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.messaging.server.SimulationTask;

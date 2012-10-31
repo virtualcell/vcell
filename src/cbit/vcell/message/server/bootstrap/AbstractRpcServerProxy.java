@@ -9,13 +9,13 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.UserLoginInfo;
 

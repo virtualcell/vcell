@@ -12,7 +12,6 @@ package cbit.vcell.message.server.bootstrap;
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.BigString;
-import org.vcell.util.MessageConstants;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
@@ -33,8 +32,8 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.StatusMessage;
-import cbit.vcell.message.server.ManageConstants;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -174,7 +173,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			DataJobEvent event = (DataJobEvent)message.getObjectContent();
 			log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
 			fireMessageEvent(event);
-		} else if (msgType.equals(ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
+		} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
 			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
 		} else{
 			throw new Exception(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message.show());

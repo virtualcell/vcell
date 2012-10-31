@@ -14,7 +14,6 @@ import java.rmi.RemoteException;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-import org.vcell.util.MessageConstants;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -31,6 +30,7 @@ import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.client.SimStatusEvent;
 import cbit.vcell.client.SimStatusListener;
 import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.server.VCellConnection;
 
 /**

@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.vcell.util.MessageConstants;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.MessageEvent;
@@ -15,6 +14,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
@@ -809,8 +809,8 @@ public final class VCMongoMessage {
 		if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
 			dbObject.put(MongoMessage_userName, message.getStringProperty(MessageConstants.USERNAME_PROPERTY));
 		}
-		if (message.propertyExists(StatusMessage.SIMULATION_STATUS_PROGRESS_PROPERTY)){
-			dbObject.put(MongoMessage_simProgress, message.getDoubleProperty(StatusMessage.SIMULATION_STATUS_PROGRESS_PROPERTY));
+		if (message.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
+			dbObject.put(MongoMessage_simProgress, message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY));
 		}
 	}
 	

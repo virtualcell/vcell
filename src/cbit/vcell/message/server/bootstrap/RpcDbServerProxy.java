@@ -11,7 +11,6 @@
 package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.VersionableFamily;
 
@@ -21,6 +20,7 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserLoginInfo;

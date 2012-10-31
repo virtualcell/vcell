@@ -12,7 +12,6 @@ package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.vcell.util.MessageConstants.SimulationQueueID;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
@@ -21,6 +20,7 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
@@ -113,7 +113,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	if (rset.wasNull()) {
 		parsedQueueID = -1;
 	}
-	SimulationQueueID simulationQueueID = SimulationQueueID.fromDatabaseNumber(parsedQueueID);
+	SimulationJobStatus.SimulationQueueID simulationQueueID = SimulationJobStatus.SimulationQueueID.fromDatabaseNumber(parsedQueueID);
 	
 	SimulationQueueEntryStatus simQueueEntryStatus = new SimulationQueueEntryStatus(parsedQueuedDate,parsedQueuePriority,simulationQueueID);	
 	
@@ -204,7 +204,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//queueID
 	buffer.append(queueID + "=");
 	if (simQueueEntryStatus != null){
-		SimulationQueueID simQueueID = simQueueEntryStatus.getQueueID();
+		SimulationJobStatus.SimulationQueueID simQueueID = simQueueEntryStatus.getQueueID();
 		if (simQueueID!=null){
 			buffer.append(simQueueEntryStatus.getQueueID().getDatabaseNumber() + ",");
 		}else{

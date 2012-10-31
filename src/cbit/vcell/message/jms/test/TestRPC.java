@@ -1,21 +1,16 @@
 package cbit.vcell.message.jms.test;
 
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
  * Hello world!

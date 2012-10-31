@@ -13,8 +13,6 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
-import org.vcell.util.MessageConstants;
-
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -22,6 +20,7 @@ import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 
 public class MessageProducerSessionJms implements VCMessageSession {

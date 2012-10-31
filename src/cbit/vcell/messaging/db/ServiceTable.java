@@ -12,14 +12,16 @@ package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
+import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.message.server.htc.HtcJobID;
 
 public class ServiceTable extends cbit.sql.Table {
@@ -89,8 +91,8 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
 		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
 	}
-	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
-			parsedDate, parsedStatus, parsedStatusMsg, parsedHtcJobId);
+	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemory), 
+			parsedDate, ServiceStatusType.fromDatabaseNumber(parsedStatus), parsedStatusMsg, parsedHtcJobId);
 	
 	return serviceStatus;
 }
@@ -113,13 +115,13 @@ public String getSQLUpdateList(ServiceStatus serviceStatus){
 	//ordinal
 	buffer.append(ordinal + "=" + serviceStatus.getServiceSpec().getOrdinal() + ",");
 	//startupType
-	buffer.append(startupType + "=" + serviceStatus.getServiceSpec().getStartupType() + ",");
+	buffer.append(startupType + "=" + serviceStatus.getServiceSpec().getStartupType().getDatabaseNumber() + ",");
 	//memory
 	buffer.append(memoryMB + "=" + serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
 	buffer.append(date + "=sysdate,");
 	//status
-	buffer.append(status + "=" + serviceStatus.getStatus() + ",");
+	buffer.append(status + "=" + serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	buffer.append(statusMsg + "='" + serviceStatus.getStatusMsg() + "',");
 	//host
@@ -153,13 +155,13 @@ public String getSQLValueList(KeyValue key, ServiceStatus serviceStatus) {
 	//ordinal
 	buffer.append(serviceStatus.getServiceSpec().getOrdinal() + ",");
 	//startupType
-	buffer.append(serviceStatus.getServiceSpec().getStartupType() + ",");
+	buffer.append(serviceStatus.getServiceSpec().getStartupType().getDatabaseNumber() + ",");
 	//memory
 	buffer.append(serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
 	buffer.append("sysdate,");
 	//status
-	buffer.append(serviceStatus.getStatus() + ",");
+	buffer.append(serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	buffer.append("'" + serviceStatus.getStatusMsg() + "',");
 	//host

@@ -19,20 +19,66 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.message.server.htc.HtcJobID;
 
-import static cbit.vcell.message.server.ManageConstants.*;
-
 public class ServiceStatus implements ComparableObject, Matchable, Serializable {
 	private ServiceSpec serviceSpec = null;
 	private Date date = null;
-	private int status;
+	private ServiceStatusType serviceStatusType;
 	private String statusMsg;
 	private HtcJobID htcJobId;
 	
-	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, HtcJobID htcJobID) {
+	//
+	//	public static final int SERVICE_STATUS_RUNNING = 0;	// restart it if the service is dead 
+	//	public static final int SERVICE_STATUS_NOTRUNNING = 1;	// restart it if the service is dead
+	//	public static final int SERVICE_STATUS_FAILED = 2; 	
+	//
+	//	public static final String[] SERVICE_STATUSES = {"running", "not running", "failed"};
+	//
+
+	public enum ServiceStatusType {
+		ServiceRunning(0,"running"),
+		ServiceNotRunning(1,"not running"),
+		ServiceFailed(2,"failed");
+		
+		final int databaseNumber;
+		final String description;
+		
+		private ServiceStatusType(int databaseNumber, String description){
+			this.databaseNumber = databaseNumber;
+			this.description = description;
+		}
+		
+		public int getDatabaseNumber(){
+			return databaseNumber;
+		}
+		public String getDescription(){
+			return description;
+		}
+	
+		public boolean isRunning() {
+			return this == ServiceRunning;
+		}
+		public boolean isNotRunning() {
+			return this == ServiceNotRunning;
+		}
+		public boolean isFailed() {
+			return this == ServiceFailed;
+		}
+	
+		public static ServiceStatusType fromDatabaseNumber(int databaseType) {
+			for (ServiceStatusType type : values()){
+				if (type.getDatabaseNumber() == databaseType){
+					return type;
+				}
+			}
+			throw new RuntimeException("unknown database serialization for ServiceStatusType = "+databaseType);
+		}
+	}	
+	
+	public ServiceStatus(ServiceSpec ss, Date d, ServiceStatusType serviceStatusType, String sm, HtcJobID htcJobID) {
 		super();
 		this.serviceSpec = ss;
 		this.date = d;
-		this.status = s;
+		this.serviceStatusType = serviceStatusType;
 		this.statusMsg = sm;
 		this.htcJobId = htcJobID;
 	}
@@ -45,20 +91,17 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 		return serviceSpec;
 	}
 
-	public int getStatus() {
-		return status;
+	public ServiceStatusType getStatus() {
+		return this.serviceStatusType;
 	}
 
 	public String getStatusMsg() {
 		return statusMsg;
 	}
 	
-	public boolean isRunning() {
-		return status == ManageConstants.SERVICE_STATUS_RUNNING;
-	}
 	public Object[] toObjects(){
 		return new Object[]{serviceSpec.getServerID(), serviceSpec.getType(), serviceSpec.getOrdinal(), 
-				SERVICE_STARTUP_TYPES[serviceSpec.getStartupType()], serviceSpec.getMemoryMB(), date, SERVICE_STATUSES[status], statusMsg, htcJobId};		
+				serviceSpec.getStartupType().getDescription(), serviceSpec.getMemoryMB(), date, serviceStatusType.getDescription(), statusMsg, htcJobId};		
 	}
 
 	public boolean equals(Object obj) {
@@ -78,7 +121,7 @@ public class ServiceStatus implements ComparableObject, Matchable, Serializable 
 			if (!date.equals(ss.date)) {
 				return false;
 			}
-			if (status != ss.status) {
+			if (serviceStatusType != ss.serviceStatusType) {
 				return false;
 			}
 			if (!statusMsg.equals(ss.statusMsg)) {

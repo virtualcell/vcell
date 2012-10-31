@@ -1,6 +1,6 @@
 package cbit.vcell.message;
 
-import org.vcell.util.MessageConstants.ServiceType;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 
 public class VCRpcConsumer extends VCMessagingConsumer {
