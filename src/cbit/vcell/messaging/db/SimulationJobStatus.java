@@ -38,7 +38,7 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	private SimulationQueueEntryStatus fieldSimulationQueueEntryStatus = null;	// may be null
 	private SimulationExecutionStatus fieldSimulationExecutionStatus = null;	// may be null
 
-	public enum SchedulerStatus {
+	public static enum SchedulerStatus {
 		WAITING(0,"waiting"),
 		QUEUED(1,"queued"),
 		DISPATCHED(2,"dispatched"),
@@ -107,6 +107,35 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	}
 
 	
+
+	public static enum SimulationQueueID {
+		QUEUE_ID_WAITING(0),
+		QUEUE_ID_SIMULATIONJOB(1),
+		QUEUE_ID_NULL(2);
+		
+		private int databaseNumber;
+		private SimulationQueueID(int databaseNumber){
+			this.databaseNumber = databaseNumber;
+		}
+		
+		public int getDatabaseNumber(){
+			return this.databaseNumber;
+		}
+		
+		public static SimulationQueueID fromDatabaseNumber(int databaseNumber){
+			if (databaseNumber == QUEUE_ID_NULL.databaseNumber){
+				return QUEUE_ID_NULL;
+			}else if (databaseNumber == QUEUE_ID_SIMULATIONJOB.databaseNumber){
+				return QUEUE_ID_SIMULATIONJOB;
+			}else if (databaseNumber == QUEUE_ID_WAITING.databaseNumber){
+				return QUEUE_ID_WAITING;
+			}else{
+				return null;
+			}
+		}
+	}
+
+
 
 /**
  * SimulationJobStatus constructor comment.

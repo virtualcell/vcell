@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -19,6 +18,7 @@ import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ParticleDataBlock;

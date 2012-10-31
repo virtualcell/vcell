@@ -9,12 +9,6 @@
  */
 
 package cbit.vcell.message.server.console;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -60,8 +54,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.vcell.util.BigString;
-import org.vcell.util.MessageConstants;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -83,10 +75,12 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.message.server.ManageConstants;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
+import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
@@ -309,7 +303,7 @@ void newService() {
 	
 	if (dialog.isAction()) {
 		ServiceSpec ss = dialog.getServiceSpec();
-		ServiceStatus config = new ServiceStatus(ss, null, ManageConstants.SERVICE_STATUS_NOTRUNNING, "newly created",	null);
+		ServiceStatus config = new ServiceStatus(ss, null, ServiceStatusType.ServiceNotRunning, "newly created",	null);
 		try {
 			config = adminDbTop.insertServiceStatus(config, true);
 		} catch (Exception e) {
@@ -353,7 +347,7 @@ private void modifyService() {
 		if (newSpec.getMemoryMB() == oldSpec.getMemoryMB() && newSpec.getStartupType() == oldSpec.getStartupType()) {
 			return;
 		}
-		ServiceStatus newConfig = new ServiceStatus(newSpec, null, ManageConstants.SERVICE_STATUS_NOTRUNNING, "newly modified",	null);
+		ServiceStatus newConfig = new ServiceStatus(newSpec, null, ServiceStatusType.ServiceNotRunning, "newly modified",	null);
 		try {
 			newConfig = adminDbTop.modifyServiceStatus(oldConfig, newConfig, true);
 			stopService(newConfig.getServiceSpec());						
@@ -2200,7 +2194,7 @@ public SimpleJobStatus getReturnedSimulationJobStatus(int selectedRow) {
 private void pingAll(int waitingTimeSec) {
 	try {
 		VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
-		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE);		
+		msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE);		
 		log.print("sending ping message [" + msg.show() + "]");		
 		vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic, msg);
 		try {
@@ -2581,13 +2575,13 @@ private void reconnect() {
 		@Override
 		public void onTopicMessage(VCMessage vcMessage, VCMessageSession session) {
 			log.print("onMessage [" + vcMessage.show() + "]");	
-			String msgType = vcMessage.getStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY);
+			String msgType = vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
 			
 			if (msgType == null) {
 				return;
 			}
 			
-			if (msgType.equals(ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE) && vcMessage.getObjectContent()!=null) {			
+			if (msgType.equals(MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE) && vcMessage.getObjectContent()!=null) {			
 				Object obj = vcMessage.getObjectContent();
 				if (obj instanceof ServiceInstanceStatus) {
 					final ServiceInstanceStatus serviceInfo = (ServiceInstanceStatus)obj;
@@ -2601,11 +2595,11 @@ private void reconnect() {
 		}
 	};
 
-	String filter = MESSAGE_TYPE_PROPERTY + " NOT IN " 
-			+ "('" + MESSAGE_TYPE_IAMALIVE_VALUE + "'" 
-			+ ",'" + MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'" 
-			+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
-			+ ",'" + MESSAGE_TYPE_STOPSERVICE_VALUE + "'"
+	String filter = MessageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
+			+ "('" + MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'" 
+			+ ",'" + MessageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'" 
+			+ ",'" + MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
+			+ ",'" + MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE + "'"
 			+ ")";
 	VCMessageSelector selector = vcMessagingService.createSelector(filter);
 	String threadName = "Daemon Control Topic Consumer";
@@ -2790,7 +2784,7 @@ public void sendMessageButton_ActionPerformed(java.awt.event.ActionEvent actionE
 			username = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
 		}
 			
-		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE);
+		msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE);
 		msg.setStringProperty(MessageConstants.USERNAME_PROPERTY, username);
 		
 		log.print("sending broadcast message [" + msg.show() + "]");		
@@ -2933,7 +2927,7 @@ private void refreshServerManager() {
 		}			
 		VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
 			
-		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE);
+		msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE);
 			
 		log.print("sending refresh server manager message [" + msg.show() + "]");		
 		vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic,msg);
@@ -2973,8 +2967,8 @@ private void stopServices() {
 private void sendStopMessage(String serviceInstanceID) throws VCMessagingException {
 	VCMessage msg = vcMessaging_daemonTopicProducerSession.createMessage();
 	
-	msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
-	msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, serviceInstanceID);
+	msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
+	msg.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceID);
 	
 	log.print("sending stop service message [" + msg.show() + "]");		
 	vcMessaging_daemonTopicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic,msg);

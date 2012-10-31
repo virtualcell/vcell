@@ -10,14 +10,12 @@
 
 package cbit.vcell.message.server;
 
-import static cbit.vcell.message.server.ManageConstants.SERVICE_STARTUP_TYPES;
-
 import java.io.Serializable;
 
 import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
+
 
 
 
@@ -25,15 +23,101 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	private VCellServerID serverID;
 	private ServiceType type;
 	private int ordinal;
-	private int startupType;
+	private ServiceStartupType serviceStartupType;
 	private int memoryMB;	
 	
-	public ServiceSpec(VCellServerID sID, ServiceType t, int o, int st, int mm) {
+	
+	public enum ServiceType { 
+		DB ("Db"),	
+		DATA ("Data"),
+		DATAEXPORT ("Exprt"),
+		DISPATCH ("Dsptch"),
+		PBSCOMPUTE ("PbsC"),	// submit everything to PBS
+		LOCALCOMPUTE ("LclC"),   // local pde and ode
+		SERVERMANAGER ("ServerManager"),
+		TESTING_SERVICE ("TestingService");
+		
+		private final String typeName;
+		ServiceType(String tn) {
+			typeName = tn;
+		}
+		
+		public String getName() {
+			return typeName;
+		}
+
+		@Override
+		public String toString() {
+			return typeName;
+		}
+		
+		public static ServiceType fromName(String name) {
+			for (ServiceType st : ServiceType.values()) {
+				if (st.getName().equals(name)) {
+					return st;
+				}
+			}			
+			throw new RuntimeException(name + " is not a legitiamte service type");
+		}
+	}
+	
+	//
+	//	public static final int SERVICE_STARTUPTYPE_AUTOMATIC = 0;	// restart it if the service is dead 
+	//	public static final int SERVICE_STARTUPTYPE_MANUAL = 1;
+	//	
+	//	public static final String[] SERVICE_STARTUP_TYPES = {"automatic", "manual"};
+	//
+	public enum ServiceStartupType {
+		StartupTypeAutomatic(0,"automatic"),
+		StartupTypeManual(1,"manual");
+		
+		final int databaseNumber;
+		final String description;
+		
+		private ServiceStartupType(int databaseNumber, String description){
+			this.databaseNumber = databaseNumber;
+			this.description = description;
+		}
+		
+		public int getDatabaseNumber(){
+			return databaseNumber;
+		}
+		public String getDescription(){
+			return description;
+		}
+	
+		public boolean isAutomatic() {
+			return this == StartupTypeAutomatic;
+		}
+		public boolean isManual() {
+			return this == StartupTypeManual;
+		}
+	
+		public static ServiceStartupType fromDatabaseNumber(int databaseType) {
+			for (ServiceStartupType type : values()){
+				if (type.getDatabaseNumber() == databaseType){
+					return type;
+				}
+			}
+			throw new RuntimeException("unknown database serialization for ServiceStartupType = "+databaseType);
+		}
+	
+		public static ServiceStartupType fromDescription(String description) {
+			for (ServiceStartupType type : values()){
+				if (type.getDescription().equals(description)){
+					return type;
+				}
+			}
+			throw new RuntimeException("unknown description for ServiceStartupType = "+description);
+		}
+	}
+	
+	public ServiceSpec(VCellServerID sID, ServiceType t, int o, ServiceStartupType serviceStartupType, int mm) {
 		super();
 		this.serverID = sID;
 		this.type = t;
 		this.ordinal = o;
-		this.startupType = st;
+		this.serviceStartupType = serviceStartupType;
 		this.memoryMB = mm;
 	}
 	
@@ -54,11 +138,11 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	}
 	
 	public String toString() {
-		return "[" + serverID + "," + type + "," + ordinal + "," + ManageConstants.SERVICE_STARTUP_TYPES[startupType] + "," + memoryMB + "M]";
+		return "[" + serverID + "," + type + "," + ordinal + "," + serviceStartupType.getDescription() + "," + memoryMB + "M]";
 	}
 
-	public int getStartupType() {
-		return startupType;
+	public ServiceStartupType getStartupType() {
+		return serviceStartupType;
 	}
 
 	public String getID() {
@@ -69,7 +153,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	}
 	
 	public Object[] toObjects() {
-		return new Object[] {serverID, type, ordinal, SERVICE_STARTUP_TYPES[startupType], memoryMB};
+		return new Object[] {serverID, type, ordinal, serviceStartupType.getDescription(), memoryMB};
 	}
 		
 	public boolean equals(Object obj) {

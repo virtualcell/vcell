@@ -19,7 +19,6 @@ import javax.swing.event.EventListenerList;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -37,8 +36,8 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.local.LocalVCMessageAdapter;
 import cbit.vcell.message.local.LocalVCMessageAdapter.LocalVCMessageListener;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
-import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -127,12 +126,12 @@ public void addSimulationJobStatusListener(SimulationJobStatusListener listener)
 
 private void onClientStatusTopic_SimulationJobStatus(VCMessage simJobStatusMessage){
 	Double progress = null;
-	if (simJobStatusMessage.propertyExists(StatusMessage.SIMULATION_STATUS_PROGRESS_PROPERTY)){
-		progress = simJobStatusMessage.getDoubleProperty(StatusMessage.SIMULATION_STATUS_PROGRESS_PROPERTY);
+	if (simJobStatusMessage.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
+		progress = simJobStatusMessage.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY);
 	}
 	Double timepoint = null;
-	if (simJobStatusMessage.propertyExists(StatusMessage.SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
-		timepoint = simJobStatusMessage.getDoubleProperty(StatusMessage.SIMULATION_STATUS_TIMEPOINT_PROPERTY);
+	if (simJobStatusMessage.propertyExists(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
+		timepoint = simJobStatusMessage.getDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY);
 	}
 	SimulationJobStatus simJobStatus = (SimulationJobStatus)simJobStatusMessage.getObjectContent();
 	

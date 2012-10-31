@@ -9,15 +9,13 @@
  */
 
 package cbit.vcell.message.server.data;
-import static org.vcell.util.MessageConstants.MESSAGE_TYPE_PROPERTY;
-import static org.vcell.util.MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE;
-import static org.vcell.util.MessageConstants.SERVICE_TYPE_PROPERTY;
+import static cbit.vcell.message.messages.MessageConstants.MESSAGE_TYPE_PROPERTY;
+import static cbit.vcell.message.messages.MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE;
+import static cbit.vcell.message.messages.MessageConstants.SERVICE_TYPE_PROPERTY;
 
 import java.io.File;
 import java.util.Date;
 
-import org.vcell.util.MessageConstants;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -35,9 +33,11 @@ import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.simdata.Cachetable;

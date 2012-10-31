@@ -9,20 +9,6 @@
  */
 
 package cbit.vcell.message.server.manager;
-import static cbit.vcell.message.server.ManageConstants.INTERVAL_PING_RESPONSE;
-import static cbit.vcell.message.server.ManageConstants.INTERVAL_PING_SERVICE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_ID_PROPERTY;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_STATUS_FAILED;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_STATUS_RUNNING;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,8 +23,6 @@ import java.util.TreeMap;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
-import org.vcell.util.MessageConstants;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -54,9 +38,13 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
+import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.ServiceStatus;
+import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
@@ -80,6 +68,11 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
  * @author: Fei Gao
  */
 public class ServerManagerDaemon {
+	
+	private static final long INTERVAL_PING_SERVICE = 10 * MessageConstants.MINUTE_IN_MS; // in minutes
+	private static final long INTERVAL_PING_RESPONSE = 10 * MessageConstants.SECOND_IN_MS; // in milliseconds
+
+
 	private org.vcell.util.SessionLog log = null;
 	private HtcProxy htcProxy = null;
 	private VCMessagingService vcMessagingService = null;
@@ -116,19 +109,19 @@ private void init() {
 			try {		
 				log.print("onMessage [" + vcMessage.show() + "]");		
 
-				String msgType = vcMessage.getStringProperty(MESSAGE_TYPE_PROPERTY);
+				String msgType = vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
 				
-				if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {
+				if (msgType.equals(MessageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {
 					VCMessage reply = session.createObjectMessage(serviceInstanceStatus);
-					reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
-					reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
+					reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					session.sendTopicMessage(VCellTopic.DaemonControlTopic, reply);
 					log.print("sending reply [" + reply.show() + "]");			
-				} else if (msgType.equals(MESSAGE_TYPE_IAMALIVE_VALUE)) {
+				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE)) {
 					on_iamalive(vcMessage);			
-				} else if (msgType.equals(MESSAGE_TYPE_STOPSERVICE_VALUE)) {
+				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE)) {
 					on_stopservice(vcMessage);
-				} else if (msgType.equals(MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE)) {
+				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE)) {
 					synchronized (this) {
 						notify();
 					}						
@@ -156,7 +149,7 @@ private void startAllServices() throws SQLException, DataAccessException, VCMess
 	Iterator<ServiceStatus> iter = serviceList.iterator();
 	while (iter.hasNext()) {
 		ServiceStatus service = iter.next();		
-		if (service.getServiceSpec().getStartupType() == SERVICE_STARTUPTYPE_AUTOMATIC) {			
+		if (service.getServiceSpec().getStartupType() == ServiceStartupType.StartupTypeAutomatic) {			
 			boolean alive = false;
 			ServiceInstanceStatus foundSis = null; 
 			Iterator<ServiceInstanceStatus> aliveIter = serviceAliveList.iterator();
@@ -192,8 +185,8 @@ private void stopService(ServiceInstanceStatus sis) {
 	try {
 		VCMessage msg = topicProducerSession.createMessage();
 			
-		msg.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_STOPSERVICE_VALUE);
-		msg.setStringProperty(SERVICE_ID_PROPERTY, sis.getID());
+		msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
+		msg.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, sis.getID());
 		
 		log.print("sending stop service message [" + msg.show() + "]");		
 		topicProducerSession.sendTopicMessage(VCellTopic.DaemonControlTopic, msg);
@@ -210,7 +203,7 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 			HtcJobID jobid = submit2PBS(oldStatus);
 			ServiceStatus newServiceStatus = null;
 			if (jobid == null) {
-				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
+				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, ServiceStatusType.ServiceFailed, "unknown pbs exception",	jobid);
 			} else {
 				long t = System.currentTimeMillis();
 				HtcJobStatus status;
@@ -223,15 +216,15 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 					status = htcProxy.getJobStatus(jobid);
 					if (status!=null && status.isExiting()){
 						// should never happen
-						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
+						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, ServiceStatusType.ServiceFailed, "exit immediately after submit", jobid);	
 						break;
 					} else if (status!=null && status.isRunning()) {						
-						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
+						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, ServiceStatusType.ServiceRunning, "running", jobid);	
 						break;
 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
 						String pendingReason = htcProxy.getPendingReason(jobid);
 						htcProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
-						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
+						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, ServiceStatusType.ServiceFailed, 
 								"PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")",
 								jobid);						
 						break;
@@ -269,8 +262,8 @@ private HtcJobID submit2PBS(ServiceStatus service) throws IOException, Executabl
  * @return int
  */
 private java.lang.String getMessageFilter() {
-	return MESSAGE_TYPE_PROPERTY + " NOT IN (" 
-		+ "'" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'" 
+	return MessageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN (" 
+		+ "'" + MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'" 
 		+ ")";
 //		+ " OR (" + ManageConstants.MESSAGE_TYPE_PROPERTY + "='" + ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'"
 //		+ " AND " + ManageConstants.SERVER_NAME_PROPERTY + " IS NOT NULL"
@@ -370,7 +363,7 @@ private void on_iamalive(VCMessage message)  {
 * the corresponding PBS job after waiting a short amount of time.
 */
 private void on_stopservice(VCMessage message) throws Exception {
-	String serviceID = message.getStringProperty(SERVICE_ID_PROPERTY);
+	String serviceID = message.getStringProperty(MessageConstants.SERVICE_ID_PROPERTY);
 	
 	if (serviceID != null) {
 		if (serviceID.equals(serviceInstanceStatus.getID())) { // stop myself
@@ -426,7 +419,7 @@ private void pingAll() throws VCMessagingException {
 	
 	VCMessage msg = topicProducerSession.createMessage();
 		
-	msg.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
+	msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
 
 	log.print("sending ping message [" + msg.show() + "]");
 	

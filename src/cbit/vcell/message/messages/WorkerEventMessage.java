@@ -12,7 +12,6 @@ package cbit.vcell.message.messages;
 import java.sql.SQLException;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.MessageConstants;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -36,12 +35,6 @@ import cbit.vcell.solver.SimulationMessage;
  */
 public class WorkerEventMessage {
 	private WorkerEvent workerEvent = null;	
-	private static final String MESSAGE_TYPE_WORKEREVENT_VALUE	= "WorkerEvent";
-
-	public static final String WORKEREVENT_STATUS = "WorkerEvent_Status";
-	public static final String WORKEREVENT_PROGRESS = "WorkerEvent_Progress";
-	public static final String WORKEREVENT_TIMEPOINT = "WorkerEvent_TimePoint";
-	public static final String WORKEREVENT_STATUSMSG = "WorkerEvent_StatusMsg";
 	
 /**
  * Insert the method's description here.
@@ -65,13 +58,13 @@ public WorkerEventMessage(SimulationDatabase simulationDatabase, VCMessage messa
 }
 
 public static String getWorkerEventSelector_ProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
-			"("+WORKEREVENT_STATUS+" IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
+	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
+			"("+MessageConstants.WORKEREVENT_STATUS+" IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
 }
 
 public static String getWorkerEventSelector_NotProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
-			"("+WORKEREVENT_STATUS+" NOT IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
+	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
+			"("+MessageConstants.WORKEREVENT_STATUS+" NOT IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
 }
 
 
@@ -101,8 +94,8 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		throw new RuntimeException("Wrong message: expecting property "+MessageConstants.MESSAGE_TYPE_PROPERTY);
 	}
 	String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
-	if (!msgType.equals(MESSAGE_TYPE_WORKEREVENT_VALUE)) {
-		throw new RuntimeException("Wrong message type: "+msgType+", expecting: "+MESSAGE_TYPE_WORKEREVENT_VALUE);
+	if (!msgType.equals(MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE)) {
+		throw new RuntimeException("Wrong message type: "+msgType+", expecting: "+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	}
 			
 	Object obj = message.getObjectContent();
@@ -115,7 +108,7 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 
 	} else {
 		// from c++ executable
-		int status = message.getIntProperty(WORKEREVENT_STATUS);
+		int status = message.getIntProperty(MessageConstants.WORKEREVENT_STATUS);
 		String hostname = message.getStringProperty(MessageConstants.HOSTNAME_PROPERTY);
 		String username = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
 		int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
@@ -135,15 +128,15 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		Double progress = null;
 		Double timepoint = null;
 		
-		if (message.propertyExists(WORKEREVENT_STATUSMSG)){
-			statusMessage = message.getStringProperty(WORKEREVENT_STATUSMSG);
+		if (message.propertyExists(MessageConstants.WORKEREVENT_STATUSMSG)){
+			statusMessage = message.getStringProperty(MessageConstants.WORKEREVENT_STATUSMSG);
 		}
 
-		if (message.propertyExists(WORKEREVENT_PROGRESS)){
-			progress = message.getDoubleProperty(WORKEREVENT_PROGRESS);
+		if (message.propertyExists(MessageConstants.WORKEREVENT_PROGRESS)){
+			progress = message.getDoubleProperty(MessageConstants.WORKEREVENT_PROGRESS);
 		}
-		if (message.propertyExists(WORKEREVENT_TIMEPOINT)){
-			timepoint = message.getDoubleProperty(WORKEREVENT_TIMEPOINT);
+		if (message.propertyExists(MessageConstants.WORKEREVENT_TIMEPOINT)){
+			timepoint = message.getDoubleProperty(MessageConstants.WORKEREVENT_TIMEPOINT);
 		}
 		
 		SimulationMessage simulationMessage = SimulationMessage.fromSerializedMessage(statusMessage);
@@ -309,7 +302,7 @@ private void sendWorkerEvent(VCMessageSession session) throws VCMessagingExcepti
  */
 private VCMessage toMessage(VCMessageSession session) {		
 	VCMessage message = session.createObjectMessage(workerEvent);
-	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_WORKEREVENT_VALUE);
+	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	return message;
 }
 }

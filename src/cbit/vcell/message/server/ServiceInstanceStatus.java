@@ -15,8 +15,10 @@ import java.util.Date;
 
 import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.VCellServerID;
+
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
+
 
 
 

@@ -9,14 +9,6 @@
  */
 
 package cbit.vcell.message.server.sim;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_ID_PROPERTY;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,8 +20,6 @@ import java.util.TreeMap;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
-import org.vcell.util.MessageConstants;
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -44,30 +34,29 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
+import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
-import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverException;
@@ -183,7 +172,7 @@ private void initServiceControlTopicListener() {
 
 		public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			try {
-				String msgType = message.getStringProperty(MESSAGE_TYPE_PROPERTY);
+				String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
 				
 				if (msgType == null) {
 					return;

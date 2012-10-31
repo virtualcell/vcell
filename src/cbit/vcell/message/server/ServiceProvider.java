@@ -9,21 +9,11 @@
  */
 
 package cbit.vcell.message.server;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE;
-import static cbit.vcell.message.server.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE;
-import static cbit.vcell.message.server.ManageConstants.SERVICE_ID_PROPERTY;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-
-import javax.jms.JMSException;
 
 import org.vcell.util.SessionLog;
 
@@ -35,6 +25,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.messages.MessageConstants;
 
 /**
  * Insert the type's description here.
@@ -74,10 +65,10 @@ public void closeTopicConsumer() {
  * @return java.lang.String
  */
 private final String getDaemonControlFilter() {
-	return MESSAGE_TYPE_PROPERTY + " NOT IN " 
-		+ "('" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
-		+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
-		+ ",'" + MESSAGE_TYPE_IAMALIVE_VALUE + "'"
+	return MessageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
+		+ "('" + MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
+		+ ",'" + MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
+		+ ",'" + MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'"
 		+ ")";		
 }
 
@@ -90,17 +81,17 @@ public void initControlTopicListener() {
 
 		public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			try {
-				String msgType = message.getStringProperty(MESSAGE_TYPE_PROPERTY);
+				String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
 				String serviceID = null;
 				
 				if (msgType == null) {
 					return;
 				}
 				
-				if (msgType.equals(MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {			
+				if (msgType.equals(MessageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {			
 					VCMessage reply = session.createObjectMessage(ServiceProvider.this.serviceInstanceStatus);
-					reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_IAMALIVE_VALUE);
-					reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
+					reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE);
+					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					log.print("sending reply [" + reply.toString() + "]");
 					if (message.getReplyTo() != null) {
 						reply.setCorrelationID(message.getMessageID());
@@ -108,15 +99,15 @@ public void initControlTopicListener() {
 					} else {
 						session.sendTopicMessage(VCellTopic.DaemonControlTopic, reply);
 					}
-				} else if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {				
+				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {				
 					VCMessage reply = session.createObjectMessage(serviceInstanceStatus);
-					reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
-					reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
+					reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					session.sendTopicMessage(VCellTopic.DaemonControlTopic, reply);			
 					log.print("sending reply [" + reply.toString() + "]");
 					
-				} else if (msgType.equals(MESSAGE_TYPE_STOPSERVICE_VALUE)) {
-					serviceID = message.getStringProperty(SERVICE_ID_PROPERTY);
+				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE)) {
+					serviceID = message.getStringProperty(MessageConstants.SERVICE_ID_PROPERTY);
 					if (serviceID != null && serviceID.equalsIgnoreCase(serviceInstanceStatus.getID()))  {
 						stopService();
 					}
