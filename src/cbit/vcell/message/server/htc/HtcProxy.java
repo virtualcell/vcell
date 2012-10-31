@@ -90,19 +90,19 @@ public abstract class HtcProxy {
 
 	public abstract String getPendingReason(HtcJobID jobid) throws ExecutableException, HtcException;
 
-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false);
+	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false, exitCommand, exitCodeReplaceTag);
 	}
 
-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false);
+	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false, exitCommand, exitCodeReplaceTag);
 	}
 
 	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true);
+		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true, null, null);
 	}
 	
-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException;
+	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
 	

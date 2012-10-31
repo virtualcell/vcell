@@ -160,6 +160,7 @@ public class PropertyLoader {
 	
 	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
 	public static final String simulationPreprocessor = "vcell.simulation.preprocessor";
+	public static final String simulationPostprocessor = "vcell.simulation.postprocessor";
 	public final static String mathSBMLDirectory = "vcell.mathSBML.directory";
 	public final static String COPASIExecutable = "vcell.COPASI.executable";
 	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";

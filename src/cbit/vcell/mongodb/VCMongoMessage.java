@@ -51,7 +51,8 @@ public final class VCMongoMessage {
 		export,
 		database,
 		serverManager,
-		solverPreprocessor
+		solverPreprocessor,
+		solverPostprocessor
 	};
 	
 	private static ServiceName serviceName = ServiceName.unknown;

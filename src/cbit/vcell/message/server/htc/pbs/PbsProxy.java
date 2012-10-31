@@ -2,14 +2,11 @@ package cbit.vcell.message.server.htc.pbs;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -171,7 +168,7 @@ public final class PbsProxy extends HtcProxy {
 	}
 
 	@Override
-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException{	
+	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
 		try {
 			VCellServerID serverID = VCellServerID.getSystemServerID();
 
@@ -229,14 +226,44 @@ public final class PbsProxy extends HtcProxy {
 				sw.append("		echo\n");
 				sw.append("     echo command2 returned $retcode2\n");
 				sw.append("     echo returning return code $retcode2 to PBS\n");
+				if (exitCommand!=null && exitCodeReplaceTag!=null){
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+				}
 				sw.append("     exit $retcode2\n");
 				sw.append("else\n");
 				sw.append("		echo \"command1 failed, skipping command2\"\n");
 				sw.append("     echo returning return code $retcode1 to PBS\n");
+				if (exitCommand!=null && exitCodeReplaceTag!=null){
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+				}
 				sw.append("     exit $retcode1\n");
 				sw.append("fi\n");
 			}else{
 				sw.append("     echo returning return code $retcode1 to PBS\n");
+				if (exitCommand!=null && exitCodeReplaceTag!=null){
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sw.append("		echo\n");
+					sw.append("		echo\n");
+				}
 				sw.append("     exit $retcode1\n");
 			}
 			

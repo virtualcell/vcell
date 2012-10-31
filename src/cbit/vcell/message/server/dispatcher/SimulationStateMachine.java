@@ -393,6 +393,22 @@ public class SimulationStateMachine {
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
 
 			}
+		} else if (workerEvent.isWorkerExitEvent()) {						
+			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
+				// new queue status		
+				SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+				
+				// new exe status
+				endDate = new Date();
+
+				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
+
+				SimulationMessage simulationMessage = SimulationMessage.workerFailure("solver stopped unexpectedly, "+workerEventSimulationMessage.getDisplayMessage());
+				
+				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
+						taskID, simulationMessage, newQueueStatus, newExeStatus);
+
+			}
 		}
 		SimulationJobStatus updatedSimJobStatus = null;
 		if (newJobStatus!=null){

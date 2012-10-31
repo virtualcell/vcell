@@ -24,6 +24,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.util.xml.XmlUtil;
@@ -126,6 +127,20 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		// write final file directly.
 		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
 	}
+	
+	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
+
+	KeyValue simKey = simTask.getSimKey();
+	User simOwner = simTask.getSimulation().getVersion().getOwner();
+	String[] postprocessorCmd = new String[] { 
+			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor), 
+			simKey.toString(),
+			simOwner.getName(), 
+			simOwner.getID().toString(),
+			Integer.toString(simTask.getSimulationJob().getJobIndex()),
+			Integer.toString(simTask.getTaskID()),
+			SOLVER_EXIT_CODE_REPLACE_STRING
+	};
 
 	if (realSolver instanceof AbstractCompiledSolver) {
 		
@@ -142,7 +157,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
 		
-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
+		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -155,7 +170,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 				forceUnixPath(userdir.getAbsolutePath())
 		};
 
-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
+		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}

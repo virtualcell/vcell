@@ -12,6 +12,7 @@ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsJobID;
+import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeJobID;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 
@@ -23,19 +24,27 @@ public class HtcTest {
 	public static void main(String[] args) {
 		CommandServiceSsh cmdssh = null;
 		try {
-			if (args.length != 2){
-				System.out.println("Usage: HtcTest username password");
+			if (args.length != 4){
+				System.out.println("Usage: HtcTest remotehost username password (PBS|SGE)");
 				System.exit(1);
 			}
-			String username = args[0];
-			String password = args[1];
-			cmdssh = new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password);
-//			HtcProxy htcProxy = new PbsProxy(cmdssh);
-			HtcProxy htcProxy = new SgeProxy(cmdssh);
-//			testHtcProxy1cmd(htcProxy);
+			String host = args[0];
+			String username = args[1];
+			String password = args[2];
+			String htcType = args[3];
+			cmdssh = new CommandServiceSsh(host, username, password);
+			HtcProxy htcProxy = null;
+			if (htcType.equalsIgnoreCase("PBS")){
+				htcProxy = new PbsProxy(cmdssh);
+			}else if (htcType.equalsIgnoreCase("SGE")){
+				htcProxy = new SgeProxy(cmdssh);
+			}else{
+				throw new RuntimeException("unrecognized htc type = "+htcType);
+			}
+			testHtcProxy1cmd(htcProxy);
 //			testHtcProxy2cmd(htcProxy);
-			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
-			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
+//			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
+//			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
 //			htcProxy.getCommandService().close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -80,7 +89,7 @@ public class HtcTest {
 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
 		HtcJobID jobID = null;
 		try {
-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100);
+			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
 		} catch (Exception e1) {
 			e1.printStackTrace(System.out);
 		}
@@ -112,7 +121,7 @@ public class HtcTest {
 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
 		HtcJobID jobID = null;
 		try {
-			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100);
+			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
 		} catch (Exception e1) {
 			e1.printStackTrace(System.out);
 		}

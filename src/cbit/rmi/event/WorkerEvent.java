@@ -34,6 +34,7 @@ public class WorkerEvent extends MessageEvent {
 	public static final int JOB_FAILURE = 1002;
 	public static final int JOB_COMPLETED = 1003;
 	public static final int JOB_WORKER_ALIVE = 1004;
+	public static final int JOB_WORKER_EXIT = 1015;
 
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private int jobIndex = -1;
@@ -273,6 +274,10 @@ public boolean isStartingEvent() {
  */
 public boolean isWorkerAliveEvent() {
 	return eventType == JOB_WORKER_ALIVE;
+}
+
+public boolean isWorkerExitEvent() {
+	return eventType == JOB_WORKER_EXIT;
 }
 
 public void setHtcJobID(HtcJobID htcJobID) {
