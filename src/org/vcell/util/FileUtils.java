@@ -53,9 +53,8 @@ public static void copyFile(File sourceFile, File destFile, boolean overwrite, b
         }
 
         // ensure that parent dir of dest file exists!
-        // not using getParentFile method to stay 1.1 compat
-        File parent = new File(destFile.getParent());
-        if (!parent.exists()) {
+        File parent = destFile.getParentFile();
+        if (parent!=null && !parent.exists()) {
             parent.mkdirs();
         }
 
@@ -211,6 +210,23 @@ public static void saveUrlToFile(File file, String urlString) throws MalformedUR
       if (fout != null)
       	{fout.close();}
   }
+}
+
+public static void deleteFile(String filePath) throws IOException {
+	File f = new File(filePath);
+	if (!f.exists()) {
+		throw new IOException("File \""+filePath+"\" does not exist.");
+	}
+	if (!f.canWrite()) {
+		throw new IOException("File \""+filePath+"\" is write protected.");
+	}	
+	if (f.isDirectory()) {
+		throw new IOException("File \""+filePath+"\" is a directory, and I'm currently programmed to balk at deleting whole directories.");
+	}
+	boolean bSuccess = f.delete();
+	if (!bSuccess) {
+		throw new IOException("File \""+filePath+"\" deletion attempt failed.");
+	}
 }
 
 }

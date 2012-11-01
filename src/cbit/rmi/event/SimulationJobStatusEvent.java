@@ -99,6 +99,8 @@ public VCSimulationIdentifier getVCSimulationIdentifier() {
 
 	return jobStatus.getVCSimulationIdentifier();
 }
+
+@Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof SimulationJobStatusEvent){
 		SimulationJobStatusEvent simulationJobStatusEvent = (SimulationJobStatusEvent)messageEvent;
@@ -107,7 +109,7 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 		if (jobStatus != null && jobStatus2 != null 
 				&& jobStatus.getVCSimulationIdentifier().equals(jobStatus2.getVCSimulationIdentifier()) 
 				&& jobStatus.getJobIndex() == jobStatus2.getJobIndex()) {
-			if (jobStatus.isRunning() && getProgress() != null && jobStatus2.isRunning() && simulationJobStatusEvent.getProgress() !=null){
+			if (jobStatus.getSchedulerStatus().isRunning() && getProgress() != null && jobStatus2.getSchedulerStatus().isRunning() && simulationJobStatusEvent.getProgress() !=null){
 				if (getProgress()<simulationJobStatusEvent.getProgress()){
 					return true;
 				}

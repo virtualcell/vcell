@@ -9,26 +9,30 @@
  */
 
 package cbit.vcell.modeldb;
-import java.rmi.*;
+import java.rmi.RemoteException;
 import java.util.List;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VCellServerID;
 
-import cbit.sql.*;
-import cbit.vcell.messaging.admin.SimpleJobStatus;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.
  */
-public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.AdminDatabaseServer {
+public class LocalAdminDbServer implements AdminDatabaseServer {
 	private SessionLog log = null;
 	private AdminDBTopLevel adminDbTop = null;
 
@@ -39,7 +43,6 @@ public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject impl
 public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) 
 		throws RemoteException, DataAccessException {
 
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortAdminDbServer,0));
 	this.log = sessionLog;
 	DbDriver.setKeyFactory(keyFactory);
 	try {
@@ -59,6 +62,14 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) 
 	}
 }
 
+public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs) throws DataAccessException{
+	try {
+		return adminDbTop.getActiveJobs(serverIDs,true);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure getting ActiveJobs");
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:34:12 PM)
@@ -67,15 +78,23 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) 
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException {
 	try {
-		return adminDbTop.getSimulationJobStatus(simKey,jobIndex,true);
+		return adminDbTop.getSimulationJobStatusArray(simKey,jobIndex,true);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
 	}
 }
 
+public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException {
+	try {
+		return adminDbTop.getSimulationJobStatus(simKey,jobIndex,taskID,true);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure getting SimulationJobStatus");
+	}
+}
 
 /**
  * getSimulationJobStatus method comment.
@@ -183,9 +202,11 @@ public UserInfo[] getUserInfos() throws DataAccessException {
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException {
+public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException {
 	try {
 		return adminDbTop.insertSimulationJobStatus(simulationJobStatus,true);
+	}catch (UpdateSynchronizationException ex){
+		throw ex;
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure inserting SimulationJobStatus: "+simulationJobStatus);

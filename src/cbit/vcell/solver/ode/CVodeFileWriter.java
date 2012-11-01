@@ -17,11 +17,11 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.SimulationJob;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -29,12 +29,12 @@ import cbit.vcell.solver.SimulationJob;
  */
 public class CVodeFileWriter extends OdeFileWriter {
 
-public CVodeFileWriter(PrintWriter pw, SimulationJob simJob) {
-	super(pw, simJob, false);
+public CVodeFileWriter(PrintWriter pw, SimulationTask simTask) {
+	super(pw, simTask, false);
 }
 	
-public CVodeFileWriter(PrintWriter pw, SimulationJob simJob, boolean bUseMessaging) {
-	super(pw, simJob, bUseMessaging);
+public CVodeFileWriter(PrintWriter pw, SimulationTask simTask, boolean bUseMessaging) {
+	super(pw, simTask, bUseMessaging);
 }
 
 /**

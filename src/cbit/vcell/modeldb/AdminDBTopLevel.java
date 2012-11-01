@@ -9,15 +9,9 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.vcell.messaging.admin.ServiceStatus;
-import cbit.vcell.messaging.admin.SimpleJobStatus;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import java.sql.Connection;
 import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -29,12 +23,18 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.sql.ConnectionFactory;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * This type was created in VisualAge.
@@ -86,14 +86,43 @@ SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] serverID
 	return jobStatusArray;
 }
 
+public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolean bEnableRetry) throws java.sql.SQLException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return jobDB.getActiveJobs(con,serverIDs);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getActiveJobs(serverIDs, false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
 
-/**
- * Insert the method's description here.
- * Creation date: (10/6/2005 3:03:51 PM)
- */
-SimulationJobStatus getNextObsoleteSimulation(Connection con, long interval) throws SQLException {
-	SimulationJobStatus jobStatus = jobDB.getNextObsoleteSimulation(con, interval);
-	return jobStatus;
+public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws java.sql.SQLException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con);
+		return unreferencedSimulations;
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getUnreferencedSimulations(false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
 }
 
 
@@ -104,18 +133,47 @@ SimulationJobStatus getNextObsoleteSimulation(Connection con, long interval) thr
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus jobStatus = getSimulationJobStatus(con, simKey, jobIndex);
+		SimulationJobStatus jobStatus = getSimulationJobStatus(con, simKey, jobIndex, taskID);
 		return jobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getSimulationJobStatus(simKey,jobIndex,false);
+			return getSimulationJobStatus(simKey,jobIndex,taskID,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (1/31/2003 2:35:44 PM)
+ * @return cbit.vcell.solvers.SimulationJobStatus[]
+ * @param bActiveOnly boolean
+ * @param owner cbit.vcell.server.User
+ */
+public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimulationJobStatus[] jobStatus = getSimulationJobStatusArray(con, simKey, jobIndex);
+		return jobStatus;
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationJobStatusArray(simKey,jobIndex,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -157,8 +215,18 @@ public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions,
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:08:22 PM)
  */
-SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex) throws SQLException {
-	SimulationJobStatus jobStatus = jobDB.getSimulationJobStatus(con,simKey,jobIndex,false);
+SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID) throws SQLException {
+	SimulationJobStatus jobStatus = jobDB.getSimulationJobStatus(con,simKey,jobIndex,taskID,false);
+	return jobStatus;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/6/2005 3:08:22 PM)
+ */
+SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex) throws SQLException {
+	SimulationJobStatus[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,jobIndex,false);
 	return jobStatus;
 }
 
@@ -352,7 +420,7 @@ public User getUser(String userid, boolean bEnableRetry) throws DataAccessExcept
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+public User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -461,7 +529,7 @@ UserInfo[] getUserInfos(boolean bEnableRetry)
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
+public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -495,15 +563,14 @@ SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobS
  * Creation date: (10/3/2005 3:33:09 PM)
  */
 SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException, UpdateSynchronizationException {
-	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),false);
+	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),simulationJobStatus.getTaskID(),false);
 	if (currentSimulationJobStatus != null){
-		con.rollback();
 		VCMongoMessage.sendSimJobStatusInsertedAlready(simulationJobStatus, currentSimulationJobStatus);
 		log.alert("AdminDbTopLevel.insertSimulationJobStatus() : current Job Status = " + currentSimulationJobStatus + ", job status database record already exists");
-		throw new UpdateSynchronizationException("Job Status database record already exists:" + currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex());
+		throw new UpdateSynchronizationException("Job Status database record already exists:" + currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex()+" taskID: "+currentSimulationJobStatus.getTaskID());
 	}
 	jobDB.insertSimulationJobStatus(con,simulationJobStatus, DbDriver.getNewKey(con));
-	SimulationJobStatus newSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),false);
+	SimulationJobStatus newSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),simulationJobStatus.getTaskID(),false);
 	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus, newSimulationJobStatus);
 	return newSimulationJobStatus;
 }
@@ -551,7 +618,7 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
+public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -585,14 +652,14 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
  * Creation date: (10/6/2005 3:20:41 PM)
  */
 SimulationJobStatus updateSimulationJobStatus(Connection con, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
-	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),true);
+	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),newSimulationJobStatus.getTaskID(),true);
 	if (!currentSimulationJobStatus.compareEqual(oldSimulationJobStatus)){
 		VCMongoMessage.sendSimJobStatusUpdateCacheMiss(oldSimulationJobStatus, currentSimulationJobStatus, newSimulationJobStatus);
 		log.print("AdminDbTopLevel.updateSimulationJobStatus() : current Job Status = "+currentSimulationJobStatus+", old Job Status = "+oldSimulationJobStatus);
 		throw new UpdateSynchronizationException("current Job Status doesn't match argument for Simulation :"+currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex());
 	}
 	jobDB.updateSimulationJobStatus(con,newSimulationJobStatus);
-	SimulationJobStatus updatedSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),false);
+	SimulationJobStatus updatedSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),newSimulationJobStatus.getTaskID(),false);
 	VCMongoMessage.sendSimJobStatusUpdate(oldSimulationJobStatus,newSimulationJobStatus,updatedSimulationJobStatus);
 	return updatedSimulationJobStatus;
 }
@@ -773,7 +840,8 @@ public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, Transac
 		try {
 			newServiceStatus = serviceOP.doOperation(oldServiceStatus);
 		} catch (Exception ex) {
-			throw new UpdateSynchronizationException("transactional operation failed for " + newServiceStatus + " : " + ex.getMessage());
+			log.exception(ex);
+			throw new RuntimeException("transactional operation failed for " + newServiceStatus + " : " + ex.getMessage());
 		}
 		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
 		con.commit();

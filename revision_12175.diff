@@ -1,0 +1,249 @@
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12175)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12174)
+@@ -21,7 +21,6 @@
+ 	 * @param args
+ 	 */
+ 	public static void main(String[] args) {
+-		CommandServiceSsh cmdssh = null;
+ 		try {
+ 			if (args.length != 2){
+ 				System.out.println("Usage: HtcTest username password");
+@@ -29,34 +28,18 @@
+ 			}
+ 			String username = args[0];
+ 			String password = args[1];
+-			cmdssh = new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password);
+-//			HtcProxy htcProxy = new PbsProxy(cmdssh);
+-			HtcProxy htcProxy = new SgeProxy(cmdssh);
++//			HtcProxy htcProxy = new PbsProxy(new CommandServiceSsh("sigcluster.cam.uchc.edu", username, password));
++			HtcProxy htcProxy = new SgeProxy(new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password));
+ //			testHtcProxy1cmd(htcProxy);
+ //			testHtcProxy2cmd(htcProxy);
+ 			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
+-			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
+-//			htcProxy.getCommandService().close();
++			htcProxy.getCommandService().close();
++			
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+-		}finally{
+-			if(cmdssh != null){cmdssh.close();}
+ 		}
+ 	}
+ 
+-	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
+-		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
+-		java.util.Vector<cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo> sjinfos = htcProxy.getServiceJobInfos(serverID);
+-		for(cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo sjInfo : sjinfos){
+-			String jobID = null;
+-			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
+-				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
+-			}else if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.sge.SgeJobID){
+-				jobID = ((cbit.vcell.message.server.htc.sge.SgeJobID)sjInfo.getHtcJobID()).getSgeJobID();
+-			}
+-			System.out.println(sjInfo.getServiceJobName()+" "+jobID+" "+sjInfo.getOutputPath()+" "+sjInfo.getErrorPath());
+-		}
+-	}
+ 	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+ 		try {
+ 			System.out.println("getting services");
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12175)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12174)
+@@ -12,7 +12,6 @@
+ import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+-import java.util.Vector;
+ 
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.document.KeyValue;
+@@ -35,30 +34,6 @@
+ 	 *
+ 	 */
+ 	
+-	public static class ServiceJobInfo{
+-		private HtcJobID htcJobID;
+-		private String serviceJobName;
+-		private String errorPath;
+-		private String outputPath;
+-		public ServiceJobInfo(HtcJobID htcJobID, String serviceJobName,String errorPath,String outputPath) {
+-			this.htcJobID = htcJobID;
+-			this.serviceJobName = serviceJobName;
+-			this.errorPath = errorPath;
+-			this.outputPath = outputPath;
+-		}
+-		public HtcJobID getHtcJobID() {
+-			return htcJobID;
+-		}
+-		public String getServiceJobName(){
+-			return serviceJobName;
+-		}
+-		public String getErrorPath() {
+-			return errorPath;
+-		}
+-		public String getOutputPath() {
+-			return outputPath;
+-		}
+-	}
+ 	protected enum HtcJobCategory {
+ 		HTC_SIMULATION_JOB,
+ 		HTC_SERVICE_JOB;
+@@ -111,7 +86,6 @@
+ 	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
+ 
+ 	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
+-	public abstract Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException;
+ 
+ 	public final CommandService getCommandService() {
+ 		return commandService;
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12175)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12174)
+@@ -12,7 +12,6 @@
+ import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+-import java.util.Vector;
+ 
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.FileUtils;
+@@ -340,52 +339,7 @@
+ 		}
+ 	}
+ 
+-	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+-		try{
+-			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
+-			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
+-			Vector<String> cmdV = new Vector<String>();
+-			cmdV.add(JOB_CMD_STATUS);
+-			cmdV.add("-f");
+-			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
+-				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
+-			}
+-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+-			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+-			String line = null;
+-			PbsJobID latestpbsJobID = null;
+-			String latestJobName = null;
+-			String latestErrorPath = null;
+-			while((line = br.readLine()) != null){
+-				StringTokenizer st = new StringTokenizer(line," \t");
+-				if(line.startsWith("Job Id:")){
+-					st.nextToken();st.nextToken();
+-					latestpbsJobID = new PbsJobID(st.nextToken());
+-				}else if(latestpbsJobID != null){
+-					if(line.trim().startsWith("Job_Name =")){
+-						st.nextToken();st.nextToken();
+-						latestJobName = st.nextToken();
+-					}else if(line.trim().startsWith("Error_Path = ")){
+-						st.nextToken();st.nextToken();
+-						latestErrorPath = st.nextToken();
+-					}else if(line.trim().startsWith("Output_Path =")){
+-						st.nextToken();st.nextToken();
+-						String latestOutputPath = st.nextToken();
+-						serviceJobInfos.add(new ServiceJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+-					}
+-				}
+-			}
+-			return serviceJobInfos;
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-			if(e instanceof ExecutableException){
+-				throw (ExecutableException)e;
+-			}else{
+-				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+-			}
+-		}
+-	}
+-	
++
+ 	public ArrayList<RunningPbsJobRecord> getRunningPBSJobs() throws ExecutableException {
+ 		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList<RunningPbsJobRecord>();
+ 
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12175)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12174)
+@@ -8,7 +8,6 @@
+ import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+-import java.util.Vector;
+ 
+ import org.jdom.Document;
+ import org.jdom.Element;
+@@ -425,55 +424,4 @@
+ 		}
+ 	}
+ 
+-	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+-		try{
+-			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
+-			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
+-			Vector<String> cmdV = new Vector<String>();
+-			cmdV.add(JOB_CMD_STATUS);
+-			cmdV.add("-f");
+-			cmdV.add("-j");
+-			String jobList = "";
+-			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
+-				if(jobList.length() != 0){
+-					jobList+=",";
+-				}
+-				jobList+=((SgeJobID)htcJobID).getSgeJobID();
+-			}
+-			cmdV.add(jobList);
+-			cmdV.add("-xml");
+-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+-			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
+-			Element rootElement = qstatDoc.getRootElement();
+-			Element dbJobInfoElement = rootElement.getChild("djob_info");
+-			if(dbJobInfoElement == null){
+-				return null;
+-			}
+-			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
+-			if(qstatInfoChildren == null){
+-				return null;
+-			}
+-			for(Element jobInfoElement : qstatInfoChildren){
+-				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+-				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
+-				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
+-				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
+-				for(Element envSublist : envSublists){
+-					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
+-						serviceJobInfos.add(new ServiceJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
+-						break;
+-					}
+-				}
+-			}
+-			return serviceJobInfos;
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-			if(e instanceof ExecutableException){
+-				throw (ExecutableException)e;
+-			}else{
+-				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+-			}
+-		}
+-	}
+-
+ }
+Index: src/cbit/vcell/mongodb/VCMongoDbDriver.java
+===================================================================
+--- src/cbit/vcell/mongodb/VCMongoDbDriver.java	(revision 12175)
++++ src/cbit/vcell/mongodb/VCMongoDbDriver.java	(revision 12174)
+@@ -128,7 +128,7 @@
+             try {
+                 sendMessages();
+                 try {
+-                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
++                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbThreadSleepMS));
+ 					Thread.sleep(sleepTimeMS);
+ 				} catch (InterruptedException e) {
+ 				}
