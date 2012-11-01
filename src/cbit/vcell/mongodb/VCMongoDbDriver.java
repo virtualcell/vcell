@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -21,12 +22,16 @@ import com.mongodb.WriteResult;
 
 public class VCMongoDbDriver implements Runnable {
 	
+	public static boolean bQuiet = false;
+	
 	private static VCMongoDbDriver mongoDriverSingleton = null;
 
 	private Mongo m = null;
 	private SessionLog log = new StdoutSessionLog("mongoDbDriver");
+	private NullSessionLog nullSessionLog = new NullSessionLog();
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
+	private Thread messageProcessingThread = null;
 
 	public static VCMongoDbDriver getInstance(){
 		if (mongoDriverSingleton == null){
@@ -44,15 +49,18 @@ public class VCMongoDbDriver implements Runnable {
 	}
 	
 	public SessionLog getSessionLog(){
+		if(bQuiet){
+			return nullSessionLog;
+		}
 		return log;
 	}
 	
-	private void sendMessages() {
+	private synchronized void sendMessages() {
     	VCMongoMessage[] queuedMessages = messageOutbox.toArray(new VCMongoMessage[0]);
    		
    		if (queuedMessages!=null && queuedMessages.length>0){
    			try {
-	   			// remove the messages whether the save is sucessfull or not.
+	   			// remove the messages whether the save is successful or not.
 	   			messageOutbox.removeAll(Arrays.asList(queuedMessages));
 	 
 	   			// create DBObjects for each message (to send to MongoDB)
@@ -81,11 +89,11 @@ public class VCMongoDbDriver implements Runnable {
 	        	String errorString = writeResult.getError();////???????
 	        	if (errorString !=null && errorString.length()>0){
 	        		for (VCMongoMessage message : queuedMessages){
-	        			log.alert("VCMongoMessage failedToSend : "+message);
+	        			getSessionLog().alert("VCMongoMessage failedToSend : "+message);
 	        		}
 	        	}else{
 		    		for (VCMongoMessage message : queuedMessages){
-		    			log.alert("VCMongoMessage sent : "+message);
+		    			getSessionLog().alert("VCMongoMessage sent : "+message);
 		    		}
 	        	}
 //   			} catch (MongoException e){
@@ -104,10 +112,10 @@ public class VCMongoDbDriver implements Runnable {
    					m = null;
    				}
    				final int minutesToWaitUponFailure = 20;
-   				log.alert("MongoDB failure ... waiting "+minutesToWaitUponFailure+" minutes before trying to connect again");
+   				getSessionLog().alert("MongoDB failure ... waiting "+minutesToWaitUponFailure+" minutes before trying to connect again");
    				for (VCMongoMessage msg : queuedMessages){
    					try {
-   						log.alert("MongoDB failure: discarding message: "+msg);
+   						getSessionLog().alert("MongoDB failure: discarding message: "+msg);
    					}catch (Exception e4){
    						e4.printStackTrace(System.out);
    					}
@@ -122,12 +130,12 @@ public class VCMongoDbDriver implements Runnable {
     
     public void run()
     {
-		log.print("Starting MongoDB Thread");
+		getSessionLog().print("Starting MongoDB Thread");
         while(processing && VCMongoMessage.enabled) {
             try {
                 sendMessages();
                 try {
-                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbThreadSleepMS));
+                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
 					Thread.sleep(sleepTimeMS);
 				} catch (InterruptedException e) {
 				}
@@ -135,7 +143,7 @@ public class VCMongoDbDriver implements Runnable {
 				e.printStackTrace(System.out);
 			}
         }
-        log.print("Ended MongoDB Thread");
+        getSessionLog().print("Ended MongoDB Thread");
     }
 
 
@@ -144,7 +152,7 @@ public class VCMongoDbDriver implements Runnable {
         if(!processing )
         {
             processing = true;
-            Thread messageProcessingThread = new Thread(this,"MongoDB Process Thread");
+            messageProcessingThread = new Thread(this,"MongoDB Process Thread");
             messageProcessingThread.setDaemon(true);
             messageProcessingThread.start();
         }
@@ -160,18 +168,25 @@ public class VCMongoDbDriver implements Runnable {
         return processing;
     }
     
-    public synchronized void addMessage(VCMongoMessage message)
+    public void addMessage(VCMongoMessage message)
     {
+//    	getSessionLog().print("VCMongoMessage queued : "+message);
     	messageOutbox.add(message);
-    	log.print("VCMongoMessage queued : "+message);
     	if (!IsProcessing()){
     		startProcessing();
     	}
     }
     
-
-
-
+    public void flush() {
+    	if (!processing){
+    		return;
+    	}
+    	if (this.messageProcessingThread!=null){
+    		this.messageProcessingThread.interrupt();
+    	}
+        sendMessages();
+    }
+    
 	/**
 	 * @param args
 	 */
@@ -213,6 +228,5 @@ public class VCMongoDbDriver implements Runnable {
 		}
 	}
 
-	
 
 }

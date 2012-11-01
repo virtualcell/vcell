@@ -1,0 +1,30 @@
+printusage() {
+	echo "Usage: JavaSimExe64 simTaskFile userdir"
+	exit 1
+}
+
+# main code
+if [ "$#" != "2" ] ; then 
+	printusage
+fi
+site=GENERATED
+
+# set up cmd and cmd rguments
+mainclass=GENERATED
+#JavaSimulationExecutable
+arguments=$*
+
+siteRootDir=/share/apps/vcell/deployed/${site}
+siteResDir=${siteRootDir}/resources
+siteCfgDir=${siteRootDir}/configs
+logdir=/share/apps/vcell/logs/${site}
+
+jre=java 
+jvm_jars=GENERATED
+jvmprop="-Xmx500M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+
+echo "starting ${serviceid} on ${nodename}"
+nice ${jre} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments}
+
+exit 0
+

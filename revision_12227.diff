@@ -1,0 +1,300 @@
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java	(revision 12227)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java	(revision 12226)
+@@ -5,7 +5,6 @@
+ import java.util.HashMap;
+ import java.util.HashSet;
+ import java.util.Map;
+-import java.util.Set;
+ import java.util.Vector;
+ 
+ import org.vcell.util.BigString;
+@@ -27,12 +26,15 @@
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
++import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+ import cbit.vcell.modeldb.ResultSetCrawler;
+ import cbit.vcell.solver.Simulation;
+ import cbit.vcell.solver.SimulationInfo;
++import cbit.vcell.solver.SimulationJob;
+ import cbit.vcell.solver.VCSimulationDataIdentifier;
++import cbit.vcell.solver.VCSimulationIdentifier;
+ import cbit.vcell.xml.XmlHelper;
+ import cbit.vcell.xml.XmlParseException;
+ 
+@@ -162,8 +164,8 @@
+ 		}
+ 	}
+ 	
+-	public Set<KeyValue> getUnreferencedSimulations() throws SQLException{
+-		return adminDbTopLevel.getUnreferencedSimulations(true);
++	public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
++		return adminDbTopLevel.getObsoleteSimulations(interval,true);
+ 	}
+ 
+ 	public User getUser(KeyValue simKey, String username) throws DataAccessException, SQLException {
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12227)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12226)
+@@ -10,19 +10,18 @@
+ 
+ package cbit.vcell.message.server.dispatcher;
+ import java.sql.SQLException;
++import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.Date;
+-import java.util.Set;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+ 
+-import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.MessageConstants;
+ import org.vcell.util.MessageConstants.ServiceType;
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+-import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
+@@ -57,7 +56,6 @@
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+@@ -177,10 +175,10 @@
+ 				long messageFlushTimeMS = endFlushTimeMS - startFlushTimeMS;
+ 				
+ 				//
+-				// abort unresponsive or unreferenced jobs
++				// abort unresponsive jobs
+ 				//
+ 				try {
+-					abortStalledOrUnreferencedSimulationTasks(messageFlushTimeMS);
++					abortStalledSimulationTasks(messageFlushTimeMS);
+ 				} catch (Exception e1) {
+ 					log.exception(e1);
+ 				}
+@@ -245,52 +243,33 @@
+ 			}
+ 		}
+ 		
+-		private void abortStalledOrUnreferencedSimulationTasks(long messageFlushTimeMS) throws SQLException, DataAccessException{
++		private void abortStalledSimulationTasks(long messageFlushTimeMS) throws SQLException{
+ 			
+ 			//
+ 			// message queue has already been flushed ... and the time it took was recorded in messageFlushTimeMS
+ 			//
+ 			// because of this, we don't have to worry about killing jobs prematurely.
+ 			//
+-			// here we want to kill jobs that are:
+-			//
+-			//  1) "timed out" (same VCellServerID)  ("Running" or "Dispatched")   (last update older than 10 minutes + flush time)
+-			//
+-			// or
+-			//
+-			//  2) "unreferenced" (same VCellServerID)   ("Waiting" or "Queued" or "Dispatched" or "Running")   (not referenced by BioModel, MathModel, or Simulation parent reference)
+-			//
+-			//
++			
+ 			long currentTimeMS = System.currentTimeMillis();
+-			SimulationJobStatusInfo[] activeJobStatusInfoArray = simulationDatabase.getActiveJobs(new VCellServerID[] { VCellServerID.getSystemServerID() });
+-			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
+-			for (SimulationJobStatusInfo activeJobStatus : activeJobStatusInfoArray){
+-				SimulationJobStatus jobStatus = activeJobStatus.getSimJobStatus();
+-				SchedulerStatus schedulerStatus = jobStatus.getSchedulerStatus();
+-				long timeSinceLastUpdateMS = currentTimeMS - jobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+-				
+-				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
+-
+-				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+-				
+-				if (bTimedOutSimulation || bUnreferencedSimulation){
+-					String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
+-					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
+-					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
+-					System.out.println(simStateMachine.show());
+-					VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
+-					simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+-					if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
+-						HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
+-						try {
+-							htcProxy.killJob(htcJobId);
+-						} catch (HtcJobNotFoundException e) {
+-							e.printStackTrace();
+-						} catch (ExecutableException e) {
+-							e.printStackTrace();
+-						} catch (HtcException e) {
+-							e.printStackTrace();
+-						}
++			SimulationJobStatus[] jobStatusArray = simulationDatabase.getObsoleteSimulations(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL_SECONDS + (messageFlushTimeMS/1000));
++			for (SimulationJobStatus jobStatus : jobStatusArray){
++				String failureMessage = "failed: timed out";
++				System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
++				SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
++				System.out.println(simStateMachine.show());
++				VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
++				simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
++				if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
++					HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
++					try {
++						htcProxy.killJob(htcJobId);
++					} catch (HtcJobNotFoundException e) {
++						e.printStackTrace();
++					} catch (ExecutableException e) {
++						e.printStackTrace();
++					} catch (HtcException e) {
++						e.printStackTrace();
+ 					}
+ 				}
+ 			}			
+Index: src/cbit/vcell/modeldb/LocalAdminDbServer.java
+===================================================================
+--- src/cbit/vcell/modeldb/LocalAdminDbServer.java	(revision 12227)
++++ src/cbit/vcell/modeldb/LocalAdminDbServer.java	(revision 12226)
+@@ -10,6 +10,7 @@
+ 
+ package cbit.vcell.modeldb;
+ import java.rmi.RemoteException;
++import java.sql.SQLException;
+ import java.util.List;
+ 
+ import org.vcell.util.DataAccessException;
+@@ -96,6 +97,10 @@
+ 	}
+ }
+ 
++public SimulationJobStatus[] getObsoleteSimulations(long interval) throws SQLException{
++	return adminDbTop.getObsoleteSimulations(interval,true);
++}
++
+ /**
+  * getSimulationJobStatus method comment.
+  */
+Index: src/cbit/vcell/modeldb/AdminDBTopLevel.java
+===================================================================
+--- src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12227)
++++ src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12226)
+@@ -11,7 +11,6 @@
+ package cbit.vcell.modeldb;
+ import java.sql.Connection;
+ import java.sql.SQLException;
+-import java.util.Set;
+ import java.util.Vector;
+ 
+ import org.vcell.util.DataAccessException;
+@@ -105,17 +104,27 @@
+ 	}
+ }
+ 
+-public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws java.sql.SQLException {
++/**
++ * Insert the method's description here.
++ * Creation date: (10/6/2005 3:03:51 PM)
++ */
++SimulationJobStatus[] getObsoleteSimulations(Connection con, long interval) throws SQLException {
++	SimulationJobStatus[] jobStatusArray = jobDB.getObsoleteSimulations(con, interval);
++	return jobStatusArray;
++}
++
++
++public SimulationJobStatus[] getObsoleteSimulations(long interval, boolean bEnableRetry) throws java.sql.SQLException {
+ 	Object lock = new Object();
+ 	Connection con = conFactory.getConnection(lock);
+ 	try {
+-		Set<KeyValue> unreferencedSimulations = jobDB.getUnreferencedSimulations(con);
+-		return unreferencedSimulations;
++		SimulationJobStatus[] jobStatus = jobDB.getObsoleteSimulations(con, interval);
++		return jobStatus;
+ 	} catch (Throwable e) {
+ 		log.exception(e);
+ 		if (bEnableRetry && isBadConnection(con)) {
+ 			conFactory.failed(con,lock);
+-			return getUnreferencedSimulations(false);
++			return getObsoleteSimulations(interval,false);
+ 		}else{
+ 			handle_SQLException(e);
+ 			return null; // never gets here;
+@@ -126,6 +135,7 @@
+ }
+ 
+ 
++
+ /**
+  * Insert the method's description here.
+  * Creation date: (1/31/2003 2:35:44 PM)
+Index: src/cbit/vcell/messaging/db/SimulationJobDbDriver.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12227)
++++ src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12226)
+@@ -13,14 +13,10 @@
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobTable;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+-import cbit.vcell.modeldb.BioModelSimulationLinkTable;
+-import cbit.vcell.modeldb.MathModelSimulationLinkTable;
+ import cbit.vcell.modeldb.SimulationTable;
+ import cbit.vcell.modeldb.DatabaseConstants;
+ import java.util.ArrayList;
+-import java.util.HashSet;
+ import java.util.List;
+-import java.util.Set;
+ 
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.SessionLog;
+@@ -129,33 +125,6 @@
+ }
+ 
+ 
+-public Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
+-	String sql = 
+-		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
+-		" MINUS "+
+-		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+-		" MINUS "+
+-		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+-		" MINUS "+
+-		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
+-			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+-			
+-	HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
+-	Statement stmt = con.createStatement();
+-	try {
+-		ResultSet rset = stmt.executeQuery(sql);
+-		while (rset.next()){
+-			KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
+-			unreferencedSimKeys.add(simKey);
+-		}
+-	} finally {
+-		stmt.close();
+-	}
+-	return unreferencedSimKeys;
+-}
+-
+-
+-
+ /**
+  * This method was created in VisualAge.
+  * @return int
+Index: src/org/vcell/util/MessageConstants.java
+===================================================================
+--- src/org/vcell/util/MessageConstants.java	(revision 12227)
++++ src/org/vcell/util/MessageConstants.java	(revision 12226)
+@@ -124,7 +124,7 @@
+ 
+ 	public static final long INTERVAL_PING_SERVER_MS = 5 * MINUTE_IN_MS; // in milliseconds
+ 	public static final long INTERVAL_SERVER_FAIL_MS = 10 * MINUTE_IN_MS; // in milliseconds
+-	public static final long INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
++	public static final long INTERVAL_DATABASE_SERVER_FAIL_SECONDS = 10 * 60; // in seconds
+ 	public static final long INTERVAL_PROGRESS_MESSAGE_MS = 5 * SECOND_IN_MS;
+ 
+ 

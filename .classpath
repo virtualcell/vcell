@@ -15,7 +15,17 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.2/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="sshj"/>
 	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="lib" path="lib/activemq-core-5.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/camel-jms-2.9.2.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-j2ee-management_1.1_spec-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jms_1.1_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jta_1.0.1B_spec-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/kahadb-5.6.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/icu4j-3.4.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/iri-0.7.jar"/>
@@ -38,11 +48,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/js.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-js.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
@@ -64,5 +71,8 @@
 	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
 	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
 	<classpathentry kind="lib" path="lib/mongo-2.8.0.jar"/>
+	<classpathentry kind="lib" path="lib/ucp.jar"/>
+	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
