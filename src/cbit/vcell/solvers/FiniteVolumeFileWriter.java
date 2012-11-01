@@ -74,6 +74,7 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -191,19 +192,19 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		GAUSSIAN_CONVOLUTION_DATA_GENERATOR,
 	}
 
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir) {	// for optimization only, no messaging
-	this (pw, simJob, geo, dir, false);
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir) {	// for optimization only, no messaging
+	this (pw, simTask, geo, dir, false);
 	bInlineVCG = true; 
 }
 
-public FiniteVolumeFileWriter(PrintWriter pw, SimulationJob simJob, Geometry geo, File dir, boolean arg_bMessaging) {
-	super(pw, simJob, arg_bMessaging);
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir, boolean arg_bMessaging) {
+	super(pw, simTask, arg_bMessaging);
 	resampledGeometry = geo;
 	userDirectory = dir;
 }
 
 private Expression subsituteExpression(Expression exp, VariableDomain variableDomain) throws ExpressionException  {
-	return subsituteExpression(exp, simulationJob.getSimulationSymbolTable(), variableDomain);
+	return subsituteExpression(exp, simTask.getSimulationJob().getSimulationSymbolTable(), variableDomain);
 }
 /**
  * Insert the method's description here.
@@ -237,9 +238,9 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
  */
 public void write(String[] parameterNames) throws Exception {
 	Variable originalVars[] = null;
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
-	if (simulationJob.getSimulation().isSerialParameterScan()) {
+	if (simTask.getSimulation().isSerialParameterScan()) {
 		originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
 		Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
 		MathOverrides mathOverrides = simulation.getMathOverrides();	
@@ -285,12 +286,12 @@ public void write(String[] parameterNames) throws Exception {
 }
 
 private void writeSmoldyn() throws Exception {
-	String baseName =  new File(userDirectory, simulationJob.getSimulationJobID()).getPath();
+	String baseName =  new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getPath();
 	String inputFilename = baseName + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simulationJob, bUseMessaging);
+		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simTask, bUseMessaging);
 		stFileWriter.write();
 	} finally {
 		if (pw != null) {
@@ -306,7 +307,7 @@ private void writeSmoldyn() throws Exception {
 }
 
 private void writePostProcessingBlock() throws Exception{ // SolverException, ExpressionException and exceptions from roiDataGenerator.getROIDataGeneratorDescription()
-	PostProcessingBlock postProcessingBlock = simulationJob.getSimulation().getMathDescription().getPostProcessingBlock();
+	PostProcessingBlock postProcessingBlock = simTask.getSimulation().getMathDescription().getPostProcessingBlock();
 	if (postProcessingBlock.getNumDataGenerators() == 0) { // to make c++ code write default var statisitcs, without the token it won't write anything
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_END);
@@ -347,7 +348,7 @@ private void writePostProcessingBlock() throws Exception{ // SolverException, Ex
 			DATA_PROCESSOR_END
 			*/
 			ROIDataGenerator roiDataGenerator = (ROIDataGenerator) dataGenerator;
-			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simulationJob)); 
+			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
 		}
@@ -358,7 +359,7 @@ private void writePostProcessingBlock() throws Exception{ // SolverException, Ex
 
 
 /*private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
 		printWriter.println("DATA_PROCESSOR_BEGIN " + DataProcessingInstructions.ROI_TIME_SERIES);
@@ -439,7 +440,7 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
 	if (fastSystem == null) {
 		return;
 	}
-	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, simulationJob.getSimulationSymbolTable());
+	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, simTask.getSimulationJob().getSimulationSymbolTable());
 	int numIndep = fs_analyzer.getNumIndependentVariables();
 	int numDep = fs_analyzer.getNumDependentVariables();
 	int numPseudo = fs_analyzer.getNumPseudoConstants();	
@@ -528,12 +529,12 @@ private void writeFastSystem(SubDomain subDomain) throws MathException, Expressi
  * @throws ExpressionException 
  */
 private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) throws ExpressionException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	//
 	// get list of volVariables participating in PDEs (anywhere).
 	//
 	Vector<VolVariable> pdeVolVariableList = new Vector<VolVariable>();
-	Variable[] variables = simulationJob.getSimulationSymbolTable().getVariables();
+	Variable[] variables = simTask.getSimulationJob().getSimulationSymbolTable().getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof VolVariable && simulation.getMathDescription().isPDE((VolVariable)variables[i])){
 			pdeVolVariableList.add((VolVariable)variables[i]);
@@ -669,7 +670,7 @@ COMPARTMENT_END
  * @throws MathException 
 */
 private void writeCompartments() throws ExpressionException, MathException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
@@ -738,7 +739,7 @@ private void writeBoundaryConditions(BoundaryConditionType[] bctypes) {
 	}
 }
 
-public static String replaceVolumeVariable(SimulationJob simulationJob, MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
+public static String replaceVolumeVariable(SimulationTask simTask, MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException {
 	Expression fluxExpr = new Expression(exp);
 	String symbols[] = exp.getSymbols();
 	String flux = null;
@@ -747,7 +748,7 @@ public static String replaceVolumeVariable(SimulationJob simulationJob, Membrane
 		flux = exp.infix();
 	} else {
 		for (String symbol : symbols) {
-			Variable var = simulationJob.getSimulationSymbolTable().getVariable(symbol);
+			Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(symbol);
 			if (var instanceof VolVariable || var instanceof VolumeRegionVariable) {
 				fluxExpr.substituteInPlace(new Expression(var.getName()), new Expression(var.getName() + "_" + var.getDomain().getName() + "_membrane"));
 			}
@@ -778,7 +779,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 		if (jc.getVariable().getDomain() == null || jc.getVariable().getDomain().getName().equals(msd.getInsideCompartment().getName())) 
 		{
 			Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-			String infix = replaceVolumeVariable(getSimulationJob(), msd, flux);
+			String infix = replaceVolumeVariable(getSimulationTask(), msd, flux);
 			printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
 		}
 		
@@ -786,7 +787,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 		{
 			// outflux
 			Expression flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-			String infix = replaceVolumeVariable(getSimulationJob(), msd, flux);
+			String infix = replaceVolumeVariable(simTask, msd, flux);
 			printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
 		}		
 		printWriter.println("JUMP_CONDITION_END");
@@ -836,7 +837,7 @@ private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDom
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	
 	Expression rateExp = subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-	String rateStr = replaceVolumeVariable(getSimulationJob(), memSubDomain, rateExp);
+	String rateStr = replaceVolumeVariable(simTask, memSubDomain, rateExp);
 	printWriter.println("RATE " + rateStr + ";");
 	
 	printWriter.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
@@ -901,7 +902,7 @@ MEMBRANE_END
  * @throws MathException 
  */
 private void writeMembranes() throws ExpressionException, MathException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
@@ -935,7 +936,7 @@ MODEL_END
  * @throws MathException 
 */
 private void writeModelDescription() throws MathException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	
 	printWriter.println("# Model description: FEATURE name handle boundary_conditions");
 	printWriter.println(FVInputFileKeyword.MODEL_BEGIN);
@@ -959,8 +960,8 @@ private void writeModelDescription() throws MathException {
 
 
 private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSet<Double> discontinuityTimes) throws ExpressionException, MathException {
-	Simulation simulation = simulationJob.getSimulation();
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	Simulation simulation = simTask.getSimulation();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	for (Discontinuity discontinuity : discontinuities) {
 		Expression rfexp = discontinuity.getRootFindingExp();
@@ -991,8 +992,8 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 		}
 	}
 	
-	/*Simulation simulation = simulationJob.getSimulation();
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	/*Simulation simulation = simTask.getSimulation();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	MonadicFunctionRootFinder rootFinder = new Bisection();
 	
 	for (Discontinuity discontinuity : discontinuities) {
@@ -1140,7 +1141,7 @@ SIMULATION_PARAM_END
  * @throws ExpressionException 
 */
 private void writeSimulationParamters() throws ExpressionException, MathException {	
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	SolverTaskDescription solverTaskDesc = simulation.getSolverTaskDescription();
 	
 	printWriter.println("# Simulation Parameters");
@@ -1162,7 +1163,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			Enumeration<Equation> enum_equ = sd.getEquations();
 			while (enum_equ.hasMoreElements()){
 				Equation equation = enum_equ.nextElement();
-				equation.getDiscontinuities(simulationJob.getSimulationSymbolTable(), discontinuities);
+				equation.getDiscontinuities(simTask.getSimulationJob().getSimulationSymbolTable(), discontinuities);
 			}
 		}
 		getDiscontinuityTimes(discontinuities, discontinuityTimes);
@@ -1176,7 +1177,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
-	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simulationJob.getSimulationJobID()).getAbsolutePath());
+	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
     printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());    
     OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
@@ -1226,7 +1227,7 @@ private void writeMeshFile() throws IOException {
 	if (bInlineVCG) {
 		GeometryFileWriter.write(printWriter, resampledGeometry);
 	} else {
-		printWriter.println(FVInputFileKeyword.VCG_FILE + " " + new File(userDirectory, simulationJob.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
+		printWriter.println(FVInputFileKeyword.VCG_FILE + " " + new File(userDirectory, simTask.getSimulationJobID() + SimDataConstants.VCG_FILE_EXTENSION).getAbsolutePath());
 	}	
 	printWriter.println(FVInputFileKeyword.MESH_END);
 	printWriter.println();
@@ -1297,7 +1298,7 @@ VARIABLE_END
  * @throws IOException 
  */
 private void writeVariables() throws MathException, ExpressionException, IOException {
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	printWriter.println("# Variables : type name domain time_dependent_flag advection_flag grad_flag solve_whole_mesh_flag solve_regions");
 	printWriter.println(FVInputFileKeyword.VARIABLE_BEGIN);
@@ -1343,7 +1344,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			 		}
 			  	}
 				if (totalNumCompartments == listOfSubDomains.size()
-						|| listOfSubDomains.size() == 0 && simulationJob.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+						|| listOfSubDomains.size() == 0 && simTask.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 					printWriter.print(" true");
 				} else {
 					printWriter.print(" false");
@@ -1379,7 +1380,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 	
 	int numRandomVariables = rvList.size();
 	if (numRandomVariables > 0) {
-		ISize samplingSize = simulationJob.getSimulation().getMeshSpecification().getSamplingSize();
+		ISize samplingSize = simTask.getSimulation().getMeshSpecification().getSamplingSize();
 		String[] varNameArr = new String[numRandomVariables];
 		VariableType[] varTypeArr = new VariableType[numRandomVariables];
 		double[][] dataArr = new double[numRandomVariables][];
@@ -1401,7 +1402,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 			printWriter.println(" " + varNameArr[i]);
 			dataArr[i] = generateRandomNumbers(rv, numRandomNumbers);
 		}
-		File rvFile = new File(userDirectory, simulationJob.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
+		File rvFile = new File(userDirectory, simTask.getSimulationJobID() + RANDOM_VARIABLE_FILE_EXTENSION);
 		DataSet.writeNew(rvFile, varNameArr, varTypeArr, samplingSize, dataArr);
 	}
 	printWriter.println(FVInputFileKeyword.VARIABLE_END);
@@ -1428,7 +1429,7 @@ private void writeParameters(String[] parameterNames) {
 }
 
 private void writeSerialParameterScans() throws ExpressionException,  DivideByZeroException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	if (!simulation.isSerialParameterScan()) {
 		return;
 	}
@@ -1470,7 +1471,7 @@ private void writeSerialParameterScans() throws ExpressionException,  DivideByZe
 */
 
 private void writeFieldData() throws FileNotFoundException, ExpressionException, DataAccessException {
-	FieldDataIdentifierSpec[] fieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
+	FieldDataIdentifierSpec[] fieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
 	if (fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0) {
 		return;
 	}
@@ -1485,7 +1486,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 	
 	FieldFunctionArguments psfFieldFunc = null;
 	
-	Variable var = simulationJob.getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+	Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
 	if (var != null) {
 		FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 		if (ffas == null || ffas.length == 0) {
@@ -1506,7 +1507,7 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 		if(!uniqueFieldDataIDSpecs.contains(fieldDataIDSpecs[i])){
 			FieldFunctionArguments ffa = fieldDataIDSpecs[i].getFieldFuncArgs();
 			File newResampledFieldDataFile = new File(userDirectory,
-					SimulationData.createCanonicalResampleFileName((VCSimulationDataIdentifier)simulationJob.getVCDataIdentifier(),
+					SimulationData.createCanonicalResampleFileName((VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier(),
 							fieldDataIDSpecs[i].getFieldFuncArgs())
 				);
 			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);
@@ -1560,7 +1561,7 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 	printWriter.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
-	printWriter.println("RATE " + replaceVolumeVariable(getSimulationJob(), memSubDomain, rateExpression) + ";");
+	printWriter.println("RATE " + replaceVolumeVariable(simTask, memSubDomain, rateExpression) + ";");
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 		

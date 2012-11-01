@@ -29,6 +29,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Event.Delay;
 import cbit.vcell.math.Event.EventAssignment;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -39,7 +40,6 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -60,8 +60,8 @@ public abstract class OdeFileWriter extends SolverFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public OdeFileWriter(PrintWriter pw, SimulationJob simJob, boolean messaging) {
-	super(pw, simJob, messaging);
+public OdeFileWriter(PrintWriter pw, SimulationTask simTask, boolean messaging) {
+	super(pw, simTask, messaging);
 }
 
 public Discontinuity getSubsitutedAndFlattened(Discontinuity discontinuity, SymbolTable st) throws ExpressionException {		
@@ -85,7 +85,7 @@ private void createSymbolTable() throws Exception {
 	varsSymbolTable.addVar(ReservedVariable.TIME); // SymbolTableEntry.index doesn't matter ... just code generating binding by var names not index.
 	int count = 0;
 	
-	Variable variables[] = simulationJob.getSimulationSymbolTable().getVariables();
+	Variable variables[] = simTask.getSimulationJob().getSimulationSymbolTable().getVariables();
 	
 	for (int i = 0; i < variables.length; i++) {
 		if (variables[i] instanceof VolVariable) {
@@ -113,7 +113,7 @@ private void createSymbolTable() throws Exception {
 	// Get the vector of sensVariables, needed for creating SensStateVariables 
 	Vector<SensStateVariable> sensVars = new Vector<SensStateVariable>();
 	for (int i = 0; i < getStateVariableCount(); i++) {
-		if (simulationJob.getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
+		if (simTask.getSimulation().getSolverTaskDescription().getSensitivityParameter() != null) {
 			if (getStateVariable(i) instanceof SensStateVariable) {
 				sensVars.addElement((SensStateVariable)getStateVariable(i));
 			}
@@ -143,14 +143,14 @@ public int getStateVariableCount () {
 
 
 private void createStateVariables() throws Exception {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 
 	MathDescription mathDescription = simulation.getMathDescription();
 	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 
 	// get Ode's from MathDescription and create ODEStateVariables
 	Enumeration<Equation> enum1 = mathDescription.getSubDomains().nextElement().getEquations();
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	while (enum1.hasMoreElements()) {
 		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
@@ -203,7 +203,7 @@ public void write(String[] parameterNames) throws Exception {
 	createStateVariables();
 	createSymbolTable();
 	
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	
 	if (simulation.getSolverTaskDescription().getUseSymbolicJacobian()){
 		throw new RuntimeException("symbolic jacobian option not yet supported in interpreted Stiff solver");
@@ -257,7 +257,7 @@ public void write(String[] parameterNames) throws Exception {
 }
 
 private String writeEvents(HashMap<Discontinuity, String> discontinuityNameMap) throws ExpressionException {
-	Simulation simulation = simulationJob.getSimulation();
+	Simulation simulation = simTask.getSimulation();
 	
 	StringBuffer sb = new StringBuffer();
 	MathDescription mathDescription = simulation.getMathDescription();

@@ -13,10 +13,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Vector;
-
-
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CacheStatus;
@@ -27,8 +26,9 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 
 import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.messaging.JmsConnectionFactory;
-import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.bootstrap.LocalVCellConnectionMessaging;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -45,10 +45,10 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private SessionLog sessionLog = null;
 	private Cachetable dataCachetable = null;
 	private DataSetControllerImpl dscImpl = null;
-	private SimulationControllerImpl simControllerImpl = null;
-	private JmsConnectionFactory fieldJmsConnFactory = null;
+	private VCMessagingService vcMessagingService = null;
 	private ExportServiceImpl exportServiceImpl = null;
 	private java.util.Date bootTime = new java.util.Date();
+	private SimulationDatabase simulationDatabase = null;
 
 	private long CLEANUP_INTERVAL = 600*1000;	
 	
@@ -56,20 +56,21 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory, AdminDatabaseServer dbServer) throws RemoteException, FileNotFoundException {
+public LocalVCellServer(String argHostName, VCMessagingService vcMessagingService, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellServer,0));
 	this.hostName = argHostName;
-	this.fieldJmsConnFactory = jmsConnFactory;
+	this.vcMessagingService = vcMessagingService;
 	adminDbServer = dbServer;
 	this.sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
 	this.dataCachetable = new Cachetable(10*Cachetable.minute);
 	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
-	this.simControllerImpl = new SimulationControllerImpl(sessionLog,adminDbServer, this);
+	this.simulationDatabase = simulationDatabase;
+//	this.simControllerImpl = new SimulationControllerImpl(sessionLog, this.simulationDatabase, this);
 	this.exportServiceImpl = new ExportServiceImpl(sessionLog);
 	
-	if (fieldJmsConnFactory != null) {
+	if (vcMessagingService != null) {
 		Thread cleanupThread = new Thread() { 
 			public void run() {
 				setName("CleanupThread");
@@ -85,13 +86,14 @@ public LocalVCellServer(String argHostName, JmsConnectionFactory jmsConnFactory,
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
+private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, FileNotFoundException {
 	if (getVCellConnection0(userLoginInfo) == null) {
 		VCellConnection localConn = null;
-		if (fieldJmsConnFactory == null){
-			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), this);
+		if (vcMessagingService == null){
+			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), simulationDatabase, getDataSetControllerImpl(), getExportServiceImpl());
 		} else {
-			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), fieldJmsConnFactory, this);
+			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), vcMessagingService, this);
+			((LocalVCellConnectionMessaging)localConn).init();
 			VCMongoMessage.sendClientConnectionNew(localConn.getUserLoginInfo());
 		}
 		vcellConnectionList.addElement(localConn);
@@ -104,7 +106,7 @@ private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws
  * Creation date: (4/16/2004 10:19:42 AM)
  */
 public void cleanupConnections() {	
-	if (fieldJmsConnFactory == null) {
+	if (vcMessagingService == null) {
 		return;
 	}
 	
@@ -144,7 +146,7 @@ public void cleanupConnections() {
  * This method was created in VisualAge.
  * @return cbit.vcell.server.AdminDatabaseServer
  */
-public AdminDatabaseServer getAdminDatabaseServer() {
+private AdminDatabaseServer getAdminDatabaseServer() {
 	try {
 		return adminDbServer;
 	}catch (Throwable e){
@@ -214,20 +216,25 @@ public ServerInfo getServerInfo() {
 	return new ServerInfo(hostName,getCacheStatus(),getConnectedUsers());
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataSetControllerImpl
- */
-SimulationControllerImpl getSimulationControllerImpl() {
-	return simControllerImpl;
-}
+///**
+// * This method was created in VisualAge.
+// * @return cbit.vcell.simdata.DataSetControllerImpl
+// */
+//SimulationControllerImpl getSimulationControllerImpl() {
+//	return simControllerImpl;
+//}
 
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.DataSetController
+ * @throws DataAccessException 
+ * @throws RemoteException 
+ * @throws AuthenticationException 
+ * @throws SQLException 
+ * @throws FileNotFoundException 
  * @exception java.lang.Exception The exception description.
  */
-VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, java.sql.SQLException, DataAccessException, FileNotFoundException, AuthenticationException, javax.jms.JMSException {
+public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws RemoteException, DataAccessException, AuthenticationException, FileNotFoundException, SQLException {
 	VCellConnection localConnection = null;
 	//Authenticate User
 	User user = null;

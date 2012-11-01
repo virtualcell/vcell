@@ -1,0 +1,68 @@
+Patches applied to VCell_5.2_messaging:
+
+patch revision_11937.diff
+all except:
+ModelTest (ignored)
+XmlHelper (patched)
+
+patch revision_11961.diff
+all except:
+PBSUtils.java (patched)
+
+patch revision_11981.diff
+all except:
+PBSConstants (patched)
+CVodeFileWriter (patched)
+HybridSolverTester (NA)
+PropertyLoader (patched)
+--- CondorConstants removed
+--- CondorUtils removed
+--- HTCUtils removed
+
+patch revision_11989.diff
+all except:
+.classpath (resolved)
+
+patch revision_11992.diff
+all except:
+.classpath (resolved)
+ServerManageConsole (resolved)
+
+patch revision_12032.diff
+all except:
+ServerManageConsole (old - delete manually ….)
+LocalUserMetaDbServerMessaging (old - delete manually …)
+RpcDbServerProxy (old - delete manually …)
+
+patch revision_12052.diff
+all:
+
+patch revision_12055.diff
+all:
+
+patch revision_12069
+all:
+
+patch revision_12072
+all:
+
+patch revision_12073
+all:
+
+patch revision_12075
+all:
+
+patch revision_12088
+all:
+
+patch revision_12094
+all:
+
+patch revision_12096
+all:
+
+patch revision_12098
+all:
+
+
+

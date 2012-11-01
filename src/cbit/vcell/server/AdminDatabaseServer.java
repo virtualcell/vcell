@@ -10,23 +10,22 @@
 
 package cbit.vcell.server;
 
-import java.rmi.*;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.messaging.admin.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
 
 /**
  * This type was created in VisualAge.
  */
-public interface AdminDatabaseServer extends java.rmi.Remote {
+public interface AdminDatabaseServer {
 	
-ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws RemoteException, DataAccessException;
+ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws DataAccessException;
 
 /**
  * Insert the method's description here.
@@ -37,8 +36,12 @@ ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws 
  * @exception java.rmi.RemoteException The exception description.
  */
 
-SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex) throws RemoteException, DataAccessException;
-	public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions) throws RemoteException, DataAccessException;
+SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException;
+
+SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException;
+
+
+java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions) throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:33:54 PM)
@@ -47,42 +50,42 @@ SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex) throws
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, User userOnly) throws RemoteException, DataAccessException;
+SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, User userOnly) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-User getUser(String userid) throws RemoteException, DataAccessException;
+User getUser(String userid) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword) throws RemoteException, DataAccessException;
+User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-User getUserFromSimulationKey(KeyValue simKey) throws RemoteException, DataAccessException;
+User getUserFromSimulationKey(KeyValue simKey) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-UserInfo getUserInfo(KeyValue userKey) throws RemoteException, DataAccessException;
+UserInfo getUserInfo(KeyValue userKey) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-UserInfo[] getUserInfos() throws RemoteException, DataAccessException;
+UserInfo[] getUserInfos() throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)
@@ -90,14 +93,14 @@ UserInfo[] getUserInfos() throws RemoteException, DataAccessException;
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws RemoteException, DataAccessException;
+SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)
@@ -105,15 +108,15 @@ org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws RemoteException, DataAccessException;
+SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-org.vcell.util.document.UserInfo updateUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo updateUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws DataAccessException;
 
-void sendLostPassword(String userid) throws RemoteException,DataAccessException;
-void updateUserStat(UserLoginInfo userLoginInfo) throws RemoteException,DataAccessException;
+void sendLostPassword(String userid) throws DataAccessException;
+void updateUserStat(UserLoginInfo userLoginInfo) throws DataAccessException;
 }

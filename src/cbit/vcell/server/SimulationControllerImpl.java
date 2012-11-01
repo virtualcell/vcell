@@ -22,22 +22,27 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.User;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.message.VCDestination;
+import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.local.LocalVCMessageAdapter;
+import cbit.vcell.message.local.LocalVCMessageAdapter.LocalVCMessageListener;
+import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.messages.SimulationTaskMessage;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.server.DispatcherDbManager;
-import cbit.vcell.messaging.server.LocalDispatcherDbManager;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
@@ -46,8 +51,6 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.LocalSolverController;
-import cbit.vcell.solvers.SimExecutionException;
-import cbit.vcell.solvers.SolverController;
 
 /**
  * Insert the type's description here.
@@ -55,22 +58,63 @@ import cbit.vcell.solvers.SolverController;
  * @author: Jim Schaff
  */
 public class SimulationControllerImpl implements WorkerEventListener {
-	private java.util.Hashtable<String, SolverController> solverControllerHash = new java.util.Hashtable<String, SolverController>();
+	public class SimulationTaskInfo {
+		public final KeyValue simKey;
+		public final int jobIndex;
+		public final int taskID;
+		public SimulationTaskInfo(KeyValue simKey,int jobIndex,int taskID){
+			this.simKey = simKey;
+			this.jobIndex = jobIndex;
+			this.taskID = taskID;
+		}
+		public SimulationTaskInfo(SimulationTask simTask){
+			this.simKey = simTask.getSimulation().getKey();
+			this.jobIndex = simTask.getSimulationJob().getJobIndex();
+			this.taskID = simTask.getTaskID();
+		}
+		public SimulationTaskInfo(SimulationJob simulationJob ,int taskID){
+			this.simKey = simulationJob.getSimulation().getKey();
+			this.jobIndex = simulationJob.getJobIndex();
+			this.taskID = taskID;
+		}
+		public SimulationTaskInfo(SimulationInfo simulationInfo, int jobIndex ,int taskID){
+			this.simKey = simulationInfo.getSimulationVersion().getVersionKey();
+			this.jobIndex = jobIndex;
+			this.taskID = taskID;
+		}
+		@Override
+		public boolean equals(Object obj){
+			if (obj instanceof SimulationTaskInfo){
+				return toString().equals(((SimulationTaskInfo)obj).toString());
+			}
+			return false;
+		}
+		@Override
+		public int hashCode(){
+			return toString().hashCode();
+		}
+		@Override
+		public String toString(){
+			return "SimTaskInfo("+simKey.toString()+","+jobIndex+","+taskID+")";
+		}
+	}
+	private java.util.Hashtable<SimulationTaskInfo, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskInfo, LocalSolverController>();
 	private SessionLog adminSessionLog = null;
-	private LocalVCellServer fieldLocalVCellServer = null;
-	private AdminDatabaseServer adminDbServer = null;
+	private LocalVCellConnection localVCellConnection = null;
+	private SimulationDatabase simulationDatabase = null;
 	private EventListenerList listenerList = new javax.swing.event.EventListenerList();
-
-	private DispatcherDbManager dispatcherDbManager = new LocalDispatcherDbManager();
+	
+	private SimulationDispatcherEngine simulationDispatcherEngine = new SimulationDispatcherEngine();
+	
 
 /**
  * SimulationControllerImpl constructor comment.
  */
-public SimulationControllerImpl(SessionLog argAdminSessionLog, AdminDatabaseServer argAdminDbServer, LocalVCellServer argLocalVCellServer) {
+public SimulationControllerImpl(SessionLog argAdminSessionLog, SimulationDatabase simulationDatabase, LocalVCellConnection localVCellConnection) {
 	super();
 	adminSessionLog = argAdminSessionLog;
-	fieldLocalVCellServer = argLocalVCellServer;
-	adminDbServer = argAdminDbServer;
+	this.localVCellConnection = localVCellConnection;
+	this.simulationDatabase = simulationDatabase;
 }
 
 /**
@@ -80,33 +124,54 @@ public void addSimulationJobStatusListener(SimulationJobStatusListener listener)
 	listenerList.add(SimulationJobStatusListener.class, listener);
 }
 
+private void onClientStatusTopic_SimulationJobStatus(VCMessage simJobStatusMessage){
+	Double progress = null;
+	if (simJobStatusMessage.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
+		progress = simJobStatusMessage.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY);
+	}
+	Double timepoint = null;
+	if (simJobStatusMessage.propertyExists(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY)){
+		timepoint = simJobStatusMessage.getDoubleProperty(MessageConstants.SIMULATION_STATUS_TIMEPOINT_PROPERTY);
+	}
+	SimulationJobStatus simJobStatus = (SimulationJobStatus)simJobStatusMessage.getObjectContent();
+	
+	SimulationJobStatusEvent simulationJobStatusEvent = new SimulationJobStatusEvent(
+			SimulationControllerImpl.this, simJobStatus.getVCSimulationIdentifier().getID(), 
+			simJobStatus, progress, timepoint);
 
+	fireSimulationJobStatusEvent(simulationJobStatusEvent);
+}
+
+public SimulationDatabase getSimulationDatabase(){
+	return this.simulationDatabase;
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/28/01 1:19:54 PM)
  * @return cbit.vcell.solvers.SolverController
  * @param simulation cbit.vcell.solver.Simulation
+ * @throws RemoteException 
  * @throws JMSException 
  * @throws AuthenticationException 
  * @throws DataAccessException 
  * @throws SQLException 
  * @throws FileNotFoundException 
+ * @throws SolverException 
+ * @throws ConfigurationException 
  */
-private SolverController createNewSolverController(UserLoginInfo userLoginInfo, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException {
+private LocalSolverController createNewSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
 	//
 	// either no appropriate slave server or THIS IS A SLAVE SERVER (can't pass the buck).
 	//
-	User user = userLoginInfo.getUser();
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
 	LocalSolverController localSolverController = new LocalSolverController(
 		localVCellConnection,
 		userSessionLog,
-		simulationJob,
-		getUserSimulationDirectory(user, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))
+		simTask,
+		getUserSimulationDirectory(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))
 		);
 
 	localSolverController.addWorkerEventListener(this);
-	userSessionLog.alert("returning local SolverController for "+simulationJob.getSimulationJobID());
+	userSessionLog.alert("returning local SolverController for "+simTask.getSimulationJobID());
 	return localSolverController;
 }
 
@@ -132,36 +197,30 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/28/01 4:33:49 PM)
- * @return cbit.vcell.server.LocalVCellServer
- */
-public LocalVCellServer getLocalVCellServer() {
-	return fieldLocalVCellServer;
-}
-
-/**
  * This method was created by a SmartGuide.
+ * @throws SolverException 
+ * @throws DataAccessException 
+ * @throws ConfigurationException 
  * @exception java.rmi.RemoteException The exception description.
  * @throws JMSException 
  * @throws AuthenticationException 
  * @throws SQLException 
  * @throws FileNotFoundException 
  */
-SolverController getSolverController(UserLoginInfo userLoginInfo, SimulationJob simulationJob, SessionLog userSessionLog) throws RemoteException, SimExecutionException, SolverException, PermissionException, DataAccessException, FileNotFoundException, SQLException, AuthenticationException, JMSException {
-	User user = userLoginInfo.getUser();
-	Simulation simulation = simulationJob.getSimulation();
+LocalSolverController getOrCreateSolverController(SimulationTask simTask, SessionLog userSessionLog) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
+	Simulation simulation = simTask.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
 		throw new IllegalArgumentException("cannot run an unsaved simulation");
 	}
-	if (!simulation.getVersion().getOwner().equals(user)){
+	if (!simulation.getVersion().getOwner().equals(localVCellConnection.getUserLoginInfo().getUser())){
 		throw new PermissionException("insufficient privilege: startSimulation()");
 	}
-	SolverController solverController = solverControllerHash.get(simulationJob.getSimulationJobID());
+	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simTask);
+	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
-		solverController = createNewSolverController(userLoginInfo,simulationJob,userSessionLog);
-		solverControllerHash.put(simulationJob.getSimulationJobID(),solverController);
+		solverController = createNewSolverController(simTask,userSessionLog);
+		solverControllerHash.put(simTaskInfo,solverController);
 	}
 	return solverController;
 }
@@ -171,8 +230,9 @@ SolverController getSolverController(UserLoginInfo userLoginInfo, SimulationJob 
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public SolverStatus getSolverStatus(User user, SimulationInfo simulationInfo, int jobIndex) throws RemoteException, PermissionException, DataAccessException {
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey()),jobIndex));
+public SolverStatus getSolverStatus(SimulationInfo simulationInfo, int jobIndex, int taskID) throws PermissionException, DataAccessException {
+	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simulationInfo, jobIndex, taskID);
+	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
 		return new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	}
@@ -180,8 +240,9 @@ public SolverStatus getSolverStatus(User user, SimulationInfo simulationInfo, in
 }
 
 
-private File getUserSimulationDirectory(User user, String simDataRoot) {
-	File directory = new File(new File(simDataRoot), user.getName());
+private File getUserSimulationDirectory(String simDataRoot) {
+	String userName = localVCellConnection.getUserLoginInfo().getUserName();
+	File directory = new File(new File(simDataRoot), userName);
 	if (!directory.exists()){
 		if (!directory.mkdirs()){
 			String msg = "could not create directory "+directory;
@@ -192,38 +253,6 @@ private File getUserSimulationDirectory(User user, String simDataRoot) {
 	return directory;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/11/2004 11:26:21 AM)
- * @param ex java.lang.Exception
- */
-private void handleException(VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, Exception ex) {
-	VCellServerID serverID = VCellServerID.getSystemServerID();
-	try {
-		SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimulationIdentifier.getSimulationKey(), jobIndex);
-		if (oldJobStatus != null) {
-			serverID = oldJobStatus.getServerID();
-		}
-		SimulationJobStatus newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, SimulationMessage.solverAborted(ex.getMessage()));
-		if (newJobStatus == null) {
-			newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(ex.getMessage()), null, null);
-		}
-		
-		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
-		fireSimulationJobStatusEvent(event);
-	} catch (DataAccessException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
-		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
-		fireSimulationJobStatusEvent(event);
-	} catch (RemoteException e) {
-		SimulationJobStatus newJobStatus = new SimulationJobStatus(serverID, vcSimulationIdentifier, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, -1, SimulationMessage.jobFailed(e.getMessage()), null, null);
-		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
-		fireSimulationJobStatusEvent(event);
-	}	
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (3/11/2004 10:44:18 AM)
@@ -231,53 +260,28 @@ private void handleException(VCSimulationIdentifier vcSimulationIdentifier, int 
  * @param progress java.lang.Double
  * @param timePoint java.lang.Double
  */
-public void onWorkerEvent(WorkerEvent workerEvent) {	
+public void onWorkerEvent(WorkerEvent workerEvent) {
 	try {
-		VCSimulationIdentifier vcSimulationIdentifier = workerEvent.getVCSimulationDataIdentifier().getVcSimID();
-		int jobIndex = workerEvent.getJobIndex();
-		SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimulationIdentifier.getSimulationKey(), jobIndex);
-		SimulationJobStatus newJobStatus = null;
-
-		if (oldJobStatus == null || oldJobStatus.isDone()) {
-			return;
-		}
 		
-		if (workerEvent.isCompletedEvent()) {
-			newJobStatus = updateCompletedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, workerEvent.getSimulationMessage());			
+		LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 			
-		} else if (workerEvent.isFailedEvent()) {
-			newJobStatus = updateFailedJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, workerEvent.getSimulationMessage());			
+			public void onLocalVCMessage(VCDestination destination, VCMessage objectMessage) {
+				if (destination == VCellTopic.ClientStatusTopic && objectMessage.getObjectContent() instanceof SimulationJobStatus){
+					onClientStatusTopic_SimulationJobStatus(objectMessage);
+				}else{
+					throw new RuntimeException("SimulationControllerImpl.onWorkerEvent().localMessageListener::  expecting object message with SimulationJobStatus to topic "+VCellTopic.ClientStatusTopic.getName()+": received \""+objectMessage.show()+"\"");
+				}
+			}
 			
-		} else if (workerEvent.isNewDataEvent()) {
-			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, true, workerEvent.getSimulationMessage());
-			
-		} else if (workerEvent.isProgressEvent()) {
-			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
-			
-		} else if (workerEvent.isStartingEvent()) {
-			if (oldJobStatus.isQueued() || oldJobStatus.isDispatched()) {
-				newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getSimulationMessage());
-			} else if (oldJobStatus.isRunning()) {
-				newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), oldJobStatus.getVCSimulationIdentifier(), oldJobStatus.getJobIndex(), oldJobStatus.getSubmitDate(), 
-					oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), workerEvent.getSimulationMessage(), oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
-			}				
-		}
-		if (workerEvent.isStartingEvent() && newJobStatus != null) {
-			SimulationJobStatusEvent newEvent = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
-			fireSimulationJobStatusEvent(newEvent);
-		} else 	if (newJobStatus != null && (!newJobStatus.compareEqual(oldJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent())) {
-			Double progress = workerEvent.getProgress();
-			Double timepoint = workerEvent.getTimePoint();
-			SimulationJobStatusEvent newEvent = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, progress, timepoint);
-			fireSimulationJobStatusEvent(newEvent);
-		}	
-	} catch (DataAccessException ex) {
-		adminSessionLog.exception(ex);
-	} catch (RemoteException ex) {
-		adminSessionLog.exception(ex);
+		};
+		
+		LocalVCMessageAdapter vcMessageSession = new LocalVCMessageAdapter(localVCMessageListener);
+		simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabase, vcMessageSession, adminSessionLog);
+		vcMessageSession.deliverAll();
+	}catch (Exception e){
+		adminSessionLog.exception(e);
 	}
 }
-
 
 /**
  * removeSimulationStatusEventListener method comment.
@@ -286,64 +290,91 @@ public void removeSimulationJobStatusListener(SimulationJobStatusListener listen
 	listenerList.remove(SimulationJobStatusListener.class, listener);
 }
 
+private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
+	SimulationTask simTask = null;
+	try {
+		
+		SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
+		simTask = simTaskMessage.getSimulationTask();
+		
+		LocalSolverController solverController = getOrCreateSolverController(simTask,adminSessionLog);
+		
+		solverController.startSimulationJob(); // can only start after updating the database is done
+		
+	} catch (Exception e) {
+		adminSessionLog.exception(e);
+		KeyValue simKey = simTask.getSimKey();
+		VCSimulationIdentifier vcSimID = simTask.getSimulationJob().getVCDataIdentifier().getVcSimID();
+		int jobIndex = simTask.getSimulationJob().getJobIndex();
+		int taskID = simTask.getTaskID();
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
+		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null);
+		fireSimulationJobStatusEvent(event);
+	}
+}
 
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(UserLoginInfo userLoginInfo, Simulation simulation, SessionLog userSessionLog) throws RemoteException, Exception {
-	User user = userLoginInfo.getUser();
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
-	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-	
-	FieldFunctionArguments[] fieldFuncArgs = FieldUtilities.getFieldFunctionArguments(simulation.getMathDescription());
-	FieldDataIdentifierSpec[] fieldDataIDs = new FieldDataIdentifierSpec[fieldFuncArgs.length];
-	if (fieldFuncArgs.length != 0) {
-		ExternalDataIdentifier[]  qualifiedSpecs =
-			getLocalVCellServer().
-				getVCellConnection(userLoginInfo).
-					getUserMetaDbServer().
-						fieldDataDBOperation(
-								FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
-		for(int i=0;i<fieldFuncArgs.length;i+= 1){
-			for(int j=0;j<qualifiedSpecs.length;j+= 1){
-				if(fieldFuncArgs[i].getFieldName().equals(qualifiedSpecs[j].getName())){
-					fieldDataIDs[i] = new FieldDataIdentifierSpec(fieldFuncArgs[i],qualifiedSpecs[j]);
-					break;
-				}
-			}
-			if(fieldDataIDs[i] == null){
-				throw new DataAccessException("Failed to resolve FieldData name "+fieldFuncArgs[i].getFieldName()+" for sim "+simulation.getName());
+public void startSimulation(Simulation simulation, SessionLog userSessionLog) throws Exception {
+
+	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
+		
+		public void onLocalVCMessage(VCDestination destination, VCMessage vcMessage) {
+			if (destination == VCellTopic.ClientStatusTopic && vcMessage.getObjectContent() instanceof SimulationJobStatus){
+				onClientStatusTopic_SimulationJobStatus(vcMessage);
+			}else if (destination == VCellQueue.SimJobQueue && vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE)){
+				onSimJobQueue_SimulationTask(vcMessage);
+			}else{
+				throw new RuntimeException("SimulationControllerImpl.startSimulation().objectMessageListener:: expecting object message with SimulationJobStatus to topic "+VCellTopic.ClientStatusTopic.getName()+": received \""+vcMessage.show()+"\"");
 			}
 		}
-	} 
+		
+	};
 	
-	boolean serialParameterScan = simulation.isSerialParameterScan();
-	int scanCount = simulation.getScanCount();
-	for (int i = 0; i < scanCount; i++){
-		SimulationJob simJob = new SimulationJob(simulation, i, fieldDataIDs);
-		VCSimulationIdentifier vcSimID = simJob.getVCDataIdentifier().getVcSimID();
-		try {
+	LocalVCMessageAdapter vcMessageSession = new LocalVCMessageAdapter(localVCMessageListener);
 
-			SolverController solverController = getSolverController(userLoginInfo,simJob,userSessionLog);
-			SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(simulation.getKey(),i);	
-			SimulationJobStatus newJobStatus = updateDispatchedJobStatus(oldJobStatus, vcSimID, i);
-			
-			if (newJobStatus != null) {
-				SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, simulation.getSimulationID(), newJobStatus, null, null);
-				fireSimulationJobStatusEvent(event);
-			}
+	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
+	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 
-			if (!serialParameterScan || i == 0 ) {
-				solverController.startSimulationJob(); // can only start after updating the database is done
+	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
+	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession, adminSessionLog);
+	vcMessageSession.deliverAll();
+	for (int jobIndex = 0; jobIndex < simulation.getScanCount(); jobIndex++){
+		int taskID = -1;
+		SimulationJobStatus[] simJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simulation.getKey(), jobIndex);
+		for (SimulationJobStatus simJobStatus : simJobStatusArray){
+			if (simJobStatus.getTaskID()>taskID){
+				taskID = simJobStatus.getTaskID();
 			}
-		} catch (Exception ex) {
-			handleException(vcSimID,i,ex);
-		}	
+		}
+		simulationDispatcherEngine.onDispatch(vcSimID, jobIndex , taskID, simulationDatabase, vcMessageSession, adminSessionLog);
+		vcMessageSession.deliverAll();
 	}
 }
 
+private void onServiceControlTopic_StopSimulation(VCMessage message){
+	KeyValue simKey = new KeyValue(String.valueOf(message.getLongProperty(MessageConstants.SIMKEY_PROPERTY)));
+	int jobIndex = message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY);
+	int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
+	
+	try {
+		SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simKey, jobIndex, taskID);
+		LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
+		if (solverController!=null){
+			solverController.stopSimulationJob(); // can only start after updating the database is done
+		}
+		
+	} catch (Exception e) {
+		adminSessionLog.exception(e);
+		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, localVCellConnection.getUserLoginInfo().getUser());
+		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
+		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null);
+		fireSimulationJobStatusEvent(event);
+	}
+	
+}
 /**
  * This method was created by a SmartGuide.
  * @throws JMSException 
@@ -352,158 +383,30 @@ public void startSimulation(UserLoginInfo userLoginInfo, Simulation simulation, 
  * @throws SQLException 
  * @throws FileNotFoundException 
  * @exception java.rmi.RemoteException The exception description.
+ * @throws VCMessagingException 
  */
-public void stopSimulation(UserLoginInfo userLoginInfo, Simulation simulation) throws RemoteException, FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException {	
-	User user = userLoginInfo.getUser();
-	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
-	removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-	for (int i = 0; i < simulation.getScanCount(); i++){
-		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(),simulation.getVersion().getOwner());
-		try {
-			if (!vcSimID.getOwner().equals(user)){
-				throw new PermissionException("insufficient privilege: stopSimulation()");
-			}
-			SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimID.getSimulationKey(), i);	
-			SimulationJobStatus newJobStatus = updateStoppedJobStatus(oldJobStatus, vcSimID, i);
-			if (newJobStatus != null) {
-				SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, simulation.getSimulationID(), newJobStatus, null, null);
-				fireSimulationJobStatusEvent(event);
-			}
-				
-			SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), i));
-			if (solverController != null){
-				solverController.stopSimulationJob();
-			}
-		} catch (Exception ex) {
-			handleException(vcSimID,i,ex);
-		}
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void stopSimulation(UserLoginInfo userLoginInfo, VCSimulationIdentifier vcSimID, int jobIndex, SimulationMessage simulationMessage) {	
-	try {
-		LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(userLoginInfo);
-		removeSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-		addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
-		if (!vcSimID.getOwner().equals(userLoginInfo.getUser())){
-			throw new PermissionException("insufficient privilege: stopSimulation()");
-		}
-		SimulationJobStatus oldJobStatus = adminDbServer.getSimulationJobStatus(vcSimID.getSimulationKey(),jobIndex);	
-		SimulationJobStatus newJobStatus = updateStoppedJobStatus(oldJobStatus, vcSimID, jobIndex);
-		if (newJobStatus != null) {
-			SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimID.getSimulationKey()), newJobStatus, null, null);
-			fireSimulationJobStatusEvent(event);
-		}
-			
-		SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
-		if (solverController != null){
-			solverController.stopSimulationJob();
-		}
-	} catch (Exception ex) {
-		handleException(vcSimID,jobIndex,ex);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2003 11:50:34 AM)
- * @param sim cbit.vcell.solver.Simulation
- * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
- */
-private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, SimulationMessage simulationMessage) throws DataAccessException, RemoteException {
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
-	if (solverController == null) {
-		return null;
-	}
-
-	synchronized (solverController) {
-		String host = (solverController != null) ? solverController.getHost() : null;
+public void stopSimulation(Simulation simulation) throws FileNotFoundException, SQLException, DataAccessException, AuthenticationException, JMSException, VCMessagingException {	
+	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 		
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_COMPLETED, simulationMessage);		
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/28/2003 3:39:37 PM)
- * @param simKey cbit.sql.KeyValue
- */
-private SimulationJobStatus updateDispatchedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex) throws RemoteException, DataAccessException, UpdateSynchronizationException {
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
-	if (solverController == null) {
-		return null;
-	}
-
-	synchronized (solverController) {	
-		String host = (solverController != null) ? solverController.getHost() : null;
+		public void onLocalVCMessage(VCDestination destination, VCMessage objectMessage) {
+			String messageTypeProperty = MessageConstants.MESSAGE_TYPE_PROPERTY;
+			String stopSimulationValue = MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE;
+			if (destination == VCellTopic.ClientStatusTopic && objectMessage.getObjectContent() instanceof SimulationJobStatus){
+				onClientStatusTopic_SimulationJobStatus(objectMessage);
+			}else if (destination == VCellTopic.ServiceControlTopic && objectMessage.getStringProperty(messageTypeProperty).equals(stopSimulationValue)){
+				onServiceControlTopic_StopSimulation(objectMessage);
+			}else{
+				throw new RuntimeException("SimulationControllerImpl.startSimulation().objectMessageListener:: expecting message with SimulationJobStatus to topic "+VCellTopic.ClientStatusTopic.getName()+": received \""+objectMessage.show()+"\" on destination \""+destination+"\"");
+			}
+		}
 		
-		return dispatcherDbManager.updateDispatchedStatus(oldJobStatus, adminDbServer, host, vcSimulationIdentifier, jobIndex, SimulationMessage.MESSAGE_JOB_DISPATCHED);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2003 11:50:34 AM)
- * @param sim cbit.vcell.solver.Simulation
- * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
- */
-private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, SimulationMessage solverMsg) throws DataAccessException, RemoteException {
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
-	if (solverController == null) {
-		return null;
-	}
+	};
 	
-	synchronized (solverController) {		
-		String host = (solverController != null) ? solverController.getHost() : null;
-		
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimulationIdentifier, jobIndex, host, SimulationJobStatus.SCHEDULERSTATUS_FAILED, solverMsg);
-	}
+	LocalVCMessageAdapter vcMessageSession = new LocalVCMessageAdapter(localVCMessageListener);
+
+	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
+	simulationDispatcherEngine.onStopRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulationDatabase, vcMessageSession, adminSessionLog);
+	vcMessageSession.deliverAll();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2003 11:50:34 AM)
- * @param sim cbit.vcell.solver.Simulation
- * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
- */
-private SimulationJobStatus updateRunningJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, boolean hasData, SimulationMessage solverMsg) throws DataAccessException, RemoteException {
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
-	if (solverController == null) {
-		return null;
-	}
-
-	synchronized (solverController) {
-		String host = (solverController != null) ? solverController.getHost() : null;
-		
-		return dispatcherDbManager.updateRunningStatus(oldJobStatus, adminDbServer, host, vcSimulationIdentifier, jobIndex, hasData, solverMsg);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/5/2003 11:50:34 AM)
- * @param sim cbit.vcell.solver.Simulation
- * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
- */
-private SimulationJobStatus updateStoppedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex) throws DataAccessException, RemoteException {	
-	SolverController solverController = solverControllerHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
-	if (solverController != null) {
-		synchronized (solverController) {
-			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
-		}
-	} else {
-		return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, SimulationMessage.MESSAGE_JOB_STOPPED);
-	}	
-}
 }

@@ -9,14 +9,20 @@
  */
 
 package cbit.vcell.messaging.db;
-import cbit.vcell.messaging.admin.ServiceSpec;
-import cbit.vcell.messaging.admin.ServiceStatus;
-import cbit.htc.PbsJobID;
-import cbit.sql.*;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import org.vcell.util.MessageConstants.ServiceType;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VCellServerID;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.vcell.message.server.ServiceSpec;
+import cbit.vcell.message.server.ServiceSpec.ServiceStartupType;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.ServiceStatus;
+import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
+import cbit.vcell.message.server.htc.HtcJobID;
 
 public class ServiceTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_service";
@@ -57,7 +63,8 @@ private ServiceTable() {
  */
 public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {	
 	//serverID
-	String parsedServerID = rset.getString(serverID.toString());
+	String parsedServerIDString = rset.getString(serverID.toString());
+	VCellServerID parsedServerID = VCellServerID.getServerID(parsedServerIDString);
 	//type
 	String parsedType = rset.getString(type.toString());
 	//ordinal
@@ -79,13 +86,13 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 		parsedStatusMsg = null;
 	}
 	//host
-	PbsJobID parsedPBSJobId = null;
-	String parsedPBSJobIdString = rset.getString(pbsjobid.toString());
-	if (!rset.wasNull() && parsedPBSJobIdString!=null && parsedPBSJobIdString.length()>0) {
-		parsedPBSJobId = new PbsJobID(parsedPBSJobIdString);
+	HtcJobID parsedHtcJobId = null;
+	String parsedHtcJobDatabaseString = rset.getString(pbsjobid.toString());
+	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
+		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
 	}
-	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
-			parsedDate, parsedStatus, parsedStatusMsg, parsedPBSJobId);
+	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemory), 
+			parsedDate, ServiceStatusType.fromDatabaseNumber(parsedStatus), parsedStatusMsg, parsedHtcJobId);
 	
 	return serviceStatus;
 }
@@ -108,19 +115,19 @@ public String getSQLUpdateList(ServiceStatus serviceStatus){
 	//ordinal
 	buffer.append(ordinal + "=" + serviceStatus.getServiceSpec().getOrdinal() + ",");
 	//startupType
-	buffer.append(startupType + "=" + serviceStatus.getServiceSpec().getStartupType() + ",");
+	buffer.append(startupType + "=" + serviceStatus.getServiceSpec().getStartupType().getDatabaseNumber() + ",");
 	//memory
 	buffer.append(memoryMB + "=" + serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
 	buffer.append(date + "=sysdate,");
 	//status
-	buffer.append(status + "=" + serviceStatus.getStatus() + ",");
+	buffer.append(status + "=" + serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	buffer.append(statusMsg + "='" + serviceStatus.getStatusMsg() + "',");
 	//host
 	buffer.append(pbsjobid + "=");
-	if (serviceStatus.getPbsJobId() != null){
-		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+	if (serviceStatus.getHtcJobId() != null){
+		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
 	} else {
 		buffer.append("null");
 	}
@@ -148,18 +155,18 @@ public String getSQLValueList(KeyValue key, ServiceStatus serviceStatus) {
 	//ordinal
 	buffer.append(serviceStatus.getServiceSpec().getOrdinal() + ",");
 	//startupType
-	buffer.append(serviceStatus.getServiceSpec().getStartupType() + ",");
+	buffer.append(serviceStatus.getServiceSpec().getStartupType().getDatabaseNumber() + ",");
 	//memory
 	buffer.append(serviceStatus.getServiceSpec().getMemoryMB() + ",");
 	//date
 	buffer.append("sysdate,");
 	//status
-	buffer.append(serviceStatus.getStatus() + ",");
+	buffer.append(serviceStatus.getStatus().getDatabaseNumber() + ",");
 	//statusMsg
 	buffer.append("'" + serviceStatus.getStatusMsg() + "',");
 	//host
-	if (serviceStatus.getPbsJobId() != null){
-		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+	if (serviceStatus.getHtcJobId() != null){
+		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
 	} else {
 		buffer.append("null");
 	}
