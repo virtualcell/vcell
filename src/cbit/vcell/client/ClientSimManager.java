@@ -57,6 +57,7 @@ import cbit.vcell.document.SimulationOwner;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -464,11 +465,11 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			File smoldynExe = ResourceUtil.SolverExecutable.Smoldyn.getExecutable();
 	
 			Simulation simulation = new TempSimulation(originalSimulation, false);
-			SimulationJob simJob = new SimulationJob(simulation, 0, null);
-			File inputFile = new File(ResourceUtil.getLocalSimDir(), simJob.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
+			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+			File inputFile = new File(ResourceUtil.getLocalSimDir(), simTask.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
 			inputFile.deleteOnExit();
 			PrintWriter pw = new PrintWriter(inputFile);
-			SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, new File(ResourceUtil.getLocalSimDir(), simJob.getSimulationJobID()).getAbsolutePath(), simJob, false);
+			SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, new File(ResourceUtil.getLocalSimDir(), simTask.getSimulationJobID()).getAbsolutePath(), simTask, false);
 			smf.write();
 			pw.close();	
 			String[] cmd = new String[] {smoldynExe.getAbsolutePath(), inputFile.getAbsolutePath()};
@@ -568,8 +569,8 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 						
 			Simulation simulation = new TempSimulation(originalSimulation, false);
 			StdoutSessionLog log = new StdoutSessionLog("Quick run");
-			SimulationJob simJob = new SimulationJob(simulation, 0, null);
-			Solver solver = createQuickRunSolver(log, localSimDataDir, simJob);
+			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+			Solver solver = createQuickRunSolver(log, localSimDataDir, simTask);
 			if (solver == null) {
 				throw new RuntimeException("null solver");
 			}
@@ -651,8 +652,8 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 }
 
 
-private Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationJob simJob) throws SolverException, IOException {
-	SolverDescription solverDescription = simJob.getSimulation().getSolverTaskDescription().getSolverDescription();
+private Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
+	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
 	}
@@ -664,7 +665,7 @@ private Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory,
 	
 	ResourceUtil.prepareSolverExecutable(solverDescription);	
 	// create solver from SolverFactory
-	Solver solver = SolverFactory.createSolver(sessionLog, directory, simJob, false);
+	Solver solver = SolverFactory.createSolver(sessionLog, directory, simTask, false);
 
 	return solver;
 }

@@ -1,0 +1,143 @@
+Patches applied to VCell_5.1_messaging:
+
+patch revision_11937.diff
+all except: 
+ModelTest			(NA)
+VCComprehensiveStatistics (NA)
+Expression			(NA)
+SimulationControllerImpl	(patched)
+XmlHelper			(patched)
+FileUtils			(patched)
+
+patch revision_11961.diff
+all except:
+PBSUtils			(patched)
+
+patch revision)_11981.diff
+all except:
+FRAPStudy			(patched) (read)
+PBSConstants		(patched) (copied … includes enums)
+PBSUtils			(patched) (removed)
+ClientSimManager		(patched) (read)
+ExportToXML		(NA)
+SimulationDispatcher	(patched) (read)
+LocalVCellServer		(patched) (read)
+SimulationControllerImpl	(copied … too many changes)
+CVodeFileWriter		(patched) (read) 
+SundialsSolver		(patched) (read)
+SolverFileWriter		(patched) (read)
+GibsonSolver		(patched) (read)
+HybridSolver			(patched) (read)
+HybridSolverTester		(NA)
+AbstractCompiledSolver	(patched) (read)
+CombinedSundialsSolver	(patched) (read)
+CppClassCoder		(patched) (read)
+CppClassCoderFastSystem (patched) (read)
+CppClassCoderSimulation (patched) (read)
+FiniteVolumeFileWriter	(patched) (read)
+FVSolver			(patched) (read)
+FVSolverStandalone	(patched) (read)
+OptXmlWriter		(patched) (read)
+SmoldynFileWriter		(patched) (read)
+SmoldynSolver		(patched) (read)
+PropertyLoader		(patched) (read)
+
+patch revision_11989.diff
+all except:
+.classpath			(patched)
+
+patch revision_11992.diff
+all except:
+.classpath			()
+ClientTester			(file does not exist)
+ServerManageConsole	(patched)
+LocalVCellServer		(patched)
+
+patch revision_12032.diff
+all except:
+DatabaseSearchPanel				(patched)
+messaging.admin.DatePanel			(patched … deleted)
+messaging.admin.ServerManageConsole	(patched … deleted)
+messaging.server.AbstractRpcServerImpl	(patched … deleted)
+messaging.server.LocalDataSetControllerMessaging	(patched … deleted)
+messaging.server.LocaluserMetaDbServerMessaging	(patched … deleted)
+messaging.server.RpcDataServerProxy		(patched … deleted)
+messaging.server.RpcDbServerProxy		(patched … deleted)
+messaging.server.SimulationDispatcher	(patched … deleted)
+messaging.SimulationDispatcherMessaging	(patched … deleted)
+messaging.SimulationTaskMessage		(patched … deleted)
+solver/SolverFileWriter				(patched)
+solvers/CppClassCoderSimulation		(patched)
+solver.smoldyn.SmoldynFileWriter		(patched)
+
+
+patch revision_12052.diff
+all except:
+cbit.vcell.client.LocalDataSetControllerProvider	(patched)
+cbit.vcell.server.LocalVCellServer			(patched)
+cbit.vcell.simdata.LocalDataSetController		(patched)
+
+patch revision_12055.diff
+all:
+
+patch revision_12069
+all:
+
+patch revision_12072
+all:
+
+patch revision_12073
+all:
+
+patch revision_12075
+all:
+
+patch revision_12088
+all:
+
+patch revision_12094
+all:
+
+patch revision_12096
+all:
+
+patch revision_12098
+all:
+
+patch revision_12144
+all:
+
+patch revision_12154
+all:
+
+patch revision_12158
+all:
+
+patch revision_12166
+all:
+
+patch revision_12175
+all:
+
+patch revision_12188
+all:
+
+patch revision_12209
+all:
+
+patch revision_12211
+all:
+
+patch revision_12227
+all:
+
+patch revision_12229
+all except:
+RpcDataServerProxy					(patched)
+RpcDbServerProxy					(patched)
+
+
+
+
+
+

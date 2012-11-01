@@ -1,0 +1,46 @@
+Index: deployInfo/JavaPreprocessor64
+===================================================================
+--- deployInfo/JavaPreprocessor64	(revision 12088)
++++ deployInfo/JavaPreprocessor64	(revision 12087)
+@@ -1,29 +0,0 @@
+-printusage() {
+-	echo "Usage: JavaPreprocessor64 simtaskfile userdir"
+-	exit 1
+-}
+-
+-# main code
+-if [ "$#" != "2" ] ; then 
+-	printusage
+-fi
+-site=GENERATED
+-
+-# set up cmd and cmd rguments
+-mainclass=GENERATED
+-arguments=$*
+-
+-siteRootDir=/share/apps/vcell/deployed/${site}
+-siteResDir=${siteRootDir}/resources
+-siteCfgDir=${siteRootDir}/configs
+-logdir=/share/apps/vcell/logs/${site}
+-
+-jre=java
+-jvm_jars=GENERATED
+-jvmprop="-Xmx500M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+-
+-echo "starting ${serviceid} on ${nodename}"
+-nice ${jre} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments}
+-
+-exit 0
+-
+Index: deployInfo/vcell64.properties
+===================================================================
+--- deployInfo/vcell64.properties	(revision 12088)
++++ deployInfo/vcell64.properties	(revision 12087)
+@@ -31,7 +31,6 @@
+ # java simulation executable
+ #
+ vcell.javaSimulation.executable = GENERATED_SERVER_SITE_PATH/configs/JavaSimExe64
+-vcell.simulation.preprocessor = GENERATED_SERVER_SITE_PATH/configs/JavaPreprocessor64
+ 
+ #
+ # stochastic solver 

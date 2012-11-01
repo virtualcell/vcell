@@ -13,6 +13,8 @@ package org.vcell.util;
 import java.util.Arrays;
 import java.util.Vector;
 
+import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+
 
 
 
@@ -42,8 +44,6 @@ public class PropertyLoader {
 	public static final String libsProperty					= "vcell.c++.libs";
 	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
 	
-	public static final String optLibsProperty				= "vcell.opt.libs";
-	public static final String optIncludeProperty			= "vcell.opt.include";
 	//
 	public static final String sundialsSolverExecutableProperty		= "vcell.sundialsSolver.executable";
 	
@@ -63,6 +63,7 @@ public class PropertyLoader {
 	public static final String bioformatsJarFileName		= "vcell.bioformatsJarFileName";
 	public static final String bioformatsClasspath			= "vcell.bioformatsClasspath";
 	public static final String bioformatsJarDownloadURL		= "vcell.bioformatsJarDownloadURL";
+	
 	// Smoldyn
 	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
 	
@@ -89,7 +90,6 @@ public class PropertyLoader {
 	public static final String sbml1SchemaUrlProperty		= "vcell.xml.sbml1SchemaUrl";
 	public static final String sbml2SchemaUrlProperty		= "vcell.xml.sbml2SchemaUrl";
 	public static final String cellmlSchemaUrlProperty      = "vcell.xml.cellmlSchemaUrl"; 
-	public static final String triangleCmdProperty			= "vcell.mesh.trianglecmd";
 	
 	public static final String dataSetCrawlerEnabled		= "vcell.dataSetCrawlerEnabled";
 	public static final String dataSetCrawlerIntervalMinutes= "vcell.dataSetCrawlerIntervalMinutes";
@@ -97,19 +97,16 @@ public class PropertyLoader {
 	public static final String odeComputeServerHosts		= "vcell.odeComputeServerHosts";   // comma-separated list of hosts
 	public static final String pdeComputeServerHosts		= "vcell.pdeComputeServerHosts";   // comma-separated list of hosts
 	public static final String hostSeparator	= ",";
-	//added by RB, to accomodate some experiment-related stuff
-	public static final String expSchemaUrlProperty = "vcell.experiment.expSchemaUrl";
-	public static final String expXMLRep = "vcell.experiment.expXMLRep";
-	public static final String expLoadDump = "vcell.experiment.expLoadDump";
 
 	public static final String jmsProvider				= "vcell.jms.provider";
+	public static final String jmsProviderValueActiveMQ		= "ActiveMQ";
+	public static final String jmsProviderValueSonicMQ		= "SonicMQ";
 	public static final String jmsURL					= "vcell.jms.url";
 	public static final String jmsUser					= "vcell.jms.user";
 	public static final String jmsPassword				= "vcell.jms.password";
 	public static final String jmsSimReqQueue			= "vcell.jms.queue.simReq";
 	public static final String jmsDataRequestQueue		= "vcell.jms.queue.dataReq";
 	public static final String jmsDbRequestQueue		= "vcell.jms.queue.dbReq";
-	public static final String jmsBNGRequestQueue		= "vcell.jms.queue.bngReq";
 	public static final String jmsSimJobQueue			= "vcell.jms.queue.simJob";
 	public static final String jmsWorkerEventQueue		= "vcell.jms.queue.workerEvent";
 	public static final String jmsWorkerPrefetchCount	= "vcell.jms.workerPrefetchCount";
@@ -133,7 +130,7 @@ public class PropertyLoader {
 	public static final String rmiPortVCellServer			= "vcell.rmi.port.vcellServer";
 	public static final String rmiPortMessageHandler		= "vcell.rmi.port.messageHandler";
 	public static final String rmiPortRegistry				= "vcell.rmi.port.registry";
-	public static final String rmiPortBNGService			= "vcell.rmi.port.bngService";
+	public static final String rmiBootstrapHost				= "vcell.rmi.host";
 
 	public static final String serverManageConfig = "vcell.messaging.serverManagerConfig";
 	public static final String bootstrapConfig = "vcell.messaging.bootstrapConfig";
@@ -142,26 +139,18 @@ public class PropertyLoader {
 
 	public static final String vcellServerHost = "vcell.serverHost";
 
-	public static final String vcellAnonymizerBootstrapPropertyFile = "vcell.anonymizer.bootstrap.propertyFile";
-	public static final String vcellAnonymizerBootstrapLogfile = "vcell.anonymizer.bootstrap.logfile";
-	public static final String vcellAnonymizerBootstrapLocalHost = "vcell.anonymizer.bootstrap.localHost";
-	public static final String vcellAnonymizerBootstrapLocalPort = "vcell.anonymizer.bootstrap.localPort";	
-	public static final String vcellAnonymizerBootstrapRemoteHost = "vcell.anonymizer.bootstrap.remoteHost";
-	public static final String vcellAnonymizerBootstrapRemotePort = "vcell.anonymizer.bootstrap.remotePort";
-	
-	public static final String vcellBNGPerl = "vcell.bng.perl.executable";
-	public static final String vcellBNGScript = "vcell.bng.script";
-
 	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
 	
-	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
-	
-	public static final String htcSubmitTemplates = "vcell.htc.submittemplates";		
+	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
+	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
+	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
 	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
 	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
 	public static final String htcComputeResources = "vcell.htc.computeresources";
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
+	public static final String pbsServiceQueuePrefix = "vcell.pbs.pbsServiceQueuePrefix";
+	public static final String pbsWorkQueuePrefix = "vcell.pbs.pbsWorkQueuePrefix";
 	
 	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
@@ -170,7 +159,8 @@ public class PropertyLoader {
 	public static final String vcellSMTPEmailAddress = "vcell.smtp.emailAddress";
 	
 	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
-	
+	public static final String simulationPreprocessor = "vcell.simulation.preprocessor";
+	public static final String simulationPostprocessor = "vcell.simulation.postprocessor";
 	public final static String mathSBMLDirectory = "vcell.mathSBML.directory";
 	public final static String COPASIExecutable = "vcell.COPASI.executable";
 	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";
@@ -202,9 +192,6 @@ public class PropertyLoader {
 		libsProperty,
 		finiteVolumeExecutableProperty,
 		
-		optLibsProperty,
-		optIncludeProperty,
-		
 		sundialsSolverExecutableProperty,
 		
 		stochExecutableProperty,
@@ -234,15 +221,11 @@ public class PropertyLoader {
 		sbml1SchemaUrlProperty,
 		sbml2SchemaUrlProperty,
 		cellmlSchemaUrlProperty,
-		triangleCmdProperty,
 		dataSetCrawlerEnabled,
 		dataSetCrawlerIntervalMinutes,
 		simDataServerHost,
 		odeComputeServerHosts,
 		pdeComputeServerHosts,
-		expSchemaUrlProperty,
-		expXMLRep,
-		expLoadDump,
 		
 		jmsProvider,
 		jmsURL,
@@ -251,7 +234,6 @@ public class PropertyLoader {
 		jmsSimReqQueue,
 		jmsDataRequestQueue,
 		jmsDbRequestQueue,
-		jmsBNGRequestQueue,
 		jmsSimJobQueue,
 		jmsWorkerEventQueue,
 		jmsWorkerPrefetchCount,
@@ -281,26 +263,14 @@ public class PropertyLoader {
 		rmiPortVCellServer,
 		rmiPortMessageHandler,
 		rmiPortRegistry,
-		rmiPortBNGService,
-
-		vcellAnonymizerBootstrapLogfile,
-		vcellAnonymizerBootstrapLocalHost,
-		vcellAnonymizerBootstrapLocalPort,
-		vcellAnonymizerBootstrapRemoteHost,
-		vcellAnonymizerBootstrapRemotePort,
-
-		vcellBNGPerl,
-		vcellBNGScript,
 
 		vcellClientTimeoutMS,
 		
-		lsfJobQueue,
-		
-		htcSubmitTemplates,		
 		htcComputeResources,
 		htcPartitionMaximumJobs,
 		htcPartitionShareServerIDs,		
 		pbsHomeDir,
+
 		
 		limitJobMemoryMB,
 		
@@ -309,6 +279,7 @@ public class PropertyLoader {
 		vcellSMTPEmailAddress,
 		
 		javaSimulationExecutable,
+		simulationPreprocessor,
 		
 		mathSBMLDirectory,
 		COPASIExecutable,
@@ -385,40 +356,6 @@ public final static String getRequiredProperty(String propertyName) throws Confi
 	}catch (Exception e){
 		throw new ConfigurationException("required System property \""+propertyName+"\" not defined");
 	}		
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/8/2006 12:29:59 PM)
- */
-public static void loadAnonymizerProperties() {
-	try {
-		java.util.Properties sysProperties = new java.util.Properties(System.getProperties());
-		
-		String customPropertyFileName = sysProperties.getProperty(PropertyLoader.vcellAnonymizerBootstrapPropertyFile);		
-
-		java.io.InputStream propInput = null;		
-		if (customPropertyFileName != null && new java.io.File(customPropertyFileName).exists()){
-			System.out.println("property file [" + customPropertyFileName + "] is specified on the command line");
-			propInput = new java.io.FileInputStream(customPropertyFileName);
-		} else {
-			System.out.println("property file is not specified on the command line, or it doesn't exist.");
-			customPropertyFileName = "Resource[/cbit/vcell/anonymizer/anonymizer.properties.txt]";
-			java.net.URL propURL = PropertyLoader.class.getResource("/cbit/vcell/anonymizer/anonymizer.properties.txt");
-			propInput = propURL.openConnection().getInputStream();
-			System.out.println("trying to use the property file in the jar file [/cbit/vcell/anonymizer/anonymizer.properties.txt]");		
-		}
-		
-		sysProperties.load(propInput);
-		propInput.close();
-		System.out.println("loaded properties from " + customPropertyFileName);
-
-		System.setProperties(sysProperties);
-		
-	} catch (Exception ex) {
-		ex.printStackTrace();
-	}	
 }
 
 

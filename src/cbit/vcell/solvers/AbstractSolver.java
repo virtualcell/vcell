@@ -19,6 +19,7 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -46,25 +47,26 @@ public abstract class AbstractSolver implements Solver, SimDataConstants {
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
-	protected final SimulationJob simulationJob;
+	protected final SimulationTask simTask;
+	public static boolean bMakeUserDirs = true;
 
 /**
  * AbstractSolver constructor comment.
  */
-public AbstractSolver(SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
+public AbstractSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
 
-	this.simulationJob = simulationJob;
+	this.simTask = simTask;
 	this.fieldSessionLog = sessionLog;
 	if (!directory.exists()){
-		if (!directory.mkdirs()){
+		if (bMakeUserDirs && !directory.mkdirs()){
 			String msg = "could not create directory "+directory;
 			sessionLog.alert(msg);
 			throw new ConfigurationException(msg);
 		}
 	}		 
 		this.saveDirectory = directory;
-	if (!simulationJob.getSimulation().checkValid()) {
-		throw new SolverException(simulationJob.getSimulation().getWarning());
+	if (!simTask.getSimulationJob().getSimulation().checkValid()) {
+		throw new SolverException(simTask.getSimulationJob().getSimulation().getWarning());
 	}
 }
 
@@ -84,7 +86,7 @@ public synchronized void addSolverListener(cbit.vcell.solver.SolverListener list
  */
 protected void fireSolverAborted(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getPbsJobId());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getHtcJobId());
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
@@ -160,7 +162,7 @@ protected void fireSolverProgress(double progress) {
  */
 protected void fireSolverStarting(SimulationMessage message) {
 	// Create event
-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getPbsJobId());
+	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getHtcJobId());
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
@@ -197,7 +199,7 @@ protected void fireSolverStopped() {
  * getCurrentTime method comment.
  */
 protected final String getBaseName() {
-	return (new File(getSaveDirectory(), simulationJob.getSimulationJobID()).getPath());
+	return (new File(getSaveDirectory(), simTask.getSimulationJob().getSimulationJobID()).getPath());
 }
 
 
@@ -228,7 +230,7 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 	//
 	// collect the explicit term
 	//
-	SimulationSymbolTable simSymbolTable = simulationJob.getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	Expression sensFuncExp = funcExpr.differentiate(constant.getName());
 	sensFuncExp.bindExpression(simSymbolTable);
@@ -276,7 +278,16 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
  * @return int
  */
 public int getJobIndex() {
-	return simulationJob.getJobIndex();
+	return getSimulationJob().getJobIndex();
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/26/2001 3:42:59 PM)
+ * @return int
+ */
+public int getTaskID() {
+	return simTask.getTaskID();
 }
 
 
@@ -345,7 +356,7 @@ protected final void setSolverStatus(SolverStatus solverStatus) {
 
 
 public SimulationJob getSimulationJob() {
-	return simulationJob;
+	return simTask.getSimulationJob();
 }
 
 }

@@ -1,0 +1,45 @@
+printusage() {
+	echo "Usage : vcell {start|stop}"
+	exit 1
+}
+
+start() {
+#   start server manager
+	nice /usr/java/latest/bin/java -Xmx64M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties -cp GENERATED cbit.vcell.message.server.manager.ServerManagerDaemon /share/apps/vcell/logs/${site} 1>~/ServerManagerDaemon.log 2>&1 &
+	echo "starting ${site} server manager				[OK]"
+}
+
+stop() {
+#   stop server manager
+	ps ux | grep java | grep ${site} | grep -v grep | awk '{ print "killing "$2; system("kill -9 " $2)}'
+	echo "stopping ${site} server manager				[OK]"
+#   stop all the services from PBS
+	pbsjobprefix=${siteUpperCase:0:1}_
+	qstat | grep ${pbsjobprefix} | awk '{ print ; system("qdel " $1"")}'
+	echo "stopping ${site} services						[OK]"
+}
+
+cmd=$1
+source /home/VCELL/vcell/.profile
+site=GENERATED
+export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH
+siteRootDir=/share/apps/vcell/deployed/${site}
+siteResDir=${siteRootDir}/resources
+siteCfgDir=${siteRootDir}/configs
+
+
+case "${cmd}" in 
+	start)
+		start
+		;;
+
+	stop)
+		stop
+		;;
+	*)
+		printusage
+		;;
+esac
+exit 0
+
+

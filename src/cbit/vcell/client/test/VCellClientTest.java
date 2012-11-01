@@ -100,8 +100,18 @@ public static void main(java.lang.String[] args) {
 		csInfo = ClientServerInfo.createRemoteServerInfo(hosts, user,(password==null || password.length()==0?null:new UserLoginInfo.DigestedPassword(password)));
 	}
 	try {
-		VCMongoMessage.enabled = false; // comment out to enable logging to MongoDB.
-		VCMongoMessage.serviceStartup(ServiceName.client,null,null);
+		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");
+		if (propertyFile.length()>0){
+			try {
+				PropertyLoader.loadProperties();
+				VCMongoMessage.enabled = true;
+				VCMongoMessage.serviceStartup(ServiceName.client,null,null);
+			}catch (Exception e){
+				System.out.println("failed to start Mongo logging");
+			}
+		}else{
+			VCMongoMessage.enabled = false;
+		}
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of VCellApplication");

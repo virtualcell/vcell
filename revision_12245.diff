@@ -1,0 +1,700 @@
+Index: src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12245)
++++ src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12244)
+@@ -393,22 +393,6 @@
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+ 
+ 			}
+-		} else if (workerEvent.isWorkerExitEvent()) {						
+-			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
+-				// new queue status		
+-				SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+-				
+-				// new exe status
+-				endDate = new Date();
+-
+-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
+-
+-				SimulationMessage simulationMessage = SimulationMessage.workerFailure("solver stopped unexpectedly, "+workerEventSimulationMessage.getDisplayMessage());
+-				
+-				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
+-						taskID, simulationMessage, newQueueStatus, newExeStatus);
+-
+-			}
+ 		}
+ 		SimulationJobStatus updatedSimJobStatus = null;
+ 		if (newJobStatus!=null){
+Index: src/cbit/vcell/message/server/sim/SolverPostprocessor.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12245)
++++ src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12244)
+@@ -1,82 +0,0 @@
+-/*
+- * Copyright (C) 1999-2011 University of Connecticut Health Center
+- *
+- * Licensed under the MIT License (the "License").
+- * You may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at:
+- *
+- *  http://www.opensource.org/licenses/mit-license.php
+- */
+-
+-package cbit.vcell.message.server.sim;
+-import org.vcell.util.PropertyLoader;
+-import org.vcell.util.SessionLog;
+-import org.vcell.util.StdoutSessionLog;
+-import org.vcell.util.document.KeyValue;
+-import org.vcell.util.document.User;
+-
+-import cbit.vcell.message.VCMessageSession;
+-import cbit.vcell.message.VCMessagingException;
+-import cbit.vcell.message.VCMessagingService;
+-import cbit.vcell.message.messages.WorkerEventMessage;
+-import cbit.vcell.message.server.ManageUtils;
+-import cbit.vcell.mongodb.VCMongoMessage;
+-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+-import cbit.vcell.solver.VCSimulationIdentifier;
+-/**
+- * Insert the type's description here.
+- * Creation date: (10/25/2001 4:14:09 PM)
+- * @author: Jim Schaff
+- */
+-public class SolverPostprocessor  {
+-
+-	public static void main(java.lang.String[] args) {
+-		if (args.length != 6) {
+-			System.out.println("Usage: " + SolverPostprocessor.class.getName() + " simKey username userKey jobindex taskid solverExitCode");
+-			System.exit(1);
+-		}
+-
+-		SessionLog log = new StdoutSessionLog("solverPostprocessor");
+-		VCMessagingService vcMessagingService = null;
+-		try {
+-			
+-			PropertyLoader.loadProperties();
+-			
+-			KeyValue simKey = new KeyValue(args[0]);
+-			String userName = args[1];
+-			KeyValue userKey = new KeyValue(args[2]);
+-			int jobIndex = Integer.parseInt(args[3]);
+-			int taskID = Integer.parseInt(args[4]);
+-			int solverExitCode = Integer.parseInt(args[5]);
+-			
+-			User owner = new User(userName,userKey);
+-			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+-			String hostName = ManageUtils.getHostName();
+-						
+-			VCMongoMessage.serviceStartup(ServiceName.solverPostprocessor, Integer.valueOf(simKey.toString()), args);
+-
+-			vcMessagingService = VCMessagingService.createInstance();
+-			VCMessageSession session = vcMessagingService.createProducerSession();
+-			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, new SolverPostprocessor(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+-			VCMongoMessage.sendWorkerEvent(workerEventMessage);
+-			try {
+-				Thread.sleep(2000);
+-			}catch (InterruptedException e){
+-			}
+-		} catch (Throwable e) {
+-			log.exception(e);
+-		} finally {
+-			if (vcMessagingService!=null){
+-				try {
+-					vcMessagingService.closeAll();
+-				} catch (VCMessagingException e) {
+-					e.printStackTrace();
+-				}
+-			}
+-			VCMongoMessage.flush();
+-			System.exit(0);
+-		}
+-	}
+-
+-
+-}
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12245)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12244)
+@@ -24,7 +24,6 @@
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+ import org.vcell.util.document.KeyValue;
+-import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
+ import cbit.util.xml.XmlUtil;
+@@ -127,21 +126,7 @@
+ 		// write final file directly.
+ 		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
+ 	}
+-	
+-	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
+ 
+-	KeyValue simKey = simTask.getSimKey();
+-	User simOwner = simTask.getSimulation().getVersion().getOwner();
+-	String[] postprocessorCmd = new String[] { 
+-			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor), 
+-			simKey.toString(),
+-			simOwner.getName(), 
+-			simOwner.getID().toString(),
+-			Integer.toString(simTask.getSimulationJob().getJobIndex()),
+-			Integer.toString(simTask.getTaskID()),
+-			SOLVER_EXIT_CODE_REPLACE_STRING
+-	};
+-
+ 	if (realSolver instanceof AbstractCompiledSolver) {
+ 		
+ 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
+@@ -157,7 +142,7 @@
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
+ 		
+-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}
+@@ -170,7 +155,7 @@
+ 				forceUnixPath(userdir.getAbsolutePath())
+ 		};
+ 
+-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12245)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12244)
+@@ -12,7 +12,6 @@
+ import cbit.vcell.message.server.htc.HtcJobStatus;
+ import cbit.vcell.message.server.htc.HtcProxy;
+ import cbit.vcell.message.server.htc.pbs.PbsJobID;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeJobID;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+ 
+@@ -24,27 +23,19 @@
+ 	public static void main(String[] args) {
+ 		CommandServiceSsh cmdssh = null;
+ 		try {
+-			if (args.length != 4){
+-				System.out.println("Usage: HtcTest remotehost username password (PBS|SGE)");
++			if (args.length != 2){
++				System.out.println("Usage: HtcTest username password");
+ 				System.exit(1);
+ 			}
+-			String host = args[0];
+-			String username = args[1];
+-			String password = args[2];
+-			String htcType = args[3];
+-			cmdssh = new CommandServiceSsh(host, username, password);
+-			HtcProxy htcProxy = null;
+-			if (htcType.equalsIgnoreCase("PBS")){
+-				htcProxy = new PbsProxy(cmdssh);
+-			}else if (htcType.equalsIgnoreCase("SGE")){
+-				htcProxy = new SgeProxy(cmdssh);
+-			}else{
+-				throw new RuntimeException("unrecognized htc type = "+htcType);
+-			}
+-			testHtcProxy1cmd(htcProxy);
++			String username = args[0];
++			String password = args[1];
++			cmdssh = new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password);
++//			HtcProxy htcProxy = new PbsProxy(cmdssh);
++			HtcProxy htcProxy = new SgeProxy(cmdssh);
++//			testHtcProxy1cmd(htcProxy);
+ //			testHtcProxy2cmd(htcProxy);
+-//			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
+-//			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
++			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
++			testGetServiceJobInfos(htcProxy, VCellServerID.getServerID("TEST2"));
+ //			htcProxy.getCommandService().close();
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+@@ -89,7 +80,7 @@
+ 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+ 		HtcJobID jobID = null;
+ 		try {
+-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
++			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100);
+ 		} catch (Exception e1) {
+ 			e1.printStackTrace(System.out);
+ 		}
+@@ -121,7 +112,7 @@
+ 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+ 		HtcJobID jobID = null;
+ 		try {
+-			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
++			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100);
+ 		} catch (Exception e1) {
+ 			e1.printStackTrace(System.out);
+ 		}
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12245)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12244)
+@@ -90,19 +90,19 @@
+ 
+ 	public abstract String getPendingReason(HtcJobID jobid) throws ExecutableException, HtcException;
+ 
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false, exitCommand, exitCodeReplaceTag);
++	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false);
+ 	}
+ 
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false, exitCommand, exitCodeReplaceTag);
++	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false);
+ 	}
+ 
+ 	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true, null, null);
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true);
+ 	}
+ 	
+-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
++	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException;
+ 
+ 	public abstract HtcProxy cloneThreadsafe();
+ 	
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12245)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12244)
+@@ -2,11 +2,14 @@
+ 
+ import java.io.BufferedReader;
+ import java.io.File;
++import java.io.FileOutputStream;
+ import java.io.IOException;
++import java.io.PrintWriter;
+ import java.io.StringReader;
+ import java.io.StringWriter;
+ import java.util.ArrayList;
+ import java.util.Comparator;
++import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+ import java.util.Vector;
+@@ -168,7 +171,7 @@
+ 	}
+ 
+ 	@Override
+-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
++	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException{	
+ 		try {
+ 			VCellServerID serverID = VCellServerID.getSystemServerID();
+ 
+@@ -226,44 +229,14 @@
+ 				sw.append("		echo\n");
+ 				sw.append("     echo command2 returned $retcode2\n");
+ 				sw.append("     echo returning return code $retcode2 to PBS\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("     exit $retcode2\n");
+ 				sw.append("else\n");
+ 				sw.append("		echo \"command1 failed, skipping command2\"\n");
+ 				sw.append("     echo returning return code $retcode1 to PBS\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("     exit $retcode1\n");
+ 				sw.append("fi\n");
+ 			}else{
+ 				sw.append("     echo returning return code $retcode1 to PBS\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("     exit $retcode1\n");
+ 			}
+ 			
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12245)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12244)
+@@ -254,7 +254,7 @@
+ 	}
+ 	
+ 	@Override
+-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
++	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException {
+ 		try {
+ 			VCellServerID serverID = VCellServerID.getSystemServerID();
+ 
+@@ -311,44 +311,14 @@
+ 				sw.append("		echo\n");
+ 				sw.append("     echo command2 returned $retcode2\n");
+ 				sw.append("     echo returning return code $retcode2 to PBS\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("     exit $retcode2\n");
+ 				sw.append("else\n");
+ 				sw.append("		echo \"command1 failed, skipping command2\"\n");
+ 				sw.append("     echo returning return code $retcode1 to SGE\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("     exit $retcode1\n");
+ 				sw.append("endif\n");
+ 			}else{
+ 				sw.append("echo returning return code $retcode1 to SGE\n");
+-				if (exitCommand!=null && exitCodeReplaceTag!=null){
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+-					sw.append("		echo\n");
+-					sw.append("		echo\n");
+-				}
+ 				sw.append("exit $retcode1\n");
+ 			}
+ 			
+Index: src/cbit/vcell/message/messages/WorkerEventMessage.java
+===================================================================
+--- src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12245)
++++ src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12244)
+@@ -27,7 +27,6 @@
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+ import cbit.vcell.solver.SimulationInfo;
+ import cbit.vcell.solver.SimulationMessage;
+-import cbit.vcell.solver.VCSimulationIdentifier;
+ 
+ /**
+  * Insert the type's description here.
+@@ -306,13 +305,4 @@
+ 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
+ 	return message;
+ }
+-
+-
+-public static WorkerEventMessage sendWorkerExit(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+-	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+-	workerEventMessage.sendWorkerEvent(session);
+-
+-	return workerEventMessage;
+ }
+-}
+Index: src/cbit/vcell/modeldb/DBBackupAndClean.java
+===================================================================
+--- src/cbit/vcell/modeldb/DBBackupAndClean.java	(revision 12245)
++++ src/cbit/vcell/modeldb/DBBackupAndClean.java	(revision 12244)
+@@ -15,15 +15,10 @@
+ import java.sql.Connection;
+ import java.sql.ResultSet;
+ import java.sql.ResultSetMetaData;
+-import java.sql.SQLException;
+ import java.sql.Statement;
+ import java.text.SimpleDateFormat;
+ import java.util.Calendar;
+-import java.util.HashSet;
+-import java.util.Set;
+ 
+-import org.vcell.util.document.KeyValue;
+-
+ import oracle.jdbc.pool.OracleDataSource;
+ 
+ 
+@@ -263,35 +258,6 @@
+ 		}
+ 	}
+ 	
+-	private static final String selectUnreferencedSimKeySQL = 
+-		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
+-		" MINUS "+
+-		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+-		" MINUS "+
+-		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+-		" MINUS "+
+-		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
+-			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
+-
+-
+-	public static Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
+-		String sql = selectUnreferencedSimKeySQL;
+-				
+-		HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
+-		Statement stmt = con.createStatement();
+-		try {
+-			ResultSet rset = stmt.executeQuery(sql);
+-			while (rset.next()){
+-				KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
+-				unreferencedSimKeys.add(simKey);
+-			}
+-		} finally {
+-			stmt.close();
+-		}
+-		return unreferencedSimKeys;
+-	}
+-
+-	
+ 	private static void cleanRemoveUnreferencedSimulations(Connection con, StringBuffer logStringBuffer) throws Exception{
+ 		//
+ 		//Remove Simulations not pointed to by MathModels or BioModels
+@@ -300,7 +266,16 @@
+ 		final String SIMID = "SIMID";
+ 		final String SIMDATE = "SIMDATE";
+ 		String UNREFERENCED_SIMS_CLAUSE = 
+-			SimulationTable.table.id.getQualifiedColName() + " IN (" + selectUnreferencedSimKeySQL + ")";
++			SimulationTable.table.id.getQualifiedColName()+" IN ("+
++			" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM vc_simulation "+
++			" MINUS "+
++			" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
++			" MINUS "+
++			" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
++			" MINUS "+
++			" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
++				" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL"+
++			")";
+ 
+ 		String sql =
+ 			"SELECT "+
+Index: src/cbit/vcell/modeldb/AdminDBTopLevel.java
+===================================================================
+--- src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12245)
++++ src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12244)
+@@ -109,7 +109,7 @@
+ 	Object lock = new Object();
+ 	Connection con = conFactory.getConnection(lock);
+ 	try {
+-		Set<KeyValue> unreferencedSimulations = DBBackupAndClean.getUnreferencedSimulations(con);
++		Set<KeyValue> unreferencedSimulations = jobDB.getUnreferencedSimulations(con);
+ 		return unreferencedSimulations;
+ 	} catch (Throwable e) {
+ 		log.exception(e);
+Index: src/cbit/vcell/solver/SimulationMessage.java
+===================================================================
+--- src/cbit/vcell/solver/SimulationMessage.java	(revision 12245)
++++ src/cbit/vcell/solver/SimulationMessage.java	(revision 12244)
+@@ -58,7 +58,6 @@
+ 		JOB_RUNNING,
+ 		SOLVEREVENT_PROGRESS,
+ 		WORKEREVENT_PROGRESS,
+-		WORKEREVENT_WORKEREXIT,
+ 		SOLVEREVENT_FINISHED,
+ 		SOLVER_FINISHED,
+ 		WORKEREVENT_COMPLETED,
+@@ -240,10 +239,6 @@
+ 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
+ 	}
+ 
+-	public static SimulationMessage WorkerExited(int solverExitCode){
+-		return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT,"solver exited (code="+solverExitCode+")");
+-	}
+-
+ 	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){
+ 		SimulationMessage simMessage = new SimulationMessage(DetailedState.SOLVEREVENT_STARTING_SUBMITTED,submitMsg);
+ 		simMessage.htcJobId = htcJobId;
+Index: src/cbit/vcell/messaging/db/SimulationJobDbDriver.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12245)
++++ src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12244)
+@@ -128,12 +128,68 @@
+ 	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
+ }
+ 
++
++public Set<KeyValue> getUnreferencedSimulations(Connection con) throws SQLException {
++	String sql = 
++		" SELECT "+SimulationTable.table.id.getUnqualifiedColName()+" FROM " + SimulationTable.table.getTableName() +
++		" MINUS "+
++		" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+BioModelSimulationLinkTable.table.getTableName()+
++		" MINUS "+
++		" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+" FROM "+MathModelSimulationLinkTable.table.getTableName()+
++		" MINUS "+
++		" SELECT DISTINCT "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" FROM "+SimulationTable.table.getTableName()+
++			" WHERE "+SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL";
++			
++	HashSet<KeyValue> unreferencedSimKeys = new HashSet<KeyValue>();
++	Statement stmt = con.createStatement();
++	try {
++		ResultSet rset = stmt.executeQuery(sql);
++		while (rset.next()){
++			KeyValue simKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.id.toString()));
++			unreferencedSimKeys.add(simKey);
++		}
++	} finally {
++		stmt.close();
++	}
++	return unreferencedSimKeys;
++}
++
++
++
+ /**
+  * This method was created in VisualAge.
+  * @return int
+  * @param user java.lang.String
+  * @param imageName java.lang.String
+  */
++public SimulationJobStatus[] getObsoleteSimulations(Connection con, long intervalSeconds) throws SQLException {
++	String sql = new String(standardJobStatusSQL);
++	sql += " AND (sysdate-" + jobTable.latestUpdateDate + ")*86400>" + intervalSeconds
++		+ " AND (" + jobTable.serverID + "='" + VCellServerID.getSystemServerID() + "')"
++		+ " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber() // running
++		+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
++		+ ") order by " + jobTable.submitDate;	
++			
++	Statement stmt = con.createStatement();
++	ArrayList<SimulationJobStatus> simJobStatusList = new ArrayList<SimulationJobStatus>();
++	try {
++		ResultSet rset = stmt.executeQuery(sql);
++		while (rset.next()){
++			simJobStatusList.add(jobTable.getSimulationJobStatus(rset));
++		}
++	} finally {
++		stmt.close();
++	}
++	return simJobStatusList.toArray(new SimulationJobStatus[0]);
++}
++
++
++/**
++ * This method was created in VisualAge.
++ * @return int
++ * @param user java.lang.String
++ * @param imageName java.lang.String
++ */
+ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue simulationKeys[]) throws SQLException {
+ 	//log.print("SchedulerDbDriver.getSimulationJobStatus(bActiveOnly=" + bActiveOnly + ", owner=" + owner);	
+ 	String sql = new String(standardJobStatusSQL);
+Index: src/cbit/vcell/mongodb/VCMongoMessage.java
+===================================================================
+--- src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12245)
++++ src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12244)
+@@ -51,8 +51,7 @@
+ 		export,
+ 		database,
+ 		serverManager,
+-		solverPreprocessor,
+-		solverPostprocessor
++		solverPreprocessor
+ 	};
+ 	
+ 	private static ServiceName serviceName = ServiceName.unknown;
+Index: src/cbit/rmi/event/WorkerEvent.java
+===================================================================
+--- src/cbit/rmi/event/WorkerEvent.java	(revision 12245)
++++ src/cbit/rmi/event/WorkerEvent.java	(revision 12244)
+@@ -34,7 +34,6 @@
+ 	public static final int JOB_FAILURE = 1002;
+ 	public static final int JOB_COMPLETED = 1003;
+ 	public static final int JOB_WORKER_ALIVE = 1004;
+-	public static final int JOB_WORKER_EXIT = 1015;
+ 
+ 	private VCSimulationIdentifier vcSimulationIdentifier = null;
+ 	private int jobIndex = -1;
+@@ -276,10 +275,6 @@
+ 	return eventType == JOB_WORKER_ALIVE;
+ }
+ 
+-public boolean isWorkerExitEvent() {
+-	return eventType == JOB_WORKER_EXIT;
+-}
+-
+ public void setHtcJobID(HtcJobID htcJobID) {
+ 	this.htcJobID = htcJobID;
+ }
+Index: src/org/vcell/util/PropertyLoader.java
+===================================================================
+--- src/org/vcell/util/PropertyLoader.java	(revision 12245)
++++ src/org/vcell/util/PropertyLoader.java	(revision 12244)
+@@ -160,7 +160,6 @@
+ 	
+ 	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
+ 	public static final String simulationPreprocessor = "vcell.simulation.preprocessor";
+-	public static final String simulationPostprocessor = "vcell.simulation.postprocessor";
+ 	public final static String mathSBMLDirectory = "vcell.mathSBML.directory";
+ 	public final static String COPASIExecutable = "vcell.COPASI.executable";
+ 	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";
+Index: deployInfo/JavaPostprocessor64
+===================================================================
+--- deployInfo/JavaPostprocessor64	(revision 12245)
++++ deployInfo/JavaPostprocessor64	(revision 12244)
+@@ -1,30 +0,0 @@
+-printusage() {
+-	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
+-	exit 1
+-}
+-
+-# main code
+-if [ "$#" != "6" ] ; then 
+-	printusage
+-fi
+-site=GENERATED
+-
+-# set up cmd and cmd rguments
+-mainclass=GENERATED
+-#SolverPostprocessor
+-arguments=$*
+-
+-siteRootDir=/share/apps/vcell/deployed/${site}
+-siteResDir=${siteRootDir}/resources
+-siteCfgDir=${siteRootDir}/configs
+-logdir=/share/apps/vcell/logs/${site}
+-
+-jre=java
+-jvm_jars=GENERATED
+-jvmprop="-Xmx500M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+-
+-echo "starting ${serviceid} on ${nodename}"
+-nice ${jre} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments}
+-
+-exit 0
+-
+Index: deployInfo/vcell64.properties
+===================================================================
+--- deployInfo/vcell64.properties	(revision 12245)
++++ deployInfo/vcell64.properties	(revision 12244)
+@@ -32,7 +32,6 @@
+ #
+ vcell.javaSimulation.executable = GENERATED_SERVER_SITE_PATH/configs/JavaSimExe64
+ vcell.simulation.preprocessor = GENERATED_SERVER_SITE_PATH/configs/JavaPreprocessor64
+-vcell.simulation.postprocessor = GENERATED_SERVER_SITE_PATH/configs/JavaPostprocessor64
+ 
+ #
+ # stochastic solver 

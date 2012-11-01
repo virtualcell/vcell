@@ -1,0 +1,37 @@
+Index: src/cbit/vcell/message/server/sim/SolverPostprocessor.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12247)
++++ src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12246)
+@@ -57,7 +57,7 @@
+ 
+ 			vcMessagingService = VCMessagingService.createInstance();
+ 			VCMessageSession session = vcMessagingService.createProducerSession();
+-			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
++			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, new SolverPostprocessor(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+ 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
+ 			try {
+ 				Thread.sleep(2000);
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12247)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12246)
+@@ -157,8 +157,7 @@
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
+ 		
+-//		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), null, null);
++		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}
+@@ -171,8 +170,7 @@
+ 				forceUnixPath(userdir.getAbsolutePath())
+ 		};
+ 
+-//		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), null, null);
++		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}

@@ -8,15 +8,21 @@ import java.util.Date;
 
 import org.vcell.util.document.VCellServerID;
 
-import cbit.htc.PbsJobID;
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.messaging.WorkerEventMessage;
+import cbit.vcell.message.VCDestination;
+import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.messages.StatusMessage;
+import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
+import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
-import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.solver.SimulationJob;
@@ -44,7 +50,9 @@ public final class VCMongoMessage {
 		simData,
 		export,
 		database,
-		serverManager
+		serverManager,
+		solverPreprocessor,
+		solverPostprocessor
 	};
 	
 	private static ServiceName serviceName = ServiceName.unknown;
@@ -68,6 +76,12 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_msgtype_exception							= "exception";
 	public final static String MongoMessage_msgtype_clientConnect						= "clientConnect";
 	public final static String MongoMessage_msgtype_clientTimeout						= "clientTimeout";
+	public final static String MongoMessage_msgtype_jmsMessageReceived					= "jmsMessageReceived";
+	public final static String MongoMessage_msgtype_jmsMessageSent						= "jmsMessageSent";
+	public final static String MongoMessage_msgtype_commandServiceCall					= "pbsCall";
+	public final static String MongoMessage_msgtype_infoMsg								= "infoMsg";
+	public final static String MongoMessage_msgtype_obsoleteJob							= "obsoleteJob";
+	public final static String MongoMessage_msgtype_zombieJob							= "zombieJob";
 	public final static String MongoMessage_msgTime				= "msgTime";
 	public final static String MongoMessage_msgTimeNice			= "msgTimeNice";
 	
@@ -106,11 +120,13 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_solverEventType		= "solverEventType";
 	public final static String MongoMessage_simComputeResource	= "simComputeResource";
 	public final static String MongoMessage_simEstMemory		= "simEstMemory";
-	public final static String MongoMessage_pbsJobID			= "pbsJobID";
-	public final static String MongoMessage_pbsWorkerMsg		= "pbsWorkerMsg";
+	public final static String MongoMessage_htcJobID			= "htcJobID";
+	public final static String MongoMessage_htcWorkerMsg		= "htcWorkerMsg";
 	public final static String MongoMessage_rpcRequestMethod	= "rpcMethod";
 	public final static String MongoMessage_rpcRequestArgs		= "rpcArgs";
 	public final static String MongoMessage_rpcRequestService	= "rpcService";
+	public final static String MongoMessage_rpcRequestDelay		= "rpcDelay";
+	public final static String MongoMessage_rpcServiceTime		= "rpcServiceTime";
 	public final static String MongoMessage_userName			= "user";
 	public final static String MongoMessage_host				= "host";
 	public final static String MongoMessage_serviceName			= "serviceName";
@@ -127,7 +143,16 @@ public final class VCMongoMessage {
 	public final static String MongoMessage_osName				= "osName";
 	public final static String MongoMessage_osVersion			= "osVersion";
 	public final static String MongoMessage_vcSoftwareVersion	= "vcSoftwareVersion";
-
+	public final static String MongoMessage_destination			= "destination";
+	public final static String MongoMessage_jmsMessage			= "jmsMessage";
+	public final static String MongoMessage_shellCmd			= "shellCmd";
+	public final static String MongoMessage_cmdString			= "cmdString";
+	public final static String MongoMessage_elapsedTimeMS		= "elapsedTimeMS";
+	public final static String MongoMessage_stdout				= "stdout";
+	public final static String MongoMessage_stderr				= "stderr";
+	public final static String MongoMessage_exitCode			= "exitCode";
+	public final static String MongoMessage_info				= "info";
+	public final static String MongoMessage_simStateMachineDump = "simStateMachine";
 	private BasicDBObject doc = null;
 	
 	VCMongoMessage(BasicDBObject doc){
@@ -193,6 +218,23 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_host,java.net.InetAddress.getLocalHost().getHostName());
 	}
 
+	public static void sendInfo(String infoString) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+	
+			addHeader(dbObject,MongoMessage_msgtype_infoMsg);
+			
+			dbObject.put(MongoMessage_info, infoString);
+							
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
+		}
+	}
+
 	public static void sendClientConnectionNew(UserLoginInfo userLoginInfo) {
 		if (!enabled){
 			return;
@@ -249,6 +291,31 @@ public final class VCMongoMessage {
 							
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+
+	public static void sendException(Throwable exception) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+	
+			addHeader(dbObject,MongoMessage_msgtype_exception);
+			
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(bos);
+			exception.printStackTrace(pw);
+			pw.close();
+			String stack = bos.toString();
+
+			dbObject.put(MongoMessage_exceptionMessage,exception.getMessage());
+			dbObject.put(MongoMessage_exceptionStack,stack);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e); 
 		}
 	}
@@ -300,6 +367,46 @@ public final class VCMongoMessage {
 			addObject(newSimJobStatusObject, newSimulationJobStatus);
 			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
 	
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendZombieJob(SimulationJobStatus jobStatus, String failureMessage, HtcJobID htcJobID) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_zombieJob);
+
+			dbObject.put(MongoMessage_info,failureMessage);
+			dbObject.put(MongoMessage_htcJobID,htcJobID.toDatabase());
+			
+			addObject(dbObject,jobStatus);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendObsoleteJob(SimulationJobStatus jobStatus, String failureMessage, SimulationStateMachine simStateMachine) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_obsoleteJob);
+
+			dbObject.put(MongoMessage_info,failureMessage);
+			dbObject.put(MongoMessage_simStateMachineDump,simStateMachine.show());
+			
+			addObject(dbObject,jobStatus);
+			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
@@ -416,7 +523,7 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
 
-			addObject(dbObject,workerEventMessage);
+			addObject(dbObject,workerEventMessage.getWorkerEvent());
 				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
@@ -424,7 +531,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendPBSWorkerMessage(SimulationTask simulationTask, PbsJobID pbsJobID, String pbsWorkerMsg) {
+	public static void sendPBSWorkerMessage(SimulationTask simulationTask, HtcJobID htcJobID, String htcWorkerMsg) {
 		if (!enabled){
 			return;
 		}
@@ -433,9 +540,9 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
 
-			dbObject.put(MongoMessage_pbsWorkerMsg, pbsWorkerMsg);
-			if (pbsJobID!=null){
-				dbObject.put(MongoMessage_pbsJobID, pbsJobID.getID());
+			dbObject.put(MongoMessage_htcWorkerMsg, htcWorkerMsg);
+			if (htcJobID!=null){
+				dbObject.put(MongoMessage_htcJobID, htcJobID.toDatabase());
 			}
 	
 			addObject(dbObject,simulationTask);
@@ -445,9 +552,63 @@ public final class VCMongoMessage {
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
 		}
 	}
+	
+	public static void sendJmsMessageReceived(VCMessage vcMessage,	VCDestination vcDestination) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
 
+			addHeader(dbObject,MongoMessage_msgtype_jmsMessageReceived);
 
-	public static void sendRpcRequestReceived(RpcRequest rpcRequest) {
+			dbObject.put(MongoMessage_destination, vcDestination.getName());
+
+			addObject(dbObject, vcMessage);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendJmsMessageSent(VCMessage vcMessage,	VCDestination vcDestination) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_jmsMessageSent);
+
+			dbObject.put(MongoMessage_destination, vcDestination.getName());
+
+			addObject(dbObject, vcMessage);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendCommandServiceCall(CommandOutput commandOutput) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_commandServiceCall);
+
+			addObject(dbObject, commandOutput);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
+	public static void sendRpcRequestProcessed(VCRpcRequest rpcRequest) {
 		if (!enabled){
 			return;
 		}
@@ -464,7 +625,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendRpcRequestSent(RpcRequest rpcRequest, UserLoginInfo userLoginInfo) {
+	public static void sendRpcRequestSent(VCRpcRequest rpcRequest, UserLoginInfo userLoginInfo) {
 		if (!enabled){
 			return;
 		}
@@ -558,6 +719,29 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_clientInfo, dbObjectClientInfo);
 	}
 	
+	private static void addObject(BasicDBObject dbObject, CommandOutput commandOutput){
+		if (commandOutput == null){
+			return;
+		}
+		BasicDBObject dbObjectShellCmd = new BasicDBObject();
+		
+		if (commandOutput.getCommandStrings()!=null){
+			dbObjectShellCmd.put(MongoMessage_cmdString, commandOutput.getCommand());
+		}
+		dbObjectShellCmd.put(MongoMessage_elapsedTimeMS, commandOutput.getElapsedTimeMS());
+		if (commandOutput.getStandardOutput()!=null){
+			dbObjectShellCmd.put(MongoMessage_stdout, commandOutput.getStandardOutput());
+		}
+		if (commandOutput.getStandardError()!=null){
+			dbObjectShellCmd.put(MongoMessage_stderr, commandOutput.getStandardError());
+		}
+		if (commandOutput.getExitStatus()!=null){
+			dbObjectShellCmd.put(MongoMessage_exitCode, commandOutput.getExitStatus());
+		}
+		
+		dbObject.put(MongoMessage_shellCmd, dbObjectShellCmd);
+	}
+	
 	private static void addObject(BasicDBObject dbObject, SimulationJobStatusEvent simJobStatusEvent){
 		addObject(dbObject, simJobStatusEvent.getSimulationMessage());
 		addObject(dbObject, simJobStatusEvent.getJobStatus());
@@ -572,7 +756,7 @@ public final class VCMongoMessage {
 		}			
 	}
 	
-	private static void addObject(BasicDBObject dbObject, RpcRequest rpcRequest){
+	private static void addObject(BasicDBObject dbObject, VCRpcRequest rpcRequest){
 		dbObject.put(MongoMessage_rpcRequestArgs,Arrays.asList(rpcRequest.getArguments()).toString());
 		for (Object arg : rpcRequest.getArguments()){
 			//
@@ -589,8 +773,14 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_rpcRequestMethod,rpcRequest.getMethodName());
 		dbObject.put(MongoMessage_rpcRequestService,rpcRequest.getRequestedServiceType().getName());
 		dbObject.put(MongoMessage_userName,rpcRequest.getUserName());
+		if (rpcRequest.getRequestTimestampMS()!=null && rpcRequest.getBeginProcessingTimestampMS()!=null){
+			dbObject.put(MongoMessage_rpcRequestDelay,rpcRequest.getBeginProcessingTimestampMS().longValue() - rpcRequest.getRequestTimestampMS().longValue());
+		}
+		if (rpcRequest.getBeginProcessingTimestampMS()!=null && rpcRequest.getEndProcessingTimestampMS()!=null){
+			dbObject.put(MongoMessage_rpcServiceTime,rpcRequest.getEndProcessingTimestampMS().longValue() - rpcRequest.getBeginProcessingTimestampMS().longValue());
+		}
 	}
-	
+		
 	private static void addObject(BasicDBObject dbObject, SimulationTask simulationTask){
 		dbObject.put(MongoMessage_simId,simulationTask.getSimulationJob().getVCDataIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_jobIndex, simulationTask.getSimulationJob().getJobIndex());
@@ -600,12 +790,53 @@ public final class VCMongoMessage {
 	}
 	
 
+	private static void addObject(BasicDBObject dbObject, VCMessage message){
+		Object objectContent = message.getObjectContent();
+		if (objectContent instanceof WorkerEvent){
+			addObject(dbObject, (WorkerEvent)objectContent);
+		}else if (objectContent instanceof SimulationJobStatus){
+			addObject(dbObject, (SimulationJobStatus)objectContent);
+		}
+		dbObject.put(MongoMessage_jmsMessage, message.show());
+		if (message.propertyExists(MessageConstants.SIMKEY_PROPERTY)){
+			dbObject.put(MongoMessage_simId,String.valueOf(message.getLongProperty(MessageConstants.SIMKEY_PROPERTY)));
+		}
+		if (message.propertyExists(MessageConstants.JOBINDEX_PROPERTY)){
+			dbObject.put(MongoMessage_jobIndex, message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY));
+		}
+		if (message.propertyExists(MessageConstants.TASKID_PROPERTY)){
+			dbObject.put(MongoMessage_taskId, message.getIntProperty(MessageConstants.TASKID_PROPERTY));
+		}
+		if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
+			dbObject.put(MongoMessage_userName, message.getStringProperty(MessageConstants.USERNAME_PROPERTY));
+		}
+		if (message.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
+			dbObject.put(MongoMessage_simProgress, message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY));
+		}
+	}
+	
 	private static void addObject(BasicDBObject dbObject, WorkerEventMessage workerEventMessage){
 		WorkerEvent workerEvent = workerEventMessage.getWorkerEvent();
 		dbObject.put(MongoMessage_computeHost, workerEvent.getHostName());
 		dbObject.put(MongoMessage_simId,workerEvent.getVCSimulationDataIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_jobIndex, workerEvent.getJobIndex());
 		dbObject.put(MongoMessage_taskId, workerEvent.getTaskID());
+		//workerEvent.getEventTypeID();
+		//workerEvent.getMessageData();
+		//workerEvent.getMessageSource();
+		addObject(dbObject, workerEvent.getSimulationMessage());
+		dbObject.put(MongoMessage_simProgress,workerEvent.getProgress());
+		dbObject.put(MongoMessage_simTime,workerEvent.getTimePoint());
+	}
+	
+	private static void addObject(BasicDBObject dbObject, WorkerEvent workerEvent){
+		dbObject.put(MongoMessage_computeHost, workerEvent.getHostName());
+		dbObject.put(MongoMessage_simId,workerEvent.getVCSimulationDataIdentifier().getSimulationKey().toString());
+		dbObject.put(MongoMessage_jobIndex, workerEvent.getJobIndex());
+		dbObject.put(MongoMessage_taskId, workerEvent.getTaskID());
+		if (workerEvent.getHtcJobID()!=null){
+			dbObject.put(MongoMessage_htcJobID, workerEvent.getHtcJobID().toDatabase());
+		}
 		//workerEvent.getEventTypeID();
 		//workerEvent.getMessageData();
 		//workerEvent.getMessageSource();
@@ -630,7 +861,7 @@ public final class VCMongoMessage {
 		dbObject.put(MongoMessage_simId,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_taskId, newSimulationJobStatus.getTaskID());
 		dbObject.put(MongoMessage_jobIndex, newSimulationJobStatus.getJobIndex());
-		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatusDescription());
+		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatus().getDescription());
 		dbObject.put(MongoMessage_serverId, newSimulationJobStatus.getServerID().toString());
 		if (newSimulationJobStatus.getTimeDateStamp()!=null){
 			dbObject.put(MongoMessage_simJobStatusTimeStamp,newSimulationJobStatus.getTimeDateStamp().getTime());
@@ -662,8 +893,8 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_latestUpdateTime, simExeStatus.getLatestUpdateDate().getTime());
 			dbObject.put(MongoMessage_latestUpdateTimeNice, simExeStatus.getLatestUpdateDate().toString());
 		}
-		if (simExeStatus.getPbsJobID()!=null){
-			dbObject.put(MongoMessage_pbsJobID, simExeStatus.getPbsJobID().getID());
+		if (simExeStatus.getHtcJobID()!=null){
+			dbObject.put(MongoMessage_htcJobID, simExeStatus.getHtcJobID().toDatabase());
 		}
 	}
 	
@@ -674,8 +905,8 @@ public final class VCMongoMessage {
 		DetailedState detailedState = simMessage.getDetailedState();
 		dbObject.put(MongoMessage_simMessageState,detailedState.name());
 		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
-		if (simMessage.getPbsJobId()!=null){
-			dbObject.put(MongoMessage_pbsJobID,simMessage.getPbsJobId().getID());
+		if (simMessage.getHtcJobId()!=null){
+			dbObject.put(MongoMessage_htcJobID,simMessage.getHtcJobId().toDatabase());
 		}
 	}
 
@@ -687,8 +918,12 @@ public final class VCMongoMessage {
 			dbObject.put(MongoMessage_simQueueEntryDate,simQueueEntryStatus.getQueueDate().getTime());
 			dbObject.put(MongoMessage_simQueueEntryDateNice,simQueueEntryStatus.getQueueDate().toString());
 		}
-		dbObject.put(MongoMessage_simQueueEntryId,simQueueEntryStatus.getQueueID());
+		dbObject.put(MongoMessage_simQueueEntryId,simQueueEntryStatus.getQueueID().name());
 		dbObject.put(MongoMessage_simQueueEntryPriority,simQueueEntryStatus.getQueuePriority());
+	}
+
+	public static void flush() {
+		VCMongoDbDriver.getInstance().flush();
 	}
 
 
