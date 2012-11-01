@@ -246,7 +246,7 @@ void revertToSaved(DocumentWindowManager documentWindowManager);
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
  * @param simulation cbit.vcell.solver.Simulation
  */
-void runSimulation(SimulationInfo simInfo) throws DataAccessException;
+void runSimulation(SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException;
 
 
 /**

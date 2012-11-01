@@ -2822,7 +2822,7 @@ public String startSimulations(TestCriteriaNew[] tcrits,ClientTaskStatusSupport 
 			pp.setProgress((int)(1+(((double)i/(double)tcrits.length)*100)));
 			pp.setMessage("Trying to run sim "+tcrits[i].getSimInfo().getName());
 			updateTCritStatus(tcrits[i],TestCriteriaNew.TCRIT_STATUS_SIMRUNNING,null);
-			getRequestManager().runSimulation(tcrits[i].getSimInfo());
+			getRequestManager().runSimulation(tcrits[i].getSimInfo(),tcrits[i].getScanCount());
 		}catch(Throwable e){
 			e.printStackTrace();
 			errors.append("Failed to start sim "+tcrits[i].getSimInfo().getVersion().getName()+" "+e.getClass().getName()+" mesg="+e.getMessage()+"\n");

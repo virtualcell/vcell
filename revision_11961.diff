@@ -1,0 +1,127 @@
+Index: src/cbit/vcell/messaging/admin/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/messaging/admin/ServerManagerDaemon.java	(revision 11961)
++++ src/cbit/vcell/messaging/admin/ServerManagerDaemon.java	(revision 11960)
+@@ -191,7 +191,7 @@
+ 	adminDbTop.updateServiceStatus(service, tso, true);
+ }	
+ 
+-private PbsJobID submit2PBS(ServiceStatus service) throws Exception {
++private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+ 	killService(service);
+ 	
+ 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
+Index: src/cbit/vcell/solvers/PBSSolver.java
+===================================================================
+--- src/cbit/vcell/solvers/PBSSolver.java	(revision 11961)
++++ src/cbit/vcell/solvers/PBSSolver.java	(revision 11960)
+@@ -47,7 +47,7 @@
+  * @throws SolverException 
+  * @throws ExecutableException 
+  */
+-private PbsJobID submit2PBS() throws Exception {
++private PbsJobID submit2PBS() throws SolverException, ExecutableException {
+ 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
+ 	String cmd = getExecutableCommand();
+ 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
+Index: src/cbit/htc/PBSUtils.java
+===================================================================
+--- src/cbit/htc/PBSUtils.java	(revision 11961)
++++ src/cbit/htc/PBSUtils.java	(revision 11960)
+@@ -35,7 +35,6 @@
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+-import org.vcell.util.document.VCellServerID;
+ 
+ public class PBSUtils {
+ 	private static SessionLog pbsLog = new StdoutSessionLog("PBS-Command");
+@@ -249,7 +248,7 @@
+  * Creation date: (9/26/2003 3:06:31 PM)
+  * @param args java.lang.String[]
+  */
+-public static void main(String[] args) throws Exception{		
++public static void main(String[] args) {		
+ 	
+ //	try {		
+ //		PropertyLoader.loadProperties();
+@@ -284,28 +283,41 @@
+ 
+ 
+ 
+-public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws Exception {
++public static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+ 	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SIMULATION_JOB);
+ }
+ 
+-public static PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws Exception {
++public static PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize) throws ExecutableException {
+ 	return submitJob(computeResource, jobName, sub_file, executable, cmdArguments, ncpus, memSize, PBSConstants.PBS_SERVICE_JOB);
+ }
+ 
+-private static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, int jobCategory) throws Exception {	
+-	PrintWriter pw = null;
++private static PbsJobID submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments, int ncpus, double memSize, int jobCategory) throws ExecutableException {	
+ 	try {	
+-		pw = new PrintWriter(new FileOutputStream(sub_file));
++		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
+ 		pw.println("# Generated without file template.");
+ 		pw.println("#PBS -N " + jobName);
+ 		pw.println("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb");
+ 		String pbsQueueNameString = "#PBS -q ";
+-		String siteNameString = VCellServerID.getSystemServerID().toCamelCase();		
++		String siteNameString = null;
++		String siteNAMEString = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
++		String pbsServiceQueueNamePrefix = PropertyLoader.getProperty("pbsServiceQueuePrefix", PBSConstants.PBS_SERVICE_QUEUE_PREFIX);
++		String pbsWorkQueueNamePrefix = PropertyLoader.getProperty("pbsWorkQueuePrefix", PBSConstants.PBS_WORK_QUEUE_PREFIX);
++		if (siteNAMEString.toUpperCase().equals("ALPHA")) {siteNameString = "Alpha";} 
++		else if  (siteNAMEString.toUpperCase().equals("BETA")) {siteNameString = "Beta";} 
++		else if  (siteNAMEString.toUpperCase().equals("REL")) {siteNameString = "Rel";} 
++		else if  (siteNAMEString.toUpperCase().equals("TEST")) {siteNameString = "Test";} 
++		else {
++			pw.close();
++			throw new ExecutableException("Invalid Server Site ID String: \""+siteNAMEString+"\"");
++		}
++	
+ 		if (jobCategory==PBSConstants.PBS_SIMULATION_JOB) {
+-			pbsQueueNameString = pbsQueueNameString+"workq"+siteNameString;
+-		}else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
+-			pbsQueueNameString = pbsQueueNameString+"serviceq"+siteNameString;
+-		}else {
++			pbsQueueNameString = pbsQueueNameString+pbsWorkQueueNamePrefix+siteNameString;
++		}
++		else if (jobCategory==PBSConstants.PBS_SERVICE_JOB) {
++			pbsQueueNameString = pbsQueueNameString+pbsServiceQueueNamePrefix+siteNameString;
++		} else {
++			pw.close();
+ 			throw new ExecutableException("Invalid jobCategory: "+Integer.toString(jobCategory));
+ 		}
+ 		
+@@ -313,8 +325,10 @@
+ 		pw.print(PBSConstants.PBS_JOB_TEMPLATE);
+ 		pw.println();
+ 		pw.println(executable + " " + cmdArguments);
+-	}finally{
+-		if(pw != null){try{pw.close();}catch(Exception e){e.printStackTrace();}}
++		pw.close();
++	} catch (IOException ex) {
++		ex.printStackTrace(System.out);
++		return null;
+ 	}
+ 	
+ 	String[] completeCommand = new String[] {JOB_CMD_SUBMIT, sub_file};
+Index: src/org/vcell/util/document/VCellServerID.java
+===================================================================
+--- src/org/vcell/util/document/VCellServerID.java	(revision 11961)
++++ src/org/vcell/util/document/VCellServerID.java	(revision 11960)
+@@ -87,7 +87,9 @@
+ public String toString() {
+ 	return serverID;
+ }
++
++
+ public String toCamelCase() {
+-    return serverID.toUpperCase().charAt(0)+serverID.substring(1).toLowerCase();
++	return serverID.toUpperCase().charAt(0)+serverID.substring(1).toLowerCase();
+ }
+ }

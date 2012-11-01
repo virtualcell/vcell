@@ -37,6 +37,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -125,23 +126,23 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					String baseExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf("."));
 					for(int i=0; i<scanCount; i++)
 					{
-						SimulationJob simJob = new SimulationJob(selectedSim, i, null);
+						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
 						String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
 						exportFile = new File(newExportFileName);
 						
 						PrintWriter pw = new PrintWriter(exportFile);
-						SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+						SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simTask, false);
 						smf.write();
 						pw.close();	
 					}
 				}
 				else if(scanCount == 1)// regular simulation, no parameter scan
 				{
-					SimulationJob simJob = new SimulationJob(selectedSim, 0, null);
+					SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
 					// export the simulation to the selected file
 					PrintWriter pw = new PrintWriter(exportFile);
-					SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+					SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simTask, false);
 					smf.write();
 					pw.close();
 				}
@@ -255,23 +256,23 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					String baseExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf("."));
 					for(int i=0; i<scanCount; i++)
 					{
-						SimulationJob simJob = new SimulationJob(selectedSim, i, null);
+						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
 						String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
 						exportFile = new File(newExportFileName);
 						
 						PrintWriter pw = new PrintWriter(exportFile);
-						SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+						SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simTask, false);
 						smf.write();
 						pw.close();	
 					}
 				}
 				else if(scanCount == 1)// regular simulation, no parameter scan
 				{
-					SimulationJob simJob = new SimulationJob(selectedSim, 0, null);
+					SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
 					// export the simulation to the selected file
 					PrintWriter pw = new PrintWriter(exportFile);
-					SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simJob, false);
+					SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simTask, false);
 					smf.write();
 					pw.close();
 				}

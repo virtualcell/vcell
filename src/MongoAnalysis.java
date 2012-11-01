@@ -248,8 +248,8 @@ public class MongoAnalysis {
 			long starting = 0;
 			long ending = 0;
 			for (DBObject dbObject : objects){
-				if (dbObject.containsField(VCMongoMessage.MongoMessage_pbsWorkerMsg)){
-					if (dbObject.get(VCMongoMessage.MongoMessage_pbsWorkerMsg).equals("PBSSolver.submit2PBS() returned")){
+				if (dbObject.containsField(VCMongoMessage.MongoMessage_htcWorkerMsg)){
+					if (dbObject.get(VCMongoMessage.MongoMessage_htcWorkerMsg).equals("PBSSolver.submit2PBS() returned")){
 						ending = (Long)dbObject.get(VCMongoMessage.MongoMessage_msgTime);
 						String endTimeNice = (String)dbObject.get(VCMongoMessage.MongoMessage_msgTimeNice);
 						if (endTimeNice == null){
@@ -258,7 +258,7 @@ public class MongoAnalysis {
 //						System.out.println("Simulation "+dbObject.get(VCMongoMessage.MongoMessage_simId)+" endTime (sec) = "+ending);
 						System.out.println(endTimeNice+", Simulation "+dbObject.get(VCMongoMessage.MongoMessage_simId)+" submitTime (sec) = "+((ending-starting)/1000.0));
 					}
-					if (dbObject.get(VCMongoMessage.MongoMessage_pbsWorkerMsg).equals("calling PBSSolver.submit2PBS()")){
+					if (dbObject.get(VCMongoMessage.MongoMessage_htcWorkerMsg).equals("calling PBSSolver.submit2PBS()")){
 						starting = (Long)dbObject.get(VCMongoMessage.MongoMessage_msgTime);
 //						System.out.println("Simulation "+dbObject.get(VCMongoMessage.MongoMessage_simId)+" startTime (sec) = "+starting);
 					}

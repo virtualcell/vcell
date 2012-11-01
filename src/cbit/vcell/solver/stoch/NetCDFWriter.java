@@ -16,7 +16,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.commons.math.random.RandomDataImpl;
 import org.vcell.util.Compare;
+import org.vcell.util.PropertyLoader;
 
 import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
@@ -35,17 +37,16 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.Variable;
-import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.VCellTopic;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-
-import org.apache.commons.math.random.RandomDataImpl;
 
 /**
  * This class is used to write input file for stochastic hybrid solvers.
@@ -59,7 +60,7 @@ import org.apache.commons.math.random.RandomDataImpl;
 public class NetCDFWriter {
 
 	private String filename = null;
-	private SimulationJob simJob = null;
+	private SimulationTask simTask = null;
 	// to store variables and their orders in the reactions. It is set to global in this
 	// class, since it is useful in a few functions and we don't want to calculate it 
 	// again and again. it is calculated in function getReactionRateLaws.
@@ -70,9 +71,9 @@ public class NetCDFWriter {
 	 * another constructor
 	 * @param arg_simulation
 	 */
-	public NetCDFWriter(SimulationJob arg_simulationJob, String fn, boolean argMessaging) 
+	public NetCDFWriter(SimulationTask simTask, String fn, boolean argMessaging) 
 	{
-		simJob = arg_simulationJob;
+		this.simTask = simTask;
 		filename = fn;
 		bMessaging = argMessaging;
 	}
@@ -86,7 +87,7 @@ public class NetCDFWriter {
 	 */
 	public boolean initialize() throws Exception
 	{
-		Simulation simulation = simJob.getSimulation();	
+		Simulation simulation = simTask.getSimulation();	
 		//check variables
 		if(!simulation.getMathDescription().getVariables().hasMoreElements())
 		{
@@ -127,8 +128,8 @@ public class NetCDFWriter {
 	 */
 	public void writeHybridInputFile(String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException,IOException, MathException, InvalidRangeException
 	{
-		Simulation simulation = simJob.getSimulation();
-		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
+		Simulation simulation = simTask.getSimulation();
+		SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 		if(initialize())
 		{
 			//we need to get model and control information first
@@ -253,15 +254,15 @@ public class NetCDFWriter {
 				// write jms info
 				if (bMessaging) {
 					ArrayChar.D1 jmsString = new ArrayChar.D1(stringLen.getLength());
-					jmsString.setString(JmsUtils.getJmsUrl());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL));
 					ncfile.write("JMS_BROKER", jmsString);
-					jmsString.setString(JmsUtils.getJmsUserID());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
 					ncfile.write("JMS_USER", jmsString);
-					jmsString.setString(JmsUtils.getJmsPassword());
+					jmsString.setString(PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
 					ncfile.write("JMS_PASSWORD", jmsString);
-					jmsString.setString(JmsUtils.getQueueWorkerEvent());
+					jmsString.setString(VCellQueue.WorkerEventQueue.getName());
 					ncfile.write("JMS_QUEUE", jmsString);
-					jmsString.setString(JmsUtils.getTopicServiceControl());
+					jmsString.setString(VCellTopic.ServiceControlTopic.getName());
 					ncfile.write("JMS_TOPIC", jmsString);
 					jmsString.setString(simulation.getVersion().getOwner().getName());
 					ncfile.write("VCELL_USER", jmsString);
@@ -269,7 +270,7 @@ public class NetCDFWriter {
 					ArrayInt.D0 scalarJMS = new ArrayInt.D0();
 					scalarJMS.set(Integer.parseInt(simulation.getVersion().getVersionKey()+""));
 					ncfile.write("SIMULATION_KEY", scalarJMS);
-					scalarJMS.set(simJob.getJobIndex());
+					scalarJMS.set(simTask.getSimulationJob().getJobIndex());
 					ncfile.write("JOB_INDEX", scalarJMS);
 				}
 
@@ -568,7 +569,7 @@ public class NetCDFWriter {
 	 */		
 	private  ReactionRateLaw[] getReactionRateLaws(Expression[] probs) throws ExpressionException, MathException
 	{
-		SimulationSymbolTable simSymbolTable = simJob.getSimulationSymbolTable();
+		SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
 		
 		ReactionRateLaw[] results = new ReactionRateLaw[probs.length];
 		varInProbOrderHash = new Hashtable[probs.length];
@@ -711,7 +712,7 @@ public class NetCDFWriter {
 		
 	private String[] getVariableSymbols(String[] symbols)
 	{
-		Simulation simulation = simJob.getSimulation();
+		Simulation simulation = simTask.getSimulation();
 		
 		Vector<String> vars = new Vector<String>();
 		if(symbols != null)

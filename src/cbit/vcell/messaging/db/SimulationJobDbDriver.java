@@ -12,10 +12,15 @@ package cbit.vcell.messaging.db;
 import java.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.modeldb.BioModelSimulationLinkTable;
+import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -23,7 +28,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.modeldb.UserTable;
 
 /**
@@ -86,10 +90,10 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 			
 			
 	sql += " AND "
-			+ jobTable.schedulerStatus + " in (" + SimulationJobStatus.SCHEDULERSTATUS_QUEUED // in job queue
-			+ ","  + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
-			+ "," + SimulationJobStatus.SCHEDULERSTATUS_RUNNING  // worker running it
-			+ "," + SimulationJobStatus.SCHEDULERSTATUS_WAITING // waiting
+			+ jobTable.schedulerStatus + " in (" + SchedulerStatus.QUEUED.getDatabaseNumber() // in job queue
+			+ ","  + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
+			+ "," + SchedulerStatus.RUNNING.getDatabaseNumber()  // worker running it
+			+ "," + SchedulerStatus.WAITING.getDatabaseNumber() // waiting
 			+ ")";
 
 	// AND upper(serverID) in ('serverid1', serverid2');
@@ -123,35 +127,6 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 	
 	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
- */
-public SimulationJobStatus getNextObsoleteSimulation(Connection con, long intervalSeconds) throws SQLException {
-	String sql = new String(standardJobStatusSQL);
-	sql += " AND (sysdate-" + jobTable.latestUpdateDate + ")*86400>" + intervalSeconds
-		+ " AND (" + jobTable.serverID + "='" + VCellServerID.getSystemServerID() + "')"
-		+ " AND (" + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_RUNNING // running
-		+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
-		+ ") and rownum<2 order by " + jobTable.submitDate;	
-			
-	Statement stmt = con.createStatement();
-	SimulationJobStatus simJobStatus = null;
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		if (rset.next()) {
-			simJobStatus = jobTable.getSimulationJobStatus(rset);
-		}
-	} finally {
-		stmt.close();
-	}
-	return simJobStatus;
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -221,16 +196,17 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int index, boolean lockRowForUpdate) throws SQLException {
+public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
-	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + index;
+	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + jobIndex;
+	sql += " AND " + jobTable.taskID.getQualifiedColName() + " = " + taskID;
 		
 	if (lockRowForUpdate){
 		sql += " FOR UPDATE OF " + jobTable.getTableName() + ".id";
 	}
-	//log.print(sql);
+//	log.print(sql);
 	Statement stmt = con.createStatement();
 	SimulationJobStatus simJobStatus = null;
 	try {
@@ -241,7 +217,38 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
 	} finally {
 		stmt.close();
 	}
+	log.print("retrieved simJobStatus = "+simJobStatus);
 	return simJobStatus;
+}
+
+/**
+ * This method was created in VisualAge.
+ * @return int
+ * @param user java.lang.String
+ * @param imageName java.lang.String
+ */
+public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex, boolean lockRowForUpdate) throws SQLException {
+	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
+	String sql = new String(standardJobStatusSQL);	
+	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
+	sql += " AND " + jobTable.jobIndex.getQualifiedColName() + " = " + jobIndex;
+		
+	if (lockRowForUpdate){
+		sql += " FOR UPDATE OF " + jobTable.getTableName() + ".id";
+	}
+	//log.print(sql);
+	Statement stmt = con.createStatement();
+	ArrayList<SimulationJobStatus> simulationJobStatusArrayList = new ArrayList<SimulationJobStatus>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			simulationJobStatusArrayList.add(simJobStatus);
+		}
+	} finally {
+		stmt.close();
+	}
+	return simulationJobStatusArrayList.toArray(new SimulationJobStatus[0]);
 }
 
 
@@ -312,9 +319,9 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bAct
 	}
 
 	if (bActiveOnly) {
-		sql += " AND (" + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_QUEUED // in job queue
-			+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_DISPATCHED // worker just accepted it
-			+ " OR " + jobTable.schedulerStatus + "=" + SimulationJobStatus.SCHEDULERSTATUS_RUNNING  // worker running it
+		sql += " AND (" + jobTable.schedulerStatus + "=" + SchedulerStatus.QUEUED.getDatabaseNumber() // in job queue
+			+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber() // worker just accepted it
+			+ " OR " + jobTable.schedulerStatus + "=" + SchedulerStatus.RUNNING.getDatabaseNumber()  // worker running it
 			+ ")";
 	}
 	
@@ -376,7 +383,7 @@ public void insertSimulationJobStatus(Connection con, SimulationJobStatus simula
 	String sql = "INSERT INTO " + jobTable.getTableName() + " " + jobTable.getSQLColumnList() + " VALUES " 
 		+ jobTable.getSQLValueList(key, simulationJobStatus);
 
-	//log.print(sql);			
+	log.print(sql);			
 	executeUpdate(con,sql);
 }
 
@@ -396,7 +403,8 @@ public void updateSimulationJobStatus(Connection con, SimulationJobStatus simula
 	
 	String sql = "UPDATE " + jobTable.getTableName() +	" SET "  + jobTable.getSQLUpdateList(simulationJobStatus) + 
 			" WHERE " + jobTable.simRef + "=" + simulationJobStatus.getVCSimulationIdentifier().getSimulationKey() +
-			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex();
+			" AND " + jobTable.jobIndex + "=" + simulationJobStatus.getJobIndex() +
+			" AND " + jobTable.taskID + "=" + simulationJobStatus.getTaskID();
 	//log.print(sql);			
 	executeUpdate(con,sql);
 }

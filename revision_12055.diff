@@ -1,0 +1,4536 @@
+Index: src/cbit/vcell/message/jms/VCMessageJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/VCMessageJms.java	(revision 12055)
++++ src/cbit/vcell/message/jms/VCMessageJms.java	(revision 12054)
+@@ -265,7 +265,7 @@
+ 			if (jmsMessage instanceof TextMessage){
+ 				buffer.append("  textContent='");
+ 				String textContent = ((TextMessage)jmsMessage).getText();
+-				if (textContent!=null && textContent.length()>maxContentLength){
++				if (textContent.length()>maxContentLength){
+ 					buffer.append(textContent.substring(0, maxContentLength-3)+"...");
+ 				}else{
+ 					buffer.append(textContent);
+@@ -273,7 +273,7 @@
+ 				buffer.append("'");
+ 			}else if (jmsMessage instanceof ObjectMessage){
+ 				buffer.append("  objectContent='");
+-				String text = ""+((ObjectMessage)jmsMessage).getObject();
++				String text = ((ObjectMessage)jmsMessage).getObject().toString();
+ 				if (text.length()>maxContentLength){
+ 					buffer.append(text.substring(0, maxContentLength-3)+"...");
+ 				}else{
+Index: src/cbit/vcell/message/server/cmd/CommandService.java
+===================================================================
+--- src/cbit/vcell/message/server/cmd/CommandService.java	(revision 12055)
++++ src/cbit/vcell/message/server/cmd/CommandService.java	(revision 12054)
+@@ -1,75 +0,0 @@
+-package cbit.vcell.message.server.cmd;
+-
+-import java.io.File;
+-import java.io.FileOutputStream;
+-import java.io.IOException;
+-import java.io.PrintWriter;
+-import java.util.ArrayList;
+-import java.util.StringTokenizer;
+-
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.FileUtils;
+-import org.vcell.util.PropertyLoader;
+-import org.vcell.util.document.VCellServerID;
+-
+-
+-public abstract class CommandService {
+-
+-	public static class CommandOutput {
+-		private String[] commandStrings;
+-		private String standardOutput;
+-		private String standardError;
+-		private Integer exitStatus;
+-		private long elapsedTimeMS;
+-
+-		public CommandOutput(String[] commandStrings, String standardOutput, String standardError, Integer exitStatus, long elapsedTimeMS) {
+-			this.commandStrings = commandStrings;
+-			this.standardOutput = standardOutput;
+-			this.standardError = standardError;
+-			this.exitStatus = exitStatus;
+-			this.elapsedTimeMS = elapsedTimeMS;
+-		}
+-		public String[] getCommandStrings() {
+-			return commandStrings;
+-		}
+-		public String getCommand(){
+-			return concatCommandStrings(commandStrings);
+-		}
+-		public String getStandardOutput() {
+-			return standardOutput;
+-		}
+-		public String getStandardError() {
+-			return standardError;
+-		}
+-		public Integer getExitStatus() {
+-			return exitStatus;
+-		}
+-		public long getElapsedTimeMS() {
+-			return elapsedTimeMS;
+-		}
+-		public static String concatCommandStrings(String[] cmdStrings){
+-			StringBuffer cmd = new StringBuffer();
+-			for (String cmdStr : cmdStrings){
+-				cmd.append(cmdStr);
+-				cmd.append(" ");
+-			}
+-			return cmd.toString().trim();
+-		}
+-	}
+-
+-
+-	public CommandService(){
+-	}
+-	
+-	@Override
+-	public abstract CommandService clone();
+-
+-	public abstract void pushFile(File tempFile, String remotePath) throws IOException;
+-	
+-	public abstract void deleteFile(String remoteFilePath) throws IOException;
+- 
+-	public abstract CommandOutput command(String[] command) throws ExecutableException;
+-
+-	public abstract void close();
+-	
+-}
+Index: src/cbit/vcell/message/server/cmd/CommandServiceLocal.java
+===================================================================
+--- src/cbit/vcell/message/server/cmd/CommandServiceLocal.java	(revision 12055)
++++ src/cbit/vcell/message/server/cmd/CommandServiceLocal.java	(revision 12054)
+@@ -1,54 +0,0 @@
+-package cbit.vcell.message.server.cmd;
+-
+-import java.io.File;
+-import java.io.IOException;
+-
+-import org.vcell.util.Executable;
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.FileUtils;
+-
+-import cbit.vcell.mongodb.VCMongoMessage;
+-
+-public class CommandServiceLocal extends CommandService {
+-	
+-	public CommandServiceLocal(){
+-		super();
+-	}
+-
+-	@Override
+-	public CommandOutput command(String[] command) throws ExecutableException {
+-		long timeMS = System.currentTimeMillis();
+-		Executable exe = new Executable(command);
+-		exe.start();
+-		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
+-		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
+-
+-		VCMongoMessage.sendCommandServiceCall(commandOutput);
+-
+-		System.out.println("Command: " + commandOutput.getCommand());
+-		System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
+-		System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
+-		System.out.println("Command: exit = " + commandOutput.getExitStatus());
+-
+-		return commandOutput;
+-	}
+-
+-	@Override
+-	public CommandService clone() {
+-		return new CommandServiceLocal();
+-	}
+-
+-	@Override
+-	public void pushFile(File tempFile, String remotePath) throws IOException {
+-		FileUtils.copyFile(tempFile, new File(remotePath));
+-	}
+-
+-	public void deleteFile(String remoteFilePath) throws IOException {
+-		FileUtils.deleteFile(remoteFilePath);
+-	}
+-
+-	@Override
+-	public void close() {
+-	}
+-
+-}
+Index: src/cbit/vcell/message/server/cmd/CommandServiceSsh.java
+===================================================================
+--- src/cbit/vcell/message/server/cmd/CommandServiceSsh.java	(revision 12055)
++++ src/cbit/vcell/message/server/cmd/CommandServiceSsh.java	(revision 12054)
+@@ -1,135 +0,0 @@
+-package cbit.vcell.message.server.cmd;
+-
+-import java.io.File;
+-import java.io.IOException;
+-
+-import net.schmizz.sshj.SSHClient;
+-import net.schmizz.sshj.common.IOUtils;
+-import net.schmizz.sshj.connection.ConnectionException;
+-import net.schmizz.sshj.connection.channel.direct.Session;
+-import net.schmizz.sshj.sftp.SFTPClient;
+-import net.schmizz.sshj.transport.TransportException;
+-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+-
+-import org.vcell.util.ExecutableException;
+-
+-import cbit.vcell.mongodb.VCMongoMessage;
+-
+-public class CommandServiceSsh extends CommandService {
+-	private SSHClient ssh = null;
+-	private String remoteHostName = null;
+-	private String username = null;
+-	private String password = null;
+-	
+-	public CommandServiceSsh(String remoteHostName, String username, String password) throws IOException{
+-		super();
+-		this.remoteHostName = remoteHostName;
+-		this.username = username;
+-		this.password = password;
+-		
+-		ssh = new SSHClient();
+-		ssh.addHostKeyVerifier(new PromiscuousVerifier());
+-		ssh.connect(remoteHostName);
+-		ssh.authPassword(username,password);
+-	}
+-	
+-	@Override
+-	public CommandOutput command(String[] commandStrings) throws ExecutableException {
+-		Session session = null;
+-		try {
+-			long timeMS = System.currentTimeMillis();
+-			session = ssh.startSession();
+-
+-			String cmd = CommandOutput.concatCommandStrings(commandStrings);
+-
+-			Session.Command command = session.exec(cmd);
+-			String standardOutput = IOUtils.readFully(command.getInputStream()).toString();
+-			String standardError = IOUtils.readFully(command.getErrorStream()).toString();
+-			Integer exitStatus = command.getExitStatus();
+-			command.close();
+-			long elapsedTimeMS = System.currentTimeMillis() - timeMS;
+-			CommandOutput commandOutput = new CommandOutput(commandStrings, standardOutput, standardError, exitStatus, elapsedTimeMS);
+-			
+-			VCMongoMessage.sendCommandServiceCall(commandOutput);
+-
+-			System.out.println("Command: " + commandOutput.getCommand());
+-			System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
+-			System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
+-			System.out.println("Command: exit = " + commandOutput.getExitStatus());
+-
+-			return commandOutput;
+-
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-			throw new ExecutableException(e.getMessage());
+-		} finally {
+-			if (session!=null){
+-				try {
+-					session.close();
+-				} catch (TransportException e) {
+-					e.printStackTrace();
+-				} catch (ConnectionException e) {
+-					e.printStackTrace();
+-				}
+-			}
+-		}
+-	}
+-
+-	@Override
+-	public CommandService clone() {
+-		try {
+-			return new CommandServiceSsh(remoteHostName, username, password);
+-		}catch (Exception e){
+-			e.printStackTrace();
+-			throw new RuntimeException(e.getMessage());
+-		}
+-	}
+-
+-	
+-
+-	
+-	@Override
+-	public void pushFile(File tempFile, String remotePath) throws IOException {
+-		SFTPClient sftpClient = null;
+-		try {
+-			sftpClient = ssh.newSFTPClient();
+-			sftpClient.put(tempFile.getPath(), remotePath);
+-		} finally {
+-			if (sftpClient!=null){
+-				try {
+-					sftpClient.close();
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
+-			}
+-		}
+-	}
+-
+-	public void deleteFile(String remoteFilePath) throws IOException {
+-		SFTPClient sftpClient = null;
+-		try {
+-			sftpClient = ssh.newSFTPClient();
+-			sftpClient.rm(remoteFilePath);
+-		} finally {
+-			if (sftpClient!=null){
+-				try {
+-					sftpClient.close();
+-				} catch (Exception e) {
+-					e.printStackTrace();
+-				}
+-			}
+-		}
+-	}
+-
+-	@Override
+-	public void close() {
+-		if (ssh!=null){
+-			try {
+-				ssh.close();
+-			} catch (IOException e) {
+-				e.printStackTrace();
+-			}
+-		}
+-	}
+-	
+-}
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12054)
+@@ -1,127 +0,0 @@
+-package cbit.vcell.message.server.htc.test;
+-
+-import java.util.List;
+-
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.document.VCellServerID;
+-
+-import cbit.vcell.message.server.cmd.CommandServiceSsh;
+-import cbit.vcell.message.server.htc.HtcException;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+-import cbit.vcell.message.server.htc.HtcJobStatus;
+-import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.pbs.PbsJobID;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+-import cbit.vcell.message.server.htc.sge.SgeJobID;
+-import cbit.vcell.message.server.htc.sge.SgeProxy;
+-
+-public class HtcTest {
+-
+-	/**
+-	 * @param args
+-	 */
+-	public static void main(String[] args) {
+-		try {
+-			if (args.length != 2){
+-				System.out.println("Usage: HtcTest username password");
+-				System.exit(1);
+-			}
+-			String username = args[0];
+-			String password = args[1];
+-//			HtcProxy htcProxy = new PbsProxy(new CommandServiceSsh("sigcluster.cam.uchc.edu", username, password));
+-			HtcProxy htcProxy = new SgeProxy(new CommandServiceSsh("sigcluster2.cam.uchc.edu", username, password));
+-//			testHtcProxy1cmd(htcProxy);
+-//			testHtcProxy2cmd(htcProxy);
+-			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
+-			htcProxy.getCommandService().close();
+-			
+-		} catch (Exception e) {
+-			e.printStackTrace();
+-		}
+-	}
+-
+-	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+-		try {
+-			System.out.println("getting services");
+-			List<HtcJobID> jobIDs = htcProxy.getServiceJobIDs(serverID);
+-			for (HtcJobID jobID : jobIDs){
+-				if (jobID instanceof PbsJobID){
+-					System.out.println("serviceJobID : "+((PbsJobID)jobID).getPbsJobID());
+-					htcProxy.killJob(jobID);
+-				}else if (jobID instanceof SgeJobID){
+-					System.out.println("serviceJobID : "+((SgeJobID)jobID).getSgeJobID());
+-					htcProxy.killJob(jobID);
+-				}
+-			}
+-			System.out.println("done getting services");
+-		} catch (Exception e1) {
+-			e1.printStackTrace(System.out);
+-		}
+-	}
+-
+-	private static void testHtcProxy1cmd(HtcProxy htcProxy)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+-		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+-		HtcJobID jobID = null;
+-		try {
+-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100);
+-		} catch (Exception e1) {
+-			e1.printStackTrace(System.out);
+-		}
+-		
+-//		System.out.println("<<<<<--------------  KILLING JOB --------------------->>>>>>");
+-//		try {
+-//			htcProxy.killJob(jobID);
+-//		} catch (Exception e) {
+-//			e.printStackTrace(System.out);
+-//		}
+-
+-		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
+-		HtcJobStatus jobStatus2 = null;
+-		while (jobStatus2 != null && jobStatus2.isRunning()){
+-			try {
+-				try {
+-					Thread.sleep(2000);
+-				} catch (InterruptedException e) {
+-				}
+-				jobStatus2 = htcProxy.getJobStatus(jobID);
+-			} catch (Exception e) {
+-				e.printStackTrace(System.out);
+-			}
+-		}
+-		System.out.println("jobStatus = "+jobStatus2);
+-	}
+-
+-	private static void testHtcProxy2cmd(HtcProxy htcProxy)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+-		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+-		HtcJobID jobID = null;
+-		try {
+-			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100);
+-		} catch (Exception e1) {
+-			e1.printStackTrace(System.out);
+-		}
+-		
+-//		System.out.println("<<<<<--------------  KILLING JOB --------------------->>>>>>");
+-//		try {
+-//			htcProxy.killJob(jobID);
+-//		} catch (Exception e) {
+-//			e.printStackTrace(System.out);
+-//		}
+-
+-		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
+-		HtcJobStatus jobStatus2 = null;
+-		while (jobStatus2 != null && jobStatus2.isRunning()){
+-			try {
+-				try {
+-					Thread.sleep(2000);
+-				} catch (InterruptedException e) {
+-				}
+-				jobStatus2 = htcProxy.getJobStatus(jobID);
+-			} catch (Exception e) {
+-				e.printStackTrace(System.out);
+-			}
+-		}
+-		System.out.println("jobStatus = "+jobStatus2);
+-	}
+-
+-}
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12054)
+@@ -1,101 +0,0 @@
+-package cbit.vcell.message.server.htc;
+-
+-import java.io.File;
+-import java.io.FileOutputStream;
+-import java.io.IOException;
+-import java.nio.ByteBuffer;
+-import java.nio.CharBuffer;
+-import java.nio.channels.FileChannel;
+-import java.nio.charset.Charset;
+-import java.nio.charset.CharsetEncoder;
+-import java.util.List;
+-
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.document.KeyValue;
+-import org.vcell.util.document.VCellServerID;
+-
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+-
+-public abstract class HtcProxy {
+-	
+-	/**
+-	 * 
+-	 * in order for remote (non-interactive) shells to work with SGE, some environment variables have to be set
+-	 * 
+-	 * we created a .bashrc file in the home directory of user vcell with the following single line content:
+-	 * 
+-	 * if [ "${HOSTNAME}" = "sigcluster2.cam.uchc.edu" ]; then source /etc/profile.d/sge-binaries.sh; fi
+-	 * 
+-	 * this will execute on sigcluster2 (with SGE) and not execute on sigcluster (with PBS).
+-	 *
+-	 */
+-	
+-	protected enum HtcJobCategory {
+-		HTC_SIMULATION_JOB,
+-		HTC_SERVICE_JOB;
+-	}
+-	protected final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+-	protected CommandService commandService = null;
+-
+-	
+-	public HtcProxy(CommandService commandService){
+-		this.commandService = commandService;
+-	}
+-
+-	public abstract HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException;
+-
+-	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
+-
+-	public abstract String getPendingReason(HtcJobID jobid) throws ExecutableException, HtcException;
+-
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false);
+-	}
+-
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false);
+-	}
+-
+-	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true);
+-	}
+-	
+-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException;
+-
+-	public abstract HtcProxy cloneThreadsafe();
+-	
+-	public abstract List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+-
+-	public final CommandService getCommandService() {
+-		return commandService;
+-	}
+-
+-	public static String createHtcSimJobName(KeyValue simKey, int simJobIndex) {
+-		return HTC_SIMULATION_JOB_NAME_PREFIX+simKey.toString()+"_"+simJobIndex;
+-	}
+-
+-	public static void writeUnixStyleTextFile(File file, String javaString)
+-			throws IOException {
+-				FileChannel fc = new FileOutputStream(file).getChannel();
+-				
+-			    Charset asciiCharset = Charset.forName("US-ASCII");
+-			    CharsetEncoder encoder = asciiCharset.newEncoder();
+-			    CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
+-			    ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
+-			    byte[] asciiArray = asciiByteBuffer.array();
+-			    ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
+-			    for (int i=0;i<asciiArray.length;i++){
+-			    	if (asciiArray[i] != 0x0d){  // skip \r character
+-			    		unixByteBuffer.put(asciiArray[i]);
+-			    	}
+-			    }
+-			    unixByteBuffer.rewind();
+-			    fc.write(unixByteBuffer);
+-			    fc.close();
+-			}
+-
+-	public abstract String getSubmissionFileExtension();
+-
+-	public abstract void checkServerStatus() throws ExecutableException;
+-}
+Index: src/cbit/vcell/message/server/htc/pbs/PBSJobStatus.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PBSJobStatus.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/pbs/PBSJobStatus.java	(revision 12054)
+@@ -1,56 +0,0 @@
+-package cbit.vcell.message.server.htc.pbs;
+-
+-public enum PBSJobStatus {
+-	Completed("C"),
+-	Exiting("E"),
+-	Held("H"),
+-	Queued("Q"),
+-	Running("R"),
+-	Moving("T"),
+-	Waiting("W"),
+-	Suspended("S");
+-	
+-	private String pbsCommandLetter;
+-	private PBSJobStatus(String pbsCommandLetter){
+-		this.pbsCommandLetter = pbsCommandLetter;
+-	}
+-	public String getPBSCommandLetter(){
+-		return pbsCommandLetter;
+-	}
+-
+-	public boolean isCompleted() {
+-		return this.equals(Completed);
+-	}
+-	public boolean isExiting() {
+-		return this.equals(Exiting);
+-	}
+-	public boolean isHeld() {
+-		return this.equals(Held);
+-	}
+-	public boolean isQueued() {
+-		return this.equals(Queued);
+-	}
+-	public boolean isRunning() {
+-		return this.equals(Running);
+-	}
+-	public boolean isMoving() {
+-		return this.equals(Moving);
+-	}
+-	public boolean isWaiting() {
+-		return this.equals(Waiting);
+-	}
+-	public boolean isSuspended() {
+-		return this.equals(Suspended);
+-	}
+-	public String getDescription() {
+-		return name();
+-	}
+-	public static PBSJobStatus fromPBSCommandLetter(String pbsCommandLetter) {
+-		for (PBSJobStatus status : values()){
+-			if (status.getPBSCommandLetter().equals(pbsCommandLetter)){
+-				return status;
+-			}
+-		}
+-		return null;
+-	}
+-}
+\ No newline at end of file
+Index: src/cbit/vcell/message/server/htc/pbs/PBSJobExitCode.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PBSJobExitCode.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/pbs/PBSJobExitCode.java	(revision 12054)
+@@ -1,115 +0,0 @@
+-package cbit.vcell.message.server.htc.pbs;
+-
+-public enum PBSJobExitCode {
+-		OK(0,"job exec successful"),
+-		FAIL1(-1,"Job exec failed, before files, no retry"),
+-		FAIL2(-2,"Job exec failed, after files, no retry"),
+-		RETRY(-3,"Job execution failed, do retry"),
+-		INITABT(-4,"Job aborted on MOM initialization"),
+-		INITRST(-5,"Job aborted on MOM init, chkpt, no migrate"),
+-		INITRMG(-6,"Job aborted on MOM init, chkpt, ok migrate"),
+-		BADRESRT(-7,"Job restart failed"),
+-		GLOBUS_INIT_RETRY(-8,"Init. globus job failed. do retry"),
+-		GLOBUS_INIT_FAIL(-9,"Init. globus job failed. no retry"),
+-		FAILUID(-10,"invalid uid/gid for job"),
+-		RERUN(-11,"Job rerun"),
+-		CHKP(-12,"Job was checkpointed and killed"),
+-		FAIL_PASSWORD(-13,"Job failed due to a bad password");
+-	
+-		private int pbsExitCode;
+-		private String desc;
+-		private PBSJobExitCode(int pbsExitCode, String desc){
+-			this.pbsExitCode = pbsExitCode;
+-			this.desc = desc;
+-		}
+-
+-		public static PBSJobExitCode fromPBSJobExitCode(int retcode) {
+-			for (PBSJobExitCode exitCode : PBSJobExitCode.values()){
+-				if (exitCode.getPbsReturnCode() == retcode){
+-					return exitCode;
+-				}
+-			}
+-			return null;
+-		}
+-	
+-		public int getPbsReturnCode(){
+-			return pbsExitCode;
+-		}
+-		public String getDescription(){
+-			return desc;
+-		}
+-		public boolean isOK() {
+-			return this.equals(OK);
+-		}
+-		public boolean isFAIL1() {
+-			return this.equals(FAIL1);
+-		}
+-		public boolean isFAIL2() {
+-			return this.equals(FAIL2);
+-		}
+-		public boolean isRETRY() {
+-			return this.equals(RETRY);
+-		}
+-		public boolean isINITABT() {
+-			return this.equals(INITABT);
+-		}
+-		public boolean isINITRST() {
+-			return this.equals(INITRST);
+-		}
+-		public boolean isINITRMG() {
+-			return this.equals(INITRMG);
+-		}
+-		public boolean isBADRESRT() {
+-			return this.equals(BADRESRT);
+-		}
+-		public boolean isGLOBUS_INIT_RETRY() {
+-			return this.equals(GLOBUS_INIT_RETRY);
+-		}
+-		public boolean isGLOBUS_INIT_FAIL() {
+-			return this.equals(GLOBUS_INIT_FAIL);
+-		}
+-		public boolean isFAILUID() {
+-			return this.equals(FAILUID);
+-		}
+-		public boolean isRERUN() {
+-			return this.equals(RERUN);
+-		}
+-		public boolean isCHKP() {
+-			return this.equals(CHKP);
+-		}
+-		public boolean isFAIL_PASSWORD() {
+-			return this.equals(FAIL_PASSWORD);
+-		}
+-
+-	}
+-//	static final int JOB_EXEC_OK = 0; 					//	job exec successful
+-//	static final int JOB_EXEC_FAIL1 =  -1; 				//	"Job exec failed, before files, no retry"
+-//	static final int JOB_EXEC_FAIL2 =  -2; 				//	"Job exec failed, after files, no retry"
+-//	static final int JOB_EXEC_RETRY =  -3; 				//	"Job execution failed, do retry"
+-//	static final int JOB_EXEC_INITABT =  -4; 			//	Job aborted on MOM initialization
+-//	static final int JOB_EXEC_INITRST =  -5; 			//	"Job aborted on MOM init, chkpt, no migrate"
+-//	static final int JOB_EXEC_INITRMG =  -6; 			//	"Job aborted on MOM init, chkpt, ok migrate"
+-//	static final int JOB_EXEC_BADRESRT =  -7; 			//	Job restart failed
+-//	static final int JOB_EXEC_GLOBUS_INIT_RETRY  =  -8; 	//	Init. globus job failed. do retry
+-//	static final int JOB_EXEC_GLOBUS_INIT_FAIL =  -9; 	//	Init. globus job failed. no retry
+-//	static final int JOB_EXEC_FAILUID =  -10; 			//	invalid uid/gid for job
+-//	static final int JOB_EXEC_RERUN =  -11; 				//	Job rerun
+-//	static final int JOB_EXEC_CHKP  =  -12; 				//	Job was checkpointed and killed
+-//	static final int JOB_EXEC_FAIL_PASSWORD = -13;		// Job failed due to a bad password
+-//	
+-//	static final String[] PBS_JOB_EXEC_STATUS = {
+-//		"job exec successful",
+-//		"Job exec failed, before files, no retry",
+-//		"Job exec failed, after files, no retry",
+-//		"Job execution failed, do retry",
+-//		"Job aborted on MOM initialization",
+-//		"Job aborted on MOM init, chkpt, no migrate",
+-//		"Job aborted on MOM init, chkpt, ok migrate",
+-//		"Job restart failed",
+-//		"Init. globus job failed. do retry",
+-//		"Init. globus job failed. no retry",
+-//		"invalid uid/gid for job",
+-//		"Job rerun",
+-//		"Job was checkpointed and killed",
+-//		"Job failed due to a bad password"
+-//	};
+\ No newline at end of file
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12054)
+@@ -1,441 +0,0 @@
+-package cbit.vcell.message.server.htc.pbs;
+-
+-import java.io.File;
+-import java.io.FileOutputStream;
+-import java.io.IOException;
+-import java.io.PrintWriter;
+-import java.io.StringWriter;
+-import java.util.ArrayList;
+-import java.util.List;
+-import java.util.StringTokenizer;
+-
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.FileUtils;
+-import org.vcell.util.PropertyLoader;
+-import org.vcell.util.document.KeyValue;
+-import org.vcell.util.document.VCellServerID;
+-
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+-import cbit.vcell.message.server.htc.HtcException;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+-import cbit.vcell.message.server.htc.HtcJobStatus;
+-import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.messaging.db.SimulationJobStatus;
+-
+-public final class PbsProxy extends HtcProxy {
+-	private static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
+-	private static final String PBS_WORK_QUEUE_PREFIX = "workq";
+-	private final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
+-	protected final static String PBS_SUBMISSION_FILE_EXT = ".pbs.sub";
+-
+-	private static String QSTAT_FULL_CLUSTER_COMMAND_PATH = "//cm//shared//apps//torque//2.5.5//bin//qstat";
+-	
+-	private final static String JOB_CMD_SUBMIT = "/cm/shared/apps/torque/2.5.5/bin/qsub";
+-	private final static String JOB_CMD_DELETE = "/cm/shared/apps/torque/2.5.5/bin/qdel";
+-	private final static String JOB_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";	
+-	private final static String JOB_CMD_HISTORY = "/cm/shared/apps/torque/2.5.5/bin/tracejob";
+-	//public final static String SERVER_CMD_STATUS = "qstat";
+-	private final static String SERVER_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";
+-	private final static int PBS_MEM_OVERHEAD_MB = 70;
+-
+-	public PbsProxy(CommandService commandService){
+-		super(commandService);
+-	}
+-	
+-	@Override
+-	public HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException {		
+-		if (!(htcJobId instanceof PbsJobID)){
+-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+-		}
+-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
+-		
+-		HtcJobStatus iStatus = null;
+-
+-		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-
+-		String output = commandOutput.getStandardOutput();
+-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+-		String strStatus = "";
+-		while (st.hasMoreTokens()) {
+-			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
+-				if (st.hasMoreTokens()) {
+-					st.nextToken();
+-				}
+-				if (st.hasMoreTokens()) {
+-					strStatus = st.nextToken();
+-				}
+-				break;
+-			}			
+-		}
+-		if (strStatus.length() == 0) {
+-			return iStatus;
+-		}
+-		/*
+-
+-	pbssrv: 
+-	                                                            Req'd  Req'd   Elap
+-	Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+-	--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+-	29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
+-	   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
+-
+-		 */		
+-		st = new StringTokenizer(strStatus, " ");
+-		String token = "";
+-		for (int i = 0; i < 10 && st.hasMoreTokens(); i ++) {
+-			token = st.nextToken();
+-		}
+-		PBSJobStatus pbsJobStatus = PBSJobStatus.fromPBSCommandLetter(token);
+-		if (pbsJobStatus!=null){
+-			return new HtcJobStatus(pbsJobStatus);
+-		}
+-		throw new HtcException("unknown PBS status letter '"+token+"'");
+-	}
+-
+-
+-	@Override
+-	public String getPendingReason(HtcJobID htcJobId) throws ExecutableException, HtcException {
+-		if (!(htcJobId instanceof PbsJobID)){
+-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+-		}
+-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
+-
+-		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-
+-		String output = commandOutput.getStandardOutput();
+-
+-		/*
+-
+-		pbssrv: 
+-		                                                            Req'd  Req'd   Elap
+-		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+-		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+-		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
+-		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
+-
+-		 */
+-		String pendingReason = "unknown pending reason";
+-
+-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+-		while (st.hasMoreTokens()) {
+-			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
+-				if (st.hasMoreTokens()) {
+-					st.nextToken();
+-				}
+-				if (st.hasMoreTokens()) {
+-					st.nextToken();
+-				}
+-				pendingReason = "";
+-				while (st.hasMoreTokens()) {
+-					pendingReason += st.nextToken();
+-				}
+-				break;
+-			}			
+-		}
+-		return pendingReason;
+-	}
+-
+-
+-	@Override
+-	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
+-		if (!(htcJobId instanceof PbsJobID)){
+-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+-		}
+-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
+-
+-		String[] cmd = new String[]{JOB_CMD_DELETE, pbsJobID.getPbsJobID()};
+-		try {
+-			CommandOutput commandOutput = commandService.command(cmd);
+-			Integer exitStatus = commandOutput.getExitStatus();
+-			String standardError = commandOutput.getStandardError();
+-			if (exitStatus!=null && exitStatus!=0 && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
+-				throw new HtcJobNotFoundException(standardError);
+-			}
+-		}catch (ExecutableException e){
+-			e.printStackTrace();
+-			if (!e.getMessage().toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
+-				throw e;
+-			}else{
+-				throw new HtcJobNotFoundException(e.getMessage());
+-			}
+-		}
+-	}
+-
+-	@Override
+-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException{	
+-		try {
+-			VCellServerID serverID = VCellServerID.getSystemServerID();
+-
+-			StringWriter sw = new StringWriter();
+-
+-			sw.append("# Generated without file template. assuming /bin/bash shell\n");
+-			sw.append("#PBS -N " + jobName+"\n");
+-			sw.append("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb\n");
+-
+-			switch (jobCategory){
+-				case HTC_SIMULATION_JOB:{
+-					String pbsWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, PBS_WORK_QUEUE_PREFIX);
+-					sw.append("#PBS -q "+pbsWorkQueueNamePrefix + serverID.toCamelCase()+"\n");
+-					break;
+-				}
+-				case HTC_SERVICE_JOB:{
+-					String pbsServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, PBS_SERVICE_QUEUE_PREFIX);
+-					sw.append("#PBS -q "+pbsServiceQueueNamePrefix + serverID.toCamelCase()+"\n");
+-					break;
+-				}
+-				default: {
+-					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
+-				}
+-			}
+-
+-			sw.append("#PBS -m a\n");
+-			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
+-			sw.append("#PBS -j oe\n");
+-			sw.append("#PBS -k oe\n");
+-			sw.append("#PBS -r n\n");
+-			sw.append("#PBS -l nice=10\n");
+-			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
+-			sw.append("export LD_LIBRARY_PATH=/share/apps/sonic/mq8.5.1:$LD_LIBRARY_PATH\n");
+-			
+-			sw.append("echo\n");
+-			sw.append("echo\n");
+-			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
+-			sw.append("echo\n");
+-			sw.append("echo\n");
+-		    sw.append(CommandOutput.concatCommandStrings(command)+"\n");
+-		    sw.append("retcode1=$?\n");
+-		    sw.append("echo\n");
+-		    sw.append("echo\n");
+-		    sw.append("echo command1 returned $retcode1\n");
+-			if (secondCommand!=null){
+-				sw.append("if [ $retcode1 = 0 ] ; then\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
+-				sw.append("     retcode2=$?\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     echo command2 returned $retcode2\n");
+-				sw.append("     echo returning return code $retcode2 to PBS\n");
+-				sw.append("     exit $retcode2\n");
+-				sw.append("else\n");
+-				sw.append("		echo \"command1 failed, skipping command2\"\n");
+-				sw.append("     echo returning return code $retcode1 to PBS\n");
+-				sw.append("     exit $retcode1\n");
+-				sw.append("fi\n");
+-			}else{
+-				sw.append("     echo returning return code $retcode1 to PBS\n");
+-				sw.append("     exit $retcode1\n");
+-			}
+-			
+-			File tempFile = File.createTempFile("tempSubFile", ".sub");
+-
+-			writeUnixStyleTextFile(tempFile, sw.getBuffer().toString());
+-			
+-			// move submission file to final location (either locally or remotely).
+-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+-			commandService.pushFile(tempFile,sub_file);
+-			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+-			tempFile.delete();
+-		} catch (IOException ex) {
+-			ex.printStackTrace(System.out);
+-			return null;
+-		}
+-
+-		String[] completeCommand = new String[] {JOB_CMD_SUBMIT, sub_file};
+-		CommandOutput commandOutput = commandService.command(completeCommand);
+-		String jobid = commandOutput.getStandardOutput().trim();
+-		
+-		if (isServiceJob){
+-			try {
+-				commandService.deleteFile(sub_file);
+-			} catch (IOException e) {
+-				e.printStackTrace();
+-				throw new ExecutableException(e.getMessage());
+-			}
+-		}
+-		
+-		return new PbsJobID(jobid);
+-	}
+-	
+-	@Override
+-	public PbsProxy cloneThreadsafe() {
+-		return new PbsProxy(getCommandService().clone());
+-	}
+-
+-	@Override
+-	public String getSubmissionFileExtension() {
+-		return PBS_SUBMISSION_FILE_EXT;
+-	}
+-	
+-	@Override
+-	public void checkServerStatus() throws ExecutableException {
+-		CommandOutput commandOutput = commandService.command(new String[] {SERVER_CMD_STATUS, "-B"});
+-
+-		String output = commandOutput.getStandardOutput();
+-		/*
+-	Server             Max   Tot   Que   Run   Hld   Wat   Trn   Ext Status
+-	---------------- ----- ----- ----- ----- ----- ----- ----- ----- -----------
+-	dll-2-1-1            0     0     0     0     0     0     0     0 Active
+-		 */	
+-		StringTokenizer st = new StringTokenizer(output, "\n");	
+-		st.nextToken();
+-		st.nextToken();
+-		String line = st.nextToken();
+-		st = new StringTokenizer(line, " ");
+-		String pbsServer = st.nextToken();	
+-	}
+-	
+-	@Override
+-	public List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+-		String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+-		
+-		String output = commandOutput.getStandardOutput();
+-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+-		while (st.hasMoreTokens()) {
+-			String line = st.nextToken().trim();
+-			int pbsJobID = Integer.parseInt(line.substring(0, line.indexOf('.')));
+-			serviceJobIDs.add(new PbsJobID(String.valueOf(pbsJobID)));
+-		}
+-		return serviceJobIDs;
+-	}
+-
+-
+-	public ArrayList<RunningPbsJobRecord> getRunningPBSJobs() throws ExecutableException {
+-		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList<RunningPbsJobRecord>();
+-
+-		try{
+-			
+-			String[] commandArray = new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX};
+-			CommandOutput commandOutput = commandService.command(commandArray);
+-			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
+-			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
+-				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
+-						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
+-						"Standard error = \n"+commandOutput.getStandardError());
+-			}
+-			String[] outputLines =commandOutput.getStandardOutput().split("\n");
+-			for (int i=0; i<outputLines.length; i++){
+-			 	String foundPbsJobID = outputLines[i].substring(0, outputLines[i].indexOf("."));
+-			 	//Do a sanity check.  Does foundPbsJobID string represent an integer?
+-			 	try {
+-			 		
+-				 	String substring2 = outputLines[i].substring(outputLines[i].indexOf(HTC_SIMULATION_JOB_NAME_PREFIX));
+-				 	String foundPbsJobName = substring2.substring(0, substring2.indexOf(" "));
+-				 	foundRunningPBSJobs.add(new RunningPbsJobRecord(Integer.parseInt(foundPbsJobID), foundPbsJobName));
+-			 	} catch (NumberFormatException nfe){
+-			 		throw new ExecutableException("Something's wrong: Non-integer found where an integer PBS Job ID was expected\n"+
+-							"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
+-							"Standard error = \n"+commandOutput.getStandardError());
+-			 	}
+-
+-			}
+-		}
+-		catch (Exception e) {
+-			e.printStackTrace();
+-			throw new ExecutableException(e.getMessage());
+-		}
+-		
+-		return foundRunningPBSJobs;
+-	}
+-
+-	public class RunningPbsJobRecord {
+-		private int pbsJobId;
+-		private String pbsJobName;
+-		private SimulationJobStatus.SchedulerStatus lastKnownSchedulerStatus = null;   // null means the database knows nothing about it
+-		
+-		public RunningPbsJobRecord(int pbsJobIdArg, String pbsJobNameArg){
+-			pbsJobId = pbsJobIdArg;
+-			pbsJobName = pbsJobNameArg;
+-		}
+-		
+-		public String getPbsJobName() {
+-			return pbsJobName;
+-		}
+-		
+-		public KeyValue getSimID() {
+-			String substring2 = pbsJobName.substring(pbsJobName.indexOf("_")+1);
+-			return new KeyValue(substring2.substring(0, substring2.indexOf("_")));
+-		}
+-		
+-		public int getSimJobIndex(){
+-			String substring2 = pbsJobName.substring(pbsJobName.indexOf("_")+1);
+-			String substring3 = substring2.substring(substring2.indexOf("_")+1);
+-			int jobindex = Integer.valueOf(substring3);
+-			return jobindex;
+-		}
+-		
+-		public int getPbsJobId(){
+-			return pbsJobId;
+-		}
+-		
+-
+-		public SimulationJobStatus.SchedulerStatus getLastKnownSchedulerStatus() {
+-			return lastKnownSchedulerStatus;
+-		}
+-
+-
+-		public void setSchedulerStatus(
+-				SimulationJobStatus.SchedulerStatus schedulerStatus) {
+-			this.lastKnownSchedulerStatus = schedulerStatus;
+-		}
+-	}
+-	
+-	public PBSJobExitCode getPbsTraceJobExitCode(PbsJobID jobid) throws Exception {
+-		/*
+-	Job: 67.dll-2-1-1
+-
+-	06/04/2007 10:04:37  S    Job Queued at request of fgao@bigfish.vcell.uchc.edu, owner =
+-	                          fgao@bigfish.vcell.uchc.edu, job name = test3.sub, queue = workq
+-	06/04/2007 10:04:37  S    Job Run at request of Scheduler@dll-2-1-1.vcell.uchc.edu on hosts
+-	                          (dll-2-1-2:ncpus=1)
+-	06/04/2007 10:04:37  L    Considering job to run
+-	06/04/2007 10:04:37  A    queue=workq
+-	06/04/2007 10:04:42  L    Job run
+-	06/04/2007 10:04:42  A    user=fgao group="RConsole Users" jobname=test3.sub queue=workq ctime=1180965876
+-	                          qtime=1180965877 etime=1180965877 start=1180965882 exec_host=dll-2-1-2/0
+-	                          exec_vnode=(dll-2-1-2:ncpus=1) Resource_List.ncpus=1 Resource_List.nodect=1
+-	                          Resource_List.place=pack Resource_List.select=1:ncpus=1 resource_assigned.ncpus=1
+-	06/04/2007 10:04:42  S    Job Modified at request of Scheduler@dll-2-1-1.vcell.uchc.edu
+-	06/04/2007 10:04:42  S    Obit received
+-	06/04/2007 10:04:42  S    Exit_status=0 resources_used.cput=00:00:00 resources_used.walltime=00:00:00
+-	06/04/2007 10:04:42  A    user=fgao group="RConsole Users" jobname=test3.sub queue=workq ctime=1180965876
+-	                          qtime=1180965877 etime=1180965877 start=1180965882 exec_host=dll-2-1-2/0
+-	                          exec_vnode=(dll-2-1-2:ncpus=1) Resource_List.ncpus=1 Resource_List.nodect=1
+-	                          Resource_List.place=pack Resource_List.select=1:ncpus=1 session=6872
+-	                          alt_id=HomeDirectory=Z: end=1180965882 Exit_status=0 resources_used.cput=00:00:00
+-	                          resources_used.walltime=00:00:00
+-	06/04/2007 10:04:44  S    Post job file processing error
+-		 */
+-
+-		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getPbsJobID()};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-
+-		String output = commandOutput.getStandardOutput();
+-		final String exitStatus = "Exit_status=";
+-		int idx = output.indexOf(exitStatus);
+-		if (idx < 0) {
+-			throw new RuntimeException("Job [" + jobid + "] : unknown status"); 
+-		}
+-		output = output.substring(idx);
+-		StringTokenizer st = new StringTokenizer(output, " =");
+-		st.nextToken();
+-		int retcode = Integer.parseInt(st.nextToken());
+-		PBSJobExitCode pbsJobExitCode = PBSJobExitCode.fromPBSJobExitCode(retcode);
+-		if (pbsJobExitCode!=null){
+-			return pbsJobExitCode;
+-		}	
+-		throw new Exception("Unknown PBS tracejob exit code ("+retcode+") for job [" + jobid + "]");
+-	}
+-
+-
+-}
+Index: src/cbit/vcell/message/server/htc/pbs/PbsJobID.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsJobID.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/pbs/PbsJobID.java	(revision 12054)
+@@ -1,18 +0,0 @@
+-package cbit.vcell.message.server.htc.pbs;
+-
+-import cbit.vcell.message.server.htc.HtcJobID;
+-
+-public class PbsJobID extends HtcJobID {
+-	
+-	public PbsJobID(String jobID){
+-		super(jobID,BatchSystemType.PBS);
+-	}
+-	
+-	public String getPbsJobID(){
+-		return getJobID();
+-	}
+-		
+-	public String toString(){
+-		return "<<<DONT CALL TOSTRING()>>>";
+-	}
+-}
+Index: src/cbit/vcell/message/server/htc/HtcJobNotFoundException.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcJobNotFoundException.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/HtcJobNotFoundException.java	(revision 12054)
+@@ -1,10 +0,0 @@
+-package cbit.vcell.message.server.htc;
+-
+-public class HtcJobNotFoundException extends HtcException {
+-
+-	public HtcJobNotFoundException(String message) {
+-		super(message);
+-	}
+-	
+-
+-}
+Index: src/cbit/vcell/message/server/htc/HtcJobID.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcJobID.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/HtcJobID.java	(revision 12054)
+@@ -1,66 +0,0 @@
+-package cbit.vcell.message.server.htc;
+-
+-import java.io.Serializable;
+-
+-import org.vcell.util.Compare;
+-import org.vcell.util.Matchable;
+-
+-import cbit.vcell.message.server.htc.pbs.PbsJobID;
+-import cbit.vcell.message.server.htc.sge.SgeJobID;
+-
+-public abstract class HtcJobID implements Serializable, Matchable {
+-	
+-	public enum BatchSystemType {
+-		PBS,
+-		SGE
+-	}
+-	private BatchSystemType batchSystemType = null;
+-	private String jobID;
+-	
+-	protected HtcJobID(String jobID, BatchSystemType batchSystemType){
+-		this.jobID = jobID;
+-		this.batchSystemType = batchSystemType;
+-	}
+-	
+-	public String toDatabase(){
+-		return batchSystemType.name()+":"+this.jobID;
+-	}
+-	
+-	public static HtcJobID fromDatabase(String databaseString){
+-		String PBS_Prefix = BatchSystemType.PBS.name()+":";
+-		String SGE_Prefix = BatchSystemType.SGE.name()+":";
+-		if (databaseString.startsWith(PBS_Prefix)){
+-			return new PbsJobID(databaseString.substring(PBS_Prefix.length()));
+-		}else if (databaseString.startsWith(SGE_Prefix)){
+-			return new SgeJobID(databaseString.substring(SGE_Prefix.length()));
+-		}else {
+-			return new PbsJobID(databaseString);
+-		}
+-	}
+-	
+-	public String toString(){
+-		return "<<<DONT CALL TOSTRING()>>>";
+-	}
+-	
+-	protected String getJobID(){
+-		return this.jobID;
+-	}
+-	
+-	public BatchSystemType getBatchSystemType(){
+-		return this.batchSystemType;
+-	}
+-	
+-	public boolean compareEqual(Matchable obj) {
+-		if (obj instanceof HtcJobID){
+-			HtcJobID other = (HtcJobID)obj;
+-			if (!Compare.isEqual(jobID,other.jobID)){
+-				return false;
+-			}
+-			if (batchSystemType != other.batchSystemType){
+-				return false;
+-			}
+-			return true;
+-		}
+-		return false;
+-	}
+-}
+Index: src/cbit/vcell/message/server/htc/HtcException.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcException.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/HtcException.java	(revision 12054)
+@@ -1,8 +0,0 @@
+-package cbit.vcell.message.server.htc;
+-
+-public class HtcException extends Exception {
+-
+-	public HtcException(String message) {
+-		super(message);
+-	}
+-}
+Index: src/cbit/vcell/message/server/htc/HtcJobStatus.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcJobStatus.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/HtcJobStatus.java	(revision 12054)
+@@ -1,44 +0,0 @@
+-package cbit.vcell.message.server.htc;
+-
+-import java.io.Serializable;
+-
+-import cbit.vcell.message.server.htc.pbs.PBSJobStatus;
+-import cbit.vcell.message.server.htc.sge.SGEJobStatus;
+-
+-public class HtcJobStatus implements Serializable {
+-	private PBSJobStatus pbsJobStatus = null;
+-	private SGEJobStatus sgeJobStatus = null;
+-
+-	public HtcJobStatus(PBSJobStatus pbsJobStatus) {
+-		this.pbsJobStatus = pbsJobStatus;
+-	}
+-
+-	public HtcJobStatus(SGEJobStatus sgeJobStatus) {
+-		this.sgeJobStatus = sgeJobStatus;
+-	}
+-
+-	public boolean isRunning() {
+-		if (pbsJobStatus!=null){
+-			return pbsJobStatus.isRunning();
+-		}else if (sgeJobStatus!=null){
+-			return sgeJobStatus.isRunning();
+-		}else{
+-			throw new RuntimeException("HtcJobStatus, neither pbs nor sge status available");
+-		}
+-	}
+-
+-	public boolean isExiting() {
+-		if (pbsJobStatus!=null){
+-			return pbsJobStatus.isExiting();
+-		}else if (sgeJobStatus!=null){
+-			return sgeJobStatus.isExiting();
+-		}else{
+-			throw new RuntimeException("HtcJobStatus, neither pbs nor sge status available");
+-		}
+-	}
+-	
+-	public String toString(){
+-		return "HtcJobStatus: isRunning="+isRunning()+", isExiting="+isExiting();
+-	}
+-
+-}
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12054)
+@@ -1,401 +0,0 @@
+-package cbit.vcell.message.server.htc.sge;
+-
+-import java.io.File;
+-import java.io.IOException;
+-import java.io.StringWriter;
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.StringTokenizer;
+-
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.FileUtils;
+-import org.vcell.util.document.VCellServerID;
+-
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+-import cbit.vcell.message.server.htc.HtcException;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+-import cbit.vcell.message.server.htc.HtcJobStatus;
+-import cbit.vcell.message.server.htc.HtcProxy;
+-
+-public class SgeProxy extends HtcProxy {
+-	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
+-	private final static String QSTAT_UNKNOWN_JOB_RESPONSE = "Following jobs do not exist:";
+-	protected final static String SGE_SUBMISSION_FILE_EXT = ".sge.sub";
+-
+-	private final static String JOB_CMD_SUBMIT = "/opt/gridengine/bin/lx26-amd64/qsub";
+-	private final static String JOB_CMD_DELETE = "/opt/gridengine/bin/lx26-amd64/qdel";
+-	private final static String JOB_CMD_STATUS = "/opt/gridengine/bin/lx26-amd64/qstat";
+-	private final static String JOB_CMD_QACCT = "/opt/gridengine/bin/lx26-amd64/qacct";
+-	private final static int SGE_MEM_OVERHEAD_MB = 70;
+-
+-	
+-	public SgeProxy(CommandService commandService) {
+-		super(commandService);
+-	}
+-	
+-
+-	/**
+-	 * qstat -j 6892
+-	 * 
+-==============================================================
+-job_number:                 6892
+-exec_file:                  job_scripts/6892
+-submission_time:            Tue Oct  9 15:05:44 2012
+-owner:                      vcell
+-uid:                        10001
+-group:                      Domain
+-gid:                        10000
+-sge_o_home:                 /home/VCELL/vcell
+-sge_o_log_name:             vcell
+-sge_o_path:                 /share/apps/vcell/visit/visit_x86_64/bin:/opt/torque/bin:/sbin:/usr/lib64/qt-3.3/bin:/usr/java/latest/bin:/opt/cuda/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/ganglia/bin:/opt/ganglia/sbin:/opt/bin:/opt/pdsh/bin:/opt/rocks/bin:/opt/rocks/sbin:/opt/gridengine/bin/lx26-amd64
+-sge_o_shell:                /bin/bash
+-sge_o_workdir:              /home/VCELL/vcell
+-sge_o_host:                 sigcluster2
+-account:                    sge
+-mail_list:                  vcell@sigcluster2.local
+-notify:                     FALSE
+-job_name:                   calculatePi.sh
+-jobshare:                   0
+-env_list:
+-job_args:                   100000
+-script_file:                calculatePi.sh
+-scheduling info:            (Collecting of scheduler job information is turned off)
+-
+-	 */
+-	
+-	/**
+-	 * qstat -j 6892
+-	 * 
+-Following jobs do not exist:
+-6892
+-
+-	 */
+-	
+-	/**
+-	 * qacct -j 6894
+-	 * 
+-error: job id 6894 not found
+-
+-	 */
+-	
+-	
+-	/**
+-	 * qacct -j 6892
+-	 * 
+-==============================================================
+-qname        all.q
+-hostname     compute-5-0.local
+-group        Domain
+-owner        vcell
+-project      NONE
+-department   defaultdepartment
+-jobname      calculatePi.sh
+-jobnumber    6892
+-taskid       undefined
+-account      sge
+-priority     0
+-qsub_time    Tue Oct  9 15:05:44 2012
+-start_time   Tue Oct  9 15:05:49 2012
+-end_time     Tue Oct  9 15:05:52 2012
+-granted_pe   NONE
+-slots        1
+-failed       0
+-exit_status  1
+-ru_wallclock 3
+-ru_utime     0.215
+-ru_stime     0.103
+-ru_maxrss    2116
+-ru_ixrss     0
+-ru_ismrss    0
+-ru_idrss     0
+-ru_isrss     0
+-ru_minflt    23740
+-ru_majflt    1
+-ru_nswap     0
+-ru_inblock   296
+-ru_oublock   24
+-ru_msgsnd    0
+-ru_msgrcv    0
+-ru_nsignals  0
+-ru_nvcsw     334
+-ru_nivcsw    63
+-cpu          0.318
+-mem          0.000
+-io           0.000
+-iow          0.000
+-maxvmem      49.582M
+-arid         undefined
+-	 * @throws HtcException 
+-
+-	 */
+-	
+-	private HashMap<String, String> parseOutput(CommandOutput commandOutput) throws HtcException{
+-		
+-		HashMap<String,String> map = new HashMap<String, String>();
+-		
+-		if (commandOutput.getStandardError().length()>0){
+-			StringTokenizer lineTokens = new StringTokenizer(commandOutput.getStandardError(), "\r\n");
+-			if (!lineTokens.hasMoreTokens()){
+-				throw new RuntimeException("no output to parse");
+-			}
+-			String line = lineTokens.nextToken();
+-			if (line.contains("Following jobs do not exist:")){
+-				return null;
+-			}else if (line.contains("error: job id") && line.contains("not found")){
+-				return null;
+-			}else{
+-				throw new HtcException("can't interpret command output");
+-			}
+-		}else if (commandOutput.getStandardOutput().length()>0){
+-			StringTokenizer lineTokens = new StringTokenizer(commandOutput.getStandardOutput(), "\r\n");
+-			if (!lineTokens.hasMoreTokens()){
+-				throw new RuntimeException("no output to parse");
+-			}
+-			String line = lineTokens.nextToken();
+-			if (line.startsWith("========")){
+-				while (lineTokens.hasMoreTokens()) {
+-					line = lineTokens.nextToken();
+-					StringTokenizer tokens = new StringTokenizer(line," ");
+-					String key = tokens.nextToken();
+-					String value = line.substring(key.length()).trim();
+-					map.put(key, value);
+-				}
+-				return map;
+-			}else{
+-				throw new RuntimeException("unexpected command output: "+line);
+-			}
+-		}else{
+-			throw new RuntimeException("no output to parse");
+-		}
+-	}
+-
+-	@Override
+-	public HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException {
+-		if (!(htcJobId instanceof SgeJobID)){
+-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+-		}
+-		SgeJobID sgeJobID = (SgeJobID)htcJobId;
+-
+-		HtcJobStatus iStatus = null;
+-
+-		String[] qstat_cmd = new String[]{JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
+-		CommandOutput commandOutput = commandService.command(qstat_cmd);
+-
+-		HashMap<String,String> outputMap = parseOutput(commandOutput);
+-		
+-		if (outputMap == null){
+-			String[] qacct_cmd = new String[]{JOB_CMD_QACCT, "-j", sgeJobID.getSgeJobID()};
+-			commandOutput = commandService.command(qacct_cmd);
+-
+-			outputMap = parseOutput(commandOutput);
+-			if (outputMap == null){
+-				throw new HtcJobNotFoundException("job not found");
+-			}else{
+-				return new HtcJobStatus(SGEJobStatus.EXITED);
+-			}
+-		}else{
+-			return new HtcJobStatus(SGEJobStatus.RUNNING);
+-		}
+-	}
+-
+-	@Override
+-	public String getPendingReason(HtcJobID htcJobId) throws ExecutableException, HtcException {
+-		return "unknown status";
+-	}
+-
+-	
+-	/**
+-	 * qdel 6894
+-	 * 
+-vcell has registered the job 6894 for deletion
+-	 *
+-	 * qdel 6894
+-	 * 
+-job 6894 is already in deletion
+-	 *
+-	 * qdel 6894
+-	 * 
+-denied: job "6894" does not exist
+-
+-	 */
+-	
+-	
+-	@Override
+-	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
+-		if (!(htcJobId instanceof SgeJobID)){
+-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+-		}
+-		SgeJobID sgeJobID = (SgeJobID)htcJobId;
+-
+-		String[] cmd = new String[]{JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
+-		try {
+-			CommandOutput commandOutput = commandService.command(cmd);
+-			Integer exitStatus = commandOutput.getExitStatus();
+-			String standardError = commandOutput.getStandardError();
+-			if (exitStatus!=null && exitStatus!=0 && standardError!=null && standardError.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+-				throw new HtcJobNotFoundException(standardError);
+-			}
+-		}catch (ExecutableException e){
+-			e.printStackTrace();
+-			if (!e.getMessage().toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+-				throw e;
+-			}else{
+-				throw new HtcJobNotFoundException(e.getMessage());
+-			}
+-		}
+-	}
+-	
+-	@Override
+-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException {
+-		try {
+-			VCellServerID serverID = VCellServerID.getSystemServerID();
+-
+-			StringWriter sw = new StringWriter();
+-
+-		    sw.append("#!/bin/csh\n");
+-		    sw.append("#$ -N " + jobName + "\n");
+-		    sw.append("#$ -o " + jobName+".log\n");
+-//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
+-
+-			//
+-			// specify the queue to run on ... currently using the default queue
+-			//
+-			
+-//			switch (jobCategory){
+-//				case HTC_SIMULATION_JOB:{
+-//					String sgeWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, SGE_WORK_QUEUE_PREFIX);
+-//					sw.append("#$ -q "+sgeWorkQueueNamePrefix + serverID.toCamelCase()+"\n");
+-//					break;
+-//				}
+-//				case HTC_SERVICE_JOB:{
+-//					String sgeServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, SGE_SERVICE_QUEUE_PREFIX);
+-//					sw.append("#$ -q "+sgeServiceQueueNamePrefix + serverID.toCamelCase()+"\n");
+-//					break;
+-//				}
+-//				default: {
+-//					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
+-//				}
+-//			}
+-
+-		    sw.append("#$ -j y\n");
+-		    sw.append("# -cwd\n");
+-		    sw.append("# the commands to be executed\n");
+-			sw.append("echo\n");
+-			sw.append("echo\n");
+-			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
+-			sw.append("echo\n");
+-			sw.append("echo\n");
+-		    sw.append(CommandOutput.concatCommandStrings(command)+"\n");
+-		    sw.append("set retcode1 = $status\n");
+-		    sw.append("echo\n");
+-		    sw.append("echo\n");
+-		    sw.append("echo command1 returned $retcode1\n");
+-			if (secondCommand!=null){
+-				sw.append("if ( $retcode1 == 0 ) then\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
+-				sw.append("     set retcode2 = $status\n");
+-				sw.append("		echo\n");
+-				sw.append("		echo\n");
+-				sw.append("     echo command2 returned $retcode2\n");
+-				sw.append("     echo returning return code $retcode2 to PBS\n");
+-				sw.append("     exit $retcode2\n");
+-				sw.append("else\n");
+-				sw.append("		echo \"command1 failed, skipping command2\"\n");
+-				sw.append("     echo returning return code $retcode1 to SGE\n");
+-				sw.append("     exit $retcode1\n");
+-				sw.append("endif\n");
+-			}else{
+-				sw.append("echo returning return code $retcode1 to SGE\n");
+-				sw.append("exit $retcode1\n");
+-			}
+-			
+-			File tempFile = File.createTempFile("tempSubFile", ".sub");
+-
+-			writeUnixStyleTextFile(tempFile, sw.getBuffer().toString());
+-			
+-			// move submission file to final location (either locally or remotely).
+-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+-			commandService.pushFile(tempFile,sub_file);
+-			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+-			tempFile.delete();
+-		} catch (IOException ex) {
+-			ex.printStackTrace(System.out);
+-			return null;
+-		}
+-
+-		String[] completeCommand = new String[] {JOB_CMD_SUBMIT, "-terse", sub_file};
+-		CommandOutput commandOutput = commandService.command(completeCommand);
+-		String jobid = commandOutput.getStandardOutput().trim();
+-		
+-		if (isServiceJob){
+-			try {
+-				commandService.deleteFile(sub_file);
+-			} catch (IOException e) {
+-				e.printStackTrace();
+-				throw new ExecutableException(e.getMessage());
+-			}
+-		}
+-		
+-		return new SgeJobID(jobid);
+-	}
+-
+-	@Override
+-	public HtcProxy cloneThreadsafe() {
+-		return new SgeProxy(getCommandService().clone());
+-	}
+-
+-	@Override
+-	public String getSubmissionFileExtension() {
+-		return SGE_SUBMISSION_FILE_EXT;
+-	}
+-	
+-	@Override
+-	public void checkServerStatus() throws ExecutableException {
+-		CommandOutput commandOutput = commandService.command(new String[] {JOB_CMD_STATUS, "-f"});
+-
+-		String output = commandOutput.getStandardOutput();
+-		/*
+-queuename                      qtype resv/used/tot. load_avg arch          states
+----------------------------------------------------------------------------------
+-all.q@compute-0-0.local        BIP   0/0/64         0.00     lx26-amd64    
+----------------------------------------------------------------------------------
+-all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64    
+-		 */	
+-		StringTokenizer st = new StringTokenizer(output, "\n");	
+-		st.nextToken();
+-		st.nextToken();
+-		String line = st.nextToken();
+-		st = new StringTokenizer(line, " ");
+-		String queueName = st.nextToken();	
+-		System.out.println("first SGE Queue name : "+queueName);
+-	}
+-
+-	@Override
+-	public List<HtcJobID> getServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+-/*
+-   6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
+-   6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
+- */
+-		String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", serverID.toString().toUpperCase()+"_"};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+-		
+-		String output = commandOutput.getStandardOutput();
+-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+-		while (st.hasMoreTokens()) {
+-			String line = st.nextToken().trim();
+-			StringTokenizer lineTokens = new StringTokenizer(line," \t");
+-			serviceJobIDs.add(new SgeJobID(lineTokens.nextToken()));
+-		}
+-		return serviceJobIDs;
+-	}
+-
+-}
+Index: src/cbit/vcell/message/server/htc/sge/SgeJobID.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeJobID.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/sge/SgeJobID.java	(revision 12054)
+@@ -1,18 +0,0 @@
+-package cbit.vcell.message.server.htc.sge;
+-
+-import cbit.vcell.message.server.htc.HtcJobID;
+-
+-public class SgeJobID extends HtcJobID {
+-	
+-	public SgeJobID(String jobID){
+-		super(jobID,BatchSystemType.SGE);
+-	}
+-		
+-	public String toString(){
+-		return "<<<DONT CALL TOSTRING()>>>";
+-	}
+-
+-	public String getSgeJobID() {
+-		return getJobID();
+-	}
+-}
+Index: src/cbit/vcell/message/server/htc/sge/SGEJobStatus.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SGEJobStatus.java	(revision 12055)
++++ src/cbit/vcell/message/server/htc/sge/SGEJobStatus.java	(revision 12054)
+@@ -1,15 +0,0 @@
+-package cbit.vcell.message.server.htc.sge;
+-
+-public enum SGEJobStatus {
+-	RUNNING,
+-	EXITED;
+-
+-	public boolean isRunning() {
+-		return this == RUNNING;
+-	}
+-
+-	public boolean isExiting() {
+-		return this == EXITED;
+-	}
+-
+-}
+\ No newline at end of file
+Index: src/cbit/vcell/message/server/console/ZombieSlayer.java
+===================================================================
+--- src/cbit/vcell/message/server/console/ZombieSlayer.java	(revision 12055)
++++ src/cbit/vcell/message/server/console/ZombieSlayer.java	(revision 12054)
+@@ -1,5 +1,6 @@
+ package cbit.vcell.message.server.console;
+ 
++import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ 
+@@ -12,12 +13,11 @@
+ import cbit.sql.KeyFactory;
+ import cbit.sql.OracleKeyFactory;
+ import cbit.sql.OraclePoolingConnectionFactory;
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.cmd.CommandServiceLocal;
+-import cbit.vcell.message.server.cmd.CommandServiceSsh;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy.RunningPbsJobRecord;
++import cbit.vcell.message.server.pbs.PbsProxy;
++import cbit.vcell.message.server.pbs.PbsProxy.RunningPbsJobRecord;
++import cbit.vcell.message.server.pbs.PbsProxyLocal;
++import cbit.vcell.message.server.pbs.PbsProxySsh;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+@@ -70,6 +70,15 @@
+ 		}
+ 	}
+ 		
++
++   private static PbsProxy init(String hostname,String username,String password, boolean isLocaLRun) throws IOException{
++	   if (isLocaLRun){
++		   return new PbsProxyLocal();
++	   } else {
++		  return new PbsProxySsh(hostname, username, password);
++	   }   
++   }
++	
+ 	public static void main(String[] args) {
+ 
+ 		if ((args.length !=0) && (args.length !=3)) {
+@@ -92,18 +101,16 @@
+ 		    ArrayList<SuspectSimJobID> zombieCandidateIDs = new ArrayList<SuspectSimJobID>();
+ 		    ArrayList<RunningPbsJobRecord> runningPbsJobRecords = null;
+ 
++		    PbsProxy pbsProxy = null;
++	
++		
+ 			//now query qstat via PbsProxy
+ 			//initialize PbsProxy
+-		    CommandService commandService = null;
+ 			if (args.length == 0) {
+-				commandService = new CommandServiceLocal();
++				pbsProxy = init(null, null, null, true);
+ 			} else {
+-				String remoteHostName = args[0];
+-				String username = args[1];
+-				String password = args[2];
+-				commandService = new CommandServiceSsh(remoteHostName, username, password);
++				pbsProxy = init(args[0], args[1], args[2], false);
+ 			}
+-			PbsProxy pbsProxy = new PbsProxy(commandService);
+ 			runningPbsJobRecords = pbsProxy.getRunningPBSJobs();
+ 
+ 		
+Index: src/cbit/vcell/message/server/console/ServiceStatusTableModel.java
+===================================================================
+--- src/cbit/vcell/message/server/console/ServiceStatusTableModel.java	(revision 12055)
++++ src/cbit/vcell/message/server/console/ServiceStatusTableModel.java	(revision 12054)
+@@ -31,7 +31,7 @@
+  * ServiceStatusTableModel constructor comment.
+  */
+ public ServiceStatusTableModel() {
+-	super(new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "HTC Job ID"});
++	super(new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "PBS Job ID"});
+ }
+ 
+ /**
+Index: src/cbit/vcell/message/server/ServiceStatus.java
+===================================================================
+--- src/cbit/vcell/message/server/ServiceStatus.java	(revision 12055)
++++ src/cbit/vcell/message/server/ServiceStatus.java	(revision 12054)
+@@ -17,7 +17,7 @@
+ import org.vcell.util.Compare;
+ import org.vcell.util.Matchable;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PbsJobID;
+ 
+ import static cbit.vcell.message.server.ManageConstants.*;
+ 
+@@ -26,15 +26,15 @@
+ 	private Date date = null;
+ 	private int status;
+ 	private String statusMsg;
+-	private HtcJobID htcJobId;
++	private PbsJobID pbsJobId;
+ 	
+-	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, HtcJobID htcJobID) {
++	public ServiceStatus(ServiceSpec ss, Date d, int s, String sm, PbsJobID pbsJobID) {
+ 		super();
+ 		this.serviceSpec = ss;
+ 		this.date = d;
+ 		this.status = s;
+ 		this.statusMsg = sm;
+-		this.htcJobId = htcJobID;
++		this.pbsJobId = pbsJobID;
+ 	}
+ 
+ 	public Date getDate() {
+@@ -58,7 +58,7 @@
+ 	}
+ 	public Object[] toObjects(){
+ 		return new Object[]{serviceSpec.getServerID(), serviceSpec.getType(), serviceSpec.getOrdinal(), 
+-				SERVICE_STARTUP_TYPES[serviceSpec.getStartupType()], serviceSpec.getMemoryMB(), date, SERVICE_STATUSES[status], statusMsg, htcJobId};		
++				SERVICE_STARTUP_TYPES[serviceSpec.getStartupType()], serviceSpec.getMemoryMB(), date, SERVICE_STATUSES[status], statusMsg, pbsJobId};		
+ 	}
+ 
+ 	public boolean equals(Object obj) {
+@@ -84,7 +84,7 @@
+ 			if (!statusMsg.equals(ss.statusMsg)) {
+ 				return false;
+ 			}
+-			if (!Compare.isEqualOrNull(htcJobId, ss.htcJobId)) {
++			if (!Compare.isEqualOrNull(pbsJobId, ss.pbsJobId)) {
+ 				return false;
+ 			}
+ 			return true;
+@@ -92,8 +92,8 @@
+ 		return false;
+ 	}
+ 
+-	public HtcJobID getHtcJobId() {
+-		return htcJobId;
++	public PbsJobID getPbsJobId() {
++		return pbsJobId;
+ 	}
+ 	
+ 	public String toString() {
+Index: src/cbit/vcell/message/server/pbs/PbsProxyLocal.java
+===================================================================
+--- src/cbit/vcell/message/server/pbs/PbsProxyLocal.java	(revision 0)
++++ src/cbit/vcell/message/server/pbs/PbsProxyLocal.java	(revision 12054)
+@@ -0,0 +1,71 @@
++package cbit.vcell.message.server.pbs;
++
++import java.io.File;
++import java.io.IOException;
++
++import org.vcell.util.Executable;
++import org.vcell.util.ExecutableException;
++import org.vcell.util.FileUtils;
++
++import cbit.vcell.mongodb.VCMongoMessage;
++
++public class PbsProxyLocal extends PbsProxy {
++	
++	public PbsProxyLocal(){
++		super();
++	}
++
++	@Override
++	public CommandOutput command(String[] command) throws ExecutableException {
++		long timeMS = System.currentTimeMillis();
++		Executable exe = new Executable(command);
++		exe.start();
++		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
++		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
++		VCMongoMessage.sendPbsCall(this,commandOutput);
++
++		System.out.println("Command: " + commandOutput.getCommand());
++		System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
++		System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
++		System.out.println("Command: exit = " + commandOutput.getExitStatus());
++
++		return commandOutput;
++	}
++
++	@Override
++	public PbsProxy clone() {
++		return new PbsProxyLocal();
++	}
++
++	@Override
++	public void pushFile(File tempFile, String remotePath) throws IOException {
++		FileUtils.copyFile(tempFile, new File(remotePath));
++	}
++
++	public void deleteFile(String remoteFilePath) throws IOException {
++		FileUtils.deleteFile(remoteFilePath);
++	}
++
++//	public static void main(String[] args){
++//		PbsProxyLocal thisProxy = null;
++//		ArrayList<RunningPbsJobRecord> records = null;
++//
++//		thisProxy = new PbsProxyLocal();
++//
++//		try {
++//			 records = thisProxy.getRunningPBSJobs();
++//		} catch (ExecutableException e) {
++//			// TODO Auto-generated catch block
++//			e.printStackTrace();
++//		}
++//		
++//		System.out.println("PBS JobID , SimID");
++//		Iterator<RunningPbsJobRecord> iter = records.iterator();
++//		while (iter.hasNext()){
++//			RunningPbsJobRecord record = iter.next();
++//			System.out.println(record.getPbsJobId()+"   ,    "+record.getPbsJobName());
++//		}
++//		System.out.println("done");
++//	}
++	
++}
+Index: src/cbit/vcell/message/server/pbs/PbsProxySsh.java
+===================================================================
+--- src/cbit/vcell/message/server/pbs/PbsProxySsh.java	(revision 0)
++++ src/cbit/vcell/message/server/pbs/PbsProxySsh.java	(revision 12054)
+@@ -0,0 +1,151 @@
++package cbit.vcell.message.server.pbs;
++
++import java.io.File;
++import java.io.IOException;
++import java.util.ArrayList;
++import java.util.Iterator;
++
++import net.schmizz.sshj.SSHClient;
++import net.schmizz.sshj.common.IOUtils;
++import net.schmizz.sshj.connection.ConnectionException;
++import net.schmizz.sshj.connection.channel.direct.Session;
++import net.schmizz.sshj.sftp.SFTPClient;
++import net.schmizz.sshj.transport.TransportException;
++import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
++
++import org.vcell.util.ExecutableException;
++
++import cbit.vcell.mongodb.VCMongoMessage;
++
++public class PbsProxySsh extends PbsProxy {
++	private SSHClient ssh = null;
++	private String remoteHostName = null;
++	private String username = null;
++	private String password = null;
++	
++	public PbsProxySsh(String remoteHostName, String username, String password) throws IOException{
++		super();
++		this.remoteHostName = remoteHostName;
++		this.username = username;
++		this.password = password;
++		
++		ssh = new SSHClient();
++		ssh.addHostKeyVerifier(new PromiscuousVerifier());
++		ssh.connect(remoteHostName);
++		ssh.authPassword(username,password);
++	}
++	
++	@Override
++	public CommandOutput command(String[] commandStrings) throws ExecutableException {
++		Session session = null;
++		try {
++			long timeMS = System.currentTimeMillis();
++			session = ssh.startSession();
++
++			String cmd = CommandOutput.concatCommandStrings(commandStrings);
++
++			Session.Command command = session.exec(cmd);
++			String standardOutput = IOUtils.readFully(command.getInputStream()).toString();
++			String standardError = IOUtils.readFully(command.getErrorStream()).toString();
++			Integer exitStatus = command.getExitStatus();
++			command.close();
++			long elapsedTimeMS = System.currentTimeMillis() - timeMS;
++			CommandOutput commandOutput = new CommandOutput(commandStrings, standardOutput, standardError, exitStatus, elapsedTimeMS);
++			
++			VCMongoMessage.sendPbsCall(this,commandOutput);
++
++			System.out.println("Command: " + commandOutput.getCommand());
++			System.out.println("Command: stdout = " + commandOutput.getStandardOutput()); 
++			System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
++			System.out.println("Command: exit = " + commandOutput.getExitStatus());
++
++			return commandOutput;
++
++		} catch (Exception e) {
++			e.printStackTrace();
++			throw new ExecutableException(e.getMessage());
++		} finally {
++			if (session!=null){
++				try {
++					session.close();
++				} catch (TransportException e) {
++					e.printStackTrace();
++				} catch (ConnectionException e) {
++					e.printStackTrace();
++				}
++			}
++		}
++	}
++
++	@Override
++	public PbsProxy clone() {
++		try {
++			return new PbsProxySsh(remoteHostName, username, password);
++		}catch (Exception e){
++			e.printStackTrace();
++			throw new RuntimeException(e.getMessage());
++		}
++	}
++
++	
++
++	
++	@Override
++	public void pushFile(File tempFile, String remotePath) throws IOException {
++		SFTPClient sftpClient = null;
++		try {
++			sftpClient = ssh.newSFTPClient();
++			sftpClient.put(tempFile.getPath(), remotePath);
++		} finally {
++			if (sftpClient!=null){
++				try {
++					sftpClient.close();
++				} catch (Exception e) {
++					e.printStackTrace();
++				}
++			}
++		}
++	}
++
++	public void deleteFile(String remoteFilePath) throws IOException {
++		SFTPClient sftpClient = null;
++		try {
++			sftpClient = ssh.newSFTPClient();
++			sftpClient.rm(remoteFilePath);
++		} finally {
++			if (sftpClient!=null){
++				try {
++					sftpClient.close();
++				} catch (Exception e) {
++					e.printStackTrace();
++				}
++			}
++		}
++	}
++	
++	public static void main(String[] args){
++		PbsProxySsh thisProxy = null;
++		ArrayList<RunningPbsJobRecord> records = null;
++		try {
++			thisProxy = new PbsProxySsh(args[0], args[1], args[2]);
++		} catch (IOException e) {
++			// TODO Auto-generated catch block
++			e.printStackTrace();
++		}
++		try {
++			 records = thisProxy.getRunningPBSJobs();
++		} catch (ExecutableException e) {
++			// TODO Auto-generated catch block
++			e.printStackTrace();
++		}
++		
++		System.out.println("PBS JobID , JobName,  SimID  , JobIndex");
++		Iterator<RunningPbsJobRecord> iter = records.iterator();
++		while (iter.hasNext()){
++			RunningPbsJobRecord record = iter.next();
++			System.out.println(record.getPbsJobId()+"   ,    "+record.getPbsJobName()+" ,  "+ record.getSimID().toString()+"  ,  "+record.getSimJobIndex());
++		}
++		System.out.println("done");
++	}
++	
++}
+Index: src/cbit/vcell/message/server/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/pbs/PbsProxy.java	(revision 0)
++++ src/cbit/vcell/message/server/pbs/PbsProxy.java	(revision 12054)
+@@ -0,0 +1,449 @@
++package cbit.vcell.message.server.pbs;
++
++import static cbit.htc.PBSConstants.JOB_CMD_DELETE;
++import static cbit.htc.PBSConstants.JOB_CMD_HISTORY;
++import static cbit.htc.PBSConstants.JOB_CMD_STATUS;
++import static cbit.htc.PBSConstants.SERVER_CMD_STATUS;
++
++import java.io.File;
++import java.io.FileOutputStream;
++import java.io.IOException;
++import java.io.PrintWriter;
++import java.util.ArrayList;
++import java.util.StringTokenizer;
++
++import org.vcell.util.ExecutableException;
++import org.vcell.util.FileUtils;
++import org.vcell.util.PropertyLoader;
++import org.vcell.util.document.KeyValue;
++import org.vcell.util.document.VCellServerID;
++
++import cbit.htc.PBSConstants;
++import cbit.htc.PBSConstants.PBSJobCategory;
++import cbit.htc.PBSConstants.PBSJobExitCode;
++import cbit.htc.PBSConstants.PBSJobStatus;
++import cbit.htc.PbsJobID;
++import cbit.vcell.messaging.db.SimulationJobStatus;
++
++public abstract class PbsProxy {
++
++	public class PbsJobNotFoundException extends Exception {
++
++		public PbsJobNotFoundException(String message) {
++			super(message);
++		}
++
++	}
++	
++	public class RunningPbsJobRecord {
++		private int pbsJobId;
++		private String pbsJobName;
++		private SimulationJobStatus.SchedulerStatus lastKnownSchedulerStatus = null;   // null means the database knows nothing about it
++		
++		public RunningPbsJobRecord(int pbsJobIdArg, String pbsJobNameArg){
++			pbsJobId = pbsJobIdArg;
++			pbsJobName = pbsJobNameArg;
++		}
++		
++		public String getPbsJobName() {
++			return pbsJobName;
++		}
++		
++		public KeyValue getSimID() {
++			String substring2 = pbsJobName.substring(pbsJobName.indexOf("_")+1);
++			return new KeyValue(substring2.substring(0, substring2.indexOf("_")));
++		}
++		
++		public int getSimJobIndex(){
++			String substring2 = pbsJobName.substring(pbsJobName.indexOf("_")+1);
++			String substring3 = substring2.substring(substring2.indexOf("_")+1);
++			int jobindex = Integer.valueOf(substring3);
++			return jobindex;
++		}
++		
++		public int getPbsJobId(){
++			return pbsJobId;
++		}
++		
++
++		public SimulationJobStatus.SchedulerStatus getLastKnownSchedulerStatus() {
++			return lastKnownSchedulerStatus;
++		}
++
++
++		public void setSchedulerStatus(
++				SimulationJobStatus.SchedulerStatus schedulerStatus) {
++			this.lastKnownSchedulerStatus = schedulerStatus;
++		}
++	
++		
++		
++	}
++
++	public static class CommandOutput {
++		private String[] commandStrings;
++		private String standardOutput;
++		private String standardError;
++		private Integer exitStatus;
++		private long elapsedTimeMS;
++
++		public CommandOutput(String[] commandStrings, String standardOutput, String standardError, Integer exitStatus, long elapsedTimeMS) {
++			this.commandStrings = commandStrings;
++			this.standardOutput = standardOutput;
++			this.standardError = standardError;
++			this.exitStatus = exitStatus;
++			this.elapsedTimeMS = elapsedTimeMS;
++		}
++		public String[] getCommandStrings() {
++			return commandStrings;
++		}
++		public String getCommand(){
++			return concatCommandStrings(commandStrings);
++		}
++		public String getStandardOutput() {
++			return standardOutput;
++		}
++		public String getStandardError() {
++			return standardError;
++		}
++		public Integer getExitStatus() {
++			return exitStatus;
++		}
++		public long getElapsedTimeMS() {
++			return elapsedTimeMS;
++		}
++		public static String concatCommandStrings(String[] cmdStrings){
++			StringBuffer cmd = new StringBuffer();
++			for (String cmdStr : cmdStrings){
++				cmd.append(cmdStr);
++				cmd.append(" ");
++			}
++			return cmd.toString().trim();
++		}
++	}
++
++
++	public PbsProxy(){
++	}
++	
++	@Override
++	public abstract PbsProxy clone();
++
++
++	/**
++	 * Insert the method's description here.
++	 * Creation date: (9/29/2003 10:34:36 AM)
++	 * @return int
++	 * @param jobid java.lang.String
++	 */
++	public String checkServerStatus() throws ExecutableException {
++		CommandOutput commandOutput = command(new String[] {SERVER_CMD_STATUS, "-B"});
++
++		String output = commandOutput.getStandardOutput();
++		/*
++	Server             Max   Tot   Que   Run   Hld   Wat   Trn   Ext Status
++	---------------- ----- ----- ----- ----- ----- ----- ----- ----- -----------
++	dll-2-1-1            0     0     0     0     0     0     0     0 Active
++		 */	
++		StringTokenizer st = new StringTokenizer(output, "\n");	
++		st.nextToken();
++		st.nextToken();
++		String line = st.nextToken();
++		st = new StringTokenizer(line, " ");
++		String pbsServer = st.nextToken();			
++
++		return pbsServer;
++	}
++
++	public PBSJobExitCode getPbsTraceJobExitCode(PbsJobID jobid) throws Exception {
++		/*
++	Job: 67.dll-2-1-1
++
++	06/04/2007 10:04:37  S    Job Queued at request of fgao@bigfish.vcell.uchc.edu, owner =
++	                          fgao@bigfish.vcell.uchc.edu, job name = test3.sub, queue = workq
++	06/04/2007 10:04:37  S    Job Run at request of Scheduler@dll-2-1-1.vcell.uchc.edu on hosts
++	                          (dll-2-1-2:ncpus=1)
++	06/04/2007 10:04:37  L    Considering job to run
++	06/04/2007 10:04:37  A    queue=workq
++	06/04/2007 10:04:42  L    Job run
++	06/04/2007 10:04:42  A    user=fgao group="RConsole Users" jobname=test3.sub queue=workq ctime=1180965876
++	                          qtime=1180965877 etime=1180965877 start=1180965882 exec_host=dll-2-1-2/0
++	                          exec_vnode=(dll-2-1-2:ncpus=1) Resource_List.ncpus=1 Resource_List.nodect=1
++	                          Resource_List.place=pack Resource_List.select=1:ncpus=1 resource_assigned.ncpus=1
++	06/04/2007 10:04:42  S    Job Modified at request of Scheduler@dll-2-1-1.vcell.uchc.edu
++	06/04/2007 10:04:42  S    Obit received
++	06/04/2007 10:04:42  S    Exit_status=0 resources_used.cput=00:00:00 resources_used.walltime=00:00:00
++	06/04/2007 10:04:42  A    user=fgao group="RConsole Users" jobname=test3.sub queue=workq ctime=1180965876
++	                          qtime=1180965877 etime=1180965877 start=1180965882 exec_host=dll-2-1-2/0
++	                          exec_vnode=(dll-2-1-2:ncpus=1) Resource_List.ncpus=1 Resource_List.nodect=1
++	                          Resource_List.place=pack Resource_List.select=1:ncpus=1 session=6872
++	                          alt_id=HomeDirectory=Z: end=1180965882 Exit_status=0 resources_used.cput=00:00:00
++	                          resources_used.walltime=00:00:00
++	06/04/2007 10:04:44  S    Post job file processing error
++		 */
++
++		String[] cmd = new String[] {JOB_CMD_HISTORY, "-p", PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir), jobid.getID()};
++		CommandOutput commandOutput = command(cmd);
++
++		String output = commandOutput.getStandardOutput();
++		final String exitStatus = "Exit_status=";
++		int idx = output.indexOf(exitStatus);
++		if (idx < 0) {
++			throw new RuntimeException("Job [" + jobid + "] : unknown status"); 
++		}
++		output = output.substring(idx);
++		StringTokenizer st = new StringTokenizer(output, " =");
++		st.nextToken();
++		int retcode = Integer.parseInt(st.nextToken());
++		PBSJobExitCode pbsJobExitCode = PBSJobExitCode.fromPBSJobExitCode(retcode);
++		if (pbsJobExitCode!=null){
++			return pbsJobExitCode;
++		}	
++		throw new Exception("Unknown PBS tracejob exit code ("+retcode+") for job [" + jobid + "]");
++	}
++	/**
++	 * Insert the method's description here.
++	 * Creation date: (9/29/2003 10:34:36 AM)
++	 * @return int
++	 * @param jobid java.lang.String
++	 */
++	public PBSJobStatus getJobStatus(PbsJobID jobid) throws Exception {		
++		PBSJobStatus iStatus = null;
++
++		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
++		CommandOutput commandOutput = command(cmd);
++
++		String output = commandOutput.getStandardOutput();
++		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
++		String strStatus = "";
++		while (st.hasMoreTokens()) {
++			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
++				if (st.hasMoreTokens()) {
++					st.nextToken();
++				}
++				if (st.hasMoreTokens()) {
++					strStatus = st.nextToken();
++				}
++				break;
++			}			
++		}
++		if (strStatus.length() == 0) {
++			return iStatus;
++		}
++		/*
++
++	pbssrv: 
++	                                                            Req'd  Req'd   Elap
++	Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
++	--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
++	29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
++	   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
++
++		 */		
++		st = new StringTokenizer(strStatus, " ");
++		String token = "";
++		for (int i = 0; i < 10 && st.hasMoreTokens(); i ++) {
++			token = st.nextToken();
++		}
++		PBSJobStatus status = PBSJobStatus.fromPBSCommandLetter(token);
++		if (status!=null){
++			return status;
++		}
++		throw new Exception("unknown PBS status letter '"+token+"'");
++	}
++
++
++	/**
++	 * Insert the method's description here.
++	 * Creation date: (9/29/2003 10:34:36 AM)
++	 * @return int
++	 * @param jobid java.lang.String
++	 */
++	public String getPendingReason(PbsJobID jobid) throws ExecutableException {
++
++		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", jobid.getID()};
++		CommandOutput commandOutput = command(cmd);
++
++		String output = commandOutput.getStandardOutput();
++
++		/*
++
++		pbssrv: 
++		                                                            Req'd  Req'd   Elap
++		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
++		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
++		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
++		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
++
++		 */
++		String pendingReason = "unknown pending reason";
++
++		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
++		while (st.hasMoreTokens()) {
++			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
++				if (st.hasMoreTokens()) {
++					st.nextToken();
++				}
++				if (st.hasMoreTokens()) {
++					st.nextToken();
++				}
++				pendingReason = "";
++				while (st.hasMoreTokens()) {
++					pendingReason += st.nextToken();
++				}
++				break;
++			}			
++		}
++		return pendingReason;
++	}
++
++
++	/**
++	 * Insert the method's description here.
++	 * Creation date: (9/29/2003 10:35:12 AM)
++	 * @param jobid java.lang.String
++	 */
++	public void killJob(PbsJobID jobid) throws ExecutableException, PbsJobNotFoundException {
++		if (jobid == null) {
++			return;
++		}
++
++		String[] cmd = new String[]{JOB_CMD_DELETE, jobid.getID()};
++		try {
++			CommandOutput commandOutput = command(cmd);
++			Integer exitStatus = commandOutput.getExitStatus();
++			String standardError = commandOutput.getStandardError();
++			if (exitStatus!=null && exitStatus!=0 && standardError!=null && standardError.toLowerCase().contains(PBSConstants.UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
++				throw new PbsJobNotFoundException(standardError);
++			}
++		}catch (ExecutableException e){
++			e.printStackTrace();
++			if (!e.getMessage().toLowerCase().contains(PBSConstants.UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
++				throw e;
++			}else{
++				throw new PbsJobNotFoundException(e.getMessage());
++			}
++		}
++	}
++
++
++	public PbsJobID submitJob(String computeResource, String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(computeResource, jobName, sub_file, command, ncpus, memSize, PBSJobCategory.PBS_SIMULATION_JOB, null, false);
++	}
++
++	public PbsJobID submitJob(String computeResource, String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(computeResource, jobName, sub_file, command, ncpus, memSize, PBSJobCategory.PBS_SIMULATION_JOB, secondCommand, false);
++	}
++
++	public PbsJobID submitServiceJob(String computeResource, String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(computeResource, jobName, sub_file, command, ncpus, memSize, PBSJobCategory.PBS_SERVICE_JOB, null, true);
++	}
++
++	private PbsJobID submitJob(String computeResource, String jobName, String sub_file, String[] command, int ncpus, double memSize, PBSJobCategory jobCategory, String[] secondCommand, boolean isServiceJob) throws ExecutableException{	
++		try {
++			VCellServerID serverID = VCellServerID.getSystemServerID();
++
++			File tempFile = File.createTempFile("tempSubFile", ".sub");
++			PrintWriter pw = new PrintWriter(new FileOutputStream(tempFile));
++			pw.println("# Generated without file template.");
++			pw.println("#PBS -N " + jobName);
++			pw.println("#PBS -l mem=" + (int)(memSize + PBSConstants.PBS_MEM_OVERHEAD_MB) + "mb");
++
++			switch (jobCategory){
++				case PBS_SIMULATION_JOB:{
++					String pbsWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, PBSConstants.PBS_WORK_QUEUE_PREFIX);
++					pw.println("#PBS -q "+pbsWorkQueueNamePrefix + serverID.toCamelCase());
++					break;
++				}
++				case PBS_SERVICE_JOB:{
++					String pbsServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, PBSConstants.PBS_SERVICE_QUEUE_PREFIX);
++					pw.println("#PBS -q "+pbsServiceQueueNamePrefix + serverID.toCamelCase());
++					break;
++				}
++				default: {
++					pw.close();
++					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
++				}
++			}
++
++			pw.print(PBSConstants.PBS_JOB_TEMPLATE);
++			pw.println();
++			
++			pw.println(CommandOutput.concatCommandStrings(command));
++			if (secondCommand!=null){
++				String secondCommandString = "if [ \"$?\" = \"0\" ] ; then "+CommandOutput.concatCommandStrings(secondCommand);
++				secondCommandString = secondCommandString+"\n"+"else exit $? ; fi\n";
++				pw.println(secondCommandString);
++			}
++			pw.close();
++			
++			// move submission file to final location (either locally or remotely).
++			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
++			pushFile(tempFile,sub_file);
++			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
++			tempFile.delete();
++		} catch (IOException ex) {
++			ex.printStackTrace(System.out);
++			return null;
++		}
++
++		String[] completeCommand = new String[] {PBSConstants.JOB_CMD_SUBMIT, sub_file};
++		CommandOutput output = command(completeCommand);
++		String jobid = output.getStandardOutput().trim();
++		
++		if (isServiceJob){
++			try {
++				deleteFile(sub_file);
++			} catch (IOException e) {
++				e.printStackTrace();
++				throw new ExecutableException(e.getMessage());
++			}
++		}
++		
++		return new PbsJobID(jobid);
++	}
++	
++	public abstract void pushFile(File tempFile, String remotePath) throws IOException;
++	
++	public abstract void deleteFile(String remoteFilePath) throws IOException;
++ 
++	public abstract CommandOutput command(String[] command) throws ExecutableException;
++	
++	public ArrayList<RunningPbsJobRecord> getRunningPBSJobs() throws ExecutableException {
++		ArrayList<RunningPbsJobRecord> foundRunningPBSJobs = new ArrayList<RunningPbsJobRecord>();
++
++		try{
++			
++			String[] commandArray = new String[]{PBSConstants.QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+PBSConstants.PBS_SIMULATION_JOB_NAME_PREFIX};
++			CommandOutput commandOutput = command(commandArray);
++			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
++			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
++				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
++						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
++						"Standard error = \n"+commandOutput.getStandardError());
++			}
++			String[] outputLines =commandOutput.getStandardOutput().split("\n");
++			for (int i=0; i<outputLines.length; i++){
++			 	String foundPbsJobID = outputLines[i].substring(0, outputLines[i].indexOf("."));
++			 	//Do a sanity check.  Does foundPbsJobID string represent an integer?
++			 	try {
++			 		
++				 	String substring2 = outputLines[i].substring(outputLines[i].indexOf(PBSConstants.PBS_SIMULATION_JOB_NAME_PREFIX));
++				 	String foundPbsJobName = substring2.substring(0, substring2.indexOf(" "));
++				 	foundRunningPBSJobs.add(new RunningPbsJobRecord(Integer.parseInt(foundPbsJobID), foundPbsJobName));
++			 	} catch (NumberFormatException nfe){
++			 		throw new ExecutableException("Something's wrong: Non-integer found where an integer PBS Job ID was expected\n"+
++							"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
++							"Standard error = \n"+commandOutput.getStandardError());
++			 	}
++
++			}
++		}
++		catch (Exception e) {
++			e.printStackTrace();
++			throw new ExecutableException(e.getMessage());
++		}
++		
++		return foundRunningPBSJobs;
++	}
++}
+Index: src/cbit/vcell/message/server/dispatcher/SimulationTaskProcessState.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationTaskProcessState.java	(revision 12055)
++++ src/cbit/vcell/message/server/dispatcher/SimulationTaskProcessState.java	(revision 12054)
+@@ -4,7 +4,9 @@
+ 
+ import org.vcell.util.document.KeyValue;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PBSConstants.PBSJobExitCode;
++import cbit.htc.PBSConstants.PBSJobStatus;
++import cbit.htc.PbsJobID;
+ 
+ public class SimulationTaskProcessState {
+ 	final KeyValue simKey;
+@@ -19,9 +21,9 @@
+ 	Double progress = null;
+ 	Double timePoint = null;
+ 	
+-	HtcJobID htcJobID;
+-	//PBSJobStatus pbsJobStatus;
+-	//PBSJobExitCode pbsJobExitCode;
++	PbsJobID pbsJobID;
++	PBSJobStatus pbsJobStatus;
++	PBSJobExitCode pbsJobExitCode;
+ 	
+ 	String computeHost;
+ 	
+@@ -41,9 +43,9 @@
+ 		this.hasData = simTaskProcessState.hasData;
+ 		this.progress = simTaskProcessState.progress;
+ 		this.timePoint = simTaskProcessState.timePoint;
+-		this.htcJobID = simTaskProcessState.htcJobID;
+-		//this.pbsJobStatus = simTaskProcessState.pbsJobStatus;
+-		//this.pbsJobExitCode = simTaskProcessState.pbsJobExitCode;
++		this.pbsJobID = simTaskProcessState.pbsJobID;
++		this.pbsJobStatus = simTaskProcessState.pbsJobStatus;
++		this.pbsJobExitCode = simTaskProcessState.pbsJobExitCode;
+ 		this.computeHost = simTaskProcessState.computeHost;
+ 	}
+ 
+Index: src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12055)
++++ src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12054)
+@@ -13,6 +13,7 @@
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
++import cbit.htc.PbsJobID;
+ import cbit.rmi.event.WorkerEvent;
+ import cbit.vcell.field.FieldDataIdentifierSpec;
+ import cbit.vcell.message.VCMessage;
+@@ -22,7 +23,6 @@
+ import cbit.vcell.message.messages.SimulationTaskMessage;
+ import cbit.vcell.message.messages.StatusMessage;
+ import cbit.vcell.message.messages.WorkerEventMessage;
+-import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.messaging.db.SimulationExecutionStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+@@ -94,7 +94,7 @@
+ 				simTaskProcessState.computeHost = simulationExecutionStatus.getComputeHost();
+ 				simTaskProcessState.endDate = simulationExecutionStatus.getEndDate();
+ 				simTaskProcessState.latestUpdateDate = simulationExecutionStatus.getLatestUpdateDate();
+-				simTaskProcessState.htcJobID = simulationExecutionStatus.getHtcJobID();
++				simTaskProcessState.pbsJobID = simulationExecutionStatus.getPbsJobID();
+ 				simTaskProcessState.startDate = simulationExecutionStatus.getStartDate();
+ 				simTaskProcessStates.add(simTaskProcessState);
+ 			}
+@@ -234,7 +234,7 @@
+ 		Date lastUpdateDate = null;
+ 		Date endDate = null;
+ 		boolean hasData = false;
+-		HtcJobID htcJobID = null;
++		PbsJobID pbsJobID = null;
+ 		String computeHost = null;
+ 		VCellServerID vcServerID = VCellServerID.getSystemServerID();
+ 		Date submitDate = null;
+@@ -262,8 +262,8 @@
+ 		if (oldSimExeStatus!=null && oldSimExeStatus.getComputeHost()!=null){
+ 			computeHost = oldSimExeStatus.getComputeHost();
+ 		}
+-		if (oldSimExeStatus!=null && oldSimExeStatus.getHtcJobID()!=null){
+-			htcJobID = oldSimExeStatus.getHtcJobID();
++		if (oldSimExeStatus!=null && oldSimExeStatus.getPbsJobID()!=null){
++			pbsJobID = oldSimExeStatus.getPbsJobID();
+ 		}
+ 		vcServerID = oldSimulationJobStatus.getServerID();
+ 		submitDate = oldSimulationJobStatus.getSubmitDate();
+@@ -281,15 +281,15 @@
+ 		//
+ 		// update using new information from event
+ 		//
+-		if (workerEvent.getHtcJobID()!=null){
+-			htcJobID = workerEvent.getHtcJobID();
++		if (workerEvent.getPbsJobID()!=null){
++			pbsJobID = workerEvent.getPbsJobID();
+ 		}
+ 		if (workerEvent.getHostName()!=null){
+ 			computeHost = workerEvent.getHostName();
+ 		}
+ 		SimulationMessage workerEventSimulationMessage = workerEvent.getSimulationMessage();
+-		if (workerEventSimulationMessage.getHtcJobId()!=null){
+-			htcJobID = workerEventSimulationMessage.getHtcJobId();
++		if (workerEventSimulationMessage.getPbsJobId()!=null){
++			pbsJobID = workerEventSimulationMessage.getPbsJobId();
+ 		}
+ 		
+ 		
+@@ -298,7 +298,7 @@
+ 
+ 		if (workerEvent.isAcceptedEvent()) {
+ 			//
+-			// job message accepted by HtcSimulationWorker and sent to Scheduler (PBS/SGE) (with a htcJobID) ... previous state should be "WAITING"
++			// job message accepted by PbsSimulationWorker and sent to PBS (with a pbsJobID) ... previous state should be "WAITING"
+ 			//
+ 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued()) {
+ 				// new queue status
+@@ -308,7 +308,7 @@
+ 				lastUpdateDate = new Date();
+ 				startDate = lastUpdateDate;
+ 				endDate = null;
+-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 				
+ 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.DISPATCHED,
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -325,7 +325,7 @@
+ 				if (startDate == null){
+ 					startDate = lastUpdateDate;
+ 				}
+-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 				
+ 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -347,7 +347,7 @@
+ 						startDate = lastUpdateDate;
+ 					}
+ 					hasData = true;
+-					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 
+ 					newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
+ 							taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -366,7 +366,7 @@
+ 					if (startDate == null){
+ 						startDate = lastUpdateDate;
+ 					}
+-					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++					SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 
+ 					newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
+ 							taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -378,7 +378,7 @@
+ 						if (sysDate.getTime() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER * 3 / 5) {
+ 							// new queue status		
+ 							SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
+-							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 
+ 							newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
+ 									taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -398,7 +398,7 @@
+ 
+ 				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
+ 				
+-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 
+ 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.COMPLETED,
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -416,7 +416,7 @@
+ 
+ 				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
+ 				
+-				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 
+ 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+@@ -505,10 +505,10 @@
+ 		String computeHost = null;
+ 		Date startDate = null;
+ 		Date endDate = null;
+-		HtcJobID htcJobID = null;
++		PbsJobID pbsJobID = null;
+ 		boolean hasData = false;
+ 		
+-		SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
++		SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, pbsJobID);
+ 		
+ 		VCellServerID vcServerID = VCellServerID.getSystemServerID();
+ 		Date submitDate = currentDate;
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12055)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12054)
+@@ -149,9 +149,9 @@
+ //				}
+ //				
+ //				SimulationJobStatus jobStatus = simulationDatabase.getNextObsoleteSimulation(MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
+-//				HtcJobID htcJobID = jobStatus.getSimulationExecutionStatus().getHtcJobID();
++//				PbsJobID pbsJobID = jobStatus.getSimulationExecutionStatus().getPbsJobID();
+ //				if (pbsJobID!=null){
+-//					PBSUtils.killJob(htcJobID);
++//					PBSUtils.killJob(pbsJobID);
+ //				}
+ //
+ //				// too many retries
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12055)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12054)
+@@ -1,274 +0,0 @@
+-/*
+- * Copyright (C) 1999-2011 University of Connecticut Health Center
+- *
+- * Licensed under the MIT License (the "License").
+- * You may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at:
+- *
+- *  http://www.opensource.org/licenses/mit-license.php
+- */
+-
+-package cbit.vcell.message.server.sim;
+-import java.io.File;
+-import java.io.FileNotFoundException;
+-import java.io.IOException;
+-import java.net.UnknownHostException;
+-import java.util.Date;
+-import java.util.StringTokenizer;
+-
+-import org.vcell.util.BeanUtils;
+-import org.vcell.util.DataAccessException;
+-import org.vcell.util.ExecutableException;
+-import org.vcell.util.MessageConstants;
+-import org.vcell.util.MessageConstants.ServiceType;
+-import org.vcell.util.PropertyLoader;
+-import org.vcell.util.SessionLog;
+-import org.vcell.util.StdoutSessionLog;
+-import org.vcell.util.document.VCellServerID;
+-
+-import cbit.util.xml.XmlUtil;
+-import cbit.vcell.message.RollbackException;
+-import cbit.vcell.message.VCMessage;
+-import cbit.vcell.message.VCMessageSelector;
+-import cbit.vcell.message.VCMessageSession;
+-import cbit.vcell.message.VCMessagingException;
+-import cbit.vcell.message.VCMessagingService;
+-import cbit.vcell.message.VCQueueConsumer;
+-import cbit.vcell.message.VCQueueConsumer.QueueListener;
+-import cbit.vcell.message.VCellQueue;
+-import cbit.vcell.message.messages.SimulationTaskMessage;
+-import cbit.vcell.message.messages.WorkerEventMessage;
+-import cbit.vcell.message.server.ManageUtils;
+-import cbit.vcell.message.server.ServiceInstanceStatus;
+-import cbit.vcell.message.server.ServiceProvider;
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.cmd.CommandServiceLocal;
+-import cbit.vcell.message.server.cmd.CommandServiceSsh;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+-import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+-import cbit.vcell.message.server.htc.sge.SgeProxy;
+-import cbit.vcell.messaging.server.SimulationTask;
+-import cbit.vcell.mongodb.VCMongoMessage;
+-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+-import cbit.vcell.simdata.SimDataConstants;
+-import cbit.vcell.solver.SimulationMessage;
+-import cbit.vcell.solver.Solver;
+-import cbit.vcell.solver.SolverException;
+-import cbit.vcell.solver.SolverFactory;
+-import cbit.vcell.solvers.AbstractCompiledSolver;
+-import cbit.vcell.solvers.AbstractSolver;
+-import cbit.vcell.xml.XmlHelper;
+-import cbit.vcell.xml.XmlParseException;
+-/**
+- * Insert the type's description here.
+- * Creation date: (10/25/2001 4:14:09 PM)
+- * @author: Jim Schaff
+- */
+-public class HtcSimulationWorker extends ServiceProvider  {
+-	private HtcProxy htcProxy = null;
+-
+-	private VCQueueConsumer queueConsumer = null;
+-	/**
+-	 * SimulationWorker constructor comment.
+-	 * @param argName java.lang.String
+-	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
+-	 * @param argInitialContext javax.naming.Context
+-	 */
+-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
+-	super(vcMessagingService, serviceInstanceStatus, log);
+-	this.htcProxy = htcProxy;
+-}
+-
+-public final String getJobSelector() {
+-	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+-	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
+-	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
+-	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
+-	int count = 0;
+-	while (st.hasMoreTokens()) {
+-		if (count > 0) {
+-			jobSelector = ", ";
+-		}
+-		jobSelector += "'" + st.nextToken() + "'";
+-		count ++;
+-	}
+-	jobSelector += ")))";
+-	
+-	return jobSelector;
+-}
+-
+-private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
+-
+-	HtcJobID jobid = null;
+-	
+-	String subFile = simTask.getSimulationJob().getSimulationJobID() + htcProxy.getSubmissionFileExtension();
+-	String jobname = HtcProxy.createHtcSimJobName(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex());   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex();
+-	
+-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
+-	
+-	if (realSolver instanceof AbstractCompiledSolver) {
+-		String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
+-		String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+simTask.getTaskID()+".simtask.xml").toString());
+-
+-		if (htcProxy.getCommandService() instanceof CommandServiceSsh){
+-			// write simTask file locally, and send it to server, and delete local copy.
+-			File tempFile = File.createTempFile("simTask", "xml");
+-			XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
+-			this.htcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
+-			tempFile.delete();
+-		}else{
+-			// write final file directly.
+-			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
+-		}
+-		
+-		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
+-		String[] preprocessorCmd = new String[] { 
+-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
+-				serviceInstanceStatus.getServerID().toString().toLowerCase(), 
+-				simTaskFilePath, 
+-				forceUnixPath(userdir.getAbsolutePath())
+-		};
+-		String[] nativeExecutableCmd = ((AbstractCompiledSolver)realSolver).getMathExecutableCommand();
+-		for (int i=0;i<nativeExecutableCmd.length;i++){
+-			nativeExecutableCmd[i] = forceUnixPath(nativeExecutableCmd[i]);
+-		}
+-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
+-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
+-		
+-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
+-		if (jobid == null) {
+-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+-		}
+-		
+-	} else {
+-		
+-		File inputFile = new File(getBaseName(userdir,simTask)+SimDataConstants.JAVA_INPUT_EXTENSION);
+-		String[] command = new String[] { 
+-				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
+-				VCellServerID.getSystemServerID().toString(), 
+-				forceUnixPath(inputFile.getParent()), 
+-				forceUnixPath(inputFile.getName()), 
+-				String.valueOf(simTask.getSimulationJob().getJobIndex()),
+-				"-tid", 
+-				String.valueOf(simTask.getTaskID())
+-		};
+-
+-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
+-		if (jobid == null) {
+-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+-		}
+-	}
+-	return jobid;
+-}
+-
+-private String forceUnixPath(String filePath){
+-	return filePath.replace("C:","").replace("D:","").replace("\\","/");
+-}
+-
+-private String getBaseName(File userdir, SimulationTask simTask) {
+-	return (new File(userdir, simTask.getSimulationJob().getSimulationJobID()).getPath());
+-}
+-
+-
+-private void initQueueConsumer() {
+-	QueueListener listener = new QueueListener() {
+-		
+-		public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
+-			SimulationTask simTask = null;
+-			try {
+-				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
+-				simTask = simTaskMessage.getSimulationTask();
+-				File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),simTask.getUserName());
+-				
+-				HtcJobID pbsId = submit2PBS(simTask, userdir);
+-				
+-				WorkerEventMessage.sendAccepted(session, HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), pbsId);
+-			} catch (Exception e) {
+-				log.exception(e);
+-				if (simTask!=null){
+-					try {
+-						WorkerEventMessage.sendFailed(session,  HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
+-					} catch (VCMessagingException e1) {
+-						log.exception(e1);
+-					}
+-				}
+-			}
+-		}
+-	};
+-
+-	
+-	VCellQueue queue = VCellQueue.SimJobQueue;
+-	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
+-	String threadName = "SimJob Queue Consumer";
+-	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
+-	vcMessagingService.addMessageConsumer(queueConsumer);
+-}
+-
+-/**
+- * Starts the application.
+- * @param args an array of command-line arguments
+- */
+-public static void main(java.lang.String[] args) {
+-	if (args.length != 3 && args.length != 6) {
+-		System.out.println("Missing arguments: " + HtcSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
+-		System.exit(1);
+-	}
+- 		
+-	//
+-	// Create and install a security manager
+-	//
+-	try {
+-		PropertyLoader.loadProperties();
+-		
+-		int serviceOrdinal = Integer.parseInt(args[0]);	
+-		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
+-		String logdir = args[1];
+-		BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
+-		
+-		CommandService commandService = null;
+-		if (args.length==6){
+-			String pbsHost = args[3];
+-			String pbsUser = args[4];
+-			String pbsPswd = args[5];
+-			commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
+-			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
+-		}else{
+-			commandService = new CommandServiceLocal();
+-		}
+-		HtcProxy htcProxy = null;
+-		switch(batchSystemType){
+-			case PBS:{
+-				htcProxy = new PbsProxy(commandService);
+-				break;
+-			}
+-			case SGE:{
+-				htcProxy = new SgeProxy(commandService);
+-				break;
+-			}
+-		}
+-		
+-		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+-		//initLog(logdir);
+-		
+-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+-		
+-		htcProxy.checkServerStatus();
+-
+-		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+-		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log);
+-		simulationWorker.initControlTopicListener();
+-		simulationWorker.initQueueConsumer();
+-	} catch (Throwable e) {
+-		e.printStackTrace(System.out);
+-		VCMongoMessage.sendException(e);
+-		VCMongoMessage.flush();
+-		System.exit(-1);
+-	}
+-}
+-
+-
+-
+-
+-}
+Index: src/cbit/vcell/message/server/sim/PbsSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/PbsSimulationWorker.java	(revision 0)
++++ src/cbit/vcell/message/server/sim/PbsSimulationWorker.java	(revision 12054)
+@@ -0,0 +1,260 @@
++/*
++ * Copyright (C) 1999-2011 University of Connecticut Health Center
++ *
++ * Licensed under the MIT License (the "License").
++ * You may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at:
++ *
++ *  http://www.opensource.org/licenses/mit-license.php
++ */
++
++package cbit.vcell.message.server.sim;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.net.UnknownHostException;
++import java.util.Date;
++import java.util.StringTokenizer;
++
++import org.vcell.util.BeanUtils;
++import org.vcell.util.DataAccessException;
++import org.vcell.util.ExecutableException;
++import org.vcell.util.MessageConstants;
++import org.vcell.util.MessageConstants.ServiceType;
++import org.vcell.util.PropertyLoader;
++import org.vcell.util.SessionLog;
++import org.vcell.util.StdoutSessionLog;
++import org.vcell.util.document.VCellServerID;
++
++import cbit.htc.PBSConstants;
++import cbit.htc.PbsJobID;
++import cbit.util.xml.XmlUtil;
++import cbit.vcell.message.RollbackException;
++import cbit.vcell.message.VCMessage;
++import cbit.vcell.message.VCMessageSelector;
++import cbit.vcell.message.VCMessageSession;
++import cbit.vcell.message.VCMessagingException;
++import cbit.vcell.message.VCMessagingService;
++import cbit.vcell.message.VCQueueConsumer;
++import cbit.vcell.message.VCQueueConsumer.QueueListener;
++import cbit.vcell.message.VCellQueue;
++import cbit.vcell.message.messages.SimulationTaskMessage;
++import cbit.vcell.message.messages.WorkerEventMessage;
++import cbit.vcell.message.server.ManageUtils;
++import cbit.vcell.message.server.ServiceInstanceStatus;
++import cbit.vcell.message.server.ServiceProvider;
++import cbit.vcell.message.server.pbs.PbsProxy;
++import cbit.vcell.message.server.pbs.PbsProxyLocal;
++import cbit.vcell.message.server.pbs.PbsProxySsh;
++import cbit.vcell.messaging.server.SimulationTask;
++import cbit.vcell.mongodb.VCMongoMessage;
++import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
++import cbit.vcell.simdata.SimDataConstants;
++import cbit.vcell.solver.SimulationMessage;
++import cbit.vcell.solver.Solver;
++import cbit.vcell.solver.SolverException;
++import cbit.vcell.solver.SolverFactory;
++import cbit.vcell.solvers.AbstractCompiledSolver;
++import cbit.vcell.solvers.AbstractSolver;
++import cbit.vcell.xml.XmlHelper;
++import cbit.vcell.xml.XmlParseException;
++/**
++ * Insert the type's description here.
++ * Creation date: (10/25/2001 4:14:09 PM)
++ * @author: Jim Schaff
++ */
++public class PbsSimulationWorker extends ServiceProvider  {
++	private static String PBS_SUBMIT_FILE_EXT = ".pbs.sub";
++	private PbsProxy pbsProxy = null;
++
++	private VCQueueConsumer queueConsumer = null;
++	/**
++	 * SimulationWorker constructor comment.
++	 * @param argName java.lang.String
++	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
++	 * @param argInitialContext javax.naming.Context
++	 */
++public PbsSimulationWorker(PbsProxy pbsProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
++	super(vcMessagingService, serviceInstanceStatus, log);
++	this.pbsProxy = pbsProxy;
++}
++
++public final String getJobSelector() {
++	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
++	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
++	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
++	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
++	int count = 0;
++	while (st.hasMoreTokens()) {
++		if (count > 0) {
++			jobSelector = ", ";
++		}
++		jobSelector += "'" + st.nextToken() + "'";
++		count ++;
++	}
++	jobSelector += ")))";
++	
++	return jobSelector;
++}
++
++private PbsJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
++
++	PbsJobID jobid = null;
++	
++	String subFile = simTask.getSimulationJob().getSimulationJobID() + PBS_SUBMIT_FILE_EXT;
++	String jobname = PBSConstants.createPBSSimJobName(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex());   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex();
++	
++	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
++	
++	if (realSolver instanceof AbstractCompiledSolver) {
++		String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
++		String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+simTask.getTaskID()+".simtask.xml").toString());
++
++		if (pbsProxy instanceof PbsProxySsh){
++			// write simTask file locally, and send it to server, and delete local copy.
++			File tempFile = File.createTempFile("simTask", "xml");
++			XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
++			this.pbsProxy.pushFile(tempFile, simTaskFilePath);
++			tempFile.delete();
++		}else{
++			// write final file directly.
++			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
++		}
++		
++		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
++		String[] preprocessorCmd = new String[] { 
++				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
++				serviceInstanceStatus.getServerID().toString().toLowerCase(), 
++				simTaskFilePath, 
++				forceUnixPath(userdir.getAbsolutePath())
++		};
++		String[] nativeExecutableCmd = ((AbstractCompiledSolver)realSolver).getMathExecutableCommand();
++		for (int i=0;i<nativeExecutableCmd.length;i++){
++			nativeExecutableCmd[i] = forceUnixPath(nativeExecutableCmd[i]);
++		}
++		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
++		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
++		
++		jobid = pbsProxy.submitJob(simTask.getComputeResource(), jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB());
++		if (jobid == null) {
++			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
++		}
++		
++	} else {
++		
++		File inputFile = new File(getBaseName(userdir,simTask)+SimDataConstants.JAVA_INPUT_EXTENSION);
++		String[] command = new String[] { 
++				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
++				VCellServerID.getSystemServerID().toString(), 
++				forceUnixPath(inputFile.getParent()), 
++				forceUnixPath(inputFile.getName()), 
++				String.valueOf(simTask.getSimulationJob().getJobIndex()),
++				"-tid", 
++				String.valueOf(simTask.getTaskID())
++		};
++
++		jobid = pbsProxy.submitJob(simTask.getComputeResource(), jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB());
++		if (jobid == null) {
++			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
++		}
++	}
++	return jobid;
++}
++
++private String forceUnixPath(String filePath){
++	return filePath.replace("C:","").replace("D:","").replace("\\","/");
++}
++
++private String getBaseName(File userdir, SimulationTask simTask) {
++	return (new File(userdir, simTask.getSimulationJob().getSimulationJobID()).getPath());
++}
++
++
++private void initQueueConsumer() {
++	QueueListener listener = new QueueListener() {
++		
++		public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
++			SimulationTask simTask = null;
++			try {
++				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
++				simTask = simTaskMessage.getSimulationTask();
++				File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),simTask.getUserName());
++				
++				PbsJobID pbsId = submit2PBS(simTask, userdir);
++				
++				WorkerEventMessage.sendAccepted(session, PbsSimulationWorker.this, simTask, ManageUtils.getHostName(), pbsId);
++			} catch (Exception e) {
++				log.exception(e);
++				if (simTask!=null){
++					try {
++						WorkerEventMessage.sendFailed(session,  PbsSimulationWorker.this, simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
++					} catch (VCMessagingException e1) {
++						log.exception(e1);
++					}
++				}
++			}
++		}
++	};
++
++	
++	VCellQueue queue = VCellQueue.SimJobQueue;
++	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
++	String threadName = "SimJob Queue Consumer";
++	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
++	vcMessagingService.addMessageConsumer(queueConsumer);
++}
++
++/**
++ * Starts the application.
++ * @param args an array of command-line arguments
++ */
++public static void main(java.lang.String[] args) {
++	if (args.length != 2 && args.length != 5) {
++		System.out.println("Missing arguments: " + PbsSimulationWorker.class.getName() + " serviceOrdinal (logdir|-) [pbshost userid pswd] ");
++		System.exit(1);
++	}
++ 		
++	//
++	// Create and install a security manager
++	//
++	try {
++		PropertyLoader.loadProperties();
++		
++		int serviceOrdinal = Integer.parseInt(args[0]);	
++		VCMongoMessage.serviceStartup(ServiceName.pbsWorker, new Integer(serviceOrdinal), args);
++		String logdir = args[1];
++
++		PbsProxy pbsProxy = null;
++		if (args.length==5){
++			String pbsHost = args[2];
++			String pbsUser = args[3];
++			String pbsPswd = args[4];
++			pbsProxy = new PbsProxySsh(pbsHost,pbsUser,pbsPswd);
++			AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
++		}else{
++			pbsProxy = new PbsProxyLocal();
++		}
++		
++		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
++		//initLog(logdir);
++		
++		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
++		
++		pbsProxy.checkServerStatus();
++
++		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
++		PbsSimulationWorker simulationWorker = new PbsSimulationWorker(pbsProxy, vcMessagingService, serviceInstanceStatus, log);
++		simulationWorker.initControlTopicListener();
++		simulationWorker.initQueueConsumer();
++	} catch (Throwable e) {
++		e.printStackTrace(System.out);
++		VCMongoMessage.sendException(e);
++		VCMongoMessage.flush();
++		System.exit(-1);
++	}
++}
++
++
++
++
++}
+Index: src/cbit/vcell/message/server/manager/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12055)
++++ src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12054)
+@@ -43,6 +43,8 @@
+ import org.vcell.util.StdoutSessionLog;
+ import org.vcell.util.document.VCellServerID;
+ 
++import cbit.htc.PBSConstants.PBSJobStatus;
++import cbit.htc.PbsJobID;
+ import cbit.sql.ConnectionFactory;
+ import cbit.sql.KeyFactory;
+ import cbit.vcell.message.VCMessage;
+@@ -56,17 +58,10 @@
+ import cbit.vcell.message.server.ManageUtils;
+ import cbit.vcell.message.server.ServiceInstanceStatus;
+ import cbit.vcell.message.server.ServiceStatus;
+-import cbit.vcell.message.server.cmd.CommandService;
+-import cbit.vcell.message.server.cmd.CommandServiceLocal;
+-import cbit.vcell.message.server.cmd.CommandServiceSsh;
+-import cbit.vcell.message.server.htc.HtcException;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+-import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+-import cbit.vcell.message.server.htc.HtcJobStatus;
+-import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.pbs.PbsProxy;
+-import cbit.vcell.message.server.htc.sge.SgeProxy;
++import cbit.vcell.message.server.pbs.PbsProxy;
++import cbit.vcell.message.server.pbs.PbsProxy.PbsJobNotFoundException;
++import cbit.vcell.message.server.pbs.PbsProxyLocal;
++import cbit.vcell.message.server.pbs.PbsProxySsh;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DbDriver;
+@@ -80,7 +75,7 @@
+  */
+ public class ServerManagerDaemon {
+ 	private org.vcell.util.SessionLog log = null;
+-	private HtcProxy htcProxy = null;
++	private PbsProxy pbsProxy = null;
+ 	private VCMessagingService vcMessagingService = null;
+ 	private VCMessageSession topicProducerSession = null;
+ 	private VCTopicConsumer daemonControlTopicConsumer = null;
+@@ -100,12 +95,12 @@
+  * @param vcMessagingService
+  * @param serviceInstanceStatus
+  */
+-public ServerManagerDaemon(HtcProxy htcProxy, ServiceInstanceStatus serviceInstanceStatus, VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTop, SessionLog log) {
++public ServerManagerDaemon(PbsProxy pbsProxy, ServiceInstanceStatus serviceInstanceStatus, VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTop, SessionLog log) {
+ 	this.serviceInstanceStatus = serviceInstanceStatus;
+ 	this.vcMessagingService = vcMessagingService;
+ 	this.adminDbTop = adminDbTop;
+ 	this.log = log;
+-	this.htcProxy = htcProxy;
++	this.pbsProxy = pbsProxy;
+ }
+ 
+ private void init() {
+@@ -206,20 +201,20 @@
+ 	log.print("starting service " + service);
+ 	AdminDBTopLevel.TransactionalServiceOperation tso = new AdminDBTopLevel.TransactionalServiceOperation() {
+ 		public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception {
+-			HtcJobID jobid = submit2PBS(oldStatus);
++			PbsJobID jobid = submit2PBS(oldStatus);
+ 			ServiceStatus newServiceStatus = null;
+ 			if (jobid == null) {
+ 				newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "unknown pbs exception",	jobid);
+ 			} else {
+ 				long t = System.currentTimeMillis();
+-				HtcJobStatus status;
++				PBSJobStatus status;
+ 				while (true) {
+ 					try {
+ 						Thread.sleep(1000);
+ 					} catch (InterruptedException ex) {
+ 					}
+ 					
+-					status = htcProxy.getJobStatus(jobid);
++					status = pbsProxy.getJobStatus(jobid);
+ 					if (status!=null && status.isExiting()){
+ 						// should never happen
+ 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, "exit immediately after submit", jobid);	
+@@ -228,8 +223,8 @@
+ 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
+ 						break;
+ 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND_IN_MS) {
+-						String pendingReason = htcProxy.getPendingReason(jobid);
+-						htcProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
++						String pendingReason = pbsProxy.getPendingReason(jobid);
++						pbsProxy.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+ 						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
+ 								"PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")",
+ 								jobid);						
+@@ -244,10 +239,10 @@
+ 	adminDbTop.updateServiceStatus(service, tso, true);
+ }	
+ 
+-private HtcJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException, HtcException {
++private PbsJobID submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
+ 	try {
+ 		killService(service);
+-	}catch (HtcJobNotFoundException e){
++	}catch (PbsJobNotFoundException e){
+ 		log.alert(service.toString()+" not found, unable to kill");
+ 	}
+ 	
+@@ -265,7 +260,7 @@
+ 	
+ 	File sub_file = File.createTempFile("service", ".pbs.sub");
+ 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getName());
+-	return htcProxy.submitServiceJob(service.getServiceSpec().getID(), sub_file.getName(), command, 1, service.getServiceSpec().getMemoryMB());
++	return pbsProxy.submitServiceJob((String)null, service.getServiceSpec().getID(), sub_file.getName(), command, 1, service.getServiceSpec().getMemoryMB());
+ }
+ /**
+  * This method was created in VisualAge.
+@@ -308,24 +303,16 @@
+ 			System.setErr(ps);			
+ 		}
+ 
+-		CommandService commandService = null;
++		PbsProxy pbsProxy = null;
+ 		if (args.length==4){
+-			String htcHost = args[1];
+-			String htcUser = args[2];
+-			String htcPswd = args[3];
+-			commandService = new CommandServiceSsh(htcHost,htcUser,htcPswd);
++			String pbsHost = args[1];
++			String pbsUser = args[2];
++			String pbsPswd = args[3];
++			pbsProxy = new PbsProxySsh(pbsHost,pbsUser,pbsPswd);
+ 		}else{
+-			commandService = new CommandServiceLocal();
++			pbsProxy = new PbsProxyLocal();
+ 		}
+-		BatchSystemType batchSystemType = BatchSystemType.valueOf(PropertyLoader.getRequiredProperty(PropertyLoader.htcBatchSystemType));
+-		HtcProxy htcProxy = null;
+-		if (batchSystemType == BatchSystemType.PBS){
+-			htcProxy = new PbsProxy(commandService);
+-		}else if (batchSystemType == BatchSystemType.SGE){
+-			htcProxy = new SgeProxy(commandService);
+-		}else{
+-			throw new RuntimeException("unsupported batch system "+batchSystemType);
+-		}
++
+ 		org.vcell.util.PropertyLoader.loadProperties();
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
+ 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+@@ -347,7 +334,7 @@
+ 		AdminDBTopLevel adminDbTop = new AdminDBTopLevel(conFactory,log);
+ 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+ 		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
+-		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(htcProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
++		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(pbsProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
+ 		serverManagerDaemon.init();
+ 		serverManagerDaemon.serviceMonitorLoop();
+ 	} catch (Throwable exc) {
+@@ -383,25 +370,25 @@
+ 		while (iter.hasNext()) {
+ 			ServiceStatus service = iter.next();		
+ 			if (service.getServiceSpec().getID().equals(serviceID)) {
+-				final HtcJobID htcJobId = service.getHtcJobId();
+-				if (htcJobId != null){
++				final PbsJobID pbsJobId = service.getPbsJobId();
++				if (pbsJobId != null){
+ 					
+-					String threadName = "Kill Thread for ServiceID "+serviceID+", htcID: "+htcJobId.toDatabase();
++					String threadName = "Kill Thread for ServiceID "+serviceID+", pbsID: "+pbsJobId;
+ 					Runnable serviceKillTask = new Runnable() {
+ 						@Override
+ 						public void run() {
+ 							try {
+-								HtcProxy threadsafeHtcProxy = htcProxy.cloneThreadsafe();
+-								HtcJobStatus jobStatus = threadsafeHtcProxy.getJobStatus(htcJobId);
++								PbsProxy threadLocalPbsProxy = pbsProxy.clone();
++								PBSJobStatus jobStatus = threadLocalPbsProxy.getJobStatus(pbsJobId);
+ 								if (jobStatus!=null && jobStatus.isRunning()){
+ 									try {
+ 										Thread.sleep(5 * MessageConstants.SECOND_IN_MS); // wait 5 seconds
+ 									} catch (InterruptedException ex) {							
+ 									}					
+ 									// if the service is not stopped, kill it from PBS
+-									jobStatus = threadsafeHtcProxy.getJobStatus(htcJobId);
++									jobStatus = threadLocalPbsProxy.getJobStatus(pbsJobId);
+ 									if (jobStatus!=null && jobStatus.isRunning()) {
+-										threadsafeHtcProxy.killJob(htcJobId);
++										threadLocalPbsProxy.killJob(pbsJobId);
+ 									}
+ 								}
+ 							} catch (Exception e) {
+@@ -442,9 +429,9 @@
+ 	}
+ }
+ 
+-private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
+-	if (service.getHtcJobId() != null) {
+-		htcProxy.killJob(service.getHtcJobId());
++private void killService(ServiceStatus service) throws ExecutableException, PbsJobNotFoundException {
++	if (service.getPbsJobId() != null) {
++		pbsProxy.killJob(service.getPbsJobId());
+ 	}
+ }
+ /**
+Index: src/cbit/vcell/message/messages/WorkerEventMessage.java
+===================================================================
+--- src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12055)
++++ src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12054)
+@@ -16,13 +16,13 @@
+ import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.User;
+ 
++import cbit.htc.PbsJobID;
+ import cbit.rmi.event.WorkerEvent;
+ import cbit.vcell.message.VCMessage;
+ import cbit.vcell.message.VCMessageSession;
+ import cbit.vcell.message.VCMessagingException;
+ import cbit.vcell.message.VCellQueue;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+-import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+@@ -107,7 +107,7 @@
+ 			
+ 	Object obj = message.getObjectContent();
+ 	if (obj!=null){
+-		// from Java executable or htcWorker
++		// from Java executable or pbsWorker
+ 		if (!(obj instanceof WorkerEvent)) {
+ 			throw new IllegalArgumentException("Expecting object message with object " + WorkerEvent.class.getName() + ", found object :"+obj.getClass().getName());
+ 		}
+@@ -198,9 +198,9 @@
+  * @param param javax.jms.Message
+  * @throws VCMessagingException 
+  */
+-public static WorkerEventMessage sendAccepted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, HtcJobID htcJobID) throws VCMessagingException {
++public static WorkerEventMessage sendAccepted(VCMessageSession session, Object source, SimulationTask simTask, String hostName, PbsJobID pbsJobID) throws VCMessagingException {
+ 	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, source, simTask, hostName, SimulationMessage.MESSAGE_JOB_ACCEPTED);
+-	workerEvent.setHtcJobID(htcJobID);
++	workerEvent.setPbsJobID(pbsJobID);
+ 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+ 	workerEventMessage.sendWorkerEvent(session);
+ 
+Index: src/cbit/vcell/solver/SolverEvent.java
+===================================================================
+--- src/cbit/vcell/solver/SolverEvent.java	(revision 12055)
++++ src/cbit/vcell/solver/SolverEvent.java	(revision 12054)
+@@ -10,7 +10,7 @@
+ 
+ package cbit.vcell.solver;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PbsJobID;
+ import cbit.vcell.solvers.AbstractSolver;
+ 
+ /**
+@@ -36,18 +36,18 @@
+ 	private SimulationMessage fieldSimulationMessage = null;
+ 	private double fieldTimePoint = -1;
+ 	private double fieldProgress = -1;
+-	private HtcJobID fieldHtcJobId = null;
++	private PbsJobID fieldPbsJobId = null;
+ /**
+  * IntegratorEvent constructor comment.
+  * @param source java.lang.Object
+  */
+-public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint, HtcJobID htcJobId) {
++public SolverEvent(AbstractSolver source, int type, SimulationMessage simulationMessage, double progress, double timePoint, PbsJobID pbsJobId) {
+ 	super(source);
+ 	this.fieldSimulationMessage = simulationMessage;
+ 	this.fieldType = type;
+ 	this.fieldProgress = progress;
+ 	this.fieldTimePoint = timePoint;
+-	this.fieldHtcJobId = htcJobId;
++	this.fieldPbsJobId = pbsJobId;
+ }
+ /**
+  * Insert the method's description here.
+@@ -81,8 +81,8 @@
+ 	return fieldType;
+ }
+ 
+-public HtcJobID getPbsJobId(){
+-	return fieldHtcJobId;
++public PbsJobID getPbsJobId(){
++	return fieldPbsJobId;
+ }
+ /**
+  * Insert the method's description here.
+Index: src/cbit/vcell/solver/SimulationMessage.java
+===================================================================
+--- src/cbit/vcell/solver/SimulationMessage.java	(revision 12055)
++++ src/cbit/vcell/solver/SimulationMessage.java	(revision 12054)
+@@ -14,7 +14,7 @@
+ 
+ import org.vcell.util.Compare;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PbsJobID;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+ 
+ public class SimulationMessage implements Serializable {
+@@ -113,7 +113,7 @@
+ 	
+ 	private final DetailedState detailedState;
+ 	private final String message;
+-	private HtcJobID htcJobId;
++	private PbsJobID pbsJobId;
+ 	private SimulationMessage(DetailedState detailedState, String message){
+ 		this.detailedState = detailedState;
+ 		this.message = message;
+@@ -239,9 +239,9 @@
+ 		return new SimulationMessage(DetailedState.JOB_FAILED,failureMessage);
+ 	}
+ 
+-	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){
++	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, PbsJobID pbsJobId){
+ 		SimulationMessage simMessage = new SimulationMessage(DetailedState.SOLVEREVENT_STARTING_SUBMITTED,submitMsg);
+-		simMessage.htcJobId = htcJobId;
++		simMessage.pbsJobId = pbsJobId;
+ 		return simMessage;
+ 	}
+ 	
+@@ -257,8 +257,8 @@
+ 		return detailedState;
+ 	}
+ 	
+-	public HtcJobID getHtcJobId(){
+-		return htcJobId;
++	public PbsJobID getPbsJobId(){
++		return pbsJobId;
+ 	}
+ 	
+ 	@Override
+Index: src/cbit/vcell/messaging/db/SimulationJobStatus.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobStatus.java	(revision 12055)
++++ src/cbit/vcell/messaging/db/SimulationJobStatus.java	(revision 12054)
+@@ -9,15 +9,15 @@
+  */
+ 
+ package cbit.vcell.messaging.db;
++import cbit.htc.PbsJobID;
++import cbit.vcell.solver.SimulationMessage;
++import cbit.vcell.solver.VCSimulationIdentifier;
++import java.util.Date;
+ import java.io.Serializable;
+-import java.util.Date;
+ 
+ import org.vcell.util.Compare;
+ import org.vcell.util.document.VCellServerID;
+ 
+-import cbit.vcell.solver.SimulationMessage;
+-import cbit.vcell.solver.VCSimulationIdentifier;
+-
+ /**
+  * Insert the type's description here.
+  * Creation date: (1/31/2003 11:02:54 AM)
+Index: src/cbit/vcell/messaging/db/ServiceStatusDbDriver.java
+===================================================================
+--- src/cbit/vcell/messaging/db/ServiceStatusDbDriver.java	(revision 12055)
++++ src/cbit/vcell/messaging/db/ServiceStatusDbDriver.java	(revision 12054)
+@@ -9,10 +9,7 @@
+  */
+ 
+ package cbit.vcell.messaging.db;
+-import java.sql.Connection;
+-import java.sql.ResultSet;
+-import java.sql.SQLException;
+-import java.sql.Statement;
++import java.sql.*;
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+Index: src/cbit/vcell/messaging/db/SimulationJobTable.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobTable.java	(revision 12055)
++++ src/cbit/vcell/messaging/db/SimulationJobTable.java	(revision 12054)
+@@ -17,9 +17,9 @@
+ import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.VCellServerID;
+ 
++import cbit.htc.PbsJobID;
+ import cbit.sql.Field;
+ import cbit.sql.Table;
+-import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+ import cbit.vcell.modeldb.DatabaseConstants;
+ import cbit.vcell.modeldb.SimulationTable;
+@@ -131,13 +131,13 @@
+ 	//hasData
+ 	String parsedHasData = rset.getString(hasData.toString());
+ 	
+-	HtcJobID parsedHtcJobID = null;
+-	String htcJobIDString = rset.getString(pbsJobID.toString());
+-	if (!rset.wasNull() && htcJobIDString!=null && htcJobIDString.length()>0){
+-		parsedHtcJobID = HtcJobID.fromDatabase(htcJobIDString);
++	PbsJobID parsedPbsJobID = null;
++	String pbsJobIDString = rset.getString(pbsJobID.toString());
++	if (!rset.wasNull() && pbsJobIDString!=null && pbsJobIDString.length()>0){
++		parsedPbsJobID = new PbsJobID(pbsJobIDString);
+ 	}
+ 	
+-	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);
++	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedPbsJobID);
+ 
+ 	VCSimulationIdentifier parsedVCSimID = new VCSimulationIdentifier(parsedSimKey,owner);
+ 	//jobIndex
+@@ -272,8 +272,8 @@
+ 	
+ 	//pbsJobID
+ 	buffer.append(pbsJobID + "=");
+-	if (simExecutionStatus!=null && simExecutionStatus.getHtcJobID() != null) {
+-		buffer.append("'" + simExecutionStatus.getHtcJobID().toDatabase() + "'");
++	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID() != null) {
++		buffer.append("'" + simExecutionStatus.getPbsJobID().getID() + "'");
+ 	} else {
+ 		buffer.append("null");
+ 	}
+@@ -372,8 +372,8 @@
+ 	buffer.append(simulationJobStatus.getServerID() == null? "null," : "'" + simulationJobStatus.getServerID() + "',");
+ 	buffer.append(simulationJobStatus.getJobIndex()+",");
+ 	
+-	if (simExecutionStatus!=null && simExecutionStatus.getHtcJobID()!=null){
+-		buffer.append("'"+simExecutionStatus.getHtcJobID().toDatabase()+"'");
++	if (simExecutionStatus!=null && simExecutionStatus.getPbsJobID()!=null){
++		buffer.append("'"+simExecutionStatus.getPbsJobID().getID()+"'");
+ 	}else{
+ 		buffer.append("null");
+ 	}
+Index: src/cbit/vcell/messaging/db/ServiceTable.java
+===================================================================
+--- src/cbit/vcell/messaging/db/ServiceTable.java	(revision 12055)
++++ src/cbit/vcell/messaging/db/ServiceTable.java	(revision 12054)
+@@ -9,19 +9,16 @@
+  */
+ 
+ package cbit.vcell.messaging.db;
+-import java.sql.ResultSet;
+-import java.sql.SQLException;
++import cbit.vcell.message.server.ServiceSpec;
++import cbit.vcell.message.server.ServiceStatus;
++import cbit.htc.PbsJobID;
++import cbit.sql.*;
++import java.sql.*;
+ 
+ import org.vcell.util.MessageConstants.ServiceType;
+ import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.VCellServerID;
+ 
+-import cbit.sql.Field;
+-import cbit.sql.Table;
+-import cbit.vcell.message.server.ServiceSpec;
+-import cbit.vcell.message.server.ServiceStatus;
+-import cbit.vcell.message.server.htc.HtcJobID;
+-
+ public class ServiceTable extends cbit.sql.Table {
+ 	private static final String TABLE_NAME = "vc_service";
+ 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
+@@ -84,13 +81,13 @@
+ 		parsedStatusMsg = null;
+ 	}
+ 	//host
+-	HtcJobID parsedHtcJobId = null;
+-	String parsedHtcJobDatabaseString = rset.getString(pbsjobid.toString());
+-	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
+-		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
++	PbsJobID parsedPBSJobId = null;
++	String parsedPBSJobIdString = rset.getString(pbsjobid.toString());
++	if (!rset.wasNull() && parsedPBSJobIdString!=null && parsedPBSJobIdString.length()>0) {
++		parsedPBSJobId = new PbsJobID(parsedPBSJobIdString);
+ 	}
+ 	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
+-			parsedDate, parsedStatus, parsedStatusMsg, parsedHtcJobId);
++			parsedDate, parsedStatus, parsedStatusMsg, parsedPBSJobId);
+ 	
+ 	return serviceStatus;
+ }
+@@ -124,8 +121,8 @@
+ 	buffer.append(statusMsg + "='" + serviceStatus.getStatusMsg() + "',");
+ 	//host
+ 	buffer.append(pbsjobid + "=");
+-	if (serviceStatus.getHtcJobId() != null){
+-		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
++	if (serviceStatus.getPbsJobId() != null){
++		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+ 	} else {
+ 		buffer.append("null");
+ 	}
+@@ -163,8 +160,8 @@
+ 	//statusMsg
+ 	buffer.append("'" + serviceStatus.getStatusMsg() + "',");
+ 	//host
+-	if (serviceStatus.getHtcJobId() != null){
+-		buffer.append("'" + serviceStatus.getHtcJobId().toDatabase() + "'");
++	if (serviceStatus.getPbsJobId() != null){
++		buffer.append("'" + serviceStatus.getPbsJobId() + "'");
+ 	} else {
+ 		buffer.append("null");
+ 	}
+Index: src/cbit/vcell/messaging/db/SimulationExecutionStatus.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationExecutionStatus.java	(revision 12055)
++++ src/cbit/vcell/messaging/db/SimulationExecutionStatus.java	(revision 12054)
+@@ -15,7 +15,7 @@
+ import org.vcell.util.Compare;
+ import org.vcell.util.Matchable;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PbsJobID;
+ 
+ 
+ /**
+@@ -29,17 +29,17 @@
+ 	private Date fieldEndDate = null;
+ 	private String fieldComputeHost = null;
+ 	private boolean fieldHasData = false;
+-	private HtcJobID fieldHtcJobID = null;
++	private PbsJobID fieldPbsJobID = null;
+ /**
+  * SimulationExecutionStatus constructor comment.
+  */
+-public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, HtcJobID htcJobID) {
++public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, PbsJobID pbsJobID) {
+ 	fieldStartDate = startDate;
+ 	fieldComputeHost = computeHost;
+ 	fieldLatestUpdateDate = latestUpdateDate;
+ 	fieldEndDate = endDate;
+ 	fieldHasData = hasData;
+-	fieldHtcJobID = htcJobID;
++	fieldPbsJobID = pbsJobID;
+ }
+ /**
+  * Checks for internal representation of objects, not keys from database
+@@ -69,7 +69,7 @@
+ 			//System.out.println("fieldLatestUpdateDate not = ");
+ 			return false;
+ 		}
+-		if (!Compare.isEqualOrNull(fieldHtcJobID,exeStatus.fieldHtcJobID)){
++		if (!Compare.isEqualOrNull(fieldPbsJobID,exeStatus.fieldPbsJobID)){
+ 			return false;
+ 		}
+ 		
+@@ -118,8 +118,8 @@
+ 	return fieldHasData;
+ }
+ 
+-public HtcJobID getHtcJobID(){
+-	return fieldHtcJobID;
++public PbsJobID getPbsJobID(){
++	return fieldPbsJobID;
+ }
+ /**
+  * Insert the method's description here.
+Index: src/cbit/vcell/mongodb/VCMongoMessage.java
+===================================================================
+--- src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12055)
++++ src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12054)
+@@ -9,6 +9,7 @@
+ import org.vcell.util.MessageConstants;
+ import org.vcell.util.document.VCellServerID;
+ 
++import cbit.htc.PbsJobID;
+ import cbit.rmi.event.MessageEvent;
+ import cbit.rmi.event.SimulationJobStatusEvent;
+ import cbit.rmi.event.WorkerEvent;
+@@ -17,8 +18,8 @@
+ import cbit.vcell.message.VCRpcRequest;
+ import cbit.vcell.message.messages.StatusMessage;
+ import cbit.vcell.message.messages.WorkerEventMessage;
+-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.vcell.message.server.pbs.PbsProxy;
++import cbit.vcell.message.server.pbs.PbsProxy.CommandOutput;
+ import cbit.vcell.messaging.db.SimulationExecutionStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+@@ -76,7 +77,7 @@
+ 	public final static String MongoMessage_msgtype_clientTimeout						= "clientTimeout";
+ 	public final static String MongoMessage_msgtype_jmsMessageReceived					= "jmsMessageReceived";
+ 	public final static String MongoMessage_msgtype_jmsMessageSent						= "jmsMessageSent";
+-	public final static String MongoMessage_msgtype_commandServiceCall					= "pbsCall";
++	public final static String MongoMessage_msgtype_pbsCall								= "pbsCall";
+ 	public final static String MongoMessage_msgtype_infoMsg								= "infoMsg";
+ 	public final static String MongoMessage_msgTime				= "msgTime";
+ 	public final static String MongoMessage_msgTimeNice			= "msgTimeNice";
+@@ -116,8 +117,8 @@
+ 	public final static String MongoMessage_solverEventType		= "solverEventType";
+ 	public final static String MongoMessage_simComputeResource	= "simComputeResource";
+ 	public final static String MongoMessage_simEstMemory		= "simEstMemory";
+-	public final static String MongoMessage_htcJobID			= "htcJobID";
+-	public final static String MongoMessage_htcWorkerMsg		= "htcWorkerMsg";
++	public final static String MongoMessage_pbsJobID			= "pbsJobID";
++	public final static String MongoMessage_pbsWorkerMsg		= "pbsWorkerMsg";
+ 	public final static String MongoMessage_rpcRequestMethod	= "rpcMethod";
+ 	public final static String MongoMessage_rpcRequestArgs		= "rpcArgs";
+ 	public final static String MongoMessage_rpcRequestService	= "rpcService";
+@@ -484,7 +485,7 @@
+ 		}
+ 	}
+ 
+-	public static void sendPBSWorkerMessage(SimulationTask simulationTask, HtcJobID htcJobID, String htcWorkerMsg) {
++	public static void sendPBSWorkerMessage(SimulationTask simulationTask, PbsJobID pbsJobID, String pbsWorkerMsg) {
+ 		if (!enabled){
+ 			return;
+ 		}
+@@ -493,9 +494,9 @@
+ 
+ 			addHeader(dbObject,MongoMessage_msgtype_workerEventMessage);
+ 
+-			dbObject.put(MongoMessage_htcWorkerMsg, htcWorkerMsg);
+-			if (htcJobID!=null){
+-				dbObject.put(MongoMessage_htcJobID, htcJobID.toDatabase());
++			dbObject.put(MongoMessage_pbsWorkerMsg, pbsWorkerMsg);
++			if (pbsJobID!=null){
++				dbObject.put(MongoMessage_pbsJobID, pbsJobID.getID());
+ 			}
+ 	
+ 			addObject(dbObject,simulationTask);
+@@ -544,14 +545,14 @@
+ 		}
+ 	}
+ 
+-	public static void sendCommandServiceCall(CommandOutput commandOutput) {
++	public static void sendPbsCall(PbsProxy pbsProxyLocal, CommandOutput commandOutput) {
+ 		if (!enabled){
+ 			return;
+ 		}
+ 		try {
+ 			BasicDBObject dbObject = new BasicDBObject();
+ 
+-			addHeader(dbObject,MongoMessage_msgtype_commandServiceCall);
++			addHeader(dbObject,MongoMessage_msgtype_pbsCall);
+ 
+ 			addObject(dbObject, commandOutput);
+ 			
+@@ -781,8 +782,8 @@
+ 		dbObject.put(MongoMessage_simId,workerEvent.getVCSimulationDataIdentifier().getSimulationKey().toString());
+ 		dbObject.put(MongoMessage_jobIndex, workerEvent.getJobIndex());
+ 		dbObject.put(MongoMessage_taskId, workerEvent.getTaskID());
+-		if (workerEvent.getHtcJobID()!=null){
+-			dbObject.put(MongoMessage_htcJobID, workerEvent.getHtcJobID().toDatabase());
++		if (workerEvent.getPbsJobID()!=null){
++			dbObject.put(MongoMessage_pbsJobID, workerEvent.getPbsJobID().toString());
+ 		}
+ 		//workerEvent.getEventTypeID();
+ 		//workerEvent.getMessageData();
+@@ -840,8 +841,8 @@
+ 			dbObject.put(MongoMessage_latestUpdateTime, simExeStatus.getLatestUpdateDate().getTime());
+ 			dbObject.put(MongoMessage_latestUpdateTimeNice, simExeStatus.getLatestUpdateDate().toString());
+ 		}
+-		if (simExeStatus.getHtcJobID()!=null){
+-			dbObject.put(MongoMessage_htcJobID, simExeStatus.getHtcJobID().toDatabase());
++		if (simExeStatus.getPbsJobID()!=null){
++			dbObject.put(MongoMessage_pbsJobID, simExeStatus.getPbsJobID().getID());
+ 		}
+ 	}
+ 	
+@@ -852,8 +853,8 @@
+ 		DetailedState detailedState = simMessage.getDetailedState();
+ 		dbObject.put(MongoMessage_simMessageState,detailedState.name());
+ 		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
+-		if (simMessage.getHtcJobId()!=null){
+-			dbObject.put(MongoMessage_htcJobID,simMessage.getHtcJobId().toDatabase());
++		if (simMessage.getPbsJobId()!=null){
++			dbObject.put(MongoMessage_pbsJobID,simMessage.getPbsJobId().getID());
+ 		}
+ 	}
+ 
+Index: src/cbit/vcell/solvers/PBSSolver.java
+===================================================================
+--- src/cbit/vcell/solvers/PBSSolver.java	(revision 12055)
++++ src/cbit/vcell/solvers/PBSSolver.java	(revision 12054)
+@@ -15,8 +15,9 @@
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.SessionLog;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
+-import cbit.vcell.message.server.htc.HtcProxy;
++import cbit.htc.PBSConstants;
++import cbit.htc.PbsJobID;
++import cbit.vcell.message.server.pbs.PbsProxy;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.solver.SimulationMessage;
+@@ -30,7 +31,7 @@
+  */
+ public class PBSSolver extends HTCSolver {
+ 	private static String PBS_SUBMIT_FILE_EXT = ".pbs.sub";
+-	private HtcProxy htcProxy = null;
++	private PbsProxy pbsProxy = null;
+ /**
+  * CondorSolver constructor comment.
+  * @param simTask cbit.vcell.messaging.server.SimulationTask
+@@ -38,9 +39,9 @@
+  * @param sessionLog cbit.vcell.server.SessionLog
+  * @exception cbit.vcell.solver.SolverException The exception description.
+  */
+-public PBSSolver(HtcProxy htcProxy, SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
++public PBSSolver(PbsProxy pbsProxy, SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+ 	super(simTask, directory, sessionLog);
+-	this.htcProxy = htcProxy;
++	this.pbsProxy = pbsProxy;
+ }
+ 
+ /**
+@@ -49,15 +50,15 @@
+  * @throws SolverException 
+  * @throws ExecutableException 
+  */
+-private HtcJobID submit2PBS() throws Exception {
++private PbsJobID submit2PBS() throws Exception {
+ 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_SUBMITTING);
+ 	String cmd = getExecutableCommand();
+ 	String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
+-	String jobname = HtcProxy.createHtcSimJobName(simulationTask.getSimKey(), simulationTask.getSimulationJob().getJobIndex());  //"S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
++	String jobname = PBSConstants.createPBSSimJobName(simulationTask.getSimKey(), simulationTask.getSimulationJob().getJobIndex());  //"S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
+ 	ArrayList<String> command = new ArrayList<String>();
+ 	command.add(cmd);
+ 	command.addAll(cmdArguments);
+-	HtcJobID jobid = htcProxy.submitJob(jobname, subFile, command.toArray(new String[0]), 1, simulationTask.getEstimatedMemorySizeMB());
++	PbsJobID jobid = pbsProxy.submitJob(simulationTask.getComputeResource(), jobname, subFile, command.toArray(new String[0]), 1, simulationTask.getEstimatedMemorySizeMB());
+ 	if (jobid == null) {
+ 		fireSolverAborted(SimulationMessage.jobFailed("Failed. (error message: submitting to job scheduler failed)."));
+ 		return null;
+@@ -160,7 +161,7 @@
+ 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.initialize()");
+ 		initialize();
+ 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "calling PBSSolver.submit2PBS()");
+-		HtcJobID jobID = submit2PBS();
++		PbsJobID jobID = submit2PBS();
+ 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,jobID, "PBSSolver.submit2PBS() returned");
+ 	} catch (Throwable throwable) {
+ 		VCMongoMessage.sendPBSWorkerMessage(simulationTask,null, "PBSSolver.startSolver() exception: "+throwable.getClass().getName()+" "+throwable.getMessage());
+Index: src/cbit/vcell/solvers/AbstractSolver.java
+===================================================================
+--- src/cbit/vcell/solvers/AbstractSolver.java	(revision 12055)
++++ src/cbit/vcell/solvers/AbstractSolver.java	(revision 12054)
+@@ -86,7 +86,7 @@
+  */
+ protected void fireSolverAborted(SimulationMessage message) {
+ 	// Create event
+-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getHtcJobId());
++	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_ABORTED, message, getProgress(), getCurrentTime(), message.getPbsJobId());
+ 	VCMongoMessage.sendSolverEvent(event);
+ 	// Guaranteed to return a non-null array
+ 	Object[] listeners = listenerList.getListenerList();
+@@ -162,7 +162,7 @@
+  */
+ protected void fireSolverStarting(SimulationMessage message) {
+ 	// Create event
+-	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getHtcJobId());
++	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STARTING, message, 0, 0, message.getPbsJobId());
+ 	VCMongoMessage.sendSolverEvent(event);
+ 	// Guaranteed to return a non-null array
+ 	Object[] listeners = listenerList.getListenerList();
+Index: src/cbit/vcell/client/desktop/simulation/SimulationStatusDetailsTableModel.java
+===================================================================
+--- src/cbit/vcell/client/desktop/simulation/SimulationStatusDetailsTableModel.java	(revision 12055)
++++ src/cbit/vcell/client/desktop/simulation/SimulationStatusDetailsTableModel.java	(revision 12054)
+@@ -25,10 +25,10 @@
+ 	private final static int COLUMN_SUBMITDATE = 4;
+ 	private final static int COLUMN_STARTDATE = 5;
+ 	private final static int COLUMN_ENDDATE = 6;
+-	private final static int COLUMN_HTCID = 7;
++	private final static int COLUMN_PBSID = 7;
+ 	private final static int COLUMN_TASKID = 8;
+ 	
+-	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date", "HTC ID", "Task ID"};
++	private String[] columnNames = new String[] {"Scan Index", "Status", "Compute Host", "Software Version", "Submit Date", "Start Date", "End Date", "PBS ID", "Task ID"};
+ 	protected transient java.beans.PropertyChangeSupport propertyChange;
+ 	private SimulationStatusDetails fieldSimulationStatusDetails = null;
+ 
+@@ -172,11 +172,11 @@
+ 				}
+ 				return jobStatus.getEndDate();
+ 			}
+-			case COLUMN_HTCID : {
+-				if (jobStatus == null || jobStatus.getSimulationExecutionStatus()==null || jobStatus.getSimulationExecutionStatus().getHtcJobID()==null) {
++			case COLUMN_PBSID : {
++				if (jobStatus == null || jobStatus.getSimulationExecutionStatus()==null || jobStatus.getSimulationExecutionStatus().getPbsJobID()==null) {
+ 					return null;
+ 				}
+-				return jobStatus.getSimulationExecutionStatus().getHtcJobID().toDatabase();
++				return jobStatus.getSimulationExecutionStatus().getPbsJobID().getID();
+ 			}
+ 			case COLUMN_TASKID : {
+ 				if (jobStatus == null) {
+Index: src/cbit/rmi/event/WorkerEvent.java
+===================================================================
+--- src/cbit/rmi/event/WorkerEvent.java	(revision 12055)
++++ src/cbit/rmi/event/WorkerEvent.java	(revision 12054)
+@@ -12,7 +12,7 @@
+ 
+ import org.vcell.util.document.User;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID;
++import cbit.htc.PbsJobID;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.solver.Simulation;
+ import cbit.vcell.solver.SimulationJob;
+@@ -43,7 +43,7 @@
+ 	private Double progress = null;
+ 	private Double timePoint = null;
+ 	private SimulationMessage eventMessage = null;
+-	private HtcJobID htcJobID = null;
++	private PbsJobID pbsJobID = null;
+ 
+ public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, SimulationMessage arg_eventMessage) {
+ 	super(source, new MessageSource(source, Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));
+@@ -146,8 +146,8 @@
+ 	return timePoint;
+ }
+ 
+-public HtcJobID getHtcJobID(){
+-	return htcJobID;
++public PbsJobID getPbsJobID(){
++	return pbsJobID;
+ }
+ /**
+  * Insert the method's description here.
+@@ -275,8 +275,8 @@
+ 	return eventType == JOB_WORKER_ALIVE;
+ }
+ 
+-public void setHtcJobID(HtcJobID htcJobID) {
+-	this.htcJobID = htcJobID;
++public void setPbsJobID(PbsJobID pbsJobID) {
++	this.pbsJobID = pbsJobID;
+ }
+ 
+ public String show(){
+Index: src/cbit/htc/PBSConstants.java
+===================================================================
+--- src/cbit/htc/PBSConstants.java	(revision 0)
++++ src/cbit/htc/PBSConstants.java	(revision 12054)
+@@ -0,0 +1,262 @@
++/*
++ * Copyright (C) 1999-2011 University of Connecticut Health Center
++ *
++ * Licensed under the MIT License (the "License").
++ * You may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at:
++ *
++ *  http://www.opensource.org/licenses/mit-license.php
++ */
++
++package cbit.htc;
++
++import org.vcell.util.document.KeyValue;
++
++
++
++public class PBSConstants {
++	
++	public enum PBSJobStatus {
++		Completed("C"),
++		Exiting("E"),
++		Held("H"),
++		Queued("Q"),
++		Running("R"),
++		Moving("T"),
++		Waiting("W"),
++		Suspended("S");
++		
++		private String pbsCommandLetter;
++		private PBSJobStatus(String pbsCommandLetter){
++			this.pbsCommandLetter = pbsCommandLetter;
++		}
++		public String getPBSCommandLetter(){
++			return pbsCommandLetter;
++		}
++
++		public boolean isCompleted() {
++			return this.equals(Completed);
++		}
++		public boolean isExiting() {
++			return this.equals(Exiting);
++		}
++		public boolean isHeld() {
++			return this.equals(Held);
++		}
++		public boolean isQueued() {
++			return this.equals(Queued);
++		}
++		public boolean isRunning() {
++			return this.equals(Running);
++		}
++		public boolean isMoving() {
++			return this.equals(Moving);
++		}
++		public boolean isWaiting() {
++			return this.equals(Waiting);
++		}
++		public boolean isSuspended() {
++			return this.equals(Suspended);
++		}
++		public String getDescription() {
++			return name();
++		}
++		public static PBSJobStatus fromPBSCommandLetter(String pbsCommandLetter) {
++			for (PBSJobStatus status : values()){
++				if (status.getPBSCommandLetter().equals(pbsCommandLetter)){
++					return status;
++				}
++			}
++			return null;
++		}
++	};
++
++//	static final int PBS_STATUS_UNKNOWN = -1; 			//Not a status in PBS. 
++//	static final int PBS_STATUS_JOBARRAYSTARTED = 0; 	//Job arrays only: job array has started
++//	static final int PBS_STATUS_EXITING = 1; 			// Job is exiting after having run
++//	static final int PBS_STATUS_HELD = 2; 				// Job is held. A job is put into a held state by the server or by a user or
++//																// administrator. A job stays in a held state until it is released by a user or
++//																// administrator.
++//	static final int PBS_STATUS_QUEUED = 3; 				//Job is queued, eligible to run or be routed
++//	static final int PBS_STATUS_RUNNING = 4; 			//Job is running
++//	static final int PBS_STATUS_SUSPENDEDBYSERVER = 5; 	//Job is suspended by server. A job is put into the suspended state when a
++//																//higher priority job needs the resources.
++//	static final int PBS_STATUS_TRANSITING = 6; 			//Job is in transition (being moved to a new location)
++//	static final int PBS_STATUS_SUSPENDEDBYUSER = 7; 	//Job is suspended due to workstation becoming busy
++//	static final int PBS_STATUS_WAITING = 8; 			//Job is waiting for its requested execution time to be reached or job specified
++//																//a stage-in request which failed for some reason.
++//	static final int PBS_STATUS_SUBJOBFINISHED = 9;		//Subjobs only; subjob is finished (expired.)
++//	
++//	private static final String[] PBS_JOB_STATUS = {"B", "E", "H", "Q", "R", "S", "T", "U", "W", "X"};
++
++	/*
++	The exit value of a job may fall in one of three ranges: X < 0, 0 <=X < 128, X >=128.
++	
++	X < 0:
++	This is a PBS special return value indicating that the job could not be executed. These
++	negative values are listed in the table below.
++	
++	0 <= X < 128 (or 256):
++	This is the exit value of the top process in the job, typically the shell. This may be the exit
++	value of the last command executed in the shell or the .logout script if the user has such a
++	script (csh).
++	
++	X >= 128 (or 256 depending on the system)
++	This means the job was killed with a signal. The signal is given by X modulo 128 (or
++	256). For example an exit value of 137 means the job's top process was killed with signal
++	9 (137 % 128 = 9).
++	 */
++	
++	public enum PBSJobExitCode {
++		OK(0,"job exec successful"),
++		FAIL1(-1,"Job exec failed, before files, no retry"),
++		FAIL2(-2,"Job exec failed, after files, no retry"),
++		RETRY(-3,"Job execution failed, do retry"),
++		INITABT(-4,"Job aborted on MOM initialization"),
++		INITRST(-5,"Job aborted on MOM init, chkpt, no migrate"),
++		INITRMG(-6,"Job aborted on MOM init, chkpt, ok migrate"),
++		BADRESRT(-7,"Job restart failed"),
++		GLOBUS_INIT_RETRY(-8,"Init. globus job failed. do retry"),
++		GLOBUS_INIT_FAIL(-9,"Init. globus job failed. no retry"),
++		FAILUID(-10,"invalid uid/gid for job"),
++		RERUN(-11,"Job rerun"),
++		CHKP(-12,"Job was checkpointed and killed"),
++		FAIL_PASSWORD(-13,"Job failed due to a bad password");
++	
++		private int pbsExitCode;
++		private String desc;
++		private PBSJobExitCode(int pbsExitCode, String desc){
++			this.pbsExitCode = pbsExitCode;
++			this.desc = desc;
++		}
++
++		public static PBSJobExitCode fromPBSJobExitCode(int retcode) {
++			for (PBSJobExitCode exitCode : PBSJobExitCode.values()){
++				if (exitCode.getPbsReturnCode() == retcode){
++					return exitCode;
++				}
++			}
++			return null;
++		}
++	
++		public int getPbsReturnCode(){
++			return pbsExitCode;
++		}
++		public String getDescription(){
++			return desc;
++		}
++		public boolean isOK() {
++			return this.equals(OK);
++		}
++		public boolean isFAIL1() {
++			return this.equals(FAIL1);
++		}
++		public boolean isFAIL2() {
++			return this.equals(FAIL2);
++		}
++		public boolean isRETRY() {
++			return this.equals(RETRY);
++		}
++		public boolean isINITABT() {
++			return this.equals(INITABT);
++		}
++		public boolean isINITRST() {
++			return this.equals(INITRST);
++		}
++		public boolean isINITRMG() {
++			return this.equals(INITRMG);
++		}
++		public boolean isBADRESRT() {
++			return this.equals(BADRESRT);
++		}
++		public boolean isGLOBUS_INIT_RETRY() {
++			return this.equals(GLOBUS_INIT_RETRY);
++		}
++		public boolean isGLOBUS_INIT_FAIL() {
++			return this.equals(GLOBUS_INIT_FAIL);
++		}
++		public boolean isFAILUID() {
++			return this.equals(FAILUID);
++		}
++		public boolean isRERUN() {
++			return this.equals(RERUN);
++		}
++		public boolean isCHKP() {
++			return this.equals(CHKP);
++		}
++		public boolean isFAIL_PASSWORD() {
++			return this.equals(FAIL_PASSWORD);
++		}
++
++	}
++//	static final int JOB_EXEC_OK = 0; 					//	job exec successful
++//	static final int JOB_EXEC_FAIL1 =  -1; 				//	"Job exec failed, before files, no retry"
++//	static final int JOB_EXEC_FAIL2 =  -2; 				//	"Job exec failed, after files, no retry"
++//	static final int JOB_EXEC_RETRY =  -3; 				//	"Job execution failed, do retry"
++//	static final int JOB_EXEC_INITABT =  -4; 			//	Job aborted on MOM initialization
++//	static final int JOB_EXEC_INITRST =  -5; 			//	"Job aborted on MOM init, chkpt, no migrate"
++//	static final int JOB_EXEC_INITRMG =  -6; 			//	"Job aborted on MOM init, chkpt, ok migrate"
++//	static final int JOB_EXEC_BADRESRT =  -7; 			//	Job restart failed
++//	static final int JOB_EXEC_GLOBUS_INIT_RETRY  =  -8; 	//	Init. globus job failed. do retry
++//	static final int JOB_EXEC_GLOBUS_INIT_FAIL =  -9; 	//	Init. globus job failed. no retry
++//	static final int JOB_EXEC_FAILUID =  -10; 			//	invalid uid/gid for job
++//	static final int JOB_EXEC_RERUN =  -11; 				//	Job rerun
++//	static final int JOB_EXEC_CHKP  =  -12; 				//	Job was checkpointed and killed
++//	static final int JOB_EXEC_FAIL_PASSWORD = -13;		// Job failed due to a bad password
++//	
++//	static final String[] PBS_JOB_EXEC_STATUS = {
++//		"job exec successful",
++//		"Job exec failed, before files, no retry",
++//		"Job exec failed, after files, no retry",
++//		"Job execution failed, do retry",
++//		"Job aborted on MOM initialization",
++//		"Job aborted on MOM init, chkpt, no migrate",
++//		"Job aborted on MOM init, chkpt, ok migrate",
++//		"Job restart failed",
++//		"Init. globus job failed. do retry",
++//		"Init. globus job failed. no retry",
++//		"invalid uid/gid for job",
++//		"Job rerun",
++//		"Job was checkpointed and killed",
++//		"Job failed due to a bad password"
++//	};
++	
++//	public static final int PBS_SIMULATION_JOB = 1;
++//	public static final int PBS_SERVICE_JOB = 2;
++	
++	public static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
++	public static final String PBS_WORK_QUEUE_PREFIX = "workq";
++	public final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
++	public final static String PBS_SIMULATION_JOB_NAME_PREFIX = "S_";
++
++	public static String createPBSSimJobName(KeyValue simKey, int simJobIndex) {
++		return PBS_SIMULATION_JOB_NAME_PREFIX+simKey.toString()+"_"+simJobIndex;
++	}
++	
++	public static String QSTAT_FULL_CLUSTER_COMMAND_PATH = "//cm//shared//apps//torque//2.5.5//bin//qstat";
++	
++	public static final String PBS_JOB_TEMPLATE = 
++		    "#PBS -m a\r\n"
++			+"#PBS -M schaff@neuron.uchc.edu\r\n"
++			+"#PBS -j oe\r\n"
++			+"#PBS -k oe\r\n"
++			+"#PBS -r n\r\n"
++			+"#PBS -l nice=10\r\n"
++			+"\r\n"
++			+"export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\r\n"
++			+"export LD_LIBRARY_PATH=/share/apps/sonic/mq8.5.1:$LD_LIBRARY_PATH\r\n";
++
++
++	public final static String JOB_CMD_SUBMIT = "/cm/shared/apps/torque/2.5.5/bin/qsub";
++	public final static String JOB_CMD_DELETE = "/cm/shared/apps/torque/2.5.5/bin/qdel";
++	public final static String JOB_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";	
++	public final static String JOB_CMD_HISTORY = "/cm/shared/apps/torque/2.5.5/bin/tracejob";
++	//public final static String SERVER_CMD_STATUS = "qstat";
++	public final static String SERVER_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";
++	public final static int PBS_MEM_OVERHEAD_MB = 70;
++	
++	public enum PBSJobCategory {
++		PBS_SIMULATION_JOB,
++		PBS_SERVICE_JOB;
++	}
++}
+Index: src/cbit/htc/PbsJobID.java
+===================================================================
+--- src/cbit/htc/PbsJobID.java	(revision 0)
++++ src/cbit/htc/PbsJobID.java	(revision 12054)
+@@ -0,0 +1,33 @@
++package cbit.htc;
++
++import java.io.Serializable;
++
++import org.vcell.util.Compare;
++import org.vcell.util.Matchable;
++
++public class PbsJobID implements Serializable, Matchable {
++	private String jobID;
++	
++	public PbsJobID(String jobID){
++		this.jobID = jobID;
++	}
++	
++	public String toString(){
++		return getID();
++	}
++	
++	public String getID(){
++		return this.jobID;
++	}
++	
++	public boolean compareEqual(Matchable obj) {
++		if (obj instanceof PbsJobID){
++			PbsJobID other = (PbsJobID)obj;
++			if (!Compare.isEqual(jobID,other.jobID)){
++				return false;
++			}
++			return true;
++		}
++		return false;
++	}
++}
+Index: src/org/vcell/util/PropertyLoader.java
+===================================================================
+--- src/org/vcell/util/PropertyLoader.java	(revision 12055)
++++ src/org/vcell/util/PropertyLoader.java	(revision 12054)
+@@ -13,12 +13,10 @@
+ import java.util.Arrays;
+ import java.util.Vector;
+ 
+-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+ 
+ 
+ 
+ 
+-
+ public class PropertyLoader {
+ 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
+ 	public static final String ADMINISTRATOR_ID = "2";
+@@ -141,9 +139,6 @@
+ 
+ 	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
+ 	
+-	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
+-	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
+-	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
+ 	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
+ 	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
+ 	public static final String htcComputeResources = "vcell.htc.computeresources";

@@ -65,6 +65,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
@@ -715,16 +716,16 @@ public class FRAPStudy implements Matchable{
 		}
 		
 		int jobIndex = 0;
-		SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
+		SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 		ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
-			simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+			simTask.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
 //			simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 		}
 		
-		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
+		FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
 		fvSolver.startSolver();
 		
 		SolverStatus status = fvSolver.getSolverStatus();
@@ -776,17 +777,17 @@ public class FRAPStudy implements Matchable{
 			}
 			
 			int jobIndex = 0;
-			SimulationJob simJob = new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs);
+			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 			//if we need to check steady state, do the following two lines
 			if(bCheckSteadyState)
 			{
-				simJob.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
-				simJob.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
+				simTask.getSimulation().getSolverTaskDescription().setStopAtSpatiallyUniformErrorTolerance(ErrorTolerance.getDefaultSpatiallyUniformErrorTolerance());
+				simTask.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 			}
 			
 			ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
-			FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);		
+			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
 			fvSolver.startSolver();
 			
 			SolverStatus status = fvSolver.getSolverStatus();
