@@ -57,7 +57,7 @@ public class SolverPostprocessor  {
 
 			vcMessagingService = VCMessagingService.createInstance();
 			VCMessageSession session = vcMessagingService.createProducerSession();
-			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, new SolverPostprocessor(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
 			try {
 				Thread.sleep(2000);
