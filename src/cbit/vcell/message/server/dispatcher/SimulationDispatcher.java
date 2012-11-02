@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -52,6 +53,7 @@ import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
@@ -213,10 +215,13 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 		
 		private void killZombieProcesses() throws ExecutableException{
-			TreeMap<HtcJobID, String> runningSimulations = htcProxy.getRunningSimulationJobIDs();
-			for (HtcJobID htcJobID : runningSimulations.keySet()){
+			List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
+			List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
+			for (int i=0;i<runningSimulations.size();i++){
+				HtcJobID htcJobID = runningSimulations.get(i);
+				HtcJobInfo jobInfo = jobInfos.get(i);
 				try {
-					String simJobName = runningSimulations.get(htcJobID);
+					String simJobName = jobInfo.getJobName();
 					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
 					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
 					String failureMessage = null;
