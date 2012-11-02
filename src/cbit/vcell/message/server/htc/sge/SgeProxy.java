@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -446,7 +447,7 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 			
 			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
 			while (remainingJobIDs.size()>0){
-				List<HtcJobID> currentJobIDs = remainingJobIDs.subList(0, Math.min(MAX_NUM_JOBS_IN_QUERY,remainingJobIDs.size()));
+				List<HtcJobID> currentJobIDs = new ArrayList<HtcJobID>(Arrays.asList(remainingJobIDs.subList(0, Math.min(MAX_NUM_JOBS_IN_QUERY,remainingJobIDs.size())).toArray(new HtcJobID[0])));
 				remainingJobIDs.removeAll(currentJobIDs);
 
 				Vector<String> cmdV = new Vector<String>();
