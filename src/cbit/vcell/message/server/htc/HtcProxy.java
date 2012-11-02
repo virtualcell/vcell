@@ -35,28 +35,31 @@ public abstract class HtcProxy {
 	 *
 	 */
 	
-	public static class ServiceJobInfo{
+	public static class HtcJobInfo{
 		private HtcJobID htcJobID;
-		private String serviceJobName;
+		private String jobName;
 		private String errorPath;
 		private String outputPath;
-		public ServiceJobInfo(HtcJobID htcJobID, String serviceJobName,String errorPath,String outputPath) {
+		public HtcJobInfo(HtcJobID htcJobID, String jobName,String errorPath,String outputPath) {
 			this.htcJobID = htcJobID;
-			this.serviceJobName = serviceJobName;
+			this.jobName = jobName;
 			this.errorPath = errorPath;
 			this.outputPath = outputPath;
 		}
 		public HtcJobID getHtcJobID() {
 			return htcJobID;
 		}
-		public String getServiceJobName(){
-			return serviceJobName;
+		public String getJobName(){
+			return jobName;
 		}
 		public String getErrorPath() {
 			return errorPath;
 		}
 		public String getOutputPath() {
 			return outputPath;
+		}
+		public String toString(){
+			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
 		}
 	}
 	protected enum HtcJobCategory {
@@ -106,12 +109,17 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 	
-	public abstract TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+	public final List<HtcJobID> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		return getRunningJobIDs(serverID.toString().toUpperCase()+"_");
+	}
 
-	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
+	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
+		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
+	}
 
-	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
-	public abstract Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException;
+	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
+	
+	public abstract List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;

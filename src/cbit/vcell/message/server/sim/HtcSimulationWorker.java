@@ -14,8 +14,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -53,6 +53,7 @@ import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -220,10 +221,13 @@ private void initServiceControlTopicListener() {
 									// should only return one running job with this name (sim/job/task) (but handles more than one).
 									//
 									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
-									TreeMap<HtcJobID, String> runningJobs = threadLocalHtcProxy.getRunningJobs(simJobName);
-									for (HtcJobID htcJobID : runningJobs.keySet()){
+									List<HtcJobID> htcJobIDs = threadLocalHtcProxy.getRunningSimulationJobIDs();
+									List<HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
+									for (HtcJobInfo htcJobInfo : htcJobInfos){
 										try {
-											threadLocalHtcProxy.killJob(htcJobID);
+											if (htcJobInfo.getJobName().equals(simJobName)){
+												threadLocalHtcProxy.killJob(htcJobInfo.getHtcJobID());
+											}
 										} catch (Exception e) {
 											log.exception(e);
 										}
