@@ -15,7 +15,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="sshj"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="lib/activemq-core-5.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/camel-jms-2.9.2.jar"/>
@@ -74,5 +73,6 @@
 	<classpathentry kind="lib" path="lib/ucp.jar"/>
 	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="lib/sshj-0.8.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
