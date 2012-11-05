@@ -108,6 +108,14 @@ public class HtcTest {
 //			e.printStackTrace(System.out);
 //		}
 
+		
+		System.out.println("<<<<<--------------  printing running simulations --------------->>>>>>");
+		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("ALPHA");
+		List<HtcJobInfo> htcJobInfos = htcProxy.getJobInfos(htcJobIDs);
+		for (HtcJobInfo htcJobInfo : htcJobInfos){
+			System.out.println("jobInfo = "+htcJobInfo);
+		}
+		
 		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
 		HtcJobStatus jobStatus2 = null;
 		while (jobStatus2 == null || jobStatus2.isRunning()){

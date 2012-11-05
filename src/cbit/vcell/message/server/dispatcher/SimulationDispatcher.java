@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -67,6 +68,7 @@ import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.AbstractSolver;
 
@@ -118,11 +120,21 @@ public class SimulationDispatcher extends ServiceProvider {
 						
 						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
 						
+						//
+						// temporarily save simulations during this dispatch iteration (to expedite dispatching multiple simulation jobs for same simulation).
+						// cache is discarded after use.
+						//
+						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
 						for (WaitingJob waitingJob : waitingJobs){
 							SimulationJobStatus jobStatus = waitingJob.simJobStatusInfo.getSimJobStatus();
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
-							
-							simDispatcherEngine.onDispatch(vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(), simulationDatabase, dispatcherQueueSession, log);
+							KeyValue simKey = vcSimID.getSimulationKey();
+							Simulation sim = tempSimulationMap.get(simKey);
+							if (sim==null){
+								sim = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
+								tempSimulationMap.put(simKey, sim);
+							}
+							simDispatcherEngine.onDispatch(sim, vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(), simulationDatabase, dispatcherQueueSession, log);
 							bDispatchedAnyJobs = true;
 							
 							Thread.yield();
