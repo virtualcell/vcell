@@ -35,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
@@ -79,6 +80,7 @@ import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
@@ -93,6 +95,7 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;
@@ -316,6 +319,19 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 										}
 									}
 									MathMapping mathMapping = simContexts[j].createNewMathMapping();
+
+									// for older models that do not have absolute compartment sizes set, but have relative sizes (SVR/VF); or if there is only one compartment with size not set, 
+									// compute absolute compartment sizes using relative sizes and assuming a default value of '1' for one of the compartments.
+									// Otherwise, the math generation will fail, since for the relaxed topology (VCell 5.3 and later) absolute compartment sizes are required.
+									GeometryContext gc = simContexts[j].getGeometryContext();
+									if (simContexts[j].getGeometry().getDimension() == 0 &&
+										((gc.isAllSizeSpecifiedNull() && !gc.isAllVolFracAndSurfVolSpecifiedNull()) || (gc.getModel().getStructures().length == 1 && gc.isAllSizeSpecifiedNull())) ) {
+										// choose the first structure in model and set its size to '1'.
+										Structure struct = simContexts[j].getModel().getStructure(0);
+										double structSize = 1.0;
+										StructureSizeSolver.updateAbsoluteStructureSizes(simContexts[j], struct, structSize, struct.getStructureSize().getUnitDefinition());
+									}
+									
 									simContexts[j].setMathDescription(mathMapping.getMathDescription());
 								}
 								Simulation[] sims = bioModel.getSimulations();

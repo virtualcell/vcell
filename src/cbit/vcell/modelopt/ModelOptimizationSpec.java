@@ -14,6 +14,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -54,7 +56,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
@@ -76,6 +77,8 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 	
 	private boolean bComputeProfileDistributions = false;
 	private ParameterEstimationTask parameterEstimationTask;
+	
+	protected List<Issue> localIssueList = new Vector<Issue>();
 
 /**
  * ModelOptimizationSpec constructor comment.
@@ -107,7 +110,9 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 	}
 	if (!bExperimentalDataMapped) {
 		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column.",Issue.SEVERITY_WARNING));
-	}	
+	}
+	
+	issueList.addAll(localIssueList);
 }
 
 public boolean hasSelectedParameters()
@@ -470,9 +475,10 @@ public void removeUncoupledParameters() {
 		ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[paramMappingSpecsList.size()];
 		paramMappingSpecsList.toArray(parameterMappingSpecs);
 		setParameterMappingSpecs(parameterMappingSpecs);
-	}catch (Exception e){
+	} catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		localIssueList.add(new Issue(this,IssueCategory.ParameterEstimationGeneralWarning, e.getMessage(),Issue.SEVERITY_WARNING));
+		// throw new RuntimeException(e.getMessage());
 	}
 }
 
