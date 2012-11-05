@@ -14,11 +14,14 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 
 public abstract class HtcProxy {
@@ -178,4 +181,17 @@ public abstract class HtcProxy {
 	public abstract String getSubmissionFileExtension();
 
 	public abstract void checkServerStatus() throws ExecutableException;
+	
+	/**
+	 * for unix-style commands that have (e.g. pipes), using the java Runtime.exec(String[] cmd), the pipe requires a shell to operate properly.
+	 * the SSH command already invokes this with a shell, so it is not required.
+	 */
+	protected final String[] constructShellCommand(CommandService commandService, String[] cmd){
+		if (commandService instanceof CommandServiceSsh){
+			return cmd;
+		}else if (commandService instanceof CommandServiceLocal){
+			return BeanUtils.addElements(new String[] { "/bin/sh","-c"}, cmd);
+		}
+		throw new RuntimeException("expected either SSH or Local CommandService");
+	}
 }
