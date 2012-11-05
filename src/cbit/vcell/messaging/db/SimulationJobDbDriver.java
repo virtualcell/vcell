@@ -227,6 +227,36 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
+public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, boolean lockRowForUpdate) throws SQLException {
+	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
+	String sql = new String(standardJobStatusSQL);	
+	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
+		
+	if (lockRowForUpdate){
+		sql += " FOR UPDATE OF " + jobTable.getTableName() + ".id";
+	}
+	//log.print(sql);
+	Statement stmt = con.createStatement();
+	ArrayList<SimulationJobStatus> simulationJobStatusArrayList = new ArrayList<SimulationJobStatus>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			simulationJobStatusArrayList.add(simJobStatus);
+		}
+	} finally {
+		stmt.close();
+	}
+	return simulationJobStatusArrayList.toArray(new SimulationJobStatus[0]);
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return int
+ * @param user java.lang.String
+ * @param imageName java.lang.String
+ */
 public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	

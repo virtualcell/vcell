@@ -42,8 +42,7 @@ public class SimulationDatabase {
 	private DatabaseServerImpl databaseServerImpl = null;
 	private SessionLog log = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
-	private DBCacheTable simulationMap = null;
-	private Map<KeyValue, User> simUserMap = Collections.synchronizedMap(new HashMap<KeyValue, User>());
+	private Map<String, User> userMap = Collections.synchronizedMap(new HashMap<String, User>());
 	protected HashSet<VCSimulationDataIdentifier> resultSetSavedSet = new HashSet<VCSimulationDataIdentifier>();
 	private ResultSetCrawler resultSetCrawler = null;
 
@@ -57,6 +56,10 @@ public class SimulationDatabase {
 
 	public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException, SQLException {
 		return adminDbTopLevel.getSimulationJobStatusArray(simKey, jobIndex, true);
+	}
+
+	public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey) throws DataAccessException, SQLException {
+		return adminDbTopLevel.getSimulationJobStatusArray(simKey, true);
 	}
 
 	public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException, SQLException {
@@ -80,34 +83,15 @@ public class SimulationDatabase {
 	}
 
 	public Simulation getSimulation(User user, KeyValue simKey) throws DataAccessException {
-		if (simulationMap == null) {
-			log.print("Initializaing DBCacheTable!");
-			simulationMap = new DBCacheTable(3600 * 1000);
-		}
-
-		log.print("Get simulation [" + simKey + ","  + user + "]");	
-		Simulation sim = (Simulation)simulationMap.getCloned(simKey);
-
-		if (sim != null) {
-			return sim;
-		}
+		Simulation sim = null;
 
 		BigString simstr = databaseServerImpl.getSimulationXML(user,simKey);	
-
 		if (simstr != null){
 			try {
 				sim = XmlHelper.XMLToSim(simstr.toString());
 			}catch (XmlParseException e){
 				log.exception(e);
 				throw new DataAccessException(e.getMessage());
-			}
-			if (sim != null) {
-				try {
-					simulationMap.putProtected(simKey, sim);
-				} catch (CacheException e) {
-					// if can't cache the simulation, it is ok
-					e.printStackTrace();
-				}
 			}
 		}
 
@@ -126,8 +110,11 @@ public class SimulationDatabase {
 
 			FieldFunctionArguments[] fieldFuncArgs =  FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 			if (fieldFuncArgs == null || fieldFuncArgs.length == 0) {
-				return null;
+				fieldDataIDSs = new FieldDataIdentifierSpec[0];
+				simFieldDataIDMap.put(simKey, fieldDataIDSs);
+				return fieldDataIDSs;
 			}
+			fieldDataIDSs = new FieldDataIdentifierSpec[0];
 			User owner = sim.getVersion().getOwner();
 			FieldDataDBOperationSpec fieldDataDbOperationSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(owner);
 			FieldDataDBOperationResults fieldDataDBOperationResults = databaseServerImpl.fieldDataDBOperation(owner,fieldDataDbOperationSpec);
@@ -151,10 +138,7 @@ public class SimulationDatabase {
 				}
 			}
 
-			if (fieldDataIDSs != null){
-				simFieldDataIDMap.put(simKey, fieldDataIDSs);		
-			}
-
+			simFieldDataIDMap.put(simKey, fieldDataIDSs);		
 			return fieldDataIDSs;
 		} catch (Exception ex) {
 			log.exception(ex);
@@ -166,54 +150,33 @@ public class SimulationDatabase {
 		return adminDbTopLevel.getUnreferencedSimulations(true);
 	}
 
-	public User getUser(KeyValue simKey, String username) throws DataAccessException, SQLException {
+	public User getUser(String username) throws DataAccessException, SQLException {
 		User user = null;
 
-		synchronized(simUserMap) {
-			user = (User)simUserMap.get(simKey);
-
-			if (user != null && username != null && !user.getName().equals(username)) {
-				throw new DataAccessException("Wrong user [" + user.getName() + "," + username + "] for the simulation [" + simKey + "]");
-			}
-
-			if (user == null) {
-				if (username != null) {
-					user = adminDbTopLevel.getUser(username,true);
-				} else {
-					user = adminDbTopLevel.getUserFromSimulationKey(simKey,true);
-				}
-				if (user != null) {
-					simUserMap.put(simKey, user);
-				}			
+		synchronized(userMap) {
+			user = (User)userMap.get(username);
+			if (user!=null){
+				return user;
 			}
 		}
-
+		
+		user = adminDbTopLevel.getUser(username,true);
+		
+		synchronized(userMap) {
+			if (user != null) {
+				userMap.put(username, user);
+			}else{
+				throw new RuntimeException("username "+username+" not found");
+			}
+		}
 		return user;
 	}
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException {
-		if (simulationMap == null) {
-			log.print("Initializaing DBCacheTable!");
-			simulationMap = new DBCacheTable(3600 * 1000);
-		}
-
-		log.print("Get simulation [" + simKey + ","  + user + "]");	
-		Simulation sim = (Simulation)simulationMap.get(simKey);
-
-		if (sim != null) {
-			return sim.getSimulationInfo();
-		}
-
 		SimulationInfo simInfo = databaseServerImpl.getSimulationInfo(user, simKey);
-
 		return simInfo;
 	}
 
-
-	public int getNumSimulationJobs(User user, KeyValue simKey) throws DataAccessException {
-		Simulation sim = getSimulation(user, simKey);
-		return sim.getScanCount();
-	}
 
 	public void dataMoved(VCSimulationDataIdentifier vcSimDataID, User user) {
 		// called by data mover thread after successful move operations
