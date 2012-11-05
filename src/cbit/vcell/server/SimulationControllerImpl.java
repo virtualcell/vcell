@@ -349,7 +349,7 @@ public void startSimulation(Simulation simulation, SessionLog userSessionLog) th
 				taskID = simJobStatus.getTaskID();
 			}
 		}
-		simulationDispatcherEngine.onDispatch(vcSimID, jobIndex , taskID, simulationDatabase, vcMessageSession, adminSessionLog);
+		simulationDispatcherEngine.onDispatch(simulation, vcSimID, jobIndex , taskID, simulationDatabase, vcMessageSession, adminSessionLog);
 		vcMessageSession.deliverAll();
 	}
 }

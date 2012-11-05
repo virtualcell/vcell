@@ -119,11 +119,8 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		KeyValue simKey = new KeyValue(longkey + "");
 //		Simulation sim = null;
 
-		User user = simDatabase.getUser(simKey, username);
-		SimulationInfo simInfo = simDatabase.getSimulationInfo(user, simKey);			
-		if (simInfo == null) {
-			throw new RuntimeException("Null Simulation"); //wrong message	
-		}
+		User user = simDatabase.getUser(username);
+		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
 		
 		String statusMessage = null;
 		Double progress = null;
@@ -181,7 +178,7 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		}
 
 		ServiceName serviceName = VCMongoMessage.getServiceName();
-		workerEvent = new WorkerEvent(status, serviceName, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, hostname, taskID, progress, timepoint, simulationMessage);		
+		workerEvent = new WorkerEvent(status, serviceName, vcSimID, jobIndex, hostname, taskID, progress, timepoint, simulationMessage);		
 	}
 }
 

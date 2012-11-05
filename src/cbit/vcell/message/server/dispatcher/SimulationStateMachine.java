@@ -505,7 +505,7 @@ public class SimulationStateMachine {
 	}
 	
 
-	public synchronized void onDispatch(VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onDispatch(Simulation simulation, VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 
 		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getSimulationJobStatus(simKey, jobIndex, taskID);
 		if (oldSimulationJobStatus == null) {
@@ -517,7 +517,6 @@ public class SimulationStateMachine {
 			throw new RuntimeException("Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "] is already dispatched ("+oldSimulationJobStatus.getSchedulerStatus().getDescription()+")");
 		}
 
-		Simulation simulation = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = simulationDatabase.getFieldDataIdentifierSpecs(simulation);
 		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID);
 
