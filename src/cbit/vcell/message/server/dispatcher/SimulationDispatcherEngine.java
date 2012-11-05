@@ -12,6 +12,7 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -64,11 +65,11 @@ public class SimulationDispatcherEngine {
 		return newStateMachine;
 	}
 
-	public void onDispatch(VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException{
+	public void onDispatch(Simulation simulation, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException{
 		KeyValue simulationKey = vcSimID.getSimulationKey();
 		SimulationStateMachine simStateMachine = getSimulationStateMachine(simulationKey, jobIndex);
 		
-		simStateMachine.onDispatch(vcSimID, taskID, simulationDatabase, dispatcherQueueSession, log);
+		simStateMachine.onDispatch(simulation, vcSimID, taskID, simulationDatabase, dispatcherQueueSession, log);
 	}
 	/**
 	 * @param vcMessage
@@ -120,8 +121,13 @@ public class SimulationDispatcherEngine {
 	public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
-		int numJobs = simulationDatabase.getNumSimulationJobs(user, simKey);
-		for (int jobIndex = 0; jobIndex < numJobs; jobIndex++){
+		SimulationJobStatus[] simJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simKey);
+		HashSet<Integer> simJobIndices = new HashSet<Integer>();
+		for (SimulationJobStatus simJobStatus : simJobStatusArray){
+			int jobIndex = simJobStatus.getJobIndex();
+			simJobIndices.add(jobIndex);
+		}
+		for (int jobIndex : simJobIndices){
 			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
 			try {
 				simStateMachine.onStopRequest(user, vcSimID, simulationDatabase, session, log);
