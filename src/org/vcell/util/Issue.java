@@ -56,6 +56,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		ModelParameterExpressionError,
 		
 		InternalError,
+		ParameterEstimationGeneralWarning,
 		ParameterBoundsDefinition,
 		ParameterEstimationBoundsError,
 		ParameterEstimationBoundsViolation,
