@@ -534,6 +534,7 @@ public class XMLTags {
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
 	public final static String SmoldynSimulationOptions_high_res	= "HighResolutionSample";
+	public final static String SmoldynSimulationOptions_saveParticleFiles	= "saveParticleFiles";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
 	
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
