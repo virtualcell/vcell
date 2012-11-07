@@ -190,7 +190,7 @@ public abstract class HtcProxy {
 		if (commandService instanceof CommandServiceSsh){
 			return cmd;
 		}else if (commandService instanceof CommandServiceLocal){
-			return BeanUtils.addElements(new String[] { "/bin/sh","-c"}, cmd);
+			return BeanUtils.addElements(BeanUtils.addElements(new String[] { "/bin/sh","-c","\""}, cmd), new String[] { "\"" });
 		}
 		throw new RuntimeException("expected either SSH or Local CommandService");
 	}
