@@ -4712,6 +4712,10 @@ private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimula
 		if (temp != null) {
 			sso.setUseHighResolutionSample(new Boolean(temp));
 		}
+		temp = smoldySimulationOptionsElement.getChildText(XMLTags.SmoldynSimulationOptions_saveParticleFiles, vcNamespace);
+		if (temp != null) {
+			sso.setSaveParticleLocations(new Boolean(temp));
+		}
 	}	
 	return sso;
 }
