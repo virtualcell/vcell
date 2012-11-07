@@ -38,6 +38,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 
 	private JCheckBox randomSeedCheckBox;
 	private JCheckBox highResCheckBox;
+	private JCheckBox saveParticleLocationsCheckBox;
 	private JTextField randomSeedTextField;
 	private JTextField accuracyTextField = null;
 	private JTextField gaussianTableSizeTextField;
@@ -84,9 +85,10 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 				{
 					setNewRandomSeed();
 				}
-			}
-			else if (source == highResCheckBox) {
+			} else if (source == highResCheckBox) {
 				setUseHighResolutionSample();
+			} else if (source == saveParticleLocationsCheckBox) {
+				setSaveParticleLocations();
 			}
 		}
 
@@ -120,6 +122,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 	private void initialize() {
 		randomSeedCheckBox = new JCheckBox("random seed");
 		highResCheckBox = new JCheckBox("fast mesh sampling");
+		saveParticleLocationsCheckBox = new JCheckBox("save particle files");
 		randomSeedTextField = new JTextField();
 		JLabel accuracyLabel = new JLabel("accuracy");
 		accuracyTextField = new JTextField();		
@@ -211,13 +214,22 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
-		gbc.gridwidth = 3;
+//		gbc.gridwidth = 3;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(0, 10, 0, 0);
 		getContentPanel().add(highResCheckBox, gbc);
-	}
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
+		gbc.gridwidth = 2;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(0, 10, 0, 0);
+		getContentPanel().add(saveParticleLocationsCheckBox, gbc);
+}
 	
 	private void initConnections() {
 		randomSeedCheckBox.addActionListener(ivjEventHandler);
@@ -225,6 +237,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		accuracyTextField.addFocusListener(ivjEventHandler);		
 		gaussianTableSizeTextField.addFocusListener(ivjEventHandler);
 		highResCheckBox.addActionListener(ivjEventHandler);
+		saveParticleLocationsCheckBox.addActionListener(ivjEventHandler);
 		
 		randomSeedHelpButton.addActionListener(ivjEventHandler);
 		accuracyHelpButton.addActionListener(ivjEventHandler);
@@ -268,6 +281,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		}
 		
 		highResCheckBox.setSelected(smoldynSimulationOptions.isUseHighResolutionSample());
+		saveParticleLocationsCheckBox.setSelected(smoldynSimulationOptions.isSaveParticleLocations());
 		
 		gaussianTableSizeTextField.setText("" + smoldynSimulationOptions.getGaussianTableSize());
 		accuracyTextField.setText("" + smoldynSimulationOptions.getAccuracy());
@@ -323,6 +337,12 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			return;
 		}
 		solverTaskDescription.getSmoldynSimulationOptions().setUseHighResolutionSample(highResCheckBox.isSelected());		
+	}
+	private void setSaveParticleLocations(){
+		if(!isVisible()){
+			return;
+		}
+		solverTaskDescription.getSmoldynSimulationOptions().setSaveParticleLocations(saveParticleLocationsCheckBox.isSelected());		
 	}
 
 }

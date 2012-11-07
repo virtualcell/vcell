@@ -31,6 +31,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	private double accuracy = 10.0;;
 	private int gaussianTableSize = 4096;
 	private boolean useHighResolutionSample = true;
+	private boolean saveParticleLocations = false;
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -39,6 +40,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	public static final String PROPERTY_NAME_ACCURACY = "accuracy";
 	public static final String PROPERTY_NAME_GAUSSIAN_TABLE_SIZE = "gaussianTableSize";
 	public static final String PROPERTY_NAME_USE_HIGH_RES = "useHighResolutionSample";
+	public static final String PROPERTY_NAME_SAVE_PARTICLE_LOCS = "saveParticleLocations";
 	
 	public SmoldynSimulationOptions() {
 		removeVetoableChangeListener(this);
@@ -51,6 +53,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		accuracy = smoldynSimulationOptions.accuracy;
 		gaussianTableSize = smoldynSimulationOptions.gaussianTableSize;
 		useHighResolutionSample = smoldynSimulationOptions.useHighResolutionSample;
+		saveParticleLocations = smoldynSimulationOptions.saveParticleLocations;
 	}
 
 	public SmoldynSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
@@ -61,11 +64,19 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	public boolean isUseHighResolutionSample() {
 		return useHighResolutionSample;
 	}
+	public boolean isSaveParticleLocations() {
+		return saveParticleLocations;
+	}
 
 	public void setUseHighResolutionSample(boolean newValue) {
 		boolean oldValue = this.useHighResolutionSample;
 		this.useHighResolutionSample = newValue;
 		firePropertyChange(PROPERTY_NAME_USE_HIGH_RES, oldValue, newValue);
+	}
+	public void setSaveParticleLocations(boolean newValue) {
+		boolean oldValue = this.saveParticleLocations;
+		this.saveParticleLocations = newValue;
+		firePropertyChange(PROPERTY_NAME_SAVE_PARTICLE_LOCS, oldValue, newValue);
 	}
 	
 	public boolean compareEqual(Matchable obj) {
@@ -83,6 +94,9 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			return false;
 		}
 		if (useHighResolutionSample != smoldynSimulationOptions.useHighResolutionSample) {
+			return false;
+		}
+		if (saveParticleLocations != smoldynSimulationOptions.saveParticleLocations) {
 			return false;
 		}
 		return true;
@@ -158,6 +172,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		if (randomSeed != null) {
 			buffer.append("\t\t" + VCML.SmoldynSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
+		buffer.append("\t\t" + VCML.SmoldynSimulationOptions_saveParticleLocations + " " + saveParticleLocations + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		
 		return buffer.toString();
@@ -189,6 +204,9 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_useHighResolutionSample)) {
 				token = tokens.nextToken();
 				useHighResolutionSample = Boolean.parseBoolean(token);
+			} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions_saveParticleLocations)) {
+				token = tokens.nextToken();
+				saveParticleLocations = Boolean.parseBoolean(token);
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}

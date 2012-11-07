@@ -556,8 +556,10 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 			int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+			if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isSaveParticleLocations()){
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+			}
 	
 			// DON'T CHANGE THE ORDER HERE.
 			// DataProcess must be before vcellWriteOutput
