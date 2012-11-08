@@ -24,6 +24,8 @@ public class VCellLookAndFeel {
 //		if (!ResourceUtil.bLinux) {
 			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
 			try {
+				System.out.println("bMac = "+ResourceUtil.bMac+"     bWindows = "+ResourceUtil.bWindows+"      bLinux = "+ResourceUtil.bLinux);
+				System.out.println("About to set the look and feel.  Before setting, we're using: "+UIManager.getLookAndFeel().getName());
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -91,5 +93,7 @@ public class VCellLookAndFeel {
 	        
 	        System.getProperties().put("swing.component.sizevariant", "small");
 		}
+		
+		System.out.println("After setting, we're using: "+UIManager.getLookAndFeel().getName());
 	}
 }
