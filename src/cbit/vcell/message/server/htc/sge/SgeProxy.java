@@ -443,7 +443,7 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 			//
 			// how many to process at once.
 			//
-			int MAX_NUM_JOBS_IN_QUERY = 20;
+			int MAX_NUM_JOBS_IN_QUERY = 1;
 			
 			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
 			while (remainingJobIDs.size()>0){
