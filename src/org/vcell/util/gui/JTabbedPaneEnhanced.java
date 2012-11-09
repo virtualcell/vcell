@@ -24,46 +24,46 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 @SuppressWarnings("serial")
 public class JTabbedPaneEnhanced extends JTabbedPane {
 
-	private List<String> tabTitles = new ArrayList<String>();
-	private boolean bBoldActiveTab = true;
+//	private List<String> tabTitles = new ArrayList<String>();
+//	private boolean bBoldActiveTab = true;
 	
-	private ChangeListener boldChangeListner = new ChangeListener() {			
-		public void stateChanged(ChangeEvent e) {
-			if (bBoldActiveTab) {
-				assert getTabCount() == tabTitles.size();
-				int selectedIndex = getSelectedIndex();
-				for (int i = 0; i < getTabCount(); i ++) {
-					String title = tabTitles.get(i);
-					if (i == selectedIndex) {
-						title = "<html><b>"+ title + "</b></html>";
-					}
-					if (!title.contains(DocumentEditor.TAB_TITLE_PROBLEMS)){
-						setTitleAt(i, title);
-					}
-				}
-			}
-		}
-	};
+//	private ChangeListener boldChangeListner = new ChangeListener() {			
+//		public void stateChanged(ChangeEvent e) {
+//			if (bBoldActiveTab) {
+//				assert getTabCount() == tabTitles.size();
+//				int selectedIndex = getSelectedIndex();
+//				for (int i = 0; i < getTabCount(); i ++) {
+//					String title = tabTitles.get(i);
+//					if (i == selectedIndex) {
+//						//title = ""+ title + "</b></html>";
+//					}
+//					if (!title.contains(DocumentEditor.TAB_TITLE_PROBLEMS)){
+//						setTitleAt(i, title);
+//					}
+//				}
+//			}
+//		}
+//	};
 	public JTabbedPaneEnhanced() {
 		this(true);
 	}
 	
 	public JTabbedPaneEnhanced(boolean boldActivTab) {
 		super();
-		this.bBoldActiveTab = boldActivTab;
-		addChangeListener(boldChangeListner);
+//		this.bBoldActiveTab = boldActivTab;
+//		addChangeListener(boldChangeListner);
 	}
 
 	@Override
 	public void insertTab(String title, Icon icon, Component component,
 			String tip, int index) {
-		tabTitles.add(index, title);
+//		tabTitles.add(index, title);
 		super.insertTab(title, icon, component, tip, index);
 	}
 
 	@Override
 	public void removeTabAt(int index) {
-		tabTitles.remove(index);
+//		tabTitles.remove(index);
 		super.removeTabAt(index);
 	}
 
