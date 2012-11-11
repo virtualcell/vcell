@@ -228,4 +228,14 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 	}
 	return true;
 }
+
+	public Node convertToRvachevFunction() 
+	{
+		ASTAddNode node = new ASTAddNode();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

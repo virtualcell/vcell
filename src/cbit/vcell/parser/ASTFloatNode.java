@@ -150,4 +150,9 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 public void roundToFloat() {
 	value = new Double(value.floatValue());
 }
+
+	public Node convertToRvachevFunction()
+	{
+		return copyTree();
+	}
 }

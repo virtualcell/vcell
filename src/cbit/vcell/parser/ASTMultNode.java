@@ -480,4 +480,15 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& jjtGetChild(1).narrow(intervals)
 			&& IANarrow.narrow_mul(getInterval(intervals),jjtGetChild(0).getInterval(intervals),jjtGetChild(1).getInterval(intervals));
 }
+
+	public Node convertToRvachevFunction()
+	{
+		ASTMultNode node = new ASTMultNode();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
+
 }

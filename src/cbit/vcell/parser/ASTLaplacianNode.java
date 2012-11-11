@@ -99,4 +99,14 @@ public String infixString(int lang){
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("ASTLaplacianNode.narrow(), not yet supported");
 }
+
+	public Node convertToRvachevFunction()
+	{
+		ASTLaplacianNode node = new ASTLaplacianNode();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

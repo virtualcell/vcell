@@ -118,4 +118,14 @@ public String infixString(int language) {
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("ASTExpression.narrow(), not yet supported");
 }
+
+	public Node convertToRvachevFunction()
+	{
+		ASTExpression node = new ASTExpression();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

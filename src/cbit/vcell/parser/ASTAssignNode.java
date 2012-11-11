@@ -146,4 +146,13 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& IANarrow.narrow_colon_equals(getInterval(intervals),jjtGetChild(0).getInterval(intervals),jjtGetChild(1).getInterval(intervals));
 }
 
+	public Node convertToRvachevFunction() 
+	{
+		ASTAssignNode node = new ASTAssignNode();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

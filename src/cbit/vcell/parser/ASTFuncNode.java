@@ -2728,4 +2728,32 @@ void setFunctionFromName(String parserToken) {
 public SymbolTableFunctionEntry getSymbolTableFunctionEntry() {
 	return symbolTableFunctionEntry;
 }
+
+	public Node convertToRvachevFunction() 
+	{
+		ASTFuncNode newfuncNode = new ASTFuncNode();
+		newfuncNode.funcType = funcType;
+		newfuncNode.funcName = funcName;
+		newfuncNode.symbolTableFunctionEntry = symbolTableFunctionEntry;
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			newfuncNode.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		
+		if (funcType == FunctionType.SQRT)
+		{
+			ASTRelationalNode relnode = new ASTRelationalNode();
+			relnode.setOperation(ASTRelationalNode.GE);
+			relnode.jjtAddChild(jjtGetChild(0));
+			relnode.jjtAddChild(new ASTFloatNode(0.0));
+			ASTMultNode multinode = new ASTMultNode();
+			multinode.jjtAddChild(relnode);
+			multinode.jjtAddChild(newfuncNode);
+			return multinode;
+		} 
+		else 
+		{
+			return newfuncNode;	
+		}
+	}
 }

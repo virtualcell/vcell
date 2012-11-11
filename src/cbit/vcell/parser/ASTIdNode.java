@@ -336,4 +336,8 @@ public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingExce
 	name = nameScope.getSymbolName(symbolTableEntry);
 }
 
+	public Node convertToRvachevFunction() 
+	{
+		return copyTree();
+	}
 }
