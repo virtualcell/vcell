@@ -114,4 +114,14 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& jjtGetChild(0).narrow(intervals)
 			&& IANarrow.narrow_uminus(getInterval(intervals),jjtGetChild(0).getInterval(intervals));
 }
+
+	public Node convertToRvachevFunction()
+	{
+		ASTMinusTermNode node = new ASTMinusTermNode();
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

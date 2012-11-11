@@ -118,4 +118,15 @@ public String infixString(int lang){
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("DerivativeNode.narrow(), not yet supported");
 }
+
+	public Node convertToRvachevFunction()
+	{
+		DerivativeNode node = new DerivativeNode(independentVar);
+		node.symbolTableEntryVariable = symbolTableEntryVariable;
+		for (int i = 0; i < jjtGetNumChildren(); ++ i)
+		{
+			node.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+		}
+		return node;
+	}
 }

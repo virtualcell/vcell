@@ -128,4 +128,9 @@ public String toString() {
 	return "LiteralNode (" + name + ")";
 }
 
+	public Node convertToRvachevFunction() 
+	{	
+		return copyTree();
+	}
+
 }

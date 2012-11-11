@@ -903,5 +903,11 @@ substituteCount++;////////////////////////////////
 	   exp.rootNode.renameBoundSymbols(nameScope);
 	   return exp;
    }
+   
+   public Expression convertToRvachevFunction() 
+   {
+	   Expression exp = new Expression((SimpleNode)rootNode.convertToRvachevFunction());
+	   return exp;
+   }
 }
 

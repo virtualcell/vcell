@@ -524,4 +524,40 @@ public void getDiscontinuities(Vector<Discontinuity> v)	throws ExpressionExcepti
 	super.getDiscontinuities(v);
 }
 
+	public Node convertToRvachevFunction() {
+	
+		Node node = null;
+		switch (operation)
+		{
+			case GT:
+			case GE:
+			{
+				//opString = ">";
+				node = new ASTAddNode();
+				node.jjtAddChild(jjtGetChild(1).convertToRvachevFunction());
+				ASTMinusTermNode node1 = new ASTMinusTermNode();
+				node1.jjtAddChild(jjtGetChild(0).convertToRvachevFunction());		
+				node.jjtAddChild(node1);
+				break;
+			}
+			case LT:
+			case LE:
+			{
+				//opString = "<";
+				node = new ASTAddNode();
+				node.jjtAddChild(jjtGetChild(0).convertToRvachevFunction());
+				ASTMinusTermNode node1 = new ASTMinusTermNode();
+				node1.jjtAddChild(jjtGetChild(1).convertToRvachevFunction());
+				node.jjtAddChild(node1);
+				break;
+			}
+			case EQ:
+			case NE:
+			{
+				throw new IllegalArgumentException(operation + " is not allowed for R function");
+			}	
+		}
+		return node;
+	}
+
 }

@@ -155,4 +155,12 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& jjtGetChild(0).narrow(intervals)
 			&& IANarrow.vcell_narrow_not(getInterval(intervals),jjtGetChild(0).getInterval(intervals));
 }
+
+	public Node convertToRvachevFunction()
+	{
+		ASTMinusTermNode node = new ASTMinusTermNode();
+		node.jjtAddChild(jjtGetChild(0).convertToRvachevFunction());
+		return node;
+	}
+
 }

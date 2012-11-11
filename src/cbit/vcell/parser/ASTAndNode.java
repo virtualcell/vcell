@@ -14,6 +14,7 @@ package cbit.vcell.parser;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 public class ASTAndNode extends SimpleNode {
 
@@ -196,4 +197,29 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 			&& jjtGetChild(1).narrow(intervals)
 			&& IANarrow.vcell_narrow_and(getInterval(intervals),jjtGetChild(0).getInterval(intervals),jjtGetChild(1).getInterval(intervals));
 }
+
+	public Node convertToRvachevFunction() 
+	{
+		ASTFuncNode node = new ASTFuncNode();
+		node.setFunctionType(FunctionType.MAX);	
+		node.jjtAddChild(jjtGetChild(0).convertToRvachevFunction());
+		node.jjtAddChild(jjtGetChild(1).convertToRvachevFunction());
+		
+		if (jjtGetNumChildren() == 2) 
+		{
+			return node;
+		}
+		
+		ASTFuncNode finalNode = node;
+		for (int i = 2; i < jjtGetNumChildren(); ++ i) 
+		{	
+			ASTFuncNode node1 = new ASTFuncNode();
+			node1.setFunctionType(FunctionType.MAX);
+			node1.jjtAddChild(finalNode);
+			node1.jjtAddChild(jjtGetChild(i).convertToRvachevFunction());
+			finalNode = node1;
+		}
+		return finalNode;
+	}
+
 }
