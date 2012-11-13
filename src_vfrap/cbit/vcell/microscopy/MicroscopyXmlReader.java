@@ -650,10 +650,11 @@ public class MicroscopyXmlReader {
 	    Element dataColumnListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataColumnListTag/*, ns*/);
 	    @SuppressWarnings("unchecked")
 	    List<Element> dataColumnList = dataColumnListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataColumnTag/*, ns*/);
-	    for (int i = 0; i < dataColumnList.size(); i++){
-	          Element dataColumnElement = dataColumnList.get(i);
-	          columnNames[i] = dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NameAttribute);
-	          columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.WeightAttribute));
+	    int colCounter = 0;
+	    for (Element dataColumnElement : dataColumnList){
+	          columnNames[colCounter] = dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.NameAttribute);
+	          columnWeights[colCounter] = Double.parseDouble(dataColumnElement.getAttributeValue(ParameterEstimationTaskXMLPersistence.WeightAttribute));
+	          colCounter ++;
 	    }
 	    //
 	    // read rows
@@ -662,8 +663,7 @@ public class MicroscopyXmlReader {
 	    Element dataRowListElement = referenceDataElement.getChild(ParameterEstimationTaskXMLPersistence.DataRowListTag/*, ns*/);
 	    @SuppressWarnings("unchecked")
 	    List<Element> dataRowList = dataRowListElement.getChildren(ParameterEstimationTaskXMLPersistence.DataRowTag/*, ns*/);
-	    for (int i = 0; i < dataRowList.size(); i++){
-	          Element dataRowElement = dataRowList.get(i);
+	    for (Element dataRowElement : dataRowList){
 	          String rowText = dataRowElement.getText();
 	          CommentStringTokenizer tokens = new CommentStringTokenizer(rowText);
 	          double[] rowData = new double[numCols];
@@ -691,9 +691,11 @@ public class MicroscopyXmlReader {
 			@SuppressWarnings("unchecked")
 			List<Element> profileDataList = profileDataListElement.getChildren(MicroscopyXMLTags.ProfileDataTag);
 			profileDataArray = new ProfileData[profileDataList.size()];
-			for(int i=0; i < profileDataList.size(); i++)//loop through each profile data
+			int profileCounter = 0;
+			for(Element profileElement : profileDataList)//loop through each profile data
 			{
-				profileDataArray[i] = getProfileData(profileDataList.get(i));
+				profileDataArray[profileCounter] = getProfileData(profileElement);
+				profileCounter ++;
 			}
 		}
 		
@@ -727,9 +729,11 @@ public class MicroscopyXmlReader {
 			@SuppressWarnings("unchecked")
 			List<Element> parameterElementList = profileDataElementElement.getChildren(OptXmlTags.Parameter_Tag);
 			Parameter[] parameters = new Parameter[parameterElementList.size()];
-			for(int i = 0; i < parameters.length; i++)
+			int paramCounter = 0;
+			for(Element paramElement : parameterElementList)
 			{
-				parameters[i] = getParameter(parameterElementList.get(i));
+				parameters[paramCounter] = getParameter(paramElement);
+				paramCounter ++;
 			}
 			
 			profileDataElement = new ProfileDataElement(paramName, paramVal, likelihood, parameters);
