@@ -10,6 +10,7 @@
 
 package cbit.vcell.modelopt;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -99,8 +100,7 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 	//
 	Element parameterMappingSpecListElement = parameterEstimationTaskElement.getChild(ParameterMappingSpecListTag, ns);
 	List<Element> parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
-	for (int i = 0; i < parameterMappingSpecElementList.size(); i++){
-		Element parameterMappingSpecElement = parameterMappingSpecElementList.get(i);
+	for (Element parameterMappingSpecElement : parameterMappingSpecElementList ){
 		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
 		SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
 	
@@ -146,13 +146,13 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 		//	
 		String[] columnNames = new String[numCols];
 		double[] columnWeights = new double[numCols];
-
+		int columnCounter = 0;
 		Element dataColumnListElement = referenceDataElement.getChild(DataColumnListTag, ns);
 		List<Element> dataColumnList = dataColumnListElement.getChildren(DataColumnTag, ns);
-		for (int i = 0; i < dataColumnList.size(); i++){
-			Element dataColumnElement = dataColumnList.get(i);
-			columnNames[i] = dataColumnElement.getAttributeValue(NameAttribute);
-			columnWeights[i] = Double.parseDouble(dataColumnElement.getAttributeValue(WeightAttribute));
+		for (Element dataColumnElement : dataColumnList){
+			columnNames[columnCounter] = dataColumnElement.getAttributeValue(NameAttribute);
+			columnWeights[columnCounter] = Double.parseDouble(dataColumnElement.getAttributeValue(WeightAttribute));
+			columnCounter ++;
 		}
 
 		//
@@ -161,8 +161,7 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 		Vector<double[]> rowDataVector = new Vector<double[]>();
 		Element dataRowListElement = referenceDataElement.getChild(DataRowListTag, ns);
 		List<Element> dataRowList = dataRowListElement.getChildren(DataRowTag, ns);
-		for (int i = 0; i < dataRowList.size(); i++){
-			Element dataRowElement = dataRowList.get(i);
+		for (Element dataRowElement : dataRowList){
 			String rowText = dataRowElement.getText();
 			CommentStringTokenizer tokens = new CommentStringTokenizer(rowText);
 			double[] rowData = new double[numCols];
@@ -189,8 +188,7 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 	Element referenceDataMappingSpecListElement = parameterEstimationTaskElement.getChild(ReferenceDataMappingSpecListTag, ns);
 	if (referenceDataMappingSpecListElement!=null){
 		List<Element> referenceDataMappingSpecList = referenceDataMappingSpecListElement.getChildren(ReferenceDataMappingSpecTag, ns);
-		for (int i = 0; i < referenceDataMappingSpecList.size(); i++){
-			Element referenceDataMappingSpecElement = referenceDataMappingSpecList.get(i);
+		for (Element referenceDataMappingSpecElement : referenceDataMappingSpecList){
 			String referenceDataColumnName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataColumnNameAttribute);
 			String referenceDataModelSymbolName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataModelSymbolAttribute);
 
