@@ -97,6 +97,7 @@ import cbit.vcell.solvers.FVSolverStandalone;
 
 public class FRAPStudy implements Matchable{
 	public static final String EXTRACELLULAR_NAME = "extracellular";
+//	public static final String EXTRACELLULAR_CYTOSOL_MEM_NAME = "extracellular_cytosol_mem";
 	public static final String CYTOSOL_NAME = "cytosol";
 	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
 	public static final String SPECIES_NAME_PREFIX_SLOW_MOBILE = "fluor_secondary_mobile";
@@ -446,6 +447,10 @@ public class FRAPStudy implements Matchable{
 		Feature extracellular = (Feature)model.getStructure(EXTRACELLULAR_NAME);
 		model.addFeature(CYTOSOL_NAME);
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
+//		Membrane mem = model.addMembrane(EXTRACELLULAR_CYTOSOL_MEM_NAME);
+//		model.getStructureTopology().setInsideFeature(mem, cytosol);
+//		model.getStructureTopology().setOutsideFeature(mem, extracellular);
+		
 
 		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
 		
@@ -535,8 +540,8 @@ public class FRAPStudy implements Matchable{
 		bioModel.addSimulationContext(simContext);
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
 		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		Membrane plasmaMembrane = model.getStructureTopology().getMembrane(cytosol, extracellular);
-		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
+//		Membrane plasmaMembrane = model.getStructureTopology().getMembrane(cytosol, extracellular);
+//		MembraneMapping plasmaMembraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(plasmaMembrane);
 		
 		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
 		SubVolume exSubVolume = geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME);
@@ -544,11 +549,11 @@ public class FRAPStudy implements Matchable{
 		
 		cytosolFeatureMapping.setGeometryClass(cytSubVolume);
 		extracellularFeatureMapping.setGeometryClass(exSubVolume);
-		plasmaMembraneMapping.setGeometryClass(pmSurfaceClass);
+//		plasmaMembraneMapping.setGeometryClass(pmSurfaceClass);
 		
 		cytosolFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
 		extracellularFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
-		plasmaMembraneMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
+//		plasmaMembraneMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
 		
 		for (int i = 0; i < speciesContexts.length; i++) {
 			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i]);
