@@ -930,8 +930,7 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 		//
 		// rename "special" parameters (those that are not "user defined")
 		//
-		for (int i = 0; i < list.size() ; i++){
-			Element xmlParam = list.get(i);
+		for (Element xmlParam : list){
 			String paramName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
@@ -1502,10 +1501,10 @@ private FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throw
 	//get names
 	List<Element> namesList = speciesInfoElement.getChildren(XMLTags.NameTag, vcNamespace);
 	String[] namesArray = new String[namesList.size()];
-
-	for (int i = 0; i < namesList.size(); i++){
-		Element nameElement = (Element)namesList.get(i);
-		namesArray[i] = unMangle(nameElement.getText());
+    int nameCounter = 0;
+	for (Element nameElement : namesList){
+		namesArray[nameCounter] = unMangle(nameElement.getText());
+		nameCounter ++;
 	}
 	String tempstring;
 	//get type
@@ -1533,15 +1532,15 @@ private FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throw
 		
 		if (enzymelist!=null && enzymelist.size()>0) {
 			enzymeArray = new EnzymeRef[enzymelist.size()];
-			
-			for (int i = 0; i < enzymelist.size(); i++){
-				Element enzymeElement = (Element)enzymelist.get(i);
+			int enzymeCounter = 0;
+			for (Element enzymeElement : enzymelist){
 				//get ECNumber
 				String ecnumber = unMangle(enzymeElement.getAttributeValue(XMLTags.ECNumberTag));
 				//get Enzymetype
 				String enztypestr = enzymeElement.getAttributeValue(XMLTags.TypeAttrTag);
 				char enzymetype = enztypestr.charAt(0);
-				enzymeArray[i] = new EnzymeRef(ecnumber, enzymetype);
+				enzymeArray[enzymeCounter] = new EnzymeRef(ecnumber, enzymetype);
+				enzymeCounter ++;
 			}
 		}
 
@@ -1739,8 +1738,10 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	//Add the SubVolumes
 	List<Element> children = param.getChildren(XMLTags.SubVolumeTag, vcNamespace);
 	SubVolume[] newsubvolumes = new SubVolume[children.size()];
-	for (int i=0 ; i<children.size() ; i++) {
-		newsubvolumes[i] = getSubVolume(children.get(i));
+	int subvolumeCounter = 0;
+	for (Element child : children) {
+		newsubvolumes[subvolumeCounter] = getSubVolume(child);
+		subvolumeCounter ++;
 	}
 	try {
 		newgeometry.getGeometrySpec().setSubVolumes( newsubvolumes );
@@ -1752,8 +1753,10 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		//Add SurfaceClasses
 		List<Element> surfaceClassChildren = param.getChildren(XMLTags.SurfaceClassTag, vcNamespace);
 		SurfaceClass[] newSurfaceClassArr = new SurfaceClass[surfaceClassChildren.size()];
-		for (int i=0 ; i<surfaceClassChildren.size() ; i++) {
-			newSurfaceClassArr[i] = getSurfaceClass(surfaceClassChildren.get(i),newgeometry);
+		int surfClassCounter = 0;
+		for (Element surfClassChild : surfaceClassChildren) {
+			newSurfaceClassArr[surfClassCounter] = getSurfaceClass(surfClassChild,newgeometry);
+			surfClassCounter ++;
 		}
 		try {
 			newgeometry.getGeometrySurfaceDescription().setSurfaceClasses(newSurfaceClassArr);
@@ -1813,10 +1816,8 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 		    ArrayList<Element> memRegions = new ArrayList<Element>(param.getChildren(XMLTags.MembraneRegionTag, vcNamespace));
 		    ArrayList<Element> volRegions = new ArrayList<Element>(param.getChildren(XMLTags.VolumeRegionTag, vcNamespace));
 			ArrayList<GeometricRegion> regions = new ArrayList<GeometricRegion>();
-			Element temp;
 			GeometryUnitSystem geometryUnitSystem = geom.getUnitSystem();
-			for (int i = 0; i < volRegions.size(); i++) {
-				temp = (Element)volRegions.get(i);
+			for (Element temp : volRegions) {
 				String regionID = temp.getAttributeValue(XMLTags.RegionIDAttrTag);
 				String name = temp.getAttributeValue(XMLTags.NameAttrTag);
 				String subvolumeRef = temp.getAttributeValue(XMLTags.SubVolumeAttrTag);
@@ -1841,8 +1842,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 				VolumeGeometricRegion vgr = new VolumeGeometricRegion(name, size, unit, subvolume, Integer.parseInt(regionID));
 				regions.add(vgr);
 			}
-			for (int i = 0; i < memRegions.size(); i++) {
-				temp = memRegions.get(i);
+			for (Element temp : memRegions) {
 				String volRegion_1 = temp.getAttributeValue(XMLTags.VolumeRegion_1AttrTag);
 				String volRegion_2 = temp.getAttributeValue(XMLTags.VolumeRegion_2AttrTag);
 				String name = temp.getAttributeValue(XMLTags.NameAttrTag);
@@ -1916,14 +1916,14 @@ private GroupAccess getGroupAccess(Element xmlGroup) {
 		List<Element> userlist = xmlGroup.getChildren(XMLTags.UserTag, vcNamespace);
 		User[] userArray = new User[userlist.size()];
 		boolean[] booleanArray = new boolean[userlist.size()];
-		
-		for (int i = 0; i < userlist.size(); i++){
-			Element userElement = userlist.get(i);
+		int counter = 0;
+		for (Element userElement : userlist){
 			String userid = unMangle(userElement.getAttributeValue(XMLTags.NameAttrTag));
 			KeyValue key = new KeyValue(userElement.getAttributeValue(XMLTags.KeyValueAttrTag));
 			boolean hidden = Boolean.valueOf(userElement.getAttributeValue(XMLTags.HiddenTag)).booleanValue();
-			userArray[i] = new User(userid, key);
-			booleanArray[i] = hidden;
+			userArray[counter] = new User(userid, key);
+			booleanArray[counter] = hidden;
+			counter ++;
 		}
 		//create and return the GroupAccess
 		return new GroupAccessSome(groupid, hashcode, userArray, booleanArray);
@@ -1951,8 +1951,8 @@ private ImageSubVolume getImageSubVolume(Element param) throws XmlParseException
 	
 	List<Element> pixelClassList = imageElement.getChildren(XMLTags.PixelClassTag, vcNamespace);
 	VCPixelClass pixelClass = null;
-	for (int i = 0; i < pixelClassList.size(); i++){
-		VCPixelClass pc = getPixelClass(pixelClassList.get(i));
+	for (Element pixelClassElement : pixelClassList){
+		VCPixelClass pc = getPixelClass(pixelClassElement);
 		if (pc.getPixel() == imagePixelValue){
 			pixelClass = pc;
 		}
@@ -2298,8 +2298,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		//
 		// rename "special" parameters (those that are not "user defined")
 		//
-		for (int i = 0; i < list.size() ; i++){
-			Element xmlParam = (Element)list.get(i);
+		for (Element xmlParam : list){
 			String paramName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
@@ -2989,9 +2988,10 @@ public MathModel getMathModel(Element param) throws XmlParseException{
 	//Set simulations contexts (if any)
 	List<Element> childList = param.getChildren(XMLTags.SimulationTag, vcNamespace);
 	Simulation[] simList = new Simulation[childList.size()];
-	
-	for (int i = 0; i < childList.size(); i++){
-		simList[i] = getSimulation(childList.get(i), mathDesc);
+	int simCounter = 0;
+	for (Element simElement : childList){
+		simList[simCounter] = getSimulation(simElement, mathDesc);
+		simCounter ++;
 	}
 	try {
 		mathmodel.setSimulations(simList);
@@ -3584,13 +3584,13 @@ private Model getModel(Element param) throws XmlParseException {
 		LinkedList<Structure> newstructures = new LinkedList<Structure>();
 		//(features)
 		List<Element> children = param.getChildren(XMLTags.FeatureTag, vcNamespace);
-		for (int i = 0; i < children.size(); i++) {
-			newstructures.add( getFeature(children.get(i)) );
+		for (Element featureElement : children) {
+			newstructures.add( getFeature(featureElement) );
 		}
 		//(Membrane)
 		children = param.getChildren(XMLTags.MembraneTag, vcNamespace);
-		for (int i = 0; i < children.size(); i++) {
-			newstructures.add( getMembrane(children.get(i), newstructures));
+		for (Element memElement : children) {
+			newstructures.add( getMembrane(memElement, newstructures));
 		}
 		if (newstructures.size()>0) {
 			Structure[] structarray = new Structure[newstructures.size()];
@@ -3602,8 +3602,10 @@ private Model getModel(Element param) throws XmlParseException {
 		//Add SpeciesContexts
 		children = param.getChildren(XMLTags.SpeciesContextTag, vcNamespace);
 		SpeciesContext[] newspeccon = new SpeciesContext[children.size()];
-		for (int i=0 ; i < children.size() ; i++) {
-			newspeccon[i] = getSpeciesContext(children.get(i), newmodel);
+		int scCounter = 0;
+		for (Element scElement : children) {
+			newspeccon[scCounter] = getSpeciesContext(scElement, newmodel);
+			scCounter ++;
 		}
 		newmodel.setSpeciesContexts(newspeccon);
 		//Add Reaction steps (if available)
@@ -3633,8 +3635,10 @@ private Model getModel(Element param) throws XmlParseException {
 		children = param.getChildren(XMLTags.DiagramTag, vcNamespace);
 		if (children.size()>0) {
 			Diagram[] newdiagrams = new Diagram[children.size()];
-			for (int i = 0; i < children.size(); i++) {
-				newdiagrams[i] = getDiagram(children.get(i), newmodel);
+			int diagramCounter = 0;
+			for (Element diagramElement : children) {
+				newdiagrams[diagramCounter] = getDiagram(diagramElement, newmodel);
+				diagramCounter ++;
 			}
 			newmodel.setDiagrams(newdiagrams);
 		}
@@ -4445,8 +4449,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		//*NOTE: Importing a model from other languages does not generates reaction specs.
 		// A more robust code will read the reactions in the source file and replace the ones created by the default by the VirtualCell framework.
 		ReactionSpec reactionSpecs[] = new ReactionSpec[children.size()];
-		for (int i=0;i<children.size();i++){
-			reactionSpecs[i] = getReactionSpec(children.get(i), biomodel.getModel());
+		int rSpecCounter = 0;
+		for (Element rsElement : children){
+			reactionSpecs[rSpecCounter] = getReactionSpec(rsElement, biomodel.getModel());
+			rSpecCounter ++;
 		}
 		try {
 			newsimcontext.getReactionContext().setReactionSpecs(reactionSpecs);
@@ -4524,8 +4530,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		children = analysisTaskListElement.getChildren(XMLTags.ParameterEstimationTaskTag, vcNamespace);
 		if (children.size()!=0) {
 			Vector<ParameterEstimationTask> analysisTaskList = new Vector<ParameterEstimationTask>();
-			for (int i = 0; i < children.size(); i++){
-				Element parameterEstimationTaskElement = (Element)children.get(i);
+			for (Element parameterEstimationTaskElement : children){
 				try {
 					ParameterEstimationTask parameterEstimationTask = ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(parameterEstimationTaskElement,newsimcontext);
 					analysisTaskList.add(parameterEstimationTask);
@@ -5647,9 +5652,10 @@ VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
 
 	if (pixelClassList.size()!=0) {
 		VCPixelClass[] pixelClassArray = new VCPixelClass[pixelClassList.size()];
-		
-		for (int i = 0; i < pixelClassList.size(); i++){
-			pixelClassArray[i] = getPixelClass((Element)pixelClassList.get(i));
+		int pixelClassCounter = 0;
+		for (Element pcElement : pixelClassList){
+			pixelClassArray[pixelClassCounter] = getPixelClass(pcElement);
+			pixelClassCounter ++;
 		}
 		try {
 			newimage.setPixelClasses(pixelClassArray);
