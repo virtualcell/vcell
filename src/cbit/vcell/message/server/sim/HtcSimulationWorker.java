@@ -158,8 +158,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
 		
-//		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), null, null);
+		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -172,8 +171,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlPars
 				forceUnixPath(userdir.getAbsolutePath())
 		};
 
-//		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), null, null);
+		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
