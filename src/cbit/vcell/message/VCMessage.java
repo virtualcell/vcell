@@ -47,6 +47,8 @@ public abstract interface VCMessage {
 	public void setCorrelationID(String correlationID);
 
 	public String show();
+
+	public long getTimestampMS();
 	
 //	public void setMessageID(String messageID);
 }
