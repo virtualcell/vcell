@@ -87,8 +87,7 @@ private VCUnitTranslator() { super(); }
 		}
 		VCUnitDefinition totalUnit = null;
 		Unit unit = null;
-		for (int i = 0; i < list.size(); i++) {
-			Element temp = (Element)list.get(i);
+		for (Element temp : list) {
 			unit = processCellMLUnit(temp, sNamespace, sAttNamespace, vcUnitSystem);
 			if (unit == null) {        //for dimensionless and unresolved?
 				continue;
@@ -315,8 +314,8 @@ private VCUnitTranslator() { super(); }
 					@SuppressWarnings("unchecked")
 					ArrayList<Element> siblings = new ArrayList<Element>(owner.getChildren(CELLMLTags.UNITS, sNamespace));
 					Element cellUnitDef = null;
-					for (int i = 0; i < siblings.size(); i++) {
-						cellUnitDef = (Element)siblings.get(i);
+					for (Element cuElement : siblings) {
+						cellUnitDef = cuElement;
 						if (cellUnitDef.getAttributeValue(CELLMLTags.name, sAttNamespace).equals(kind)) {
 							break;
 						} else {
