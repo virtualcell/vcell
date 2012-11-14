@@ -14,11 +14,14 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandServiceLocal;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 
 public abstract class HtcProxy {
@@ -35,28 +38,31 @@ public abstract class HtcProxy {
 	 *
 	 */
 	
-	public static class ServiceJobInfo{
+	public static class HtcJobInfo{
 		private HtcJobID htcJobID;
-		private String serviceJobName;
+		private String jobName;
 		private String errorPath;
 		private String outputPath;
-		public ServiceJobInfo(HtcJobID htcJobID, String serviceJobName,String errorPath,String outputPath) {
+		public HtcJobInfo(HtcJobID htcJobID, String jobName,String errorPath,String outputPath) {
 			this.htcJobID = htcJobID;
-			this.serviceJobName = serviceJobName;
+			this.jobName = jobName;
 			this.errorPath = errorPath;
 			this.outputPath = outputPath;
 		}
 		public HtcJobID getHtcJobID() {
 			return htcJobID;
 		}
-		public String getServiceJobName(){
-			return serviceJobName;
+		public String getJobName(){
+			return jobName;
 		}
 		public String getErrorPath() {
 			return errorPath;
 		}
 		public String getOutputPath() {
 			return outputPath;
+		}
+		public String toString(){
+			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
 		}
 	}
 	protected enum HtcJobCategory {
@@ -106,12 +112,17 @@ public abstract class HtcProxy {
 
 	public abstract HtcProxy cloneThreadsafe();
 	
-	public abstract TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+	public final List<HtcJobID> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+		return getRunningJobIDs(serverID.toString().toUpperCase()+"_");
+	}
 
-	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
+	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
+		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
+	}
 
-	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
-	public abstract Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException;
+	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
+	
+	public abstract List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;
@@ -170,4 +181,21 @@ public abstract class HtcProxy {
 	public abstract String getSubmissionFileExtension();
 
 	public abstract void checkServerStatus() throws ExecutableException;
+	
+	/**
+	 * for unix-style commands that have (e.g. pipes), using the java Runtime.exec(String[] cmd), the pipe requires a shell to operate properly.
+	 * the SSH command already invokes this with a shell, so it is not required.
+	 */
+	protected final String[] constructShellCommand(CommandService commandService, String[] cmd){
+		if (commandService instanceof CommandServiceSsh){
+			return cmd;
+		}else if (commandService instanceof CommandServiceLocal){
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < cmd.length; i++) {
+				sb.append((i>0?" ":"")+cmd[i]);
+			}
+			return new String[] { "/bin/sh","-c",sb.toString()};
+		}
+		throw new RuntimeException("expected either SSH or Local CommandService");
+	}
 }

@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeMap;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -54,6 +53,7 @@ import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
@@ -433,22 +433,23 @@ private void pingAll() throws VCMessagingException {
 }
 
 private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
-	 TreeMap<HtcJobID, String>  jobIdMapJobName = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
-	 HtcJobID foundJobID = null;
-	 for(HtcJobID jobID : jobIdMapJobName.keySet()){
-		 if(jobIdMapJobName.get(jobID).equals(service.getServiceSpec().getID())){
-			 foundJobID = jobID;
+	 List<HtcJobID>  jobIds = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
+	 List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(jobIds);
+	 HtcJobInfo foundJobInfo = null;
+	 for(HtcJobInfo jobInfo : jobInfos){
+		 if(jobInfo.getJobName().equals(service.getServiceSpec().getID())){
+			 foundJobInfo = jobInfo;
 			 break;
 		 }
 	 }
-	 if(foundJobID == null){
+	 if(foundJobInfo == null){
 		 return;
 	 }
-	 htcProxy.killJob(foundJobID);
+	 htcProxy.killJob(foundJobInfo.getHtcJobID());
 	 long TIMEOUT = 60000;
 	 long startTime = System.currentTimeMillis();
 	 while((System.currentTimeMillis()-startTime) < TIMEOUT){
-		 HtcJobStatus htcJobStatus = htcProxy.getJobStatus(foundJobID);
+		 HtcJobStatus htcJobStatus = htcProxy.getJobStatus(foundJobInfo.getHtcJobID());
 		 if(htcJobStatus == null || !htcJobStatus.isRunning()){
 			 return;
 		 }
@@ -459,7 +460,7 @@ private void killService(ServiceStatus service) throws ExecutableException, HtcJ
 			e.printStackTrace();
 		}
 	 }
-	 throw new HtcException("Timeout Error: failed to kill service "+service.getServiceSpec().getID()+" jobid="+foundJobID);
+	 throw new HtcException("Timeout Error: failed to kill service "+service.getServiceSpec().getID()+" jobid="+foundJobInfo.getHtcJobID());
 }
 /**
 * Insert the method's description here.

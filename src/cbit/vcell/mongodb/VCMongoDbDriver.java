@@ -22,7 +22,7 @@ import com.mongodb.WriteResult;
 
 public class VCMongoDbDriver implements Runnable {
 	
-	public static boolean bQuiet = false;
+	public static boolean bQuiet = true;
 	
 	private static VCMongoDbDriver mongoDriverSingleton = null;
 

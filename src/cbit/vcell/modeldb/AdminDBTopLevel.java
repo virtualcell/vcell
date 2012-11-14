@@ -162,6 +162,35 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
+public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimulationJobStatus[] jobStatus = getSimulationJobStatusArray(con, simKey);
+		return jobStatus;
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationJobStatusArray(simKey,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (1/31/2003 2:35:44 PM)
+ * @return cbit.vcell.solvers.SimulationJobStatus[]
+ * @param bActiveOnly boolean
+ * @param owner cbit.vcell.server.User
+ */
 public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
@@ -220,6 +249,15 @@ SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int 
 	return jobStatus;
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/6/2005 3:08:22 PM)
+ */
+SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey) throws SQLException {
+	SimulationJobStatus[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,false);
+	return jobStatus;
+}
 
 /**
  * Insert the method's description here.

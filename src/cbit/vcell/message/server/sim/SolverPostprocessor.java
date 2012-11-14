@@ -57,8 +57,13 @@ public class SolverPostprocessor  {
 
 			vcMessagingService = VCMessagingService.createInstance();
 			VCMessageSession session = vcMessagingService.createProducerSession();
-			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
-			VCMongoMessage.sendWorkerEvent(workerEventMessage);
+			if (solverExitCode==0){
+				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+				VCMongoMessage.sendWorkerEvent(workerEventMessage);
+			}else{
+				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+				VCMongoMessage.sendWorkerEvent(workerEventMessage);
+			}
 			try {
 				Thread.sleep(2000);
 			}catch (InterruptedException e){

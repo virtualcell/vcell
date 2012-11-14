@@ -7,6 +7,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -326,37 +327,20 @@ public final class PbsProxy extends HtcProxy {
 	}
 	
 	@Override
-	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
-		return getRunningJobs(serverID.toString().toUpperCase()+"_");
-	}
-
-	@Override
-	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
-		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
-	}
-
-	@Override
-	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
+	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
 		try {
-			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix};
+			String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDNameMap =
-				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
-					@Override
-					public int compare(HtcJobID o1, HtcJobID o2) {
-						return Integer.parseInt(((PbsJobID)o2).getPbsJobID())-Integer.parseInt(((PbsJobID)o1).getPbsJobID());
-					}
-				});
+			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
 			while((line = br.readLine()) != null){
 				StringTokenizer st = new StringTokenizer(line," \t");
 				String pbsJobInfo = st.nextToken();
 				Integer pbsJobID = new Integer(pbsJobInfo.substring(0,pbsJobInfo.indexOf('.')));
-				String jobName = st.nextToken();
-				pbsJobIDNameMap.put(new PbsJobID(String.valueOf(pbsJobID)), jobName);
+				pbsJobIDs.add(new PbsJobID(String.valueOf(pbsJobID)));
 			}
-			return pbsJobIDNameMap;
+			return pbsJobIDs;
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ExecutableException){
@@ -367,14 +351,14 @@ public final class PbsProxy extends HtcProxy {
 		}
 	}
 
-	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+	@Override
+	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
 		try{
-			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
-			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
-			Vector<String> cmdV = new Vector<String>();
+			ArrayList<HtcJobInfo> serviceJobInfos = new ArrayList<HtcJobInfo>();
+			ArrayList<String> cmdV = new ArrayList<String>();
 			cmdV.add(JOB_CMD_STATUS);
 			cmdV.add("-f");
-			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
+			for(HtcJobID htcJobID : htcJobIDs){
 				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
 			}
 			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
@@ -398,7 +382,7 @@ public final class PbsProxy extends HtcProxy {
 					}else if(line.trim().startsWith("Output_Path =")){
 						st.nextToken();st.nextToken();
 						String latestOutputPath = st.nextToken();
-						serviceJobInfos.add(new ServiceJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+						serviceJobInfos.add(new HtcJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
 					}
 				}
 			}
@@ -418,14 +402,14 @@ public final class PbsProxy extends HtcProxy {
 
 		try{
 			
-			String[] commandArray = new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX};
+			String[] commandArray = constructShellCommand(commandService,new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX,"|","cat"/*compensate grep behaviour*/});
 			CommandOutput commandOutput = commandService.command(commandArray);
-			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
-			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
-				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
-						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
-						"Standard error = \n"+commandOutput.getStandardError());
-			}
+//			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
+//			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
+//				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
+//						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
+//						"Standard error = \n"+commandOutput.getStandardError());
+//			}
 			String[] outputLines =commandOutput.getStandardOutput().split("\n");
 			for (int i=0; i<outputLines.length; i++){
 			 	String foundPbsJobID = outputLines[i].substring(0, outputLines[i].indexOf("."));

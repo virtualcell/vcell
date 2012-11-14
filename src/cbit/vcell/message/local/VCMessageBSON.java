@@ -16,23 +16,27 @@ public class VCMessageBSON implements VCMessage {
 	private VCDestination replyTo = null;
 	private String correlationID = null;
 	private final String messageID;
+	private final long timestampMS;
 
 	VCMessageBSON(){
 		this.textContent = null;
 		this.objectContent = null;
 		this.messageID = "VCMessageBSON("+System.identityHashCode(this)+")";
+		this.timestampMS = System.currentTimeMillis();
 	}
 	
 	VCMessageBSON(String textContent){
 		this.textContent = textContent;
 		this.objectContent = null;
 		this.messageID = "VCMessageBSON("+System.identityHashCode(this)+")";
+		this.timestampMS = System.currentTimeMillis();
 	}
 	
 	VCMessageBSON(Object objectContent){
 		this.textContent = null;
 		this.objectContent = objectContent;
 		this.messageID = "VCMessageBSON("+System.identityHashCode(this)+")";
+		this.timestampMS = System.currentTimeMillis();
 	}
 	
 	@Override
@@ -187,6 +191,11 @@ public class VCMessageBSON implements VCMessage {
 			buffer.append("'");
 		}
 		return buffer.toString();
+	}
+
+	@Override
+	public long getTimestampMS() {
+		return timestampMS;
 	}
 
 }

@@ -1,0 +1,86 @@
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12287)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12277)
+@@ -190,11 +190,7 @@
+ 		if (commandService instanceof CommandServiceSsh){
+ 			return cmd;
+ 		}else if (commandService instanceof CommandServiceLocal){
+-			StringBuffer sb = new StringBuffer();
+-			for (int i = 0; i < cmd.length; i++) {
+-				sb.append((i>0?" ":"")+cmd[i]);
+-			}
+-			return new String[] { "/bin/sh","-c",sb.toString()};
++			return BeanUtils.addElements(new String[] { "/bin/sh","-c"}, cmd);
+ 		}
+ 		throw new RuntimeException("expected either SSH or Local CommandService");
+ 	}
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12287)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12277)
+@@ -329,7 +329,7 @@
+ 	@Override
+ 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
+ 		try {
+-			String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
++			String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix});
+ 			CommandOutput commandOutput = commandService.command(cmd);
+ 			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
+ 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+@@ -402,14 +402,14 @@
+ 
+ 		try{
+ 			
+-			String[] commandArray = constructShellCommand(commandService,new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX,"|","cat"/*compensate grep behaviour*/});
++			String[] commandArray = constructShellCommand(commandService,new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX});
+ 			CommandOutput commandOutput = commandService.command(commandArray);
+-//			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
+-//			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
+-//				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
+-//						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
+-//						"Standard error = \n"+commandOutput.getStandardError());
+-//			}
++			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
++			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
++				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
++						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
++						"Standard error = \n"+commandOutput.getStandardError());
++			}
+ 			String[] outputLines =commandOutput.getStandardOutput().split("\n");
+ 			for (int i=0; i<outputLines.length; i++){
+ 			 	String foundPbsJobID = outputLines[i].substring(0, outputLines[i].indexOf("."));
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12287)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12277)
+@@ -419,7 +419,7 @@
+    6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
+    6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
+  */
+-		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
++		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix});
+ 		CommandOutput commandOutput = commandService.command(cmd);
+ 		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+ 		
+@@ -443,7 +443,7 @@
+ 			//
+ 			// how many to process at once.
+ 			//
+-			int MAX_NUM_JOBS_IN_QUERY = 1;
++			int MAX_NUM_JOBS_IN_QUERY = 20;
+ 			
+ 			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
+ 			while (remainingJobIDs.size()>0){
+Index: src/cbit/vcell/message/server/htc/sge/SgeJobID.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeJobID.java	(revision 12287)
++++ src/cbit/vcell/message/server/htc/sge/SgeJobID.java	(revision 12277)
+@@ -6,7 +6,6 @@
+ 	
+ 	public SgeJobID(String jobID){
+ 		super(jobID,BatchSystemType.SGE);
+-		int jobIdInteger = Integer.parseInt(jobID); // attempt to temporarily parse the jobID for input validation.
+ 	}
+ 		
+ 	public String getSgeJobID() {

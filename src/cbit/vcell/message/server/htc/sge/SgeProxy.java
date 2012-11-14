@@ -3,11 +3,11 @@ package cbit.vcell.message.server.htc.sge;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import org.jdom.Document;
@@ -414,88 +414,80 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 	}
 
 	@Override
-	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
-		return getRunningJobs(serverID.toString().toUpperCase()+"_");
-	}
-
-	@Override
-	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
-		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
-	}
-
-	@Override
-	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
-		try{
-			String[] cmd = new String[]{JOB_CMD_STATUS, "-xml"};//get running jobs in XML format
-			CommandOutput commandOutput = commandService.command(cmd);
-			TreeMap<HtcJobID, String> pbsJobIDMapJobName =
-				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
-					@Override
-					public int compare(HtcJobID o1, HtcJobID o2) {
-						return Integer.parseInt(((SgeJobID)o2).getSgeJobID())-Integer.parseInt(((SgeJobID)o1).getSgeJobID());
-					}
-				});
-			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
-			Element rootElement = qstatDoc.getRootElement();
-			List<Element> qstatInfoChildren = rootElement.getChild("queue_info").getChildren("job_list");
-			for(Element jobInfoElement : qstatInfoChildren){
-				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
-				String jobName = jobInfoElement.getChildText("JB_name").trim();
-				if(jobName.startsWith(jobNamePrefix))
-				pbsJobIDMapJobName.put(new SgeJobID(jobID), jobName);
-			}
-			return pbsJobIDMapJobName;
-		} catch (Exception e) {
-			e.printStackTrace();
-			if(e instanceof ExecutableException){
-				throw (ExecutableException)e;
-			}else{
-				throw new ExecutableException("Error getRunningJobs: "+e.getMessage());
-			}
+	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
+/*
+   6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
+   6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
+ */
+		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+		CommandOutput commandOutput = commandService.command(cmd);
+		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+		
+		String output = commandOutput.getStandardOutput();
+		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+		while (st.hasMoreTokens()) {
+			String line = st.nextToken().trim();
+			StringTokenizer lineTokens = new StringTokenizer(line," \t");
+			serviceJobIDs.add(new SgeJobID(lineTokens.nextToken()));
 		}
+		return serviceJobIDs;
 	}
 
-	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+
+
+
+	@Override
+	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
 		try{
-			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
-			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
-			Vector<String> cmdV = new Vector<String>();
-			cmdV.add(JOB_CMD_STATUS);
-			cmdV.add("-f");
-			cmdV.add("-j");
-			String jobList = "";
-			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
-				if(jobList.length() != 0){
-					jobList+=",";
+			ArrayList<HtcJobInfo> jobInfos = new ArrayList<HtcJobInfo>();
+			//
+			// how many to process at once.
+			//
+			int MAX_NUM_JOBS_IN_QUERY = 1;
+			
+			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
+			while (remainingJobIDs.size()>0){
+				List<HtcJobID> currentJobIDs = new ArrayList<HtcJobID>(Arrays.asList(remainingJobIDs.subList(0, Math.min(MAX_NUM_JOBS_IN_QUERY,remainingJobIDs.size())).toArray(new HtcJobID[0])));
+				remainingJobIDs.removeAll(currentJobIDs);
+
+				Vector<String> cmdV = new Vector<String>();
+				cmdV.add(JOB_CMD_STATUS);
+				cmdV.add("-f");
+				cmdV.add("-j");
+				String jobList = "";
+				for(HtcJobID htcJobID : currentJobIDs){
+					if(jobList.length() != 0){
+						jobList+=",";
+					}
+					jobList+=((SgeJobID)htcJobID).getSgeJobID();
 				}
-				jobList+=((SgeJobID)htcJobID).getSgeJobID();
-			}
-			cmdV.add(jobList);
-			cmdV.add("-xml");
-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
-			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
-			Element rootElement = qstatDoc.getRootElement();
-			Element dbJobInfoElement = rootElement.getChild("djob_info");
-			if(dbJobInfoElement == null){
-				return null;
-			}
-			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
-			if(qstatInfoChildren == null){
-				return null;
-			}
-			for(Element jobInfoElement : qstatInfoChildren){
-				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
-				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
-				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
-				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
-				for(Element envSublist : envSublists){
-					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
-						serviceJobInfos.add(new ServiceJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
-						break;
+				cmdV.add(jobList);
+				cmdV.add("-xml");
+				CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+				Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
+				Element rootElement = qstatDoc.getRootElement();
+				Element dbJobInfoElement = rootElement.getChild("djob_info");
+				if(dbJobInfoElement == null){
+					return null;
+				}
+				List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
+				if(qstatInfoChildren == null){
+					return null;
+				}
+				for(Element jobInfoElement : qstatInfoChildren){
+					String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+					String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
+					String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
+					List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
+					for(Element envSublist : envSublists){
+						if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
+							jobInfos.add(new HtcJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
+							break;
+						}
 					}
 				}
 			}
-			return serviceJobInfos;
+			return jobInfos;
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ExecutableException){
