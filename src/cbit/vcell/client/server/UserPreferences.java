@@ -93,7 +93,6 @@ public class UserPreferences {
 	// user choices
 	private Hashtable<String, Preference> warningHash = new Hashtable<String, Preference>();// keyed by "WARN"+number
 	private Hashtable<String, Preference> genericHash = new Hashtable<String, Preference>();// keyed by "GEN_PREF"+number
-	private Hashtable<String, Preference> sysClientHash =  new Hashtable<String, Preference>();// keyed by Preference.XXX
 
 /**
  * Insert the method's description here.
@@ -112,10 +111,6 @@ public UserPreferences(ClientServerManager clientServerManager) {
  */
 private ClientServerManager getClientServerManager() {
 	return clientServerManager;
-}
-
-public String getSystemClientProperty(String systemClientPropertyName){
-	return sysClientHash.get(systemClientPropertyName).getValue();
 }
 	public String getGenPref(int prefType) {
 
@@ -220,13 +215,10 @@ protected void resetFromSaved(Preference[] savedPreferences) {
 	/* look in getUserChoices() for keys and values strings encoding of the preferences */
 	// reset to defaults
 	warningHash.clear();
-	sysClientHash.clear();
 	// apply saved choices
 	for (int i = 0; i < savedPreferences.length; i++){
 		String key = savedPreferences[i].getKey();
-		if (savedPreferences[i].isSystemClientProperty()) {
-			sysClientHash.put(savedPreferences[i].getKey(),savedPreferences[i]);
-		}else if (key.startsWith(UserPreferences.WARN)) {
+		if (key.startsWith(UserPreferences.WARN)) {
 			// parse warning preferences
 			int warningType = Integer.parseInt(key.substring(UserPreferences.WARN.length()));
 			boolean choice = Boolean.valueOf(savedPreferences[i].getValue()).booleanValue();

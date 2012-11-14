@@ -36,8 +36,6 @@ import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.visit.VisitConnectionInfo;
-import cbit.vcell.visit.VisitSession;
 import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
 /**
@@ -340,9 +338,5 @@ void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff compareP
 void accessPermissions(Component requester, VCDocument vcDocument);
 
 boolean isDifferentFromBlank(int documentType, VCDocument vcDocument);
-
-public VisitSession createNewVisitSession(String visitBinPath) throws DataAccessException;
-
-public VisitConnectionInfo createNewLocalVisitSessionConnectionInfo (String visitBinPath) throws DataAccessException;
 
 }

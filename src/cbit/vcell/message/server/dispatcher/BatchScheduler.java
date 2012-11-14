@@ -17,8 +17,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import llnl.visit.GlobalAttributes;
-
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;

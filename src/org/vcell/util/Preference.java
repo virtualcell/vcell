@@ -23,7 +23,6 @@ import java.util.Vector;
 public class Preference implements java.io.Serializable, Matchable {
 	private String key = null;
 	private String value = null;
-	private boolean isSystemClientProperty = false;
 
 	//
 	// max string lengths
@@ -32,26 +31,6 @@ public class Preference implements java.io.Serializable, Matchable {
 	//
 	public static final int MAX_KEY_LENGTH = 128;
 	public static final int MAX_VALUE_LENGTH = 4000;
-	
-	//-------------------------------------------------------------------------------------------------
-	//
-	//Global System Client Property Names
-	//Declaration name MUST begin with "SYSCLIENT_" or it will not be available to clients
-	//from UserPreferences.
-	//Declaration value must match a property NAME defined in a an external properties file or the database.
-	//
-	public static final String SYSCLIENT_pslidAllProteinListURL = "SYSCLIENT_vcell.pslid.allProteinListURL";
-	public static final String SYSCLIENT_pslidCellProteinListExpURL = "SYSCLIENT_vcell.pslid.cellProteinListExpURL";
-	public static final String SYSCLIENT_pslidCellProteinListGenURL = "SYSCLIENT_vcell.pslid.cellProteinListGenURL";
-	public static final String SYSCLIENT_pslidCellProteinImageInfoExpURL = "SYSCLIENT_vcell.pslid.cellProteinImageInfoExpURL";
-	public static final String SYSCLIENT_pslidCellProteinImageInfoGenURL = "SYSCLIENT_vcell.pslid.cellProteinImageInfoGenURL";
-	public static final String SYSCLIENT_pslidCellProteinImageExpURL = "SYSCLIENT_vcell.pslid.cellProteinImageExpURL";
-	public static final String SYSCLIENT_pslidCellProteinImageGenURL_1 = "SYSCLIENT_vcell.pslid.cellProteinImageGenURL_1";
-	public static final String SYSCLIENT_pslidCellProteinImageGenURL_2 = "SYSCLIENT_vcell.pslid.cellProteinImageGenURL_2";
-	
-	private static final String[] SYSTEM_CLIENT_PROPERTIES = getAllDefinedSystemClientPropertyNames();
-	//-------------------------------------------------------------------------------------------------
-
 
 /**
  * Preference constructor comment.
@@ -68,14 +47,6 @@ public Preference(String argKey, String argValue) {
 	}
 	this.key = argKey;
 	this.value = argValue;
-}
-
-public Preference(String argKey, String argValue,boolean isSystemClientProperty) {
-	this(argKey,argValue);
-	this.isSystemClientProperty = isSystemClientProperty;
-	if(isSystemClientProperty && !Preference.isDefinedSystemClientProperty(argKey)){
-		throw new IllegalArgumentException("SYSTEM_CLIENT_PROPERTY "+argKey+" is not defined in "+Preference.class.getName());
-	}
 }
 
 public static final String[] getAllDefinedSystemClientPropertyNames(){
@@ -103,14 +74,6 @@ public static final String[] getAllDefinedSystemClientPropertyNames(){
 	return null;
 }
 
-private static boolean isDefinedSystemClientProperty(String propName){
-	for (int i = 0; i < Preference.SYSTEM_CLIENT_PROPERTIES.length; i++) {
-		if(Preference.SYSTEM_CLIENT_PROPERTIES[i].equals(propName)){
-			return true;
-		}
-	}
-	return false;
-}
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
@@ -158,9 +121,5 @@ public java.lang.String getValue() {
  */
 public String toString() {
 	return "Preference['"+key+"','"+value+"']";
-}
-
-public boolean isSystemClientProperty() {
-	return isSystemClientProperty;
 }
 }

@@ -150,9 +150,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
-import cbit.vcell.visit.VisitConnectionInfo;
-import cbit.vcell.visit.VisitControlPanel;
-import cbit.vcell.visit.VisitSession;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -312,10 +309,6 @@ public class PDEDataViewer extends DataViewer {
 					connEtoC9(e);
 				} else if (e.getSource() == snapShotMenuItem) {
 					snapshotROI();
-				} else if (e.getSource() == getJButtonVisit()) {
-					openInVisit();
-				}  else if (e.getSource() == getJButtonLocalVisit()) {
-					openInLocalVisit();
 				}
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -1313,289 +1306,6 @@ private ExportMonitorPanel getExportMonitorPanel1() {
 //	return ivjJButtonStatistics;
 //}
 
-private void openInVisit() {
-	try {
-		
-//		if (!VCellVisitUtils.checkVisitResourcePrerequisites(this,"visit2_2_2"))   //This should be a property
-//		{
-//			System.out.println("VCellVisitUtils.checkVisitResourcePrerequisites returned false, meaning prerequisite tests failed");
-//			return; //return without opening Visit or VisitControlPanel
-//			
-//		}
-//		
-//		System.out.println("Visit prerequisites tests passed");
-		
-		 /*
-		 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
-		 if vcDId instanceOf VCSim
-		 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
-		 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
-		KeyValue fieldDataKey = null;
-		int jobIndex = 0;
-		boolean isOldStyle = false;
-		VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
-		if (vcdid instanceof VCSimulationDataIdentifier){
-			fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
-			jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
-		}else if (vcdid instanceof VCSimulationDataIdentifierOldStyle){
-			isOldStyle = true;
-			fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
-			jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
-		}else{
-			throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
-		}
-
-		String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-		
-		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
-		//
-		String visitBinDirProp = null;
-		if (ResourceUtil.bMac || ResourceUtil.bLinux) {
-		
-			//visitBinDirProp = new File(ResourceUtil.getVcellHome(),"visit2_2_2/bin").getCanonicalPath();    //TODO: Replace visit2_2_2 with property of latest VCell supported version
-			visitBinDirProp = "/home/VCELL/visit/visit2_3_2.linux-x86_64/bin";
-		}
-		else {
-				visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
-		}
-		
-		System.out.println("visitBinDirProp = " + visitBinDirProp);
-		
-		if (visitBinDirProp != null && (new File(visitBinDirProp,"visit.exe").exists()|| new File(visitBinDirProp,"visit").exists())) {
-			visitBinDir=visitBinDirProp;
-		}else {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogTitle("Please locate the VisIt executable");
-			chooser.showOpenDialog(this);
-			if (!chooser.getSelectedFile().getName().toLowerCase().startsWith("visit")) {
-				DialogUtils.showErrorDialog(this, "Expecting filename to begin with 'visit'");
-				return;
-			}
-			visitBinDir=chooser.getSelectedFile().getParentFile().getAbsolutePath();
-		}
-		
-		//final JDesktopPaneEnhanced desktopPane = (JDesktopPaneEnhanced) JOptionPane.getDesktopPaneForComponent(this);
-		
-		final VisitSession visitSession = getDataViewerManager().getRequestManager().createNewVisitSession(visitBinDir);
-		visitSession.addPropertyChangeListener(new PropertyChangeListener() {
-			
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals(VisitSession.PROPERTY_NAME_VIEWER_WAS_CLOSED)) {
-					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
-					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(visitSession);
-					if (childWindow!=null){
-						childWindow.close();
-					}
-				}
-			}
-		});
-		
-		visitSession.openDatabase(getSimulation().getVersion().getOwner(), simlogname);
-		
-		String varName = getPdeDataContext().getVariableName();
-		//String varName = "s0";
-		visitSession.addAndDrawPseudocolorPlot(varName);
-
-		VisitControlPanel visitControlPanel= new VisitControlPanel();
-		visitControlPanel.setPdeDataContext(getPdeDataContext(), getPdeDataContext().getCartesianMesh().getOrigin(), getPdeDataContext().getCartesianMesh().getExtent());
-		visitControlPanel.init(getPdeDataContext().getDataIdentifier(),visitSession);
-		final boolean[] bClose = visitSession.pollViewerPoll();
-
-		ChildWindowListener childWindowListener = new ChildWindowListener() {		
-			public void closing(ChildWindow childWindow) {
-				visitSession.close();
-				bClose[0]=true;
-			}		
-			public void closed(ChildWindow childWindow) {
-			}
-		};
-
-		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(PDEDataViewer.this).addChildWindow(visitControlPanel, visitSession, "Visit Control Panel");
-		childWindow.setIsCenteredOnParent();
-		childWindow.pack();
-		childWindow.addChildWindowListener(childWindowListener);
-		childWindow.show();
-
-	} catch(Exception e1) {
-		e1.printStackTrace();
-	}
-}
-
-
-private void openInLocalVisit() {
-	try {
-		
-//		if (!VCellVisitUtils.checkVisitResourcePrerequisites(this,"visit2_2_2"))   //This should be a property
-//		{
-//			System.out.println("VCellVisitUtils.checkVisitResourcePrerequisites returned false, meaning prerequisite tests failed");
-//			return; //return without opening Visit or VisitControlPanel
-//			
-//		}
-//		
-//		System.out.println("Visit prerequisites tests passed");
-		
-		 /*
-		 VCDataIdentifier vcDId = getPdeDataContext().getDataIdentifier();
-		 if vcDId instanceOf VCSim
-		 KeyValue fieldDataKey = getPdeDataContext().getDataIdentifier(
-		 String simFileToOpen = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);*/
-		KeyValue fieldDataKey = null;
-		int jobIndex = 0;
-		boolean isOldStyle = false;
-		final boolean[] isLocalRun = new boolean[] {false};
-		VCDataIdentifier vcdid = getPdeDataContext().getVCDataIdentifier();
-		if (vcdid instanceof VCSimulationDataIdentifier){
-			fieldDataKey = ((VCSimulationDataIdentifier)vcdid).getSimulationKey();
-			jobIndex = ((VCSimulationDataIdentifier)vcdid).getJobIndex();
-		}else if (vcdid instanceof VCSimulationDataIdentifierOldStyle){
-			isOldStyle = true;
-			fieldDataKey = ((VCSimulationDataIdentifierOldStyle)vcdid).getSimulationKey();
-			jobIndex = ((VCSimulationDataIdentifierOldStyle)vcdid).getJobIndex();
-		}else{
-			throw new RuntimeException("Unknown VCDataIdentifier type "+vcdid.getClass().getName());
-		}
-
-		final String simlogname = SimulationData.createCanonicalSimLogFileName(fieldDataKey, jobIndex, isOldStyle);
-		final File[] localDir = new File[1];
-		if (vcdid instanceof LocalVCDataIdentifier){
-			localDir[0] = ((LocalVCDataIdentifier)vcdid).getLocalDirectory();
-			if (localDir[0] == null) {throw new RuntimeException("local directory not found");}
-			isLocalRun[0] = true;
-		}
-		
-		//Try to figure out where the Visit executable is. Check some educated guesses first, then ask the user as a last resort
-		//
-		String visitBinDirProp = null;
-		if (ResourceUtil.bMac || ResourceUtil.bLinux) {
-		
-			//visitBinDirProp = new File(ResourceUtil.getVcellHome(),"visit2_2_2/bin").getCanonicalPath();    //TODO: Replace visit2_2_2 with property of latest VCell supported version
-			//visitBinDirProp = "/home/VCELL/visit/visit2_3_2.linux-x86_64/bin";
-		}
-		else {
-				visitBinDirProp = PropertyLoader.getProperty("vcell.visit.installexe", null);
-		}
-		
-		System.out.println("visitBinDirProp = " + visitBinDirProp);
-		final StringBuffer visitLocalBin = new StringBuffer();
-		if (visitBinDirProp != null && (new File(visitBinDirProp,"visit.exe").exists()|| new File(visitBinDirProp,"visit").exists())) {
-			visitBinDir=visitBinDirProp;
-			visitLocalBin.append(visitBinDirProp+"/visit");
-		}else {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogTitle("Please locate the VisIt executable");
-			chooser.showOpenDialog(this);
-			if (chooser.getSelectedFile()==null) {return;}
-			if (!chooser.getSelectedFile().getName().toLowerCase().startsWith("visit")) {
-				DialogUtils.showErrorDialog(this, "Expecting filename to begin with 'visit'");
-				return;
-			}
-			if (ResourceUtil.bMac || ResourceUtil.bLinux) {
-				visitLocalBin.append(chooser.getSelectedFile().getParentFile().getCanonicalPath()+File.separator+"visit");
-				System.out.println("Unix visitLocalBin= "+visitLocalBin);
-			}
-			else {
-			
-				visitLocalBin.append(chooser.getSelectedFile().getCanonicalPath());
-			}
-		}
-		
-//		JFileChooser simResultsChooser = new JFileChooser();visit2_3_2.linux-x86_64
-//		simResultsChooser.setDialogTitle("Please locate .log file");
-//		simResultsChooser.showOpenDialog(this);
-		
-		//String localSimResultLogFile = simResultsChooser.getSelectedFile().getCanonicalPath();
-			new Thread(new Runnable() {
-				
-				public void run() {
-					// TODO Auto-generated method stub
-					try {
-						VisitConnectionInfo localVisitConnInfo =  getDataViewerManager().getRequestManager().createNewLocalVisitSessionConnectionInfo(visitLocalBin.toString());
-						String varName = getPdeDataContext().getVariableName();	
-						
-//						String visitMDServerHost = PropertyLoader.getProperty("vcell.visit.mdserverhost", null);
-//						String serverResultsDataPath = PropertyLoader.getProperty("vcell.primarySimdatadir", null);
-						
-						String visitMDServerHost = localVisitConnInfo.getIPAddress();
-						String serverResultsDataPath = localVisitConnInfo.getDataPath();
-						
-						if (visitMDServerHost == null || serverResultsDataPath == null) {
-							System.out.println("Unable to get properties from the server");
-							return;
-						}
-
-						
-							final ArrayList<String> args = new ArrayList<String>();
-							args.add(visitLocalBin.toString());
-							args.add("-o");
-							if (isLocalRun[0]) {
-								args.add(new File(localDir[0],simlogname).getPath());
-							}
-							else
-							{
-							 
-								args.add(visitMDServerHost+":"+serverResultsDataPath+"/"+getSimulation().getVersion().getOwner().getName()+"/"+simlogname);
-							}
-							System.out.println("args: "+args);
-							
-							final Executable executable = new Executable(args.toArray(new String[0]));
-
-						executable.start();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						DialogUtils.showErrorDialog(PDEDataViewer.this, e.getMessage());
-					}
-				}
-			}).start();
-			
-//			AsynchClientTask visitTask = new AsynchClientTask("Starting Local Visit Executable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//				
-//				@Override
-//				public void run(Hashtable<String, Object> hashTable) throws Exception {
-//					Runtime.getRuntime().exec(args.toArray(new String[0]));
-//					//executable.start();
-//					
-//				}
-//			};
-//			ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {visitTask});
-			
-			
-
-	} catch(Exception e1) {
-		e1.printStackTrace();
-	}
-}
-
-private JButton ivjButtonVisit;
-private JButton getJButtonVisit(){
-	if (ivjButtonVisit == null) {
-		ivjButtonVisit = new javax.swing.JButton();
-		ivjButtonVisit.setVisible(true);
-		ivjButtonVisit.setName("JButtonVisit");
-		ivjButtonVisit.setText("Open in VisIt");
-		ivjButtonVisit.addActionListener(ivjEventHandler);
-		ivjButtonVisit.setEnabled(true);
-
-	}
-	return ivjButtonVisit;
-	
-}
-
-private JButton ivjButtonLocalVisit;
-private JButton getJButtonLocalVisit(){
-	if (ivjButtonLocalVisit == null) {
-		ivjButtonLocalVisit = new javax.swing.JButton();
-		ivjButtonLocalVisit.setVisible(true);
-		ivjButtonLocalVisit.setName("JButtonLocalVisit");
-		ivjButtonLocalVisit.setText("Open in Local VisIt");
-		ivjButtonLocalVisit.addActionListener(ivjEventHandler);
-		ivjButtonLocalVisit.setEnabled(true);
-
-	}
-	return ivjButtonLocalVisit;
-	
-}
-
 private void snapshotROI() {
 	final AsynchClientTask createSnapshotTask = new AsynchClientTask("Creating Snapshot...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -1747,10 +1457,6 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setName("JPanelButtons");
 			ivjJPanelButtons.add(getPlotButton());
 			ivjJPanelButtons.add(getROIButton());
-			if (DocumentWindowAboutBox.getVERSION_NO().compareTo("5.0") > 0) {
-				ivjJPanelButtons.add(getJButtonVisit());
-				ivjJPanelButtons.add(getJButtonLocalVisit());
-			}
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
@@ -2642,11 +2348,6 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 		}
 	};
 	ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
-}
-
-public void setVisItButtonVisible(boolean bVisible)
-{
-	getJButtonVisit().setVisible(bVisible);
 }
 
 public void addDataJobListener(DataJobListener listener) {
