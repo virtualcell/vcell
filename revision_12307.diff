@@ -1,0 +1,159 @@
+Index: src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12307)
++++ src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12306)
+@@ -348,7 +348,8 @@
+ 				}else if (oldSchedulerStatus.isRunning()){
+ 					if (oldSimExeStatus != null) {
+ 						Date latestUpdate = oldSimExeStatus.getLatestUpdateDate();
+-						if (System.currentTimeMillis() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
++						Date sysDate = oldSimulationJobStatus.getTimeDateStamp();
++						if (sysDate.getTime() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
+ 							// new queue status		
+ 							SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+ 							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
+@@ -392,7 +393,7 @@
+ 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
+ 
+ 			}
+-		} else if (workerEvent.isWorkerExitErrorEvent()) {						
++		} else if (workerEvent.isWorkerExitEvent()) {						
+ 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
+ 				// new queue status		
+ 				SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+Index: src/cbit/vcell/message/server/sim/SolverPostprocessor.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12307)
++++ src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12306)
+@@ -57,13 +57,8 @@
+ 
+ 			vcMessagingService = VCMessagingService.createInstance();
+ 			VCMessageSession session = vcMessagingService.createProducerSession();
+-			if (solverExitCode==0){
+-				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+-				VCMongoMessage.sendWorkerEvent(workerEventMessage);
+-			}else{
+-				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+-				VCMongoMessage.sendWorkerEvent(workerEventMessage);
+-			}
++			WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExit(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
++			VCMongoMessage.sendWorkerEvent(workerEventMessage);
+ 			try {
+ 				Thread.sleep(2000);
+ 			}catch (InterruptedException e){
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12307)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12306)
+@@ -158,7 +158,8 @@
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
+ 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
+ 		
+-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++//		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), null, null);
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}
+@@ -171,7 +172,8 @@
+ 				forceUnixPath(userdir.getAbsolutePath())
+ 		};
+ 
+-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++//		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
++		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), null, null);
+ 		if (jobid == null) {
+ 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+ 		}
+Index: src/cbit/vcell/message/messages/WorkerEventMessage.java
+===================================================================
+--- src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12307)
++++ src/cbit/vcell/message/messages/WorkerEventMessage.java	(revision 12306)
+@@ -305,19 +305,11 @@
+ }
+ 
+ 
+-public static WorkerEventMessage sendWorkerExitNormal(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_NORMAL,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
++public static WorkerEventMessage sendWorkerExit(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
++	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+ 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+ 	workerEventMessage.sendWorkerEvent(session);
+ 
+ 	return workerEventMessage;
+ }
+-
+-public static WorkerEventMessage sendWorkerExitError(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_ERROR,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+-	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+-	workerEventMessage.sendWorkerEvent(session);
+-
+-	return workerEventMessage;
+ }
+-}
+Index: src/cbit/vcell/solver/SimulationMessage.java
+===================================================================
+--- src/cbit/vcell/solver/SimulationMessage.java	(revision 12307)
++++ src/cbit/vcell/solver/SimulationMessage.java	(revision 12306)
+@@ -58,8 +58,7 @@
+ 		JOB_RUNNING,
+ 		SOLVEREVENT_PROGRESS,
+ 		WORKEREVENT_PROGRESS,
+-		WORKEREVENT_WORKEREXIT_NORMAL,
+-		WORKEREVENT_WORKEREXIT_ERROR,
++		WORKEREVENT_WORKEREXIT,
+ 		SOLVEREVENT_FINISHED,
+ 		SOLVER_FINISHED,
+ 		WORKEREVENT_COMPLETED,
+@@ -242,11 +241,7 @@
+ 	}
+ 
+ 	public static SimulationMessage WorkerExited(int solverExitCode){
+-		if (solverExitCode==0){
+-			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_NORMAL,"solver exited (code="+solverExitCode+")");
+-		}else{
+-			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,"solver exited (code="+solverExitCode+")");
+-		}
++		return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT,"solver exited (code="+solverExitCode+")");
+ 	}
+ 
+ 	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){
+Index: src/cbit/rmi/event/WorkerEvent.java
+===================================================================
+--- src/cbit/rmi/event/WorkerEvent.java	(revision 12307)
++++ src/cbit/rmi/event/WorkerEvent.java	(revision 12306)
+@@ -15,6 +15,7 @@
+ import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.solver.Simulation;
++import cbit.vcell.solver.SimulationJob;
+ import cbit.vcell.solver.SimulationMessage;
+ import cbit.vcell.solver.VCSimulationDataIdentifier;
+ import cbit.vcell.solver.VCSimulationIdentifier;
+@@ -33,8 +34,7 @@
+ 	public static final int JOB_FAILURE = 1002;
+ 	public static final int JOB_COMPLETED = 1003;
+ 	public static final int JOB_WORKER_ALIVE = 1004;
+-	public static final int JOB_WORKER_EXIT_NORMAL = 1015;
+-	public static final int JOB_WORKER_EXIT_ERROR = 1016;
++	public static final int JOB_WORKER_EXIT = 1015;
+ 
+ 	private VCSimulationIdentifier vcSimulationIdentifier = null;
+ 	private int jobIndex = -1;
+@@ -276,14 +276,10 @@
+ 	return eventType == JOB_WORKER_ALIVE;
+ }
+ 
+-public boolean isWorkerExitErrorEvent() {
+-	return eventType == JOB_WORKER_EXIT_ERROR;
++public boolean isWorkerExitEvent() {
++	return eventType == JOB_WORKER_EXIT;
+ }
+ 
+-public boolean isWorkerExitNormalEvent() {
+-	return eventType == JOB_WORKER_EXIT_NORMAL;
+-}
+-
+ public void setHtcJobID(HtcJobID htcJobID) {
+ 	this.htcJobID = htcJobID;
+ }

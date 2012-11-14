@@ -566,6 +566,8 @@ public final class VCMongoMessage {
 
 			addObject(dbObject, vcMessage);
 			
+			dbObject.put(MongoMessage_elapsedTimeMS, new Long(System.currentTimeMillis()-vcMessage.getTimestampMS()));
+			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);

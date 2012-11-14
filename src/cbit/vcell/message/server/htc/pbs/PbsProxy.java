@@ -329,7 +329,7 @@ public final class PbsProxy extends HtcProxy {
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
 		try {
-			String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix});
+			String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 			CommandOutput commandOutput = commandService.command(cmd);
 			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
@@ -402,14 +402,14 @@ public final class PbsProxy extends HtcProxy {
 
 		try{
 			
-			String[] commandArray = constructShellCommand(commandService,new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX});
+			String[] commandArray = constructShellCommand(commandService,new String[]{QSTAT_FULL_CLUSTER_COMMAND_PATH,"|", "grep "+HTC_SIMULATION_JOB_NAME_PREFIX,"|","cat"/*compensate grep behaviour*/});
 			CommandOutput commandOutput = commandService.command(commandArray);
-			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
-			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
-				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
-						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
-						"Standard error = \n"+commandOutput.getStandardError());
-			}
+//			if (commandOutput.getExitStatus()==1) {return null;} //because Grep returns code 1 if nothing found
+//			if (commandOutput.getExitStatus()!=0 || commandOutput.getStandardOutput()==null) {
+//				throw new ExecutableException("qstat failed.\nExit Status = "+commandOutput.getExitStatus().toString()+"\n"+
+//						"Standard out = \n"+commandOutput.getStandardOutput()+"\n"+
+//						"Standard error = \n"+commandOutput.getStandardError());
+//			}
 			String[] outputLines =commandOutput.getStandardOutput().split("\n");
 			for (int i=0; i<outputLines.length; i++){
 			 	String foundPbsJobID = outputLines[i].substring(0, outputLines[i].indexOf("."));

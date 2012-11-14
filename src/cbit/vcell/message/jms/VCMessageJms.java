@@ -287,5 +287,15 @@ public class VCMessageJms implements VCMessage {
 		}
 		return buffer.toString();
 	}
+
+	@Override
+	public long getTimestampMS() {
+		try {
+			return jmsMessage.getJMSTimestamp();
+		} catch (JMSException e) {
+			handleJMSException(e);
+			throw new RuntimeException(e.getMessage(),e);
+		}
+	}
 	
 }

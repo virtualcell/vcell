@@ -1,0 +1,549 @@
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12259)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12258)
+@@ -11,7 +11,6 @@
+ package cbit.vcell.message.server.dispatcher;
+ import java.sql.SQLException;
+ import java.util.Date;
+-import java.util.List;
+ import java.util.Set;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+@@ -53,7 +52,6 @@
+ import cbit.vcell.message.server.htc.HtcException;
+ import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+ import cbit.vcell.message.server.htc.HtcProxy;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+@@ -215,13 +213,10 @@
+ 		}
+ 		
+ 		private void killZombieProcesses() throws ExecutableException{
+-			List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
+-			List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
+-			for (int i=0;i<runningSimulations.size();i++){
+-				HtcJobID htcJobID = runningSimulations.get(i);
+-				HtcJobInfo jobInfo = jobInfos.get(i);
++			TreeMap<HtcJobID, String> runningSimulations = htcProxy.getRunningSimulationJobIDs();
++			for (HtcJobID htcJobID : runningSimulations.keySet()){
+ 				try {
+-					String simJobName = jobInfo.getJobName();
++					String simJobName = runningSimulations.get(htcJobID);
+ 					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
+ 					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+ 					String failureMessage = null;
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12259)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12258)
+@@ -14,8 +14,8 @@
+ import java.io.IOException;
+ import java.net.UnknownHostException;
+ import java.util.Date;
+-import java.util.List;
+ import java.util.StringTokenizer;
++import java.util.TreeMap;
+ 
+ import org.vcell.util.BeanUtils;
+ import org.vcell.util.DataAccessException;
+@@ -53,7 +53,6 @@
+ import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
+ import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+ import cbit.vcell.messaging.server.SimulationTask;
+@@ -221,13 +220,10 @@
+ 									// should only return one running job with this name (sim/job/task) (but handles more than one).
+ 									//
+ 									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
+-									List<HtcJobID> htcJobIDs = threadLocalHtcProxy.getRunningSimulationJobIDs();
+-									List<HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
+-									for (HtcJobInfo htcJobInfo : htcJobInfos){
++									TreeMap<HtcJobID, String> runningJobs = threadLocalHtcProxy.getRunningJobs(simJobName);
++									for (HtcJobID htcJobID : runningJobs.keySet()){
+ 										try {
+-											if (htcJobInfo.getJobName().equals(simJobName)){
+-												threadLocalHtcProxy.killJob(htcJobInfo.getHtcJobID());
+-											}
++											threadLocalHtcProxy.killJob(htcJobID);
+ 										} catch (Exception e) {
+ 											log.exception(e);
+ 										}
+Index: src/cbit/vcell/message/server/manager/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12259)
++++ src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12258)
+@@ -19,6 +19,7 @@
+ import java.util.Date;
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.TreeMap;
+ 
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+@@ -53,7 +54,6 @@
+ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+ import cbit.vcell.message.server.htc.HtcJobStatus;
+ import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+@@ -433,23 +433,22 @@
+ }
+ 
+ private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
+-	 List<HtcJobID>  jobIds = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
+-	 List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(jobIds);
+-	 HtcJobInfo foundJobInfo = null;
+-	 for(HtcJobInfo jobInfo : jobInfos){
+-		 if(jobInfo.getJobName().equals(service.getServiceSpec().getID())){
+-			 foundJobInfo = jobInfo;
++	 TreeMap<HtcJobID, String>  jobIdMapJobName = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
++	 HtcJobID foundJobID = null;
++	 for(HtcJobID jobID : jobIdMapJobName.keySet()){
++		 if(jobIdMapJobName.get(jobID).equals(service.getServiceSpec().getID())){
++			 foundJobID = jobID;
+ 			 break;
+ 		 }
+ 	 }
+-	 if(foundJobInfo == null){
++	 if(foundJobID == null){
+ 		 return;
+ 	 }
+-	 htcProxy.killJob(foundJobInfo.getHtcJobID());
++	 htcProxy.killJob(foundJobID);
+ 	 long TIMEOUT = 60000;
+ 	 long startTime = System.currentTimeMillis();
+ 	 while((System.currentTimeMillis()-startTime) < TIMEOUT){
+-		 HtcJobStatus htcJobStatus = htcProxy.getJobStatus(foundJobInfo.getHtcJobID());
++		 HtcJobStatus htcJobStatus = htcProxy.getJobStatus(foundJobID);
+ 		 if(htcJobStatus == null || !htcJobStatus.isRunning()){
+ 			 return;
+ 		 }
+@@ -460,7 +459,7 @@
+ 			e.printStackTrace();
+ 		}
+ 	 }
+-	 throw new HtcException("Timeout Error: failed to kill service "+service.getServiceSpec().getID()+" jobid="+foundJobInfo.getHtcJobID());
++	 throw new HtcException("Timeout Error: failed to kill service "+service.getServiceSpec().getID()+" jobid="+foundJobID);
+ }
+ /**
+ * Insert the method's description here.
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12259)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12258)
+@@ -1,12 +1,8 @@
+ package cbit.vcell.message.server.htc.test;
+ 
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.List;
+ import java.util.TreeMap;
+ 
+ import org.vcell.util.ExecutableException;
+-import org.vcell.util.PropertyLoader;
+ import org.vcell.util.document.VCellServerID;
+ 
+ import cbit.vcell.message.server.cmd.CommandServiceSsh;
+@@ -15,7 +11,6 @@
+ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+ import cbit.vcell.message.server.htc.HtcJobStatus;
+ import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsJobID;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeJobID;
+@@ -46,7 +41,6 @@
+ 			}else{
+ 				throw new RuntimeException("unrecognized htc type = "+htcType);
+ 			}
+-			System.setProperty(PropertyLoader.vcellServerIDProperty,"BETA");
+ 			testHtcProxy1cmd(htcProxy);
+ //			testHtcProxy2cmd(htcProxy);
+ //			testServices(htcProxy, VCellServerID.getServerID("TEST2"));
+@@ -61,23 +55,22 @@
+ 
+ 	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
+ 		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
+-		List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
+-		List<HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
+-		for(HtcJobInfo sjInfo : sjinfos){
++		java.util.Vector<cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo> sjinfos = htcProxy.getServiceJobInfos(serverID);
++		for(cbit.vcell.message.server.htc.HtcProxy.ServiceJobInfo sjInfo : sjinfos){
+ 			String jobID = null;
+ 			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
+ 				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
+ 			}else if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.sge.SgeJobID){
+ 				jobID = ((cbit.vcell.message.server.htc.sge.SgeJobID)sjInfo.getHtcJobID()).getSgeJobID();
+ 			}
+-			System.out.println(sjInfo.getJobName()+" "+jobID+" "+sjInfo.getOutputPath()+" "+sjInfo.getErrorPath());
++			System.out.println(sjInfo.getServiceJobName()+" "+jobID+" "+sjInfo.getOutputPath()+" "+sjInfo.getErrorPath());
+ 		}
+ 	}
+ 	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+ 		try {
+ 			System.out.println("getting services");
+-			List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
+-			for (HtcJobID jobID : htcJobIDs){
++			TreeMap<HtcJobID, String> jobIDs = htcProxy.getRunningServiceJobIDs(serverID);
++			for (HtcJobID jobID : jobIDs.keySet()){
+ 				if (jobID instanceof PbsJobID){
+ 					System.out.println("serviceJobID : "+((PbsJobID)jobID).getPbsJobID());
+ 					htcProxy.killJob(jobID);
+@@ -96,7 +89,7 @@
+ 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+ 		HtcJobID jobID = null;
+ 		try {
+-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "100000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
++			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "1000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
+ 		} catch (Exception e1) {
+ 			e1.printStackTrace(System.out);
+ 		}
+@@ -110,20 +103,18 @@
+ 
+ 		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
+ 		HtcJobStatus jobStatus2 = null;
+-		while (jobStatus2 == null || jobStatus2.isRunning()){
++		while (jobStatus2 != null && jobStatus2.isRunning()){
+ 			try {
+ 				try {
+ 					Thread.sleep(2000);
+ 				} catch (InterruptedException e) {
+ 				}
+ 				jobStatus2 = htcProxy.getJobStatus(jobID);
+-				List<HtcJobInfo> htcJobInfo = htcProxy.getJobInfos(Arrays.asList(jobID));
+-				System.out.println("jobInfo = "+htcJobInfo);
+-				System.out.println("jobStatus = "+jobStatus2);
+ 			} catch (Exception e) {
+ 				e.printStackTrace(System.out);
+ 			}
+ 		}
++		System.out.println("jobStatus = "+jobStatus2);
+ 	}
+ 
+ 	private static void testHtcProxy2cmd(HtcProxy htcProxy)	throws ExecutableException, HtcException, HtcJobNotFoundException {
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12259)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12258)
+@@ -35,22 +35,22 @@
+ 	 *
+ 	 */
+ 	
+-	public static class HtcJobInfo{
++	public static class ServiceJobInfo{
+ 		private HtcJobID htcJobID;
+-		private String jobName;
++		private String serviceJobName;
+ 		private String errorPath;
+ 		private String outputPath;
+-		public HtcJobInfo(HtcJobID htcJobID, String jobName,String errorPath,String outputPath) {
++		public ServiceJobInfo(HtcJobID htcJobID, String serviceJobName,String errorPath,String outputPath) {
+ 			this.htcJobID = htcJobID;
+-			this.jobName = jobName;
++			this.serviceJobName = serviceJobName;
+ 			this.errorPath = errorPath;
+ 			this.outputPath = outputPath;
+ 		}
+ 		public HtcJobID getHtcJobID() {
+ 			return htcJobID;
+ 		}
+-		public String getJobName(){
+-			return jobName;
++		public String getServiceJobName(){
++			return serviceJobName;
+ 		}
+ 		public String getErrorPath() {
+ 			return errorPath;
+@@ -58,9 +58,6 @@
+ 		public String getOutputPath() {
+ 			return outputPath;
+ 		}
+-		public String toString(){
+-			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+-		}
+ 	}
+ 	protected enum HtcJobCategory {
+ 		HTC_SIMULATION_JOB,
+@@ -109,17 +106,12 @@
+ 
+ 	public abstract HtcProxy cloneThreadsafe();
+ 	
+-	public final List<HtcJobID> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
+-		return getRunningJobIDs(serverID.toString().toUpperCase()+"_");
+-	}
++	public abstract TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException;
+ 
+-	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
+-		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
+-	}
++	public abstract TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException;
+ 
+-	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
+-	
+-	public abstract List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
++	public abstract TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException;
++	public abstract Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException;
+ 
+ 	public final CommandService getCommandService() {
+ 		return commandService;
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12259)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12258)
+@@ -7,7 +7,6 @@
+ import java.io.StringWriter;
+ import java.util.ArrayList;
+ import java.util.Comparator;
+-import java.util.List;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+ import java.util.Vector;
+@@ -327,20 +326,37 @@
+ 	}
+ 	
+ 	@Override
+-	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
++	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
++		return getRunningJobs(serverID.toString().toUpperCase()+"_");
++	}
++
++	@Override
++	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
++		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
++	}
++
++	@Override
++	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
+ 		try {
+ 			String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix};
+ 			CommandOutput commandOutput = commandService.command(cmd);
+-			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
++			TreeMap<HtcJobID, String> pbsJobIDNameMap =
++				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
++					@Override
++					public int compare(HtcJobID o1, HtcJobID o2) {
++						return Integer.parseInt(((PbsJobID)o2).getPbsJobID())-Integer.parseInt(((PbsJobID)o1).getPbsJobID());
++					}
++				});
+ 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+ 			String line = null;
+ 			while((line = br.readLine()) != null){
+ 				StringTokenizer st = new StringTokenizer(line," \t");
+ 				String pbsJobInfo = st.nextToken();
+ 				Integer pbsJobID = new Integer(pbsJobInfo.substring(0,pbsJobInfo.indexOf('.')));
+-				pbsJobIDs.add(new PbsJobID(String.valueOf(pbsJobID)));
++				String jobName = st.nextToken();
++				pbsJobIDNameMap.put(new PbsJobID(String.valueOf(pbsJobID)), jobName);
+ 			}
+-			return pbsJobIDs;
++			return pbsJobIDNameMap;
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			if(e instanceof ExecutableException){
+@@ -351,14 +367,14 @@
+ 		}
+ 	}
+ 
+-	@Override
+-	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
++	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
+ 		try{
+-			ArrayList<HtcJobInfo> serviceJobInfos = new ArrayList<HtcJobInfo>();
+-			ArrayList<String> cmdV = new ArrayList<String>();
++			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
++			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
++			Vector<String> cmdV = new Vector<String>();
+ 			cmdV.add(JOB_CMD_STATUS);
+ 			cmdV.add("-f");
+-			for(HtcJobID htcJobID : htcJobIDs){
++			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
+ 				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
+ 			}
+ 			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+@@ -382,7 +398,7 @@
+ 					}else if(line.trim().startsWith("Output_Path =")){
+ 						st.nextToken();st.nextToken();
+ 						String latestOutputPath = st.nextToken();
+-						serviceJobInfos.add(new HtcJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
++						serviceJobInfos.add(new ServiceJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+ 					}
+ 				}
+ 			}
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12259)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12258)
+@@ -3,10 +3,11 @@
+ import java.io.File;
+ import java.io.IOException;
+ import java.io.StringWriter;
+-import java.util.ArrayList;
++import java.util.Comparator;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.StringTokenizer;
++import java.util.TreeMap;
+ import java.util.Vector;
+ 
+ import org.jdom.Document;
+@@ -413,80 +414,88 @@
+ 	}
+ 
+ 	@Override
+-	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
+-/*
+-   6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
+-   6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
+- */
+-		String[] cmd = new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix};
+-		CommandOutput commandOutput = commandService.command(cmd);
+-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+-		
+-		String output = commandOutput.getStandardOutput();
+-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+-		while (st.hasMoreTokens()) {
+-			String line = st.nextToken().trim();
+-			StringTokenizer lineTokens = new StringTokenizer(line," \t");
+-			serviceJobIDs.add(new SgeJobID(lineTokens.nextToken()));
+-		}
+-		return serviceJobIDs;
++	public TreeMap<HtcJobID, String> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
++		return getRunningJobs(serverID.toString().toUpperCase()+"_");
+ 	}
+ 
++	@Override
++	public TreeMap<HtcJobID, String> getRunningSimulationJobIDs() throws ExecutableException {
++		return getRunningJobs(HTC_SIMULATION_JOB_NAME_PREFIX);
++	}
+ 
+-
+-
+ 	@Override
+-	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
++	public TreeMap<HtcJobID, String> getRunningJobs(String jobNamePrefix) throws ExecutableException {
+ 		try{
+-			ArrayList<HtcJobInfo> jobInfos = new ArrayList<HtcJobInfo>();
+-			//
+-			// how many to process at once.
+-			//
+-			int MAX_NUM_JOBS_IN_QUERY = 20;
+-			
+-			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
+-			while (remainingJobIDs.size()>0){
+-				List<HtcJobID> currentJobIDs = remainingJobIDs.subList(0, Math.min(MAX_NUM_JOBS_IN_QUERY,remainingJobIDs.size()));
+-				remainingJobIDs.removeAll(currentJobIDs);
++			String[] cmd = new String[]{JOB_CMD_STATUS, "-xml"};//get running jobs in XML format
++			CommandOutput commandOutput = commandService.command(cmd);
++			TreeMap<HtcJobID, String> pbsJobIDMapJobName =
++				new TreeMap<HtcJobID, String>(new Comparator<HtcJobID>() {
++					@Override
++					public int compare(HtcJobID o1, HtcJobID o2) {
++						return Integer.parseInt(((SgeJobID)o2).getSgeJobID())-Integer.parseInt(((SgeJobID)o1).getSgeJobID());
++					}
++				});
++			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
++			Element rootElement = qstatDoc.getRootElement();
++			List<Element> qstatInfoChildren = rootElement.getChild("queue_info").getChildren("job_list");
++			for(Element jobInfoElement : qstatInfoChildren){
++				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
++				String jobName = jobInfoElement.getChildText("JB_name").trim();
++				if(jobName.startsWith(jobNamePrefix))
++				pbsJobIDMapJobName.put(new SgeJobID(jobID), jobName);
++			}
++			return pbsJobIDMapJobName;
++		} catch (Exception e) {
++			e.printStackTrace();
++			if(e instanceof ExecutableException){
++				throw (ExecutableException)e;
++			}else{
++				throw new ExecutableException("Error getRunningJobs: "+e.getMessage());
++			}
++		}
++	}
+ 
+-				Vector<String> cmdV = new Vector<String>();
+-				cmdV.add(JOB_CMD_STATUS);
+-				cmdV.add("-f");
+-				cmdV.add("-j");
+-				String jobList = "";
+-				for(HtcJobID htcJobID : currentJobIDs){
+-					if(jobList.length() != 0){
+-						jobList+=",";
+-					}
+-					jobList+=((SgeJobID)htcJobID).getSgeJobID();
++	public Vector<ServiceJobInfo> getServiceJobInfos(VCellServerID serverID) throws ExecutableException {
++		try{
++			Vector<ServiceJobInfo> serviceJobInfos = new Vector<HtcProxy.ServiceJobInfo>();
++			TreeMap<HtcJobID, String> serviceJobIDs = getRunningServiceJobIDs(serverID);
++			Vector<String> cmdV = new Vector<String>();
++			cmdV.add(JOB_CMD_STATUS);
++			cmdV.add("-f");
++			cmdV.add("-j");
++			String jobList = "";
++			for(HtcJobID htcJobID : serviceJobIDs.keySet()){
++				if(jobList.length() != 0){
++					jobList+=",";
+ 				}
+-				cmdV.add(jobList);
+-				cmdV.add("-xml");
+-				CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+-				Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
+-				Element rootElement = qstatDoc.getRootElement();
+-				Element dbJobInfoElement = rootElement.getChild("djob_info");
+-				if(dbJobInfoElement == null){
+-					return null;
+-				}
+-				List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
+-				if(qstatInfoChildren == null){
+-					return null;
+-				}
+-				for(Element jobInfoElement : qstatInfoChildren){
+-					String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+-					String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
+-					String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
+-					List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
+-					for(Element envSublist : envSublists){
+-						if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
+-							jobInfos.add(new HtcJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
+-							break;
+-						}
++				jobList+=((SgeJobID)htcJobID).getSgeJobID();
++			}
++			cmdV.add(jobList);
++			cmdV.add("-xml");
++			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
++			Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
++			Element rootElement = qstatDoc.getRootElement();
++			Element dbJobInfoElement = rootElement.getChild("djob_info");
++			if(dbJobInfoElement == null){
++				return null;
++			}
++			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
++			if(qstatInfoChildren == null){
++				return null;
++			}
++			for(Element jobInfoElement : qstatInfoChildren){
++				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
++				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
++				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
++				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
++				for(Element envSublist : envSublists){
++					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
++						serviceJobInfos.add(new ServiceJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
++						break;
+ 					}
+ 				}
+ 			}
+-			return jobInfos;
++			return serviceJobInfos;
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			if(e instanceof ExecutableException){
