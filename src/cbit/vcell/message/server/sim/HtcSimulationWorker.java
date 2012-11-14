@@ -9,30 +9,29 @@
  */
 
 package cbit.vcell.message.server.sim;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
@@ -41,8 +40,6 @@ import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.message.messages.SimulationTaskMessage;
-import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
@@ -56,36 +53,35 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
-import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.Solver;
-import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverFactory;
-import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
  * @author: Jim Schaff
  */
 public class HtcSimulationWorker extends ServiceProvider  {
+	private static final int NUM_HTC_THREADS = 10;
+	private static final int MAX_HTC_TASKS_IN_POOL = 10;
+	private ExecutorService executorService = null;
+	private ArrayList<Future<Boolean>> messageProcessorFutures = new ArrayList<Future<Boolean>>();
+
 	private HtcProxy htcProxy = null;
 
 	private VCQueueConsumer queueConsumer = null;
 	private VCTopicConsumer serviceControlTopicConsumer = null;
+	private VCMessageSession sharedMessageProducer = null;
 	/**
 	 * SimulationWorker constructor comment.
 	 * @param argName java.lang.String
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
+public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ExecutorService executorService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
 	super(vcMessagingService, serviceInstanceStatus, log);
 	this.htcProxy = htcProxy;
+	this.executorService = executorService;
 }
 
 public final String getJobSelector() {
@@ -104,83 +100,6 @@ public final String getJobSelector() {
 	jobSelector += ")))";
 	
 	return jobSelector;
-}
-
-private HtcJobID submit2PBS(SimulationTask simTask, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
-
-	HtcJobID jobid = null;
-	
-	String subFile = simTask.getSimulationJob().getSimulationJobID() + htcProxy.getSubmissionFileExtension();
-	String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
-	
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
-	
-	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-	String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
-	
-	if (htcProxy.getCommandService() instanceof CommandServiceSsh){
-		// write simTask file locally, and send it to server, and delete local copy.
-		File tempFile = File.createTempFile("simTask", "xml");
-		XmlUtil.writeXMLStringToFile(simTaskXmlText, tempFile.getAbsolutePath(), true);
-		this.htcProxy.getCommandService().pushFile(tempFile, simTaskFilePath);
-		tempFile.delete();
-	}else{
-		// write final file directly.
-		XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFilePath, true);
-	}
-	
-	final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
-
-	KeyValue simKey = simTask.getSimKey();
-	User simOwner = simTask.getSimulation().getVersion().getOwner();
-	String[] postprocessorCmd = new String[] { 
-			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor), 
-			simKey.toString(),
-			simOwner.getName(), 
-			simOwner.getID().toString(),
-			Integer.toString(simTask.getSimulationJob().getJobIndex()),
-			Integer.toString(simTask.getTaskID()),
-			SOLVER_EXIT_CODE_REPLACE_STRING
-	};
-
-	if (realSolver instanceof AbstractCompiledSolver) {
-		
-		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
-		String[] preprocessorCmd = new String[] { 
-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
-				simTaskFilePath, 
-				forceUnixPath(userdir.getAbsolutePath())
-		};
-		String[] nativeExecutableCmd = ((AbstractCompiledSolver)realSolver).getMathExecutableCommand();
-		for (int i=0;i<nativeExecutableCmd.length;i++){
-			nativeExecutableCmd[i] = forceUnixPath(nativeExecutableCmd[i]);
-		}
-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
-		
-		jobid = htcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
-		if (jobid == null) {
-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
-		}
-		
-	} else {
-		
-		String[] command = new String[] { 
-				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
-				simTaskFilePath,
-				forceUnixPath(userdir.getAbsolutePath())
-		};
-
-		jobid = htcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
-		if (jobid == null) {
-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
-		}
-	}
-	return jobid;
-}
-
-private String forceUnixPath(String filePath){
-	return filePath.replace("C:","").replace("D:","").replace("\\","/");
 }
 
 private void initServiceControlTopicListener() {
@@ -257,28 +176,39 @@ private void initServiceControlTopicListener() {
 
 
 private void initQueueConsumer() {
+	
+	this.sharedMessageProducer = vcMessagingService.createProducerSession();
+	
 	QueueListener listener = new QueueListener() {
 		
 		public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
-			SimulationTask simTask = null;
-			try {
-				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
-				simTask = simTaskMessage.getSimulationTask();
-				File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),simTask.getUserName());
-				
-				HtcJobID pbsId = submit2PBS(simTask, userdir);
-				
-				WorkerEventMessage.sendAccepted(session, HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), pbsId);
-			} catch (Exception e) {
-				log.exception(e);
-				if (simTask!=null){
+			HtcMessageProcessor messageProcessor = new HtcMessageProcessor(vcMessage, sharedMessageProducer, htcProxy.cloneThreadsafe(), log);
+			//
+			// remove completed "Futures"
+			//
+			while (true){
+				Iterator<Future<Boolean>> iter = messageProcessorFutures.iterator();
+				while (iter.hasNext()){
+					Future<Boolean> future = iter.next();
+					if (future.isDone()){
+						iter.remove();
+					}
+				}
+				if (messageProcessorFutures.size()<MAX_HTC_TASKS_IN_POOL){
+					// there is room in thread pool for this simulation
+					// we will submit this job and return from the callback.
+					break;
+				}else{
+					// block until some tasks finish.
 					try {
-						WorkerEventMessage.sendFailed(session,  HtcSimulationWorker.this, simTask, ManageUtils.getHostName(), SimulationMessage.jobFailed(e.getMessage()));
-					} catch (VCMessagingException e1) {
-						log.exception(e1);
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
 					}
 				}
 			}
+			Future<Boolean> messageProcessorFuture = executorService.submit(messageProcessor);
+			messageProcessorFutures.add(messageProcessorFuture);
 		}
 	};
 
@@ -288,6 +218,30 @@ private void initQueueConsumer() {
 	String threadName = "SimJob Queue Consumer";
 	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
 	vcMessagingService.addMessageConsumer(queueConsumer);
+}
+
+private void shutdownAndAwaitTermination(ExecutorService pool) {
+	pool.shutdown(); // Disable new tasks from being submitted
+	try {
+		// Wait a while for existing tasks to terminate
+		if (!pool.awaitTermination(20, TimeUnit.SECONDS)) {
+			pool.shutdownNow(); // Cancel currently executing tasks
+			// Wait a while for tasks to respond to being cancelled
+			if (!pool.awaitTermination(20, TimeUnit.SECONDS))
+				log.alert("Pool did not terminate");
+		}
+	} catch (InterruptedException ie) {
+		// (Re-)Cancel if current thread also interrupted
+		pool.shutdownNow();
+		// Preserve interrupt status
+		Thread.currentThread().interrupt();
+	}
+}
+
+@Override
+public void stopService(){
+	shutdownAndAwaitTermination(executorService);
+	super.stopService();
 }
 
 /**
@@ -338,10 +292,13 @@ public static void main(java.lang.String[] args) {
 		
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
+		ExecutorService executorService = Executors.newFixedThreadPool(NUM_HTC_THREADS);
+		
+
 		htcProxy.checkServerStatus();
 
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log);
+		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, executorService, serviceInstanceStatus, log);
 		simulationWorker.initControlTopicListener();
 		simulationWorker.initQueueConsumer();
 	} catch (Throwable e) {
