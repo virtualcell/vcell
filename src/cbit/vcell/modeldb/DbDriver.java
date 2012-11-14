@@ -1077,33 +1077,6 @@ public static Preference[] getPreferences(Connection con, User user) throws SQLE
 			stmt.close();
 		}
 	}
-	preferences = DbDriver.includeSystemClientPreferences(preferences);
-	return preferences;
-}
-
-private static Preference[] includeSystemClientPreferences(Preference[] preferences){
-	final String[] SYSTEM_CLIENT_PROPERTIES_NAMES = Preference.getAllDefinedSystemClientPropertyNames();
-	try{
-		PropertyLoader.loadProperties();
-		Vector<Preference> preferenceV =
-			new Vector<Preference>(Arrays.asList((preferences != null?preferences:new Preference[0])));
-		for (int i = 0; i < SYSTEM_CLIENT_PROPERTIES_NAMES.length; i++) {
-			preferenceV.add(
-				new Preference(
-					SYSTEM_CLIENT_PROPERTIES_NAMES[i],
-					PropertyLoader.getRequiredProperty(SYSTEM_CLIENT_PROPERTIES_NAMES[i]),
-					true
-				)
-			);
-		}
-		if(preferenceV.size() > 0){
-			Preference[] mergedPreferences = new Preference[preferenceV.size()];
-			preferenceV.copyInto(mergedPreferences);
-			return mergedPreferences;
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-	}
 	return preferences;
 }
 

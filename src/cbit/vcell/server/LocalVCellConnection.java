@@ -35,7 +35,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
-import cbit.vcell.visit.VisitConnectionInfo;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
  * after the user has been authenticated.
@@ -98,12 +97,6 @@ public void exportMessage(ExportEvent event) {
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.messageEvent(event);
 	}
-}
-
-public VisitConnectionInfo createNewVisitConnection() {
-	VisitConnectionInfo visitConnectionInfo = VisitConnectionInfo.createHardCodedVisitConnectionInfo(getUserLoginInfo().getUser());
-	
-	return visitConnectionInfo;
 }
 
 /**

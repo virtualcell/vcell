@@ -32,7 +32,6 @@ public class FRAPSimDataViewerPanel extends JPanel {
 		originalDataViewer.setPreferredSize(new Dimension(0, 500));
 		originalDataViewer.setMaximumSize(new Dimension(0, 500));
 		originalDataViewer.setBorder(new EmptyBorder(8, 0, 0, 0));
-		originalDataViewer.setVisItButtonVisible(false);
 		
 		add(originalDataViewer, BorderLayout.CENTER);
 		

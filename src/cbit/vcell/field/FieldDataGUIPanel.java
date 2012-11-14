@@ -691,34 +691,6 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsJButtonFDFromSim.weightx = 1.0;
 			constraintsJButtonFDFromSim.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJButtonFDFromSim(), constraintsJButtonFDFromSim);
-
-			final JButton fromPslidExperimentalButton = new JButton();
-			fromPslidExperimentalButton.setVisible(false);//PSLID disabled because not working
-			fromPslidExperimentalButton.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					getPslidSelections(modePslidExperimentalData);
-				}
-			});
-			fromPslidExperimentalButton.setText("PSLID Experimental");
-			final GridBagConstraints gridBagConstraintsE = new GridBagConstraints();
-			gridBagConstraintsE.insets = new Insets(4, 4, 4, 4);
-			gridBagConstraintsE.gridy = 2;
-			gridBagConstraintsE.gridx = 1;
-			ivjJPanel1.add(fromPslidExperimentalButton, gridBagConstraintsE);
-			
-			final JButton fromPslidGeneratedButton = new JButton();
-			fromPslidGeneratedButton.setVisible(false);//PSLID disabled because not working
-			fromPslidGeneratedButton.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					getPslidSelections(modePslidGeneratedModel);
-				}
-			});
-			fromPslidGeneratedButton.setText("PSLID Generated Model");
-			final GridBagConstraints gridBagConstraintsG = new GridBagConstraints();
-			gridBagConstraintsG.insets = new Insets(4, 4, 4, 4);
-			gridBagConstraintsG.gridy = 2;
-			gridBagConstraintsG.gridx = 2;
-			ivjJPanel1.add(fromPslidGeneratedButton, gridBagConstraintsG);
 			
 			// user code begin {1}
 			// user code end
@@ -1887,42 +1859,4 @@ private JButton getJButtonViewAnnot() {
 	return jButtonViewAnnot;
 }
 
-
-private void getPslidSelections(final int mode) {
-	final PSLIDPanel pslidPanel = new PSLIDPanel();
-	pslidPanel.setPreferredSize(new Dimension(550,600));
-	
-	AsynchClientTask[] initTasks = pslidPanel.initCellProteinList( fieldDataWindowManager.getUserPreferences(), mode);
-
-	AsynchClientTask[] fromFileTasks = fdFromFile();
-	
-	AsynchClientTask[] tasks = new AsynchClientTask[initTasks.length + fromFileTasks.length + 1];
-	
-	System.arraycopy(initTasks, 0, tasks, 0, initTasks.length);
-	System.arraycopy(fromFileTasks, 0, tasks, initTasks.length + 1, fromFileTasks.length);
-	
-	String taskName = "Accessing PSLID Information";
-	tasks[initTasks.length] = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, pslidPanel,"PSLID Browser") == JOptionPane.OK_OPTION){
-				PSLIDPanel.PSLIDSelectionInfo pslidSelInfo = pslidPanel.getPSLIDSelectionInfo();
-				String initFDName = pslidSelInfo.cellName+"_"+pslidSelInfo.proteinName+"_"+pslidSelInfo.imageSetID;
-				System.out.println(initFDName);
-				System.out.println(pslidSelInfo.proteinImageURL);
-				System.out.println(pslidSelInfo.compartmentImageURL);
-				hashTable.put("argfdos", pslidSelInfo.fdos);
-				hashTable.put("arginitFDName", initFDName);
-			} else {
-				throw UserCancelException.CANCEL_GENERIC;
-			}
-		}
-	};
-	
-	
-	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false, true, null);
-
 }
-
-}  //  @jve:decl-index=0:visual-constraint="10,10"
