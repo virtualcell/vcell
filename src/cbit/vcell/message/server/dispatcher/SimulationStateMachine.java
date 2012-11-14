@@ -348,8 +348,7 @@ public class SimulationStateMachine {
 				}else if (oldSchedulerStatus.isRunning()){
 					if (oldSimExeStatus != null) {
 						Date latestUpdate = oldSimExeStatus.getLatestUpdateDate();
-						Date sysDate = oldSimulationJobStatus.getTimeDateStamp();
-						if (sysDate.getTime() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
+						if (System.currentTimeMillis() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
 							// new queue status		
 							SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
 							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
@@ -393,7 +392,7 @@ public class SimulationStateMachine {
 						taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
 
 			}
-		} else if (workerEvent.isWorkerExitEvent()) {						
+		} else if (workerEvent.isWorkerExitErrorEvent()) {						
 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
 				// new queue status		
 				SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
@@ -505,7 +504,7 @@ public class SimulationStateMachine {
 	}
 	
 
-	public synchronized void onDispatch(VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onDispatch(Simulation simulation, VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 
 		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getSimulationJobStatus(simKey, jobIndex, taskID);
 		if (oldSimulationJobStatus == null) {
@@ -517,7 +516,6 @@ public class SimulationStateMachine {
 			throw new RuntimeException("Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "] is already dispatched ("+oldSimulationJobStatus.getSchedulerStatus().getDescription()+")");
 		}
 
-		Simulation simulation = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = simulationDatabase.getFieldDataIdentifierSpecs(simulation);
 		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID);
 
