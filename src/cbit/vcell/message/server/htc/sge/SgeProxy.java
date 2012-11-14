@@ -419,7 +419,7 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
    6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
    6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
  */
-		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix});
+		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 		CommandOutput commandOutput = commandService.command(cmd);
 		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
 		
@@ -443,7 +443,7 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 			//
 			// how many to process at once.
 			//
-			int MAX_NUM_JOBS_IN_QUERY = 20;
+			int MAX_NUM_JOBS_IN_QUERY = 1;
 			
 			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
 			while (remainingJobIDs.size()>0){

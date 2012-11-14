@@ -305,8 +305,16 @@ private VCMessage toMessage(VCMessageSession session) {
 }
 
 
-public static WorkerEventMessage sendWorkerExit(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
-	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+public static WorkerEventMessage sendWorkerExitNormal(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_NORMAL,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
+	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+	workerEventMessage.sendWorkerEvent(session);
+
+	return workerEventMessage;
+}
+
+public static WorkerEventMessage sendWorkerExitError(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, int solverExitCode) throws VCMessagingException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_ERROR,source,vcSimID,jobIndex,hostName,taskID,null,null,SimulationMessage.WorkerExited(solverExitCode));
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
 
