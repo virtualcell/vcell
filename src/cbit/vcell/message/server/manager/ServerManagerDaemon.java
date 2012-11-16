@@ -69,7 +69,7 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
  */
 public class ServerManagerDaemon {
 	
-	private static final long INTERVAL_PING_SERVICE = 10 * MessageConstants.MINUTE_IN_MS; // in minutes
+	private static final long INTERVAL_PING_SERVICE = 2 * MessageConstants.MINUTE_IN_MS; // in minutes
 	private static final long INTERVAL_PING_RESPONSE = 10 * MessageConstants.SECOND_IN_MS; // in milliseconds
 
 
@@ -90,7 +90,6 @@ public class ServerManagerDaemon {
 /**
  * ServerManagerMessaging constructor comment.
  * @param log 
- * @param adminDbTop
  * @param vcMessagingService
  * @param serviceInstanceStatus
  */
