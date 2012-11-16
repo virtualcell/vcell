@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -62,7 +63,9 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JLabel labelRelTolValue = null;
 	private JLabel labelAbsTolValue = null;
 	private JPanel settingsPanel;
-
+	private JLabel meshRefinementLabel;
+	private JLabel labelMeshRefinementTitle;
+	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if (fieldSimulation == null) {
@@ -167,6 +170,31 @@ private void displayMesh() {
                     }
             }
             getJLabelMesh().setText(labelText);
+            
+            ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
+			if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+				int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
+				labelMeshRefinementTitle.setVisible(true);
+				getJLabelMeshRefinement().setVisible(true);
+				
+				boolean bHasRefinement = numRefinementLevels > 0;
+				if (bHasRefinement) {
+					String refinementText = numRefinementLevels + " level(s), Refinement ratio(s): ";
+					for (int i = 0; i < numRefinementLevels; i ++) {
+						if (i > 0) {
+							refinementText += ",";
+						}
+						refinementText += chomboSolverSpec.getRefinementLevel(i).getRefineRatio();
+						
+					}
+					getJLabelMeshRefinement().setText(refinementText);
+				} else {
+					getJLabelMeshRefinement().setText("None");
+				}
+            } else {
+            	labelMeshRefinementTitle.setVisible(false);
+            	getJLabelMeshRefinement().setVisible(false);
+            }
         }
     } catch (Exception exc) {
         exc.printStackTrace(System.out);
@@ -805,6 +833,21 @@ private void initialize() {
 		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
 
 		gridy ++;
+		java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 0; constraints.gridy = gridy;
+		constraints.anchor = java.awt.GridBagConstraints.EAST;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		labelMeshRefinementTitle = new JLabel("Mesh Refinement:");
+		add(labelMeshRefinementTitle, constraints);
+		
+		constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 1; constraintsJLabelMesh.gridy = gridy;
+		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraints.gridwidth = GridBagConstraints.REMAINDER;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getJLabelMeshRefinement(), constraints);
+		
+		gridy ++;
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
 		constraintsMathOverridesPanel1.gridx = 0; 
 		constraintsMathOverridesPanel1.gridy = gridy;
@@ -867,6 +910,7 @@ private void refreshDisplay() {
 		getJLabelRelTolValue().setText("");
 		getJLabelAbsTolValue().setText("");
 		getMathOverridesPanel1().setMathOverrides(null);
+		getJLabelMeshRefinement().setText("");
 	} else {
 		displayAnnotation();
 		displayTask();
@@ -943,5 +987,23 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		selectedSimulation = (Simulation) selectedObjects[0];
 	}
 	setSimulation(selectedSimulation);	
+}
+
+private javax.swing.JLabel getJLabelMeshRefinement() {
+	if (meshRefinementLabel == null) {
+		try {
+			meshRefinementLabel = new javax.swing.JLabel();
+			meshRefinementLabel.setText(" ");
+			meshRefinementLabel.setForeground(java.awt.Color.blue);
+			meshRefinementLabel.setVisible(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return meshRefinementLabel;
 }
 }
