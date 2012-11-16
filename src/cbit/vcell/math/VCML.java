@@ -211,4 +211,14 @@ public class VCML {
 	public final static String KernelGaussian = "Gaussian";
 	public final static String KernelGaussianSigmaXY = "SigmaXY";
 	public final static String KernelGaussianSigmaZ = "SigmaZ";
+	
+	public final static String ChomboSolverSpec = "ChomboSolverSpec";
+	public final static String MaxBoxSize = "MaxBoxSize";
+	public final static String FillRatio = "FillRatio";
+	public final static String MeshRefinement = "MeshRefinement";
+	public final static String RefinementLevel = "RefinementLevel";
+	public final static String ChomboBox = "ChomboBox";
+	public final static String NumOfLevels = "NumOfLevels";
+	public final static String NumOfBoxes = "NumOfBoxes";
+	public final static String RefineRatio = "RefineRatio";		
 }

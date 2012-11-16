@@ -9,11 +9,15 @@
  */
 
 package cbit.vcell.solvers;
+import java.beans.PropertyVetoException;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Random;
@@ -21,17 +25,32 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementLevel;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
+import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
 
+import cbit.image.ImageException;
+import cbit.image.VCImage;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.geometry.surface.DistanceMapGenerator;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.surface.RayCaster;
+import cbit.vcell.geometry.surface.SubvolumeSignedDistanceMap;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -79,7 +98,9 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.RvachevFunctionUtils;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
@@ -90,7 +111,6 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -107,6 +127,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
  */
 public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
+	private static final String DISTANCE_MAP_FILE_EXTENSION = ".dmf";
 	private File userDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
@@ -190,6 +211,18 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		EXPLICIT_DATA_GENERATOR,
 		PROJECTION_DATA_GENERATOR,
 		GAUSSIAN_CONVOLUTION_DATA_GENERATOR,
+		
+		CHOMBO_SPEC_BEGIN,
+		DIMENSION,
+		GRID_SIZE,
+		DOMAIN_SIZE,
+		DOMAIN_ORIGIN,
+		DISTANCE_MAP,
+		FILL_RATIO,
+		MAX_BOX_SIZE,
+		SUBDOMAINS,
+		REFINEMENT_RATIOS,
+		CHOMBO_SPEC_END,
 	}
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir) {	// for optimization only, no messaging
@@ -240,48 +273,61 @@ public void write(String[] parameterNames) throws Exception {
 	Variable originalVars[] = null;
 	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
-	if (simTask.getSimulation().isSerialParameterScan()) {
-		originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-		Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-		MathOverrides mathOverrides = simulation.getMathOverrides();	
-		
-		String[] scanParameters = mathOverrides.getOverridenConstantNames();
-		for (int i = 0; i < scanParameters.length; i++){
-			String scanParameter = scanParameters[i];
-			Variable mathVariable = mathDesc.getVariable(scanParameter);
-			//
-			// replace constant values with "Parameter"
-			//
-			if (mathVariable instanceof Constant){
-				Constant origConstant = (Constant)mathVariable;
-				for (int j = 0; j < allVars.length; j++){
-					if (allVars[j].equals(origConstant)){
-						allVars[j] = new ParameterVariable(origConstant.getName());
-						break;
+	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+	{
+		writeJMSParamters();	
+		writeSimulationParamters();	
+		writeModelDescription();
+		writeChomboSpec();
+		writeVariables();
+		writeCompartments();
+		writeMembranes();
+	}
+	else
+	{
+		if (simTask.getSimulation().isSerialParameterScan()) {
+			originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+			Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+			MathOverrides mathOverrides = simulation.getMathOverrides();
+			
+			String[] scanParameters = mathOverrides.getOverridenConstantNames();
+			for (int i = 0; i < scanParameters.length; i++){
+				String scanParameter = scanParameters[i];
+				Variable mathVariable = mathDesc.getVariable(scanParameter);
+				//
+				// replace constant values with "Parameter"
+				//
+				if (mathVariable instanceof Constant){
+					Constant origConstant = (Constant)mathVariable;
+					for (int j = 0; j < allVars.length; j++){
+						if (allVars[j].equals(origConstant)){
+							allVars[j] = new ParameterVariable(origConstant.getName());
+							break;
+						}
 					}
 				}
 			}
-		}		
-		mathDesc.setAllVariables(allVars);
-	}
-	
-	writeJMSParamters();	
-	writeSimulationParamters();	
-	writeModelDescription();	
-	writeMeshFile();	
-	writeVariables();
-	if (mathDesc.isSpatialHybrid()) {
-		writeSmoldyn();
-	}
-	writeParameters(parameterNames);
-	writeSerialParameterScans();	
-	writeFieldData();	
-	writePostProcessingBlock();
-	writeCompartments();	
-	writeMembranes();
-	
-	if (originalVars != null) {
-		mathDesc.setAllVariables(originalVars);
+			mathDesc.setAllVariables(allVars);
+		}
+		
+		writeJMSParamters();
+		writeSimulationParamters();
+		writeModelDescription();
+		writeMeshFile();
+		writeVariables();
+		if (mathDesc.isSpatialHybrid()) {
+			writeSmoldyn();
+		}
+		writeParameters(parameterNames);
+		writeSerialParameterScans();
+		writeFieldData();
+		writePostProcessingBlock();
+		writeCompartments();
+		writeMembranes();
+		
+		if (originalVars != null) {
+			mathDesc.setAllVariables(originalVars);
+		}
 	}
 }
 
@@ -1618,4 +1664,200 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println("EQUATION_END");
 	printWriter.println();
 }
+
+	private void assignPhases(SubVolume[] subVolumes, int startingIndex, int[] phases, int[] numAssigned) {
+		if (phases[startingIndex] == -1) {
+			return;
+		}
+		if (numAssigned[0] == subVolumes.length) {
+			return;
+		}
+		for (int j = 0; j < subVolumes.length; j ++) {
+			if (startingIndex == j) {
+				continue;
+			}
+			 
+			SurfaceClass sc = resampledGeometry.getGeometrySurfaceDescription().getSurfaceClass(subVolumes[startingIndex], subVolumes[j]);
+			if (sc != null) {
+				if (phases[j] == -1) {
+					numAssigned[0] ++;
+					// membrane between i and j, different phase
+					phases[j] = phases[startingIndex] == 0 ? 1 : 0;
+					assignPhases(subVolumes, j, phases, numAssigned);		
+				}
+			}
+		}
+	}
+
+	private void writeDistanceMapFile(Vect3d deltaX, SubvolumeSignedDistanceMap distanceMap, File file) throws IOException {
+		Origin origin = resampledGeometry.getOrigin();
+		String headerNames[] = {
+				"dimension",
+				"Nx",
+				"Ny",
+				"Nz",
+				"Dx",
+				"Dy",
+				"Dz",
+				"firstX",
+				"firstY",
+				"firstZ",
+			};
+		double[] pointsX = distanceMap.getSamplesX();
+		double[] pointsY = distanceMap.getSamplesY();
+		double[] pointsZ = distanceMap.getSamplesZ();
+		double[] distances = distanceMap.getSignedDistances();
+		int Nx = pointsX.length;
+		int Ny = pointsY.length;
+		int Nz = pointsZ.length;
+		double Dx = deltaX.getX();
+		double Dy = deltaX.getY();
+		double Dz = deltaX.getZ();
+		
+		assert Math.abs(origin.getX() - pointsX[0]) < 2e-8;
+		assert Math.abs(origin.getY() - pointsY[0]) < 2e-8;
+		assert Math.abs(origin.getZ() - pointsZ[0]) < 2e-8;
+		
+		double[] header = new double[headerNames.length];
+		int count = -1;
+		header[++count] = resampledGeometry.getDimension();
+		header[++count] = Nx;
+		header[++count] = Ny;
+		header[++count] = Nz;
+		header[++count] = Dx;
+		header[++count] = Dy;
+		header[++count] = Dz;
+		header[++count] = origin.getX();
+		header[++count] = origin.getY();
+		header[++count] = origin.getZ();
+		
+		DataOutputStream dos = null;
+		try {
+			dos = new DataOutputStream(new FileOutputStream(file));
+			for (double d : header) {
+				dos.writeDouble(d);			
+			}
+			
+	//		PrintWriter pw = new PrintWriter("d:\\temp\\distance.txt");
+	//		for (int k = 50; k < 51; ++ k) {
+	//			for (int j = 50; j < 51; ++ j) {
+	//				for (int i = 0; i < Nx; ++ i) {
+	//					int index = k * Nx * Ny + j * Nx + i;
+	//					double x = i * Dx;
+	//					double y = j * Dy;
+	//					double z = k * Dz;
+	//					double exact_d = Math.sqrt((x-2.001)*(x-2.001) + (y-2.001)*(y-2.001) + (z-2.001)*(z-2.001)) - 1;
+	//					pw.println(x + " " + y + " " + z + " " + " " + exact_d + " " + (distances[index]));
+	//				}
+	//			}
+	//		}
+	//		pw.close();
+			for (double d : distances) {
+				dos.writeDouble(d);
+				
+			}
+		} finally {
+			if (dos != null) {
+				dos.close();
+			}
+		}
+	}
+	
+	private void writeChomboSpec() throws ExpressionException, SolverException, PropertyVetoException, ClassNotFoundException, IOException, GeometryException, ImageException {
+		Simulation simulation = getSimulationTask().getSimulation();
+		SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
+		SolverDescription sd = solverTaskDescription.getSolverDescription(); 
+		if (!sd.isChomboSolver()) {
+			return;
+		}
+		
+		ChomboSolverSpec chomboSolverSpec = solverTaskDescription.getChomboSolverSpec();
+		GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
+		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_BEGIN);
+		printWriter.println(FVInputFileKeyword.DIMENSION + " " + geometrySpec.getDimension());
+		Extent extent = geometrySpec.getExtent();
+		Origin origin = geometrySpec.getOrigin();	
+		ISize isize = simulation.getMeshSpecification().getSamplingSize();
+		switch (geometrySpec.getDimension()) {
+			case 1:
+				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX());
+				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX());
+				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX());
+				break;
+			case 2:
+				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX() + " " + isize.getY());
+				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX() + " " + extent.getY());
+				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX() + " " + origin.getY());
+				break;
+			case 3:
+				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX() + " " + isize.getY() + " " + isize.getZ());
+				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
+				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
+				break;
+		}
+		SubVolume[] subVolumes = geometrySpec.getSubVolumes();
+		int numSubVolumes = subVolumes.length;
+		int phases[] = new int[numSubVolumes];
+		Arrays.fill(phases, -1);
+		phases[numSubVolumes - 1] = 0;
+		int[] numAssigned = new int[1];
+		assignPhases(subVolumes, numSubVolumes - 1, phases, numAssigned);
+		boolean bUseDistanceMap = false;
+		if (geometrySpec.hasImage() || bUseDistanceMap) {
+			Geometry geometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+			if (geometry.getDimension() != 3) {
+				throw new SolverException("Distance map is only supported for 3D Chombo simulations.");
+			}		
+			ISize finestISize = chomboSolverSpec.getFinestSamplingSize(isize);
+			int Nx = finestISize.getX();
+			int Ny = finestISize.getY();
+			int Nz = finestISize.getZ();
+			//one more point in each direction
+			finestISize = new ISize(Nx+1, Ny+1, Nz+1);
+			boolean bCellCentered = false; 
+			double dx = geometry.getExtent().getX()/(Nx - 1);
+			double dy = geometry.getExtent().getY()/(Ny - 1);
+			double dz = geometry.getExtent().getZ()/(Nz - 1);
+			Vect3d deltaX = new Vect3d(dx, dy, dz);
+			GeometrySpec gc = geometry.getGeometrySpec();
+			Extent simExtent = gc.getExtent();
+			Extent distanceMapExtent = new Extent(simExtent.getX() + dx, simExtent.getY() + dx, simExtent.getZ() + dx);
+			gc.setExtent(distanceMapExtent);
+			GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
+			geoSurfaceDesc.setVolumeSampleSize(finestISize);
+			geoSurfaceDesc.updateAll();
+			VCImage vcImage = RayCaster.sampleGeometry(geometry, finestISize, bCellCentered);
+			SubvolumeSignedDistanceMap[] distanceMaps = DistanceMapGenerator.computeDistanceMaps(geometry, vcImage, bCellCentered);
+		
+			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
+			for (int i = 0; i < numSubVolumes; i++) {
+				File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
+				writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
+				printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
+			}
+		} else {
+			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
+			Expression[] rvachevExps = RvachevFunctionUtils.convertAnalyticGeometryToRvachevFunction(geometrySpec);
+			for (int i = 0; i < numSubVolumes; i++) {
+				printWriter.print(subVolumes[i].getName() + " " + phases[i] + " ");
+				if (subVolumes[i] instanceof AnalyticSubVolume) {
+					printWriter.println(rvachevExps[i].infix() + ";");			
+				}
+			}
+		}
+		
+		printWriter.println(FVInputFileKeyword.MAX_BOX_SIZE + " " + chomboSolverSpec.getMaxBoxSize());
+		printWriter.println(FVInputFileKeyword.FILL_RATIO + " " + chomboSolverSpec.getFillRatio());
+		int numLevels = chomboSolverSpec.getNumRefinementLevels();
+		printWriter.print(FVInputFileKeyword.REFINEMENT_RATIOS + " " + (numLevels + 1));
+		RefinementLevel rfl  = null;
+		for (int i = 0; i < numLevels; i ++) {		
+			rfl = chomboSolverSpec.getRefinementLevel(i);
+			printWriter.print(" " + rfl.getRefineRatio());
+		}
+		printWriter.println(" 2"); // write last refinement ratio, fake	
+		
+		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
+		printWriter.println();
+	}
 }

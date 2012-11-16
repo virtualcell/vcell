@@ -247,7 +247,7 @@ public void prepareToEdit(Simulation simulation) {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
-		getMeshSpecificationPanel1().setMeshSpecification(clonedSimulation == null ? null : clonedSimulation.getMeshSpecification());
+		getMeshSpecificationPanel1().setSimulation(clonedSimulation);
 		getSolverTaskDescriptionAdvancedPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		
 		boolean shouldMeshBeEnabled = false;

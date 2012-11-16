@@ -23,6 +23,8 @@ import java.util.Vector;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementLevel;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -3941,6 +3943,11 @@ private Element getXML(SolverTaskDescription param) {
 	if (sundialsSolverOptions != null) {		
 		solvertask.addContent(getXML(sundialsSolverOptions));
 	}
+	ChomboSolverSpec chomboSolverSpec = param.getChomboSolverSpec();
+	if (chomboSolverSpec != null) {
+		Element chomboElement = getXML(chomboSolverSpec);
+		solvertask.addContent(chomboElement);
+	}
 	return solvertask;
 }
 
@@ -4092,6 +4099,33 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 
 	return rateRulesElement;
 }
+
+	private Element getXML(ChomboSolverSpec param) {
+		Element chomboElement = new Element(XMLTags.ChomboSolverSpec);
+		
+		Element maxBoxSize = new Element(XMLTags.MaxBoxSizeTag);
+		maxBoxSize.setText(param.getMaxBoxSize() + "");
+		chomboElement.addContent(maxBoxSize);
+		
+		Element fillRatio = new Element(XMLTags.FillRatioTag);
+		fillRatio.setText(param.getFillRatio() + "");
+		chomboElement.addContent(fillRatio);
+		
+		Element meshRefinement = new Element(XMLTags.MeshRefinementTag);
+		for (int i = 0; i < param.getNumRefinementLevels(); i ++) {
+			RefinementLevel rfl = param.getRefinementLevel(i);
+			Element levelElement = new Element(XMLTags.RefinementLevelTag);
+			levelElement.setAttribute(XMLTags.RefineRatioAttrTag, String.valueOf(rfl.getRefineRatio()));
+//			for (int j = 0; j < rfl.getNumBoxes(); j ++) {
+//				Element boxElement = new Element(XMLTags.RefinementBoxTag);
+//				boxElement.setText(rfl.getBox(j).toString());
+//				levelElement.addContent(boxElement);
+//			}
+			meshRefinement.addContent(levelElement);
+		}
+		chomboElement.addContent(meshRefinement);
+		return chomboElement;
+	}
 
 /*
 //For rateRuleVariables in model

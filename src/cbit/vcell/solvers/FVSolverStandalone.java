@@ -125,7 +125,27 @@ private String getInputFilename(){
 
 @Override
 public String[] getMathExecutableCommand() {
-	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
+	String executableName = null;
+	Simulation simulation = getSimulationJob().getSimulation();
+	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+		int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
+		if (dimension == 1) 
+		{
+			throw new RuntimeException("Chombo Solver doesn't run 1D simulation");
+		}
+		else if (dimension == 2)
+		{
+			executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable2D);
+		} 
+		else if (dimension == 3)
+		{
+			executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable3D);
+		}
+	}
+	else
+	{
+		executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
+	}
 	String inputFilename = getInputFilename();
 	return new String[] { executableName, inputFilename };
 }

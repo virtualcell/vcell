@@ -77,6 +77,8 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.Smoldyn)) {
 		solver = new SmoldynSolver(simTask, directory, sessionLog, bMessaging);
+	} else if (solverDescription.equals(SolverDescription.Chombo)) {
+		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

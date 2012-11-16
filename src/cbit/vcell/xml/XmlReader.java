@@ -22,6 +22,9 @@ import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.chombo.ChomboBox;
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementLevel;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -4985,6 +4988,11 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			SundialsSolverOptions sundialsSolverOptions = getSundialsSolverOptions(sundialsSolverOptionsElement);
 			solverTaskDesc.setSundialsSolverOptions(sundialsSolverOptions);			
 		}
+		Element chomboElement = param.getChild(XMLTags.ChomboSolverSpec, vcNamespace);		
+		if (chomboElement != null) {
+			ChomboSolverSpec chombo = getChomboSolverSpec(chomboElement, simulation.getMathDescription().getGeometry().getDimension());
+			solverTaskDesc.setChomboSolverSpec(chombo);
+		}
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e);
@@ -6071,4 +6079,35 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 	
 	return var;
 }
+
+	private ChomboSolverSpec getChomboSolverSpec(Element element, int dimension) {
+		Element maxBoxSizeElement = element.getChild(XMLTags.MaxBoxSizeTag, vcNamespace);
+		int maxBoxSize = ChomboSolverSpec.getDefaultMaxBoxSize(dimension);
+		if (maxBoxSizeElement != null)
+		{
+			maxBoxSize = Integer.parseInt(maxBoxSizeElement.getText());
+		}
+		Element fillRatioElement = element.getChild(XMLTags.FillRatioTag, vcNamespace);
+		double fillRatio = ChomboSolverSpec.getDefaultFillRatio();
+		if (fillRatioElement != null)
+		{
+			fillRatio = Double.parseDouble(fillRatioElement.getText());
+		}
+		ArrayList<RefinementLevel> refineLevelList = new ArrayList<RefinementLevel>();
+		Element meshRefineElement = element.getChild(XMLTags.MeshRefinementTag, vcNamespace);		
+		if (meshRefineElement != null) {
+			List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
+			for (Element levelElement : levelElementList) {
+				String ratio = levelElement.getAttributeValue(XMLTags.RefineRatioAttrTag);
+				RefinementLevel rfl = new RefinementLevel(Integer.parseInt(ratio));
+				refineLevelList.add(rfl);
+//				List<Element> boxElementList = levelElement.getChildren(XMLTags.RefinementBoxTag, vcNamespace);
+//				for (Element boxElement : boxElementList) {
+//					String str = boxElement.getText();					
+//					rfl.addBox(ChomboBox.fromString(str));
+//				}
+			}
+		}
+		return new ChomboSolverSpec(maxBoxSize, fillRatio, refineLevelList);
+	}
 }

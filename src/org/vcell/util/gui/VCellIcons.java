@@ -32,6 +32,10 @@ public abstract class VCellIcons {
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
 	
+	// Chombo
+	public final static Icon refLevelNewIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_new.png"));
+	public final static Icon refLevelDeleteIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_delete.png"));
+	
 	// CSG
 	public final static Icon csgSphereIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_sphere.png"));
 	public final static Icon csgCubeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/csg_cube.png"));
@@ -170,7 +174,7 @@ public abstract class VCellIcons {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			javax.swing.JFrame frame = new javax.swing.JFrame();
 			JPanel panel =  new JPanel(new BorderLayout());
-			panel.add(new JLabel("label", odeQuickRunIcon, SwingConstants.LEFT), BorderLayout.CENTER);
+			panel.add(new JLabel("label", refLevelDeleteIcon, SwingConstants.LEFT), BorderLayout.CENTER);
 			frame.add(panel);
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {
 				public void windowClosing(java.awt.event.WindowEvent e) {
