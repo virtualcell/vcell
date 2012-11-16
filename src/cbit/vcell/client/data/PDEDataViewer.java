@@ -2665,16 +2665,4 @@ public void showTimePlotMultipleScans(DataManager dataManager) {
 	
 }
 
-public void setPostProcessingPanelVisible(boolean bVisible){
-	if(bVisible){
-		if(ivjJTabbedPane1.indexOfComponent(dataProcessingResultsPanel) < 0 && dataProcessingResultsPanel != null){
-			ivjJTabbedPane1.addTab(POST_PROCESS_TABNAME, dataProcessingResultsPanel);
-		}
-	}else{
-		if(ivjJTabbedPane1.indexOfComponent(dataProcessingResultsPanel) >= 0 && dataProcessingResultsPanel != null){
-			ivjJTabbedPane1.remove(dataProcessingResultsPanel);
-		}
-	}
-}
-
 }
