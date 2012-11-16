@@ -84,7 +84,6 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Deterministic
 	};
 	
-	private static final int NUM_SOLVERS = 16;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -101,6 +100,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	private static final int TYPE_COMBINED_IDA_CVODE = 13;
 	private static final int TYPE_SUNDIALS_PDE = 14;
 	private static final int TYPE_SMOLDYN = 15;
+	private static final int TYPE_CHOMBO = 16;
+	private static final int NUM_SOLVERS = 17;
 	
 	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
 	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
@@ -118,6 +119,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
 	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
 	public static final SolverDescription Smoldyn			= new SolverDescription(TYPE_SMOLDYN);
+	public static final SolverDescription Chombo = new SolverDescription(TYPE_CHOMBO);
 
 	private static SolverDescription[] AllSolverDescriptions = new SolverDescription[] {
 		ForwardEuler,
@@ -135,7 +137,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		FiniteVolumeStandalone,
 		CombinedSundials,
 		SundialsPDE,
-		Smoldyn
+		Smoldyn,
+		Chombo,
 	};
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
@@ -157,6 +160,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Combined Stiff Solver (IDA/CVODE)",
 		"Sundials Stiff PDE Solver (Variable Time Step)",
 		"Smoldyn (Spatial Stochastic Simulator)",
+		"Chombo Standalone",
 	};
 	private static final String[] DISPLAY_LABEL = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -175,6 +179,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Combined Stiff Solver (IDA/CVODE)",
 		"Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
 		"Smoldyn (Spatial Stochastic Simulator)",
+		"EBChombo, Semi-Implicit (Fixed Time Step)",
 	};
 	
 	private static final String[] SHORT_DISPLAY_LABEL = {
@@ -194,12 +199,13 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		"Combined IDA/CVODE",
 		"Fully-Implicit",
 		"Smoldyn",
+		"EBChombo",
 	};
 	
 	private static String Description_Start_Time = "<b>Starting Time</b>";
 	private static String Description_End_Time = "<b>Ending Time</b>";
 	private static String Description_TimeStep = "<b>Time Step</b>";
-	private static String Description_TimeStep_Default = "<b>Default:</b> the time step to numerically solve ODEs.";
+	private static String Description_TimeStep_Default = "<b>Default:</b> the time step to numerically solve ODEs/PDEs.";
 	private static String Description_TimeStep_Min = "<b>Minimum:</b> the minimum time stepsize that the solver should attempt to use.";
 	private static String Description_TimeStep_Max = "<b>Maximum:</b> the maxmum time stepsize that the solver should attempt to use.";
 	private static String Description_ErrorTolerance = "<b>Error Tolerance</b>";
@@ -237,6 +243,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	private static final String Description_Stochastic_DEFAULT_TIME_STEP_Adaptive = "<b>Default:</b> the initial time step of the SDE numerical integrator. " +
 			"It may be set for adaptive methods to decrease memory requirements.";
 	private static String Description_StochasticOptions = "<b>Stochastic Options</b>";
+	private static String Description_MaxBoxSize = "<b>Max Box Size:</b> Maximum grid length in any direction. 0 means no limit.";
+	private static String Description_FillRatio = "<b>Fill Ratio:</b> Measure of how efficiently tagged cells will be covered.";
 	
 	private static final String Description_PARAMETERS_TO_BE_SET = "<p><u><b>Input Parameters:<b></u>";
 	private static final String Description_REFERENCES = "<u><b>References:<b></u>";
@@ -610,6 +618,29 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	     "Simulated molecules diffuse, react, are confined by surfaces, and bind to membranes " +
 	     "much as they would in a real biological system."
 	     + "</html>",
+	     // Chombo
+	     "<html>"
+	     + "<center><h3>" + DISPLAY_LABEL[TYPE_CHOMBO] + "</h3></center>" +
+	     "Chombo provides a set of tools for implementing finite difference methods for the solution of " +
+	     "partial differential equations on block-structured adaptively refined rectangular grids. Both elliptic " +
+	     "and time-dependent modules are included. Chombo supports calculations in complex geometries with both " +
+	     "embedded boundaries and mapped grids, and Chombo also supports particle methods. Most parallel platforms " +
+	     "are supported, and cross-platform self-describing file formats are included."
+	     + Description_PARAMETERS_TO_BE_SET +
+			"<li>" + Description_Start_Time + "</li>"+
+			"<li>" + Description_End_Time + "</li>"+
+			"<li>" + Description_TimeStep +
+				"<ul>"+
+				"<li>" + Description_TimeStep_Default + "</li>" +
+				"</ul></li>"+
+		     "<li>" + Description_MaxBoxSize + "</li>" +
+		     "<li>" + Description_FillRatio + "</li>" +
+		     "<li>" + Description_OutputOptions +
+		     	"<ul>" +
+	  			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
+	  			"</ul></li>"
+	  		 + "</ul>"	
+	     + "</html>",
 	};
 	
 	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
@@ -631,6 +662,7 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		3,	// TYPE_COMBINED_IDA_CVODE
 		3,	// TYPE_SUNDIALS_PDE
 		1,	// TYPE_SMOLDYN
+		1,  // Chombo
 	};
 
 /**
@@ -833,7 +865,9 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 		case TYPE_SMOLDYN:
 		case TYPE_HYBRID_EM:
 		case TYPE_HYBRID_MIL:
-		case TYPE_HYBRID_MIL_Adaptive: {
+		case TYPE_HYBRID_MIL_Adaptive: 
+		case TYPE_CHOMBO:
+		{
 			return outputTimeSpec.isUniform();
 		}
 		default: {
@@ -980,6 +1014,10 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
 		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
 		break;	
+	case TYPE_CHOMBO:
+		featureSet.add(SolverFeature.Feature_Spatial);
+		featureSet.add(SolverFeature.Feature_Deterministic);
+		break;
 	}
 	return featureSet;
 }
@@ -1030,8 +1068,14 @@ public static SolverDescription[] getSupportingSolverDescriptions(MathDescriptio
 	}
 }
 
+public boolean isChomboSolver() 
+{
+	return type == TYPE_CHOMBO;
+}
+
+
 //public static void main(String[] args) {
-//	for (int i = 0; i < NUM_SOLVERS; i ++) {
+//	for (int i = 16; i < NUM_SOLVERS; i ++) {
 //		org.vcell.util.gui.DialogUtils.showInfoDialog(null, FULL_DESCRIPTIONS[i]);
 //	}
 //}

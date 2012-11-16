@@ -173,6 +173,9 @@ public class PropertyLoader {
 	public final static String mongodbLoggingCollection			= "vcell.mongodb.loggingCollection";
 	public final static String mongodbThreadSleepMS				= "vcell.mongodb.threadSleepMS";
 	
+	public static final String VCellChomboExecutable2D = "vcell.chombo.executable.2d";
+	public static final String VCellChomboExecutable3D = "vcell.chombo.executable.3d";
+	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -291,6 +294,8 @@ public class PropertyLoader {
 		mongodbLoggingCollection,
 		mongodbThreadSleepMS,
 
+		VCellChomboExecutable2D,
+		VCellChomboExecutable3D,
 	};
 
 

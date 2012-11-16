@@ -25,12 +25,14 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.Simulation;
 
 /**
  * Insert the type's description here.
@@ -48,7 +50,6 @@ public class MeshSpecificationPanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjZTextField = null;
 	private javax.swing.JLabel ivjGeometrySizeLabel = null;
 	private javax.swing.JLabel ivjMeshSizeLabel = null;
-	private MeshSpecification fieldMeshSpecification = null;
 	private javax.swing.JLabel ivjJLabelTitle = null;
 	private JCheckBox autoMeshSizeCheckBox = null;
 	private boolean bInProgress = false;
@@ -58,8 +59,9 @@ public class MeshSpecificationPanel extends javax.swing.JPanel {
 	private JTextField ivjDzTextField = new JTextField();
 	private JLabel ivjDyLabel = new JLabel("\u0394y");
 	private JLabel ivjDzLabel = new JLabel("\u0394z");
+	private Simulation simulation = null;
 
-class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener, ItemListener, DocumentListener {
+class IvjEventHandler implements java.awt.event.FocusListener, ItemListener, DocumentListener {
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
 			if (e.isTemporary()) {
@@ -72,10 +74,6 @@ class IvjEventHandler implements java.awt.event.FocusListener, java.beans.Proper
 			if (e.getSource() == MeshSpecificationPanel.this.getZTextField()) 
 				connEtoC4(e);
 		};
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == MeshSpecificationPanel.this && (evt.getPropertyName().equals("meshSpecification"))) 
-				updateDisplay();
-		}
 		public void itemStateChanged(ItemEvent e) {
 			if (e.getStateChange() == ItemEvent.SELECTED && e.getSource() == getAutoMeshSizeCheckBox()) {
 				autoUpdateSizes(e);
@@ -98,7 +96,6 @@ class IvjEventHandler implements java.awt.event.FocusListener, java.beans.Proper
  */
 public MeshSpecificationPanel() {
 	super();
-	addPropertyChangeListener(ivjEventHandler);
 	initialize();
 }
 
@@ -259,7 +256,7 @@ private javax.swing.JLabel getMeshSizeLabel() {
  * @see #setMeshSpecification
  */
 private MeshSpecification getMeshSpecification() {
-	return fieldMeshSpecification;
+	return simulation.getMeshSpecification();
 }
 
 
@@ -693,10 +690,12 @@ public static void main(java.lang.String[] args) {
  * @param meshSpecification The new value for the property.
  * @see #getMeshSpecification
  */
-public void setMeshSpecification(MeshSpecification meshSpecification) {
-	MeshSpecification oldValue = fieldMeshSpecification;
-	fieldMeshSpecification = meshSpecification;
-	firePropertyChange("meshSpecification", oldValue, meshSpecification);
+public void setSimulation(Simulation newValue) {
+	if (newValue == simulation) {
+		return;
+	}
+	simulation = newValue;
+	updateDisplay();
 }
 
 
@@ -790,6 +789,14 @@ private void updateSize() {
 	DialogUtils.showErrorDialog(this, "Error setting mesh size : " + error);
 }
 
+long computeAnotherSizeWRTAspectRatio(int oneSize, double ratio) {
+	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+		return Math.max(3, Math.round(ratio * oneSize));
+	} else {
+		return Math.max(3, Math.round(ratio * (oneSize - 1) + 1));
+	}
+}
+
 public void autoUpdateSizes(ItemEvent e) {
 	if (bInProgress) {
 		return;
@@ -810,15 +817,15 @@ public void autoUpdateSizes(ItemEvent e) {
 		switch (dimension){
 			case 2:{
 				double yxRatio = extent.getY()/extent.getX();
-				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				long numY = computeAnotherSizeWRTAspectRatio(numX, yxRatio);
 				getYTextField().setText("" + Math.round(numY));
 				break;
 			}
 			case 3:{
 				double yxRatio = extent.getY()/extent.getX();
 				double zxRatio = extent.getZ()/extent.getX();
-				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-				long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
+				long numY = computeAnotherSizeWRTAspectRatio(numX, yxRatio);
+				long numZ = computeAnotherSizeWRTAspectRatio(numX, zxRatio);
 				getYTextField().setText("" + numY);
 				getZTextField().setText("" + numZ);
 				break;
@@ -855,25 +862,16 @@ private void autoUpdateSizes(DocumentEvent e) {
 				return;
 			}
 			int numX = Integer.parseInt(xtext);
-			switch (dimension){
-			case 1: {
-				break;
-			}
-			case 2:{
+			if (dimension > 1) {
 				double yxRatio = extent.getY()/extent.getX();
-				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
+				long numY = computeAnotherSizeWRTAspectRatio(numX, yxRatio);
 				getYTextField().setText("" + numY);
-				break;
-			}
-			case 3:{
-				double yxRatio = extent.getY()/extent.getX();
-				double zxRatio = extent.getZ()/extent.getX();
-				long numY = Math.max(3, Math.round(yxRatio * (numX - 1) + 1));
-				long numZ = Math.max(3, Math.round(zxRatio * (numX - 1) + 1));
-				getYTextField().setText("" + numY);
-				getZTextField().setText("" + numZ);
-				break;
-			}
+
+				if (dimension > 2) {
+					double zxRatio = extent.getZ()/extent.getX();
+					long numZ = computeAnotherSizeWRTAspectRatio(numX, zxRatio);
+					getZTextField().setText("" + numZ);
+				}
 			}
 		} else if (e.getDocument() == getYTextField().getDocument()) {
 			input = getYTextField();
@@ -885,22 +883,13 @@ private void autoUpdateSizes(DocumentEvent e) {
 				return;
 			}
 			int numY = Integer.parseInt(ytext);
-			switch (dimension){		
-				case 2:{
-					double xyRatio = extent.getX()/extent.getY();
-					long numX = Math.max(3, Math.round(xyRatio * (numY - 1) + 1));
-					getXTextField().setText("" + numX);
-					break;
-				}
-				case 3:{
-					double xyRatio = extent.getX()/extent.getY();
-					double zyRatio = extent.getZ()/extent.getY();
-					long numX = Math.max(3, Math.round(xyRatio * (numY - 1) + 1));
-					long numZ = Math.max(3, Math.round(zyRatio * (numY - 1) + 1));
-					getXTextField().setText("" + numX);
-					getZTextField().setText("" + numZ);
-					break;
-				}
+			double xyRatio = extent.getX()/extent.getY();
+			long numX = computeAnotherSizeWRTAspectRatio(numY, xyRatio);
+			getXTextField().setText("" + numX);
+			if (dimension > 2){		
+				double zyRatio = extent.getZ()/extent.getY(); 
+				long numZ  = computeAnotherSizeWRTAspectRatio(numY, zyRatio);
+				getZTextField().setText("" + numZ);
 			}
 		} else if (e.getDocument() == getZTextField().getDocument()) {
 			input = getZTextField();
@@ -912,16 +901,13 @@ private void autoUpdateSizes(DocumentEvent e) {
 				return;
 			}
 			int numZ = Integer.parseInt(ztext);
-			switch (dimension){		
-				case 3:{
-					double xzRatio = extent.getX()/extent.getZ();
-					double yzRatio = extent.getY()/extent.getZ();
-					long numX = Math.max(3, Math.round(xzRatio * (numZ - 1) + 1));
-					long numY = Math.max(3, Math.round(yzRatio * (numZ - 1) + 1));
-					getXTextField().setText("" + numX);
-					getYTextField().setText("" + numY);
-					break;
-				}
+			if (dimension > 2) {
+				double xzRatio = extent.getX()/extent.getZ();
+				double yzRatio = extent.getY()/extent.getZ();
+				long numX = computeAnotherSizeWRTAspectRatio(numZ, xzRatio);
+				long numY = computeAnotherSizeWRTAspectRatio(numZ, yzRatio);
+				getXTextField().setText("" + numX);
+				getYTextField().setText("" + numY);
 			}
 		}
 		input.setBorder(UIManager.getBorder("TextField.border"));
@@ -933,6 +919,15 @@ private void autoUpdateSizes(DocumentEvent e) {
 	} finally {
 		bInProgress = false;
 	}
+}
+
+private Coordinate computeDxDyDz(int numX, int numY, int numZ) {
+	Extent extent = getMeshSpecification().getGeometry().getExtent();
+	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+		return new Coordinate(extent.getX()/numX, extent.getY()/numY, extent.getZ()/numZ);
+	}
+	
+	return new Coordinate(extent.getX()/(numX - 1), extent.getY()/(numY - 1), extent.getZ()/(numZ - 1));
 }
 
 private void updateTotalSizeAndSpatialStep() {
@@ -947,9 +942,11 @@ private void updateTotalSizeAndSpatialStep() {
 	if (samplingSize == null) {
 		return;
 	}
-	Extent extent = getMeshSpecification().getGeometry().getExtent();
-	int dim = getMeshSpecification().getGeometry().getDimension();
+	
 	try {
+		int dim = getMeshSpecification().getGeometry().getDimension();
+		Extent extent = getMeshSpecification().getGeometry().getExtent();
+		
 		String xtext = getXTextField().getText();
 		int numX = Integer.parseInt(xtext);	
 		int numY = 1;
@@ -969,9 +966,11 @@ private void updateTotalSizeAndSpatialStep() {
 			}
 		}
 		totalSizeTextField.setText(totalSizeText + (totalSizeText.length() == 0 ? "" : " = ") + totalSizeValue);
-		ivjDxTextField.setText(extent.getX()/(numX - 1) + "");
-		ivjDyTextField.setText(extent.getY()/(numY - 1) + "");
-		ivjDzTextField.setText(extent.getZ()/(numZ - 1) + "");
+		
+		Coordinate h = computeDxDyDz(numX, numY, numZ);
+		ivjDxTextField.setText(h.getX() + "");
+		ivjDyTextField.setText(h.getY() + "");
+		ivjDzTextField.setText(h.getY() + "");
 	} catch (NumberFormatException ex) {
 		clearTotalSizeAndSpatialStep();
 	}

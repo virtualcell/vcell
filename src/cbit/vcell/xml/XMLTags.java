@@ -579,4 +579,13 @@ public class XMLTags {
 	public final static String LengthUnitTag = "LengthUnit";
 	public final static String TimeUnitTag = "TimeUnit";
 	
+	//ChomboSolverSpec Option 
+    public final static String ChomboSolverSpec = "ChomboSolverSpec";
+    public final static String MaxBoxSizeTag = "MaxBoxSize";
+    public final static String FillRatioTag = "FillRatio";
+    public final static String MeshRefinementTag = "MeshRefinement";
+    public final static String RefinementLevelTag = "RefinementLevel";
+    public final static String RefineRatioAttrTag = "RefineRatio";
+    public final static String RefinementBoxTag = "RefinementBox";
+	
 }

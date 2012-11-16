@@ -11,6 +11,7 @@
 package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
 
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -63,6 +64,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 	private SundialsSolverOptions sundialsSolverOptions = null; 
+	private ChomboSolverSpec chomboSolverSpec = null;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -134,6 +136,11 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 		sundialsSolverOptions = new SundialsSolverOptions(solverTaskDescription.sundialsSolverOptions);
 	} else {
 		sundialsSolverOptions = null;
+	}
+	if (solverTaskDescription.chomboSolverSpec != null) {
+		chomboSolverSpec = new ChomboSolverSpec(solverTaskDescription.chomboSolverSpec);
+	} else {
+		chomboSolverSpec = null;
 	}
 }
 
@@ -220,6 +227,9 @@ public boolean compareEqual(Matchable object) {
 		}
 		if  (!Compare.isEqualOrNull(sundialsSolverOptions,solverTaskDescription.sundialsSolverOptions)) {
 			return false;
+		}
+		if (!Compare.isEqualOrNull(chomboSolverSpec,solverTaskDescription.chomboSolverSpec)) {
+			return (false);
 		}
 		return true;
 	}
@@ -510,6 +520,11 @@ public String getVCML() {
 	if (sundialsSolverOptions != null) {
 		buffer.append(sundialsSolverOptions.getVCML());
 	}
+	
+	if (chomboSolverSpec != null) {
+		buffer.append(chomboSolverSpec.getVCML()+"\n");
+	}
+	
 	buffer.append(VCML.EndBlock+"\n");
 		
 	return buffer.toString();
@@ -586,6 +601,17 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					smoldynSimulationOptions = new SmoldynSimulationOptions();
 				}
 //				setSmoldynDefaultTimeStep();
+			}
+			if (solverDescription.isChomboSolver()) {
+				if (chomboSolverSpec == null) {
+					chomboSolverSpec = new ChomboSolverSpec(ChomboSolverSpec.getDefaultMaxBoxSize(getSimulation().getMathDescription().getGeometry().getDimension()));
+				}
+				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+					double outputTime = getTimeBounds().getEndingTime()/10;
+					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				}
+			} else {
+				chomboSolverSpec = null;
 			}
 		}
 	} catch (PropertyVetoException e) {
@@ -792,6 +818,8 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));				
 			} else if (token.equalsIgnoreCase(VCML.SundialsSolverOptions)) {
 				setSundialsSolverOptions(new SundialsSolverOptions(tokens));
+			} else	if (token.equalsIgnoreCase(VCML.ChomboSolverSpec)) {
+				chomboSolverSpec = new ChomboSolverSpec(tokens);				
 			} else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
@@ -1032,6 +1060,16 @@ public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverO
 	this.sundialsSolverOptions = sundialsSolverOptions;
 	firePropertyChange(PROPERTY_SUNDIALS_SOLVER_OPTIONS, oldValue, sundialsSolverOptions);
 }
+
+	public final ChomboSolverSpec getChomboSolverSpec() 
+	{
+		return chomboSolverSpec;
+	}
+	
+	public final void setChomboSolverSpec(ChomboSolverSpec chomboSolverSpec)
+	{
+		this.chomboSolverSpec = chomboSolverSpec;
+	}
 
 //double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
 //{

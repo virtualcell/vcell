@@ -13,12 +13,14 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.JScrollPane;
 
+import org.vcell.util.ISize;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
@@ -50,6 +52,7 @@ import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -249,6 +252,16 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	} else if(!simulation.getMathDescription().isNonSpatialStoch() && (solverDescription.isNonSpatialStochasticSolver())) {
 		errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" + 
 					solverDescription.getDisplayLabel()+" is not a ODE/PDE solver!";		
+	} 
+	else if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+	{
+		ISize samplingSize = (ISize) simulation.getMeshSpecification().getSamplingSize();
+		if (!SolverUtilities.isPowerOf2(samplingSize.getX())
+			|| !SolverUtilities.isPowerOf2(samplingSize.getY())
+			|| simulation.getMathDescription().getGeometry().getDimension() == 3 && !SolverUtilities.isPowerOf2(samplingSize.getZ()))
+		{
+			errorMessage = "Mesh sizes must be power of 2 for " + SolverDescription.Chombo.getDisplayLabel() + ".";
+		}
 	} else {		
 		errorMessage = null;
 	}

@@ -24,6 +24,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.solver.SolverUtilities;
 
 public class SmoldynSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
@@ -216,7 +217,7 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 		if (evt.getPropertyName().equals(PROPERTY_NAME_GAUSSIAN_TABLE_SIZE)) {
 			int newValue = (Integer)evt.getNewValue();
-			if (!isPowerOf2(newValue)) {
+			if (!SolverUtilities.isPowerOf2(newValue)) {
 				throw new PropertyVetoException("Gaussian table size must be an integer power of 2.", evt);
 			}
 		}
@@ -229,20 +230,6 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 
 	public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
 		getPropertyChange().removePropertyChangeListener(listener);
-	}
-	
-	private boolean isPowerOf2(int newValue) {
-		int n = newValue;
-		while (true) {
-			int mod = n % 2;
-			if (mod == 1) {
-				return false;
-			}
-			n = n / 2;
-			if (n == 1) {
-				return true;
-			}
-		}
 	}
 	
 	public void refreshDependencies() {
