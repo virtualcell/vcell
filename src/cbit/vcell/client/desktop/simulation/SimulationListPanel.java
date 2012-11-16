@@ -155,7 +155,7 @@ private void copySimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
 	}
 	Simulation[] toCopy = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
@@ -178,9 +178,9 @@ private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	StringBuilder simulationNames = new StringBuilder(); 
 	ArrayList<Simulation> simList = new ArrayList<Simulation>();
-	Simulation[] allSims = getSimulationWorkspace().getSimulations();
+//	Simulation[] allSims = getSimulationWorkspace().getSimulations();
 	for (int i = 0; i < selections.length; i++){
-		Simulation sim = allSims[selections[i]];
+		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]));
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 		if (!simStatus.isRunning()){
 			simList.add(sim);
@@ -214,7 +214,7 @@ private void editSimulation() {
 	// this should not be possible to call unless exactly one row is selected, but check anyway
 	int[] selectedRows = getScrollPaneTable().getSelectedRows();
 	if (selectedRows.length > 0) { // make sure something is selected...
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationWorkspace().getSimulations()[selectedRows[0]]);
+		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus((Simulation)(ivjSimulationListTableModel1.getValueAt(selectedRows[0])));
 		if (!simStatus.isRunning()){
 			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
 		}
@@ -704,7 +704,7 @@ private void runSimulations() {
 	final ArrayList<Simulation> simList = new ArrayList<Simulation>();
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	for (int i = 0; i < selections.length; i++){
-		Simulation sim = getSimulationWorkspace().getSimulations()[selections[i]];	
+		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]));	
 		if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) {
 				String option = DialogUtils.showOKCancelWarningDialog(SimulationListPanel.this, "Deprecated Solver", VCellErrorMessages.getSemiFVSolverCompiledSolverDeprecated(sim));
@@ -769,7 +769,7 @@ private void showSimulationResults() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]))); 
 	}
 	Simulation[] toShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationResults(toShow);
@@ -783,7 +783,7 @@ private void showSimulationStatusDetails() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
 	}
 	Simulation[] sims = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
@@ -797,7 +797,7 @@ private void stopSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
+		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
 	}
 	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
