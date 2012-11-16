@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -181,6 +182,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			refreshData();
 		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 			int simIndex = (Integer)evt.getNewValue();
+			simIndex = simIndex % getMaxRowsPerPage();
 			fireTableRowsUpdated(simIndex, simIndex);
 		}
 	} else {
