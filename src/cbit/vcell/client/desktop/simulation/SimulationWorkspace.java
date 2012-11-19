@@ -184,11 +184,12 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 	SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 	SolverDescription solverDescription = solverTaskDescription.getSolverDescription();
 	if (expectedNumTimePoints>maxTimepoints){
-		errorMessage = "Too many timepoints to be saved ("+expectedNumTimePoints+")\n"+
-						"maximum allowed is:\n" + 
+		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
+				        "The simulation has too many timepoints ("+expectedNumTimePoints+") to be saved, which has exceeded our limit.\n\n"+
+						"maximum saving timepoints limits are:\n" + 
 						"     "+Simulation.MAX_LIMIT_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
-						"recommended limits are:\n" + 
+						"suggested saving timepoints limits are:\n" + 
 						"     "+Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
 						"     "+Simulation.WARNING_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
 						"Try saving fewer timepoints\n"+
@@ -199,12 +200,13 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 			errorMessage = null;
 		}
 	} else if (expectedSizeBytes>maxSizeBytes){
-		errorMessage = "Resulting dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large\n"+
-						"maximum size is:\n" + 
+		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
+				        "The simulation's result dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large, which has exceeded our limit.\n\n"+
+						"maximum size limits are:\n" + 
 						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_MEGABYTES + " MB for spatial simulations\n"+
 						"     "+Simulation.MAX_LIMIT_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
-						"suggested limits are:\n" + 
+						"suggested size limits are:\n" + 
 						"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n"+
 						"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n"+
@@ -216,7 +218,8 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 			errorMessage = null;
 		}
 	} else if (simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
-		errorMessage = "Too many simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
+		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
+				        "The simulation generates too many simulations (" + simulation.getScanCount() + ") required for parameter scan, which has exceeded our limit.\n\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
@@ -235,7 +238,8 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 			double maxSimTime = maxNumberOfSteps * maximumTimeStep;
 			double endingTime = solverTaskDescription.getTimeBounds().getEndingTime();
 			if (maxSimTime < endingTime) {
-				errorMessage = "The maximum possible simulation time (keepEvery * maxTimestep * keepAtMost = " + maxSimTime 
+				errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" + 
+				      "The maximum possible simulation time (keepEvery * maxTimestep * keepAtMost = " + maxSimTime 
 					+ ") is less than simulation end time (" + endingTime + ").\n\n"
 					+ "You have chosen a variable time step solver and specified a maximum number of time steps of "+maxNumberOfSteps+" (keepEvery*keepAtMost).  "
 					+ "Actual time steps are often small, but even if all steps were at the maximum time step of "+maximumTimeStep+", the simulation end time of "+endingTime+" would not be reached. \n\n"
@@ -267,18 +271,21 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		// no error conditions, check for warning conditions (suggested limits on resources)
 		//
 		if (expectedNumTimePoints>warningTimepoints){
-			warningMessage = "Warning: large number of timepoints ("+expectedNumTimePoints+"), suggested limits are:\n" + 
+			warningMessage = "Warnings from Simulation: '" + simulation.getName() + "'!\n" + 
+					        "The simulation has large number of saving timepoints ("+expectedNumTimePoints+"), suggested saving timepoints limits are:\n" + 
 							"     "+Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
 							"     "+Simulation.WARNING_SPATIAL_TIMEPOINTS + " for spatial simulations\n" +
 							"Try saving fewer timepoints";
 		} else if (expectedSizeBytes>warningSizeBytes){
-			warningMessage = "Warning: large simulation result set ("+(expectedSizeBytes/1000000L)+"MB) exceeds suggested limits of:\n" + 
+			warningMessage = "Warnings from Simulation: '" + simulation.getName() + "'!\n" +
+					        "The simulation has large result dataset ("+(expectedSizeBytes/1000000L)+"MB), suggested size limits are:\n" + 
 							"     "+Simulation.WARNING_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 							"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n" +
 							"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n" +
 							"Try saving fewer timepoints or using a coarser mesh if spatial.";
 		} else if (simulation.getScanCount() > Simulation.WARNING_SCAN_JOBS) {
-			warningMessage = "Warning : large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
+			warningMessage = "Warnings from Simulation: '" + simulation.getName() + "'!\n" + 
+					    "The simulation generates a large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for the number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
@@ -286,13 +293,15 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		
 		if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 			if (solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance() > 1e-4) {
-				String msg = "Warning : it is not reccomended to use a relative tolerance that is greater than \n1e-4 for " 
+				String msg = "Warnings from Simulation: '" + simulation.getName() + "'!\n" + 
+					  "Warning: it is not reccomended to use a relative tolerance that is greater than \n1e-4 for " 
 					+ solverDescription.getDisplayLabel() + ".";
 				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
 			}
 		} else if (solverDescription.isSemiImplicitPdeSolver()) {
 			if (solverTaskDescription.getErrorTolerance().getRelativeErrorTolerance() > 1e-8) {
-				String msg = "Warning : it is not reccomended to use a relative tolerance that is greater than \n1e-8 for " 
+				String msg = "Warnings from Simulation: '" + simulation.getName() + "'!\n" + 
+					  "Warning: it is not reccomended to use a relative tolerance that is greater than \n1e-8 for " 
 					+ solverDescription.getDisplayLabel() + ".";
 				warningMessage = warningMessage == null? msg : warningMessage + "\n\n" + msg;
 			}
@@ -676,8 +685,19 @@ public synchronized void removePropertyChangeListener(PropertyChangeListener lis
 /**
  * Comment
  */
-void runSimulations(Simulation[] sims) {
-	getClientSimManager().runSimulations(sims);
+void runSimulations(Simulation[] sims, Component parent) {
+	boolean bOkToRun = true;
+	for(Simulation sim : sims)
+	{
+		//check if every sim in the sim list is ok to run
+		if(!checkSimulationParameters(sim, parent)){
+			bOkToRun = false;
+			break;
+		}
+	}
+	if(bOkToRun){
+		getClientSimManager().runSimulations(sims);
+	}
 }
 
 
