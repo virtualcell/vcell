@@ -10,4 +10,11 @@ public class VCMessageSelectorJms extends VCMessageSelector {
 		this.selectorString = selectorString;
 	}
 
+	@Override
+	public String getSelectionString() {
+		return selectorString;
+	}
+	
+	
+
 }
