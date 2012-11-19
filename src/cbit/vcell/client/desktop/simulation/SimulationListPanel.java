@@ -723,7 +723,7 @@ private void runSimulations() {
 	}
 	if (simList.size() > 0) {
 		Simulation[] toRun = simList.toArray(new Simulation[0]);
-		getSimulationWorkspace().runSimulations(toRun);
+		getSimulationWorkspace().runSimulations(toRun, this);
 	}
 }
 
