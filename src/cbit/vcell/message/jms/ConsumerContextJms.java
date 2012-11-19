@@ -177,7 +177,11 @@ public class ConsumerContextJms implements Runnable {
 			}else{
 				this.jmsDestination = this.jmsSession.createTopic(vcConsumer.getVCDestination().getName());							
 			}
-			this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination);
+			if (vcConsumer.getSelector()==null){
+				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination);
+			}else{
+				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination,vcConsumer.getSelector().getSelectionString());
+			}
 		}catch (JMSException e){
 			e.printStackTrace(System.out);
 			onException(e);
