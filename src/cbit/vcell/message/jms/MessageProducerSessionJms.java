@@ -94,6 +94,8 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 						}
 					} 
 				} else {
+					rpcMessage.setJMSReplyTo(commonTemporaryQueue);
+					messageProducer.setTimeToLive(timeoutMS);
 					messageProducer.send(rpcMessage);
 					commit();
 					return null;
