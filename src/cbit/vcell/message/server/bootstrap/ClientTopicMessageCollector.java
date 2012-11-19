@@ -146,35 +146,53 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			throw new Exception(this.getClass().getName()+".onTopicMessage: message type NULL for message "+message);
 		}
 		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
-					
-			StatusMessage statusMessage = new StatusMessage(message);
-			String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
-			if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
-				userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+				StatusMessage statusMessage = new StatusMessage(message);
+				String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
+				if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
+					userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+				}
+				
+				SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
+				if (newJobStatus == null) {
+					return;
+				}
+				
+				VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
+				Double progress = statusMessage.getProgress();
+				Double timePoint = statusMessage.getTimePoint();
+				log.print("---onTopicMessage[" + newJobStatus + ", progress=" + progress + ", timepoint=" + timePoint + "]");
+				
+				fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint));		
+			}else{
+				throw new RuntimeException("user "+user.getName()+" received a simstatus event message meant for user "+messageUserName);
 			}
-			
-			SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
-			if (newJobStatus == null) {
-				return;
+		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {	
+			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+				ExportEvent event = (ExportEvent)message.getObjectContent();
+				log.print("---onTopicMessage[ExportEvent[" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
+				fireExportEvent(event);
+			}else{
+				throw new RuntimeException("user "+user.getName()+" received an export event message meant for user "+messageUserName);
 			}
-			
-			VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
-			Double progress = statusMessage.getProgress();
-			Double timePoint = statusMessage.getTimePoint();
-			log.print("---onTopicMessage[" + newJobStatus + ", progress=" + progress + ", timepoint=" + timePoint + "]");
-			
-			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint));		
-
-		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {			
-			ExportEvent event = (ExportEvent)message.getObjectContent();
-			log.print("---onTopicMessage[ExportEvent[" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
-			fireExportEvent(event);
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE)){
-			DataJobEvent event = (DataJobEvent)message.getObjectContent();
-			log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
-			fireMessageEvent(event);
+			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+				DataJobEvent event = (DataJobEvent)message.getObjectContent();
+				log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
+				fireMessageEvent(event);
+			}else{
+				throw new RuntimeException("user "+user.getName()+" received a data event message meant for user "+messageUserName);
+			}
 		} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
-			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
+			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+				fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
+			}else{
+				throw new RuntimeException("user "+user.getName()+" received a broadcast event message meant for user "+messageUserName);
+			}
 		} else{
 			throw new Exception(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message.show());
 		}
@@ -189,8 +207,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
  * onException method comment.
  */
 public void init() {
-	String clientMessageFilter = (user == null ? "" : MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR ");
-	clientMessageFilter += MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
+	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
 	VCTopicConsumer topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
 	vcMessagingService.addMessageConsumer(topicConsumer);
