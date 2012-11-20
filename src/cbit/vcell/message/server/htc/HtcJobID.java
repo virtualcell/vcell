@@ -63,4 +63,19 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if (obj instanceof HtcJobID){
+			HtcJobID other = (HtcJobID)obj;
+			return toDatabase().equals(other.toDatabase());
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode(){
+		return toDatabase().hashCode();
+	}
+	
 }
