@@ -157,6 +157,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SIMULATION_PARAM_BEGIN,
 		SOLVER,
 		FV_SOLVER,
+		CHOMBO_SEMIIMPLICIT_SOLVER,
 		SUNDIALS_PDE_SOLVER,
 		DISCONTINUITY_TIMES,
 		BASE_FILE_NAME,
@@ -1220,6 +1221,8 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			}
 			printWriter.println();
 		}
+	} else if(solverTaskDesc.getSolverDescription().equals(SolverDescription.Chombo)){
+		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.CHOMBO_SEMIIMPLICIT_SOLVER);
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
