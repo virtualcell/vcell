@@ -7,7 +7,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -352,9 +354,9 @@ public final class PbsProxy extends HtcProxy {
 	}
 
 	@Override
-	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
+	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
 		try{
-			ArrayList<HtcJobInfo> serviceJobInfos = new ArrayList<HtcJobInfo>();
+			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
 			ArrayList<String> cmdV = new ArrayList<String>();
 			cmdV.add(JOB_CMD_STATUS);
 			cmdV.add("-f");
@@ -382,11 +384,11 @@ public final class PbsProxy extends HtcProxy {
 					}else if(line.trim().startsWith("Output_Path =")){
 						st.nextToken();st.nextToken();
 						String latestOutputPath = st.nextToken();
-						serviceJobInfos.add(new HtcJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+						jobInfoMap.put(latestpbsJobID, new HtcJobInfo(latestpbsJobID,true,latestJobName,latestErrorPath,latestOutputPath));
 					}
 				}
 			}
-			return serviceJobInfos;
+			return jobInfoMap;
 		} catch (Exception e) {
 			e.printStackTrace();
 			if(e instanceof ExecutableException){
