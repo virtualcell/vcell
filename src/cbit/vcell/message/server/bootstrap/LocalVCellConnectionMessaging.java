@@ -37,7 +37,6 @@ import cbit.vcell.server.URLFinder;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.visit.VisitConnectionInfo;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -192,11 +191,6 @@ public URLFinder getURLFinder() {
 		fieldSessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}
-}
-
-public VisitConnectionInfo createNewVisitConnection() {
-	VisitConnectionInfo visitConnectionInfo = VisitConnectionInfo.createHardCodedVisitConnectionInfo(getUserLoginInfo().getUser());
-	return visitConnectionInfo;
 }
 
 /**
