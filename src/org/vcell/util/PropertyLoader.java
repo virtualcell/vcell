@@ -468,7 +468,6 @@ private static final void verifyPropertyFile(String propertyFileName) {
 
 		//Merge System Server and System Client Property Lists
 		Vector<String> allListV = new Vector<String>(Arrays.asList(PropertyLoader.SYSTEM_SERVER_PROPERTY_NAMES));
-		allListV.addAll(Arrays.asList(Preference.getAllDefinedSystemClientPropertyNames()));
 		String[] ALL_PROPERTIES = allListV.toArray(new String[0]);
 
 		//

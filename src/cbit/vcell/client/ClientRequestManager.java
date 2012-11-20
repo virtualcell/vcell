@@ -168,8 +168,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.visit.VisitConnectionInfo;
-import cbit.vcell.visit.VisitSession;
 import cbit.vcell.xml.XMLInfo;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
@@ -3441,28 +3439,6 @@ public void accessPermissions(Component requester, VCDocument vcDoc) {
 	getMdiManager().getDatabaseWindowManager().accessPermissions(requester, selectedVersionInfo);
 	
 }
-
-
-public VisitSession createNewVisitSession(String visitBinPath) throws DataAccessException {
-	VisitConnectionInfo visitConnInfo = getClientServerManager().createNewVisitConnection();
-	final VisitSession visitSession = new VisitSession(this,visitBinPath,visitConnInfo);
-	visitSession.initViewerProxyOpenWindows();
-	visitSession.openMDServer(visitSession.getVisitConnectionInfo().getIPAddress());
-	
-//	Runnable eventLoopWorker = new Runnable(){
-//		public void run(){
-//			visitSession.runEventLoop();
-//		}
-//	};
-	return visitSession;
-}
-
-public VisitConnectionInfo createNewLocalVisitSessionConnectionInfo (String visitBinPath) throws DataAccessException {
-	VisitConnectionInfo visitConnInfo = getClientServerManager().createNewVisitConnection();
-	
-	return visitConnInfo;
-}
-
 
 
 public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
