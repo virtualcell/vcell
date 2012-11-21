@@ -53,8 +53,6 @@ public class PropertyLoader {
 	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
 	public static final String hybridMilAdaptiveExecutableProperty = "vcell.hybridMilAdaptive.executable";
 	
-	public static final String visitServerExecutableProperty		= "vcell.visit.servervisitexecutable";
-	public static final String visitMDServerHostProperty			= "vcell.visit.mdserverhost";
 	public static final String visitSmoldynVisitExecutableProperty	= "vcell.visit.smoldynvisitexecutable";
 	public static final String visitSmoldynScriptPathProperty		= "vcell.visit.smoldynscript";
 	
