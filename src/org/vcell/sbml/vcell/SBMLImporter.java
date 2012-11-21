@@ -43,6 +43,7 @@ import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
 import org.sbml.libsbml.ListOfEvents;
 import org.sbml.libsbml.ModifierSpeciesReference;
+import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.Reaction;
@@ -907,7 +908,11 @@ protected void addReactions(VCMetaData metaData) {
 			// record reaction name in annotation if it is greater than 64 characters. Choosing 64, since that is (as of 12/2/08) 
 			// the limit on the reactionName length.
 			if (rxnName.length() > 64) {
-				StringBuffer oldRxnAnnotation = new StringBuffer(metaData.getFreeTextAnnotation(vcReactions[i]));
+				String freeTextAnnotation = metaData.getFreeTextAnnotation(vcReactions[i]);
+				if (freeTextAnnotation == null) {
+					freeTextAnnotation = "";
+				}
+				StringBuffer oldRxnAnnotation = new StringBuffer(freeTextAnnotation);
 				oldRxnAnnotation.append("\n\n" + rxnName);
 				metaData.setFreeTextAnnotation(vcReactions[i], oldRxnAnnotation.toString());
 			}
@@ -1836,10 +1841,14 @@ public BioModel getBioModel() {
 	
 	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
-//	System.out.println("\n\nSBML Import Error Report");
-//	OStringStream oStrStream = new OStringStream();
-//	document.printErrors(oStrStream);
-//	System.out.println(oStrStream.str());
+	System.out.println("\n\nSBML Import Error Report");
+	OStringStream oStrStream = new OStringStream();
+	document.printErrors(oStrStream);
+	System.out.println(oStrStream.str());
+	
+	if (numProblems > 0) {
+		throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str());
+	}
 	
 	sbmlModel = document.getModel();
 	
