@@ -49,31 +49,6 @@ public Preference(String argKey, String argValue) {
 	this.value = argValue;
 }
 
-public static final String[] getAllDefinedSystemClientPropertyNames(){
-	final String SYSTEM_CLIENT_PROPERTY_PREFIX = "SYSCLIENT_";
-	Vector<String> allDefinedSystemClientPropertiesV = new Vector<String>();
-	Field[] systemClientFields = Preference.class.getFields();
-	for (int i = 0; i < systemClientFields.length; i++) {
-		if(	systemClientFields[i].getType().isAssignableFrom(String.class) &&
-			systemClientFields[i].getName().startsWith(SYSTEM_CLIENT_PROPERTY_PREFIX)){
-			int modifiers = systemClientFields[i].getModifiers();
-			if(Modifier.isPublic(modifiers) && Modifier.isFinal(modifiers) && Modifier.isStatic(modifiers)){
-				try {
-					allDefinedSystemClientPropertiesV.add((String)systemClientFields[i].get(null));
-				}catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	if(allDefinedSystemClientPropertiesV.size() > 0){
-		String[] allDefinedSystemClientProperties = new String[allDefinedSystemClientPropertiesV.size()];
-		allDefinedSystemClientPropertiesV.copyInto(allDefinedSystemClientProperties);
-		return allDefinedSystemClientProperties;
-	}
-	return null;
-}
-
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
