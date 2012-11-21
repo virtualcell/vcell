@@ -56,12 +56,15 @@ public abstract class HtcProxy {
 			return htcJobID;
 		}
 		public String getJobName(){
+			validate();
 			return jobName;
 		}
 		public String getErrorPath() {
+			validate();
 			return errorPath;
 		}
 		public String getOutputPath() {
+			validate();
 			return outputPath;
 		}
 		public boolean isFound(){
@@ -72,6 +75,11 @@ public abstract class HtcProxy {
 				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
 			}else{
 				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
+			}
+		}
+		private void validate(){
+			if(!isFound()){
+				throw new RuntimeException("Must call isFound() before using HtcJobInfo to verify info exists");
 			}
 		}
 	}
