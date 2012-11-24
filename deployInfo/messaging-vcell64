@@ -14,7 +14,7 @@ stop() {
 	ps ux | grep java | grep ${site} | grep -v grep | awk '{ print "killing "$2; system("kill -9 " $2)}'
 	echo "stopping ${site} server manager				[OK]"
 #   stop all the services from PBS
-	pbsjobprefix=${siteUpperCase:0:1}_
+	pbsjobprefix=${siteUpperCase}_
 	qstat | grep ${pbsjobprefix} | awk '{ print ; system("qdel " $1"")}'
 	echo "stopping ${site} services						[OK]"
 }
@@ -22,6 +22,7 @@ stop() {
 cmd=$1
 source /home/VCELL/vcell/.profile
 site=GENERATED
+siteUpperCase=`echo ${site} | tr [a-z] [A-Z]`
 export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH
 siteRootDir=/share/apps/vcell/deployed/${site}
 siteResDir=${siteRootDir}/resources
