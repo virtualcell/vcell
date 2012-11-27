@@ -214,9 +214,10 @@ private void editSimulation() {
 	// this should not be possible to call unless exactly one row is selected, but check anyway
 	int[] selectedRows = getScrollPaneTable().getSelectedRows();
 	if (selectedRows.length > 0) { // make sure something is selected...
-		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus((Simulation)(ivjSimulationListTableModel1.getValueAt(selectedRows[0])));
+		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selectedRows[0]));
+		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 		if (!simStatus.isRunning()){
-			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), getSimulationWorkspace().getSimulations()[selectedRows[0]]); // just the first one if more than one selected...
+			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), sim); // just the first one if more than one selected...
 		}
 	}
 }
