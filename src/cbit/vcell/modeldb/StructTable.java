@@ -23,13 +23,15 @@ public class StructTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_struct";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field strName		= new Field("strName",		"varchar(255)",	"NOT NULL");
-	public final Field structType	= new Field("structType",	"varchar(10)",	"NOT NULL");
-	public final Field parentRef 	= new Field("parentRef",	"integer",		StructTable.REF_TYPE);
-	public final Field cellTypeRef 	= new Field("cellTypeRef",	"integer",  	CellTypeTable.REF_TYPE);
-	public final Field memVoltName	= new Field("memVoltName",	"varchar(64)",	"");
+	public final Field strName			= new Field("strName",		"varchar(255)",	"NOT NULL");
+	public final Field structType		= new Field("structType",	"varchar(10)",	"NOT NULL");
+	public final Field parentRef 		= new Field("parentRef",	"integer",		StructTable.REF_TYPE);
+	public final Field cellTypeRef 		= new Field("cellTypeRef",	"integer",  	CellTypeTable.REF_TYPE);
+	public final Field memVoltName		= new Field("memVoltName",	"varchar(64)",	"");
+	public final Field negFeatureRef 	= new Field("negFeatureRef",	"integer",		StructTable.REF_TYPE);
+	public final Field posFeatureRef 	= new Field("posFeatureRef",	"integer",		StructTable.REF_TYPE);
 
-	private final Field fields[] = {strName,structType,parentRef,cellTypeRef,memVoltName};
+	private final Field fields[] = {strName,structType,parentRef,cellTypeRef,memVoltName, negFeatureRef, posFeatureRef};
 	
 	private static final String STRUCTTYPE_FEATURE = "feature";
 	private static final String STRUCTTYPE_MEMBRANE = "membrane";
@@ -52,7 +54,7 @@ private StructTable() {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key, Structure structure, KeyValue parentKey, KeyValue cellTypeKey) throws DataAccessException {
+public String getSQLValueList(KeyValue key, Structure structure, KeyValue parentKey, KeyValue cellTypeKey, KeyValue negKey, KeyValue posKey) throws DataAccessException {
 
 	int defaultCharge = 0;
 
@@ -64,11 +66,13 @@ public String getSQLValueList(KeyValue key, Structure structure, KeyValue parent
 	buffer.append(parentKey+",");  // structRef
 	buffer.append(cellTypeKey+",");  // cellTypeRef
 	if (structure instanceof Membrane){
-		buffer.append("'"+((Membrane)structure).getMembraneVoltage().getName()+"'"+")");
+		buffer.append("'"+((Membrane)structure).getMembraneVoltage().getName()+"'"+",");
 	}else{
-		buffer.append("null"+")");
+		buffer.append("null"+",");
 	}
-
+	buffer.append(negKey+",");  // negative feature key
+	buffer.append(posKey+")");  // positive feature key
+	
 	return buffer.toString();
 }
 

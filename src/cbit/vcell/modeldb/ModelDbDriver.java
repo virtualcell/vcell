@@ -32,14 +32,17 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.model.Diagram;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.modeldb.ReactStepDbDriver.StructureKeys;
 /**
  * This type was created in VisualAge.
  */
@@ -222,8 +225,8 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		if (structures!=null && structures.length>0){
 			model.setStructures(structures);
 		}
-		HashMap<KeyValue, KeyValue> structureParentMap = reactStepDB.getStructureParentMapByModel(dbc, con, modelKey);
-		ReactStepDbDriver.populateStructureTopology(model, structureParentMap);
+		HashMap<KeyValue, StructureKeys> structureKeysMap = reactStepDB.getStructureParentMapByModel(dbc, con, modelKey);
+		ReactStepDbDriver.populateStructureAndElectricalTopology(model, structureKeysMap);
 
 		//
 		// set species for this model
@@ -269,21 +272,8 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 					for (int j = 0; j < params.length; j++){
 						SpeciesContext speciesContext = model.getSpeciesContext(params[j].getName());
 						if (speciesContext!=null){
-							//
-							// if spatially coincident, then make it a catalyst (else just complain to log and let user sort it out).
-							// they are coincident if:
-							//   a) in the same structure
-							//   b) reactionStep is in membrane and speciesContext is adjacent
-							//
-							if (reactSteps[i].getStructure().getName().equals(speciesContext.getStructure().getName()) ||
-								(reactSteps[i].getStructure() instanceof Membrane &&
-									(structureTopology.getInsideFeature((Membrane)reactSteps[i].getStructure()).getName().equals(speciesContext.getStructure().getName()) ||
-									 structureTopology.getOutsideFeature((Membrane)reactSteps[i].getStructure()).getName().equals(speciesContext.getStructure().getName())))) {
-								reactSteps[i].addCatalyst(speciesContext);
-								log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
-							}else{
-								log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with non-adjacent SpeciesContext, can't fix");
-							}
+							reactSteps[i].addCatalyst(speciesContext);
+							log.alert("ModelDbDriver.getModel(), Parameter '"+params[j].getName()+"' in Reaction "+reactSteps[i].getName()+" in Model("+model.getKey()+") conflicts with SpeciesContext, added as a catalyst");
 						}
 					}
 				}catch (Throwable e){
@@ -507,6 +497,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	// make sure all species are in the database and the hashtable
 	//
 	StructureTopology structureTopology = model.getStructureTopology();
+	ElectricalTopology electricalTopology = model.getElectricalTopology();
 	Species speciesArray[] = model.getSpecies();
 	for (int i=0;i<speciesArray.length;i++){
 		KeyValue speciesKey = null;//speciesArray[i].getKey();
@@ -523,16 +514,50 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 
 	//
 	// make sure all structures are in the database and the hashtable (add entry to link table)
+	// this does not populate the parent, negativeFeature, and positiveFeature columns ... done later with updateStructureKeys()
 	//
 	Structure structures[] = model.getStructures();
 	for (int i=0;i<structures.length;i++){
 		Structure structure = (Structure) structures[i];
 		KeyValue structureKey = null;
 		if (hash.getDatabaseKey(structure) == null) {
-			structureKey = reactStepDB.insertStructure(hash,con,structure, structureTopology);
+			structureKey = reactStepDB.insertStructure(hash,con,structure);
 		}
 		KeyValue linkKey = getNewKey(con);
 		insertModelStructLinkSQL(con, linkKey, newVersion.getVersionKey()/*modelKey*/, hash.getDatabaseKey(structure));
+	}
+
+	//
+	// add structure references (parent, negativeFeature, positiveFeature) are updated into the newly inserted Structure records
+	//   (they were inserted above without their references to parent,negative,positive structures).
+	//
+	for (Structure structure : structures){
+		KeyValue structKey = hash.getDatabaseKey(structure);
+		
+		KeyValue parentKey = null;
+		Structure parentStruct = structureTopology.getParentStructure(structure);
+		if (parentStruct!=null){
+			parentKey = hash.getDatabaseKey(parentStruct);
+		}
+		
+		KeyValue negKey = null;
+		KeyValue posKey = null;
+		if (structure instanceof Membrane){
+			Membrane membrane = (Membrane)structure;
+
+			Feature negFeature = electricalTopology.getNegativeFeature(membrane);
+			if (negFeature != null){
+				negKey = hash.getDatabaseKey(negFeature);
+			}
+			
+			Feature posFeature = electricalTopology.getPositiveFeature(membrane);
+			if (posFeature != null){
+				posKey = hash.getDatabaseKey(posFeature);
+			}
+		}
+				
+		StructureKeys structureKeys = new StructureKeys(structKey,parentKey,posKey,negKey);
+		reactStepDB.updateStructureKeys(con, structureKeys);
 	}
 
 	//
@@ -553,7 +578,7 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 	for (int i=0;i<reactionSteps.length;i++){
 		ReactionStep rs = reactionSteps[i];
 		if (hash.getDatabaseKey(rs) == null){
-			reactStepDB.insertReactionStep(hash,con,user,rs,newVersion.getVersionKey(), structureTopology);
+			reactStepDB.insertReactionStep(hash,con,user,rs,newVersion.getVersionKey());
 		}
 	}
 

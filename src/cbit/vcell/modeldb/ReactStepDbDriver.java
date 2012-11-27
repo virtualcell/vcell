@@ -26,6 +26,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
@@ -39,6 +40,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -277,7 +279,7 @@ public cbit.vcell.model.Model getReactionStepAsModel(QueryHashtable dbc, Connect
 	Table[] t =
 	{
 		BioModelTable.table,
-		reactStepTable.table
+		ReactStepTable.table
 	};
 	
 	String condition =
@@ -307,14 +309,12 @@ public cbit.vcell.model.Model getReactionStepAsModel(QueryHashtable dbc, Connect
 			}
 		}
 		model.setStructures(structures.toArray(new Structure[0]));
-		HashMap<KeyValue,KeyValue> structureParentMap = new HashMap<KeyValue, KeyValue>();
+		HashMap<KeyValue,StructureKeys> structureKeysMap = new HashMap<KeyValue, StructureKeys>();
 		for (Structure structure : structures){
-			KeyValue parentKey = getStructureParentKey(dbc, con, structure.getKey());
-			if (parentKey!=null){
-				structureParentMap.put(structure.getKey(),parentKey);
-			}
+			StructureKeys structureKeys = getStructureKeys(dbc, con, structure.getKey());
+			structureKeysMap.put(structure.getKey(),structureKeys);
 		}
-		populateStructureTopology(model, structureParentMap);
+		populateStructureAndElectricalTopology(model, structureKeysMap);
 		model.addReactionStep(reactionStep);
 		return model;
 	}
@@ -608,15 +608,28 @@ public Structure getStructure(QueryHashtable dbc, Connection con, KeyValue struc
 	return struct;
 }
 
+public static class StructureKeys {
+	public final KeyValue structKey;
+	public final KeyValue parentKey;
+	public final KeyValue posKey;
+	public final KeyValue negKey;
+	StructureKeys(KeyValue structKey, KeyValue parentKey, KeyValue positiveKey, KeyValue negativeKey){
+		this.structKey = structKey;
+		this.parentKey = parentKey;
+		this.posKey = positiveKey;
+		this.negKey = negativeKey;
+	}
+}
+
 /**
  * Selects all structures that are topologically neighboring (according to the parentRef field)
  */
-public HashMap<KeyValue, KeyValue> getStructureParentMapByModel(QueryHashtable dbc, Connection con , KeyValue modelKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public HashMap<KeyValue, StructureKeys> getStructureParentMapByModel(QueryHashtable dbc, Connection con , KeyValue modelKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	String sql;
 
 	// get all structures/parent relationships belonging to the same model
 	
-	sql =	" SELECT " + structTable.id.getQualifiedColName()+", " + structTable.parentRef.getQualifiedColName()+
+	sql =	" SELECT " + structTable.id.getQualifiedColName()+", " + structTable.parentRef.getQualifiedColName() + "," + structTable.posFeatureRef.getQualifiedColName()+ "," + structTable.negFeatureRef.getQualifiedColName()+
 			" FROM " + structTable.getTableName() + ", "+modelStructLinkTable.getTableName() +
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + modelStructLinkTable.structRef.getQualifiedColName() +
 			   " AND " + modelStructLinkTable.modelRef.getQualifiedColName() + " = " + modelKey;
@@ -625,38 +638,45 @@ System.out.println(sql);
 
 	Statement stmt = con.createStatement();
 
-	HashMap<KeyValue,KeyValue> keyMap = new HashMap<KeyValue,KeyValue>();
+	HashMap<KeyValue,StructureKeys> keyMap = new HashMap<KeyValue,StructureKeys>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
 		while (rset.next()) {
-			KeyValue key = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
-
+			KeyValue structKey = new KeyValue(rset.getBigDecimal(structTable.id.toString()));
+			KeyValue parentKey = null;
+			KeyValue positiveKey = null;
+			KeyValue negativeKey = null;
 			java.math.BigDecimal parentKeyValue = rset.getBigDecimal(structTable.parentRef.toString());
 			if (!rset.wasNull()){
-				keyMap.put(key, new KeyValue(parentKeyValue));
+				parentKey = new KeyValue(parentKeyValue);
 			}
+			java.math.BigDecimal posKeyValue = rset.getBigDecimal(structTable.posFeatureRef.toString());
+			if (!rset.wasNull()){
+				positiveKey = new KeyValue(posKeyValue);
+			}
+			java.math.BigDecimal negKeyValue = rset.getBigDecimal(structTable.negFeatureRef.toString());
+			if (!rset.wasNull()){
+				negativeKey = new KeyValue(negKeyValue);
+			}
+			keyMap.put(structKey, new StructureKeys(structKey, parentKey, positiveKey, negativeKey));
 		}
+		return keyMap;
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
 	
-	//
-	// return the structure that you asked for
-	//
-	return keyMap;
 }
-
 
 /**
  * Selects all structures that are topologically neighboring (according to the parentRef field)
  */
-public KeyValue getStructureParentKey(QueryHashtable dbc, Connection con , KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
+public StructureKeys getStructureKeys(QueryHashtable dbc, Connection con , KeyValue structKey) throws SQLException, DataAccessException, ObjectNotFoundException {
 	String sql;
 
 	// get all structures/parent relationships belonging to the same model
 	
-	sql =	" SELECT " + structTable.parentRef.getQualifiedColName()+
+	sql =	" SELECT " + structTable.parentRef.getQualifiedColName()+ "," + structTable.posFeatureRef.getQualifiedColName()+ "," + structTable.negFeatureRef.getQualifiedColName()+
 			" FROM " + structTable.getTableName() + 
 			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;
 
@@ -664,32 +684,42 @@ System.out.println(sql);
 
 	Statement stmt = con.createStatement();
 	
-	KeyValue parentKey = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
 		//showMetaData(rset);
 
+		KeyValue parentKey = null;
+		KeyValue positiveKey = null;
+		KeyValue negativeKey = null;
 		while (rset.next()) {
 			java.math.BigDecimal parentKeyValue = rset.getBigDecimal(structTable.parentRef.toString());
 			if (!rset.wasNull()){
 				parentKey = new KeyValue(parentKeyValue);
 			}
+			java.math.BigDecimal posKeyValue = rset.getBigDecimal(structTable.posFeatureRef.toString());
+			if (!rset.wasNull()){
+				positiveKey = new KeyValue(posKeyValue);
+			}
+			java.math.BigDecimal negKeyValue = rset.getBigDecimal(structTable.negFeatureRef.toString());
+			if (!rset.wasNull()){
+				negativeKey = new KeyValue(negKeyValue);
+			}
 		}
+		return new StructureKeys(structKey, parentKey, positiveKey, negativeKey);
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
-	return parentKey;
 }
 
 
-public static void populateStructureTopology(Model model, HashMap<KeyValue, KeyValue> parentsKeyMap) throws DataAccessException  {
+public static void populateStructureAndElectricalTopology(Model model, HashMap<KeyValue, StructureKeys> structureKeysMap) throws DataAccessException  {
 	//
 	// populate first pass (Feature parents only if directly present in database)
 	//
 	for (Structure structure : model.getStructures()) {
 		// get parent struct
-		KeyValue parentKey = parentsKeyMap.get(structure.getKey());
+		KeyValue parentKey = structureKeysMap.get(structure.getKey()).parentKey;
 		Structure parentStructure = null;
 		if (parentKey != null) {
 			for (Structure struct1 : model.getStructures()) {
@@ -715,6 +745,29 @@ public static void populateStructureTopology(Model model, HashMap<KeyValue, KeyV
 					structureTopology.setOutsideFeature(membrane, (Feature)parentStructure);
 				} else {
 					throw new DataAccessException("Membrane '" + membrane.getName() + "' is not permitted to be the parent of another membrane '" + parentStructure.getName());
+				}
+			}
+		}
+		if (structure instanceof Membrane){
+			Membrane membrane = (Membrane)structure;
+			KeyValue negKey = structureKeysMap.get(structure.getKey()).negKey;
+			if (negKey != null) {
+				for (Structure struct : model.getStructures()) {
+					if (struct instanceof Feature && struct.getKey().equals(negKey)) {
+						Feature feature = (Feature)struct;
+						model.getElectricalTopology().setNegativeFeature(membrane, feature);
+						break;
+					}
+				}
+			}
+			KeyValue posKey = structureKeysMap.get(structure.getKey()).posKey;
+			if (posKey != null) {
+				for (Structure struct : model.getStructures()) {
+					if (struct instanceof Feature && struct.getKey().equals(posKey)) {
+						Feature feature = (Feature)struct;
+						model.getElectricalTopology().setPositiveFeature(membrane, feature);
+						break;
+					}
 				}
 			}
 		}
@@ -814,7 +867,7 @@ private void insertReactionParticipantSQL(InsertHashtable hash, Connection con, 
 /**
  * addModel method comment.
  */
-KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, ReactionStep reactionStep, KeyValue modelKey, StructureTopology structureTopology) 
+KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, ReactionStep reactionStep, KeyValue modelKey) 
 				throws SQLException, DataAccessException {
 			
 	//log.print("ReactStepDbDriver.insertReactionStep(user="+user+", reacitonStep="+reactionStep+")");
@@ -842,8 +895,8 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 		// may insert structure for this reactionParicipant
 		//
 		Structure structure = rp_Array[i].getStructure();
-		if (hash.getDatabaseKey(structure) == null) {
-			insertStructure(hash,con,structure, structureTopology);
+		if (structure!=null && hash.getDatabaseKey(structure) == null) {
+			throw new DataAccessException("ReactionParticipant '"+rp_Array[i].getName()+"' for reaction '"+reactionStep.getName()+"' refers to structure '"+structure.getName()+"' which is not found in database");
 		}		
 	}
 
@@ -852,7 +905,7 @@ KeyValue insertReactionStep(InsertHashtable hash, Connection con, User user, Rea
 	//
 	Structure structure = reactionStep.getStructure();
 	if (hash.getDatabaseKey(structure) == null) {
-		insertStructure(hash,con,structure, structureTopology);
+		throw new DataAccessException("Structure '"+structure.getName()+"' for reaction '"+reactionStep.getName()+"' not found in database");
 	}
 
 	//
@@ -931,21 +984,15 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 /**
  * addModel method comment.
  */
-public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell.model.Structure structure, StructureTopology structureTopology) throws SQLException,DataAccessException {
+public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell.model.Structure structure) throws SQLException,DataAccessException {
 	
 	//log.print("ReactStepDbDriver.insertStructure(structure=" + structure + ")");
 	
+	// parentKey
 	KeyValue parentKey = null;
-	Structure parentStructure = structureTopology.getParentStructure(structure);
-	if (parentStructure == null) {
-		parentKey = null;
-	} else {
-		parentKey = hash.getDatabaseKey(parentStructure);
-		if (parentKey == null) {
-			parentKey = insertStructure(hash,con,parentStructure, structureTopology);
-			//throw new DataAccessException("parent Structure " + parentStructure + " doesn't have a key");
-		}
-	}
+	KeyValue negFeatureKey = null;
+	KeyValue posFeatureKey = null;
+
 	KeyValue key = hash.getDatabaseKey(structure);
 	if (key != null){
 		return key;
@@ -956,7 +1003,7 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 	String sql;
 	sql = "INSERT INTO " + structTable.getTableName() + " " + 
 			structTable.getSQLColumnList() + " VALUES " + 
-			structTable.getSQLValueList(key, structure,parentKey,cellTypeKey);
+			structTable.getSQLValueList(key, structure,parentKey,cellTypeKey, negFeatureKey, posFeatureKey);
 	
 	
 //	sql = "UPDATE " + structTable.getTableName() + 
@@ -971,5 +1018,26 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 //	MIRIAMTable.table.insertMIRIAM(con,structure,key);
 	
 	return key;
+}
+
+/**
+ * addModel method comment.
+ */
+public void updateStructureKeys(Connection con, StructureKeys structureKeys) throws SQLException,DataAccessException {
+	
+	KeyValue parentKey = structureKeys.parentKey;
+	KeyValue negFeatureKey = structureKeys.negKey;
+	KeyValue posFeatureKey = structureKeys.posKey;
+	KeyValue structKey = structureKeys.structKey;
+	String sql;
+	sql = "UPDATE " + structTable.getTableName() + " " + 
+		 	" SET " + structTable.parentRef.getQualifiedColName() + " = "+parentKey + " " + "," +
+					  structTable.negFeatureRef.getQualifiedColName() + " = "+negFeatureKey + " " + "," +
+					  structTable.posFeatureRef.getQualifiedColName() + " = "+posFeatureKey + " " +
+			" WHERE " + structTable.id.getQualifiedColName() + " = " + structKey;	
+
+//System.out.println(sql);
+
+	updateCleanSQL(con,sql);
 }
 }

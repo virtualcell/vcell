@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -23,21 +24,30 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -54,6 +64,15 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField sizeTextField;
 	private JLabel voltageLabel;
 	private JTextField voltageTextField;
+	
+	// for electrophysiology
+	private JLabel electrophysiologyLabel;
+	private JLabel positiveFeatureLabel;
+	private JComboBox positiveFeatureComboBox;
+	private JLabel negativeFeatureLabel;
+	private JComboBox negativeFeatureComboBox;
+	
+	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
@@ -63,6 +82,10 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 				changeAnnotation();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			} else if (e.getSource() == positiveFeatureComboBox) {
+				changePositiveFeature();
+			} else if (e.getSource() == negativeFeatureComboBox) {
+				changeNegativeFeature();
 			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -74,6 +97,12 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == nameTextField) {
 				changeName();
+			}
+			if (e.getSource() == positiveFeatureComboBox) {
+				changePositiveFeature();
+			}		
+			if (e.getSource() == negativeFeatureComboBox) {
+				changeNegativeFeature();
 			}		
 		}
 	}
@@ -104,6 +133,8 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
+	positiveFeatureComboBox.addFocusListener(eventHandler);
+	negativeFeatureComboBox.addFocusListener(eventHandler);
 }
 
 /**
@@ -123,7 +154,14 @@ private void initialize() {
 		voltageLabel = new JLabel("Voltage Variable Name");
 		voltageTextField = new JTextField();
 		voltageTextField.setEditable(false);
-		
+
+		electrophysiologyLabel = new JLabel("<html><u>Electrophysiology</u></html>");
+		positiveFeatureLabel = new JLabel("Positive (inside feature)");
+		positiveFeatureComboBox = new JComboBox();
+
+		negativeFeatureLabel = new JLabel("Negative (outside feature)");
+		negativeFeatureComboBox = new JComboBox();
+
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
@@ -141,6 +179,7 @@ private void initialize() {
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, gbc);
 		
+		// name
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -158,6 +197,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(nameTextField, gbc);
 		
+		// size
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -175,6 +215,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(sizeTextField, gbc);
 		
+		// voltage
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -191,6 +232,52 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;		
 		add(voltageTextField, gbc);
 		
+		// electrophysiology
+		gridy++;
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		electrophysiologyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		electrophysiologyLabel.setFont(label.getFont().deriveFont(Font.BOLD));
+		add(electrophysiologyLabel, gbc);
+
+		// positive (feature) voltage
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(positiveFeatureLabel, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;	
+		add(positiveFeatureComboBox, gbc);
+		
+		// negative (feature) voltage
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(negativeFeatureLabel, gbc);
+		
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.LINE_START;
+		add(negativeFeatureComboBox, gbc);
+		
+		// annotation
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -211,6 +298,25 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		add(jsp, gbc);
 		
+		
+		DefaultListCellRenderer comboBoxListCellRenderer = new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected,
+						cellHasFocus);
+				if (value instanceof Feature) {
+					setText(((Structure) value).getName());
+				}
+				return this;
+			}
+			
+		};
+	
+		positiveFeatureComboBox.setRenderer(comboBoxListCellRenderer);
+		negativeFeatureComboBox.setRenderer(comboBoxListCellRenderer);
+			
 		setBackground(Color.white);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -236,6 +342,34 @@ private void changeAnnotation() {
 
 public void setModel(Model model) {
 	fieldModel = model;
+
+	DefaultComboBoxModel dataModelPos = new DefaultComboBoxModel();
+	DefaultComboBoxModel dataModelNeg = new DefaultComboBoxModel();
+	dataModelPos.addElement("");
+	dataModelNeg.addElement("");
+	for (Structure s : model.getStructures()) {
+		if (s instanceof Feature) {
+			dataModelPos.addElement(s.getName());
+			dataModelNeg.addElement(s.getName());
+		}
+	}
+	// fill the comboBoxes with feature names from the model.
+	positiveFeatureComboBox.setModel(dataModelPos);
+	// if selected structure is a membrane, if it has +ve/-ve feature set, set the comboBox with that selection. 
+	if (structure instanceof Membrane) {
+		Membrane membrane = (Membrane)structure;
+		if (fieldModel.getElectricalTopology().getPositiveFeature(membrane) != null) {
+			positiveFeatureComboBox.setSelectedItem(fieldModel.getElectricalTopology().getPositiveFeature(membrane).getName());
+		}
+	}
+	negativeFeatureComboBox.setModel(dataModelNeg);
+	if (structure instanceof Membrane) {
+		Membrane membrane = (Membrane)structure;
+		if (fieldModel.getElectricalTopology().getPositiveFeature(membrane) != null) {
+			positiveFeatureComboBox.setSelectedItem(fieldModel.getElectricalTopology().getPositiveFeature(membrane).getName());
+		}
+	}
+
 }
 
 /**
@@ -279,6 +413,13 @@ private void updateInterface() {
 	boolean bMembrane = bNonNullStructure && structure instanceof Membrane;
 	voltageLabel.setVisible(bMembrane);
 	voltageTextField.setVisible(bMembrane);
+
+	electrophysiologyLabel.setVisible(bMembrane);
+	positiveFeatureLabel.setVisible(bMembrane);
+	positiveFeatureComboBox.setVisible(bMembrane);
+	negativeFeatureLabel.setVisible(bMembrane);
+	negativeFeatureComboBox.setVisible(bMembrane);
+
 	if (bNonNullStructure) {
 		nameTextField.setText(structure.getName());
 		annotationTextArea.setText(fieldModel.getVcMetaData().getFreeTextAnnotation(structure));
@@ -317,6 +458,32 @@ private void changeName() {
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(StructurePropertiesPanel.this, e1.getMessage());
+	}
+}
+
+private void changePositiveFeature() {
+	if (structure == null) {
+		return;
+	}
+	String positiveFeatureStr = (String)positiveFeatureComboBox.getSelectedItem();
+	if (positiveFeatureStr == null || positiveFeatureStr.length() == 0) {
+		return;
+	}
+	if (structure instanceof Membrane) {
+		fieldModel.getElectricalTopology().setPositiveFeature((Membrane)structure, (Feature)fieldModel.getStructure(positiveFeatureStr));
+	}
+}
+
+private void changeNegativeFeature() {
+	if (structure == null) {
+		return;
+	}
+	String negativeFeatureStr = (String)negativeFeatureComboBox.getSelectedItem();
+	if (negativeFeatureStr == null || negativeFeatureStr.length() == 0) {
+		return;
+	}
+	if (structure instanceof Membrane) {
+		fieldModel.getElectricalTopology().setNegativeFeature((Membrane)structure, (Feature)fieldModel.getStructure(negativeFeatureStr));
 	}
 }
 

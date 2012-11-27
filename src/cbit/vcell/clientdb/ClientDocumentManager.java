@@ -804,7 +804,8 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 		XMLHolder<BioModel> bioModelXML = getBioModelXML(bioModelKey);
 
 		BioModel bioModel = getBioModelFromDatabaseXML(bioModelXML);
-
+		// if the positive & negative features for the membranes are not already set, set them using struct topology.
+		bioModel.getModel().getElectricalTopology().populateFromStructureTopology();
 		//
 		// preload SimulationJobStatus for all simulations if any missing from hash.
 		// 

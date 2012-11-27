@@ -371,6 +371,9 @@ public class XMLTags {
     public final static String InsideFeatureTag = "InsideFeature";
     public final static String OutsideFeatureTag = "OutsideFeature";
     public final static String ParentFeatureTag = "ParentFeature";
+    public static final String PositiveFeatureTag = "PositiveFeature";
+    public static final String NegativeFeatureTag = "NegativeFeature";
+    
     public final static String SpeciesTag = "Compound";
 	//    public final static String FormalNameAttrTag = "FormalName"; 4/21/03; specie name scheme changed
 	public final static String CommonNameAttrTag = "CommonName";
