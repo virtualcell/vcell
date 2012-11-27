@@ -274,14 +274,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	private void refreshButtons() {
 		int selectedIndex = tabbedPane.getSelectedIndex();		
+		newMemButton.setVisible(false);
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
 //			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
 			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
 			newButton.setVisible(false);
-			newMemButton.setVisible(false);
 		} else {
 			newButton.setVisible(true);
-			newMemButton.setVisible(true);
+			newButton.setText("Add New");
+			// For structureTable tab, newButton should show 'Add New Compartment'; 'Add New Membrane' button should be visible.
+			if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
+				newButton.setText("Add New Compartment");
+				newMemButton.setVisible(true);
+			}
 		}
 		
 		deleteButton.setEnabled(false);
@@ -371,7 +376,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("Add New Compartment");
+		newButton = new JButton("Add New");
 		newMemButton = new JButton("Add New Membrane");
 		deleteButton = new JButton("Delete");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());

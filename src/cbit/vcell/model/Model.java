@@ -90,8 +90,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private final ModelUnitSystem unitSystem;
 	private transient VCMetaData vcMetaData = null;
 	private StructureTopology structureTopology = new StructureTopology();
+	private ElectricalTopology electricalTopology = new ElectricalTopology();
 
-	public class StructureTopology implements Serializable {
+	public class StructureTopology implements Serializable, Matchable {
 		private HashMap<Membrane,Feature> insideFeatures = new HashMap<Membrane, Feature>();
 		private HashMap<Membrane,Feature> outsideFeatures = new HashMap<Membrane, Feature>();
 		private HashMap<Feature,Membrane> enclosingMembrane = new HashMap<Feature, Membrane>();
@@ -194,9 +195,30 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}else{
 				throw new IllegalArgumentException("unexpected argument of StructureTopology.enclosedBy()");
 			}
+		}
+		@Override
+		public boolean compareEqual(Matchable object) {
+			if (object instanceof StructureTopology){
+				StructureTopology structTopology = (StructureTopology)object;
+			
+				if (!Compare.isEqual(insideFeatures, structTopology.insideFeatures)){
+					return false;
+				}
+				
+				if (!Compare.isEqual(outsideFeatures, structTopology.outsideFeatures)) {
+					return false;
+				}
+	
+				if (!Compare.isEqual(enclosingMembrane, structTopology.enclosingMembrane)){
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
-
-		public String showStructureHierarchy() {
+		
+		
+		/*public String showStructureHierarchy() {
 			StringBuffer strbuffer = new StringBuffer();
 			ArrayList<Structure> structList = new ArrayList<Structure>(Arrays.asList(fieldStructures));
 
@@ -244,11 +266,71 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}
 			}
 			return strbuffer.toString();
-		}
+		}*/
 		
 	}
 
+	public class ElectricalTopology implements Serializable, Matchable {
+		
+		private HashMap<Membrane,Feature> positiveFeatures = new HashMap<Membrane, Feature>();
+		private HashMap<Membrane,Feature> negativeFeatures = new HashMap<Membrane, Feature>();
+		
+		public ElectricalTopology() {
+		}
+
+		public void setPositiveFeature(Membrane membrane, Feature insideFeature){
+			positiveFeatures.put(membrane, insideFeature);
+		}
+		public void setNegativeFeature(Membrane membrane, Feature outsideFeature){
+			negativeFeatures.put(membrane, outsideFeature);
+		}
+
+		public Feature getPositiveFeature(Membrane membrane) {
+			return positiveFeatures.get(membrane);
+		}
+
+		public Feature getNegativeFeature(Membrane membrane) {
+			return negativeFeatures.get(membrane);
+		}
+		
+		public void populateFromStructureTopology() {
+			// if the positive & negative features for the membranes are already set, do not override using struct topology.
+			if (positiveFeatures.isEmpty() && negativeFeatures.isEmpty()) {
+				for (Structure struct : fieldStructures) {
+					if (struct instanceof Membrane) {
+						Membrane membrane = (Membrane)struct;
+						Feature positiveFeature = structureTopology.getInsideFeature(membrane);
+						Feature negativeFeature = structureTopology.getOutsideFeature(membrane);
+						
+						if (positiveFeature != null) {
+							electricalTopology.setPositiveFeature(membrane, positiveFeature);
+						}
+						if (negativeFeature != null) {
+							electricalTopology.setNegativeFeature(membrane, negativeFeature);
+						}
+					}
+				}
+			}
+		}
+		
+		@Override
+		public boolean compareEqual(Matchable object) {
+			if (object instanceof ElectricalTopology){
+				ElectricalTopology electricalTopology = (ElectricalTopology)object;
+			
+				if (!Compare.isEqual(positiveFeatures, electricalTopology.positiveFeatures)){
+					return false;
+				}
+				
+				if (!Compare.isEqual(negativeFeatures, electricalTopology.negativeFeatures)) {
+					return false;
+				}
 	
+				return true;
+			}
+			return false;
+		}
+	}
 	
 	public class ModelNameScope extends BioNameScope {
 		public ModelNameScope(){
@@ -880,6 +962,12 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	if (!Compare.isEqual(unitSystem, model.unitSystem)){
+		return false;
+	}
+	if (!Compare.isEqual(structureTopology, model.structureTopology)){
+		return false;
+	}
+	if (!Compare.isEqual(electricalTopology, model.electricalTopology)){
 		return false;
 	}
 	
@@ -1699,6 +1787,9 @@ public String[] getSpeciesNames(){
 	return names;
 }               
 
+public ElectricalTopology getElectricalTopology(){
+	return electricalTopology;
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -1741,6 +1832,7 @@ public Structure getStructure(int index) {
 public StructureTopology getStructureTopology(){
 	return structureTopology ;
 }
+
 //wei's code
 public ArrayList<Membrane> getMembranes(){
 	ArrayList<Membrane> membranes = new ArrayList<Membrane>();

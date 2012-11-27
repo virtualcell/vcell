@@ -3198,25 +3198,44 @@ private Membrane getMembrane(Model model, Element param, List<Structure> feature
 	//set inside feature
 	String infeaturename = unMangle(param.getAttributeValue(XMLTags.InsideFeatureTag));
 	String outfeaturename = unMangle(param.getAttributeValue(XMLTags.OutsideFeatureTag));
-	Feature infeatureref = null, outfeatureref = null;
+
+	String posFeatureName = unMangle(param.getAttributeValue(XMLTags.PositiveFeatureTag));
+	String negFeatureName = unMangle(param.getAttributeValue(XMLTags.NegativeFeatureTag));
+
+	Feature infeatureref = null; 
+	Feature outfeatureref = null;
+	Feature posFeature = null;
+	Feature negFeature = null;
 	
 	for (Structure s : featureList) {
 		String sname = s.getName();
 		if (sname.equals(infeaturename)) {		
 			infeatureref = (Feature)s;
-		} else if (sname.equals(outfeaturename)) {
+		} 
+		if (sname.equals(outfeaturename)) {
 			outfeatureref = (Feature)s;
 		}
-		if (infeatureref != null && outfeatureref != null) {
-			break;
+		if (sname.equals(posFeatureName)) {		
+			posFeature = (Feature)s;
+		} 
+		if (sname.equals(negFeatureName)) {
+			negFeature = (Feature)s;
 		}
 	}
-	//set inside and outside feature
+	
+	//set inside and outside features
 	if (infeatureref != null) {
 		model.getStructureTopology().setInsideFeature(newmembrane,infeatureref);
 	}
 	if (outfeatureref != null) {
 		model.getStructureTopology().setOutsideFeature(newmembrane,outfeatureref);
+	}
+	//set positive & negative features
+	if (posFeature != null) {
+		model.getElectricalTopology().setPositiveFeature(newmembrane, posFeature);
+	}
+	if (negFeature != null) {
+		model.getElectricalTopology().setNegativeFeature(newmembrane, negFeature);
 	}
 	//set MemVoltName
 	if (param.getAttribute(XMLTags.MemVoltNameTag)==null) {

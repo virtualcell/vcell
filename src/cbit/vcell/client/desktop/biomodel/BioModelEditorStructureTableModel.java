@@ -25,6 +25,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTable;
@@ -34,7 +35,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_TYPE = 1;
-	private static String[] columnNames = new String[] {"Name", "Type"};
+	public final static int COLUMN_ELECTRICAL = 2;
+	private static String[] columnNames = new String[] {"Name", "Type", "Electrical (Membrane Polarity)"};
 
 	public BioModelEditorStructureTableModel(EditorScrollTable table) {
 		super(table);
@@ -47,6 +49,9 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				return String.class;
 			}
 			case COLUMN_TYPE:{
+				return String.class;
+			}
+			case COLUMN_ELECTRICAL:{
 				return String.class;
 			}
 			}
@@ -91,6 +96,25 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					} 
 					case COLUMN_TYPE: {
 						return structure.getTypeName();
+					}
+					case COLUMN_ELECTRICAL: {
+						String electricalOptions = "";
+						if (structure instanceof Membrane) {
+							Membrane membrane = (Membrane)structure;
+							ElectricalTopology electricalTopology = getModel().getElectricalTopology();
+							if (electricalTopology != null) {
+								String posFeature = "unspecified compartment";
+								if (electricalTopology.getPositiveFeature(membrane) != null) {
+									posFeature = electricalTopology.getPositiveFeature(membrane).getName();
+								}
+								String negFeature = "unspecified compartment";
+								if (electricalTopology.getNegativeFeature(membrane) != null) {
+									negFeature = electricalTopology.getNegativeFeature(membrane).getName();
+								}
+								electricalOptions = posFeature + " (+)    " + negFeature + " (-)"; 
+							}
+						}
+						return electricalOptions;
 					} 
 				}
 			} else {
@@ -215,7 +239,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				}
 			}
 			break;
-			}
+		}
 		return null;
 	}
 	

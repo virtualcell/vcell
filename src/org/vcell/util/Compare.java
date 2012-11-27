@@ -10,7 +10,13 @@
 
 package org.vcell.util;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 
 /**
  * This type was created in VisualAge.
@@ -496,6 +502,52 @@ public static boolean isEqualStrict(Matchable v1[], Matchable v2[]) {
 		}
 	}
 
+	return true;
+}
+
+public static <KeyType extends Matchable, ValueType extends Matchable> boolean isEqual(HashMap<KeyType, ValueType> map1, HashMap<KeyType, ValueType> map2) {
+	//
+	// compare entries from map1 to map2
+	//
+	for (KeyType key1 : map1.keySet()){
+		boolean bFoundOtherKey = false;
+		for (KeyType key2 : map2.keySet()){
+			if (Compare.isEqual(key1, key2)){
+				bFoundOtherKey = true;
+				if (Compare.isEqual(map1.get(key1), map2.get(key2))){
+					break;
+				}else{
+					// keys are the same but values are different.
+					return false;
+				}
+			}
+		}
+		if (!bFoundOtherKey){
+			// can't find other key
+			return false;
+		}
+	}
+	//
+	// compare entries from map2 to map1
+	//
+	for (KeyType key2 : map2.keySet()){
+		boolean bFoundOtherKey = false;
+		for (KeyType key1 : map1.keySet()){
+			if (Compare.isEqual(key1, key2)){
+				bFoundOtherKey = true;
+				if (Compare.isEqual(map1.get(key1), map2.get(key2))){
+					break;
+				}else{
+					// keys are the same but values are different.
+					return false;
+				}
+			}
+		}
+		if (!bFoundOtherKey){
+			// can't find other key
+			return false;
+		}
+	}
 	return true;
 }
 }

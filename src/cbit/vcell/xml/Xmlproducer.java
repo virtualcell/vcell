@@ -183,6 +183,7 @@ import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
@@ -3643,6 +3644,17 @@ private Element getXML(Structure structure, Model model) throws XmlParseExceptio
 		if (outsideFeature != null) {
 			structureElement.setAttribute(XMLTags.OutsideFeatureTag, mangle(outsideFeature.getName()));
 		}
+		// positive & negative features for electrical topology
+		ElectricalTopology electricalTopology = model.getElectricalTopology();
+		Feature positiveFeature = electricalTopology.getPositiveFeature((Membrane)structure);
+		if (positiveFeature != null) {
+			structureElement.setAttribute(XMLTags.PositiveFeatureTag, mangle(positiveFeature.getName()));
+		}
+		Feature negativeFeature = electricalTopology.getNegativeFeature((Membrane)structure);
+		if (negativeFeature != null) {
+			structureElement.setAttribute(XMLTags.NegativeFeatureTag, mangle(negativeFeature.getName()));
+		}
+
 		structureElement.setAttribute(XMLTags.MemVoltNameTag, mangle(((Membrane)structure).getMembraneVoltage().getName()));
     } else {
 	    throw new XmlParseException("An unknown type of structure was found:"+structure.getClass().getName());
