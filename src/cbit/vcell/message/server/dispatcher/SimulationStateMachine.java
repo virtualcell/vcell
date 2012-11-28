@@ -536,7 +536,7 @@ public class SimulationStateMachine {
 					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed"),
 					newQueueStatus,newSimExeStatus);
 			
-			updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newSimJobStatus);
+			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
 			
 			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);

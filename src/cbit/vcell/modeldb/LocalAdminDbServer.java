@@ -18,13 +18,11 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.UserLoginInfo;
@@ -62,14 +60,6 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) 
 	}
 }
 
-public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs) throws DataAccessException{
-	try {
-		return adminDbTop.getActiveJobs(serverIDs,true);
-	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException("failure getting ActiveJobs");
-	}
-}
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:34:12 PM)
