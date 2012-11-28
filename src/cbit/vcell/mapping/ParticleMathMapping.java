@@ -748,168 +748,171 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 			}
 			
-			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
-			// we process it as forward reaction
-			List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
-			List<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
-			List<Action> forwardActions = new ArrayList<Action>();
-			List<Action> reverseActions = new ArrayList<Action>();
-			List<ReactionParticipant> reactants = maFunc.getReactants();
-			List<ReactionParticipant> products = maFunc.getProducts();
-	
-			for (ReactionParticipant rp : reactants){
-				SpeciesContext sc = rp.getSpeciesContext();
-				SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
-				GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
-				String varName = getMathSymbol(sc, scGeometryClass);
-				Variable var = mathDesc.getVariable(varName);
-				if (var instanceof ParticleVariable){
-					ParticleVariable particle = (ParticleVariable)var;
-					reactantParticles.add(particle);
-					if (!scs.isConstant()) {
-						for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
-							if (forwardRate!=null) {
-								forwardActions.add(Action.createDestroyAction(particle));
-							}					 
-							if (reverseRate!=null) {
-								reverseActions.add(Action.createCreateAction(particle));
+			if(maFunc != null)
+			{
+				// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
+				// we process it as forward reaction
+				List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
+				List<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
+				List<Action> forwardActions = new ArrayList<Action>();
+				List<Action> reverseActions = new ArrayList<Action>();
+				List<ReactionParticipant> reactants = maFunc.getReactants();
+				List<ReactionParticipant> products = maFunc.getProducts();
+		
+				for (ReactionParticipant rp : reactants){
+					SpeciesContext sc = rp.getSpeciesContext();
+					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
+					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+					String varName = getMathSymbol(sc, scGeometryClass);
+					Variable var = mathDesc.getVariable(varName);
+					if (var instanceof ParticleVariable){
+						ParticleVariable particle = (ParticleVariable)var;
+						reactantParticles.add(particle);
+						if (!scs.isConstant()) {
+							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+								if (forwardRate!=null) {
+									forwardActions.add(Action.createDestroyAction(particle));
+								}					 
+								if (reverseRate!=null) {
+									reverseActions.add(Action.createCreateAction(particle));
+								}
 							}
 						}
+					}else{
+						throw new MappingException("particle variable '"+varName+"' not found");
 					}
-				}else{
-					throw new MappingException("particle variable '"+varName+"' not found");
 				}
-			}
-			for (ReactionParticipant rp : products){
-				SpeciesContext sc = rp.getSpeciesContext();
-				SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
-				GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
-				String varName = getMathSymbol(sc, scGeometryClass);
-				Variable var = mathDesc.getVariable(varName);
-				if (var instanceof ParticleVariable){
-					ParticleVariable particle = (ParticleVariable)var;
-					productParticles.add(particle);
-					if (!scs.isConstant()) {
-						for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
-							if (forwardRate!=null) {
-								forwardActions.add(Action.createCreateAction(particle));
-							}					 
-							if (reverseRate!=null) {
-								reverseActions.add(Action.createDestroyAction(particle));
+				for (ReactionParticipant rp : products){
+					SpeciesContext sc = rp.getSpeciesContext();
+					SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
+					GeometryClass scGeometryClass = getSimulationContext().getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
+					String varName = getMathSymbol(sc, scGeometryClass);
+					Variable var = mathDesc.getVariable(varName);
+					if (var instanceof ParticleVariable){
+						ParticleVariable particle = (ParticleVariable)var;
+						productParticles.add(particle);
+						if (!scs.isConstant()) {
+							for (int i = 0; i < Math.abs(rp.getStoichiometry()); i++) {
+								if (forwardRate!=null) {
+									forwardActions.add(Action.createCreateAction(particle));
+								}					 
+								if (reverseRate!=null) {
+									reverseActions.add(Action.createDestroyAction(particle));
+								}
 							}
 						}
-					}
-				}else{
-					throw new MappingException("particle variable '"+varName+"' not found");
-				}
-			}
-			if (forwardRate!=null)
-			{
-				// 
-				// Smoldyn assumes kinectic constants work on molecules/size. VCell assumes a unit of molecules/size 
-				// only on membrane reactions. Hence the need to perform unit conversion if reaction is in vol.
-				//
-				// The algorithm used to perform the unit conversion for reaction rate:
-				//	(1) Count the # of vol. (reactants * stoichiometry) : N
-				// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
-				//	(3) Converted reaction rate = reaction_rate * KMOLE^N
-				//
-				
-				// Step (1) : Calculate N
-				int N = 0;
-				for (ReactionParticipant rp : reactants) {
-					// for a reactant in vol
-					if (rp.getStructure() instanceof Feature) {
-						// add it to total count N
-						N += rp.getStoichiometry();
+					}else{
+						throw new MappingException("particle variable '"+varName+"' not found");
 					}
 				}
-				// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
-				// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
-				// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
-				// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
-				// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
-				if( (reactants.size() == 0) && (products.size() == 1) && 	//0th order reaction
-					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
-					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+				if (forwardRate!=null)
 				{
-					forwardRate = Expression.mult(forwardRate, unitFactor);
-				}
-				else
-				{
-					// Step (2) : if reaction is a vol reaction/flux, N = N-1
-					if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-						N = N-1;
+					// 
+					// Smoldyn assumes kinectic constants work on molecules/size. VCell assumes a unit of molecules/size 
+					// only on membrane reactions. Hence the need to perform unit conversion if reaction is in vol.
+					//
+					// The algorithm used to perform the unit conversion for reaction rate:
+					//	(1) Count the # of vol. (reactants * stoichiometry) : N
+					// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
+					//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+					//
+					
+					// Step (1) : Calculate N
+					int N = 0;
+					for (ReactionParticipant rp : reactants) {
+						// for a reactant in vol
+						if (rp.getStructure() instanceof Feature) {
+							// add it to total count N
+							N += rp.getStoichiometry();
+						}
+					}
+					// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
+					// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
+					// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
+					// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
+					// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
+					if( (reactants.size() == 0) && (products.size() == 1) && 	//0th order reaction
+						reactionStep.getStructure() instanceof Feature &&  // in VOLUME
+						reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+					{
+						forwardRate = Expression.mult(forwardRate, unitFactor);
+					}
+					else
+					{
+						// Step (2) : if reaction is a vol reaction/flux, N = N-1
+						if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
+							N = N-1;
+						}
+						
+						// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+						if (N == 1) {
+							forwardRate = Expression.div(forwardRate, unitFactor);
+						} else if (N > 1) {
+							forwardRate = Expression.div(forwardRate, Expression.power(unitFactor, new Expression((double)N)));
+						}
 					}
 					
-					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-					if (N == 1) {
-						forwardRate = Expression.div(forwardRate, unitFactor);
-					} else if (N > 1) {
-						forwardRate = Expression.div(forwardRate, Expression.power(unitFactor, new Expression((double)N)));
-					}
-				}
-				
-				Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
-				JumpProcessRateDefinition partRateDef = new MacroscopicRateConstant(exp);
-				// create particle jump process
-				String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-				ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions);
-				subdomain.addParticleJumpProcess(forwardProcess);
-			}
-			if (reverseRate!=null)
-			{
-				// The algorithm used to perform the unit conversion for reverse reaction rate:
-				//	(1) Count the # of vol. (products * stoichiometry) : N
-				// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
-				//	(3) Converted reaction rate = reaction_rate * KMOLE^N
-				//
-				
-				// Step (1) : Calculate N
-				int N = 0;
-				for (ReactionParticipant rp : products) {
-					// for a product in vol
-					if (rp.getStructure() instanceof Feature) {
-						// add it to total count N
-						N += rp.getStoichiometry();
-					}
-				}
-				
-				// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
-				// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
-				// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
-				// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
-				// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
-				if( (reactants.size() == 1) && (products.size() == 0) && 	//consuming a species
-					reactionStep.getStructure() instanceof Feature &&  // in VOLUME
-					reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+					Expression exp = getIdentifierSubstitutions(forwardRate, forwardRateUnit, reactionStepGeometryClass);
+					JumpProcessRateDefinition partRateDef = new MacroscopicRateConstant(exp);
+					// create particle jump process
+					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
+					ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions);
+					subdomain.addParticleJumpProcess(forwardProcess);
+				} // end of forward rate not null
+				if (reverseRate!=null)
 				{
-					reverseRate = Expression.mult(reverseRate, unitFactor);
-				}
-				else 
-				{
-					// Step (2) : if reaction is a vol reaction, N = N-1
-					if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
-						N = N-1;
+					// The algorithm used to perform the unit conversion for reverse reaction rate:
+					//	(1) Count the # of vol. (products * stoichiometry) : N
+					// 	(2) Count = N - 1, if reaction is a vol. reaction or flux reaction (N, otherwise)
+					//	(3) Converted reaction rate = reaction_rate * KMOLE^N
+					//
+					
+					// Step (1) : Calculate N
+					int N = 0;
+					for (ReactionParticipant rp : products) {
+						// for a product in vol
+						if (rp.getStructure() instanceof Feature) {
+							// add it to total count N
+							N += rp.getStoichiometry();
+						}
 					}
 					
-					// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
-					if (N == 1) {
-						reverseRate = Expression.div(reverseRate, unitFactor);
-					} else if (N > 1) {
-						reverseRate = Expression.div(reverseRate, Expression.power(unitFactor, new Expression((double)N)));
+					// there are special cases with 0th order reaction(no reactant, 1 product) or consuming a species (1 reactant, 0 product) in VOLUME (on mem, the unit(molecules) is fine)
+					// if using MASSACTION rate law,  0th order reaction doesn't have forward rate involved, and the reverse rate constant is in unit of 1/s
+					// consuming a species doesn't have reverse rate involved, and the forward rate constant is in unit of 1/s. So, MassAction has no problem.
+					// if using GENERAL rate law, 0th order reaction has forward rate in unit of uM/s, reverse rate in 1/s, we'll have to divide forward rate constant by KMOLE.
+					// consuming a species has forward rate in 1/s, reverse rate in uM/s, we'll have to divide reverse rate constant by KMOLE.
+					if( (reactants.size() == 1) && (products.size() == 0) && 	//consuming a species
+						reactionStep.getStructure() instanceof Feature &&  // in VOLUME
+						reactionStep.getKinetics().getKineticsDescription().equals(KineticsDescription.General)) // with General rate law
+					{
+						reverseRate = Expression.mult(reverseRate, unitFactor);
 					}
-				}
-				
-				// get probability
-				Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
-				JumpProcessRateDefinition partProbRate = new MacroscopicRateConstant(exp);
-				
-				// get jump process name
-				String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
-				ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions);
-				subdomain.addParticleJumpProcess(reverseProcess);
-			}
+					else 
+					{
+						// Step (2) : if reaction is a vol reaction, N = N-1
+						if (reactionStep .getStructure() instanceof Feature || reactionStep instanceof FluxReaction) {
+							N = N-1;
+						}
+						
+						// Step (3) : Adjust reaction rate : rateExp = rateExp * KMOLE^N
+						if (N == 1) {
+							reverseRate = Expression.div(reverseRate, unitFactor);
+						} else if (N > 1) {
+							reverseRate = Expression.div(reverseRate, Expression.power(unitFactor, new Expression((double)N)));
+						}
+					}
+					
+					// get probability
+					Expression exp = getIdentifierSubstitutions(reverseRate, reverseRateUnit, reactionStepGeometryClass);
+					JumpProcessRateDefinition partProbRate = new MacroscopicRateConstant(exp);
+					
+					// get jump process name
+					String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
+					ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions);
+					subdomain.addParticleJumpProcess(reverseProcess);
+				} //end of reverse rate not null
+			} //end of maFunc not null
 		} // end of reaction step for loop
 	}
 	

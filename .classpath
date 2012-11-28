@@ -4,7 +4,7 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="UserDocumentation"/>
