@@ -2284,7 +2284,14 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 			}
 			Kinetics.KineticsParameter tempParam = null;
-			if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
+			if (role.equals(XMLTags.ParamRoleChargeValence)) {
+				if (!paramExp.isNumeric()) {
+					throw new XmlParseException("Cannot import model : charge valence for reaction '" + reaction.getName() + "' must be numeric; found '" + paramExpStr + "'.");
+				} else {
+					reaction.getChargeCarrierValence().setExpression(paramExp);
+				}
+				continue;
+			} else if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
 				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDesc(role));
 			}else{
 				continue;
@@ -2954,10 +2961,10 @@ private Membrane getMembrane(Element param, List<Structure> featureList) throws 
 		}
 	}
 	if (infeatureref ==null) {
-		throw new XmlParseException("The inside feature " + infeaturename + "could not be resolved!");
+		throw new XmlParseException("The inside feature " + infeaturename + " could not be resolved!");
 	}
 	if (outfeatureref ==null) {
-		throw new XmlParseException("The outside feature " + outfeaturename + "could not be resolved!");
+		throw new XmlParseException("The outside feature " + outfeaturename + " could not be resolved!");
 	}
 	//set inside and outside feature
 	newmembrane.setInsideFeature(infeatureref);
