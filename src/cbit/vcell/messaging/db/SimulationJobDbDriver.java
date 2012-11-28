@@ -9,18 +9,14 @@
  */
 
 package cbit.vcell.messaging.db;
-import java.sql.*;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.modeldb.BioModelSimulationLinkTable;
-import cbit.vcell.modeldb.MathModelSimulationLinkTable;
-import cbit.vcell.modeldb.SimulationTable;
-import cbit.vcell.modeldb.DatabaseConstants;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -28,6 +24,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.modeldb.DatabaseConstants;
+import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 
 /**
@@ -79,14 +78,12 @@ private int executeUpdate(Connection con, String sql) throws SQLException {
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] serverIDs) throws SQLException {
+public SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
 	String sql = "SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() 
-			+ "," + userTable.userid.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
-			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
+			+ "," + userTable.userid.getQualifiedColName() 
+			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
 			+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
-			+ " AND " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
-			+ " AND " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
-			+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName();
+			+ " AND " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName();
 			
 			
 	sql += " AND "
@@ -96,36 +93,66 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 			+ "," + SchedulerStatus.WAITING.getDatabaseNumber() // waiting
 			+ ")";
 
-	// AND upper(serverID) in ('serverid1', serverid2');
-	if (serverIDs != null) {
+	// AND upper(serverID) = 'serverid1';
+	if (serverID != null) {
 		// all in uppercase
-		sql += " AND upper(" + jobTable.serverID.getQualifiedColName() + ") in (";
-		for (int i = 0; i < serverIDs.length; i ++) {
-			sql += "'" + serverIDs[i].toString().toUpperCase() + "'";
-			if (i < serverIDs.length - 1) {
-				sql += ",";
-			}
-		}
-		sql += ")";
+		sql += " AND upper(" + jobTable.serverID.getQualifiedColName() + ") = " + "'" + serverID.toString().toUpperCase() + "'";
 	}
 
 	sql += " order by " + jobTable.submitDate.getQualifiedColName(); // order by submit date
 		
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List<SimulationJobStatusInfo> simJobStatusInfoList = new java.util.ArrayList<SimulationJobStatusInfo>();
+	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
 			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
-			int dimension = rset.getInt(geometryTable.dimension.toString());			
-			simJobStatusInfoList.add(new SimulationJobStatusInfo(simJobStatus, dimension));
+			simJobStatusList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
 	
-	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
+	return (SimulationJobStatus[])simJobStatusList.toArray(new SimulationJobStatus[0]);
+}
+
+/**
+ * This method was created in VisualAge.
+ * @return int
+ * @param user java.lang.String
+ * @param imageName java.lang.String
+ */
+public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection con, List<KeyValue> simKeys) throws SQLException {
+	StringBuffer simKeyListBuffer = new StringBuffer();
+	for (int i=0;i<simKeys.size();i++){
+		KeyValue key = simKeys.get(i);
+		simKeyListBuffer.append(key);
+		if (i<simKeys.size()-1){
+			simKeyListBuffer.append(",");
+		}
+	}
+	String sql = "SELECT " + simTable.id.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
+			+ " FROM " + simTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
+			+ " WHERE " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
+			+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName()
+			+ " AND " + simTable.id.getQualifiedColName() + " in ( "+ simKeyListBuffer.toString() + " )";
+			
+	//log.print(sql);
+	Statement stmt = con.createStatement();
+	HashMap<KeyValue,SimulationRequirements> simulationRequirementsMap = new HashMap<KeyValue,SimulationRequirements>();
+	try {
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			KeyValue simKey = new KeyValue(rset.getBigDecimal(simTable.id.toString()));
+			int dimension = rset.getInt(geometryTable.dimension.toString());			
+			simulationRequirementsMap.put(simKey,new SimulationRequirements(simKey, dimension));
+		}
+	} finally {
+		stmt.close();
+	}
+	
+	return simulationRequirementsMap;
 }
 
 /**

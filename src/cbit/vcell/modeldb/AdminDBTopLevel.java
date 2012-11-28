@@ -11,6 +11,8 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -30,7 +32,7 @@ import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.UserLoginInfo;
@@ -81,21 +83,21 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:14:40 PM)
  */
-SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] serverIDs) throws SQLException {
-	SimulationJobStatusInfo[] jobStatusArray = jobDB.getActiveJobs(con, serverIDs);
+SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
+	SimulationJobStatus[] jobStatusArray = jobDB.getActiveJobs(con, serverID);
 	return jobStatusArray;
 }
 
-public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolean bEnableRetry) throws java.sql.SQLException {
+public SimulationJobStatus[] getActiveJobs(VCellServerID serverID, boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return jobDB.getActiveJobs(con,serverIDs);
+		return jobDB.getActiveJobs(con,serverID);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getActiveJobs(serverIDs, false);
+			return getActiveJobs(serverID, false);
 		}else{
 			handle_SQLException(e);
 			return null; // never gets here;
@@ -104,6 +106,27 @@ public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolea
 		conFactory.release(con,lock);
 	}
 }
+
+public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys, boolean bEnableRetry) throws java.sql.SQLException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return jobDB.getSimulationRequirements(con, simKeys);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationRequirements(simKeys, false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
 
 public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
