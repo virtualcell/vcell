@@ -438,6 +438,7 @@ public class XMLTags {
     public static final String ParamRoleTotalCurrentDensityTag = "current density";
 	public static final String ParamRoleReactionRateTag = "reaction rate";
 	public static final String ParamRoleInwardCurrentTag = "inward current density";
+	public static final Object ParamRoleChargeValence = "charge";
 //	public static final String ParamRoleForwardRateTag = "forward rate constant";
 //	public static final String ParamRoleReverseRateTag = "reverse rate constant";
 //	public static final String ParamRoleKmTag = "Km (1/2 max)";
@@ -558,5 +559,5 @@ public class XMLTags {
 	public final static String ConvolutionKernel = "ConvolutionKernel";
 	public final static String FluorescenceSpecies = "FluorescenceSpecies";
 	public final static String ConvolutionKernel_Type_ProjectionZKernel = "ProjectionZKernel";	
-	public final static String ConvolutionKernel_Type_GaussianConvolutionKernel = "GaussianConvolutionKernel";	
+	public final static String ConvolutionKernel_Type_GaussianConvolutionKernel = "GaussianConvolutionKernel";
 }
