@@ -124,15 +124,10 @@ public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,Sessio
 	
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulationVersion.getVersionKey(),simulationVersion.getOwner());
 	VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, rset.getInt(ResultSetMetaDataTable.table.jobIndex.toString()));
-	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID);
-	try {
-		String path = rset.getString(ResultSetMetaDataTable.table.dataFilePath.toString());
-		rsetInfo.setDataFilePath(path);
-		rsetInfo.setEndingDate(getDate(rset,ResultSetMetaDataTable.table.endDate.toString()));
-		rsetInfo.setStartingDate(getDate(rset,ResultSetMetaDataTable.table.startDate.toString()));
-	}catch (PropertyVetoException e){
-		log.exception(e);
-	}
+	String parsedPath = rset.getString(ResultSetMetaDataTable.table.dataFilePath.toString());
+	java.util.Date parsedEndingDate = getDate(rset,ResultSetMetaDataTable.table.endDate.toString());
+	java.util.Date parsedStartingDate = getDate(rset,ResultSetMetaDataTable.table.startDate.toString());
+	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID,parsedPath,parsedStartingDate,parsedEndingDate);
 	return rsetInfo;
 }
 /**
