@@ -87,19 +87,16 @@ public SolverResultSetInfo getSolverResultSetInfo(ResultSet rset, SessionLog log
 		throw new DataAccessException("ResultSetMetaData.simKey not same as simInfo");
 	}
 	int parsedJobIndex = rset.getInt(jobIndex.toString());
-	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), parsedJobIndex));
-	rsetInfo.setDataFilePath(rset.getString(dataFilePath.toString()));
 
-	try {
-		rsetInfo.setStartingDate(getDate(rset, startDate.toString()));
-		rsetInfo.setEndingDate(getDate(rset, endDate.toString()));
-	}catch (java.beans.PropertyVetoException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
+	java.util.Date parsedStartingDate = getDate(rset, startDate.toString());
+	java.util.Date parsedEndingDate	= getDate(rset, endDate.toString());
 	
-	String pathFileName = rset.getString(dataFilePath.toString()).trim();
+	String parsedPathFileName = rset.getString(dataFilePath.toString()).trim();
+	if (parsedPathFileName!=null){
+		parsedPathFileName = parsedPathFileName.trim();
+	}
 
+	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(new VCSimulationDataIdentifier(simInfo.getAuthoritativeVCSimulationIdentifier(), parsedJobIndex), parsedPathFileName, parsedStartingDate, parsedEndingDate);
 	return rsetInfo;
 }
 
@@ -137,8 +134,10 @@ public String getSQLUpdateList(KeyValue simKey, SolverResultSetInfo rsetInfo) {
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key, KeyValue simKey, SolverResultSetInfo rsetInfo) {
+public String getSQLValueList(KeyValue key, SolverResultSetInfo rsetInfo) {
 
+	KeyValue simKey = rsetInfo.getVCSimulationDataIdentifier().getSimulationKey();
+	
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(key+",");

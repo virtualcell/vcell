@@ -45,7 +45,6 @@ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
@@ -58,47 +57,7 @@ import cbit.vcell.solvers.LocalSolverController;
  * @author: Jim Schaff
  */
 public class SimulationControllerImpl implements WorkerEventListener {
-	public class SimulationTaskInfo {
-		public final KeyValue simKey;
-		public final int jobIndex;
-		public final int taskID;
-		public SimulationTaskInfo(KeyValue simKey,int jobIndex,int taskID){
-			this.simKey = simKey;
-			this.jobIndex = jobIndex;
-			this.taskID = taskID;
-		}
-		public SimulationTaskInfo(SimulationTask simTask){
-			this.simKey = simTask.getSimulation().getKey();
-			this.jobIndex = simTask.getSimulationJob().getJobIndex();
-			this.taskID = simTask.getTaskID();
-		}
-		public SimulationTaskInfo(SimulationJob simulationJob ,int taskID){
-			this.simKey = simulationJob.getSimulation().getKey();
-			this.jobIndex = simulationJob.getJobIndex();
-			this.taskID = taskID;
-		}
-		public SimulationTaskInfo(SimulationInfo simulationInfo, int jobIndex ,int taskID){
-			this.simKey = simulationInfo.getSimulationVersion().getVersionKey();
-			this.jobIndex = jobIndex;
-			this.taskID = taskID;
-		}
-		@Override
-		public boolean equals(Object obj){
-			if (obj instanceof SimulationTaskInfo){
-				return toString().equals(((SimulationTaskInfo)obj).toString());
-			}
-			return false;
-		}
-		@Override
-		public int hashCode(){
-			return toString().hashCode();
-		}
-		@Override
-		public String toString(){
-			return "SimTaskInfo("+simKey.toString()+","+jobIndex+","+taskID+")";
-		}
-	}
-	private java.util.Hashtable<SimulationTaskInfo, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskInfo, LocalSolverController>();
+	private java.util.Hashtable<SimulationTaskID, LocalSolverController> solverControllerHash = new java.util.Hashtable<SimulationTaskID, LocalSolverController>();
 	private SessionLog adminSessionLog = null;
 	private LocalVCellConnection localVCellConnection = null;
 	private SimulationDatabase simulationDatabase = null;
@@ -216,7 +175,7 @@ LocalSolverController getOrCreateSolverController(SimulationTask simTask, Sessio
 	if (!simulation.getVersion().getOwner().equals(localVCellConnection.getUserLoginInfo().getUser())){
 		throw new PermissionException("insufficient privilege: startSimulation()");
 	}
-	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simTask);
+	SimulationTaskID simTaskInfo = new SimulationTaskID(simTask);
 	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
 		solverController = createNewSolverController(simTask,userSessionLog);
@@ -231,7 +190,7 @@ LocalSolverController getOrCreateSolverController(SimulationTask simTask, Sessio
  * @exception java.rmi.RemoteException The exception description.
  */
 public SolverStatus getSolverStatus(SimulationInfo simulationInfo, int jobIndex, int taskID) throws PermissionException, DataAccessException {
-	SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simulationInfo, jobIndex, taskID);
+	SimulationTaskID simTaskInfo = new SimulationTaskID(simulationInfo, jobIndex, taskID);
 	LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 	if (solverController==null){
 		return new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
@@ -342,14 +301,8 @@ public void startSimulation(Simulation simulation, SessionLog userSessionLog) th
 	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession, adminSessionLog);
 	vcMessageSession.deliverAll();
 	for (int jobIndex = 0; jobIndex < simulation.getScanCount(); jobIndex++){
-		int taskID = -1;
-		SimulationJobStatus[] simJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simulation.getKey(), jobIndex);
-		for (SimulationJobStatus simJobStatus : simJobStatusArray){
-			if (simJobStatus.getTaskID()>taskID){
-				taskID = simJobStatus.getTaskID();
-			}
-		}
-		simulationDispatcherEngine.onDispatch(simulation, vcSimID, jobIndex , taskID, simulationDatabase, vcMessageSession, adminSessionLog);
+		SimulationJobStatus latestSimJobStatus = simulationDatabase.getLatestSimulationJobStatus(simulation.getKey(), jobIndex);
+		simulationDispatcherEngine.onDispatch(simulation, latestSimJobStatus, simulationDatabase, vcMessageSession, adminSessionLog);
 		vcMessageSession.deliverAll();
 	}
 }
@@ -360,7 +313,7 @@ private void onServiceControlTopic_StopSimulation(VCMessage message){
 	int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
 	
 	try {
-		SimulationTaskInfo simTaskInfo = new SimulationTaskInfo(simKey, jobIndex, taskID);
+		SimulationTaskID simTaskInfo = new SimulationTaskID(simKey, jobIndex, taskID);
 		LocalSolverController solverController = solverControllerHash.get(simTaskInfo);
 		if (solverController!=null){
 			solverController.stopSimulationJob(); // can only start after updating the database is done

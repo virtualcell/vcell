@@ -460,13 +460,15 @@ public void insertResultSetExport(Connection con, User user,KeyValue simulationR
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-void insertResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
+void insertResultSetInfoSQL(Connection con, User user, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
+	KeyValue simKey = rsetInfo.getVCSimulationDataIdentifier().getSimulationKey();
+	int jobIndex = rsetInfo.getVCSimulationDataIdentifier().getJobIndex();
 	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
 	if(versionInfoVector.size() == 0){
-		throw new ObjectNotFoundException("SimulationDbDriver:insertResultSetInfo() key="+simKey+" not found for user="+user);
+		throw new ObjectNotFoundException("SimulationDbDriver:insertResultSetInfo() key="+simKey+", jobIndex="+jobIndex+" not found for user="+user);
 	}
 	else if (versionInfoVector.size() > 1){
-		throw new DataAccessException("SimulationDbDriver:insertResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
+		throw new DataAccessException("SimulationDbDriver:insertResultSetInfo() key="+simKey+", jobIndex="+jobIndex+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
 	}
 	VersionInfo versionInfo = versionInfoVector.firstElement();
 	//
@@ -478,7 +480,7 @@ void insertResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverRe
 
 	String sql;
 	sql = "INSERT INTO " + rsetInfoTable.getTableName() + " " + rsetInfoTable.getSQLColumnList() + " VALUES " + 
-		rsetInfoTable.getSQLValueList(getNewKey(con), simKey, rsetInfo);
+		rsetInfoTable.getSQLValueList(getNewKey(con), rsetInfo);
 //System.out.println(sql);
 	updateCleanSQL(con,sql);
 }
@@ -580,7 +582,9 @@ protected SimulationVersion insertVersionableInit(InsertHashtable hash, Connecti
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-void updateResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
+void updateResultSetInfoSQL(Connection con, User user, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
+	int jobIndex = rsetInfo.getVCSimulationDataIdentifier().getJobIndex();
+	KeyValue simKey = rsetInfo.getVCSimulationDataIdentifier().getSimulationKey();
 	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("SimulationDbDriver:updateResultSetInfo() key="+simKey+" not found for user="+user);
@@ -600,6 +604,7 @@ void updateResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverRe
 	sb.append("UPDATE " + rsetInfoTable.getTableName());
 	sb.append(" SET " + rsetInfoTable.getSQLUpdateList(simKey,rsetInfo));
 	sb.append(" WHERE " + rsetInfoTable.simRef + " = " + simKey);
+	sb.append(" AND " + rsetInfoTable.jobIndex + " = " + jobIndex);
 //System.out.println(sb.toString());
 	int numRecordsChanged = updateCleanSQL(con,sb.toString());
 	if (numRecordsChanged!=1){

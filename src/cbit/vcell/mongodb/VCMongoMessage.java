@@ -413,7 +413,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendSimJobStatusInsert(SimulationJobStatus newSimulationJobStatus,SimulationJobStatus updatedSimulationJobStatus) {
+	public static void sendSimJobStatusInsert(SimulationJobStatus newSimulationJobStatus) {
 		if (!enabled){
 			return;
 		}
@@ -422,52 +422,15 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_simJobStatusInsert);
 
-			addObject(dbObject,updatedSimulationJobStatus);
-			
-			BasicDBObject newSimJobStatusObject = new BasicDBObject();
-			addObject(newSimJobStatusObject, newSimulationJobStatus);
-			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
-	
-			BasicDBObject updatedSimJobStatusObject = new BasicDBObject();
-			addObject(updatedSimJobStatusObject, updatedSimulationJobStatus);
-			dbObject.put(MongoMessage_updatedSimJobStatus, updatedSimJobStatusObject);
-			
-			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
-		} catch (Exception e){
-			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
-		}
-	}
-
-	public static void sendSimJobStatusUpdateCacheMiss(SimulationJobStatus cachedSimulationJobStatus, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) {
-		if (!enabled){
-			return;
-		}
-		try {
-			BasicDBObject dbObject = new BasicDBObject();
-
-			addHeader(dbObject,MongoMessage_msgtype_simJobStatusUpdate_DBCacheMiss);
-
 			addObject(dbObject,newSimulationJobStatus);
 			
-			BasicDBObject cachedSimJobStatusObject = new BasicDBObject();
-			addObject(cachedSimJobStatusObject, cachedSimulationJobStatus);
-			dbObject.put(MongoMessage_cachedSimJobStatus, cachedSimJobStatusObject);
-			
-			BasicDBObject oldSimJobStatusObject = new BasicDBObject();
-			addObject(oldSimJobStatusObject, oldSimulationJobStatus);
-			dbObject.put(MongoMessage_oldSimJobStatus, oldSimJobStatusObject);
-	
-			BasicDBObject newSimJobStatusObject = new BasicDBObject();
-			addObject(newSimJobStatusObject, newSimulationJobStatus);
-			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
-	
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
 		}
 	}
-	
-	public static void sendSimJobStatusUpdate(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus, SimulationJobStatus updatedSimulationJobStatus) {
+
+	public static void sendSimJobStatusUpdate(SimulationJobStatus newSimulationJobStatus) {
 		if (!enabled){
 			return;
 		}
@@ -476,20 +439,8 @@ public final class VCMongoMessage {
 
 			addHeader(dbObject,MongoMessage_msgtype_simJobStatusUpdate);
 
-			addObject(dbObject,updatedSimulationJobStatus);
-	
-			BasicDBObject oldSimJobStatusObject = new BasicDBObject();
-			addObject(oldSimJobStatusObject, oldSimulationJobStatus);
-			dbObject.put(MongoMessage_oldSimJobStatus, oldSimJobStatusObject);
-	
-			BasicDBObject newSimJobStatusObject = new BasicDBObject();
-			addObject(newSimJobStatusObject, newSimulationJobStatus);
-			dbObject.put(MongoMessage_newSimJobStatus, newSimJobStatusObject);
-	
-			BasicDBObject updatedSimJobStatusObject = new BasicDBObject();
-			addObject(updatedSimJobStatusObject, updatedSimulationJobStatus);
-			dbObject.put(MongoMessage_updatedSimJobStatus, updatedSimJobStatusObject);
-			
+			addObject(dbObject,newSimulationJobStatus);
+				
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
 			VCMongoDbDriver.getInstance().getSessionLog().exception(e);

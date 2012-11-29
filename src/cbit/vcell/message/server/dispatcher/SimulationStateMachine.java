@@ -33,6 +33,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -179,10 +180,9 @@ public class SimulationStateMachine {
 		VCMongoMessage.sendWorkerEvent(workerEventMessage);
 		
 		String userName = workerEvent.getUserName(); // as the filter of the client
-		int taskID = workerEvent.getTaskID();
-		int jobIndex = workerEvent.getJobIndex();
+		int workerEventTaskID = workerEvent.getTaskID();
 
-		log.print("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][simid=" + workerEvent.getVCSimulationDataIdentifier() + ",job=" + jobIndex + ",task=" + taskID + "]");
+		log.print("onWorkerEventMessage[" + workerEvent.getEventTypeID() + "," + workerEvent.getSimulationMessage() + "][simid=" + workerEvent.getVCSimulationDataIdentifier() + ",job=" + jobIndex + ",task=" + workerEventTaskID + "]");
 
 		VCSimulationDataIdentifier vcSimDataID = workerEvent.getVCSimulationDataIdentifier();
 		if (vcSimDataID == null) {
@@ -190,16 +190,17 @@ public class SimulationStateMachine {
 			return;
 		}
 		KeyValue simKey = vcSimDataID.getSimulationKey();
-		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getSimulationJobStatus(simKey, jobIndex, taskID);
+		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(simKey, jobIndex);
 
 		if (oldSimulationJobStatus == null){
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent, no current SimulationJobStatus: "+workerEvent.show());
 			return;
 		}	
-		if (oldSimulationJobStatus == null || oldSimulationJobStatus.getSchedulerStatus().isDone()){
+		if (oldSimulationJobStatus == null || oldSimulationJobStatus.getSchedulerStatus().isDone() || oldSimulationJobStatus.getTaskID() > workerEventTaskID){
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring outdated WorkerEvent, (currState="+oldSimulationJobStatus.getSchedulerStatus().getDescription()+"): "+workerEvent.show());
 			return;
-		}	
+		}
+		int taskID = oldSimulationJobStatus.getTaskID();
 		SchedulerStatus oldSchedulerStatus = oldSimulationJobStatus.getSchedulerStatus();
 		
 		//
@@ -307,9 +308,11 @@ public class SimulationStateMachine {
 
 		} else if (workerEvent.isNewDataEvent()) {
 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
-				
-				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
-				
+				SolverResultSetInfo solverResultSetInfo = simulationDatabase.getSolverResultSetInfo(oldSimulationJobStatus.getVCSimulationIdentifier().getOwner(), simKey, queuePriority);
+				if (solverResultSetInfo == null){
+					SolverResultSetInfo newSolverResultSetInfo = SimulationDatabaseDirect.createNewSolverResultSetInfo(vcSimDataID);
+					simulationDatabase.updateSolverResultSetInfo(newSolverResultSetInfo);
+				}
 				
 				if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL || hasData==false){
 					
@@ -369,7 +372,11 @@ public class SimulationStateMachine {
 				endDate = new Date();
 				hasData = true;
 
-				simulationDatabase.dataMoved(vcSimDataID, workerEvent.getUser());
+				SolverResultSetInfo solverResultSetInfo = simulationDatabase.getSolverResultSetInfo(oldSimulationJobStatus.getVCSimulationIdentifier().getOwner(), simKey, queuePriority);
+				if (solverResultSetInfo == null){
+					SolverResultSetInfo newSolverResultSetInfo = SimulationDatabaseDirect.createNewSolverResultSetInfo(vcSimDataID);
+					simulationDatabase.updateSolverResultSetInfo(newSolverResultSetInfo);
+				}
 				
 				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
@@ -409,31 +416,30 @@ public class SimulationStateMachine {
 
 			}
 		}
-		SimulationJobStatus updatedSimJobStatus = null;
 		if (newJobStatus!=null){
-			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus, newJobStatus);
+			simulationDatabase.updateSimulationJobStatus(newJobStatus);
 			if (!newJobStatus.compareEqual(oldSimulationJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()) {		
 				Double progress = workerEvent.getProgress();
 				Double timepoint = workerEvent.getTimePoint();
-				StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, progress, timepoint);
+				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
 				msgForClient.sendToClient(session);
 				log.print("Send status to client: " + msgForClient);
 			} else {
-				StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, null, null);
+				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 				msgForClient.sendToClient(session);
 				log.print("Send status to client: " + msgForClient);
 			}
 		}else if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()){
 			Double progress = workerEvent.getProgress();
 			Double timepoint = workerEvent.getTimePoint();
-			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus, oldSimulationJobStatus);
-			StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, progress, timepoint);
+			simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus);
+			StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
 			msgForClient.sendToClient(session);
 			log.print("Send status to client: " + msgForClient);
 		}else{
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
 		}
-		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(updatedSimJobStatus.getTaskID(), workerEvent), oldSimulationJobStatus, updatedSimJobStatus));
+		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(taskID, workerEvent), oldSimulationJobStatus, newJobStatus));
 
 	}
 
@@ -451,14 +457,10 @@ public class SimulationStateMachine {
 		//
 		// get latest simulation job task (if any).
 		//
-		SimulationJobStatus[] oldSimulationJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simKey, jobIndex);
-		SimulationJobStatus oldSimulationJobStatus = null;
+		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(simKey, jobIndex);
 		int oldTaskID = -1;
-		for (SimulationJobStatus simJobStatus : oldSimulationJobStatusArray){
-			if (simJobStatus.getTaskID() > oldTaskID){
-				oldTaskID = simJobStatus.getTaskID();
-				oldSimulationJobStatus = simJobStatus;
-			}
+		if (oldSimulationJobStatus != null){
+			oldTaskID = oldSimulationJobStatus.getTaskID();
 		}
 		// if already started by another thread
 		if (oldSimulationJobStatus != null && !oldSimulationJobStatus.getSchedulerStatus().isDone()) {
@@ -481,7 +483,7 @@ public class SimulationStateMachine {
 		SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_WAITING);
 		
 		// new exe status
-		Date lastUpdateDate = null;
+		Date lastUpdateDate = new Date();
 		String computeHost = null;
 		Date startDate = null;
 		Date endDate = null;
@@ -496,21 +498,18 @@ public class SimulationStateMachine {
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(vcServerID, vcSimID, jobIndex, submitDate, SchedulerStatus.WAITING,
 				newTaskID, SimulationMessage.MESSAGE_JOB_WAITING, newQueueStatus, newExeStatus);
 		
-		SimulationJobStatus updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newJobStatus);
-		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(updatedSimJobStatus.getTaskID()), oldSimulationJobStatus, updatedSimJobStatus));
+		simulationDatabase.insertSimulationJobStatus(newJobStatus);
+		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(newTaskID), oldSimulationJobStatus, newJobStatus));
 			
-		StatusMessage message = new StatusMessage(updatedSimJobStatus, user.getName(), null, null);
+		StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
 		message.sendToClient(session);
 	}
 	
 
-	public synchronized void onDispatch(Simulation simulation, VCSimulationIdentifier vcSimID, int taskID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onDispatch(Simulation simulation, SimulationJobStatus oldSimulationJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+		VCSimulationIdentifier vcSimID = oldSimulationJobStatus.getVCSimulationIdentifier();
+		int taskID = oldSimulationJobStatus.getTaskID();
 
-		SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getSimulationJobStatus(simKey, jobIndex, taskID);
-		if (oldSimulationJobStatus == null) {
-			VCMongoMessage.sendInfo("onDispatch("+vcSimID.getID()+") Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "], status not found)");
-			throw new RuntimeException("Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "], status not found)");
-		}
 		if (!oldSimulationJobStatus.getSchedulerStatus().isWaiting()) {
 			VCMongoMessage.sendInfo("onDispatch("+vcSimID.getID()+") Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "] is already dispatched ("+oldSimulationJobStatus.getSchedulerStatus().getDescription()+")");
 			throw new RuntimeException("Can't start, simulation[" + vcSimID + "] job [" + jobIndex + "] task [" + taskID + "] is already dispatched ("+oldSimulationJobStatus.getSchedulerStatus().getDescription()+")");
@@ -521,8 +520,8 @@ public class SimulationStateMachine {
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		double allowableMemMB = Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB));
-		SimulationJobStatus updatedSimJobStatus = null;
 		
+		final SimulationJobStatus newSimJobStatus;
 		if (requiredMemMB > allowableMemMB) {						
 			//
 			// fail the simulation
@@ -531,14 +530,14 @@ public class SimulationStateMachine {
 			// new queue status
 			SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
 			SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
-			SimulationJobStatus newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
+			newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
 					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.FAILED,taskID,
 					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed"),
 					newQueueStatus,newSimExeStatus);
 			
-			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
+			simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
 			
-			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
+			StatusMessage message = new StatusMessage(newSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);
 			
 		}else{
@@ -548,7 +547,7 @@ public class SimulationStateMachine {
 			Date currentDate = new Date();
 			SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_SIMULATIONJOB);
 			SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
-			SimulationJobStatus newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
+			newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
 					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.QUEUED,taskID,
 					SimulationMessage.MESSAGE_JOB_DISPATCHED,
 					newQueueStatus,newSimExeStatus);
@@ -556,63 +555,58 @@ public class SimulationStateMachine {
 			SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(simulationTask);
 			simTaskMessage.sendSimulationTask(session);
 			
-			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
+			simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
 			
-			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
+			StatusMessage message = new StatusMessage(newSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);
 		
 		}
-		addStateMachineTransition(new StateMachineTransition(new DispatchStateMachineEvent(updatedSimJobStatus.getTaskID()), oldSimulationJobStatus, updatedSimJobStatus));
+		addStateMachineTransition(new StateMachineTransition(new DispatchStateMachineEvent(taskID), oldSimulationJobStatus, newSimJobStatus));
 
 	}
 
-	public synchronized void onStopRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+	public synchronized void onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 		
-		if (!user.equals(vcSimID.getOwner())) {
+		if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
 			log.alert(user + " is not authorized to stop simulation (key=" + simKey + ")");
-			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
+			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
 			message.sendToClient(session);
-			VCMongoMessage.sendInfo("onStopRequest("+vcSimID.getID()+") ignoring stop simulation request - wrong user)");
+			VCMongoMessage.sendInfo("onStopRequest("+simJobStatus.getVCSimulationIdentifier()+") ignoring stop simulation request - wrong user)");
 			return;
 		} 
-		// if the job is in simJob queue, get it out
-		KeyValue simKey = vcSimID.getSimulationKey();
-		SimulationJobStatus[] oldJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simKey, jobIndex);
 		
-		// stop each active task.
-		for (SimulationJobStatus oldJobStatus : oldJobStatusArray){
-			SchedulerStatus schedulerStatus = oldJobStatus.getSchedulerStatus();
-			int taskID = oldJobStatus.getTaskID();
-	
-			if (schedulerStatus.isActive()){
-				SimulationQueueEntryStatus simQueueEntryStatus = oldJobStatus.getSimulationQueueEntryStatus();
-				SimulationExecutionStatus simExeStatus = oldJobStatus.getSimulationExecutionStatus();
-				SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(),vcSimID,jobIndex,oldJobStatus.getSubmitDate(),
-						SchedulerStatus.STOPPED,taskID,SimulationMessage.solverStopped("simulation stopped by user"),simQueueEntryStatus,simExeStatus);
-				
-				//
-				// send stopSimulation to serviceControl topic
-				//
-				log.print("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
-				VCMessage msg = session.createMessage();
-				msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
-				msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
-				msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
-				msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
-				msg.setStringProperty(MessageConstants.USERNAME_PROPERTY, user.getName());
-				if (simExeStatus.getHtcJobID()!=null){
-					msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
-				}
-				session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);	
-				
-				SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldJobStatus, newJobStatus);
-				addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(updatedSimJobStatus.getTaskID()), oldJobStatus, updatedSimJobStatus));
+		// stop latest task if active
+		SchedulerStatus schedulerStatus = simJobStatus.getSchedulerStatus();
+		int taskID = simJobStatus.getTaskID();
 
-				// update client
-				StatusMessage message = new StatusMessage(updatedSimJobStatus, user.getName(), null, null);
-				message.sendToClient(session);
+		if (schedulerStatus.isActive()){
+			SimulationQueueEntryStatus simQueueEntryStatus = simJobStatus.getSimulationQueueEntryStatus();
+			SimulationExecutionStatus simExeStatus = simJobStatus.getSimulationExecutionStatus();
+			SimulationJobStatus newJobStatus = new SimulationJobStatus(simJobStatus.getServerID(),simJobStatus.getVCSimulationIdentifier(),jobIndex,simJobStatus.getSubmitDate(),
+					SchedulerStatus.STOPPED,taskID,SimulationMessage.solverStopped("simulation stopped by user"),simQueueEntryStatus,simExeStatus);
+			
+			//
+			// send stopSimulation to serviceControl topic
+			//
+			log.print("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
+			VCMessage msg = session.createMessage();
+			msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
+			msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
+			msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
+			msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
+			msg.setStringProperty(MessageConstants.USERNAME_PROPERTY, user.getName());
+			if (simExeStatus.getHtcJobID()!=null){
+				msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
 			}
+			session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);	
+			
+			simulationDatabase.updateSimulationJobStatus(newJobStatus);
+			addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(taskID), simJobStatus, newJobStatus));
+
+			// update client
+			StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
+			message.sendToClient(session);
 		}
 	}
 
@@ -669,11 +663,11 @@ public class SimulationStateMachine {
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(vcServerID, oldJobStatus.getVCSimulationIdentifier(), jobIndex, submitDate, SchedulerStatus.FAILED,
 				taskID, SimulationMessage.jobFailed(failureMessage), newQueueStatus, newExeStatus);
 		
-		SimulationJobStatus updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldJobStatus, newJobStatus);
-		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(updatedSimJobStatus.getTaskID(), failureMessage), oldJobStatus, updatedSimJobStatus));
+		simulationDatabase.updateSimulationJobStatus(newJobStatus);
+		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(taskID, failureMessage), oldJobStatus, newJobStatus));
 
 		String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
-		StatusMessage msgForClient = new StatusMessage(updatedSimJobStatus, userName, null, null);
+		StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 		msgForClient.sendToClient(session);
 		log.print("Send status to client: " + msgForClient);
 	}

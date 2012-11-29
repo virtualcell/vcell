@@ -30,7 +30,7 @@ public class ResultSetDBTopLevel extends AbstractDBTopLevel{
 /**
  * DBTopLevel constructor comment.
  */
-ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
+public ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
 	GeomDbDriver geomDBDriver = new GeomDbDriver(newLog);
 	MathDescriptionDbDriver mathDBDriver = new MathDescriptionDbDriver(geomDBDriver,newLog);
@@ -174,7 +174,7 @@ cbit.vcell.export.server.ExportLog[] getResultSetExports(User user, boolean bAll
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-SolverResultSetInfo getResultSetInfo(User user, KeyValue simKey, int jobIndex, boolean bEnableRetry) throws SQLException, DataAccessException {
+public SolverResultSetInfo getResultSetInfo(User user, KeyValue simKey, int jobIndex, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -290,12 +290,12 @@ public void insertResultSetExport(User user,KeyValue simulationRef,String export
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-void insertResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
+void insertResultSetInfo(User user, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		simDB.insertResultSetInfoSQL(con,user,simKey,rsetInfo);
+		simDB.insertResultSetInfoSQL(con,user,rsetInfo);
 		con.commit();
 		return;
 	} catch (Throwable e) {
@@ -308,7 +308,7 @@ void insertResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInf
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			insertResultSetInfo(user,simKey,rsetInfo,false);
+			insertResultSetInfo(user,rsetInfo,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 		}
@@ -323,16 +323,16 @@ void insertResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInf
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-void updateResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
+public void updateResultSetInfo(User user, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
 		try {
-			simDB.updateResultSetInfoSQL(con,user,simKey,rsetInfo);
+			simDB.updateResultSetInfoSQL(con,user,rsetInfo);
 			con.commit();
 		}catch (ObjectNotFoundException e){
-			simDB.insertResultSetInfoSQL(con,user,simKey,rsetInfo);
+			simDB.insertResultSetInfoSQL(con,user,rsetInfo);
 			con.commit();
 		}
 		return;
@@ -346,7 +346,7 @@ void updateResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInf
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			updateResultSetInfo(user,simKey,rsetInfo,false);
+			updateResultSetInfo(user,rsetInfo,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 		}

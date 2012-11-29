@@ -16,6 +16,7 @@ import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.pbs.PbsProxy.RunningPbsJobRecord;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -23,6 +24,7 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.modeldb.ResultSetDBTopLevel;
 
 public class ZombieSlayer {
 
@@ -87,8 +89,8 @@ public class ZombieSlayer {
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl,log);
+			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
 		    ArrayList<SuspectSimJobID> zombieCandidateIDs = new ArrayList<SuspectSimJobID>();
 		    ArrayList<RunningPbsJobRecord> runningPbsJobRecords = null;
 
@@ -109,31 +111,13 @@ public class ZombieSlayer {
 		
 			RunningPbsJobRecord suspectPbsJobRecord = null;
 			SimulationJobStatus.SchedulerStatus schedulerStatus = null;
-			SimulationJobStatus[] simJobs = null;
-			SimulationJobStatus simJobStatus = null;
 				
 			Iterator<RunningPbsJobRecord> jobRecordIter = runningPbsJobRecords.iterator();
 			while (jobRecordIter.hasNext()){
 				schedulerStatus = null;
-				simJobStatus = null;
-				int highestTaskId, highestTaskIdIndex=0;
 				suspectPbsJobRecord = jobRecordIter.next();
-				simJobs = simulationDatabase.getSimulationJobStatusArray(suspectPbsJobRecord.getSimID(), suspectPbsJobRecord.getSimJobIndex());
+				SimulationJobStatus simJobStatus = simulationDatabase.getLatestSimulationJobStatus(suspectPbsJobRecord.getSimID(), suspectPbsJobRecord.getSimJobIndex());
 		
-				if (simJobs!=null && (simJobs.length>0)){
-					highestTaskId=0;
-					highestTaskIdIndex = 0;
-					
-					for (int i=0; i<simJobs.length; i++) {
-						if (simJobs[i].getTaskID()>highestTaskId){
-							highestTaskId = simJobs[i].getTaskID();
-							highestTaskIdIndex = i;
-						}
-					}
-				
-					simJobStatus = simJobs[highestTaskIdIndex];
-				
-				}
 				if (simJobStatus!=null) {
 					schedulerStatus = simJobStatus.getSchedulerStatus();
 				}
