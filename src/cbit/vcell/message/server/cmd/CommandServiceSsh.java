@@ -34,7 +34,10 @@ public class CommandServiceSsh extends CommandService {
 	}
 	
 	@Override
-	public CommandOutput command(String[] commandStrings) throws ExecutableException {
+	public CommandOutput command(String[] commandStrings, int[] allowableReturnCodes) throws ExecutableException {
+		if (allowableReturnCodes == null){
+			throw new IllegalArgumentException("allowableReturnCodes must not be null");
+		}
 		Session session = null;
 		try {
 			long timeMS = System.currentTimeMillis();
@@ -56,6 +59,16 @@ public class CommandServiceSsh extends CommandService {
 			if(!bQuiet){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
 			System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
 			System.out.println("Command: exit = " + commandOutput.getExitStatus());
+			
+			boolean bReturnCodeAllowable = false;
+			for (int returnCode : allowableReturnCodes){
+				if (commandOutput.getExitStatus()!=null && returnCode == commandOutput.getExitStatus().intValue()){
+					bReturnCodeAllowable = true;
+				}
+			}
+			if (!bReturnCodeAllowable){
+				throw new ExecutableException("command exited with return code = "+commandOutput.getExitStatus());
+			}
 
 			return commandOutput;
 

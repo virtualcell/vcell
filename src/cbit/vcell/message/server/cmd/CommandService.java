@@ -1,16 +1,9 @@
 package cbit.vcell.message.server.cmd;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import org.vcell.util.ExecutableException;
-import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.VCellServerID;
 
 
 public abstract class CommandService {
@@ -70,7 +63,11 @@ public abstract class CommandService {
 	
 	public abstract void deleteFile(String remoteFilePath) throws IOException;
  
-	public abstract CommandOutput command(String[] command) throws ExecutableException;
+	public final CommandOutput command(String[] command) throws ExecutableException {
+		return command(command,new int[] { 0 });
+	}
+
+	public abstract CommandOutput command(String[] command, int[] allowableReturnCodes) throws ExecutableException;
 
 	public abstract void close();
 	
