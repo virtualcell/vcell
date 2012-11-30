@@ -26,6 +26,7 @@ import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
 
 public class SgeProxy extends HtcProxy {
+	private final static int QDEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	private final static String QSTAT_UNKNOWN_JOB_RESPONSE = "Following jobs do not exist:";
 	protected final static String SGE_SUBMISSION_FILE_EXT = ".sge.sub";
@@ -237,11 +238,11 @@ denied: job "6894" does not exist
 
 		String[] cmd = new String[]{JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
 		try {
-			CommandOutput commandOutput = commandService.command(cmd);
+			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
-			String standardError = commandOutput.getStandardError();
-			if (exitStatus!=null && exitStatus!=0 && standardError!=null && standardError.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
-				throw new HtcJobNotFoundException(standardError);
+			String standardOut = commandOutput.getStandardOutput();
+			if (exitStatus!=null && exitStatus.intValue()==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
+				throw new HtcJobNotFoundException(standardOut);
 			}
 		}catch (ExecutableException e){
 			e.printStackTrace();
