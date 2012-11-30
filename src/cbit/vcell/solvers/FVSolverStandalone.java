@@ -94,7 +94,12 @@ protected void initialize() throws SolverException {
 		} else {
 			writeFunctionsFile();
 		}
-		writeVCGAndResampleFieldData();
+		
+		// not for Chombo solver
+		if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver())
+		{
+			writeVCGAndResampleFieldData();
+		}
 	
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
