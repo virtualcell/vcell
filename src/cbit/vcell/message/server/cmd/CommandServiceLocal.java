@@ -16,10 +16,13 @@ public class CommandServiceLocal extends CommandService {
 	}
 
 	@Override
-	public CommandOutput command(String[] command) throws ExecutableException {
+	public CommandOutput command(String[] command, int[] allowableReturnCodes) throws ExecutableException {
+		if (allowableReturnCodes == null){
+			throw new IllegalArgumentException("allowableReturnCodes must not be null");
+		}
 		long timeMS = System.currentTimeMillis();
 		Executable exe = new Executable(command);
-		exe.start();
+		exe.start(allowableReturnCodes);
 		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
 
