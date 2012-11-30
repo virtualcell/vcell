@@ -30,6 +30,8 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
 public final class PbsProxy extends HtcProxy {
+	private static final int QDEL_JOB_NOT_FOUND_RETURN_CODE = 153;
+	
 	private static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
 	private static final String PBS_WORK_QUEUE_PREFIX = "workq";
 	private final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
@@ -154,10 +156,10 @@ public final class PbsProxy extends HtcProxy {
 
 		String[] cmd = new String[]{JOB_CMD_DELETE, pbsJobID.getPbsJobID()};
 		try {
-			CommandOutput commandOutput = commandService.command(cmd);
+			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardError = commandOutput.getStandardError();
-			if (exitStatus!=null && exitStatus!=0 && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
+			if (exitStatus!=null && exitStatus==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
 				throw new HtcJobNotFoundException(standardError);
 			}
 		}catch (ExecutableException e){
