@@ -9,7 +9,10 @@
  */
 
 package org.vcell.util;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Insert the type's description here.
@@ -27,7 +30,6 @@ public class Executable {
 	private File workingDir = null;
 	private String[] execEnvVars = null;
 	
-
 /**
  * sometimes command and input file name have space, we need to escape space;
  * So the easiest way to run the command is to call Runtime.exec(String[] cmd)
@@ -88,7 +90,7 @@ public Executable(String[] command, long arg_timeoutMS) {
 /**
  * This method was created by a SmartGuide.
  */
-protected void executeProcess() throws org.vcell.util.ExecutableException {
+protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
@@ -110,12 +112,19 @@ protected void executeProcess() throws org.vcell.util.ExecutableException {
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
-		} else if (getExitValue().intValue() == 0) {
-			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") executable successful\n");
-			setStatus(ExecutableStatus.COMPLETE);
 		} else {
-			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") executable failed, return code = " + getExitValue() + "\n");
-			setStatus(ExecutableStatus.getError("executable failed, return code = " + getExitValue() + "\nstderr = '" + getErrorString() + "'"));
+			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") executable returned with returncode = " + getExitValue() + "\n");
+			boolean bExpectedReturnCode = false;
+			for (int expectedReturnCode : expectedReturnCodes){
+				if (expectedReturnCode == getExitValue()){
+					bExpectedReturnCode = true;
+				}
+			}
+			if (bExpectedReturnCode){
+				setStatus(ExecutableStatus.COMPLETE);
+			}else{
+				setStatus(ExecutableStatus.getError("executable failed, return code = " + getExitValue() + "\nstderr = '" + getErrorString() + "'"));				
+			}
 		}
 		// log output
 		System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
@@ -133,6 +142,8 @@ protected void executeProcess() throws org.vcell.util.ExecutableException {
 			e.printStackTrace(System.out);
 			throw new ExecutableException("Unexpected error: " + e.getMessage() + "\n\n(" + getCommand() + ")");
 		}			
+	} finally {
+		close();
 	}
 }
 
@@ -372,15 +383,18 @@ private void setStatus(org.vcell.util.ExecutableStatus newStatus) {
 	status = newStatus;
 }
 
+public final void start() throws org.vcell.util.ExecutableException {
+	start(new int[] { 0 });
+}
 
 /**
  * This method was created in VisualAge.
  */
-public final void start() throws org.vcell.util.ExecutableException {
+public final void start(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
 
     setStatus(ExecutableStatus.RUNNING);
     try {
-        executeProcess();
+        executeProcess(expectedReturnCodes);
     } catch (ExecutableException e) {
         e.printStackTrace(System.out);
         setStatus(ExecutableStatus.getError("Executable Exception: " + e.getMessage()));
@@ -388,16 +402,36 @@ public final void start() throws org.vcell.util.ExecutableException {
     }
 }
 
-
 /**
  * This method was created in VisualAge.
  */
 public final void stop() {
 	setStatus(ExecutableStatus.STOPPED);
+	close();
+}
+
+private final void close(){
 	if (getProcess() != null) {
+		try {
+			getProcess().getInputStream().close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			getProcess().getOutputStream().close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			getProcess().getErrorStream().close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		getProcess().destroy();
+		setProcess(null);
 	}
 }
+
 public File getWorkingDir() {
 	return workingDir;
 }
