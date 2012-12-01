@@ -291,7 +291,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 		ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 		Vector<ReactionStep> rsList = new Vector<ReactionStep>();
 		for (int i = 0; i < reactionSpecs.length; i++){
-			if (reactionSpecs[i].isExcluded()==false){
+			if (!reactionSpecs[i].isExcluded()){
 				rsList.add(reactionSpecs[i].getReactionStep());
 			}
 		}
