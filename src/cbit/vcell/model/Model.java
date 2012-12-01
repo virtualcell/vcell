@@ -3014,53 +3014,65 @@ public String isValidForStochApp()
 	// Mass Action and centain form of general Flux can be automatically transformed.
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
 	{
-		if(((reacSteps[i] instanceof SimpleReaction) && 
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) &&
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) &&
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) &&
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
-			||
-		  ((reacSteps[i] instanceof FluxReaction) && 
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) && 
-				!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)))
+		int numCatalyst = 0;
+		ReactionParticipant[] reacParts = reacSteps[i].getReactionParticipants(); 
+		for(ReactionParticipant rp : reacParts)
 		{
-			unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
-		}
-		else
-		{
-			if(reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
+			if(rp instanceof Catalyst)
 			{
-				unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + "(has electric current),";
+				numCatalyst ++;
+			}
+		}
+		if((reacParts.length - numCatalyst) > 0)
+		{
+			if(((reacSteps[i] instanceof SimpleReaction) && 
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) &&
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) &&
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) &&
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible)) 
+				||
+			  ((reacSteps[i] instanceof FluxReaction) && 
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) && 
+					!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)))
+			{
+				unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
 			}
 			else
 			{
-				if(reacSteps[i] instanceof SimpleReaction)
+				if(reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || reacSteps[i].getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 				{
-					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) || 
-							reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
-					{
-						try{
-							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
-						}catch(Exception e)
-						{
-							exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
-						}
-					}
+					unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + "(has electric current),";
 				}
-				else // flux described by General density function
+				else
 				{
-					if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) ||
-					   reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
+					if(reacSteps[i] instanceof SimpleReaction)
 					{
 						Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-						try{
-							MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
-						}catch(Exception e)
+						if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) || 
+								reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 						{
-							exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+							try{
+								MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
+							}catch(Exception e)
+							{
+								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+							}
 						}
-					} 
+					}
+					else // flux described by General density function
+					{
+						if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General) ||
+						   reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
+						{
+							Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+							try{
+								MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
+							}catch(Exception e)
+							{
+								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+							}
+						} 
+					}
 				}
 			}
 		}
