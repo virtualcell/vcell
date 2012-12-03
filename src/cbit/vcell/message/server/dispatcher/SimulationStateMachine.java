@@ -433,7 +433,7 @@ public class SimulationStateMachine {
 		}else{
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
 		}
-		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(updatedSimJobStatus.getTaskID(), workerEvent), oldSimulationJobStatus, updatedSimJobStatus));
+		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(taskID, workerEvent), oldSimulationJobStatus, updatedSimJobStatus));
 
 	}
 
