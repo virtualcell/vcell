@@ -72,23 +72,23 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		SessionLog sessionLog, VCMessagingService vcMessagingService, LocalVCellServer aLocalVCellServer) 
 		throws RemoteException, FileNotFoundException {
 		
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
-	this.userLoginInfo = userLoginInfo;
-	this.fieldHost = host;
-	this.fieldSessionLog = sessionLog;
-	this.fieldLocalVCellServer = aLocalVCellServer;
-	this.vcMessagingService = vcMessagingService;
-	clientMessageCollector = new ClientTopicMessageCollector(vcMessagingService, userLoginInfo.getUser(), fieldSessionLog);
-	
-	messageService = new SimpleMessageService();
-	clientMessageCollector.addMessageListener(messageService);
-	
-	sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
-	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
-	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
-	
-	performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
-}
+		super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
+		this.userLoginInfo = userLoginInfo;
+		this.fieldHost = host;
+		this.fieldSessionLog = sessionLog;
+		this.fieldLocalVCellServer = aLocalVCellServer;
+		this.vcMessagingService = vcMessagingService;
+		clientMessageCollector = new ClientTopicMessageCollector(vcMessagingService, userLoginInfo.getUser(), fieldSessionLog);
+		
+		messageService = new SimpleMessageService();
+		clientMessageCollector.addMessageListener(messageService);
+		
+		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
+		fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
+		fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
+		
+		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
+	}
 	
 public void init(){
 	clientMessageCollector.init();
@@ -109,6 +109,9 @@ public void close() {
 	}
 	if (vcMessageSessionSim!=null){
 		vcMessageSessionSim.close();
+	}
+	if (clientMessageCollector!=null){
+		clientMessageCollector.close();
 	}
 }
 
