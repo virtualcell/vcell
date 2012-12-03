@@ -9,7 +9,11 @@
  */
 
 package cbit.vcell.message.server.db;
+import java.lang.management.ManagementFactory;
 import java.util.Date;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -28,6 +32,8 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -90,6 +96,13 @@ public static void main(java.lang.String[] args) {
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 		//initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
+
+		//
+		// JMX registration
+		//
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 		
 		final SessionLog log = new StdoutSessionLog("DatabaseServer");
 		
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
