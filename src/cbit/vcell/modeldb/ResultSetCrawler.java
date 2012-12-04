@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.modeldb;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -26,7 +25,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
-import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
@@ -553,7 +551,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 }
 
 
-	/**
+/**
  * Insert the method's description here.
  * Creation date: (2/14/01 9:48:46 AM)
  * @param user cbit.vcell.server.User
@@ -592,14 +590,9 @@ public void updateSimResults(User user, VCSimulationDataIdentifier vcSimDataID) 
 		//
 		// if log file found, then insert/update record in database for result metadata
 		//
-		SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID);
-		rsetInfo.setDataFilePath(logFile.getPath());
+		SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID,logFile.getPath(),new java.util.Date(logFile.lastModified()),null);
 		try {
-			rsetInfo.setStartingDate(new java.util.Date(logFile.lastModified()));
-		} catch (PropertyVetoException e) {
-		}
-		try {
-			resultSetDbTopLevel.updateResultSetInfo(user, simKey, rsetInfo, true);
+			resultSetDbTopLevel.updateResultSetInfo(user, rsetInfo, true);
 			log.print("file " + logFile.toString() + " found, simInfo (" + vcSimDataID + ") stored in database");
 		}catch (PermissionException e){
 			log.exception(e);
