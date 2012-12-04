@@ -1,0 +1,446 @@
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12353)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12352)
+@@ -13,7 +13,6 @@
+ import java.util.Date;
+ import java.util.HashMap;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.Set;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+@@ -229,37 +228,36 @@
+ 		
+ 		private void killZombieProcesses() throws ExecutableException{
+ 			List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
+-			Map<HtcJobID,HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
+-			for (HtcJobID htcJobID : runningSimulations){
+-				HtcJobInfo jobInfo = jobInfos.get(htcJobID);
+-				if (jobInfo.isFound()){
+-					try {
+-						String simJobName = jobInfo.getJobName();
+-						HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
+-						SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+-						String failureMessage = null;
+-						boolean killJob = false;
+-						if (simJobStatus==null){
+-							failureMessage = "no jobStatus found in database for running htc job";
++			List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
++			for (int i=0;i<runningSimulations.size();i++){
++				HtcJobID htcJobID = runningSimulations.get(i);
++				HtcJobInfo jobInfo = jobInfos.get(i);
++				try {
++					String simJobName = jobInfo.getJobName();
++					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
++					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
++					String failureMessage = null;
++					boolean killJob = false;
++					if (simJobStatus==null){
++						failureMessage = "no jobStatus found in database for running htc job";
++						killJob = true;
++					}else if (simJobStatus.getSchedulerStatus().isDone()){
++						failureMessage = "jobStatus Done in database for running htc job";
++						if (simJobStatus.getSimulationExecutionStatus()==null){
+ 							killJob = true;
+-						}else if (simJobStatus.getSchedulerStatus().isDone()){
+-							failureMessage = "jobStatus Done in database for running htc job";
+-							if (simJobStatus.getSimulationExecutionStatus()==null){
++						}else{
++							long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
++							if (elapsedTimeMS > 10000){
+ 								killJob = true;
+-							}else{
+-								long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+-								if (elapsedTimeMS > MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS){
+-									killJob = true;
+-								}
+ 							}
+ 						}
+-						if (killJob){
+-							VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
+-							htcProxy.killJob(htcJobID);
+-						}
+-					}catch (Exception e){
+-						log.exception(e);
+ 					}
++					if (killJob){
++						VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
++						htcProxy.killJob(htcJobID);
++					}
++				}catch (Exception e){
++					log.exception(e);
+ 				}
+ 			}
+ 		}
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12353)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12352)
+@@ -15,7 +15,6 @@
+ import java.util.Date;
+ import java.util.Iterator;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.StringTokenizer;
+ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+@@ -140,10 +139,10 @@
+ 									//
+ 									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
+ 									List<HtcJobID> htcJobIDs = threadLocalHtcProxy.getRunningSimulationJobIDs();
+-									Map<HtcJobID,HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
+-									for (HtcJobInfo htcJobInfo : htcJobInfos.values()){
++									List<HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
++									for (HtcJobInfo htcJobInfo : htcJobInfos){
+ 										try {
+-											if (htcJobInfo.isFound() && htcJobInfo.getJobName().equals(simJobName)){
++											if (htcJobInfo.getJobName().equals(simJobName)){
+ 												threadLocalHtcProxy.killJob(htcJobInfo.getHtcJobID());
+ 											}
+ 										} catch (Exception e) {
+Index: src/cbit/vcell/message/server/manager/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12353)
++++ src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12352)
+@@ -19,7 +19,6 @@
+ import java.util.Date;
+ import java.util.Iterator;
+ import java.util.List;
+-import java.util.Map;
+ 
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+@@ -435,15 +434,15 @@
+ 
+ private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
+ 	 List<HtcJobID>  jobIds = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
+-	 Map<HtcJobID,HtcJobInfo> jobInfoMap = htcProxy.getJobInfos(jobIds);
++	 List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(jobIds);
+ 	 HtcJobInfo foundJobInfo = null;
+-	 for(HtcJobInfo jobInfo : jobInfoMap.values()){
++	 for(HtcJobInfo jobInfo : jobInfos){
+ 		 if(jobInfo.getJobName().equals(service.getServiceSpec().getID())){
+ 			 foundJobInfo = jobInfo;
+ 			 break;
+ 		 }
+ 	 }
+-	 if(foundJobInfo == null || !foundJobInfo.isFound()){
++	 if(foundJobInfo == null){
+ 		 return;
+ 	 }
+ 	 htcProxy.killJob(foundJobInfo.getHtcJobID());
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12353)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12352)
+@@ -3,7 +3,6 @@
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.TreeMap;
+ 
+ import org.vcell.util.ExecutableException;
+@@ -63,8 +62,8 @@
+ 	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
+ 		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
+ 		List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
+-		Map<HtcJobID,HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
+-		for(HtcJobInfo sjInfo : sjinfos.values()){
++		List<HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
++		for(HtcJobInfo sjInfo : sjinfos){
+ 			String jobID = null;
+ 			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
+ 				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
+@@ -111,11 +110,10 @@
+ 
+ 		
+ 		System.out.println("<<<<<--------------  printing running simulations --------------->>>>>>");
+-		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("REL");
+-		htcJobIDs.add(new SgeJobID("12345"));
+-		Map<HtcJobID,HtcJobInfo> htcJobInfoMap = htcProxy.getJobInfos(htcJobIDs);
+-		for (HtcJobID htcJobId : htcJobInfoMap.keySet()){
+-			System.out.println("jobInfo = "+htcJobInfoMap.get(htcJobId));
++		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("ALPHA");
++		List<HtcJobInfo> htcJobInfos = htcProxy.getJobInfos(htcJobIDs);
++		for (HtcJobInfo htcJobInfo : htcJobInfos){
++			System.out.println("jobInfo = "+htcJobInfo);
+ 		}
+ 		
+ 		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
+@@ -127,7 +125,7 @@
+ 				} catch (InterruptedException e) {
+ 				}
+ 				jobStatus2 = htcProxy.getJobStatus(jobID);
+-				Map<HtcJobID,HtcJobInfo> htcJobInfo = htcProxy.getJobInfos(Arrays.asList(jobID));
++				List<HtcJobInfo> htcJobInfo = htcProxy.getJobInfos(Arrays.asList(jobID));
+ 				System.out.println("jobInfo = "+htcJobInfo);
+ 				System.out.println("jobStatus = "+jobStatus2);
+ 			} catch (Exception e) {
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12353)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12352)
+@@ -10,7 +10,6 @@
+ import java.nio.charset.Charset;
+ import java.nio.charset.CharsetEncoder;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+ import java.util.Vector;
+@@ -44,10 +43,8 @@
+ 		private String jobName;
+ 		private String errorPath;
+ 		private String outputPath;
+-		private boolean bFound;
+-		public HtcJobInfo(HtcJobID htcJobID, boolean bFound, String jobName,String errorPath,String outputPath) {
++		public HtcJobInfo(HtcJobID htcJobID, String jobName,String errorPath,String outputPath) {
+ 			this.htcJobID = htcJobID;
+-			this.bFound = bFound;
+ 			this.jobName = jobName;
+ 			this.errorPath = errorPath;
+ 			this.outputPath = outputPath;
+@@ -64,15 +61,8 @@
+ 		public String getOutputPath() {
+ 			return outputPath;
+ 		}
+-		public boolean isFound(){
+-			return bFound;
+-		}
+ 		public String toString(){
+-			if (bFound){
+-				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+-			}else{
+-				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
+-			}
++			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+ 		}
+ 	}
+ 	protected enum HtcJobCategory {
+@@ -132,7 +122,7 @@
+ 
+ 	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
+ 	
+-	public abstract Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
++	public abstract List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
+ 
+ 	public final CommandService getCommandService() {
+ 		return commandService;
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12353)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12352)
+@@ -7,9 +7,7 @@
+ import java.io.StringWriter;
+ import java.util.ArrayList;
+ import java.util.Comparator;
+-import java.util.HashMap;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.StringTokenizer;
+ import java.util.TreeMap;
+ import java.util.Vector;
+@@ -354,9 +352,9 @@
+ 	}
+ 
+ 	@Override
+-	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
++	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
+ 		try{
+-			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
++			ArrayList<HtcJobInfo> serviceJobInfos = new ArrayList<HtcJobInfo>();
+ 			ArrayList<String> cmdV = new ArrayList<String>();
+ 			cmdV.add(JOB_CMD_STATUS);
+ 			cmdV.add("-f");
+@@ -384,11 +382,11 @@
+ 					}else if(line.trim().startsWith("Output_Path =")){
+ 						st.nextToken();st.nextToken();
+ 						String latestOutputPath = st.nextToken();
+-						jobInfoMap.put(latestpbsJobID, new HtcJobInfo(latestpbsJobID,true,latestJobName,latestErrorPath,latestOutputPath));
++						serviceJobInfos.add(new HtcJobInfo(latestpbsJobID,latestJobName,latestErrorPath,latestOutputPath));
+ 					}
+ 				}
+ 			}
+-			return jobInfoMap;
++			return serviceJobInfos;
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			if(e instanceof ExecutableException){
+Index: src/cbit/vcell/message/server/htc/HtcJobID.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcJobID.java	(revision 12353)
++++ src/cbit/vcell/message/server/htc/HtcJobID.java	(revision 12352)
+@@ -63,19 +63,4 @@
+ 		}
+ 		return false;
+ 	}
+-	
+-	@Override
+-	public boolean equals(Object obj){
+-		if (obj instanceof HtcJobID){
+-			HtcJobID other = (HtcJobID)obj;
+-			return toDatabase().equals(other.toDatabase());
+-		}
+-		return false;
+-	}
+-	
+-	@Override
+-	public int hashCode(){
+-		return toDatabase().hashCode();
+-	}
+-	
+ }
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12353)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12352)
+@@ -7,7 +7,6 @@
+ import java.util.Arrays;
+ import java.util.HashMap;
+ import java.util.List;
+-import java.util.Map;
+ import java.util.StringTokenizer;
+ import java.util.Vector;
+ 
+@@ -435,88 +434,68 @@
+ 	}
+ 
+ 
++
++
+ 	@Override
+-	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
++	public List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
+ 		try{
+-			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
+-			for (HtcJobID htcJobID : htcJobIDs){
+-				HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
+-				if (htcJobInfo!=null){
+-					jobInfoMap.put(htcJobID,htcJobInfo);
++			ArrayList<HtcJobInfo> jobInfos = new ArrayList<HtcJobInfo>();
++			//
++			// how many to process at once.
++			//
++			int MAX_NUM_JOBS_IN_QUERY = 1;
++			
++			ArrayList<HtcJobID> remainingJobIDs = new ArrayList<HtcJobID>(htcJobIDs);
++			while (remainingJobIDs.size()>0){
++				List<HtcJobID> currentJobIDs = new ArrayList<HtcJobID>(Arrays.asList(remainingJobIDs.subList(0, Math.min(MAX_NUM_JOBS_IN_QUERY,remainingJobIDs.size())).toArray(new HtcJobID[0])));
++				remainingJobIDs.removeAll(currentJobIDs);
++
++				Vector<String> cmdV = new Vector<String>();
++				cmdV.add(JOB_CMD_STATUS);
++				cmdV.add("-f");
++				cmdV.add("-j");
++				String jobList = "";
++				for(HtcJobID htcJobID : currentJobIDs){
++					if(jobList.length() != 0){
++						jobList+=",";
++					}
++					jobList+=((SgeJobID)htcJobID).getSgeJobID();
+ 				}
++				cmdV.add(jobList);
++				cmdV.add("-xml");
++				CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
++				Document qstatDoc = XmlUtil.stringToXML(commandOutput.getStandardOutput(), null);
++				Element rootElement = qstatDoc.getRootElement();
++				Element dbJobInfoElement = rootElement.getChild("djob_info");
++				if(dbJobInfoElement == null){
++					return null;
++				}
++				List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
++				if(qstatInfoChildren == null){
++					return null;
++				}
++				for(Element jobInfoElement : qstatInfoChildren){
++					String jobID = jobInfoElement.getChildText("JB_job_number").trim();
++					String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
++					String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
++					List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
++					for(Element envSublist : envSublists){
++						if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
++							jobInfos.add(new HtcJobInfo(new SgeJobID(jobID),jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile));
++							break;
++						}
++					}
++				}
+ 			}
+-			return jobInfoMap;
++			return jobInfos;
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			if(e instanceof ExecutableException){
+ 				throw (ExecutableException)e;
+ 			}else{
+-				throw new ExecutableException("Error getJobInfo: "+e.getMessage());
++				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
+ 			}
+ 		}
+ 	}
+ 
+-	public HtcJobInfo getJobInfo(HtcJobID htcJobID) throws ExecutableException {
+-		Vector<String> cmdV = new Vector<String>();
+-		cmdV.add(JOB_CMD_STATUS);
+-		cmdV.add("-f");
+-		cmdV.add("-j");
+-		cmdV.add(((SgeJobID)htcJobID).getSgeJobID());
+-		cmdV.add("-xml");
+-		CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+-		String xmlString = commandOutput.getStandardOutput();
+-		if (xmlString.contains("unknown_jobs")){
+-			/**
+-			 * <unknown_jobs  xmlns:xsd='http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11'>
+-			 * 		<>
+-			 * 			<ST_name>12345</ST_name>
+-			 * 		</>
+-			 * </unknown_jobs>
+-			 **/
+-			return new HtcJobInfo(htcJobID,false,null,null,null);
+-		}else{
+-			/**
+-			 * 
+-			 * <detailed_job_info  xmlns:xsd="http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11">
+-			 *    <djob_info>
+-			 *  	 <element>
+-			 *  	    <JB_job_number>12345</JB_job_number>
+-			 *  	    <JB_job_name>S_76915529_0_0</JB_job_name>
+-			 *          <JB_stdout_path_list>
+-			 *             <path_list>
+-			 *                <PN_path>S_76915529_0_0.log</PN_path>
+-			 *                <PN_host></PN_host>
+-			 *                <PN_file_host></PN_file_host>
+-			 *                <PN_file_staging>false</PN_file_staging>
+-			 *             </path_list>
+-			 *          </JB_stdout_path_list>
+-			 *       </element>
+-			 *    </djob_info>
+-			 * </detailed_job_info>
+-			 **/
+-			Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
+-			Element rootElement = qstatDoc.getRootElement();
+-			Element dbJobInfoElement = rootElement.getChild("djob_info");
+-			if(dbJobInfoElement == null){
+-				return null;
+-			}
+-			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
+-			if(qstatInfoChildren == null){
+-				return null;
+-			}
+-			for(Element jobInfoElement : qstatInfoChildren){
+-				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+-				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
+-				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
+-				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
+-				for(Element envSublist : envSublists){
+-					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
+-						return new HtcJobInfo(new SgeJobID(jobID),true,jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile);
+-					}
+-				}
+-			}
+-		}
+-		throw new RuntimeException("Error parsing job status for batch job id "+htcJobID.toDatabase());
+-	}
+-
+ }
