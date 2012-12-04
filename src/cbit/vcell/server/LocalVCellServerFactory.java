@@ -20,21 +20,16 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.modeldb.ResultSetDBTopLevel;
 /**
  * This type was created in VisualAge.
  */
 public class LocalVCellServerFactory implements VCellServerFactory {
 	private VCellServer vcServer = null;
-/**
- * LocalVCellConnectionFactory constructor comment.
- */
-public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword digestedPassword, String hostName, ConnectionFactory conFactory, KeyFactory keyFactory, SessionLog sessionLog) throws java.sql.SQLException, java.io.FileNotFoundException, DataAccessException {
-	this(userid, digestedPassword, hostName, null, conFactory, keyFactory, sessionLog);
-}
 /**
  * LocalVCellConnectionFactory constructor comment.
  */
@@ -52,9 +47,9 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 			}
 		}
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, sessionLog);
-		ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, sessionLog);
+		ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, sessionLog);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
-		SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl, sessionLog);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, sessionLog);
 		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase);
 	} catch (java.rmi.RemoteException e){
 		sessionLog.exception(e);

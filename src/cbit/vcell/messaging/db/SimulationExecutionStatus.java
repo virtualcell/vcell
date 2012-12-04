@@ -34,6 +34,9 @@ public class SimulationExecutionStatus implements org.vcell.util.Matchable, java
  * SimulationExecutionStatus constructor comment.
  */
 public SimulationExecutionStatus(Date startDate, String computeHost, Date latestUpdateDate, Date endDate, boolean hasData, HtcJobID htcJobID) {
+	if (latestUpdateDate==null){
+		throw new IllegalArgumentException("latestUpdateDate must not be null");
+	}
 	fieldStartDate = startDate;
 	fieldComputeHost = computeHost;
 	fieldLatestUpdateDate = latestUpdateDate;
