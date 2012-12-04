@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.message.server.dispatcher;
+import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -59,6 +63,8 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
@@ -502,6 +508,13 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 			
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+
+			//
+			// JMX registration
+			//
+			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 			
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 			//		initLog(logdir);
