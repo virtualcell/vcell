@@ -203,6 +203,10 @@ public final class VCMongoMessage {
 		return VCMongoMessage.serviceStartupTime;
 	}
 	
+	public static int getServiceOrdinal(){
+		return VCMongoMessage.serviceOrdinal;
+	}
+	
 	private static void addHeader(BasicDBObject dbObject, String messageType) throws UnknownHostException{
 		dbObject.put(MongoMessage_serverId, org.vcell.util.PropertyLoader.getProperty(org.vcell.util.PropertyLoader.vcellServerIDProperty,"unknown"));
 		dbObject.put(MongoMessage_serviceName,serviceName.name());

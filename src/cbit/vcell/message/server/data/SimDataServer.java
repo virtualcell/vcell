@@ -14,7 +14,11 @@ import static cbit.vcell.message.messages.MessageConstants.MESSAGE_TYPE_RPC_SERV
 import static cbit.vcell.message.messages.MessageConstants.SERVICE_TYPE_PROPERTY;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.Date;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -38,6 +42,8 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.simdata.Cachetable;
@@ -135,6 +141,13 @@ public static void main(java.lang.String[] args) {
 		}
 		//initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
+
+		//
+		// JMX registration
+		//
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 		
 		final SessionLog log = new StdoutSessionLog("DataServer");
 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 

@@ -10,6 +10,10 @@
 
 package cbit.vcell.message.server.sim;
 import java.io.File;
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
@@ -20,12 +24,13 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solvers.HTCSolver;
 import cbit.vcell.xml.XmlHelper;
@@ -87,7 +92,13 @@ public class SolverPreprocessor  {
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
 
-			final HTCSolver htcSolver = new HTCSolver(simTask, userdir,log) {
+			//
+			// JMX registration
+			//
+			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+			
+ 	        final HTCSolver htcSolver = new HTCSolver(simTask, userdir,log) {
 				public void startSolver() {
 					try {
 						initialize();

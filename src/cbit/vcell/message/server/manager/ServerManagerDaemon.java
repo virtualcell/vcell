@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +21,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -57,6 +61,8 @@ import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
@@ -337,6 +343,13 @@ public static void main(String[] args) {
 		AdminDBTopLevel adminDbTop = new AdminDBTopLevel(conFactory,log);
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
+
+		//
+		// JMX registration
+		//
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 		
 		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(htcProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
 		serverManagerDaemon.init();
 		serverManagerDaemon.serviceMonitorLoop();

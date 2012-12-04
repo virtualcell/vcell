@@ -11,9 +11,13 @@
 package cbit.vcell.message.server.sim;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.StringTokenizer;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -37,6 +41,8 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
@@ -208,7 +214,13 @@ public static void main(java.lang.String[] args) {
 		
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+		//
+		// JMX registration
+		//
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 
+        SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 		LocalSimulationWorker localSimulationWorker = new LocalSimulationWorker(vcMessagingService, serviceInstanceStatus, log);
 		localSimulationWorker.initControlTopicListener();
 		localSimulationWorker.initQueueConsumer();
