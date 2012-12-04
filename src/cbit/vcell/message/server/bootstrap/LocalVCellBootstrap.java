@@ -10,11 +10,18 @@
 
 package cbit.vcell.message.server.bootstrap;
 
+import java.beans.ConstructorProperties;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Date;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
@@ -30,6 +37,9 @@ import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.message.server.jmx.BootstrapMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -55,6 +65,26 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
 	private LocalVCellServer localVCellServer = null;
 	private AdminDatabaseServer adminDbServer = null;
 	private SessionLog sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
+	private BootstrapMXBean bootstrapMXBean = new BootstrapMXBeanImpl();
+	
+	public class BootstrapMXBeanImpl implements BootstrapMXBean {
+		public BootstrapMXBeanImpl(){
+		}
+		@Override
+		public int getConnectedUserCount(){
+			return localVCellServer.getServerInfo().getConnectedUsers().length;
+		}
+		@Override
+		public String getConnectedUserNames(){
+			ArrayList<String> connectedUsers = new ArrayList<String>();
+			StringBuffer userNames = new StringBuffer();
+			User[] users = localVCellServer.getServerInfo().getConnectedUsers();
+			for (User user : users){
+				userNames.append(user.getName()+" ");
+			}
+			return userNames.toString();
+		}
+	}
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
@@ -195,6 +225,13 @@ public static void main(java.lang.String[] args) {
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, log);
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase);
 
+		//
+		// JMX registration
+		//
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+        mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
+        
 		//
 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)
 		//
