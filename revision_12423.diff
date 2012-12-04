@@ -1,0 +1,435 @@
+Index: src/cbit/vcell/message/server/db/DatabaseServer.java
+===================================================================
+--- src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12423)
++++ src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12422)
+@@ -9,12 +9,8 @@
+  */
+ 
+ package cbit.vcell.message.server.db;
+-import java.lang.management.ManagementFactory;
+ import java.util.Date;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+@@ -32,8 +28,6 @@
+ import cbit.vcell.message.server.ServiceInstanceStatus;
+ import cbit.vcell.message.server.ServiceProvider;
+ import cbit.vcell.message.server.ServiceSpec.ServiceType;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.modeldb.DatabasePolicySQL;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+ import cbit.vcell.mongodb.VCMongoMessage;
+@@ -96,13 +90,6 @@
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+ 		//initLog(serviceInstanceStatus, logdir);
+ 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
+-
+-		//
+-		// JMX registration
+-		//
+-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 		
+ 		final SessionLog log = new StdoutSessionLog("DatabaseServer");
+ 		
+ 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12423)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12422)
+@@ -9,7 +9,6 @@
+  */
+ 
+ package cbit.vcell.message.server.dispatcher;
+-import java.lang.management.ManagementFactory;
+ import java.sql.SQLException;
+ import java.util.ArrayList;
+ import java.util.Date;
+@@ -18,9 +17,6 @@
+ import java.util.Map;
+ import java.util.Set;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.PropertyLoader;
+@@ -63,8 +59,6 @@
+ import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+ import cbit.vcell.messaging.db.SimulationRequirements;
+@@ -508,13 +502,6 @@
+ 			}
+ 			
+ 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
+-
+-			//
+-			// JMX registration
+-			//
+-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 			
+ 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
+ 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
+ 			//		initLog(logdir);
+Index: src/cbit/vcell/message/server/sim/SolverPostprocessor.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12423)
++++ src/cbit/vcell/message/server/sim/SolverPostprocessor.java	(revision 12422)
+@@ -9,11 +9,6 @@
+  */
+ 
+ package cbit.vcell.message.server.sim;
+-import java.lang.management.ManagementFactory;
+-
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+@@ -25,8 +20,6 @@
+ import cbit.vcell.message.VCMessagingService;
+ import cbit.vcell.message.messages.WorkerEventMessage;
+ import cbit.vcell.message.server.ManageUtils;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+ import cbit.vcell.solver.VCSimulationIdentifier;
+@@ -62,13 +55,7 @@
+ 						
+ 			VCMongoMessage.serviceStartup(ServiceName.solverPostprocessor, Integer.valueOf(simKey.toString()), args);
+ 
+-			//
+-			// JMX registration
+-			//
+-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 
+-	        vcMessagingService = VCMessagingService.createInstance();
++			vcMessagingService = VCMessagingService.createInstance();
+ 			VCMessageSession session = vcMessagingService.createProducerSession();
+ 			if (solverExitCode==0){
+ 				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
+Index: src/cbit/vcell/message/server/sim/SolverPreprocessor.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/SolverPreprocessor.java	(revision 12423)
++++ src/cbit/vcell/message/server/sim/SolverPreprocessor.java	(revision 12422)
+@@ -10,11 +10,7 @@
+ 
+ package cbit.vcell.message.server.sim;
+ import java.io.File;
+-import java.lang.management.ManagementFactory;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.FileUtils;
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+@@ -24,13 +20,12 @@
+ import cbit.vcell.message.VCMessagingException;
+ import cbit.vcell.message.VCMessagingService;
+ import cbit.vcell.message.messages.WorkerEventMessage;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+ import cbit.vcell.solver.SimulationMessage;
+ import cbit.vcell.solver.SolverEvent;
++import cbit.vcell.solver.SolverException;
+ import cbit.vcell.solver.SolverListener;
+ import cbit.vcell.solvers.HTCSolver;
+ import cbit.vcell.xml.XmlHelper;
+@@ -92,13 +87,7 @@
+ 
+ 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
+ 
+-			//
+-			// JMX registration
+-			//
+-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+-			
+- 	        final HTCSolver htcSolver = new HTCSolver(simTask, userdir,log) {
++			final HTCSolver htcSolver = new HTCSolver(simTask, userdir,log) {
+ 				public void startSolver() {
+ 					try {
+ 						initialize();
+Index: src/cbit/vcell/message/server/sim/LocalSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12423)
++++ src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12422)
+@@ -11,14 +11,10 @@
+ package cbit.vcell.message.server.sim;
+ import java.io.File;
+ import java.io.FileNotFoundException;
+-import java.lang.management.ManagementFactory;
+ import java.net.UnknownHostException;
+ import java.util.Date;
+ import java.util.StringTokenizer;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+@@ -41,8 +37,6 @@
+ import cbit.vcell.message.server.ServiceInstanceStatus;
+ import cbit.vcell.message.server.ServiceProvider;
+ import cbit.vcell.message.server.ServiceSpec.ServiceType;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.messaging.server.SimulationTask;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+@@ -214,13 +208,7 @@
+ 		
+ 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+ 		
+-		//
+-		// JMX registration
+-		//
+-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 
+-        SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
++		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+ 		LocalSimulationWorker localSimulationWorker = new LocalSimulationWorker(vcMessagingService, serviceInstanceStatus, log);
+ 		localSimulationWorker.initControlTopicListener();
+ 		localSimulationWorker.initQueueConsumer();
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12423)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12422)
+@@ -10,7 +10,6 @@
+ 
+ package cbit.vcell.message.server.sim;
+ import java.io.FileNotFoundException;
+-import java.lang.management.ManagementFactory;
+ import java.net.UnknownHostException;
+ import java.util.ArrayList;
+ import java.util.Date;
+@@ -23,9 +22,6 @@
+ import java.util.concurrent.Future;
+ import java.util.concurrent.TimeUnit;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+@@ -58,8 +54,6 @@
+ import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+ import cbit.vcell.solvers.AbstractSolver;
+@@ -297,13 +291,7 @@
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+ 		//initLog(logdir);
+ 		
+-		//
+-		// JMX registration
+-		//
+-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 
+-        VCMessagingService vcMessagingService = VCMessagingService.createInstance();
++		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+ 		
+ 		ExecutorService executorService = Executors.newFixedThreadPool(NUM_HTC_THREADS);
+ 		
+Index: src/cbit/vcell/message/server/data/SimDataServer.java
+===================================================================
+--- src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12423)
++++ src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12422)
+@@ -14,12 +14,8 @@
+ import static cbit.vcell.message.messages.MessageConstants.SERVICE_TYPE_PROPERTY;
+ 
+ import java.io.File;
+-import java.lang.management.ManagementFactory;
+ import java.util.Date;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+ import org.vcell.util.StdoutSessionLog;
+@@ -42,8 +38,6 @@
+ import cbit.vcell.message.server.ServiceInstanceStatus;
+ import cbit.vcell.message.server.ServiceProvider;
+ import cbit.vcell.message.server.ServiceSpec.ServiceType;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+ import cbit.vcell.simdata.Cachetable;
+@@ -141,13 +135,6 @@
+ 		}
+ 		//initLog(serviceInstanceStatus, logdir);
+ 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
+-
+-		//
+-		// JMX registration
+-		//
+-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 		
+ 		final SessionLog log = new StdoutSessionLog("DataServer");
+ 		Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
+ 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 
+Index: src/cbit/vcell/message/server/manager/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12423)
++++ src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12422)
+@@ -13,7 +13,6 @@
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.io.PrintStream;
+-import java.lang.management.ManagementFactory;
+ import java.sql.SQLException;
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -22,9 +21,6 @@
+ import java.util.List;
+ import java.util.Map;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+ import org.vcell.util.PropertyLoader;
+@@ -61,8 +57,6 @@
+ import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DbDriver;
+@@ -344,13 +338,6 @@
+ 		AdminDBTopLevel adminDbTop = new AdminDBTopLevel(conFactory,log);
+ 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+ 		VCMongoMessage.serviceStartup(ServiceName.serverManager, new Integer(0), args);
+-
+-		//
+-		// JMX registration
+-		//
+-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+- 		
+ 		ServerManagerDaemon serverManagerDaemon = new ServerManagerDaemon(htcProxy, serviceInstanceStatus, vcMessagingService, adminDbTop, log);
+ 		serverManagerDaemon.init();
+ 		serverManagerDaemon.serviceMonitorLoop();
+Index: src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java
+===================================================================
+--- src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java	(revision 12423)
++++ src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java	(revision 12422)
+@@ -10,19 +10,12 @@
+ 
+ package cbit.vcell.message.server.bootstrap;
+ 
+-import java.beans.ConstructorProperties;
+ import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+ import java.io.PrintStream;
+-import java.lang.management.ManagementFactory;
+ import java.rmi.RemoteException;
+ import java.rmi.server.UnicastRemoteObject;
+-import java.util.ArrayList;
+-import java.util.Date;
+ 
+-import javax.management.MBeanServer;
+-import javax.management.ObjectName;
+-
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.PermissionException;
+ import org.vcell.util.PropertyLoader;
+@@ -37,9 +30,6 @@
+ import cbit.vcell.message.VCMessagingService;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+-import cbit.vcell.message.server.jmx.BootstrapMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabasePolicySQL;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+@@ -65,26 +55,6 @@
+ 	private LocalVCellServer localVCellServer = null;
+ 	private AdminDatabaseServer adminDbServer = null;
+ 	private SessionLog sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
+-	private BootstrapMXBean bootstrapMXBean = new BootstrapMXBeanImpl();
+-	
+-	public class BootstrapMXBeanImpl implements BootstrapMXBean {
+-		public BootstrapMXBeanImpl(){
+-		}
+-		@Override
+-		public int getConnectedUserCount(){
+-			return localVCellServer.getServerInfo().getConnectedUsers().length;
+-		}
+-		@Override
+-		public String getConnectedUserNames(){
+-			ArrayList<String> connectedUsers = new ArrayList<String>();
+-			StringBuffer userNames = new StringBuffer();
+-			User[] users = localVCellServer.getServerInfo().getConnectedUsers();
+-			for (User user : users){
+-				userNames.append(user.getName()+" ");
+-			}
+-			return userNames.toString();
+-		}
+-	}
+ /**
+  * This method was created by a SmartGuide.
+  * @exception java.rmi.RemoteException The exception description.
+@@ -226,13 +196,6 @@
+ 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase);
+ 
+ 		//
+-		// JMX registration
+-		//
+-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+-        mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+-        mbs.registerMBean(localVCellBootstrap.bootstrapMXBean, new ObjectName(BootstrapMXBean.jmxObjectName));
+-        
+-		//
+ 		// spawn the WatchdogMonitor (which spawns the RMI registry, and binds the localVCellBootstrap)
+ 		//
+ 		long minuteMS = 60000;
+Index: src/cbit/vcell/mongodb/VCMongoMessage.java
+===================================================================
+--- src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12423)
++++ src/cbit/vcell/mongodb/VCMongoMessage.java	(revision 12422)
+@@ -203,10 +203,6 @@
+ 		return VCMongoMessage.serviceStartupTime;
+ 	}
+ 	
+-	public static int getServiceOrdinal(){
+-		return VCMongoMessage.serviceOrdinal;
+-	}
+-	
+ 	private static void addHeader(BasicDBObject dbObject, String messageType) throws UnknownHostException{
+ 		dbObject.put(MongoMessage_serverId, org.vcell.util.PropertyLoader.getProperty(org.vcell.util.PropertyLoader.vcellServerIDProperty,"unknown"));
+ 		dbObject.put(MongoMessage_serviceName,serviceName.name());
