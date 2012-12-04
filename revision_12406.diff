@@ -1,0 +1,802 @@
+Index: src/cbit/vcell/message/server/dispatcher/BatchScheduler.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/BatchScheduler.java	(revision 12406)
++++ src/cbit/vcell/message/server/dispatcher/BatchScheduler.java	(revision 12405)
+@@ -16,16 +16,13 @@
+ import java.util.HashSet;
+ import java.util.Hashtable;
+ import java.util.Iterator;
+-import java.util.Map;
+ 
+ import org.vcell.util.PropertyLoader;
+ import org.vcell.util.SessionLog;
+-import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
+-import cbit.vcell.messaging.db.SimulationJobStatus;
+-import cbit.vcell.messaging.db.SimulationRequirements;
++import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ 
+ /**
+  * Insert the type's description here.
+@@ -40,16 +37,14 @@
+ 		public final Integer numRunningPDEs;
+ 		public final Integer numRunningODEs;
+ 		public final Long waitingTimeStamp;
+-		public final SimulationJobStatus simJobStatus;
+-		public final SimulationRequirements simRequirements;
++		public final SimulationJobStatusInfo simJobStatusInfo;
+ 
+-		public WaitingJob(User user, int numRunningPDEs, int numRunningODEs, long waitingTimeStamp, SimulationJobStatus simJobStatus, SimulationRequirements simRequirements) {
++		public WaitingJob(User user, int numRunningPDEs, int numRunningODEs, long waitingTimeStamp, SimulationJobStatusInfo simJobStatusInfo) {
+ 			this.user = user;
+ 			this.numRunningPDEs = numRunningPDEs;
+ 			this.numRunningODEs = numRunningODEs;
+ 			this.waitingTimeStamp = waitingTimeStamp;
+-			this.simJobStatus = simJobStatus;
+-			this.simRequirements = simRequirements;
++			this.simJobStatusInfo = simJobStatusInfo;
+ 		}
+ 		
+ 		public Integer getNumRunningJobs(){
+@@ -74,24 +69,19 @@
+ 	return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxPdeJobsPerUser));
+ }
+ 
+-public static int getMaxJobsPerSite() {
+-	return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxJobsPerSite));
+-}
+-
+-
+ /**
+  * Insert the method's description here.
+  * Creation date: (5/11/2006 9:32:58 AM)
+  */
+-public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsThisSite, Map<KeyValue,SimulationRequirements> simulationRequirementsMap, int siteJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
++public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int globalJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
+ 	Hashtable<User, Integer> userPdeRunningJobsThisSite = new Hashtable<User, Integer>();
+ 	Hashtable<User, Integer> userOdeRunningJobsThisSite = new Hashtable<User, Integer>();
+ 	
+ 
+ 	cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
+-	int numRunningJobsThisSite = 0;
+-	for (int i = 0; i < activeJobsThisSite.length; i++){
+-		jobStatus = activeJobsThisSite[i];
++	int numRunningJobsAllSites = 0;
++	for (int i = 0; i < allActiveJobs.length; i++){
++		jobStatus = allActiveJobs[i].getSimJobStatus();
+ 
+ 		if (!jobStatus.getSchedulerStatus().isActive()) {
+ 			continue;
+@@ -101,12 +91,11 @@
+ 			continue;  // we only do statistics on running jobs;
+ 		}
+ 		
+-		numRunningJobsThisSite++;
++		numRunningJobsAllSites++;
+ 		
+ 		if (jobStatus.getServerID().equals(systemID)) { // the number of running jobs on this site
+-			User user = activeJobsThisSite[i].getVCSimulationIdentifier().getOwner();
+-			SimulationRequirements simRequirements = simulationRequirementsMap.get(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+-			if(simRequirements!=null && simRequirements.isPDE()) {
++			User user = allActiveJobs[i].getUser();
++			if(allActiveJobs[i].isPDE()) {
+ 				Integer numUserPdeJobs = userPdeRunningJobsThisSite.get(user);
+ 				if (numUserPdeJobs == null) {
+ 					userPdeRunningJobsThisSite.put(user, 1);
+@@ -124,8 +113,8 @@
+ 		}
+ 	}
+ 	ArrayList<WaitingJob> waitingJobs = new ArrayList<WaitingJob>();
+-	for (int i = 0; i < activeJobsThisSite.length; i++){
+-		jobStatus = activeJobsThisSite[i];
++	for (int i = 0; i < allActiveJobs.length; i++){
++		jobStatus = allActiveJobs[i].getSimJobStatus();
+ 			
+ 		if (!jobStatus.getSchedulerStatus().isWaiting()) {
+ 			continue; // ignore non-waiting job
+@@ -134,7 +123,7 @@
+ 			continue; // doesn't belong
+ 		}
+ 
+-		User user = activeJobsThisSite[i].getVCSimulationIdentifier().getOwner();
++		User user = allActiveJobs[i].getUser();
+ 		Integer numRunningPDEsThisSite = userPdeRunningJobsThisSite.get(user);
+ 		if (numRunningPDEsThisSite==null){
+ 			numRunningPDEsThisSite = new Integer(0);
+@@ -145,8 +134,7 @@
+ 		}
+ 		long waitingTimeStamp = jobStatus.getSimulationQueueEntryStatus().getQueueDate().getTime();
+ 		
+-		KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
+-		waitingJobs.add(new WaitingJob(user, numRunningPDEsThisSite, numRunningODEsThisSite, waitingTimeStamp, jobStatus, simulationRequirementsMap.get(simKey)));
++		waitingJobs.add(new WaitingJob(user, numRunningPDEsThisSite, numRunningODEsThisSite, waitingTimeStamp, allActiveJobs[i]));
+ 	}
+ 
+ 	Collections.sort(waitingJobs,new Comparator<WaitingJob>(){
+@@ -162,8 +150,8 @@
+ 			//
+ 			// ODEs take precedence over PDEs (they should be faster)
+ 			//
+-			if (o1.simRequirements.isPDE() != o2.simRequirements.isPDE()){
+-				if (o1.simRequirements.isPDE()){
++			if (o1.simJobStatusInfo.isPDE() != o2.simJobStatusInfo.isPDE()){
++				if (o1.simJobStatusInfo.isPDE()){
+ 					return 1;
+ 				}else{
+ 					return -1;
+@@ -202,7 +190,7 @@
+ 		while (waitingJobIter.hasNext()){
+ 			WaitingJob waitingJob = waitingJobIter.next();
+ 			if (waitingJob.user.equals(user)){
+-				if (waitingJob.simRequirements.isPDE()){
++				if (waitingJob.simJobStatusInfo.isPDE()){
+ 					if (numRunningPDEs < userQuotaPde){
+ 						numRunningPDEs++;
+ 					}else{
+@@ -219,9 +207,9 @@
+ 		}
+ 	}
+ 	//
+-	// enforce site quota (keep only first N jobs) where currentRunning + N <= quota
++	// enforce global quota (keep only first N jobs) where currentRunning + N <= quota
+ 	//
+-	int numJobsSlotsAvailable = Math.max(0, siteJobQuota - numRunningJobsThisSite);
++	int numJobsSlotsAvailable = Math.max(0, globalJobQuota - numRunningJobsAllSites);
+ 	int numJobsEligible = waitingJobs.size();
+ 	int numJobsToDispatch = Math.min(numJobsSlotsAvailable,numJobsEligible);
+ 	if (numJobsToDispatch == 0){
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java	(revision 12406)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDatabase.java	(revision 12405)
+@@ -4,12 +4,12 @@
+ import java.util.Collections;
+ import java.util.HashMap;
+ import java.util.HashSet;
+-import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.Vector;
+ 
+ import org.vcell.util.BigString;
++import org.vcell.util.CacheException;
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ObjectNotFoundException;
+ import org.vcell.util.SessionLog;
+@@ -18,13 +18,14 @@
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
++import cbit.sql.DBCacheTable;
+ import cbit.vcell.field.FieldDataDBOperationResults;
+ import cbit.vcell.field.FieldDataDBOperationSpec;
+ import cbit.vcell.field.FieldDataIdentifierSpec;
+ import cbit.vcell.field.FieldFunctionArguments;
+ import cbit.vcell.field.FieldUtilities;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+-import cbit.vcell.messaging.db.SimulationRequirements;
++import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+@@ -69,17 +70,16 @@
+ 		return adminDbTopLevel.insertSimulationJobStatus(simulationJobStatus,true);
+ 	}
+ 
+-	public SimulationJobStatus[] getActiveJobs(VCellServerID serverID) throws DataAccessException, SQLException{
+-		SimulationJobStatus[] activeJobs = adminDbTopLevel.getActiveJobs(serverID,true);
++	public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs) throws DataAccessException, SQLException{
++		SimulationJobStatusInfo[] activeJobs = adminDbTopLevel.getActiveJobs(serverIDs,true);
+ 		return activeJobs;
+ 	}
+-	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys) throws SQLException {
+-		Map<KeyValue,SimulationRequirements> simReqMap = adminDbTopLevel.getSimulationRequirements(simKeys,true);
+-		return simReqMap;
+-	}
+-	
+ 	public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException {
+-		return adminDbTopLevel.updateSimulationJobStatus(oldSimulationJobStatus,newSimulationJobStatus,true);
++		if (oldSimulationJobStatus==null){
++			return adminDbTopLevel.insertSimulationJobStatus(newSimulationJobStatus,true);
++		}else{
++			return adminDbTopLevel.updateSimulationJobStatus(oldSimulationJobStatus,newSimulationJobStatus,true);
++		}
+ 	}
+ 
+ 	public Simulation getSimulation(User user, KeyValue simKey) throws DataAccessException {
+Index: src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12406)
++++ src/cbit/vcell/message/server/dispatcher/SimulationStateMachine.java	(revision 12405)
+@@ -536,7 +536,7 @@
+ 					SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB+"MB allowed"),
+ 					newQueueStatus,newSimExeStatus);
+ 			
+-			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
++			updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newSimJobStatus);
+ 			
+ 			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
+ 			message.sendToClient(session);
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12406)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12405)
+@@ -10,12 +10,13 @@
+ 
+ package cbit.vcell.message.server.dispatcher;
+ import java.sql.SQLException;
+-import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
++import java.util.StringTokenizer;
++import java.util.TreeMap;
+ 
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.ExecutableException;
+@@ -54,14 +55,14 @@
+ import cbit.vcell.message.server.htc.HtcException;
+ import cbit.vcell.message.server.htc.HtcJobID;
+ import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
++import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.HtcJobNotFoundException;
+ import cbit.vcell.message.server.htc.HtcProxy;
+-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
+ import cbit.vcell.message.server.htc.pbs.PbsProxy;
+ import cbit.vcell.message.server.htc.sge.SgeProxy;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+-import cbit.vcell.messaging.db.SimulationRequirements;
++import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.modeldb.AdminDBTopLevel;
+ import cbit.vcell.modeldb.DatabaseServerImpl;
+ import cbit.vcell.modeldb.DbDriver;
+@@ -111,19 +112,14 @@
+ 				boolean bDispatchedAnyJobs = false;
+ 
+ 				try {
+-					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
+-					ArrayList<KeyValue> simKeys = new ArrayList<KeyValue>();
+-					for (SimulationJobStatus simJobStatus : allActiveJobs){
+-						simKeys.add(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
+-					}
+-					final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
++					final SimulationJobStatusInfo[] allActiveJobs = simulationDatabase.getActiveJobs(getHTCPartitionShareServerIDs());
+ 					if (allActiveJobs != null && allActiveJobs.length > 0) {
+-						int maxJobsPerSite = BatchScheduler.getMaxJobsPerSite();
++						int htcMaxJobs = getHTCPartitionMaximumJobs();
+ 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
+ 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
+ 						VCellServerID serverID = VCellServerID.getSystemServerID();
+ 						
+-						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
++						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
+ 						
+ 						//
+ 						// temporarily save simulations during this dispatch iteration (to expedite dispatching multiple simulation jobs for same simulation).
+@@ -131,7 +127,7 @@
+ 						//
+ 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
+ 						for (WaitingJob waitingJob : waitingJobs){
+-							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
++							SimulationJobStatus jobStatus = waitingJob.simJobStatusInfo.getSimJobStatus();
+ 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
+ 							KeyValue simKey = vcSimID.getSimulationKey();
+ 							Simulation sim = tempSimulationMap.get(simKey);
+@@ -285,25 +281,26 @@
+ 			//
+ 			//
+ 			long currentTimeMS = System.currentTimeMillis();
+-			SimulationJobStatus[] activeJobStatusArray = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
++			SimulationJobStatusInfo[] activeJobStatusInfoArray = simulationDatabase.getActiveJobs(new VCellServerID[] { VCellServerID.getSystemServerID() });
+ 			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
+-			for (SimulationJobStatus activeJobStatus : activeJobStatusArray){
+-				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
+-				long timeSinceLastUpdateMS = currentTimeMS - activeJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
++			for (SimulationJobStatusInfo activeJobStatus : activeJobStatusInfoArray){
++				SimulationJobStatus jobStatus = activeJobStatus.getSimJobStatus();
++				SchedulerStatus schedulerStatus = jobStatus.getSchedulerStatus();
++				long timeSinceLastUpdateMS = currentTimeMS - jobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+ 				
+ 				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
+ 
+-				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(activeJobStatus.getVCSimulationIdentifier().getSimulationKey());
++				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+ 				
+ 				if (bTimedOutSimulation || bUnreferencedSimulation){
+ 					String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
+-					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")\n\n");
+-					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
++					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
++					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
+ 					System.out.println(simStateMachine.show());
+-					VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage,simStateMachine);
+-					simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+-					if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
+-						HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
++					VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
++					simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
++					if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
++						HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
+ 						try {
+ 							htcProxy.killJob(htcJobId);
+ 						} catch (HtcJobNotFoundException e) {
+@@ -454,6 +451,39 @@
+ 
+ 
+ 	/**
++	 * Insert the method's description here.
++	 * Creation date: (2/21/2006 8:59:36 AM)
++	 * @return int
++	 */
++	private static int getHTCPartitionMaximumJobs() {
++		return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionMaximumJobs));
++	}
++
++
++	/**
++	 * Insert the method's description here.
++	 * Creation date: (2/21/2006 9:01:20 AM)
++	 * @return cbit.vcell.messaging.db.VCellServerID[]
++	 */
++	private static VCellServerID[] getHTCPartitionShareServerIDs() {
++		try {
++			String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionShareServerIDs);
++			StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");
++			VCellServerID[] serverIDs = new VCellServerID[st.countTokens() + 1]; // include the current system ServerID
++			serverIDs[0] = VCellServerID.getSystemServerID();
++
++			int count = 1;
++			while (st.hasMoreTokens()) {			
++				serverIDs[count] = VCellServerID.getServerID(st.nextToken());
++				count ++;			
++			}
++			return serverIDs;
++		} catch (Exception ex) {
++			return null;
++		}
++	}
++
++	/**
+ 	 * Starts the application.
+ 	 * @param args an array of command-line arguments
+ 	 */
+Index: src/cbit/vcell/modeldb/LocalAdminDbServer.java
+===================================================================
+--- src/cbit/vcell/modeldb/LocalAdminDbServer.java	(revision 12406)
++++ src/cbit/vcell/modeldb/LocalAdminDbServer.java	(revision 12405)
+@@ -18,11 +18,13 @@
+ import org.vcell.util.document.KeyValue;
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.UserInfo;
++import org.vcell.util.document.VCellServerID;
+ 
+ import cbit.sql.ConnectionFactory;
+ import cbit.sql.KeyFactory;
+ import cbit.vcell.messaging.db.SimpleJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
++import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+ import cbit.vcell.server.AdminDatabaseServer;
+ import cbit.vcell.server.UserLoginInfo;
+@@ -60,6 +62,14 @@
+ 	}
+ }
+ 
++public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs) throws DataAccessException{
++	try {
++		return adminDbTop.getActiveJobs(serverIDs,true);
++	}catch (Throwable e){
++		log.exception(e);
++		throw new DataAccessException("failure getting ActiveJobs");
++	}
++}
+ /**
+  * Insert the method's description here.
+  * Creation date: (1/31/2003 2:34:12 PM)
+Index: src/cbit/vcell/modeldb/AdminDBTopLevel.java
+===================================================================
+--- src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12406)
++++ src/cbit/vcell/modeldb/AdminDBTopLevel.java	(revision 12405)
+@@ -11,8 +11,6 @@
+ package cbit.vcell.modeldb;
+ import java.sql.Connection;
+ import java.sql.SQLException;
+-import java.util.List;
+-import java.util.Map;
+ import java.util.Set;
+ import java.util.Vector;
+ 
+@@ -32,7 +30,7 @@
+ import cbit.vcell.messaging.db.SimpleJobStatus;
+ import cbit.vcell.messaging.db.SimulationJobDbDriver;
+ import cbit.vcell.messaging.db.SimulationJobStatus;
+-import cbit.vcell.messaging.db.SimulationRequirements;
++import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+ import cbit.vcell.messaging.db.UpdateSynchronizationException;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ import cbit.vcell.server.UserLoginInfo;
+@@ -83,21 +81,21 @@
+  * Insert the method's description here.
+  * Creation date: (10/6/2005 3:14:40 PM)
+  */
+-SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
+-	SimulationJobStatus[] jobStatusArray = jobDB.getActiveJobs(con, serverID);
++SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] serverIDs) throws SQLException {
++	SimulationJobStatusInfo[] jobStatusArray = jobDB.getActiveJobs(con, serverIDs);
+ 	return jobStatusArray;
+ }
+ 
+-public SimulationJobStatus[] getActiveJobs(VCellServerID serverID, boolean bEnableRetry) throws java.sql.SQLException {
++public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs, boolean bEnableRetry) throws java.sql.SQLException {
+ 	Object lock = new Object();
+ 	Connection con = conFactory.getConnection(lock);
+ 	try {
+-		return jobDB.getActiveJobs(con,serverID);
++		return jobDB.getActiveJobs(con,serverIDs);
+ 	} catch (Throwable e) {
+ 		log.exception(e);
+ 		if (bEnableRetry && isBadConnection(con)) {
+ 			conFactory.failed(con,lock);
+-			return getActiveJobs(serverID, false);
++			return getActiveJobs(serverIDs, false);
+ 		}else{
+ 			handle_SQLException(e);
+ 			return null; // never gets here;
+@@ -107,27 +105,6 @@
+ 	}
+ }
+ 
+-public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys, boolean bEnableRetry) throws java.sql.SQLException {
+-	Object lock = new Object();
+-	Connection con = conFactory.getConnection(lock);
+-	try {
+-		return jobDB.getSimulationRequirements(con, simKeys);
+-	} catch (Throwable e) {
+-		log.exception(e);
+-		if (bEnableRetry && isBadConnection(con)) {
+-			conFactory.failed(con,lock);
+-			return getSimulationRequirements(simKeys, false);
+-		}else{
+-			handle_SQLException(e);
+-			return null; // never gets here;
+-		}
+-	} finally {
+-		conFactory.release(con,lock);
+-	}
+-}
+-
+-
+-
+ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws java.sql.SQLException {
+ 	Object lock = new Object();
+ 	Connection con = conFactory.getConnection(lock);
+Index: src/cbit/vcell/messaging/db/SimulationRequirements.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationRequirements.java	(revision 12406)
++++ src/cbit/vcell/messaging/db/SimulationRequirements.java	(revision 12405)
+@@ -1,51 +0,0 @@
+-/*
+- * Copyright (C) 1999-2011 University of Connecticut Health Center
+- *
+- * Licensed under the MIT License (the "License").
+- * You may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at:
+- *
+- *  http://www.opensource.org/licenses/mit-license.php
+- */
+-
+-package cbit.vcell.messaging.db;
+-import org.vcell.util.document.KeyValue;
+-
+-/**
+- * Insert the type's description here.
+- * Creation date: (5/9/2006 3:55:48 PM)
+- * @author: Jim Schaff
+- */
+-public class SimulationRequirements implements java.io.Serializable {
+-	private KeyValue simKey = null;
+-	private int dimension = 0;
+-
+-/**
+- * SimulationJobStatusInfo constructor comment.
+- */
+-public SimulationRequirements(KeyValue simKey, int dim) {
+-	super();
+-	this.simKey = simKey;
+-	dimension = dim;
+-}
+-
+-
+-/**
+- * Insert the method's description here.
+- * Creation date: (5/9/2006 3:57:30 PM)
+- * @return cbit.vcell.messaging.db.SimulationJobStatus
+- */
+-public KeyValue getSimKey() {
+-	return this.simKey;
+-}
+-
+-
+-/**
+- * Insert the method's description here.
+- * Creation date: (5/9/2006 3:57:30 PM)
+- * @return boolean
+- */
+-public boolean isPDE() {
+-	return dimension > 0;
+-}
+-}
+Index: src/cbit/vcell/messaging/db/SimulationJobStatusInfo.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobStatusInfo.java	(revision 0)
++++ src/cbit/vcell/messaging/db/SimulationJobStatusInfo.java	(revision 12405)
+@@ -0,0 +1,61 @@
++/*
++ * Copyright (C) 1999-2011 University of Connecticut Health Center
++ *
++ * Licensed under the MIT License (the "License").
++ * You may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at:
++ *
++ *  http://www.opensource.org/licenses/mit-license.php
++ */
++
++package cbit.vcell.messaging.db;
++import org.vcell.util.document.User;
++
++/**
++ * Insert the type's description here.
++ * Creation date: (5/9/2006 3:55:48 PM)
++ * @author: Jim Schaff
++ */
++public class SimulationJobStatusInfo implements java.io.Serializable {
++	private SimulationJobStatus simJobStatus = null;
++	private int dimension = 0;
++
++/**
++ * SimulationJobStatusInfo constructor comment.
++ */
++public SimulationJobStatusInfo(SimulationJobStatus sjs, int dim) {
++	super();
++	simJobStatus = sjs;
++	dimension = dim;
++}
++
++
++/**
++ * Insert the method's description here.
++ * Creation date: (5/9/2006 3:57:30 PM)
++ * @return cbit.vcell.messaging.db.SimulationJobStatus
++ */
++public SimulationJobStatus getSimJobStatus() {
++	return simJobStatus;
++}
++
++
++/**
++ * Insert the method's description here.
++ * Creation date: (5/9/2006 3:57:30 PM)
++ * @return User
++ */
++public User getUser() {
++	return simJobStatus.getVCSimulationIdentifier().getOwner();
++}
++
++
++/**
++ * Insert the method's description here.
++ * Creation date: (5/9/2006 3:57:30 PM)
++ * @return boolean
++ */
++public boolean isPDE() {
++	return dimension > 0;
++}
++}
+Index: src/cbit/vcell/messaging/db/SimulationJobDbDriver.java
+===================================================================
+--- src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12406)
++++ src/cbit/vcell/messaging/db/SimulationJobDbDriver.java	(revision 12405)
+@@ -9,14 +9,18 @@
+  */
+ 
+ package cbit.vcell.messaging.db;
+-import java.sql.Connection;
+-import java.sql.ResultSet;
+-import java.sql.SQLException;
+-import java.sql.Statement;
++import java.sql.*;
++import cbit.vcell.messaging.db.SimulationJobStatus;
++import cbit.vcell.messaging.db.SimulationJobTable;
++import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
++import cbit.vcell.modeldb.BioModelSimulationLinkTable;
++import cbit.vcell.modeldb.MathModelSimulationLinkTable;
++import cbit.vcell.modeldb.SimulationTable;
++import cbit.vcell.modeldb.DatabaseConstants;
+ import java.util.ArrayList;
+-import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.List;
+-import java.util.Map;
++import java.util.Set;
+ 
+ import org.vcell.util.DataAccessException;
+ import org.vcell.util.SessionLog;
+@@ -24,9 +28,6 @@
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.VCellServerID;
+ 
+-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+-import cbit.vcell.modeldb.DatabaseConstants;
+-import cbit.vcell.modeldb.SimulationTable;
+ import cbit.vcell.modeldb.UserTable;
+ 
+ /**
+@@ -78,12 +79,14 @@
+  * @param user java.lang.String
+  * @param imageName java.lang.String
+  */
+-public SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
++public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] serverIDs) throws SQLException {
+ 	String sql = "SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() 
+-			+ "," + userTable.userid.getQualifiedColName() 
+-			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
++			+ "," + userTable.userid.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
++			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
+ 			+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
+-			+ " AND " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName();
++			+ " AND " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
++			+ " AND " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
++			+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName();
+ 			
+ 			
+ 	sql += " AND "
+@@ -93,66 +96,36 @@
+ 			+ "," + SchedulerStatus.WAITING.getDatabaseNumber() // waiting
+ 			+ ")";
+ 
+-	// AND upper(serverID) = 'serverid1';
+-	if (serverID != null) {
++	// AND upper(serverID) in ('serverid1', serverid2');
++	if (serverIDs != null) {
+ 		// all in uppercase
+-		sql += " AND upper(" + jobTable.serverID.getQualifiedColName() + ") = " + "'" + serverID.toString().toUpperCase() + "'";
++		sql += " AND upper(" + jobTable.serverID.getQualifiedColName() + ") in (";
++		for (int i = 0; i < serverIDs.length; i ++) {
++			sql += "'" + serverIDs[i].toString().toUpperCase() + "'";
++			if (i < serverIDs.length - 1) {
++				sql += ",";
++			}
++		}
++		sql += ")";
+ 	}
+ 
+ 	sql += " order by " + jobTable.submitDate.getQualifiedColName(); // order by submit date
+ 		
+ 	//log.print(sql);
+ 	Statement stmt = con.createStatement();
+-	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
++	java.util.List<SimulationJobStatusInfo> simJobStatusInfoList = new java.util.ArrayList<SimulationJobStatusInfo>();
+ 	try {
+ 		ResultSet rset = stmt.executeQuery(sql);
+ 		while (rset.next()) {
+ 			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+-			simJobStatusList.add(simJobStatus);
+-		}
+-	} finally {
+-		stmt.close();
+-	}
+-	
+-	return (SimulationJobStatus[])simJobStatusList.toArray(new SimulationJobStatus[0]);
+-}
+-
+-/**
+- * This method was created in VisualAge.
+- * @return int
+- * @param user java.lang.String
+- * @param imageName java.lang.String
+- */
+-public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection con, List<KeyValue> simKeys) throws SQLException {
+-	StringBuffer simKeyListBuffer = new StringBuffer();
+-	for (int i=0;i<simKeys.size();i++){
+-		KeyValue key = simKeys.get(i);
+-		simKeyListBuffer.append(key);
+-		if (i<simKeys.size()-1){
+-			simKeyListBuffer.append(",");
+-		}
+-	}
+-	String sql = "SELECT " + simTable.id.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
+-			+ " FROM " + simTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
+-			+ " WHERE " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
+-			+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName()
+-			+ " AND " + simTable.id.getQualifiedColName() + " in ( "+ simKeyListBuffer.toString() + " )";
+-			
+-	//log.print(sql);
+-	Statement stmt = con.createStatement();
+-	HashMap<KeyValue,SimulationRequirements> simulationRequirementsMap = new HashMap<KeyValue,SimulationRequirements>();
+-	try {
+-		ResultSet rset = stmt.executeQuery(sql);
+-		while (rset.next()) {
+-			KeyValue simKey = new KeyValue(rset.getBigDecimal(simTable.id.toString()));
+ 			int dimension = rset.getInt(geometryTable.dimension.toString());			
+-			simulationRequirementsMap.put(simKey,new SimulationRequirements(simKey, dimension));
++			simJobStatusInfoList.add(new SimulationJobStatusInfo(simJobStatus, dimension));
+ 		}
+ 	} finally {
+ 		stmt.close();
+ 	}
+ 	
+-	return simulationRequirementsMap;
++	return (SimulationJobStatusInfo[])simJobStatusInfoList.toArray(new SimulationJobStatusInfo[0]);
+ }
+ 
+ /**
+Index: src/org/vcell/util/PropertyLoader.java
+===================================================================
+--- src/org/vcell/util/PropertyLoader.java	(revision 12406)
++++ src/org/vcell/util/PropertyLoader.java	(revision 12405)
+@@ -112,8 +112,7 @@
+ 
+ 	public static final String maxOdeJobsPerUser	= "vcell.server.maxOdeJobsPerUser";
+ 	public static final String maxPdeJobsPerUser	= "vcell.server.maxPdeJobsPerUser";
+-	public static final String maxJobsPerScan		= "vcell.server.maxJobsPerScan";
+-	public static final String maxJobsPerSite		= "vcell.server.maxJobsPerSite";
++	public static final String maxJobsPerScan	= "vcell.server.maxJobsPerScan";
+ 	
+ 	public static final String jmsServiceControlTopic	= "vcell.jms.topic.serviceControl";
+ 	public static final String jmsDaemonControlTopic	= "vcell.jms.topic.daemonControl";
+@@ -143,6 +142,8 @@
+ 	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
+ 	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
+ 	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
++	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
++	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
+ 	public static final String htcComputeResources = "vcell.htc.computeresources";
+ 	
+ 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
+@@ -242,7 +243,6 @@
+ 		maxOdeJobsPerUser,
+ 		maxPdeJobsPerUser,
+ 		maxJobsPerScan,
+-		maxJobsPerSite,
+ 		
+ 		jmsServiceControlTopic,
+ 		jmsDaemonControlTopic,
+@@ -268,6 +268,8 @@
+ 		vcellClientTimeoutMS,
+ 		
+ 		htcComputeResources,
++		htcPartitionMaximumJobs,
++		htcPartitionShareServerIDs,		
+ 		pbsHomeDir,
+ 
+ 		
+Index: deployInfo/vcell64.properties
+===================================================================
+--- deployInfo/vcell64.properties	(revision 12406)
++++ deployInfo/vcell64.properties	(revision 12405)
+@@ -84,14 +84,17 @@
+ #
+ # Quota info
+ #
+-vcell.server.maxOdeJobsPerUser = 10
+-vcell.server.maxPdeJobsPerUser = 10
++vcell.server.maxOdeJobsPerUser = 40
++vcell.server.maxPdeJobsPerUser = 40
+ vcell.server.maxJobsPerScan = 100
+-vcell.server.maxJobsPerSite = 100
+ 
+ #
+ # HTC info
+ #
++vcell.htc.partition.maximumJobs = 200
++vcell.htc.partition.shareServerIDs = REL BETA ALPHA TEST TEST2 TEST3
++#vcell.htc.computeresources = osgrocks64
++#vcell.htc.submittemplates = osgrocks64@GENERATED_SERVER_SITE_PATH/configs/pbstemplate.sub
+ vcell.htc.computeresources = sigcluster
+ vcell.htc.submittemplates = sigcluster@GENERATED_SERVER_SITE_PATH/configs/pbstemplate.sub
+ vcell.pbs.homeDir = /cm/shared/apps/torque/current

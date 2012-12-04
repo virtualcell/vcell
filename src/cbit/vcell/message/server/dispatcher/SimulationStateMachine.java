@@ -537,7 +537,6 @@ public class SimulationStateMachine {
 					newQueueStatus,newSimExeStatus);
 
 			updatedSimJobStatus = simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,newSimJobStatus);
-//			updatedSimJobStatus = simulationDatabase.insertSimulationJobStatus(newSimJobStatus);
 			
 			StatusMessage message = new StatusMessage(updatedSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
 			message.sendToClient(session);
