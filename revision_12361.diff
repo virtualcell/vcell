@@ -1,0 +1,32 @@
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12361)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12360)
+@@ -56,15 +56,12 @@
+ 			return htcJobID;
+ 		}
+ 		public String getJobName(){
+-			validate();
+ 			return jobName;
+ 		}
+ 		public String getErrorPath() {
+-			validate();
+ 			return errorPath;
+ 		}
+ 		public String getOutputPath() {
+-			validate();
+ 			return outputPath;
+ 		}
+ 		public boolean isFound(){
+@@ -77,11 +74,6 @@
+ 				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
+ 			}
+ 		}
+-		private void validate(){
+-			if(!isFound()){
+-				throw new RuntimeException("Must call isFound() before using HtcJobInfo to verify info exists");
+-			}
+-		}
+ 	}
+ 	protected enum HtcJobCategory {
+ 		HTC_SIMULATION_JOB,
