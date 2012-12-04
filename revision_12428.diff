@@ -1,0 +1,90 @@
+Index: src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java
+===================================================================
+--- src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java	(revision 12428)
++++ src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java	(revision 12427)
+@@ -49,7 +49,6 @@
+ 	private SessionLog log = null;
+ 
+ 	private long timeSinceLastMessage = System.currentTimeMillis();
+-	private VCTopicConsumer topicConsumer = null;
+ 
+ /**
+  * ClientStatusMonitor constructor comment.
+@@ -210,7 +209,7 @@
+ public void init() {
+ 	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
+ 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
+-	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
++	VCTopicConsumer topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
+ 	vcMessagingService.addMessageConsumer(topicConsumer);
+ }
+ 
+@@ -239,12 +238,4 @@
+ public void onWorkerEvent(WorkerEvent event) {	
+ 	System.out.println("jms message collector doesn't listen for WorkerEvent");
+ }
+-
+-
+-public void close() {
+-	if (topicConsumer!=null){
+-		vcMessagingService.removeMessageConsumer(topicConsumer);
+-		topicConsumer = null;
+-	}
+ }
+-}
+Index: src/cbit/vcell/message/server/bootstrap/LocalVCellConnectionMessaging.java
+===================================================================
+--- src/cbit/vcell/message/server/bootstrap/LocalVCellConnectionMessaging.java	(revision 12428)
++++ src/cbit/vcell/message/server/bootstrap/LocalVCellConnectionMessaging.java	(revision 12427)
+@@ -72,24 +72,24 @@
+ 		SessionLog sessionLog, VCMessagingService vcMessagingService, LocalVCellServer aLocalVCellServer) 
+ 		throws RemoteException, FileNotFoundException {
+ 		
+-		super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
+-		this.userLoginInfo = userLoginInfo;
+-		this.fieldHost = host;
+-		this.fieldSessionLog = sessionLog;
+-		this.fieldLocalVCellServer = aLocalVCellServer;
+-		this.vcMessagingService = vcMessagingService;
+-		clientMessageCollector = new ClientTopicMessageCollector(vcMessagingService, userLoginInfo.getUser(), fieldSessionLog);
+-		
+-		messageService = new SimpleMessageService();
+-		clientMessageCollector.addMessageListener(messageService);
+-		
+-		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
+-		fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
+-		fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
+-		
+-		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
+-	}
++	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
++	this.userLoginInfo = userLoginInfo;
++	this.fieldHost = host;
++	this.fieldSessionLog = sessionLog;
++	this.fieldLocalVCellServer = aLocalVCellServer;
++	this.vcMessagingService = vcMessagingService;
++	clientMessageCollector = new ClientTopicMessageCollector(vcMessagingService, userLoginInfo.getUser(), fieldSessionLog);
+ 	
++	messageService = new SimpleMessageService();
++	clientMessageCollector.addMessageListener(messageService);
++	
++	sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
++	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
++	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
++	
++	performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
++}
++	
+ public void init(){
+ 	clientMessageCollector.init();
+ }
+@@ -110,9 +110,6 @@
+ 	if (vcMessageSessionSim!=null){
+ 		vcMessageSessionSim.close();
+ 	}
+-	if (clientMessageCollector!=null){
+-		clientMessageCollector.close();
+-	}
+ }
+ 
+ 
