@@ -10,6 +10,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -43,8 +44,10 @@ public abstract class HtcProxy {
 		private String jobName;
 		private String errorPath;
 		private String outputPath;
-		public HtcJobInfo(HtcJobID htcJobID, String jobName,String errorPath,String outputPath) {
+		private boolean bFound;
+		public HtcJobInfo(HtcJobID htcJobID, boolean bFound, String jobName,String errorPath,String outputPath) {
 			this.htcJobID = htcJobID;
+			this.bFound = bFound;
 			this.jobName = jobName;
 			this.errorPath = errorPath;
 			this.outputPath = outputPath;
@@ -53,16 +56,31 @@ public abstract class HtcProxy {
 			return htcJobID;
 		}
 		public String getJobName(){
+			validate();
 			return jobName;
 		}
 		public String getErrorPath() {
+			validate();
 			return errorPath;
 		}
 		public String getOutputPath() {
+			validate();
 			return outputPath;
 		}
+		public boolean isFound(){
+			return bFound;
+		}
 		public String toString(){
-			return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+			if (bFound){
+				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+			}else{
+				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
+			}
+		}
+		private void validate(){
+			if(!isFound()){
+				throw new RuntimeException("Must call isFound() before using HtcJobInfo to verify info exists");
+			}
 		}
 	}
 	protected enum HtcJobCategory {
@@ -122,7 +140,7 @@ public abstract class HtcProxy {
 
 	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
 	
-	public abstract List<HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
+	public abstract Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
 
 	public final CommandService getCommandService() {
 		return commandService;

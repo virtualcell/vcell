@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -228,36 +229,37 @@ public class SimulationDispatcher extends ServiceProvider {
 		
 		private void killZombieProcesses() throws ExecutableException{
 			List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
-			List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
-			for (int i=0;i<runningSimulations.size();i++){
-				HtcJobID htcJobID = runningSimulations.get(i);
-				HtcJobInfo jobInfo = jobInfos.get(i);
-				try {
-					String simJobName = jobInfo.getJobName();
-					HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
-					SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
-					String failureMessage = null;
-					boolean killJob = false;
-					if (simJobStatus==null){
-						failureMessage = "no jobStatus found in database for running htc job";
-						killJob = true;
-					}else if (simJobStatus.getSchedulerStatus().isDone()){
-						failureMessage = "jobStatus Done in database for running htc job";
-						if (simJobStatus.getSimulationExecutionStatus()==null){
+			Map<HtcJobID,HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
+			for (HtcJobID htcJobID : runningSimulations){
+				HtcJobInfo jobInfo = jobInfos.get(htcJobID);
+				if (jobInfo.isFound()){
+					try {
+						String simJobName = jobInfo.getJobName();
+						HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
+						SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+						String failureMessage = null;
+						boolean killJob = false;
+						if (simJobStatus==null){
+							failureMessage = "no jobStatus found in database for running htc job";
 							killJob = true;
-						}else{
-							long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
-							if (elapsedTimeMS > 10000){
+						}else if (simJobStatus.getSchedulerStatus().isDone()){
+							failureMessage = "jobStatus Done in database for running htc job";
+							if (simJobStatus.getSimulationExecutionStatus()==null){
 								killJob = true;
+							}else{
+								long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+								if (elapsedTimeMS > MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS){
+									killJob = true;
+								}
 							}
 						}
+						if (killJob){
+							VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
+							htcProxy.killJob(htcJobID);
+						}
+					}catch (Exception e){
+						log.exception(e);
 					}
-					if (killJob){
-						VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
-						htcProxy.killJob(htcJobID);
-					}
-				}catch (Exception e){
-					log.exception(e);
 				}
 			}
 		}
