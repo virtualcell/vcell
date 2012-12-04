@@ -9,6 +9,11 @@
  */
 
 package cbit.vcell.message.server.sim;
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -20,6 +25,8 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.jmx.VCellServiceMXBean;
+import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -55,7 +62,13 @@ public class SolverPostprocessor  {
 						
 			VCMongoMessage.serviceStartup(ServiceName.solverPostprocessor, Integer.valueOf(simKey.toString()), args);
 
-			vcMessagingService = VCMessagingService.createInstance();
+			//
+			// JMX registration
+			//
+			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
+ 
+	        vcMessagingService = VCMessagingService.createInstance();
 			VCMessageSession session = vcMessagingService.createProducerSession();
 			if (solverExitCode==0){
 				WorkerEventMessage workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
