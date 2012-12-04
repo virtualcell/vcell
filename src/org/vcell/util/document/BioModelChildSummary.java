@@ -113,7 +113,8 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 			geoNamesV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 			int[] temp = new int[geoDimsArr.length + 1];
 			System.arraycopy(geoDimsArr,0,temp,0,geoDimsArr.length);
-			temp[temp.length-1] = Integer.parseInt((String)st.nextElement());
+			String geoDimStr = st.nextToken().replace("D", "");
+			temp[temp.length-1] = Integer.parseInt(geoDimStr);
 			geoDimsArr = temp;
 			
 			int numSims = Integer.parseInt((String)st.nextElement());
