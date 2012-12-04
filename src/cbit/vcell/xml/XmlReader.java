@@ -1423,6 +1423,35 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 		if (specieref == null) {
 			throw new XmlParseException("The Species " + speciesname + " could not be resolved in the dictionnary!");
 		}
+	} else {
+		// if model was saved in 5.3 or later, there is no flux carrier, only reaction participants
+		
+		Species insideSpeciesRef = null;
+		Species outsideSpeciesRef = null;
+		// get species associated with reactant
+		Iterator<Element> iterator = param.getChildren(XMLTags.ReactantTag, vcNamespace).iterator();
+		while (iterator.hasNext()) {
+			Element temp = iterator.next();
+			// get the speciesContext/species associated with this reactionParticipant (reactant - this is the outside species)
+		    String speccontref = unMangle(temp.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
+		    outsideSpeciesRef = model.getSpeciesContext(speccontref).getSpecies();
+		}
+
+		// get species associated with product
+		iterator = param.getChildren(XMLTags.ProductTag, vcNamespace).iterator();
+		while (iterator.hasNext()) {
+			Element temp = iterator.next();
+			// get the speciesContext/species associated with this reactionParticipant (product - this is the inside species)
+		    String speccontref = unMangle(temp.getAttributeValue(XMLTags.SpeciesContextRefAttrTag));
+		    insideSpeciesRef = model.getSpeciesContext(speccontref).getSpecies();
+		}
+	
+		// if inside and outside species are the same, this is the flix carrier speciesRed
+		if (insideSpeciesRef == outsideSpeciesRef) {
+			specieref = insideSpeciesRef;
+		} else {
+			throw new XmlParseException("The inside species '" + insideSpeciesRef.getCommonName() + "' and outside species '" + outsideSpeciesRef.getCommonName() + "' should be the same for a flux reaaction.");
+		}
 	}
 	
 	//-- Instantiate new FluxReaction --
@@ -1453,6 +1482,20 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException("A propertyVetoException was fired when setting the valence to the flux reaction " + name, e);
+			}
+		} else {
+			List<Element> list = param.getChild(XMLTags.KineticsTag, vcNamespace).getChildren(XMLTags.ParameterTag, vcNamespace);
+			for (Element xmlParam : list){
+				String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
+				if (role.equals(XMLTags.ParamRoleChargeValence)) {
+					Expression paramExp = unMangleExpression(xmlParam.getText());
+					if (!paramExp.isNumeric()) {
+						throw new XmlParseException("Cannot import model : charge valence for reaction '" + fluxreaction.getName() + "' must be numeric; found '" + paramExp.infix() + "'.");
+					} else {
+						fluxreaction.getChargeCarrierValence().setExpression(paramExp);
+					}
+					continue;
+				}
 			}
 		}
 	} catch (NumberFormatException e) {
@@ -2317,14 +2360,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				throw new XmlParseException("error reordering parameters according to dependencies: ", e);
 			}
 			Kinetics.KineticsParameter tempParam = null;
-			if (role.equals(XMLTags.ParamRoleChargeValence)) {
-				if (!paramExp.isNumeric()) {
-					throw new XmlParseException("Cannot import model : charge valence for reaction '" + reaction.getName() + "' must be numeric; found '" + paramExpStr + "'.");
-				} else {
-					reaction.getChargeCarrierValence().setExpression(paramExp);
-				}
-				continue;
-			} else if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
+			if (!role.equals(XMLTags.ParamRoleUserDefinedTag) && !role.equals(XMLTags.ParamRoleChargeValence)) {
 				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDesc(role));
 			}else{
 				continue;
@@ -4114,7 +4150,7 @@ private ReactionSpec getReactionSpec(Element param, Model model) throws XmlParse
  * @return cbit.vcell.model.SimpleReaction
  * @param param org.jdom.Element
  */
-private SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
+private SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException, PropertyVetoException {
     //resolve reference to the  structure that it belongs to.
     String structureName = unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
     Structure structureref = (Structure) model.getStructure(structureName);
@@ -4178,6 +4214,20 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Veto error when setting tha ChargeVarrierValence "+ carrierValue + "to reaction "+name, e);
+		}
+	} else {
+		List<Element> list = param.getChild(XMLTags.KineticsTag, vcNamespace).getChildren(XMLTags.ParameterTag, vcNamespace);
+		for (Element xmlParam : list){
+			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
+			if (role.equals(XMLTags.ParamRoleChargeValence)) {
+				Expression paramExp = unMangleExpression(xmlParam.getText());
+				if (!paramExp.isNumeric()) {
+					throw new XmlParseException("Cannot import model : charge valence for reaction '" + simplereaction.getName() + "' must be numeric; found '" + paramExp.infix() + "'.");
+				} else {
+					simplereaction.getChargeCarrierValence().setExpression(paramExp);
+				}
+				continue;
+			}
 		}
 	}
 
