@@ -4,12 +4,12 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.BigString;
-import org.vcell.util.CacheException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
@@ -18,14 +18,13 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.sql.DBCacheTable;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -70,16 +69,17 @@ public class SimulationDatabase {
 		return adminDbTopLevel.insertSimulationJobStatus(simulationJobStatus,true);
 	}
 
-	public SimulationJobStatusInfo[] getActiveJobs(VCellServerID[] serverIDs) throws DataAccessException, SQLException{
-		SimulationJobStatusInfo[] activeJobs = adminDbTopLevel.getActiveJobs(serverIDs,true);
+	public SimulationJobStatus[] getActiveJobs(VCellServerID serverID) throws DataAccessException, SQLException{
+		SimulationJobStatus[] activeJobs = adminDbTopLevel.getActiveJobs(serverID,true);
 		return activeJobs;
 	}
+	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys) throws SQLException {
+		Map<KeyValue,SimulationRequirements> simReqMap = adminDbTopLevel.getSimulationRequirements(simKeys,true);
+		return simReqMap;
+	}
+	
 	public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException {
-		if (oldSimulationJobStatus==null){
-			return adminDbTopLevel.insertSimulationJobStatus(newSimulationJobStatus,true);
-		}else{
-			return adminDbTopLevel.updateSimulationJobStatus(oldSimulationJobStatus,newSimulationJobStatus,true);
-		}
+		return adminDbTopLevel.updateSimulationJobStatus(oldSimulationJobStatus,newSimulationJobStatus,true);
 	}
 
 	public Simulation getSimulation(User user, KeyValue simKey) throws DataAccessException {
