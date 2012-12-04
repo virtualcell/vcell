@@ -112,7 +112,8 @@ public class PropertyLoader {
 
 	public static final String maxOdeJobsPerUser	= "vcell.server.maxOdeJobsPerUser";
 	public static final String maxPdeJobsPerUser	= "vcell.server.maxPdeJobsPerUser";
-	public static final String maxJobsPerScan	= "vcell.server.maxJobsPerScan";
+	public static final String maxJobsPerScan		= "vcell.server.maxJobsPerScan";
+	public static final String maxJobsPerSite		= "vcell.server.maxJobsPerSite";
 	
 	public static final String jmsServiceControlTopic	= "vcell.jms.topic.serviceControl";
 	public static final String jmsDaemonControlTopic	= "vcell.jms.topic.daemonControl";
@@ -142,8 +143,6 @@ public class PropertyLoader {
 	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
 	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
 	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
-	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
-	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
 	public static final String htcComputeResources = "vcell.htc.computeresources";
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
@@ -240,6 +239,7 @@ public class PropertyLoader {
 		maxOdeJobsPerUser,
 		maxPdeJobsPerUser,
 		maxJobsPerScan,
+		maxJobsPerSite,
 		
 		jmsServiceControlTopic,
 		jmsDaemonControlTopic,
@@ -265,8 +265,6 @@ public class PropertyLoader {
 		vcellClientTimeoutMS,
 		
 		htcComputeResources,
-		htcPartitionMaximumJobs,
-		htcPartitionShareServerIDs,		
 		pbsHomeDir,
 
 		

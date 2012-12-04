@@ -10,13 +10,12 @@
 
 package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -55,14 +54,14 @@ import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
@@ -112,14 +111,19 @@ public class SimulationDispatcher extends ServiceProvider {
 				boolean bDispatchedAnyJobs = false;
 
 				try {
-					final SimulationJobStatusInfo[] allActiveJobs = simulationDatabase.getActiveJobs(getHTCPartitionShareServerIDs());
+					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
+					ArrayList<KeyValue> simKeys = new ArrayList<KeyValue>();
+					for (SimulationJobStatus simJobStatus : allActiveJobs){
+						simKeys.add(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
+					}
+					final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
-						int htcMaxJobs = getHTCPartitionMaximumJobs();
+						int maxJobsPerSite = BatchScheduler.getMaxJobsPerSite();
 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
 						VCellServerID serverID = VCellServerID.getSystemServerID();
 						
-						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, htcMaxJobs, maxOdePerUser, maxPdePerUser, serverID, log);
+						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
 						
 						//
 						// temporarily save simulations during this dispatch iteration (to expedite dispatching multiple simulation jobs for same simulation).
@@ -127,7 +131,7 @@ public class SimulationDispatcher extends ServiceProvider {
 						//
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
 						for (WaitingJob waitingJob : waitingJobs){
-							SimulationJobStatus jobStatus = waitingJob.simJobStatusInfo.getSimJobStatus();
+							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 							KeyValue simKey = vcSimID.getSimulationKey();
 							Simulation sim = tempSimulationMap.get(simKey);
@@ -281,26 +285,25 @@ public class SimulationDispatcher extends ServiceProvider {
 			//
 			//
 			long currentTimeMS = System.currentTimeMillis();
-			SimulationJobStatusInfo[] activeJobStatusInfoArray = simulationDatabase.getActiveJobs(new VCellServerID[] { VCellServerID.getSystemServerID() });
+			SimulationJobStatus[] activeJobStatusArray = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
 			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
-			for (SimulationJobStatusInfo activeJobStatus : activeJobStatusInfoArray){
-				SimulationJobStatus jobStatus = activeJobStatus.getSimJobStatus();
-				SchedulerStatus schedulerStatus = jobStatus.getSchedulerStatus();
-				long timeSinceLastUpdateMS = currentTimeMS - jobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+			for (SimulationJobStatus activeJobStatus : activeJobStatusArray){
+				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
+				long timeSinceLastUpdateMS = currentTimeMS - activeJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
 				
 				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
 
-				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(activeJobStatus.getVCSimulationIdentifier().getSimulationKey());
 				
 				if (bTimedOutSimulation || bUnreferencedSimulation){
 					String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
-					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + jobStatus + ")\n\n");
-					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(jobStatus.getVCSimulationIdentifier().getSimulationKey(), jobStatus.getJobIndex());
+					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")\n\n");
+					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
 					System.out.println(simStateMachine.show());
-					VCMongoMessage.sendObsoleteJob(jobStatus,failureMessage,simStateMachine);
-					simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
-					if (jobStatus.getSimulationExecutionStatus()!=null && jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
-						HtcJobID htcJobId = jobStatus.getSimulationExecutionStatus().getHtcJobID();
+					VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage,simStateMachine);
+					simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
+					if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
+						HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
 						try {
 							htcProxy.killJob(htcJobId);
 						} catch (HtcJobNotFoundException e) {
@@ -449,39 +452,6 @@ public class SimulationDispatcher extends ServiceProvider {
 		}
 	}
 
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (2/21/2006 8:59:36 AM)
-	 * @return int
-	 */
-	private static int getHTCPartitionMaximumJobs() {
-		return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionMaximumJobs));
-	}
-
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (2/21/2006 9:01:20 AM)
-	 * @return cbit.vcell.messaging.db.VCellServerID[]
-	 */
-	private static VCellServerID[] getHTCPartitionShareServerIDs() {
-		try {
-			String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionShareServerIDs);
-			StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");
-			VCellServerID[] serverIDs = new VCellServerID[st.countTokens() + 1]; // include the current system ServerID
-			serverIDs[0] = VCellServerID.getSystemServerID();
-
-			int count = 1;
-			while (st.hasMoreTokens()) {			
-				serverIDs[count] = VCellServerID.getServerID(st.nextToken());
-				count ++;			
-			}
-			return serverIDs;
-		} catch (Exception ex) {
-			return null;
-		}
-	}
 
 	/**
 	 * Starts the application.
