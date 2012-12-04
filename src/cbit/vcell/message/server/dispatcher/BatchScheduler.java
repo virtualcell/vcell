@@ -16,13 +16,16 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationRequirements;
 
 /**
  * Insert the type's description here.
@@ -37,14 +40,16 @@ public class BatchScheduler {
 		public final Integer numRunningPDEs;
 		public final Integer numRunningODEs;
 		public final Long waitingTimeStamp;
-		public final SimulationJobStatusInfo simJobStatusInfo;
+		public final SimulationJobStatus simJobStatus;
+		public final SimulationRequirements simRequirements;
 
-		public WaitingJob(User user, int numRunningPDEs, int numRunningODEs, long waitingTimeStamp, SimulationJobStatusInfo simJobStatusInfo) {
+		public WaitingJob(User user, int numRunningPDEs, int numRunningODEs, long waitingTimeStamp, SimulationJobStatus simJobStatus, SimulationRequirements simRequirements) {
 			this.user = user;
 			this.numRunningPDEs = numRunningPDEs;
 			this.numRunningODEs = numRunningODEs;
 			this.waitingTimeStamp = waitingTimeStamp;
-			this.simJobStatusInfo = simJobStatusInfo;
+			this.simJobStatus = simJobStatus;
+			this.simRequirements = simRequirements;
 		}
 		
 		public Integer getNumRunningJobs(){
@@ -69,19 +74,24 @@ public static final int getMaxPdeJobsPerUser() {
 	return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxPdeJobsPerUser));
 }
 
+public static int getMaxJobsPerSite() {
+	return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.maxJobsPerSite));
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/11/2006 9:32:58 AM)
  */
-public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int globalJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
+public static WaitingJob[] schedule(SimulationJobStatus[] activeJobsThisSite, Map<KeyValue,SimulationRequirements> simulationRequirementsMap, int siteJobQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
 	Hashtable<User, Integer> userPdeRunningJobsThisSite = new Hashtable<User, Integer>();
 	Hashtable<User, Integer> userOdeRunningJobsThisSite = new Hashtable<User, Integer>();
 	
 
 	cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
-	int numRunningJobsAllSites = 0;
-	for (int i = 0; i < allActiveJobs.length; i++){
-		jobStatus = allActiveJobs[i].getSimJobStatus();
+	int numRunningJobsThisSite = 0;
+	for (int i = 0; i < activeJobsThisSite.length; i++){
+		jobStatus = activeJobsThisSite[i];
 
 		if (!jobStatus.getSchedulerStatus().isActive()) {
 			continue;
@@ -91,11 +101,12 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 			continue;  // we only do statistics on running jobs;
 		}
 		
-		numRunningJobsAllSites++;
+		numRunningJobsThisSite++;
 		
 		if (jobStatus.getServerID().equals(systemID)) { // the number of running jobs on this site
-			User user = allActiveJobs[i].getUser();
-			if(allActiveJobs[i].isPDE()) {
+			User user = activeJobsThisSite[i].getVCSimulationIdentifier().getOwner();
+			SimulationRequirements simRequirements = simulationRequirementsMap.get(jobStatus.getVCSimulationIdentifier().getSimulationKey());
+			if(simRequirements!=null && simRequirements.isPDE()) {
 				Integer numUserPdeJobs = userPdeRunningJobsThisSite.get(user);
 				if (numUserPdeJobs == null) {
 					userPdeRunningJobsThisSite.put(user, 1);
@@ -113,8 +124,8 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 		}
 	}
 	ArrayList<WaitingJob> waitingJobs = new ArrayList<WaitingJob>();
-	for (int i = 0; i < allActiveJobs.length; i++){
-		jobStatus = allActiveJobs[i].getSimJobStatus();
+	for (int i = 0; i < activeJobsThisSite.length; i++){
+		jobStatus = activeJobsThisSite[i];
 			
 		if (!jobStatus.getSchedulerStatus().isWaiting()) {
 			continue; // ignore non-waiting job
@@ -123,7 +134,7 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 			continue; // doesn't belong
 		}
 
-		User user = allActiveJobs[i].getUser();
+		User user = activeJobsThisSite[i].getVCSimulationIdentifier().getOwner();
 		Integer numRunningPDEsThisSite = userPdeRunningJobsThisSite.get(user);
 		if (numRunningPDEsThisSite==null){
 			numRunningPDEsThisSite = new Integer(0);
@@ -134,7 +145,8 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 		}
 		long waitingTimeStamp = jobStatus.getSimulationQueueEntryStatus().getQueueDate().getTime();
 		
-		waitingJobs.add(new WaitingJob(user, numRunningPDEsThisSite, numRunningODEsThisSite, waitingTimeStamp, allActiveJobs[i]));
+		KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
+		waitingJobs.add(new WaitingJob(user, numRunningPDEsThisSite, numRunningODEsThisSite, waitingTimeStamp, jobStatus, simulationRequirementsMap.get(simKey)));
 	}
 
 	Collections.sort(waitingJobs,new Comparator<WaitingJob>(){
@@ -150,8 +162,8 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 			//
 			// ODEs take precedence over PDEs (they should be faster)
 			//
-			if (o1.simJobStatusInfo.isPDE() != o2.simJobStatusInfo.isPDE()){
-				if (o1.simJobStatusInfo.isPDE()){
+			if (o1.simRequirements.isPDE() != o2.simRequirements.isPDE()){
+				if (o1.simRequirements.isPDE()){
 					return 1;
 				}else{
 					return -1;
@@ -190,7 +202,7 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 		while (waitingJobIter.hasNext()){
 			WaitingJob waitingJob = waitingJobIter.next();
 			if (waitingJob.user.equals(user)){
-				if (waitingJob.simJobStatusInfo.isPDE()){
+				if (waitingJob.simRequirements.isPDE()){
 					if (numRunningPDEs < userQuotaPde){
 						numRunningPDEs++;
 					}else{
@@ -207,9 +219,9 @@ public static WaitingJob[] schedule(SimulationJobStatusInfo[] allActiveJobs, int
 		}
 	}
 	//
-	// enforce global quota (keep only first N jobs) where currentRunning + N <= quota
+	// enforce site quota (keep only first N jobs) where currentRunning + N <= quota
 	//
-	int numJobsSlotsAvailable = Math.max(0, globalJobQuota - numRunningJobsAllSites);
+	int numJobsSlotsAvailable = Math.max(0, siteJobQuota - numRunningJobsThisSite);
 	int numJobsEligible = waitingJobs.size();
 	int numJobsToDispatch = Math.min(numJobsSlotsAvailable,numJobsEligible);
 	if (numJobsToDispatch == 0){
