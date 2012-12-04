@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -139,10 +140,10 @@ private void initServiceControlTopicListener() {
 									//
 									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
 									List<HtcJobID> htcJobIDs = threadLocalHtcProxy.getRunningSimulationJobIDs();
-									List<HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
-									for (HtcJobInfo htcJobInfo : htcJobInfos){
+									Map<HtcJobID,HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
+									for (HtcJobInfo htcJobInfo : htcJobInfos.values()){
 										try {
-											if (htcJobInfo.getJobName().equals(simJobName)){
+											if (htcJobInfo.isFound() && htcJobInfo.getJobName().equals(simJobName)){
 												threadLocalHtcProxy.killJob(htcJobInfo.getHtcJobID());
 											}
 										} catch (Exception e) {

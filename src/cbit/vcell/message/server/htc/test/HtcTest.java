@@ -3,6 +3,7 @@ package cbit.vcell.message.server.htc.test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
@@ -62,8 +63,8 @@ public class HtcTest {
 	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
 		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
 		List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
-		List<HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
-		for(HtcJobInfo sjInfo : sjinfos){
+		Map<HtcJobID,HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
+		for(HtcJobInfo sjInfo : sjinfos.values()){
 			String jobID = null;
 			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
 				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
@@ -110,10 +111,11 @@ public class HtcTest {
 
 		
 		System.out.println("<<<<<--------------  printing running simulations --------------->>>>>>");
-		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("ALPHA");
-		List<HtcJobInfo> htcJobInfos = htcProxy.getJobInfos(htcJobIDs);
-		for (HtcJobInfo htcJobInfo : htcJobInfos){
-			System.out.println("jobInfo = "+htcJobInfo);
+		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("REL");
+		htcJobIDs.add(new SgeJobID("12345"));
+		Map<HtcJobID,HtcJobInfo> htcJobInfoMap = htcProxy.getJobInfos(htcJobIDs);
+		for (HtcJobID htcJobId : htcJobInfoMap.keySet()){
+			System.out.println("jobInfo = "+htcJobInfoMap.get(htcJobId));
 		}
 		
 		System.out.println("<<<<<--------------  GETTING JOB EXIT STATUS--------------->>>>>>");
@@ -125,7 +127,7 @@ public class HtcTest {
 				} catch (InterruptedException e) {
 				}
 				jobStatus2 = htcProxy.getJobStatus(jobID);
-				List<HtcJobInfo> htcJobInfo = htcProxy.getJobInfos(Arrays.asList(jobID));
+				Map<HtcJobID,HtcJobInfo> htcJobInfo = htcProxy.getJobInfos(Arrays.asList(jobID));
 				System.out.println("jobInfo = "+htcJobInfo);
 				System.out.println("jobStatus = "+jobStatus2);
 			} catch (Exception e) {

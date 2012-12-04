@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -434,15 +435,15 @@ private void pingAll() throws VCMessagingException {
 
 private void killService(ServiceStatus service) throws ExecutableException, HtcJobNotFoundException, HtcException {
 	 List<HtcJobID>  jobIds = htcProxy.getRunningServiceJobIDs(VCellServerID.getSystemServerID());
-	 List<HtcJobInfo> jobInfos = htcProxy.getJobInfos(jobIds);
+	 Map<HtcJobID,HtcJobInfo> jobInfoMap = htcProxy.getJobInfos(jobIds);
 	 HtcJobInfo foundJobInfo = null;
-	 for(HtcJobInfo jobInfo : jobInfos){
+	 for(HtcJobInfo jobInfo : jobInfoMap.values()){
 		 if(jobInfo.getJobName().equals(service.getServiceSpec().getID())){
 			 foundJobInfo = jobInfo;
 			 break;
 		 }
 	 }
-	 if(foundJobInfo == null){
+	 if(foundJobInfo == null || !foundJobInfo.isFound()){
 		 return;
 	 }
 	 htcProxy.killJob(foundJobInfo.getHtcJobID());
