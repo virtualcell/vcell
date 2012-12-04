@@ -49,6 +49,7 @@ public class ClientTopicMessageCollector implements MessageCollector, TopicListe
 	private SessionLog log = null;
 
 	private long timeSinceLastMessage = System.currentTimeMillis();
+	private VCTopicConsumer topicConsumer = null;
 
 /**
  * ClientStatusMonitor constructor comment.
@@ -209,7 +210,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 public void init() {
 	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
-	VCTopicConsumer topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
+	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
 	vcMessagingService.addMessageConsumer(topicConsumer);
 }
 
@@ -237,5 +238,13 @@ public void simulationJobStatusChanged(SimulationJobStatusEvent simJobStatusEven
 
 public void onWorkerEvent(WorkerEvent event) {	
 	System.out.println("jms message collector doesn't listen for WorkerEvent");
+}
+
+
+public void close() {
+	if (topicConsumer!=null){
+		vcMessagingService.removeMessageConsumer(topicConsumer);
+		topicConsumer = null;
+	}
 }
 }
