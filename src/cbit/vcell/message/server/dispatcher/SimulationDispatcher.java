@@ -65,7 +65,7 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.Simulation;
@@ -111,7 +111,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				boolean bDispatchedAnyJobs = false;
 
 				try {
-					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
+					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs();
 					ArrayList<KeyValue> simKeys = new ArrayList<KeyValue>();
 					for (SimulationJobStatus simJobStatus : allActiveJobs){
 						simKeys.add(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
@@ -139,7 +139,7 @@ public class SimulationDispatcher extends ServiceProvider {
 								sim = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
 								tempSimulationMap.put(simKey, sim);
 							}
-							simDispatcherEngine.onDispatch(sim, vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID(), simulationDatabase, dispatcherQueueSession, log);
+							simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
 							bDispatchedAnyJobs = true;
 							
 							Thread.yield();
@@ -240,11 +240,14 @@ public class SimulationDispatcher extends ServiceProvider {
 					try {
 						String simJobName = jobInfo.getJobName();
 						HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
-						SimulationJobStatus simJobStatus = simulationDatabase.getSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex, simTaskInfo.taskId);
+						SimulationJobStatus simJobStatus = simulationDatabase.getLatestSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex);
 						String failureMessage = null;
 						boolean killJob = false;
 						if (simJobStatus==null){
 							failureMessage = "no jobStatus found in database for running htc job";
+							killJob = true;
+						}else if (simTaskInfo.taskId < simJobStatus.getTaskID()){
+							failureMessage = "newer task found in database for running htc job";
 							killJob = true;
 						}else if (simJobStatus.getSchedulerStatus().isDone()){
 							failureMessage = "jobStatus Done in database for running htc job";
@@ -285,7 +288,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			//
 			//
 			long currentTimeMS = System.currentTimeMillis();
-			SimulationJobStatus[] activeJobStatusArray = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
+			SimulationJobStatus[] activeJobStatusArray = simulationDatabase.getActiveJobs();
 			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
 			for (SimulationJobStatus activeJobStatus : activeJobStatusArray){
 				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
@@ -510,8 +513,8 @@ public class SimulationDispatcher extends ServiceProvider {
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetCrawler resultSetCrawler = new ResultSetCrawler(conFactory, adminDbTopLevel, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabase(resultSetCrawler, adminDbTopLevel, databaseServerImpl,log);
+			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
 
 			VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 

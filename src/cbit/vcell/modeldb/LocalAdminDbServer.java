@@ -192,9 +192,9 @@ public UserInfo[] getUserInfos() throws DataAccessException {
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException {
+public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException {
 	try {
-		return adminDbTop.insertSimulationJobStatus(simulationJobStatus,true);
+		adminDbTop.insertSimulationJobStatus(simulationJobStatus,true);
 	}catch (UpdateSynchronizationException ex){
 		throw ex;
 	}catch (Throwable e){
@@ -227,9 +227,9 @@ public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) thr
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus simulationJobStatus) throws DataAccessException {
+public void updateSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException {
 	try {
-		return adminDbTop.updateSimulationJobStatus(oldSimulationJobStatus,simulationJobStatus,true);
+		adminDbTop.updateSimulationJobStatus(simulationJobStatus,true);
 	} catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure updating SimulationJobStatus: "+simulationJobStatus);

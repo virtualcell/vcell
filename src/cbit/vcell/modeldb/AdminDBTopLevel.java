@@ -590,14 +590,13 @@ UserInfo[] getUserInfos(boolean bEnableRetry)
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
+public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus newSimulationJobStatus = insertSimulationJobStatus(con, simulationJobStatus);
+		insertSimulationJobStatus(con, simulationJobStatus);
 		con.commit();
-		return newSimulationJobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
 		try {
@@ -608,10 +607,8 @@ public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulat
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return insertSimulationJobStatus(simulationJobStatus,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
-			return null; // never gets here;
 		}
 	}finally{
 		conFactory.release(con,lock);
@@ -623,17 +620,9 @@ public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulat
  * Insert the method's description here.
  * Creation date: (10/3/2005 3:33:09 PM)
  */
-SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException, UpdateSynchronizationException {
-	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),simulationJobStatus.getTaskID(),false);
-	if (currentSimulationJobStatus != null){
-		VCMongoMessage.sendSimJobStatusInsertedAlready(simulationJobStatus, currentSimulationJobStatus);
-		log.alert("AdminDbTopLevel.insertSimulationJobStatus() : current Job Status = " + currentSimulationJobStatus + ", job status database record already exists");
-		throw new UpdateSynchronizationException("Job Status database record already exists:" + currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex()+" taskID: "+currentSimulationJobStatus.getTaskID());
-	}
+void insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException, UpdateSynchronizationException {
 	jobDB.insertSimulationJobStatus(con,simulationJobStatus, DbDriver.getNewKey(con));
-	SimulationJobStatus newSimulationJobStatus = jobDB.getSimulationJobStatus(con,simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), simulationJobStatus.getJobIndex(),simulationJobStatus.getTaskID(),false);
-	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus, newSimulationJobStatus);
-	return newSimulationJobStatus;
+	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus);
 }
 
 
@@ -679,14 +668,13 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
+public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus updatedSimulationJobStatus = updateSimulationJobStatus(con, oldSimulationJobStatus, newSimulationJobStatus);
+		updateSimulationJobStatus(con, newSimulationJobStatus);
 		con.commit();
-		return updatedSimulationJobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
 		try {
@@ -697,10 +685,9 @@ public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimu
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return updateSimulationJobStatus(oldSimulationJobStatus,newSimulationJobStatus,false);
+			updateSimulationJobStatus(newSimulationJobStatus,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
-			return null; // never gets here;
 		}
 	}finally{
 		conFactory.release(con,lock);
@@ -712,17 +699,9 @@ public SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimu
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:20:41 PM)
  */
-SimulationJobStatus updateSimulationJobStatus(Connection con, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
-	SimulationJobStatus currentSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),newSimulationJobStatus.getTaskID(),true);
-	if (!currentSimulationJobStatus.compareEqual(oldSimulationJobStatus)){
-		VCMongoMessage.sendSimJobStatusUpdateCacheMiss(oldSimulationJobStatus, currentSimulationJobStatus, newSimulationJobStatus);
-		log.print("AdminDbTopLevel.updateSimulationJobStatus() : current Job Status = "+currentSimulationJobStatus+", old Job Status = "+oldSimulationJobStatus);
-		throw new UpdateSynchronizationException("current Job Status doesn't match argument for Simulation :"+currentSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey()+" job: "+currentSimulationJobStatus.getJobIndex());
-	}
+void updateSimulationJobStatus(Connection con, SimulationJobStatus newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
 	jobDB.updateSimulationJobStatus(con,newSimulationJobStatus);
-	SimulationJobStatus updatedSimulationJobStatus = jobDB.getSimulationJobStatus(con,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),newSimulationJobStatus.getJobIndex(),newSimulationJobStatus.getTaskID(),false);
-	VCMongoMessage.sendSimJobStatusUpdate(oldSimulationJobStatus,newSimulationJobStatus,updatedSimulationJobStatus);
-	return updatedSimulationJobStatus;
+	VCMongoMessage.sendSimJobStatusUpdate(newSimulationJobStatus);
 }
 
 

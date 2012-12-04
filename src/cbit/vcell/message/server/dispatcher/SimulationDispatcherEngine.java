@@ -12,7 +12,6 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -21,7 +20,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.messages.StatusMessage;
@@ -65,11 +63,11 @@ public class SimulationDispatcherEngine {
 		return newStateMachine;
 	}
 
-	public void onDispatch(Simulation simulation, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException{
-		KeyValue simulationKey = vcSimID.getSimulationKey();
-		SimulationStateMachine simStateMachine = getSimulationStateMachine(simulationKey, jobIndex);
+	public void onDispatch(Simulation simulation, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession dispatcherQueueSession, SessionLog log) throws VCMessagingException, DataAccessException, SQLException{
+		KeyValue simulationKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey();
+		SimulationStateMachine simStateMachine = getSimulationStateMachine(simulationKey, simJobStatus.getJobIndex());
 		
-		simStateMachine.onDispatch(simulation, vcSimID, taskID, simulationDatabase, dispatcherQueueSession, log);
+		simStateMachine.onDispatch(simulation, simJobStatus, simulationDatabase, dispatcherQueueSession, log);
 	}
 	/**
 	 * @param vcMessage
@@ -121,18 +119,19 @@ public class SimulationDispatcherEngine {
 	public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
 		KeyValue simKey = vcSimID.getSimulationKey();
 
-		SimulationJobStatus[] simJobStatusArray = simulationDatabase.getSimulationJobStatusArray(simKey);
-		HashSet<Integer> simJobIndices = new HashSet<Integer>();
-		for (SimulationJobStatus simJobStatus : simJobStatusArray){
-			int jobIndex = simJobStatus.getJobIndex();
-			simJobIndices.add(jobIndex);
+		SimulationJobStatus[] allActiveSimJobStatusArray = simulationDatabase.getActiveJobs();
+		ArrayList<SimulationJobStatus> simJobStatusArray = new ArrayList<SimulationJobStatus>();
+		for (SimulationJobStatus activeSimJobStatus : allActiveSimJobStatusArray){
+			if (activeSimJobStatus.getVCSimulationIdentifier().getSimulationKey().equals(vcSimID.getSimulationKey())){
+				simJobStatusArray.add(activeSimJobStatus);
+			}
 		}
-		for (int jobIndex : simJobIndices){
-			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, jobIndex);
+		for (SimulationJobStatus simJobStatus : simJobStatusArray){
+			SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, simJobStatus.getJobIndex());
 			try {
-				simStateMachine.onStopRequest(user, vcSimID, simulationDatabase, session, log);
+				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session, log);
 			}catch (UpdateSynchronizationException e){
-				simStateMachine.onStopRequest(user, vcSimID, simulationDatabase, session, log);
+				simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session, log);
 			}
 		}
 	}
