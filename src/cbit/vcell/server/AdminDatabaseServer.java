@@ -93,7 +93,7 @@ UserInfo[] getUserInfos() throws DataAccessException;
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
+void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
@@ -108,7 +108,7 @@ org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
+void updateSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
