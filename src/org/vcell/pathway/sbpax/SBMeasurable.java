@@ -29,11 +29,46 @@ public class SBMeasurable extends SBEntityImpl {
 	public ArrayList<UnitOfMeasurement> getUnit() {
 		return unit;
 	}
+	
+	public String extractSBOTermAsString() {	// returns a sting like SBO:0000xxx
+		if(getSBTerm().isEmpty()) {
+			return new String("");		// more fault-tolerant than returning null
+		}
+		String sboTermName = getSBTerm().get(0).toString();
+		sboTermName = sboTermName.substring(sboTermName.lastIndexOf('#'));
+		sboTermName = sboTermName.replace('#', ' ');
+		sboTermName = sboTermName.replace('\'', ' ');
+		sboTermName = sboTermName.replace("(proxy)", "");
+		sboTermName = sboTermName.replace(" ", "");
+		return sboTermName;
+	}
+	public String extractSBOUnitAsString() {
+		String sboUnit = new String("");
+		if(!hasUnit()) {
+			return sboUnit;
+		}
+		UnitOfMeasurement u = getUnit().get(0);
+		if(u.getSymbols().isEmpty()) {
+			sboUnit += u.getIDShort();
+		} else {
+			sboUnit += u.getSymbols().get(0);
+		}
+		return sboUnit;
+	}
+	
+	public boolean hasTerm() {
+		return !getSBTerm().isEmpty();
+	}
+	public boolean hasNumber() {
+		return !number.isEmpty();
+	}
+	public boolean hasUnit() {
+		return !unit.isEmpty();
+	}
 
 	public void setNumber(ArrayList<Double> number) {
 		this.number = number;
 	}
-	
 	public void setUnit(ArrayList<UnitOfMeasurement> unit) {
 		this.unit = unit;
 	}

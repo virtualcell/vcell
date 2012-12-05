@@ -47,7 +47,10 @@ public class SBOUtil {
 		while (iterator.hasNext()) {
 			String key = (String) iterator.next();
 			SBOTerm candidate = SBOListEx.sboMap.get(key);
-			if(candidate.getIsA().contains(term.getId())) {
+			String candidateIsa = candidate.getIsA();
+			String termIndex = term.getIndex();
+//			System.out.println("is " + termIndex + " a parent of " + key + " ( " + candidateIsa + " ) ?" );
+			if(candidateIsa.contains(termIndex)) {
 				subClasses.add(candidate);
 			}
 		}
@@ -75,6 +78,17 @@ public class SBOUtil {
 			id = "0000000" + id; 
 		}
 		return id.substring(id.length() - 7);
+	}
+	
+	/*
+	 * retrieves an entry from SBOListEx by recovering the key using the SBVocabulary id 
+	 * format: http://sabio.h-its.org/biopax#SBO:0000xyz 
+	 * the recovered key being  SBO:0000xyz  
+	 */
+	public static SBOTerm getSBOTermFromVocabularyId(String id) {
+		String key = id.substring(id.lastIndexOf('#')+1);
+		SBOTerm sboT = SBOListEx.sboMap.get(key);
+		return sboT;
 	}
 	
 	@Deprecated
