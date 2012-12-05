@@ -121,6 +121,31 @@ public class CollapsiblePanel extends JPanel {
 	public CollapsiblePanel(String borderTitle) {
 		this(borderTitle, true);
 	}
+	public CollapsiblePanel(String borderTitle, boolean expanded, Border border) {
+		super();
+		this.bExpanded = expanded;
+		borderLabel  = new JLabel(borderTitle, bExpanded ? expandedIcon : collapsedIcon, SwingConstants.LEFT);
+		borderLabel.setForeground(borderTitleColor);
+		borderLabel.setFont(borderLabel.getFont().deriveFont(Font.PLAIN));
+		Dimension size = new Dimension(borderLabel.getPreferredSize().width + 5, borderLabel.getPreferredSize().height);
+		borderLabel.setPreferredSize(size);
+		setBorder(new ComponentTitledBorder(borderLabel, this, border));
+		borderLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				bExpanded = !bExpanded;
+				toggleExpand();
+			}			
+		});
+		contentPanel = new JPanel();
+		setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();  
+        gbc.weightx = 1.0;  
+        gbc.weighty = 1.0;  
+        gbc.fill = GridBagConstraints.BOTH; 
+        add(contentPanel, gbc);
+        contentPanel.setVisible(bExpanded);
+	}
 	public CollapsiblePanel(String borderTitle, boolean expanded) {
 		super();
 		this.bExpanded = expanded;

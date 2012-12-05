@@ -22,10 +22,18 @@ import java.util.Set;
 
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.id.URIUtil;
+import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
+import org.vcell.pathway.sbo.SBOListEx;
+import org.vcell.pathway.sbo.SBOParam;
+import org.vcell.pathway.sbo.SBOTerm;
+import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.pathway.sbpax.SBMeasurable;
+import org.vcell.pathway.sbpax.SBVocabulary;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
+//import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.Identifiable;
 
 public class PathwayModel {
@@ -259,10 +267,70 @@ public class PathwayModel {
 			cleanupUnresolvedProxies();
 			ConvertModulationToCatalysis();
 //			System.out.println(show(false));
+			ProcessKineticLaws();
 			setDisableUpdate(false);
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
 		}finally{
 			setDisableUpdate(false);
+		}
+	}
+
+	/*
+	 * For each kinetic law verify whether the SBOTerm which defines the type of kinetic law exists
+	 * If it doesn't exist try to guesstimate it based on the type of parameters
+	 * For example, if Km is present we assume it's Michaelis-Menten rate law, otherwise it's mass action
+	 */
+	private void ProcessKineticLaws() {
+		Set<Control> controls = BioPAXUtil.getAllControls(this);
+		Iterator<Control> iterator = controls.iterator();
+		while (iterator.hasNext()) {
+			Control control = iterator.next();
+			ArrayList<SBEntity> sbEntities = control.getSBSubEntity();
+			for(SBEntity sbE : sbEntities) {
+				// the following if clause may not be needed, we KNOW that 
+				// the only SBSubEntities allowed in a control are kinetic laws
+				if(sbE.getID().contains("kineticLaw")) {
+					// build list of the parameters of this kinetic law in sboParams
+					ArrayList<SBOParam> sboParams = new ArrayList<SBOParam>();	// params of this kinetic law
+					ArrayList<SBEntity> subEntities = sbE.getSBSubEntity();
+					for(SBEntity subEntity : subEntities) {
+						if(subEntity instanceof SBMeasurable) {
+							SBMeasurable m  = (SBMeasurable)subEntity;
+							if(!m.hasTerm()) {
+								break;	// we don't know what to do with a measurable with no SBTerm
+							}
+							String termName = m.extractSBOTermAsString();
+							SBOTerm sboT = SBOListEx.sboMap.get(termName);
+							System.out.println("    " + sboT.getIndex() + "  " + sboT.getName());
+							SBOParam sboParam = SBPAXKineticsExtractor.matchSBOParam(sboT);
+							
+							if(m.hasNumber()) {
+								double number = m.getNumber().get(0);
+								sboParam.setNumber(number);
+							}
+							if(m.hasUnit()) {
+								String unit = m.extractSBOUnitAsString();
+								sboParam.setUnit(unit);
+							}
+							sboParams.add(sboParam);
+						}
+					}
+					ArrayList<SBVocabulary> sbTerms = sbE.getSBTerm();
+					if(sbTerms.isEmpty()) {			// guesstimation based on params found above
+						SBVocabulary sbTerm = new SBVocabulary();
+						ArrayList<String> termNames = new ArrayList<String>();
+						String id;
+						SBOParam kMichaelis = SBPAXKineticsExtractor.extractMichaelisForwardParam(sboParams);
+						if(kMichaelis == null) {
+							id = new String("SBO:0000012");	// mass action rate law
+						} else {
+							id = new String("SBO:0000029");	// irreversible Henri-Michaelis-Menten rate law
+						}
+						sbTerm.setID(id);
+						sbTerms.add(sbTerm);
+					}
+				}
+			}
 		}
 	}
 

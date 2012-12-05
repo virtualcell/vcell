@@ -228,7 +228,7 @@ private void initialize() {
 					int ccol = table.columnAtPoint(pt);
 					BioPaxObjectProperty property = tableModel.getValueAt(crow);
 					if(property != null) {
-						final String htmlStart = "<html><font face = \"Arial\"><font size =\"-1\">";
+						final String htmlStart = "<html><font face = \"Arial\"><font size =\"-2\">";
 						final String htmlEnd = "</font></font></html>";
 						if(!property.getDetails().isEmpty()) {
 							details.setText(htmlStart + property.getDetails() + htmlEnd);
@@ -482,8 +482,6 @@ protected void refreshInterface() {
 				// the following if clause may not be needed, we KNOW that 
 				// the only SBSubEntities allowed in a control are kinetic laws
 				if(sbE.getID().contains("kineticLaw")) {
-					// TODO: when double click navigate to the catalyst (no more web hyper link)
-					// TODO: or when single click highlight the catalyst
 					String str = new String();
 					if(control.getPhysicalControllers() != null){
 						str += " for Controller(s): ";
@@ -499,7 +497,7 @@ protected void refreshInterface() {
 					String sDetails = "";
 					ArrayList<SBVocabulary> sbTerms = sbE.getSBTerm();
 					for(SBVocabulary sbv : sbTerms) {
-						String str1 = sbv.getID();
+						String str1 = sbv.getID();		// type of kinetic law
 						str1 = str1.substring(str1.lastIndexOf('#')+1);
 						System.out.println(str1);
 						SBOTerm sboT = SBOListEx.sboMap.get(str1);
@@ -515,24 +513,14 @@ protected void refreshInterface() {
 							String str1 = "";
 							String str2 = "";
 							String str3 = "";
-							if(!m.getSBTerm().isEmpty()) {
-								str1 += m.getSBTerm().get(0).toString();
-								str1 = str1.substring(str1.lastIndexOf('#'));
-								str1 = str1.replace('#', ' ');
-								str1 = str1.replace('\'', ' ');
-								str1 = str1.replace("(proxy)", "");
-								str1 = str1.replace(" ", "");
-								str2 += m.getNumber() + "";
-								str2 = str2.replace('[', ' ');
-								str2 = str2.replace(']', ' ');
+							if(m.hasTerm()) {
+								str1 += m.extractSBOTermAsString();
 							}
-							if(!m.getUnit().isEmpty()) {
-								UnitOfMeasurement u = m.getUnit().get(0);
-								if(u.getSymbols().isEmpty()) {
-									str3 += u.getIDShort();
-								} else {
-									str3 += u.getSymbols().get(0);
-								}
+							if(m.hasNumber()) {
+								str2 += m.getNumber().get(0);
+							}
+							if(m.hasUnit()) {
+								str3 += m.extractSBOUnitAsString();
 							}
 							// str1 is an SBO id, for example "SBO:0000064"
 							SBOTerm sboT = SBOListEx.sboMap.get(str1);

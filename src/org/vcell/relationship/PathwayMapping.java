@@ -52,28 +52,23 @@ public class PathwayMapping {
 	
 	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 	{
-		for(ConversionTableRow conversionTableRow : conversionTableRows){
-			if(conversionTableRow.getBioPaxObject() instanceof PhysicalEntity){
-				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
-						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
-			}else if(conversionTableRow.getBioPaxObject() instanceof ComplexAssembly){ // Conversion : ComplexAssembly
-				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)conversionTableRow.getBioPaxObject(),
-						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
-			}else if(conversionTableRow.getBioPaxObject() instanceof Transport){ // Conversion : Transport
-				createReactionStepsFromTableRow(bioModel, (Transport)conversionTableRow.getBioPaxObject(),
-						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
-//			}else if(conversionTableRow.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
+		for(ConversionTableRow ctr : conversionTableRows){
+			if(ctr.getBioPaxObject() instanceof PhysicalEntity){
+				createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
+			}else if(ctr.getBioPaxObject() instanceof ComplexAssembly){ // Conversion : ComplexAssembly
+				createReactionStepsFromTableRow(bioModel, (ComplexAssembly)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+			}else if(ctr.getBioPaxObject() instanceof Transport){ // Conversion : Transport
+				createReactionStepsFromTableRow(bioModel, (Transport)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
+//			}else if(ctr.getBioPaxObject() instanceof Degradation){ // Conversion : Degradation 
 //				// to do
-			}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){ // Conversion : BiochemicalReaction
-				createReactionStepsFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
-						conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location(), conversionTableRows);
+			}else if(ctr.getBioPaxObject() instanceof Conversion){ // Conversion : BiochemicalReaction
+				createReactionStepsFromTableRow(bioModel, (Conversion)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location(), conversionTableRows);
 			}
 		}
 	}
 	
 	public void createBioModelEntitiesFromBioPaxObjects(BioModel bioModel, Object[] selectedObjects) throws Exception
 	{
-		
 		for(int i = 0; i < selectedObjects.length; i++){
 			if(selectedObjects[i] instanceof BioPaxObject){
 				BioPaxObject bioPaxObject = (BioPaxObject)selectedObjects[i];
@@ -83,13 +78,11 @@ public class PathwayMapping {
 					createReactionStepsFromBioPaxObject(bioModel, (Conversion)bioPaxObject);
 				}
 			}else if(selectedObjects[i] instanceof ConversionTableRow){
-				ConversionTableRow conversionTableRow = (ConversionTableRow)selectedObjects[i];
-				if(conversionTableRow.getBioPaxObject() instanceof PhysicalEntity){
-					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)conversionTableRow.getBioPaxObject(), 
-							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
-				}else if(conversionTableRow.getBioPaxObject() instanceof Conversion){
-					createReactionStepsFromTableRow(bioModel, (Conversion)conversionTableRow.getBioPaxObject(),
-							conversionTableRow.stoich(), conversionTableRow.id(), conversionTableRow.location());
+				ConversionTableRow ctr = (ConversionTableRow)selectedObjects[i];
+				if(ctr.getBioPaxObject() instanceof PhysicalEntity){
+					createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
+				}else if(ctr.getBioPaxObject() instanceof Conversion){
+					createReactionStepsFromTableRow(bioModel, (Conversion)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
 				}
 			}
 		}
@@ -214,7 +207,7 @@ public class PathwayMapping {
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 			{
 		// use user defined id as the name of the reaction name
-		// get participants from table rows
+		// get participants of this reaction from table rows
 		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows){
@@ -339,8 +332,7 @@ public class PathwayMapping {
 
 			// get speciesContext object based on its name
 			// if the speciesContext is not existed, create a new one
-			createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), 
-					ctr.stoich(), ctr.id(), ctr.location());
+			createSpeciesContextFromTableRow(bioModel, (PhysicalEntity)ctr.getBioPaxObject(), ctr.stoich(), ctr.id(), ctr.location());
 			
 			// add the existed speciesContext objects or new speciesContext objects to reaction participant list
 			if(ctr.participantType().equals("Reactant")){
@@ -351,7 +343,7 @@ public class PathwayMapping {
 				if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
 					rplist.add(new Product(null,(SimpleReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
 				}
-			}
+			}		// we do not add catalysts
 		}
 		ReactionParticipant[] rpArray = rplist.toArray(new ReactionParticipant[0]);
 		reactionStep.setReactionParticipants(rpArray);
@@ -625,8 +617,14 @@ public class PathwayMapping {
 	} 
 	
 	private void addKinetics(ReactionStep reactionStep, Process process) {
-		SBPAXKineticsExtractor.extractKinetics(reactionStep, 
-				Collections.<SBEntity>unmodifiableSet(process.getInteractions()));		
+		try {
+			SBPAXKineticsExtractor.extractKineticsExactMatch(reactionStep, process);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+		}		
+//		SBPAXKineticsExtractor.extractKineticsInferredMatch(reactionStep, Collections.<SBEntity>unmodifiableSet(process.getInteractions()));		
 	}
 	
 }

@@ -11,6 +11,7 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,6 +53,20 @@ public class BioPAXUtil {
 		}
 		PathwayModel pathwayModel = bioModel.getPathwayModel();
 		
+		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
+		for(BioPaxObject bpObject : bpObjects) {
+			if(bpObject instanceof Control) {
+				Control c = (Control) bpObject;
+				controls.add(c);
+			}
+		}
+		return controls;
+	}
+	public static Set<Control> getAllControls(PathwayModel pathwayModel) {
+		Set<Control> controls = new HashSet<Control>();
+		if(pathwayModel == null) {
+			return controls;
+		}
 		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
 		for(BioPaxObject bpObject : bpObjects) {
 			if(bpObject instanceof Control) {
@@ -305,8 +320,67 @@ public class BioPAXUtil {
 	public static String getSafetyName(String oldValue){
 		return TokenMangler.fixTokenStrict(oldValue, 60);
 	} 
-	
+
 	public static String getName(Entity entity) {
+		String name = "";
+		if(entity instanceof PhysicalEntity) {
+			PhysicalEntity pe = (PhysicalEntity)entity;
+			if (pe.getCellularLocation() != null) {
+				// we don't try to second guess naming if cellular location vocabulary is present
+				return getNameOld(entity);
+			} else {
+				// we try to extract location from id and append it to name
+				ArrayList<String> nameList = entity.getName();
+				if(!nameList.isEmpty()) {
+					name = getSafetyName(nameList.get(0)).trim();
+					String postfix = extractLocationFromId(entity);
+					return (name+postfix);
+					
+				}else{					
+					getNameOld(entity);
+				}
+			}
+			return name;
+		} else {
+			return getNameOld(entity);
+		}
+	}
+	
+	private static String extractLocationFromId(Entity entity) {
+		final String[] locations = {
+				"noname",
+				"unknown",
+				"membrane",
+				"nucleus",
+				"nucleoplasm",
+				"cytoplasm",
+				"cytosol",
+				"intracellular",
+				"extracellular",
+				"endosome",
+				"reticulum",
+				"golgi",
+				"lumen",
+				"vesicle",
+				"mitochondria"
+				};
+		// HashSet locationsSet = new HashSet(Arrays.asList(locations));
+
+		String id = entity.getID();
+		int locationIndex = id.lastIndexOf("_");
+		if(locationIndex <= 0) {
+			return "";
+		}
+		String postfix = id.substring(locationIndex);		// contains the '_'
+		for(String location : locations) {
+			if(postfix.contains(location)) {
+				return postfix;
+			}
+		}
+		return "";
+	}
+
+	public static String getNameOld(Entity entity) {
 		ArrayList<String> nameList = entity.getName();
 		if(!nameList.isEmpty()) {
 			return (getSafetyName(nameList.get(0))).trim();

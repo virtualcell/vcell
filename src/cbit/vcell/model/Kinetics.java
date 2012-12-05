@@ -65,6 +65,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 
 	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
+	public static final int ROLE_NotARole		= -1;
+	
 	public static final int ROLE_UserDefined	= 0;
 	public static final int ROLE_ReactionRate	= 1;
 	public static final int ROLE_CurrentDensity	= 2;
@@ -83,14 +85,18 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_LumpedCurrent	= 15;
 	
 	// spatial stochastic-related roles
-	public static final int ROLE_Binding_Radius  		= 16;
-	public static final int ROLE_KOn  					= 17;
-	public static final int ROLE_Diffusion_Reactant1 	= 18;
-	public static final int ROLE_Diffusion_Reactant2  	= 19;
-	public static final int ROLE_Concentration_Reactant1  = 20;
-	public static final int ROLE_Concentration_Reactant2  = 21;
+	public static final int ROLE_Binding_Radius  			= 16;
+	public static final int ROLE_KOn  						= 17;
+	public static final int ROLE_Diffusion_Reactant1 		= 18;
+	public static final int ROLE_Diffusion_Reactant2  		= 19;
+	public static final int ROLE_Concentration_Reactant1 	= 20;
+	public static final int ROLE_Concentration_Reactant2	= 21;
+	public static final int ROLE_Concentration_Product		= 22;
+	public static final int ROLE_Concentration_Catalyst		= 23;
+	public static final int ROLE_Concentration_Participant	= 24;
+	public static final int ROLE_Kcat						= 25;
 	
-	public static final int NUM_ROLES			= 22;
+	public static final int NUM_ROLES		= 26;
 
 	
 	private static final String RoleDescs[] = {
