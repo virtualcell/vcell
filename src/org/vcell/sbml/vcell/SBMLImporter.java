@@ -1896,12 +1896,12 @@ public BioModel getBioModel() {
 	OStringStream oStrStream = new OStringStream();
 	document.printErrors(oStrStream);
 	System.out.println(oStrStream.str());
+		
+	sbmlModel = document.getModel();
 	
-	if (numProblems > 0) {
+	if (sbmlModel == null) {
 		throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str());
 	}
-	
-	sbmlModel = document.getModel();
 	
 	// Convert SBML Model to VCell model
 	// An SBML model will correspond to a simcontext - which needs a Model and a Geometry
