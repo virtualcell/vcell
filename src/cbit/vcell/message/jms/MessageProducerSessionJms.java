@@ -25,14 +25,12 @@ import cbit.vcell.mongodb.VCMongoMessage;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
-		private VCMessagingServiceJms vcMessagingServiceJms = null;
 		private TemporaryQueue commonTemporaryQueue = null;
 		private Connection connection = null;
 		private Session session = null;
 		protected boolean bIndependent;
 		
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
-			this.vcMessagingServiceJms = vcMessagingServiceJms;
 			this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
 			this.connection.setExceptionListener(new ExceptionListener() {
 				public void onException(JMSException arg0) {

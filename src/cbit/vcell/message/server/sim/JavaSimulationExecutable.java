@@ -152,7 +152,7 @@ protected void init() throws JMSException {
 	};
 	VCMessageSelector selector = null;
 	String threadName = "Service Control Topic Consumer";
-	VCTopicConsumer serviceControlConsumer = new VCTopicConsumer(topic, listener, selector, threadName);
+	VCTopicConsumer serviceControlConsumer = new VCTopicConsumer(topic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SERVICE_CONTROL);
 	vcMessagingService.addMessageConsumer(serviceControlConsumer);
 }
 
