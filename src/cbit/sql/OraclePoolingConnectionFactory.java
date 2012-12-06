@@ -60,6 +60,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	connectionCacheName = "UCP_ManagedPool_" + System.nanoTime();
 
 	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
+	connectionPoolManaager.setJmxEnabled(true);
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 	poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
 	poolDataSource.setConnectionPoolName(connectionCacheName);
