@@ -141,7 +141,7 @@ private void init() {
 	};
 	VCMessageSelector selector = vcMessagingService.createSelector(getMessageFilter());
 	String threadName = "Daemon Control Topic Consumer";
-	daemonControlTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName);
+	daemonControlTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL);
 	vcMessagingService.addMessageConsumer(daemonControlTopicConsumer);
 	
 	topicProducerSession = vcMessagingService.createProducerSession();

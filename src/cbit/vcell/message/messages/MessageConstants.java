@@ -68,6 +68,16 @@ public interface MessageConstants {
 	public static final long INTERVAL_SERVER_FAIL_MS = 10 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_PROGRESS_MESSAGE_MS = 5 * SECOND_IN_MS;
+	
+	public static final int PREFETCH_LIMIT_CLIENT_TOPIC = 100;
+	public static final int PREFETCH_LIMIT_DAEMON_CONTROL = 100;
+	public static final int PREFETCH_LIMIT_DATA_REQUEST = 1;
+	public static final int PREFETCH_LIMIT_DB_REQUEST = 1;
+	public static final int PREFETCH_LIMIT_SERVICE_CONTROL = 100;
+	public static final int PREFETCH_LIMIT_SIM_REQUEST = 100;
+	public static final int PREFETCH_LIMIT_WORKER_EVENT = 100;
+	public static final int PREFETCH_LIMIT_SIM_JOB_LOCAL = 1;
+	public static final int PREFETCH_LIMIT_SIM_JOB_HTC = 5;
 
 
 }

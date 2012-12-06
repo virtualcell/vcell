@@ -8,8 +8,8 @@ public final class VCTopicConsumer extends VCMessagingConsumer {
 
 	private TopicListener listener = null;
 	
-	public VCTopicConsumer(VCellTopic topic, TopicListener listener, VCMessageSelector selector, String threadName){
-		super(topic,selector,threadName);
+	public VCTopicConsumer(VCellTopic topic, TopicListener listener, VCMessageSelector selector, String threadName, int prefetchLimit){
+		super(topic,selector,threadName,prefetchLimit);
 		this.listener = listener;
 	}
 	public VCellTopic getTopic() {
