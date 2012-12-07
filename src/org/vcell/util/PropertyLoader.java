@@ -144,10 +144,9 @@ public class PropertyLoader {
 	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
 	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
 	public static final String htcComputeResources = "vcell.htc.computeresources";
+	public static final String htcBatchSystemQueue = "vcell.htc.queue";
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
-	public static final String pbsServiceQueuePrefix = "vcell.pbs.pbsServiceQueuePrefix";
-	public static final String pbsWorkQueuePrefix = "vcell.pbs.pbsWorkQueuePrefix";
 	
 	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
@@ -265,6 +264,7 @@ public class PropertyLoader {
 		vcellClientTimeoutMS,
 		
 		htcComputeResources,
+		htcBatchSystemQueue,
 		pbsHomeDir,
 
 		
