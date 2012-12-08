@@ -1,0 +1,553 @@
+Index: src/cbit/vcell/message/jms/test/TestBlobMessages.java
+===================================================================
+--- src/cbit/vcell/message/jms/test/TestBlobMessages.java	(revision 12471)
++++ src/cbit/vcell/message/jms/test/TestBlobMessages.java	(revision 12470)
+@@ -1,87 +0,0 @@
+-package cbit.vcell.message.jms.test;
+-
+-import java.util.ArrayList;
+-
+-import org.vcell.util.PropertyLoader;
+-
+-import cbit.vcell.message.RollbackException;
+-import cbit.vcell.message.VCMessage;
+-import cbit.vcell.message.VCMessageSession;
+-import cbit.vcell.message.VCMessagingService;
+-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+-import cbit.vcell.message.VCQueueConsumer;
+-import cbit.vcell.message.VCQueueConsumer.QueueListener;
+-import cbit.vcell.message.VCellQueue;
+-
+-/**
+- * Hello world!
+- */
+-public class TestBlobMessages {
+-
+-	private static final int NUM_PRODUCERS = 2;
+-    private static final int NUM_COMSUMERS = 3;
+-	private static final int NUM_MESSAGES = 100;
+-	
+-    public static class Calculator {
+-    	private int sum = 0;
+-    	public synchronized void add(int number){
+-    		sum += number;
+-    		System.out.println("sum is :"+sum);
+-    	}
+-    	public int getSum(){
+-    		return sum;
+-    	}
+-    }
+-
+-	public static void main(String[] args) throws Exception {
+-		try {
+-	    	PropertyLoader.loadProperties();
+-	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
+-	    	
+-	    	VCMessagingService messagingService = VCMessagingService.createInstance();
+-	    	VCMessagingDelegate messagingDelegate = new VCMessagingDelegate() {
+-				public void onMessagingException(Exception e) {
+-					e.printStackTrace(System.out);
+-				}
+-			};
+-			messagingService.setDelegate(messagingDelegate);
+-	    		        
+-	        // creating one messageProducer session
+-	        ArrayList<VCMessageSession> sessions = new ArrayList<VCMessageSession>();
+-	        for (int i=0;i<NUM_PRODUCERS;i++){
+-	        	sessions.add(messagingService.createProducerSession());
+-	        }
+-	        for (int i=0;i<NUM_MESSAGES;i++){
+-	        	for (int s=0;s<NUM_PRODUCERS;s++){
+-	        		VCMessageSession session = sessions.get(s);
+-		        	VCMessage message = session.createObjectMessage(new byte[1000]);
+-//		        	VCMessage message = session.createObjectMessage(new byte[100000000]);
+-		        	session.sendQueueMessage(VCellQueue.JimQueue, message);
+-		        	session.commit();
+-		        }
+-	        }
+-	        
+-	        // reading message and computing sum
+-	        // create N comsumers
+-	        for (int i=0;i<NUM_COMSUMERS;i++){
+-	        	QueueListener listener = new QueueListener() {
+-	        		public void onQueueMessage(VCMessage vcMessage,	VCMessageSession session) throws RollbackException {
+-	        			byte[] byteArray = (byte[])vcMessage.getObjectContent();
+-	        			System.out.println("timestampMS="+vcMessage.getTimestampMS()+", "+toString()+",  elapsedTimeS="+((System.currentTimeMillis()-vcMessage.getTimestampMS())/1000.0)+", Received: "+byteArray.length+" bytes");
+-	        		}
+-	        	};
+-	        	VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellQueue.JimQueue, listener, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
+-	        	messagingService.addMessageConsumer(queueConsumer);
+-	        }
+-	        
+-	        Thread.sleep(1000*300);
+-	        	    	
+-	    	System.out.println("main program calling closeAll()");
+-	    	messagingService.closeAll();
+-	    	System.out.println("main program exiting");
+-		}catch (Exception e){
+-			e.printStackTrace(System.out);
+-		}
+-    }
+-	
+-}
+\ No newline at end of file
+Index: src/cbit/vcell/message/jms/test/TestRPC.java
+===================================================================
+--- src/cbit/vcell/message/jms/test/TestRPC.java	(revision 12471)
++++ src/cbit/vcell/message/jms/test/TestRPC.java	(revision 12470)
+@@ -37,7 +37,7 @@
+ 	        // create N comsumers
+ 	        MyRpcServer myRpcServer = new MyRpcServer();
+ 	        for (int i=0;i<NUM_COMSUMERS;i++){
+-				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
++				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i);
+ 	        	messagingService.addMessageConsumer(rpcConsumer);
+ 	        }
+ 	        
+Index: src/cbit/vcell/message/jms/test/TestQueues.java
+===================================================================
+--- src/cbit/vcell/message/jms/test/TestQueues.java	(revision 12471)
++++ src/cbit/vcell/message/jms/test/TestQueues.java	(revision 12470)
+@@ -79,7 +79,7 @@
+ 						calculator.add(1);
+ 					}
+ 				};
+-				VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellQueue.JimQueue, listener, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
++				VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellQueue.JimQueue, listener, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== Consumer Thread "+i);
+ 	        	messagingService.addMessageConsumer(queueConsumer);
+ 	        }
+ 	        
+Index: src/cbit/vcell/message/jms/VCMessagingServiceJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/VCMessagingServiceJms.java	(revision 12471)
++++ src/cbit/vcell/message/jms/VCMessagingServiceJms.java	(revision 12470)
+@@ -7,10 +7,7 @@
+ import javax.jms.ConnectionFactory;
+ import javax.jms.Destination;
+ import javax.jms.JMSException;
+-import javax.jms.MessageConsumer;
+-import javax.jms.Session;
+ 
+-import cbit.vcell.message.VCDestination;
+ import cbit.vcell.message.VCMessageSelector;
+ import cbit.vcell.message.VCMessageSession;
+ import cbit.vcell.message.VCMessagingConsumer;
+@@ -115,7 +112,5 @@
+ 	public VCMessageSelector createSelector(String selectorString){
+ 		return new VCMessageSelectorJms(selectorString);
+ 	}
+-
+-	public abstract MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException;
+ 	
+ }
+Index: src/cbit/vcell/message/jms/MessageProducerSessionJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/MessageProducerSessionJms.java	(revision 12471)
++++ src/cbit/vcell/message/jms/MessageProducerSessionJms.java	(revision 12470)
+@@ -25,12 +25,14 @@
+ 
+ public class MessageProducerSessionJms implements VCMessageSession {
+ 		
++		private VCMessagingServiceJms vcMessagingServiceJms = null;
+ 		private TemporaryQueue commonTemporaryQueue = null;
+ 		private Connection connection = null;
+ 		private Session session = null;
+ 		protected boolean bIndependent;
+ 		
+ 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
++			this.vcMessagingServiceJms = vcMessagingServiceJms;
+ 			this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
+ 			this.connection.setExceptionListener(new ExceptionListener() {
+ 				public void onException(JMSException arg0) {
+Index: src/cbit/vcell/message/jms/activeMQ/VCMessagingServiceActiveMQ.java
+===================================================================
+--- src/cbit/vcell/message/jms/activeMQ/VCMessagingServiceActiveMQ.java	(revision 12471)
++++ src/cbit/vcell/message/jms/activeMQ/VCMessagingServiceActiveMQ.java	(revision 12470)
+@@ -3,20 +3,13 @@
+ import java.net.URI;
+ 
+ import javax.jms.ConnectionFactory;
+-import javax.jms.Destination;
+-import javax.jms.JMSException;
+-import javax.jms.MessageConsumer;
+-import javax.jms.Session;
+ 
+ import org.apache.activemq.ActiveMQConnectionFactory;
+ import org.apache.activemq.broker.BrokerService;
+ import org.apache.activemq.broker.TransportConnector;
+ import org.vcell.util.PropertyLoader;
+ 
+-import cbit.vcell.message.VCDestination;
+-import cbit.vcell.message.VCMessageSelector;
+ import cbit.vcell.message.VCMessagingException;
+-import cbit.vcell.message.VCellQueue;
+ import cbit.vcell.message.jms.VCMessagingServiceJms;
+ 
+ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
+@@ -51,21 +44,4 @@
+ 		}
+ 	}
+ 
+-	@Override
+-	public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException {
+-		Destination jmsDestination;
+-		MessageConsumer jmsMessageConsumer;
+-		if (vcDestination instanceof VCellQueue){
+-			jmsDestination = jmsSession.createQueue(vcDestination.getName()+"?consumer.prefetchSize="+prefetchLimit);							
+-		}else{
+-			jmsDestination = jmsSession.createTopic(vcDestination.getName()+"?consumer.prefetchSize="+prefetchLimit);							
+-		}
+-		if (vcSelector==null){
+-			jmsMessageConsumer = jmsSession.createConsumer(jmsDestination);
+-		}else{
+-			jmsMessageConsumer = jmsSession.createConsumer(jmsDestination,vcSelector.getSelectionString());
+-		}
+-		return jmsMessageConsumer;
+-	}
+-
+ }
+Index: src/cbit/vcell/message/jms/sonicMQ/VCMessagingServiceSonicMQ.java
+===================================================================
+--- src/cbit/vcell/message/jms/sonicMQ/VCMessagingServiceSonicMQ.java	(revision 12471)
++++ src/cbit/vcell/message/jms/sonicMQ/VCMessagingServiceSonicMQ.java	(revision 12470)
+@@ -1,17 +1,11 @@
+ package cbit.vcell.message.jms.sonicMQ;
+ 
+ import javax.jms.ConnectionFactory;
+-import javax.jms.Destination;
+ import javax.jms.JMSException;
+-import javax.jms.MessageConsumer;
+-import javax.jms.Session;
+ 
+ import org.vcell.util.PropertyLoader;
+ 
+-import cbit.vcell.message.VCDestination;
+-import cbit.vcell.message.VCMessageSelector;
+ import cbit.vcell.message.VCMessagingException;
+-import cbit.vcell.message.VCellQueue;
+ import cbit.vcell.message.jms.VCMessagingServiceJms;
+ 
+ public class VCMessagingServiceSonicMQ extends VCMessagingServiceJms {
+@@ -37,23 +31,5 @@
+ 			throw new VCMessagingException("embedded broker not supported");
+ 		}
+ 	}
+-	
+ 
+-	@Override
+-	public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException {
+-		Destination jmsDestination;
+-		progress.message.jclient.MessageConsumer sonicMessageConsumer;
+-		if (vcDestination instanceof VCellQueue){
+-			jmsDestination = jmsSession.createQueue(vcDestination.getName());							
+-		}else{
+-			jmsDestination = jmsSession.createTopic(vcDestination.getName());							
+-		}
+-		if (vcSelector==null){
+-			sonicMessageConsumer = (progress.message.jclient.MessageConsumer)jmsSession.createConsumer(jmsDestination);
+-		}else{
+-			sonicMessageConsumer = (progress.message.jclient.MessageConsumer)jmsSession.createConsumer(jmsDestination,vcSelector.getSelectionString());
+-		}
+-		sonicMessageConsumer.setPrefetchCount(prefetchLimit);
+-		return sonicMessageConsumer;
+-	}
+ }
+Index: src/cbit/vcell/message/jms/ConsumerContextJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/ConsumerContextJms.java	(revision 12471)
++++ src/cbit/vcell/message/jms/ConsumerContextJms.java	(revision 12470)
+@@ -4,6 +4,7 @@
+ 
+ import javax.jms.Connection;
+ import javax.jms.DeliveryMode;
++import javax.jms.Destination;
+ import javax.jms.ExceptionListener;
+ import javax.jms.JMSException;
+ import javax.jms.Message;
+@@ -24,6 +25,7 @@
+ import cbit.vcell.message.VCRpcConsumer;
+ import cbit.vcell.message.VCRpcRequest;
+ import cbit.vcell.message.VCTopicConsumer;
++import cbit.vcell.message.VCellQueue;
+ import cbit.vcell.message.messages.MessageConstants;
+ import cbit.vcell.mongodb.VCMongoMessage;
+ 
+@@ -31,6 +33,7 @@
+ 	public static final long CONSUMER_POLLING_INTERVAL_MS = 2000;
+ 	private VCMessagingServiceJms vcMessagingServiceJms = null;
+ 	private VCMessagingConsumer vcConsumer = null;
++	private Destination jmsDestination = null;
+ 	private Session jmsSession = null;
+ 	private Connection jmsConnection = null;
+ 	private MessageConsumer jmsMessageConsumer = null;
+@@ -168,8 +171,17 @@
+ 				}
+ 			});
+ 			this.jmsConnection.start();
+-			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);
+-			this.jmsMessageConsumer = this.vcMessagingServiceJms.createConsumer(this.jmsSession, vcConsumer.getVCDestination(), vcConsumer.getSelector(), vcConsumer.getPrefetchLimit());
++			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);			
++			if (vcConsumer.getVCDestination() instanceof VCellQueue){
++				this.jmsDestination = this.jmsSession.createQueue(vcConsumer.getVCDestination().getName());							
++			}else{
++				this.jmsDestination = this.jmsSession.createTopic(vcConsumer.getVCDestination().getName());							
++			}
++			if (vcConsumer.getSelector()==null){
++				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination);
++			}else{
++				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination,vcConsumer.getSelector().getSelectionString());
++			}
+ 		}catch (JMSException e){
+ 			e.printStackTrace(System.out);
+ 			onException(e);
+Index: src/cbit/vcell/message/VCMessagingConsumer.java
+===================================================================
+--- src/cbit/vcell/message/VCMessagingConsumer.java	(revision 12471)
++++ src/cbit/vcell/message/VCMessagingConsumer.java	(revision 12470)
+@@ -5,13 +5,11 @@
+ 	private VCDestination vcDestination = null;
+ 	private String threadName = null;
+ 	private VCMessageSelector selector = null;
+-	private int prefetchLimit = 1;
+ 	
+-	public VCMessagingConsumer(VCDestination vcDestination, VCMessageSelector selector, String threadName, int prefetchLimit) {
++	public VCMessagingConsumer(VCDestination vcDestination, VCMessageSelector selector, String threadName) {
+ 		this.vcDestination = vcDestination;
+ 		this.selector = selector;
+ 		this.threadName = threadName;
+-		this.prefetchLimit = prefetchLimit;
+ 	}
+ 	
+ 	public VCDestination getVCDestination(){
+@@ -25,8 +23,4 @@
+ 	public VCMessageSelector getSelector(){
+ 		return this.selector;
+ 	}
+-
+-	public int getPrefetchLimit() {
+-		return this.prefetchLimit;
+-	}
+ }
+\ No newline at end of file
+Index: src/cbit/vcell/message/VCTopicConsumer.java
+===================================================================
+--- src/cbit/vcell/message/VCTopicConsumer.java	(revision 12471)
++++ src/cbit/vcell/message/VCTopicConsumer.java	(revision 12470)
+@@ -8,8 +8,8 @@
+ 
+ 	private TopicListener listener = null;
+ 	
+-	public VCTopicConsumer(VCellTopic topic, TopicListener listener, VCMessageSelector selector, String threadName, int prefetchLimit){
+-		super(topic,selector,threadName,prefetchLimit);
++	public VCTopicConsumer(VCellTopic topic, TopicListener listener, VCMessageSelector selector, String threadName){
++		super(topic,selector,threadName);
+ 		this.listener = listener;
+ 	}
+ 	public VCellTopic getTopic() {
+Index: src/cbit/vcell/message/server/console/ServerManageConsole.java
+===================================================================
+--- src/cbit/vcell/message/server/console/ServerManageConsole.java	(revision 12471)
++++ src/cbit/vcell/message/server/console/ServerManageConsole.java	(revision 12470)
+@@ -2603,7 +2603,7 @@
+ 			+ ")";
+ 	VCMessageSelector selector = vcMessagingService.createSelector(filter);
+ 	String threadName = "Daemon Control Topic Consumer";
+-	vcMessagingService.addMessageConsumer(new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL));
++	vcMessagingService.addMessageConsumer(new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName));
+ 	
+ 	vcMessaging_daemonTopicProducerSession = vcMessagingService.createProducerSession();
+ 	
+Index: src/cbit/vcell/message/server/db/DatabaseServer.java
+===================================================================
+--- src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12471)
++++ src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12470)
+@@ -28,7 +28,6 @@
+ import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+ import cbit.vcell.message.VCRpcConsumer;
+ import cbit.vcell.message.VCellQueue;
+-import cbit.vcell.message.messages.MessageConstants;
+ import cbit.vcell.message.server.ManageUtils;
+ import cbit.vcell.message.server.ServiceInstanceStatus;
+ import cbit.vcell.message.server.ServiceProvider;
+@@ -63,7 +62,7 @@
+ }
+ 
+ private void init() throws Exception {
+-	rpcConsumer = new VCRpcConsumer(databaseServerImpl, VCellQueue.DbRequestQueue, ServiceType.DB, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
++	rpcConsumer = new VCRpcConsumer(databaseServerImpl, VCellQueue.DbRequestQueue, ServiceType.DB, null, "Database RPC Server Thread");
+ 
+ 	VCMessagingDelegate delegate = new VCMessagingDelegate() {
+ 		public void onMessagingException(Exception e) {
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12471)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12470)
+@@ -350,7 +350,7 @@
+ 		};
+ 		VCMessageSelector workerEventSelector = null;
+ 		String threadName = "Worker Event Consumer";
+-		workerEventConsumer = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName, MessageConstants.PREFETCH_LIMIT_WORKER_EVENT);
++		workerEventConsumer = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName);
+ 		vcMessagingService.addMessageConsumer(workerEventConsumer);
+ 
+ 		//
+@@ -363,7 +363,7 @@
+ 		};
+ 		VCMessageSelector simRequestSelector = null;
+ 		threadName = "Sim Request Consumer";
+-		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, simRequestListener, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
++		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, simRequestListener, simRequestSelector, threadName);
+ 		vcMessagingService.addMessageConsumer(simRequestConsumer);
+ 		
+ 		this.dispatcherQueueSession = vcMessagingService.createProducerSession();
+Index: src/cbit/vcell/message/server/sim/JavaSimulationExecutable.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/JavaSimulationExecutable.java	(revision 12471)
++++ src/cbit/vcell/message/server/sim/JavaSimulationExecutable.java	(revision 12470)
+@@ -152,7 +152,7 @@
+ 	};
+ 	VCMessageSelector selector = null;
+ 	String threadName = "Service Control Topic Consumer";
+-	VCTopicConsumer serviceControlConsumer = new VCTopicConsumer(topic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SERVICE_CONTROL);
++	VCTopicConsumer serviceControlConsumer = new VCTopicConsumer(topic, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(serviceControlConsumer);
+ }
+ 
+Index: src/cbit/vcell/message/server/sim/LocalSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12471)
++++ src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12470)
+@@ -120,7 +120,7 @@
+ 	VCellQueue queue = VCellQueue.SimJobQueue;
+ 	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
+ 	String threadName = "SimJob Queue Consumer";
+-	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_LOCAL);
++	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(queueConsumer);
+ 	
+ 	this.workerProducerSession = vcMessagingService.createProducerSession();
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12471)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12470)
+@@ -176,7 +176,7 @@
+ 	};
+ 	VCMessageSelector selector = null;
+ 	String threadName = "Service Control Topic Consumer (for killing sims)";
+-	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SERVICE_CONTROL);
++	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(serviceControlTopicConsumer);
+ }
+ 
+@@ -223,7 +223,7 @@
+ 	VCellQueue queue = VCellQueue.SimJobQueue;
+ 	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
+ 	String threadName = "SimJob Queue Consumer";
+-	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_HTC);
++	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(queueConsumer);
+ }
+ 
+Index: src/cbit/vcell/message/server/data/SimDataServer.java
+===================================================================
+--- src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12471)
++++ src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12470)
+@@ -89,7 +89,7 @@
+ 		throw new RuntimeException("expecting either Service type of "+ServiceType.DATA+" or "+ServiceType.DATAEXPORT);
+ 	}
+ 
+-	rpcConsumer = new VCRpcConsumer(dataServerImpl, VCellQueue.DataRequestQueue, serviceType, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
++	rpcConsumer = new VCRpcConsumer(dataServerImpl, VCellQueue.DataRequestQueue, serviceType, selector, serviceType.getName()+" RPC Server Thread");
+ 
+ 	VCMessagingDelegate delegate = new VCMessagingDelegate() {
+ 		public void onMessagingException(Exception e) {
+Index: src/cbit/vcell/message/server/manager/ServerManagerDaemon.java
+===================================================================
+--- src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12471)
++++ src/cbit/vcell/message/server/manager/ServerManagerDaemon.java	(revision 12470)
+@@ -141,7 +141,7 @@
+ 	};
+ 	VCMessageSelector selector = vcMessagingService.createSelector(getMessageFilter());
+ 	String threadName = "Daemon Control Topic Consumer";
+-	daemonControlTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL);
++	daemonControlTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(daemonControlTopicConsumer);
+ 	
+ 	topicProducerSession = vcMessagingService.createProducerSession();
+Index: src/cbit/vcell/message/server/ServiceProvider.java
+===================================================================
+--- src/cbit/vcell/message/server/ServiceProvider.java	(revision 12471)
++++ src/cbit/vcell/message/server/ServiceProvider.java	(revision 12470)
+@@ -120,7 +120,7 @@
+ 	};
+ 	VCMessageSelector selector = vcMessagingService.createSelector(getDaemonControlFilter());
+ 	String threadName = "Daemon Control Topic Consumer";
+-	vcTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL);
++	vcTopicConsumer = new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName);
+ 	vcMessagingService.addMessageConsumer(vcTopicConsumer);
+ }
+ 
+Index: src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java
+===================================================================
+--- src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java	(revision 12471)
++++ src/cbit/vcell/message/server/bootstrap/ClientTopicMessageCollector.java	(revision 12470)
+@@ -210,7 +210,7 @@
+ public void init() {
+ 	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
+ 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
+-	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName(),MessageConstants.PREFETCH_LIMIT_CLIENT_TOPIC);
++	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
+ 	vcMessagingService.addMessageConsumer(topicConsumer);
+ }
+ 
+Index: src/cbit/vcell/message/messages/MessageConstants.java
+===================================================================
+--- src/cbit/vcell/message/messages/MessageConstants.java	(revision 12471)
++++ src/cbit/vcell/message/messages/MessageConstants.java	(revision 12470)
+@@ -68,16 +68,6 @@
+ 	public static final long INTERVAL_SERVER_FAIL_MS = 10 * MINUTE_IN_MS; // in milliseconds
+ 	public static final long INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
+ 	public static final long INTERVAL_PROGRESS_MESSAGE_MS = 5 * SECOND_IN_MS;
+-	
+-	public static final int PREFETCH_LIMIT_CLIENT_TOPIC = 100;
+-	public static final int PREFETCH_LIMIT_DAEMON_CONTROL = 100;
+-	public static final int PREFETCH_LIMIT_DATA_REQUEST = 1;
+-	public static final int PREFETCH_LIMIT_DB_REQUEST = 1;
+-	public static final int PREFETCH_LIMIT_SERVICE_CONTROL = 100;
+-	public static final int PREFETCH_LIMIT_SIM_REQUEST = 100;
+-	public static final int PREFETCH_LIMIT_WORKER_EVENT = 100;
+-	public static final int PREFETCH_LIMIT_SIM_JOB_LOCAL = 1;
+-	public static final int PREFETCH_LIMIT_SIM_JOB_HTC = 5;
+ 
+ 
+ }
+Index: src/cbit/vcell/message/VCRpcConsumer.java
+===================================================================
+--- src/cbit/vcell/message/VCRpcConsumer.java	(revision 12471)
++++ src/cbit/vcell/message/VCRpcConsumer.java	(revision 12470)
+@@ -7,8 +7,8 @@
+ 	private Object serviceImplementation = null;
+ 	private ServiceType serviceType = null;
+ 
+-	public VCRpcConsumer(Object serviceImplementation, VCellQueue queue, ServiceType serviceType, VCMessageSelector selector, String threadName, int prefetchLimit) {
+-		super(queue, selector, threadName, prefetchLimit);
++	public VCRpcConsumer(Object serviceImplementation, VCellQueue queue, ServiceType serviceType, VCMessageSelector selector, String threadName) {
++		super(queue, selector, threadName);
+ 		this.serviceImplementation = serviceImplementation;
+ 		this.serviceType = serviceType;
+ 	}
+Index: src/cbit/vcell/message/VCQueueConsumer.java
+===================================================================
+--- src/cbit/vcell/message/VCQueueConsumer.java	(revision 12471)
++++ src/cbit/vcell/message/VCQueueConsumer.java	(revision 12470)
+@@ -9,8 +9,8 @@
+ 	
+ 	private QueueListener listener = null;
+ 	
+-	public VCQueueConsumer(VCellQueue queue, QueueListener listener, VCMessageSelector selector, String threadName, int prefetchLimit){
+-		super(queue, selector, threadName, prefetchLimit);
++	public VCQueueConsumer(VCellQueue queue, QueueListener listener, VCMessageSelector selector, String threadName){
++		super(queue, selector, threadName);
+ 		this.listener = listener;
+ 	}
+ 	public VCellQueue getQueue() {

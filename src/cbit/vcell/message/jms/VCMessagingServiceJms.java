@@ -7,7 +7,10 @@ import java.util.List;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
 
+import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingConsumer;
@@ -112,5 +115,7 @@ public abstract class VCMessagingServiceJms extends VCMessagingService {
 	public VCMessageSelector createSelector(String selectorString){
 		return new VCMessageSelectorJms(selectorString);
 	}
+
+	public abstract MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException;
 	
 }
