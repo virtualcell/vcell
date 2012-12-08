@@ -1,5 +1,10 @@
 package cbit.vcell.message.jms;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Enumeration;
 
 import javax.jms.Destination;
@@ -10,6 +15,8 @@ import javax.jms.Queue;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
@@ -18,23 +25,107 @@ import cbit.vcell.message.VCellTopic;
 
 public class VCMessageJms implements VCMessage {
 	
+	public static final String BLOB_MESSAGE_FILE_NAME = "blobMessageFileName";
+	public static final String BLOB_MESSAGE_PRODUCER_TEMPDIR = "blobProducerTempDir";
+	public static final String BLOB_MESSAGE_OBJECT_TYPE = "blobObjectType";
+	public static final String BLOB_MESSAGE_OBJECT_SIZE = "blobObjectSize";
+	
+	private transient Serializable blobObject = null;
+	private transient File blobFile = null;
+	
 	private Message jmsMessage = null;
 		
 	public VCMessageJms(Message jmsMessage){
 		this.jmsMessage = jmsMessage;
 	}
 	
+	public VCMessageJms(Message jmsMessage, Serializable blobObject){
+		this.jmsMessage = jmsMessage;
+		this.blobObject = blobObject;
+	}
+	
 	public Message getJmsMessage(){
 		return jmsMessage;
 	}
 	
+	/**
+	 * see Property jmsBlobMessageMinSize "vcell.jms.blobMessageMinSize"
+	 * see Property jmsBlobMessageTempDir "vcell.jms.blobMessageTempDir"
+	 * see class MessageProducerSessionJms
+	 * 
+	 * 
+	 * 1) Message Producer serializes into byte[] and compares size with PropertyLoader.jmsBlobMessageMinSize.
+	 * 2) For Large Object Messages (> threshold bytes), MessageProducerSessionJms writes bytes to a local file (e.g. MyBlobMessageTempDir/BlobMessage2295645974283237270.data).
+	 * 3) Pass file name as message properties so that receiver can delete file when done.
+	 * 4) consumer-side VCMessage infrastructure receives BlobMessage and invokes VCMessageJms.loadBlobMessage()
+	 * 5) loadBlobMessage() reads object from stream and attempts to delete both original and broker files.
+	 * 6) consumer's message listener calls getObjectContent() not knowing if it was sent as a Blob or not.
+	 * 7) message consumer calls VCMessageJms.removeBlobFile() to clean up disk.
+	 * 
+	 */
+	public void loadBlobFile(){
+		if (blobObject!=null){
+			return;
+		}
+		if (jmsMessage instanceof ObjectMessage && propertyExists(BLOB_MESSAGE_FILE_NAME)){
+			try {				
+				//
+				// read serialized object from inputStream (from Broker's data file)
+				//
+				String blobFileName = jmsMessage.getStringProperty(BLOB_MESSAGE_FILE_NAME);
+				
+				//
+				// get (or create) directory to store Message BLOBs
+				//
+				File blobTempDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));				
+				blobFile = new File(blobTempDir,blobFileName);
+				if (!blobFile.exists()){
+					throw new RuntimeException("Message BLOB file \""+blobFileName+"\" in directory \""+blobTempDir+"\" not found, maybe the message was already read");
+				}
+				FileInputStream fis = new FileInputStream(blobFile);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				ObjectInputStream ois = new ObjectInputStream(bis);
+				blobObject = (Serializable) ois.readObject();
+				ois.close();
+				bis.close();
+				fis.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+		}
+	}
+	
+	public void removeBlobFile(){
+		if (blobFile!=null){
+			//
+			// remove blob file if it still exists (after a successful commit)
+			//
+			try {
+				if (blobFile.exists()){
+					blobFile.delete();
+				}else{
+					System.out.println("Message BLOB file \""+blobFile.getAbsolutePath()+"\" doesn't exist");
+				}
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+			}
+		}
+	}
+	
+
+
 	public Object getObjectContent(){
 		if (jmsMessage instanceof ObjectMessage){
-			try {
-				return ((ObjectMessage)jmsMessage).getObject();
-			} catch (JMSException e) {
-				handleJMSException(e);
-				throw new RuntimeException(e.getMessage());
+			if (propertyExists(BLOB_MESSAGE_FILE_NAME)){
+				return blobObject;
+			}else{
+				try {
+					return ((ObjectMessage)jmsMessage).getObject();
+				} catch (JMSException e) {
+					handleJMSException(e);
+					throw new RuntimeException(e.getMessage());
+				}
 			}
 		}else{
 			return null;
