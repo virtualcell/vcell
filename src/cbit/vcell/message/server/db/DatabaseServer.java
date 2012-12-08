@@ -28,6 +28,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
@@ -62,7 +63,7 @@ public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServe
 }
 
 private void init() throws Exception {
-	rpcConsumer = new VCRpcConsumer(databaseServerImpl, VCellQueue.DbRequestQueue, ServiceType.DB, null, "Database RPC Server Thread");
+	rpcConsumer = new VCRpcConsumer(databaseServerImpl, VCellQueue.DbRequestQueue, ServiceType.DB, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
 	VCMessagingDelegate delegate = new VCMessagingDelegate() {
 		public void onMessagingException(Exception e) {

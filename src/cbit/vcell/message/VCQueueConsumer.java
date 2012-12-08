@@ -9,8 +9,8 @@ public final class VCQueueConsumer extends VCMessagingConsumer {
 	
 	private QueueListener listener = null;
 	
-	public VCQueueConsumer(VCellQueue queue, QueueListener listener, VCMessageSelector selector, String threadName){
-		super(queue, selector, threadName);
+	public VCQueueConsumer(VCellQueue queue, QueueListener listener, VCMessageSelector selector, String threadName, int prefetchLimit){
+		super(queue, selector, threadName, prefetchLimit);
 		this.listener = listener;
 	}
 	public VCellQueue getQueue() {

@@ -1,11 +1,17 @@
 package cbit.vcell.message.jms.sonicMQ;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
 
 import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.message.VCDestination;
+import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessagingServiceJms;
 
 public class VCMessagingServiceSonicMQ extends VCMessagingServiceJms {
@@ -31,5 +37,23 @@ public class VCMessagingServiceSonicMQ extends VCMessagingServiceJms {
 			throw new VCMessagingException("embedded broker not supported");
 		}
 	}
+	
 
+	@Override
+	public MessageConsumer createConsumer(Session jmsSession, VCDestination vcDestination, VCMessageSelector vcSelector, int prefetchLimit) throws JMSException {
+		Destination jmsDestination;
+		progress.message.jclient.MessageConsumer sonicMessageConsumer;
+		if (vcDestination instanceof VCellQueue){
+			jmsDestination = jmsSession.createQueue(vcDestination.getName());							
+		}else{
+			jmsDestination = jmsSession.createTopic(vcDestination.getName());							
+		}
+		if (vcSelector==null){
+			sonicMessageConsumer = (progress.message.jclient.MessageConsumer)jmsSession.createConsumer(jmsDestination);
+		}else{
+			sonicMessageConsumer = (progress.message.jclient.MessageConsumer)jmsSession.createConsumer(jmsDestination,vcSelector.getSelectionString());
+		}
+		sonicMessageConsumer.setPrefetchCount(prefetchLimit);
+		return sonicMessageConsumer;
+	}
 }

@@ -120,7 +120,7 @@ private void initQueueConsumer() {
 	VCellQueue queue = VCellQueue.SimJobQueue;
 	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
 	String threadName = "SimJob Queue Consumer";
-	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
+	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_LOCAL);
 	vcMessagingService.addMessageConsumer(queueConsumer);
 	
 	this.workerProducerSession = vcMessagingService.createProducerSession();
