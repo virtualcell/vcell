@@ -100,8 +100,9 @@ public class SurfaceClass implements GeometryClass {
 			if(!Compare.isEqualOrNull(name,sc.name)){
 				return false;
 			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	public String getName() {
