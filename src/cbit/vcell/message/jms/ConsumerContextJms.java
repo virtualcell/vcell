@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -25,7 +24,6 @@ import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 
@@ -33,7 +31,6 @@ public class ConsumerContextJms implements Runnable {
 	public static final long CONSUMER_POLLING_INTERVAL_MS = 2000;
 	private VCMessagingServiceJms vcMessagingServiceJms = null;
 	private VCMessagingConsumer vcConsumer = null;
-	private Destination jmsDestination = null;
 	private Session jmsSession = null;
 	private Connection jmsConnection = null;
 	private MessageConsumer jmsMessageConsumer = null;
@@ -171,17 +168,8 @@ public class ConsumerContextJms implements Runnable {
 				}
 			});
 			this.jmsConnection.start();
-			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);			
-			if (vcConsumer.getVCDestination() instanceof VCellQueue){
-				this.jmsDestination = this.jmsSession.createQueue(vcConsumer.getVCDestination().getName());							
-			}else{
-				this.jmsDestination = this.jmsSession.createTopic(vcConsumer.getVCDestination().getName());							
-			}
-			if (vcConsumer.getSelector()==null){
-				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination);
-			}else{
-				this.jmsMessageConsumer = this.jmsSession.createConsumer(this.jmsDestination,vcConsumer.getSelector().getSelectionString());
-			}
+			this.jmsSession = this.jmsConnection.createSession(bTransacted, acknowledgeMode);
+			this.jmsMessageConsumer = this.vcMessagingServiceJms.createConsumer(this.jmsSession, vcConsumer.getVCDestination(), vcConsumer.getSelector(), vcConsumer.getPrefetchLimit());
 		}catch (JMSException e){
 			e.printStackTrace(System.out);
 			onException(e);

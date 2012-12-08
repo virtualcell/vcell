@@ -37,7 +37,7 @@ public class TestRPC {
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
 	        for (int i=0;i<NUM_COMSUMERS;i++){
-				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i);
+				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
 	        	messagingService.addMessageConsumer(rpcConsumer);
 	        }
 	        

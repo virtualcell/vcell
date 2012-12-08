@@ -7,8 +7,8 @@ public class VCRpcConsumer extends VCMessagingConsumer {
 	private Object serviceImplementation = null;
 	private ServiceType serviceType = null;
 
-	public VCRpcConsumer(Object serviceImplementation, VCellQueue queue, ServiceType serviceType, VCMessageSelector selector, String threadName) {
-		super(queue, selector, threadName);
+	public VCRpcConsumer(Object serviceImplementation, VCellQueue queue, ServiceType serviceType, VCMessageSelector selector, String threadName, int prefetchLimit) {
+		super(queue, selector, threadName, prefetchLimit);
 		this.serviceImplementation = serviceImplementation;
 		this.serviceType = serviceType;
 	}
