@@ -72,7 +72,7 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 	//startupType
 	int parsedStartupType = rset.getInt(startupType.toString());
 	//memoryMB
-	int parsedMemory = rset.getInt(memoryMB.toString());
+	int parsedMemoryMB = rset.getInt(memoryMB.toString());
 	//date
 	java.util.Date parsedDate = rset.getTimestamp(date.toString());
 	if (rset.wasNull()) {
@@ -91,7 +91,7 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
 		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
 	}
-	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemory), 
+	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemoryMB), 
 			parsedDate, ServiceStatusType.fromDatabaseNumber(parsedStatus), parsedStatusMsg, parsedHtcJobId);
 	
 	return serviceStatus;
