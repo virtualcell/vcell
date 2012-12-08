@@ -176,7 +176,7 @@ private void initServiceControlTopicListener() {
 	};
 	VCMessageSelector selector = null;
 	String threadName = "Service Control Topic Consumer (for killing sims)";
-	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName);
+	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SERVICE_CONTROL);
 	vcMessagingService.addMessageConsumer(serviceControlTopicConsumer);
 }
 
@@ -223,7 +223,7 @@ private void initQueueConsumer() {
 	VCellQueue queue = VCellQueue.SimJobQueue;
 	VCMessageSelector selector = vcMessagingService.createSelector(getJobSelector());
 	String threadName = "SimJob Queue Consumer";
-	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName);
+	queueConsumer = new VCQueueConsumer(queue, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_JOB_HTC);
 	vcMessagingService.addMessageConsumer(queueConsumer);
 }
 

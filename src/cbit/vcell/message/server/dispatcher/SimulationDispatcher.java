@@ -350,7 +350,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		};
 		VCMessageSelector workerEventSelector = null;
 		String threadName = "Worker Event Consumer";
-		workerEventConsumer = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName);
+		workerEventConsumer = new VCQueueConsumer(VCellQueue.WorkerEventQueue, workerEventListener, workerEventSelector, threadName, MessageConstants.PREFETCH_LIMIT_WORKER_EVENT);
 		vcMessagingService.addMessageConsumer(workerEventConsumer);
 
 		//
@@ -363,7 +363,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		};
 		VCMessageSelector simRequestSelector = null;
 		threadName = "Sim Request Consumer";
-		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, simRequestListener, simRequestSelector, threadName);
+		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, simRequestListener, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
 		vcMessagingService.addMessageConsumer(simRequestConsumer);
 		
 		this.dispatcherQueueSession = vcMessagingService.createProducerSession();

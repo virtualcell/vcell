@@ -2603,7 +2603,7 @@ private void reconnect() {
 			+ ")";
 	VCMessageSelector selector = vcMessagingService.createSelector(filter);
 	String threadName = "Daemon Control Topic Consumer";
-	vcMessagingService.addMessageConsumer(new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName));
+	vcMessagingService.addMessageConsumer(new VCTopicConsumer(VCellTopic.DaemonControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_DAEMON_CONTROL));
 	
 	vcMessaging_daemonTopicProducerSession = vcMessagingService.createProducerSession();
 	
