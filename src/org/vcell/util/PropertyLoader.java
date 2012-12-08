@@ -109,6 +109,8 @@ public class PropertyLoader {
 	public static final String jmsWorkerEventQueue		= "vcell.jms.queue.workerEvent";
 	public static final String jmsWorkerPrefetchCount	= "vcell.jms.workerPrefetchCount";
 	public static final String jmsServicePrefetchCount	= "vcell.jms.servicePrefetchCount";
+	public static final String jmsBlobMessageMinSize	= "vcell.jms.blobMessageMinSize";
+	public static final String jmsBlobMessageTempDir	= "vcell.jms.blobMessageTempDir";
 
 	public static final String maxOdeJobsPerUser	= "vcell.server.maxOdeJobsPerUser";
 	public static final String maxPdeJobsPerUser	= "vcell.server.maxPdeJobsPerUser";
@@ -235,6 +237,8 @@ public class PropertyLoader {
 		jmsWorkerEventQueue,
 		jmsWorkerPrefetchCount,
 		jmsServicePrefetchCount,
+		jmsBlobMessageMinSize,
+		jmsBlobMessageTempDir,
 
 		maxOdeJobsPerUser,
 		maxPdeJobsPerUser,
