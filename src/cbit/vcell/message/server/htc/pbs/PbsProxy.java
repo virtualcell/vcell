@@ -32,8 +32,6 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 public final class PbsProxy extends HtcProxy {
 	private static final int QDEL_JOB_NOT_FOUND_RETURN_CODE = 153;
 	
-	private static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
-	private static final String PBS_WORK_QUEUE_PREFIX = "workq";
 	private final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
 	protected final static String PBS_SUBMISSION_FILE_EXT = ".pbs.sub";
 
@@ -61,7 +59,7 @@ public final class PbsProxy extends HtcProxy {
 		HtcJobStatus iStatus = null;
 
 		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
-		CommandOutput commandOutput = commandService.command(cmd);
+		CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
 
 		String output = commandOutput.getStandardOutput();
 		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
@@ -182,23 +180,10 @@ public final class PbsProxy extends HtcProxy {
 			sw.append("# Generated without file template. assuming /bin/bash shell\n");
 			sw.append("#PBS -N " + jobName+"\n");
 			sw.append("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb\n");
-
-			switch (jobCategory){
-				case HTC_SIMULATION_JOB:{
-					String pbsWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, PBS_WORK_QUEUE_PREFIX);
-					sw.append("#PBS -q "+pbsWorkQueueNamePrefix + serverID.toCamelCase()+"\n");
-					break;
-				}
-				case HTC_SERVICE_JOB:{
-					String pbsServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, PBS_SERVICE_QUEUE_PREFIX);
-					sw.append("#PBS -q "+pbsServiceQueueNamePrefix + serverID.toCamelCase()+"\n");
-					break;
-				}
-				default: {
-					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
-				}
+			String pbsQueueName = PropertyLoader.getProperty(PropertyLoader.htcBatchSystemQueue,null);
+			if (pbsQueueName!=null && pbsQueueName.trim().length()>0){
+				sw.append("#PBS -q "+pbsQueueName+"\n");
 			}
-
 			sw.append("#PBS -m a\n");
 			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
 			sw.append("#PBS -j oe\n");
@@ -365,7 +350,7 @@ public final class PbsProxy extends HtcProxy {
 			for(HtcJobID htcJobID : htcJobIDs){
 				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
 			}
-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
 			PbsJobID latestpbsJobID = null;

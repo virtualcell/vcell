@@ -1,0 +1,162 @@
+Index: deployInfo/vcell64.properties
+===================================================================
+--- deployInfo/vcell64.properties	(revision 12474)
++++ deployInfo/vcell64.properties	(revision 12473)
+@@ -95,10 +95,6 @@
+ vcell.htc.computeresources = sigcluster
+ vcell.htc.submittemplates = sigcluster@GENERATED_SERVER_SITE_PATH/configs/pbstemplate.sub
+ vcell.pbs.homeDir = /cm/shared/apps/torque/current
+-#
+-# uncomment to specify which PBS or SGE submission queue to use for simulation jobs.
+-# when not specified, the default queue is used.
+-#vcell.htc.queue = myQueueName
+ 
+ #
+ # Client Timeout in milliseconds
+Index: src/cbit/vcell/message/server/cmd/CommandServiceSsh.java
+===================================================================
+--- src/cbit/vcell/message/server/cmd/CommandServiceSsh.java	(revision 12474)
++++ src/cbit/vcell/message/server/cmd/CommandServiceSsh.java	(revision 12473)
+@@ -73,16 +73,16 @@
+ 			return commandOutput;
+ 
+ 		} catch (Exception e) {
+-			e.printStackTrace(System.out);
++			e.printStackTrace();
+ 			throw new ExecutableException(e.getMessage());
+ 		} finally {
+ 			if (session!=null){
+ 				try {
+ 					session.close();
+ 				} catch (TransportException e) {
+-					e.printStackTrace(System.out);
++					e.printStackTrace();
+ 				} catch (ConnectionException e) {
+-					e.printStackTrace(System.out);
++					e.printStackTrace();
+ 				}
+ 			}
+ 		}
+Index: src/cbit/vcell/message/server/htc/test/HtcTest.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12474)
++++ src/cbit/vcell/message/server/htc/test/HtcTest.java	(revision 12473)
+@@ -97,7 +97,7 @@
+ 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
+ 		HtcJobID jobID = null;
+ 		try {
+-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "100000000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
++			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "100000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
+ 		} catch (Exception e1) {
+ 			e1.printStackTrace(System.out);
+ 		}
+@@ -111,12 +111,8 @@
+ 
+ 		
+ 		System.out.println("<<<<<--------------  printing running simulations --------------->>>>>>");
+-		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("myJob1");
+-		if (htcProxy instanceof SgeProxy){
+-			htcJobIDs.add(new SgeJobID("12345"));
+-		}else{
+-			htcJobIDs.add(new PbsJobID("12345"));
+-		}
++		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("REL");
++		htcJobIDs.add(new SgeJobID("12345"));
+ 		Map<HtcJobID,HtcJobInfo> htcJobInfoMap = htcProxy.getJobInfos(htcJobIDs);
+ 		for (HtcJobID htcJobId : htcJobInfoMap.keySet()){
+ 			System.out.println("jobInfo = "+htcJobInfoMap.get(htcJobId));
+Index: src/cbit/vcell/message/server/htc/pbs/PbsProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12474)
++++ src/cbit/vcell/message/server/htc/pbs/PbsProxy.java	(revision 12473)
+@@ -32,6 +32,8 @@
+ public final class PbsProxy extends HtcProxy {
+ 	private static final int QDEL_JOB_NOT_FOUND_RETURN_CODE = 153;
+ 	
++	private static final String PBS_SERVICE_QUEUE_PREFIX = "serviceq";
++	private static final String PBS_WORK_QUEUE_PREFIX = "workq";
+ 	private final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
+ 	protected final static String PBS_SUBMISSION_FILE_EXT = ".pbs.sub";
+ 
+@@ -59,7 +61,7 @@
+ 		HtcJobStatus iStatus = null;
+ 
+ 		String[] cmd = new String[]{JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
+-		CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
++		CommandOutput commandOutput = commandService.command(cmd);
+ 
+ 		String output = commandOutput.getStandardOutput();
+ 		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
+@@ -180,10 +182,23 @@
+ 			sw.append("# Generated without file template. assuming /bin/bash shell\n");
+ 			sw.append("#PBS -N " + jobName+"\n");
+ 			sw.append("#PBS -l mem=" + (int)(memSize + PBS_MEM_OVERHEAD_MB) + "mb\n");
+-			String pbsQueueName = PropertyLoader.getProperty(PropertyLoader.htcBatchSystemQueue,null);
+-			if (pbsQueueName!=null && pbsQueueName.trim().length()>0){
+-				sw.append("#PBS -q "+pbsQueueName+"\n");
++
++			switch (jobCategory){
++				case HTC_SIMULATION_JOB:{
++					String pbsWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, PBS_WORK_QUEUE_PREFIX);
++					sw.append("#PBS -q "+pbsWorkQueueNamePrefix + serverID.toCamelCase()+"\n");
++					break;
++				}
++				case HTC_SERVICE_JOB:{
++					String pbsServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, PBS_SERVICE_QUEUE_PREFIX);
++					sw.append("#PBS -q "+pbsServiceQueueNamePrefix + serverID.toCamelCase()+"\n");
++					break;
++				}
++				default: {
++					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
++				}
+ 			}
++
+ 			sw.append("#PBS -m a\n");
+ 			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
+ 			sw.append("#PBS -j oe\n");
+@@ -350,7 +365,7 @@
+ 			for(HtcJobID htcJobID : htcJobIDs){
+ 				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
+ 			}
+-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
++			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+ 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
+ 			String line = null;
+ 			PbsJobID latestpbsJobID = null;
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12474)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12473)
+@@ -189,7 +189,7 @@
+ 		HtcJobStatus iStatus = null;
+ 
+ 		String[] qstat_cmd = new String[]{JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
+-		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
++		CommandOutput commandOutput = commandService.command(qstat_cmd);
+ 
+ 		HashMap<String,String> outputMap = parseOutput(commandOutput);
+ 		
+Index: src/org/vcell/util/PropertyLoader.java
+===================================================================
+--- src/org/vcell/util/PropertyLoader.java	(revision 12474)
++++ src/org/vcell/util/PropertyLoader.java	(revision 12473)
+@@ -144,9 +144,10 @@
+ 	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
+ 	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
+ 	public static final String htcComputeResources = "vcell.htc.computeresources";
+-	public static final String htcBatchSystemQueue = "vcell.htc.queue";
+ 	
+ 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
++	public static final String pbsServiceQueuePrefix = "vcell.pbs.pbsServiceQueuePrefix";
++	public static final String pbsWorkQueuePrefix = "vcell.pbs.pbsWorkQueuePrefix";
+ 	
+ 	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
+ 	
+@@ -264,7 +265,6 @@
+ 		vcellClientTimeoutMS,
+ 		
+ 		htcComputeResources,
+-		htcBatchSystemQueue,
+ 		pbsHomeDir,
+ 
+ 		
