@@ -53,18 +53,22 @@ public class ConsumerContextJms implements Runnable {
 //						System.out.println(toString()+"===============message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 					if (vcConsumer instanceof VCQueueConsumer){
 						VCQueueConsumer queueConsumer = (VCQueueConsumer)vcConsumer;
-						VCMessage vcMessage = new VCMessageJms(jmsMessage);
+						VCMessageJms vcMessage = new VCMessageJms(jmsMessage);
+						vcMessage.loadBlobFile();
 						VCMongoMessage.sendJmsMessageReceived(vcMessage,vcConsumer.getVCDestination());
 						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession);
 						queueConsumer.getQueueListener().onQueueMessage(vcMessage, temporaryMessageProducerSession);
 						jmsSession.commit();
+						vcMessage.removeBlobFile();
 					} else if (vcConsumer instanceof VCTopicConsumer){
 						VCTopicConsumer topicConsumer = (VCTopicConsumer)vcConsumer;
-						VCMessage vcMessage = new VCMessageJms(jmsMessage);
+						VCMessageJms vcMessage = new VCMessageJms(jmsMessage);
+						vcMessage.loadBlobFile();
 						VCMongoMessage.sendJmsMessageReceived(vcMessage,vcConsumer.getVCDestination());
 						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession);
 						topicConsumer.getTopicListener().onTopicMessage(vcMessage, temporaryMessageProducerSession);
 						jmsSession.commit();
+						vcMessage.removeBlobFile();
 					} else {
 						VCRpcConsumer rpcConsumer = (VCRpcConsumer)vcConsumer;
 						if (!(jmsMessage instanceof ObjectMessage)){
@@ -72,7 +76,9 @@ public class ConsumerContextJms implements Runnable {
 							throw new VCMessagingException("expecting ObjectMessage");
 						}
 						ObjectMessage objectMessage = (ObjectMessage)jmsMessage;
-						Serializable object = objectMessage.getObject();
+						VCMessageJms rpcVCMessage = new VCMessageJms(objectMessage);
+						rpcVCMessage.loadBlobFile();
+						Serializable object = (Serializable)rpcVCMessage.getObjectContent();
 						if (!(object instanceof VCRpcRequest)){
 							jmsSession.commit();
 							throw new VCMessagingException("expecting RpcRequest in message");
@@ -120,6 +126,7 @@ public class ConsumerContextJms implements Runnable {
 						replyProducer.send(replyMessage);
 						replyProducer.close();
 						jmsSession.commit();		//commit		
+						rpcVCMessage.removeBlobFile();
 						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest);
 					}
 				}else{
