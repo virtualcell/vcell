@@ -1,0 +1,83 @@
+Index: src/cbit/vcell/message/server/ServiceSpec.java
+===================================================================
+--- src/cbit/vcell/message/server/ServiceSpec.java	(revision 12478)
++++ src/cbit/vcell/message/server/ServiceSpec.java	(revision 12477)
+@@ -112,13 +112,13 @@
+ 		}
+ 	}
+ 	
+-	public ServiceSpec(VCellServerID sID, ServiceType t, int o, ServiceStartupType serviceStartupType, int memoryMB) {
++	public ServiceSpec(VCellServerID sID, ServiceType t, int o, ServiceStartupType serviceStartupType, int mm) {
+ 		super();
+ 		this.serverID = sID;
+ 		this.type = t;
+ 		this.ordinal = o;
+ 		this.serviceStartupType = serviceStartupType;
+-		this.memoryMB = memoryMB;
++		this.memoryMB = mm;
+ 	}
+ 	
+ 	public int getMemoryMB() {
+Index: src/cbit/vcell/message/server/htc/HtcProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12478)
++++ src/cbit/vcell/message/server/htc/HtcProxy.java	(revision 12477)
+@@ -114,16 +114,16 @@
+ 
+ 	public abstract String getPendingReason(HtcJobID jobid) throws ExecutableException, HtcException;
+ 
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SIMULATION_JOB, null, false, exitCommand, exitCodeReplaceTag);
++	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, null, false, exitCommand, exitCodeReplaceTag);
+ 	}
+ 
+-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false, exitCommand, exitCodeReplaceTag);
++	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSize, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false, exitCommand, exitCodeReplaceTag);
+ 	}
+ 
+-	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB) throws ExecutableException {
+-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SERVICE_JOB, null, true, null, null);
++	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSize) throws ExecutableException {
++		return submitJob(jobName, sub_file, command, ncpus, memSize, HtcJobCategory.HTC_SERVICE_JOB, null, true, null, null);
+ 	}
+ 	
+ 	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
+Index: src/cbit/vcell/message/server/htc/sge/SgeProxy.java
+===================================================================
+--- src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12478)
++++ src/cbit/vcell/message/server/htc/sge/SgeProxy.java	(revision 12477)
+@@ -287,9 +287,7 @@
+ //				}
+ //			}
+ 
+-		    long jobMemoryMB = (SGE_MEM_OVERHEAD_MB+((long)memSize));
+ 		    sw.append("#$ -j y\n");
+-		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
+ 		    sw.append("# -cwd\n");
+ 		    sw.append("# the commands to be executed\n");
+ 			sw.append("echo\n");
+Index: src/cbit/vcell/messaging/db/ServiceTable.java
+===================================================================
+--- src/cbit/vcell/messaging/db/ServiceTable.java	(revision 12478)
++++ src/cbit/vcell/messaging/db/ServiceTable.java	(revision 12477)
+@@ -72,7 +72,7 @@
+ 	//startupType
+ 	int parsedStartupType = rset.getInt(startupType.toString());
+ 	//memoryMB
+-	int parsedMemoryMB = rset.getInt(memoryMB.toString());
++	int parsedMemory = rset.getInt(memoryMB.toString());
+ 	//date
+ 	java.util.Date parsedDate = rset.getTimestamp(date.toString());
+ 	if (rset.wasNull()) {
+@@ -91,7 +91,7 @@
+ 	if (!rset.wasNull() && parsedHtcJobDatabaseString!=null && parsedHtcJobDatabaseString.length()>0) {
+ 		parsedHtcJobId = HtcJobID.fromDatabase(parsedHtcJobDatabaseString);
+ 	}
+-	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemoryMB), 
++	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, ServiceStartupType.fromDatabaseNumber(parsedStartupType), parsedMemory), 
+ 			parsedDate, ServiceStatusType.fromDatabaseNumber(parsedStatus), parsedStatusMsg, parsedHtcJobId);
+ 	
+ 	return serviceStatus;

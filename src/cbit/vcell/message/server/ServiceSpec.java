@@ -112,13 +112,13 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		}
 	}
 	
-	public ServiceSpec(VCellServerID sID, ServiceType t, int o, ServiceStartupType serviceStartupType, int mm) {
+	public ServiceSpec(VCellServerID sID, ServiceType t, int o, ServiceStartupType serviceStartupType, int memoryMB) {
 		super();
 		this.serverID = sID;
 		this.type = t;
 		this.ordinal = o;
 		this.serviceStartupType = serviceStartupType;
-		this.memoryMB = mm;
+		this.memoryMB = memoryMB;
 	}
 	
 	public int getMemoryMB() {
