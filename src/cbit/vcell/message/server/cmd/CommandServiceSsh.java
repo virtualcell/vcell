@@ -73,16 +73,16 @@ public class CommandServiceSsh extends CommandService {
 			return commandOutput;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 			throw new ExecutableException(e.getMessage());
 		} finally {
 			if (session!=null){
 				try {
 					session.close();
 				} catch (TransportException e) {
-					e.printStackTrace();
+					e.printStackTrace(System.out);
 				} catch (ConnectionException e) {
-					e.printStackTrace();
+					e.printStackTrace(System.out);
 				}
 			}
 		}
