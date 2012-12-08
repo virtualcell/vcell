@@ -210,7 +210,7 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 public void init() {
 	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
 	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
-	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName());
+	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName(),MessageConstants.PREFETCH_LIMIT_CLIENT_TOPIC);
 	vcMessagingService.addMessageConsumer(topicConsumer);
 }
 
