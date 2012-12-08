@@ -287,7 +287,9 @@ denied: job "6894" does not exist
 //				}
 //			}
 
+		    long jobMemoryMB = (SGE_MEM_OVERHEAD_MB+((long)memSize));
 		    sw.append("#$ -j y\n");
+		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 		    sw.append("# -cwd\n");
 		    sw.append("# the commands to be executed\n");
 			sw.append("echo\n");
