@@ -189,7 +189,7 @@ arid         undefined
 		HtcJobStatus iStatus = null;
 
 		String[] qstat_cmd = new String[]{JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
-		CommandOutput commandOutput = commandService.command(qstat_cmd);
+		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
 
 		HashMap<String,String> outputMap = parseOutput(commandOutput);
 		

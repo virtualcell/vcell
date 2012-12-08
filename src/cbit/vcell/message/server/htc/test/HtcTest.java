@@ -97,7 +97,7 @@ public class HtcTest {
 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
 		HtcJobID jobID = null;
 		try {
-			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "100000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
+			jobID = htcProxy.submitJob("myJob1","/home/VCELL/vcell/myJob1.sub",new String[] { "/home/VCELL/vcell/calculatePi.sh", "100000000" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
 		} catch (Exception e1) {
 			e1.printStackTrace(System.out);
 		}
@@ -111,8 +111,12 @@ public class HtcTest {
 
 		
 		System.out.println("<<<<<--------------  printing running simulations --------------->>>>>>");
-		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("REL");
-		htcJobIDs.add(new SgeJobID("12345"));
+		List<HtcJobID> htcJobIDs = htcProxy.getRunningJobIDs("myJob1");
+		if (htcProxy instanceof SgeProxy){
+			htcJobIDs.add(new SgeJobID("12345"));
+		}else{
+			htcJobIDs.add(new PbsJobID("12345"));
+		}
 		Map<HtcJobID,HtcJobInfo> htcJobInfoMap = htcProxy.getJobInfos(htcJobIDs);
 		for (HtcJobID htcJobId : htcJobInfoMap.keySet()){
 			System.out.println("jobInfo = "+htcJobInfoMap.get(htcJobId));
