@@ -1,6 +1,10 @@
 package cbit.vcell.message.jms;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import javax.jms.Connection;
 import javax.jms.Destination;
@@ -12,6 +16,9 @@ import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -83,8 +90,11 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					if (replyMessage == null || !(replyMessage instanceof ObjectMessage)) {
 						throw new JMSException("Server is temporarily not responding, please try again later. If problem persists, contact VCell_Support@uchc.edu." +
 								" (server=" + vcRpcRequest.getRequestedServiceType().getName() + ", method=" + vcRpcRequest.getMethodName() +")");
-					} else {				
-						Object returnValue = ((ObjectMessage)replyMessage).getObject();
+					} else {
+						VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage);
+						vcReplyMessage.loadBlobFile();
+						Object returnValue = vcReplyMessage.getObjectContent();
+						vcReplyMessage.removeBlobFile();
 						if (returnValue instanceof Exception){
 							throw new VCMessagingInvocationTargetException((Exception)returnValue);
 						} else {
@@ -177,14 +187,50 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 		}
 		public VCMessage createObjectMessage(Serializable object) {
 			try {
-				Message jmsMessage = session.createObjectMessage(object);
-				return new VCMessageJms(jmsMessage);
+				// if the serialized object is very large, send it as a BlobMessage (ActiveMQ specific).
+				byte[] serializedBytes = BeanUtils.toSerialized(object);
+				
+				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageMinSize));
+				
+				if (serializedBytes.length > blobMessageSizeThreshold){
+					//
+					// get (or create) directory to store Message BLOBs
+					//
+					File tempdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));
+					if (!tempdir.exists()){
+						tempdir.mkdirs();
+					}
+					
+					//
+					// write serialized message to "temp" file.
+					//
+					File blobFile = File.createTempFile("BlobMessage",".data",tempdir);
+					FileOutputStream fileOutputStream = new FileOutputStream(blobFile);
+					FileChannel channel = fileOutputStream.getChannel();
+					channel.write(ByteBuffer.wrap(serializedBytes));
+					channel.close();
+					fileOutputStream.close();
+
+					ObjectMessage objectMessage = session.createObjectMessage("emptyObject");
+					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_PRODUCER_TEMPDIR, tempdir.getAbsolutePath());
+					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
+					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
+					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
+					return new VCMessageJms(objectMessage,object);
+				}else{
+					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(serializedBytes);
+					return new VCMessageJms(objectMessage);
+				}
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
-				throw new RuntimeException("unable to create text message");
+				throw new RuntimeException("unable to create object message");
+			} catch (Exception e){
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());				
 			}
 		}
+		
 		public VCMessage createMessage() {
 			try {
 				Message jmsMessage = session.createMessage();
