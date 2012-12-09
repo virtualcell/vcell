@@ -1,0 +1,172 @@
+Index: src/cbit/vcell/message/jms/test/TestBlobRpcMessages.java
+===================================================================
+--- src/cbit/vcell/message/jms/test/TestBlobRpcMessages.java	(revision 12489)
++++ src/cbit/vcell/message/jms/test/TestBlobRpcMessages.java	(revision 12488)
+@@ -1,115 +0,0 @@
+-package cbit.vcell.message.jms.test;
+-
+-import java.util.ArrayList;
+-
+-import org.vcell.util.PropertyLoader;
+-import org.vcell.util.document.KeyValue;
+-import org.vcell.util.document.User;
+-
+-import cbit.vcell.message.RollbackException;
+-import cbit.vcell.message.VCMessage;
+-import cbit.vcell.message.VCMessageSession;
+-import cbit.vcell.message.VCMessagingInvocationTargetException;
+-import cbit.vcell.message.VCMessagingService;
+-import cbit.vcell.message.VCRpcConsumer;
+-import cbit.vcell.message.VCRpcRequest;
+-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+-import cbit.vcell.message.VCQueueConsumer;
+-import cbit.vcell.message.VCQueueConsumer.QueueListener;
+-import cbit.vcell.message.jms.VCMessageJms;
+-import cbit.vcell.message.jms.test.TestRPC.MyRpcServer;
+-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+-import cbit.vcell.message.VCellQueue;
+-
+-/**
+- * Hello world!
+- */
+-public class TestBlobRpcMessages {
+-
+-	private static final int NUM_PRODUCERS = 2;
+-    private static final int NUM_COMSUMERS = 3;
+-	private static final int NUM_MESSAGES = 5;
+-	
+-    public static class Calculator {
+-    	private int sum = 0;
+-    	public synchronized void add(int number){
+-    		sum += number;
+-    		System.out.println("sum is :"+sum);
+-    	}
+-    	public int getSum(){
+-    		return sum;
+-    	}
+-    }
+-
+-	public static class MyRpcServer {
+-		public byte[] concat(byte[] a, byte[] b){
+-			byte[] newArray = new byte[a.length+b.length];
+-			System.arraycopy(a, 0, newArray, 0, a.length);
+-			System.arraycopy(b, 0, newArray, a.length, b.length);
+-			return newArray;
+-		}
+-	}
+-
+-	public static void main(String[] args) throws Exception {
+-		try {
+-	    	PropertyLoader.loadProperties();
+-	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
+-	    	
+-	    	VCMessagingService messagingService = VCMessagingService.createInstance();
+-
+-	        // reading message and computing sum
+-	        // create N comsumers
+-	        MyRpcServer myRpcServer = new MyRpcServer();
+-	        for (int i=0;i<NUM_COMSUMERS;i++){
+-				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
+-	        	messagingService.addMessageConsumer(rpcConsumer);
+-	        }
+-	    		        
+-	        // creating one messageProducer session
+-	        ArrayList<VCMessageSession> sessions = new ArrayList<VCMessageSession>();
+-	        for (int i=0;i<NUM_PRODUCERS;i++){
+-	        	sessions.add(messagingService.createProducerSession());
+-	        }
+-	        for (int i=0;i<NUM_MESSAGES;i++){
+-	        	for (int s=0;s<NUM_PRODUCERS;s++){
+-	        		VCMessageSession session = sessions.get(s);
+-		        	try {
+-		        		//
+-		        		// create simple RPC request for service "Testing_Service"
+-		        		//
+-			        	User user = new User("schaff",new KeyValue("17"));
+-			        	byte[] array1 = new byte[20000000];
+-			        	byte[] array2 = new byte[20000000];
+-			        	VCRpcRequest rpcRequest = new VCRpcRequest(user, ServiceType.TESTING_SERVICE, "concat", new Object[] { array1, array2 });
+-			        	
+-			        	//
+-			        	// send request and block for response (or timeout).
+-			        	// RPC invocations don't need commits.
+-			        	//
+-			        	Object returnValue = session.sendRpcMessage(VCellQueue.JimQueue, rpcRequest, true, 20000, null, null);
+-			        	
+-			        	//
+-			        	// print result.
+-			        	//
+-			        	if (returnValue instanceof byte[]){
+-			        		System.out.println("concat(byte["+array1.length+"], byte["+array2.length+"]) ===> byte["+(((byte[])returnValue).length)+"]");
+-			        	}else{
+-			        		System.out.println("unexpected return value of "+returnValue);
+-			        	}
+-		        	}catch (VCMessagingInvocationTargetException e){
+-		        		e.printStackTrace(System.out);
+-		        		System.out.println("the rpc service threw an exception");
+-		        		e.getTargetException().printStackTrace(System.out);
+-		        	}
+-	        	}
+-	        }        
+-	        	    	
+-	    	System.out.println("main program calling closeAll()");
+-	    	messagingService.closeAll();
+-	    	System.out.println("main program exiting");
+-		}catch (Exception e){
+-			e.printStackTrace(System.out);
+-		}
+-    }
+-	
+-}
+\ No newline at end of file
+Index: src/cbit/vcell/message/jms/MessageProducerSessionJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/MessageProducerSessionJms.java	(revision 12489)
++++ src/cbit/vcell/message/jms/MessageProducerSessionJms.java	(revision 12488)
+@@ -63,15 +63,8 @@
+ 					throw new VCMessagingException("cannot invoke RpcMessage from within another transaction, create an independent message producer");
+ 				}
+ 				Destination destination = session.createQueue(queue.getName());
+-				messageProducer = session.createProducer(destination);
+-
+-				//
+-				// use MessageProducerSessionJms to create the rpcRequest message (allows "Blob" messages to be formed as needed).
+-				//
+-				MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(session);
+-				VCMessageJms vcRpcRequestMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(vcRpcRequest);
+-				Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
+-				
++				messageProducer = session.createProducer(destination);				
++				ObjectMessage rpcMessage = session.createObjectMessage(vcRpcRequest);
+ 				rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
+ 				rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
+ 				if (specialValues != null) {
+@@ -225,7 +218,7 @@
+ 					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
+ 					return new VCMessageJms(objectMessage,object);
+ 				}else{
+-					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
++					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(serializedBytes);
+ 					return new VCMessageJms(objectMessage);
+ 				}
+ 			} catch (JMSException e) {
+Index: src/cbit/vcell/message/jms/ConsumerContextJms.java
+===================================================================
+--- src/cbit/vcell/message/jms/ConsumerContextJms.java	(revision 12489)
++++ src/cbit/vcell/message/jms/ConsumerContextJms.java	(revision 12488)
+@@ -111,14 +111,7 @@
+ 						// reply to "reply-to" queue with the return value or exception.
+ 						long clientTimeoutMS = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellClientTimeoutMS)); 
+ 						Queue replyTo = (Queue)jmsMessage.getJMSReplyTo();
+-						
+-						//
+-						// use MessageProducerSessionJms to create the replyMessage (allows "Blob" messages to be formed as needed).
+-						//
+-						MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(jmsSession);
+-						VCMessageJms vcReplyMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(returnValue);
+-						Message replyMessage = vcReplyMessage.getJmsMessage();
+-						
++						Message replyMessage = jmsSession.createObjectMessage(returnValue);
+ 						replyMessage.setStringProperty(MessageConstants.METHOD_NAME_PROPERTY, vcRpcRequest.getMethodName());
+ 						replyMessage.setJMSCorrelationID(jmsMessage.getJMSMessageID());
+ //{
