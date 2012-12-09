@@ -63,8 +63,15 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					throw new VCMessagingException("cannot invoke RpcMessage from within another transaction, create an independent message producer");
 				}
 				Destination destination = session.createQueue(queue.getName());
-				messageProducer = session.createProducer(destination);				
-				ObjectMessage rpcMessage = session.createObjectMessage(vcRpcRequest);
+				messageProducer = session.createProducer(destination);
+
+				//
+				// use MessageProducerSessionJms to create the rpcRequest message (allows "Blob" messages to be formed as needed).
+				//
+				MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(session);
+				VCMessageJms vcRpcRequestMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(vcRpcRequest);
+				Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
+				
 				rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
 				rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
 				if (specialValues != null) {
@@ -218,7 +225,7 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
 					return new VCMessageJms(objectMessage,object);
 				}else{
-					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(serializedBytes);
+					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
 					return new VCMessageJms(objectMessage);
 				}
 			} catch (JMSException e) {
