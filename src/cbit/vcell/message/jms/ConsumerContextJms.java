@@ -111,7 +111,14 @@ public class ConsumerContextJms implements Runnable {
 						// reply to "reply-to" queue with the return value or exception.
 						long clientTimeoutMS = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellClientTimeoutMS)); 
 						Queue replyTo = (Queue)jmsMessage.getJMSReplyTo();
-						Message replyMessage = jmsSession.createObjectMessage(returnValue);
+						
+						//
+						// use MessageProducerSessionJms to create the replyMessage (allows "Blob" messages to be formed as needed).
+						//
+						MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(jmsSession);
+						VCMessageJms vcReplyMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(returnValue);
+						Message replyMessage = vcReplyMessage.getJmsMessage();
+						
 						replyMessage.setStringProperty(MessageConstants.METHOD_NAME_PROPERTY, vcRpcRequest.getMethodName());
 						replyMessage.setJMSCorrelationID(jmsMessage.getJMSMessageID());
 //{
