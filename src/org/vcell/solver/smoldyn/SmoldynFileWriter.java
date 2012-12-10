@@ -1134,7 +1134,10 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 	try {
 		count = subsituteFlatten(initialCount.getCount());
 	} catch (NotAConstantException ex) {
-		throw new ExpressionException("initial count for variable " + variableName + " is not a constant. Constants are required for all intial counts");
+		String errMsg = "\n" +
+				"Initial count for variable " + variableName + " is not a constant. Spatial stochastic simulation requires constant value for initial count.\n" +
+				"If you want to set variable initial condition as a function of time or space, please select application ->specifications ->species and choose initial condition to 'Concentration'.";
+        throw new ExpressionException(errMsg);
 	}
 	if (count > 0) {
 		int intcount = (int)count;
