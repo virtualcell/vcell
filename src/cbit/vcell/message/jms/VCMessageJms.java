@@ -91,7 +91,7 @@ public class VCMessageJms implements VCMessage {
 				ois.close();
 				bis.close();
 				fis.close();
-				VCMongoMessage.sendTrace("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getShortProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+				VCMongoMessage.sendTrace("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
