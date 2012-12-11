@@ -26,5 +26,15 @@ public class VCellServiceMXBeanImpl implements VCellServiceMXBean {
 	public Date getStartupDate(){
 		return new Date(VCMongoMessage.getServiceStartupTime());
 	}
+	
+	@Override
+	public void setTrace(boolean bTrace){
+		VCMongoMessage.bTrace = bTrace;
+	}
+	
+	@Override
+	public boolean getTrace(){
+		return VCMongoMessage.bTrace;
+	}
 
 }

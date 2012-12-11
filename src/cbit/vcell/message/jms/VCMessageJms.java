@@ -22,6 +22,7 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.mongodb.VCMongoMessage;
 
 public class VCMessageJms implements VCMessage {
 	
@@ -69,6 +70,7 @@ public class VCMessageJms implements VCMessage {
 		}
 		if (jmsMessage instanceof ObjectMessage && propertyExists(BLOB_MESSAGE_FILE_NAME)){
 			try {				
+				long t1 = System.currentTimeMillis();
 				//
 				// read serialized object from inputStream (from Broker's data file)
 				//
@@ -89,6 +91,7 @@ public class VCMessageJms implements VCMessage {
 				ois.close();
 				bis.close();
 				fis.close();
+				VCMongoMessage.sendTrace("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getShortProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
