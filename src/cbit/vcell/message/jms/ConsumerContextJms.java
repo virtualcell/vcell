@@ -192,6 +192,7 @@ public class ConsumerContextJms implements Runnable {
 	}
 	
 	private void onException(JMSException e){
+		VCMongoMessage.sendException(e);
 		e.printStackTrace(System.out);
 	}
 	
