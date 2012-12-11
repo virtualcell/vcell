@@ -537,13 +537,13 @@ public synchronized CartesianMesh getMesh() throws DataAccessException, MathExce
  * @param simID java.lang.String
  */
 private synchronized File getMeshFile() throws FileNotFoundException {
-VCMongoMessage.sendInfo("SimulationData.getMeshFile() <<BEGIN>>");
+	VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<BEGIN>>");
 	File meshFile = new File(userDirectory,vcDataId.getID()+".mesh");
 	if (meshFile.exists()){
-VCMongoMessage.sendInfo("SimulationData.getMeshFile() <<EXIT-meshfile>>");
+		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-meshfile>>");
 		return meshFile;
 	}else{
-VCMongoMessage.sendInfo("SimulationData.getMeshFile() <<EXIT-mesh file not found>>");
+		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-mesh file not found>>");
 		throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
 	}
 }
@@ -1158,14 +1158,14 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
  * This method was created by a SmartGuide.
  */
 private synchronized void readLog(File logFile) throws FileNotFoundException, DataAccessException, IOException {
-VCMongoMessage.sendInfo("SimulationData.readLog() <<ENTER>>");
+	VCMongoMessage.sendTrace("SimulationData.readLog() <<ENTER>>");
 	if (logFile.exists()){
-VCMongoMessage.sendInfo("SimulationData.readLog() logFile exists");
+		VCMongoMessage.sendTrace("SimulationData.readLog() logFile exists");
 		long length = logFile.length();
 		long lastModified = logFile.lastModified();
 		if (lastModified == logFileLastModified && logFileLength == length){
 //System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") lastModified and fileLength unchanged (no re-read), logFile.lastModified() = "+(new java.util.Date(lastModified)).toString());
-VCMongoMessage.sendInfo("SimulationData.readLog() hasn't been modified ... <<EXIT>>");
+			VCMongoMessage.sendTrace("SimulationData.readLog() hasn't been modified ... <<EXIT>>");
 			return;
 		}else{
 //String status = "";
@@ -1182,7 +1182,7 @@ VCMongoMessage.sendInfo("SimulationData.readLog() hasn't been modified ... <<EXI
 		dataFilenames = null;
 		zipFilenames = null;
 		dataTimes = null;
-VCMongoMessage.sendInfo("SimulationData.readLog() log file not found <<EXIT-Exception>>");
+		VCMongoMessage.sendTrace("SimulationData.readLog() log file not found <<EXIT-Exception>>");
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
 
@@ -1209,7 +1209,7 @@ VCMongoMessage.sendInfo("SimulationData.readLog() log file not found <<EXIT-Exce
 			is.close();
 		}
 	}
-VCMongoMessage.sendInfo("SimulationData.readLog() log file read into string buffer");
+	VCMongoMessage.sendTrace("SimulationData.readLog() log file read into string buffer");
 	String logfileContent = stringBuffer.toString();
 	if (logfileContent.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
@@ -1253,7 +1253,7 @@ VCMongoMessage.sendInfo("SimulationData.readLog() log file read into string buff
 		dataTimes = new double[numFiles];
 		dataFilenames = new String[numFiles];
 		int index = 0;
-VCMongoMessage.sendInfo("SimulationData.readLog() parsing zip files and times from log <<BEGIN>>");
+		VCMongoMessage.sendTrace("SimulationData.readLog() parsing zip files and times from log <<BEGIN>>");
 		while (st.hasMoreTokens()){
 			String iteration = st.nextToken();
 			String filename = st.nextToken();
@@ -1269,12 +1269,12 @@ VCMongoMessage.sendInfo("SimulationData.readLog() parsing zip files and times fr
 			dataFilenames[index] = (new File(filename)).getName();
 			index++;
 		}
-VCMongoMessage.sendInfo("SimulationData.readLog() parsing zip files and times from log <<END>>");
+		VCMongoMessage.sendTrace("SimulationData.readLog() parsing zip files and times from log <<END>>");
 		// now check if .particle files also exist
 		try {
-VCMongoMessage.sendInfo("SimulationData.readLog() getting particle data file <<BEGIN>>");
+			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<BEGIN>>");
 			File firstFile = getParticleDataFile(dataTimes[0]);
-VCMongoMessage.sendInfo("SimulationData.readLog() getting particle data file <<END>>");
+			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<END>>");
 			if (firstFile!=null){
 				particleDataExists = true;
 			}else{
@@ -1284,7 +1284,7 @@ VCMongoMessage.sendInfo("SimulationData.readLog() getting particle data file <<E
 			particleDataExists = false;
 		}
 	}
-VCMongoMessage.sendInfo("SimulationData.readLog() <<EXIT>>");
+	VCMongoMessage.sendTrace("SimulationData.readLog() <<EXIT>>");
 }
 
 
@@ -1316,7 +1316,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
  * This method was created in VisualAge.
  */
 private synchronized void refreshLogFile() throws DataAccessException {
-VCMongoMessage.sendInfo("SimulationData.refreshLogFile() <<ENTER>>");
+	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<ENTER>>");
 	//
 	// (re)read the log file if necessary
 	//
@@ -1335,7 +1335,7 @@ VCMongoMessage.sendInfo("SimulationData.refreshLogFile() <<ENTER>>");
 		e.printStackTrace(System.out);
 		throw e;
 	}
-VCMongoMessage.sendInfo("SimulationData.refreshLogFile() <<EXIT>>");
+	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<EXIT>>");
 }
 
 
@@ -1346,15 +1346,15 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 	//
 	// (re)read the log file if necessary
 	//
-VCMongoMessage.sendInfo("SimulationData.refreshMeshFile() <<BEGIN>>");
+	VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<BEGIN>>");
 	try {
 		readMesh(getMeshFile(),getMembraneMeshMetricsFile());
-VCMongoMessage.sendInfo("SimulationData.refreshMeshFile() <<EXIT normally>>");
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT normally>>");
 	} catch (FileNotFoundException e) {
-VCMongoMessage.sendInfo("SimulationData.refreshMeshFile() <<EXIT-file not found>>");
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-file not found>>");
 	} catch (IOException e) {
 		e.printStackTrace(System.out);
-VCMongoMessage.sendInfo("SimulationData.refreshMeshFile() <<EXIT-IOException>>");
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-IOException>>");
 		throw new DataAccessException(e.getMessage());
 	}
 }

@@ -195,6 +195,7 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 		public VCMessage createObjectMessage(Serializable object) {
 			try {
 				// if the serialized object is very large, send it as a BlobMessage (ActiveMQ specific).
+				long t1 = System.currentTimeMillis();
 				byte[] serializedBytes = BeanUtils.toSerialized(object);
 				
 				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageMinSize));
@@ -223,9 +224,11 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
 					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
 					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
+					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 					return new VCMessageJms(objectMessage,object);
 				}else{
 					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
+					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 					return new VCMessageJms(objectMessage);
 				}
 			} catch (JMSException e) {
