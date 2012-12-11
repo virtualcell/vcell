@@ -189,18 +189,22 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
-				throw new RuntimeException("unable to create text message");
+				throw new RuntimeException("unable to create text message",e);
 			}
 		}
 		public VCMessage createObjectMessage(Serializable object) {
 			try {
 				// if the serialized object is very large, send it as a BlobMessage (ActiveMQ specific).
 				long t1 = System.currentTimeMillis();
-				byte[] serializedBytes = BeanUtils.toSerialized(object);
+				byte[] serializedBytes = null;
+				
+				if (object!=null){
+					serializedBytes = BeanUtils.toSerialized(object);
+				}
 				
 				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageMinSize));
 				
-				if (serializedBytes.length > blobMessageSizeThreshold){
+				if (serializedBytes!=null && serializedBytes.length > blobMessageSizeThreshold){
 					//
 					// get (or create) directory to store Message BLOBs
 					//
@@ -228,16 +232,18 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					return new VCMessageJms(objectMessage,object);
 				}else{
 					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
-					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+					int size = (serializedBytes!=null)?(serializedBytes.length):(0);
+					String objectType = (serializedBytes!=null)?(object.getClass().getName()):("NULL");
+					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size="+size+", type="+objectType+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 					return new VCMessageJms(objectMessage);
 				}
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
-				throw new RuntimeException("unable to create object message");
+				throw new RuntimeException("unable to create object message",e);
 			} catch (Exception e){
 				e.printStackTrace();
-				throw new RuntimeException(e.getMessage());				
+				throw new RuntimeException(e.getMessage(),e);				
 			}
 		}
 		
@@ -248,7 +254,7 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
-				throw new RuntimeException("unable to create message");
+				throw new RuntimeException("unable to create message",e);
 			}
 		}
 
