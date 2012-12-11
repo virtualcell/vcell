@@ -78,6 +78,7 @@ public class ConsumerContextJms implements Runnable {
 						ObjectMessage objectMessage = (ObjectMessage)jmsMessage;
 						VCMessageJms rpcVCMessage = new VCMessageJms(objectMessage);
 						rpcVCMessage.loadBlobFile();
+						VCMongoMessage.sendJmsMessageReceived(rpcVCMessage,vcConsumer.getVCDestination());
 						Serializable object = (Serializable)rpcVCMessage.getObjectContent();
 						if (!(object instanceof VCRpcRequest)){
 							jmsSession.commit();
