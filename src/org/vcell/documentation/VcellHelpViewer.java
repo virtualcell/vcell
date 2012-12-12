@@ -63,4 +63,14 @@ public class VcellHelpViewer extends JPanel
 		
 		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HEIGHT));
 	}
+	
+	public static void main(String[] args){
+		VcellHelpViewer helpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
+		JFrame frame = new JFrame("Virtual Cell Help");
+		
+		frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
+		frame.pack();
+		frame.add(helpViewer);
+		frame.setVisible(true);
+	}
 }
