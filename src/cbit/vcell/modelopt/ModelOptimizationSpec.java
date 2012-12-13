@@ -52,10 +52,13 @@ import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Structure;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
@@ -289,6 +292,22 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
 			}
 		}
 	}
+
+    //
+    //  add dependences for calculated voltages
+    //
+    for (Structure structure : model.getStructures()){
+           if (structure instanceof Membrane && ((MembraneMapping)getSimulationContext().getGeometryContext().getStructureMapping(structure)).getCalculateVoltage()){
+                  MembraneVoltage membraneVoltage = ((Membrane)structure).getMembraneVoltage();
+                  String membraneVoltageScopedName = membraneVoltage.getNameScope().getAbsoluteScopePrefix()+membraneVoltage.getName();
+                  Node membraneVoltageNode = digraph.getNode(membraneVoltageScopedName);
+                  if (membraneVoltageNode==null){
+                        membraneVoltageNode = new Node(membraneVoltageScopedName,membraneVoltage);
+                        digraph.addNode(membraneVoltageNode);
+                  }
+                  digraph.addEdge(new Edge(membraneVoltageNode,timeNode));
+           }
+    }
 
 	Node[] timeDependentNodes = digraph.getDigraphAttractorSet(timeNode);
 	
