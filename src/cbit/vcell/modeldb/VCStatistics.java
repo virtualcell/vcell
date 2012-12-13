@@ -70,7 +70,8 @@ public class VCStatistics {
 	}
 	public static void main(String[] args) {
 		if(args.length != 4){
-			System.out.println("Usage: VCStatistics dbServer dbName dbUserID dbPassword");
+			//e.g in your eclipse debug configuration put arguments: dbs6.cam.uchc.edu orcl ID password
+			System.out.println("Usage:VCStatistics dbServer dbName dbUserID dbPassword");
 			System.exit(1);
 		}
 		try {
@@ -94,23 +95,35 @@ public class VCStatistics {
 			SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy");
 			pw.println(sdf.format(currentDate));
 			pw.println("==========================================");
-			pw.format("%30s - %10d%n", "Total Registered VCell Users", userIDList.size());		
-			pw.format("%30s - %10d%n", "Users Who Ran Simulations", howManyUsersWhoRanSimulations());
+			int numUsers = userIDList.size();
+			pw.format("%30s - %10d%n", "Total Registered VCell Users", numUsers);		
+			System.out.println("Total Registered VCell Users : " + numUsers);
+			int numUsersRunSim = howManyUsersWhoRanSimulations();
+			pw.format("%30s - %10d%n", "Users Who Ran Simulations", numUsersRunSim);
+			System.out.println("Users Who Ran Simulations : " + numUsersRunSim);
 			int howmanyBio = howManyBioModels();
 			int howmanyMath = howManyMathModels();
 			pw.format("%30s - %10d%n", "Total Models", (howmanyBio + howmanyMath));
+			System.out.println("Total Models : " + (howmanyBio + howmanyMath));
 			int numApplications = howManySimulationContexts();
+			int numSims = howManySimulations();
 			pw.format("%30s - %10d%n", "Total Applications", numApplications);
-			pw.format("%30s - %10d%n", "Total Simulations", howManySimulations());
+			pw.format("%30s - %10d%n", "Total Simulations", numSims);
+			System.out.println("Total Applications : " + numApplications);
+			System.out.println("Total Simulations : " + numSims);
 			int howmanyPublicBio = howManyPublicBioModels();
 			int howmanyPublicMath = howManyPublicMathModels();
 			pw.format("%30s - %10d%n", "Public Models", (howmanyPublicBio + howmanyPublicMath));
 			pw.format("%30s - %10d%n", "Public Simulations", howManyPublicSimulations());
+			System.out.println("Public Models : " + (howmanyPublicBio + howmanyPublicMath));
+			System.out.println("Public Simulations : " + howManyPublicSimulations());
 			pw.println();
 			UserModelCountHistogram histogram = getHistogramOnModels();
 			if (histogram != null) {
 				pw.println("Histgram (X - number of Models, Y - number of Users)");
 				pw.println(histogram.toString());
+				System.out.println("Histgram (X - number of Models, Y - number of Users):");
+				System.out.println(histogram.toString());
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
