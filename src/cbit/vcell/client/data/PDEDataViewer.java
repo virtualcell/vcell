@@ -1874,13 +1874,19 @@ private void showKymograph() {
 				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 			}
 			KymographPanel  kymographPanel = new KymographPanel(this, title);
-			
 			SymbolTable symbolTable;
 			if(getSimulation() != null && getSimulation().getMathDescription() != null){
 				symbolTable = getSimulation().getMathDescription();
 			}else{
 				symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
 			}
+			
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+			ChildWindow childWindow = childWindowManager.addChildWindow(kymographPanel, kymographPanel,  title);
+			childWindow.setSize(new Dimension(700,500));
+			childWindow.show();
+			
+			
 			
 			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
 				getPdeDataContext().getDataIdentifier(), getPdeDataContext().getTimePoints()[0], 1,
