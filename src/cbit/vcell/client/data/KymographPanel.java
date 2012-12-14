@@ -10,30 +10,15 @@
 
 package cbit.vcell.client.data;
 
+import java.awt.GridBagConstraints;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import cbit.image.ZoomEvent;
-import cbit.image.gui.DisplayAdapterService;
-import cbit.image.gui.SourceDataInfo;
-import cbit.plot.Plot2D;
-import cbit.plot.PlotData;
-import cbit.plot.SingleXPlot2D;
-import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
-import cbit.vcell.client.server.DataManager;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.solver.SolverUtilities;
+import java.text.DecimalFormat;
+import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JOptionPane;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -43,11 +28,21 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.Point;
-import java.text.DecimalFormat;
-import java.util.Hashtable;
+import cbit.image.ZoomEvent;
+import cbit.image.gui.DisplayAdapterService;
+import cbit.image.gui.SourceDataInfo;
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
+import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.solver.SolverUtilities;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -1929,7 +1924,7 @@ public void initDataManager(
 		}
 	};
 	AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2};
-	ClientTaskDispatcher.dispatch(pdeDataViewer, hash, taskArray, false);
+	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 }
 
 
@@ -2031,13 +2026,21 @@ private void initDataManagerVariable(final String finalVarName) {
 				currentSelectionUnit = new Point2D.Double(0,(double)closestTimeIndex/(double)(currentTimes.length-1));
 				configurePlotData((int)currentSelectionImg.getX(),(int)currentSelectionImg.getY());	
 				
-				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(pdeDataViewer);
-				ChildWindow childWindow = childWindowManager.addChildWindow(KymographPanel.this,KymographPanel.this,title);
-				childWindow.setIsCenteredOnParent();
-				childWindow.pack();
-				childWindow.show();
-				System.out.println("Kymograph panel ChildWindow requesting focus.  Answer is: "+childWindow.requestFocusInWindow());
-				zoomToFill();
+//				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(pdeDataViewer);
+////				final ChildWindow childWindow = childWindowManager.addChildWindow(new javax.swing.JPanel(),this,title);
+//				final ChildWindow childWindow = childWindowManager.addChildWindow(KymographPanel.this,KymographPanel.this,title);
+//				childWindow.setIsCenteredOnParent();
+//				childWindow.pack();
+//				childWindow.show();
+//				Timer timer = new Timer(1000,new ActionListener() {
+//					
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						childWindow.toFront();
+//					}
+//				});
+				//System.out.println("Kymograph panel ChildWindow requesting focus.  Answer is: "+childWindow.requestFocusInWindow());
+//				zoomToFill();
 			}else{
 				getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
 			}
@@ -2444,7 +2447,7 @@ private void zoomDownJButton_ActionPerformed(java.awt.event.ActionEvent actionEv
  * Insert the method's description here.
  * Creation date: (12/29/2004 12:57:18 PM)
  */
-private void zoomToFill() {
+public void zoomToFill() {
 
 	getimagePaneView1().getImagePaneModel().changeZoomToFillViewport();
 	getImagePaneScroller1().zooming(new ZoomEvent(getimagePaneView1(),0,0));
