@@ -132,6 +132,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
 	private int psfFieldIndex = -1;
+	private boolean bChombSolver = false;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -193,6 +194,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		INITIAL,
 		RATE,
 		DIFFUSION,
+		EXACT,
 		VELOCITY_X,
 		VELOCITY_Y,
 		VELOCITY_Z,
@@ -215,7 +217,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		
 		CHOMBO_SPEC_BEGIN,
 		DIMENSION,
-		GRID_SIZE,
+		MESH_SIZE,
 		DOMAIN_SIZE,
 		DOMAIN_ORIGIN,
 		DISTANCE_MAP,
@@ -235,6 +237,7 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry g
 	super(pw, simTask, arg_bMessaging);
 	resampledGeometry = geo;
 	userDirectory = dir;
+	bChombSolver = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver();
 }
 
 private Expression subsituteExpression(Expression exp, VariableDomain variableDomain) throws ExpressionException  {
@@ -274,7 +277,7 @@ public void write(String[] parameterNames) throws Exception {
 	Variable originalVars[] = null;
 	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
-	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+	if (bChombSolver)
 	{
 		writeJMSParamters();	
 		writeSimulationParamters();	
@@ -632,6 +635,10 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 	printWriter.println(FVInputFileKeyword.INITIAL + " " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME);
 	printWriter.println(FVInputFileKeyword.RATE + " " + rateExpression.infix() + ";");
+	if (bChombSolver && equation.getExactSolution() != null)
+	{
+		printWriter.println(FVInputFileKeyword.EXACT + " " + subsituteExpression(equation.getExactSolution(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	}
 	if (equation instanceof PdeEquation) {
 		PdeEquation pdeEquation = (PdeEquation)equation;
 		printWriter.println(FVInputFileKeyword.DIFFUSION + " " + subsituteExpression(pdeEquation.getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
@@ -1611,6 +1618,10 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	printWriter.println("RATE " + replaceVolumeVariable(simTask, memSubDomain, rateExpression) + ";");
+	if (bChombSolver && equation.getExactSolution() != null)
+	{
+		printWriter.println(FVInputFileKeyword.EXACT + " " + subsituteExpression(equation.getExactSolution(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
+	}
 	if (equation instanceof PdeEquation) {
 		printWriter.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 		
@@ -1769,8 +1780,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	private void writeChomboSpec() throws ExpressionException, SolverException, PropertyVetoException, ClassNotFoundException, IOException, GeometryException, ImageException {
 		Simulation simulation = getSimulationTask().getSimulation();
 		SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
-		SolverDescription sd = solverTaskDescription.getSolverDescription(); 
-		if (!sd.isChomboSolver()) {
+		if (!bChombSolver) {
 			return;
 		}
 		
@@ -1783,17 +1793,17 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		ISize isize = simulation.getMeshSpecification().getSamplingSize();
 		switch (geometrySpec.getDimension()) {
 			case 1:
-				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX());
+				printWriter.println(FVInputFileKeyword.MESH_SIZE + " " + isize.getX());
 				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX());
 				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX());
 				break;
 			case 2:
-				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX() + " " + isize.getY());
+				printWriter.println(FVInputFileKeyword.MESH_SIZE + " " + isize.getX() + " " + isize.getY());
 				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX() + " " + extent.getY());
 				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX() + " " + origin.getY());
 				break;
 			case 3:
-				printWriter.println(FVInputFileKeyword.GRID_SIZE + " " + isize.getX() + " " + isize.getY() + " " + isize.getZ());
+				printWriter.println(FVInputFileKeyword.MESH_SIZE + " " + isize.getX() + " " + isize.getY() + " " + isize.getZ());
 				printWriter.println(FVInputFileKeyword.DOMAIN_SIZE + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
 				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
 				break;
