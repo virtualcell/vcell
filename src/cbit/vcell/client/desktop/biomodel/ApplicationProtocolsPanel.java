@@ -86,6 +86,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideEventsPanel();
 		showOrHideMicroscopeMeasurementPanel();
+		showOrHideRateRulesPanel();
 		rateRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
@@ -100,11 +101,12 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		ProtocolsPanelTab tab = protocolPanelTabs[tabID.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
 		if (bShow) {
-			tabbedPane.setEnabledAt(index, true);
+			// tabbedPane.setEnabledAt(index, true);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
 		} else {
 			if (index >= 0) {
 				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.setEnabledAt(index, false);
+				tabbedPane.remove(tab.component);
 				if (selectedComponent == tab.component) {
 					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
 						if (tabbedPane.isEnabledAt(i)) {
@@ -130,6 +132,14 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		showOrHidePanel(ProtocolsPanelTabID.events, bShow);
 		if (bShow) {
 			eventsDisplayPanel.setSimulationContext(simulationContext);
+		}
+	}
+
+	private void showOrHideRateRulesPanel() {
+		boolean bShow = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
+		showOrHidePanel(ProtocolsPanelTabID.rate_rules, bShow);
+		if (bShow) {
+			rateRulesDisplayPanel.setSimulationContext(simulationContext);
 		}
 	}
 
