@@ -190,9 +190,12 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 		
 //		if (!isSpatial) { 
 			try {
+				// check if model to be exported to SBML has units compatible with SBML default units (default units in SBML can be assumed only until SBML Level2)
+				ModelUnitSystem forcedModelUnitSystem = simContext.getModel().getUnitSystem();
+				if (level < 3 && !ModelUnitSystem.isCompatibleWithDefaultSBMLLevel2Units(forcedModelUnitSystem)) {
+					forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
+				}
 				// create new Biomodel with new (SBML compatible)  unit system
-				// ModelUnitSystem forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLExportUnits();
-				ModelUnitSystem forcedModelUnitSystem = ModelUnitSystem.createDefaultSBMLLevel2Units();
 				BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(simContext.getBioModel(), forcedModelUnitSystem);
 				// extract the simContext from new Biomodel. Apply overrides to *this* modified simContext
 				SimulationContext simContextFromModifiedBioModel = modifiedBiomodel.getSimulationContext(simContext.getName());

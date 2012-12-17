@@ -451,6 +451,19 @@ public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 			return modelUnitSystem;
 		}
 
+		
+		public static boolean isCompatibleWithDefaultSBMLLevel2Units(ModelUnitSystem unitSystem) {
+			ModelUnitSystem defaultSBMLLevel2Units = createDefaultSBMLLevel2Units();
+			if  (unitSystem.getVolumeSubstanceUnit().isCompatible(defaultSBMLLevel2Units.getVolumeSubstanceUnit()) &&
+				 unitSystem.getVolumeUnit().isCompatible(defaultSBMLLevel2Units.getVolumeUnit()) &&
+				 unitSystem.getAreaUnit().isCompatible(defaultSBMLLevel2Units.getAreaUnit()) &&
+				 unitSystem.getLengthUnit().isCompatible(defaultSBMLLevel2Units.getLengthUnit()) &&
+				 unitSystem.getTimeUnit().isCompatible(defaultSBMLLevel2Units.getTimeUnit()) ) {
+				return true;
+			}
+			return false;
+		}
+		
 		private static ModelUnitSystem createUnitSystem(VCUnitDefinition volumeSubstanceUnit, VCUnitDefinition membraneSubstanceUnit, VCUnitDefinition lumpedReactionSubstanceUnit, VCUnitDefinition volumeUnit, VCUnitDefinition areaUnit, VCUnitDefinition lengthUnit, VCUnitDefinition timeUnit) {
 			ModelUnitSystem modelUnitSystem = new ModelUnitSystem();
 			VCUnitDefinition mole = modelUnitSystem.getInstance("mole");
