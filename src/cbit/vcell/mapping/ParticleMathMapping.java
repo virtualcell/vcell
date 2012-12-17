@@ -154,40 +154,40 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	VariableHash varHash = new VariableHash();
 	
-	//
-	// verify that all structures are mapped to geometry classes and all geometry classes are mapped to a structure
-	//
-	Structure structures[] = getSimulationContext().getGeometryContext().getModel().getStructures();
-	for (int i = 0; i < structures.length; i++){
-		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structures[i]);
-		if (sm==null || (sm.getGeometryClass() == null)){
-			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
-		}
-		if (sm.getUnitSizeParameter()!=null){
-			Expression unitSizeExp = sm.getUnitSizeParameter().getExpression();
-			if(unitSizeExp != null)
-			{
-				try {
-					double unitSize = unitSizeExp.evaluateConstant();
-					if (unitSize != 1.0){
-						throw new MappingException("model structure '"+sm.getStructure().getName()+"' unit size = "+unitSize+" != 1.0 ... partial volume or surface mapping not yet supported for particles");
-					}
-				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					throw new MappingException("couldn't evaluate unit size for model structure '"+sm.getStructure().getName()+"' : "+e.getMessage());
-				}
-			}
-		}
-	}
-	{
-		GeometryClass[] geometryClass = getSimulationContext().getGeometryContext().getGeometry().getGeometryClasses();
-		for (int i = 0; i < geometryClass.length; i++){
-			Structure[] mappedStructures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(geometryClass[i]);
-			if (mappedStructures==null || mappedStructures.length==0){
-				throw new MappingException("geometryClass '"+geometryClass[i].getName()+"' not mapped from a model structure");
-			}
-		}
-	}
+//	//
+//	// verify that all structures are mapped to geometry classes and all geometry classes are mapped to a structure
+//	//
+//	Structure structures[] = getSimulationContext().getGeometryContext().getModel().getStructures();
+//	for (int i = 0; i < structures.length; i++){
+//		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structures[i]);
+//		if (sm==null || (sm.getGeometryClass() == null)){
+//			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subdomain");
+//		}
+//		if (sm.getUnitSizeParameter()!=null){
+//			Expression unitSizeExp = sm.getUnitSizeParameter().getExpression();
+//			if(unitSizeExp != null)
+//			{
+//				try {
+//					double unitSize = unitSizeExp.evaluateConstant();
+//					if (unitSize != 1.0){
+//						throw new MappingException("model structure '"+sm.getStructure().getName()+"' unit size = "+unitSize+" != 1.0 ... partial volume or surface mapping not yet supported for particles");
+//					}
+//				}catch (ExpressionException e){
+//					e.printStackTrace(System.out);
+//					throw new MappingException("couldn't evaluate unit size for model structure '"+sm.getStructure().getName()+"' : "+e.getMessage());
+//				}
+//			}
+//		}
+//	}
+//	{
+//		GeometryClass[] geometryClass = getSimulationContext().getGeometryContext().getGeometry().getGeometryClasses();
+//		for (int i = 0; i < geometryClass.length; i++){
+//			Structure[] mappedStructures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(geometryClass[i]);
+//			if (mappedStructures==null || mappedStructures.length==0){
+//				throw new MappingException("geometryClass '"+geometryClass[i].getName()+"' not mapped from a model structure");
+//			}
+//		}
+//	}
 
 	// deals with model parameters
 	Model model = getSimulationContext().getModel();
