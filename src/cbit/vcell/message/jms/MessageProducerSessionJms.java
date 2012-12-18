@@ -29,6 +29,7 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.UserLoginInfo;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
@@ -56,7 +57,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 			this.bIndependent = false;
 		}
 
-		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues) throws VCMessagingException, VCMessagingInvocationTargetException {
+		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException {
 			MessageProducer messageProducer = null;
 			try {
 				if (!bIndependent){
@@ -85,7 +86,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					messageProducer.setTimeToLive(timeoutMS);
 					messageProducer.send(rpcMessage);
 					session.commit();
-System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
+					VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 					String filter = MessageConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
 					MessageConsumer replyConsumer = session.createConsumer(commonTemporaryQueue,filter);
 					Message replyMessage = replyConsumer.receive(timeoutMS);
@@ -95,7 +96,7 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					}
 
 					if (replyMessage == null || !(replyMessage instanceof ObjectMessage)) {
-						throw new JMSException("Server is temporarily not responding, please try again later. If problem persists, contact VCell_Support@uchc.edu." +
+						throw new JMSException("Server is temporarily not responding, please try again. If problem persists, contact VCell_Support@uchc.edu." +
 								" (server=" + vcRpcRequest.getRequestedServiceType().getName() + ", method=" + vcRpcRequest.getMethodName() +")");
 					} else {
 						VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage);
@@ -113,6 +114,7 @@ System.out.println("rpcMessage sent: id='"+rpcMessage.getJMSMessageID()+"'");
 					messageProducer.setTimeToLive(timeoutMS);
 					messageProducer.send(rpcMessage);
 					commit();
+					VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 					return null;
 				}
 			} catch (JMSException e){

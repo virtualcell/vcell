@@ -9,11 +9,12 @@ import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.server.UserLoginInfo;
 
 public abstract class VCMessageSessionLocal implements VCMessageSession {
 
 	@Override
-	public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues) 
+	public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) 
 			throws VCMessagingException, VCMessagingInvocationTargetException {
 		throw new RuntimeException("rpc not implemented - must override sendRpcMessage() to implement");
 	}
