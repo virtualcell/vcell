@@ -175,6 +175,12 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 			if (parameterMappingSpecs[i].getHigh() < parameterMappingSpecs[i].getLow()) {
 				throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is greater than its upper bound.");
 			}
+			if (parameterMappingSpecs[i].getCurrent() < parameterMappingSpecs[i].getLow()){
+				throw new MathException("The initial guess of '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is smaller than its lower bound.");
+			}
+			if (parameterMappingSpecs[i].getCurrent() > parameterMappingSpecs[i].getHigh()){
+				throw new MathException("The initial guess of '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is greater than its upper bound.");
+			}
 			if (parameterMappingSpecs[i].getLow() < 0) {
 				throw new MathException("The lower bound for Parameter '" + parameterMappingSpecs[i].getModelParameter().getName() + "' is negative. All lower bounds must not be negative.");
 			}
