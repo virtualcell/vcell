@@ -37,6 +37,13 @@ import org.vcell.util.UserCancelException;
 import cbit.vcell.biomodel.meta.Identifiable;
 
 public class PathwayModel {
+	
+	public class SBVocabularyEx extends SBVocabulary {
+		boolean inferred = false;
+		boolean isInferred() { return this.inferred; }
+		void setInferred(boolean inferred) { this.inferred = inferred; }
+	}
+	
 	private HashSet<BioPaxObject> biopaxObjects = new HashSet<BioPaxObject>();
 	private HashSet<String> diagramObjectsID = new HashSet<String>();
 	protected transient ArrayList<PathwayListener> aPathwayListeners = new ArrayList<PathwayListener>();
@@ -316,16 +323,19 @@ public class PathwayModel {
 						}
 					}
 					ArrayList<SBVocabulary> sbTerms = sbE.getSBTerm();
-					if(sbTerms.isEmpty()) {			// guesstimation based on params found above
-						SBVocabulary sbTerm = new SBVocabulary();
+					if(sbTerms.isEmpty()) {	// we try to guesstimate kinetic law type based on params found above
+						SBVocabularyEx sbTerm = new SBVocabularyEx();
 						ArrayList<String> termNames = new ArrayList<String>();
 						String id;
 						SBOParam kMichaelis = SBPAXKineticsExtractor.extractMichaelisForwardParam(sboParams);
 						if(kMichaelis == null) {
 							id = new String("SBO:0000012");	// mass action rate law
+							System.out.println("   --- matched kinetic law to Mass Action");
 						} else {
 							id = new String("SBO:0000029");	// irreversible Henri-Michaelis-Menten rate law
+							System.out.println("   --- matched kinetic law to Henri-Michaelis-Menten");
 						}
+						sbTerm.setInferred(true);
 						sbTerm.setID(id);
 						sbTerms.add(sbTerm);
 					}
