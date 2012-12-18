@@ -587,7 +587,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendRpcRequestProcessed(VCRpcRequest rpcRequest) {
+	public static void sendRpcRequestProcessed(VCRpcRequest rpcRequest, VCMessage vcMessage) {
 		if (!enabled){
 			return;
 		}
@@ -595,6 +595,8 @@ public final class VCMongoMessage {
 			BasicDBObject dbObject = new BasicDBObject();
 
 			addHeader(dbObject,MongoMessage_msgtype_rpcRequestReceived);
+			
+			addObject(dbObject,vcMessage);
 
 			addObject(dbObject,rpcRequest);
 			
@@ -604,7 +606,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendRpcRequestSent(VCRpcRequest rpcRequest, UserLoginInfo userLoginInfo) {
+	public static void sendRpcRequestSent(VCRpcRequest rpcRequest, UserLoginInfo userLoginInfo, VCMessage vcMessage) {
 		if (!enabled){
 			return;
 		}
@@ -613,10 +615,14 @@ public final class VCMongoMessage {
 			BasicDBObject dbObject = new BasicDBObject();
 
 			addHeader(dbObject,MongoMessage_msgtype_rpcRequestSent);
+			
+			addObject(dbObject,vcMessage);
 
 			addObject(dbObject,rpcRequest);
 			
-			addObject(dbObject,userLoginInfo);
+			if (userLoginInfo!=null){
+				addObject(dbObject,userLoginInfo);
+			}
 			
 			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
 		} catch (Exception e){
