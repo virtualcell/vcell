@@ -26,6 +26,7 @@ import ncsa.hdf.object.Group;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
@@ -110,8 +111,15 @@ public class HybridSolverTester {
 				//create sim job
 				int jobIndex = startTrialNo + i;
 				SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, null),0);
-				ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
-				
+				/*
+				 * When you want to run the multiple trials on local uncomment the line below.
+				 */
+				//ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
+				/*
+				 * When you want to run the multiple trials on server (without VCell user interface), use the next line of code 
+				 * Corresponding changes should be made in the shell script runhybridtest for the location of executable on server
+				 */
+				System.getProperties().put(PropertyLoader.finiteVolumeExecutableProperty, "/share/apps/vcell/deployed/test/numerics/cmake-build/bin/FiniteVolume_x64");	
 				FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simDataDir,new StdoutSessionLog(sim.getVersion().getOwner().getName()),false);		
 				fvSolver.startSolver();
 				
@@ -245,7 +253,7 @@ public class HybridSolverTester {
 		File[] files = 	rootDir.listFiles( 
 							new FileFilter(){
 								public boolean accept(File file) {
-									if (file.getName().startsWith(vcSimDataID.getID()) && (!file.getName().endsWith("hdf5"))){
+									if (file.getName().startsWith(vcSimDataID.getID()) && (!file.getName().endsWith(".txt"))){
 										return true;
 									}
 									return false;
@@ -253,6 +261,7 @@ public class HybridSolverTester {
 							}
 						);
 		for(File f:files){
+			System.out.println("Deleting file..." + f.getAbsolutePath());
 			f.delete();
 		}
 			
