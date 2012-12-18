@@ -40,8 +40,8 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -91,6 +91,7 @@ public class SimulationData extends VCData {
  * SimResults constructor comment.
  */
 public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {	
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
 	try {
 		this.vcDataId = argVCDataID;
 		this.userDirectory = primaryUserDir;
@@ -101,11 +102,15 @@ public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File se
 		}
 		this.vcDataId = argVCDataID;
 		userDirectory = secondaryUserDir;
+		VCMongoMessage.sendTrace("SimulationData.SimulationData() checking log file, "+exc.getMessage());
 		checkLogFile();
 	}
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() getting var and function identifiers");
 	getVarAndFunctionDataIdentifiers(null);
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<EXIT>>");
 }
 private void checkLogFile() throws FileNotFoundException {
+	VCMongoMessage.sendTrace("SimulationData.checkLogFile()  <<ENTER>>");
 	try {
 		// must exist for constructor to succeed
 		getLogFile();
@@ -114,6 +119,7 @@ private void checkLogFile() throws FileNotFoundException {
 		vcDataId = createScanFriendlyVCDataID(vcDataId);
 		getLogFile();
 	}
+	VCMongoMessage.sendTrace("SimulationData.checkLogFile()  <<EXIT>>");
 }
 
 private void checkSelfReference(AnnotatedFunction function) throws ExpressionException{
@@ -482,9 +488,12 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
  */
 public File getLogFile() throws FileNotFoundException {
 	File logFile = new File(userDirectory,vcDataId.getID()+".log");
+	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logile.exists()");
 	if (logFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file found");
 		return logFile;
 	}else{
+		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file not found");
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
 }
@@ -498,10 +507,12 @@ public File getLogFile() throws FileNotFoundException {
  */
 private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundException {
 	File meshMetricsFile = new File(userDirectory,vcDataId.getID()+".meshmetrics");
+	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> calling meshMetricsFile.exists()");
 	if (meshMetricsFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file found");
 		return meshMetricsFile;
 	}
-
+	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file not found");
 	return null;
 }
 /**
@@ -512,10 +523,12 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
  */
 private synchronized File getSubdomainFile() throws FileNotFoundException {
 	File subdomainFile = new File(userDirectory,vcDataId.getID()+SimDataConstants.SUBDOMAINS_FILE_SUFFIX);
+	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> calling subdomain.exists()");
 	if (subdomainFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> file found");
 		return subdomainFile;
 	}
-	
+	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> file not found");
 	return null;
 }
 

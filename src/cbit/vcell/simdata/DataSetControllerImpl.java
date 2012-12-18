@@ -3256,7 +3256,7 @@ private File getSecondaryUserDir(User user) throws FileNotFoundException {
  * @param simID java.lang.String
  */
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<ENTER>>");
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<ENTER>>");
 
 	VCData vcData = (cacheTable0 != null?cacheTable0.get(vcdID):null);
 	//
@@ -3267,23 +3267,23 @@ log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<ENTER>>");
 			try {
 				User user = vcdID.getOwner();
 				VCDataIdentifier[] vcdIdentifiers = ((MergedDataInfo)vcdID).getDataIDs();
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<BEGIN>>");
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<BEGIN>>");
 				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers, ((MergedDataInfo)vcdID).getDataSetPrefix());
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<END>>");
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<END>>");
 			} catch (IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
 			try {
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<BEGIN>>");
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<BEGIN>>");
 				cacheTable0.put(vcdID,vcData);
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<END>>");
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<END>>");
 			} catch (CacheException e) {
 				// if  can't cache the data, it is ok
 				e.printStackTrace();
@@ -3291,7 +3291,7 @@ log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData :
 		}
 	}
 
-log.print("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<EXIT>>");
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<EXIT>>");
 	return vcData;
 }
 
