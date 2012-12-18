@@ -134,8 +134,8 @@ public class ConsumerContextJms implements Runnable {
 						replyProducer.send(replyMessage);
 						replyProducer.close();
 						jmsSession.commit();		//commit		
+						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest,rpcVCMessage);
 						rpcVCMessage.removeBlobFile();
-						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest);
 					}
 				}else{
 //						System.out.println(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");

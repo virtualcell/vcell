@@ -77,12 +77,16 @@ public class VCMessageJms implements VCMessage {
 				String blobFileName = jmsMessage.getStringProperty(BLOB_MESSAGE_FILE_NAME);
 				
 				//
-				// get (or create) directory to store Message BLOBs
+				// get directory to retrieve Message BLOBs
 				//
-				File blobTempDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));				
-				blobFile = new File(blobTempDir,blobFileName);
+				File localBlobDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));				
+				File producerBlobDir = new File(getStringProperty(BLOB_MESSAGE_PRODUCER_TEMPDIR));
+				blobFile = new File(localBlobDir,blobFileName);
 				if (!blobFile.exists()){
-					throw new RuntimeException("Message BLOB file \""+blobFileName+"\" in directory \""+blobTempDir+"\" not found, maybe the message was already read");
+					blobFile = new File(producerBlobDir,blobFileName);
+					if (!blobFile.exists()){
+						throw new RuntimeException("Message BLOB file \""+blobFileName+"\" not found local=\""+localBlobDir+"\" or producer=\""+producerBlobDir+"\"");
+					}
 				}
 				FileInputStream fis = new FileInputStream(blobFile);
 				BufferedInputStream bis = new BufferedInputStream(fis);
@@ -105,11 +109,7 @@ public class VCMessageJms implements VCMessage {
 			// remove blob file if it still exists (after a successful commit)
 			//
 			try {
-				if (blobFile.exists()){
-					blobFile.delete();
-				}else{
-					System.out.println("Message BLOB file \""+blobFile.getAbsolutePath()+"\" doesn't exist");
-				}
+				blobFile.delete();
 			}catch (Exception e){
 				VCMongoMessage.sendException(e);
 				e.printStackTrace(System.out);

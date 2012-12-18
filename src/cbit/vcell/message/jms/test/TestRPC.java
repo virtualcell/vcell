@@ -58,7 +58,7 @@ public class TestRPC {
 		        	// send request and block for response (or timeout).
 		        	// RPC invocations don't need commits.
 		        	//
-		        	Object returnValue = messageSession.sendRpcMessage(VCellQueue.JimQueue, rpcRequest, true, 20000, null, null);
+		        	Object returnValue = messageSession.sendRpcMessage(VCellQueue.JimQueue, rpcRequest, true, 20000, null, null, null);
 		        	
 		        	//
 		        	// print result.
