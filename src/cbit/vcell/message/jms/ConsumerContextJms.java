@@ -78,6 +78,7 @@ public class ConsumerContextJms implements Runnable {
 						ObjectMessage objectMessage = (ObjectMessage)jmsMessage;
 						VCMessageJms rpcVCMessage = new VCMessageJms(objectMessage);
 						rpcVCMessage.loadBlobFile();
+						VCMongoMessage.sendJmsMessageReceived(rpcVCMessage,vcConsumer.getVCDestination());
 						Serializable object = (Serializable)rpcVCMessage.getObjectContent();
 						if (!(object instanceof VCRpcRequest)){
 							jmsSession.commit();
@@ -133,8 +134,8 @@ public class ConsumerContextJms implements Runnable {
 						replyProducer.send(replyMessage);
 						replyProducer.close();
 						jmsSession.commit();		//commit		
+						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest,rpcVCMessage);
 						rpcVCMessage.removeBlobFile();
-						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest);
 					}
 				}else{
 //						System.out.println(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
@@ -191,6 +192,7 @@ public class ConsumerContextJms implements Runnable {
 	}
 	
 	private void onException(JMSException e){
+		VCMongoMessage.sendException(e);
 		e.printStackTrace(System.out);
 	}
 	

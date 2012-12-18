@@ -13,5 +13,9 @@ public interface VCellServiceMXBean {
 	String getServiceName();
 
 	Date getStartupDate();
+	
+	void setTrace(boolean bTrace);
+
+	boolean getTrace();
 
 }

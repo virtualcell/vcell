@@ -22,6 +22,7 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.mongodb.VCMongoMessage;
 
 public class VCMessageJms implements VCMessage {
 	
@@ -69,18 +70,23 @@ public class VCMessageJms implements VCMessage {
 		}
 		if (jmsMessage instanceof ObjectMessage && propertyExists(BLOB_MESSAGE_FILE_NAME)){
 			try {				
+				long t1 = System.currentTimeMillis();
 				//
 				// read serialized object from inputStream (from Broker's data file)
 				//
 				String blobFileName = jmsMessage.getStringProperty(BLOB_MESSAGE_FILE_NAME);
 				
 				//
-				// get (or create) directory to store Message BLOBs
+				// get directory to retrieve Message BLOBs
 				//
-				File blobTempDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));				
-				blobFile = new File(blobTempDir,blobFileName);
+				File localBlobDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageTempDir));				
+				File producerBlobDir = new File(getStringProperty(BLOB_MESSAGE_PRODUCER_TEMPDIR));
+				blobFile = new File(localBlobDir,blobFileName);
 				if (!blobFile.exists()){
-					throw new RuntimeException("Message BLOB file \""+blobFileName+"\" in directory \""+blobTempDir+"\" not found, maybe the message was already read");
+					blobFile = new File(producerBlobDir,blobFileName);
+					if (!blobFile.exists()){
+						throw new RuntimeException("Message BLOB file \""+blobFileName+"\" not found local=\""+localBlobDir+"\" or producer=\""+producerBlobDir+"\"");
+					}
 				}
 				FileInputStream fis = new FileInputStream(blobFile);
 				BufferedInputStream bis = new BufferedInputStream(fis);
@@ -89,6 +95,7 @@ public class VCMessageJms implements VCMessage {
 				ois.close();
 				bis.close();
 				fis.close();
+				VCMongoMessage.sendTrace("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
@@ -102,12 +109,9 @@ public class VCMessageJms implements VCMessage {
 			// remove blob file if it still exists (after a successful commit)
 			//
 			try {
-				if (blobFile.exists()){
-					blobFile.delete();
-				}else{
-					System.out.println("Message BLOB file \""+blobFile.getAbsolutePath()+"\" doesn't exist");
-				}
+				blobFile.delete();
 			}catch (Exception e){
+				VCMongoMessage.sendException(e);
 				e.printStackTrace(System.out);
 			}
 		}
@@ -124,7 +128,7 @@ public class VCMessageJms implements VCMessage {
 					return ((ObjectMessage)jmsMessage).getObject();
 				} catch (JMSException e) {
 					handleJMSException(e);
-					throw new RuntimeException(e.getMessage());
+					throw new RuntimeException(e.getMessage(),e);
 				}
 			}
 		}else{
@@ -138,7 +142,7 @@ public class VCMessageJms implements VCMessage {
 				return ((TextMessage)jmsMessage).getText();
 			} catch (JMSException e) {
 				handleJMSException(e);
-				throw new RuntimeException(e.getMessage());
+				throw new RuntimeException(e.getMessage(),e);
 			}
 		}else{
 			return null;
@@ -150,7 +154,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setBooleanProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -159,7 +163,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setDoubleProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -168,7 +172,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setIntProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -177,7 +181,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setLongProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -186,7 +190,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setObjectProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -195,7 +199,7 @@ public class VCMessageJms implements VCMessage {
 			jmsMessage.setStringProperty(propertyName,value);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -204,7 +208,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getPropertyNames();
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
@@ -216,7 +220,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getBooleanProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -228,7 +232,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getDoubleProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -240,7 +244,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getIntProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -252,7 +256,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getLongProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -264,7 +268,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getObjectProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -276,7 +280,7 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.getStringProperty(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -285,11 +289,12 @@ public class VCMessageJms implements VCMessage {
 			return jmsMessage.propertyExists(propertyName);
 		} catch (JMSException e) {
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 	
 	private void handleJMSException(JMSException e){
+		VCMongoMessage.sendException(e);
 		e.printStackTrace(System.out);
 	}
 
@@ -308,7 +313,7 @@ public class VCMessageJms implements VCMessage {
 			}
 		}catch (JMSException e){
 			handleJMSException(e);
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException(e.getMessage(),e);
 		}
 	}
 
@@ -350,6 +355,7 @@ public class VCMessageJms implements VCMessage {
 					buffer.append(" " + propName + "='" + value + "'");
 				} catch (MessagePropertyNotFoundException ex) {
 					// definitely should not happen
+					VCMongoMessage.sendException(ex);
 				}
 			}
 			int maxContentLength = 120;

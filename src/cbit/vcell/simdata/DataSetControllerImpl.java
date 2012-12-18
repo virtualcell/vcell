@@ -91,6 +91,7 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -2469,6 +2470,7 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
  */
 public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException, IOException, MathException {
 
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdID.getID()+")  <<EXIT>>");
 	log.print("DataSetControllerImpl.getMesh("+vcdID.getOwner().getName()+","+vcdID.getID()+")");
 	
 	VCData simData = null;
@@ -2489,15 +2491,19 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException,
 		try {
 			int size[] = simData.getVolumeSize();
 			if (size==null){
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdID.getID()+")  <<EXIT size==null>>");
 				return null;
 			}
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdID.getID()+")  <<EXIT size not null but can't read>>");
 			throw new RuntimeException("DataSetControllerImpl.getMesh(): size not null but couldn't read Mesh");
 		}catch (Throwable e2){
 			log.exception(e2);
 			log.alert("DataSetControllerImpl.getMesh(): error creating dummy mesh: "+e2.getMessage());
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdID.getID()+")  <<EXIT null>>");
 			return null;
 		}
 	}else{
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getMesh("+vcdID.getID()+")  <<EXIT non-null>>");
 		return mesh;
 	}
 }
@@ -2598,10 +2604,12 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
  * @return boolean
  */
 public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException, IOException, FileNotFoundException {
-
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getParticleDataExists("+vcdID.getID()+") ... <<ENTER>>");
 	VCData simData = getVCData(vcdID);
-	return simData.getParticleDataExists();
-	
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getParticleDataExists("+vcdID.getID()+") got VCData");
+	boolean bParticleDataExists = simData.getParticleDataExists();
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getParticleDataExists("+vcdID.getID()+") ... <<EXIT>>");
+	return bParticleDataExists;
 }
 
 
@@ -2612,16 +2620,20 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  * @param time double
  */
 public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
-	log.print("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")");
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<ENTER>>");
 
 	try {
 		//
 		// check if already cached for non-function variables
 		//
 		VCData simData = getVCData(vcdID);
-		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(),vcdID.getID(),varName,time,simData.getDataBlockTimeStamp(PDE_DATA, time));
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") got VCData");
+		long dataBlockTimeStamp = simData.getDataBlockTimeStamp(PDE_DATA, time);
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") got dataBlockTimeStamp");
+		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(),vcdID.getID(),varName,time,dataBlockTimeStamp);
 		SimDataBlock simDataBlock = null;
 		AnnotatedFunction function = getFunction(outputContext,vcdID,varName);
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") got function");
 		if (function == null){
 			simDataBlock = (cacheTable0 != null?cacheTable0.get(pdeDataInfo):null);
 			if (simDataBlock == null) {
@@ -2642,23 +2654,29 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 			if (simData instanceof SimulationData) {
 				function = ((SimulationData)simData).simplifyFunction(function);
 			}
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") evaluating function");
 			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
 		if (simDataBlock != null) {
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-simDataBlock not null>>");
 			return simDataBlock;
 		} else {
 			String msg = "failure reading "+varName+" at t="+time+" for "+vcdID.getOwner().getName()+"'s "+vcdID.getID();
 			log.alert("DataSetControllerImpl.getDataBlockValues(): "+msg);
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
 			throw new DataAccessException(msg);			
 		}
 	}catch (MathException e){
 		log.exception(e);
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
 		throw new DataAccessException(e.getMessage());
 	}catch (IOException e){
 		log.exception(e);
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
 		throw new DataAccessException(e.getMessage());
 	}catch (ExpressionException e){
 		log.exception(e);
+		VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-Exception>>");
 		throw new DataAccessException(e.getMessage());
 	}
 }
@@ -3238,6 +3256,7 @@ private File getSecondaryUserDir(User user) throws FileNotFoundException {
  * @param simID java.lang.String
  */
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<ENTER>>");
 
 	VCData vcData = (cacheTable0 != null?cacheTable0.get(vcdID):null);
 	//
@@ -3248,17 +3267,23 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			try {
 				User user = vcdID.getOwner();
 				VCDataIdentifier[] vcdIdentifiers = ((MergedDataInfo)vcdID).getDataIDs();
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<BEGIN>>");
 				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers, ((MergedDataInfo)vcdID).getDataSetPrefix());
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new MergedData : <<END>>");
 			} catch (IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
+			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
 			try {
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<BEGIN>>");
 				cacheTable0.put(vcdID,vcData);
+				VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : caching vcData : <<END>>");
 			} catch (CacheException e) {
 				// if  can't cache the data, it is ok
 				e.printStackTrace();
@@ -3266,6 +3291,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 		}
 	}
 
+	VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") ... <<EXIT>>");
 	return vcData;
 }
 
