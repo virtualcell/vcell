@@ -80,6 +80,8 @@ public abstract class VCellIcons {
 	public final static Icon pathwayParticipantsIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/biopax/modification.gif"));
 
 	public final static Icon pathwayLeafIcon = new ImageIcon(VCellIcons.class.getResource("/icons/pathwayLeaf.gif"));
+	public final static Icon kineticLawIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kineticLaw.gif"));
+	public final static Icon kineticLaw2Icon = new ImageIcon(VCellIcons.class.getResource("/icons/kineticLaw2.gif"));
 	public final static Icon sortUpIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortUp.png"));
 	public final static Icon sortDownIcon = new ImageIcon(VCellIcons.class.getResource("/images/sortDown.png"));
 
