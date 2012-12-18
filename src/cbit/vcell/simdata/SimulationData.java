@@ -40,8 +40,9 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -90,6 +91,7 @@ public class SimulationData extends VCData {
  * SimResults constructor comment.
  */
 public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {	
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
 	try {
 		this.vcDataId = argVCDataID;
 		this.userDirectory = primaryUserDir;
@@ -100,11 +102,15 @@ public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File se
 		}
 		this.vcDataId = argVCDataID;
 		userDirectory = secondaryUserDir;
+		VCMongoMessage.sendTrace("SimulationData.SimulationData() checking log file, "+exc.getMessage());
 		checkLogFile();
 	}
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() getting var and function identifiers");
 	getVarAndFunctionDataIdentifiers(null);
+	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<EXIT>>");
 }
 private void checkLogFile() throws FileNotFoundException {
+	VCMongoMessage.sendTrace("SimulationData.checkLogFile()  <<ENTER>>");
 	try {
 		// must exist for constructor to succeed
 		getLogFile();
@@ -113,6 +119,7 @@ private void checkLogFile() throws FileNotFoundException {
 		vcDataId = createScanFriendlyVCDataID(vcDataId);
 		getLogFile();
 	}
+	VCMongoMessage.sendTrace("SimulationData.checkLogFile()  <<EXIT>>");
 }
 
 private void checkSelfReference(AnnotatedFunction function) throws ExpressionException{
@@ -481,9 +488,12 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
  */
 public File getLogFile() throws FileNotFoundException {
 	File logFile = new File(userDirectory,vcDataId.getID()+".log");
+	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logile.exists()");
 	if (logFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file found");
 		return logFile;
 	}else{
+		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file not found");
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
 }
@@ -497,10 +507,12 @@ public File getLogFile() throws FileNotFoundException {
  */
 private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundException {
 	File meshMetricsFile = new File(userDirectory,vcDataId.getID()+".meshmetrics");
+	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> calling meshMetricsFile.exists()");
 	if (meshMetricsFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file found");
 		return meshMetricsFile;
 	}
-
+	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file not found");
 	return null;
 }
 /**
@@ -511,10 +523,12 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
  */
 private synchronized File getSubdomainFile() throws FileNotFoundException {
 	File subdomainFile = new File(userDirectory,vcDataId.getID()+SimDataConstants.SUBDOMAINS_FILE_SUFFIX);
+	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> calling subdomain.exists()");
 	if (subdomainFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> file found");
 		return subdomainFile;
 	}
-	
+	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> file not found");
 	return null;
 }
 
@@ -536,10 +550,13 @@ public synchronized CartesianMesh getMesh() throws DataAccessException, MathExce
  * @param simID java.lang.String
  */
 private synchronized File getMeshFile() throws FileNotFoundException {
+	VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<BEGIN>>");
 	File meshFile = new File(userDirectory,vcDataId.getID()+".mesh");
 	if (meshFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-meshfile>>");
 		return meshFile;
 	}else{
+		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-mesh file not found>>");
 		throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
 	}
 }
@@ -1154,12 +1171,14 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
  * This method was created by a SmartGuide.
  */
 private synchronized void readLog(File logFile) throws FileNotFoundException, DataAccessException, IOException {
-
+	VCMongoMessage.sendTrace("SimulationData.readLog() <<ENTER>>");
 	if (logFile.exists()){
+		VCMongoMessage.sendTrace("SimulationData.readLog() logFile exists");
 		long length = logFile.length();
 		long lastModified = logFile.lastModified();
 		if (lastModified == logFileLastModified && logFileLength == length){
 //System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog("+info.getSimID()+") lastModified and fileLength unchanged (no re-read), logFile.lastModified() = "+(new java.util.Date(lastModified)).toString());
+			VCMongoMessage.sendTrace("SimulationData.readLog() hasn't been modified ... <<EXIT>>");
 			return;
 		}else{
 //String status = "";
@@ -1176,6 +1195,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		dataFilenames = null;
 		zipFilenames = null;
 		dataTimes = null;
+		VCMongoMessage.sendTrace("SimulationData.readLog() log file not found <<EXIT-Exception>>");
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
 
@@ -1202,6 +1222,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			is.close();
 		}
 	}
+	VCMongoMessage.sendTrace("SimulationData.readLog() log file read into string buffer");
 	String logfileContent = stringBuffer.toString();
 	if (logfileContent.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
@@ -1245,6 +1266,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		dataTimes = new double[numFiles];
 		dataFilenames = new String[numFiles];
 		int index = 0;
+		VCMongoMessage.sendTrace("SimulationData.readLog() parsing zip files and times from log <<BEGIN>>");
 		while (st.hasMoreTokens()){
 			String iteration = st.nextToken();
 			String filename = st.nextToken();
@@ -1260,9 +1282,12 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			dataFilenames[index] = (new File(filename)).getName();
 			index++;
 		}
+		VCMongoMessage.sendTrace("SimulationData.readLog() parsing zip files and times from log <<END>>");
 		// now check if .particle files also exist
 		try {
+			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<BEGIN>>");
 			File firstFile = getParticleDataFile(dataTimes[0]);
+			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<END>>");
 			if (firstFile!=null){
 				particleDataExists = true;
 			}else{
@@ -1272,6 +1297,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			particleDataExists = false;
 		}
 	}
+	VCMongoMessage.sendTrace("SimulationData.readLog() <<EXIT>>");
 }
 
 
@@ -1303,6 +1329,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
  * This method was created in VisualAge.
  */
 private synchronized void refreshLogFile() throws DataAccessException {
+	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<ENTER>>");
 	//
 	// (re)read the log file if necessary
 	//
@@ -1321,6 +1348,7 @@ private synchronized void refreshLogFile() throws DataAccessException {
 		e.printStackTrace(System.out);
 		throw e;
 	}
+	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<EXIT>>");
 }
 
 
@@ -1331,11 +1359,15 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 	//
 	// (re)read the log file if necessary
 	//
+	VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<BEGIN>>");
 	try {
 		readMesh(getMeshFile(),getMembraneMeshMetricsFile());
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT normally>>");
 	} catch (FileNotFoundException e) {
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-file not found>>");
 	} catch (IOException e) {
 		e.printStackTrace(System.out);
+		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-IOException>>");
 		throw new DataAccessException(e.getMessage());
 	}
 }
