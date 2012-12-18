@@ -1,7 +1,6 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -28,10 +27,13 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -40,9 +42,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.GuiConstants;
@@ -58,9 +66,17 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 import com.lowagie.text.Font;
-import com.sonicsw.util.debug.Debug;
 
 public class ChomboSimpleDataViewer extends JFrame {
+	
+	static
+	{
+	    Logger rootLogger = Logger.getRootLogger();
+	    rootLogger.setLevel(Level.OFF);
+	    rootLogger.removeAllAppenders();
+	    rootLogger.addAppender(new ConsoleAppender(new PatternLayout("%-6r [%p] %c - %m%n")));
+	}
+	
 	private static class MeshMetricsTableModel extends AbstractTableModel
 	{
 		private List<String> cols = new ArrayList<String>();
@@ -256,6 +272,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 	private TextFieldAutoCompletion dataDirTextField = new TextFieldAutoCompletion();
 	private TextFieldAutoCompletion userNameTextField = new TextFieldAutoCompletion();
 	private TextFieldAutoCompletion simIdField = new TextFieldAutoCompletion();
+//	private JPasswordField remotePasswordField = new JPasswordField();
 	private JComboBox timeComboBox = new JComboBox();
 	private JLabel solLabel = new JLabel("Solution");
 	private JLabel timePlotLabel = new JLabel("Time Plot");
@@ -312,6 +329,40 @@ public class ChomboSimpleDataViewer extends JFrame {
 		return solPanel;
 	}
 	
+	JFileChooser jFileChooser;
+	private ActionListener dataBrowseActionListener = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(jFileChooser == null){
+				jFileChooser = new JFileChooser();
+//				jFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			}
+			int returnVal = jFileChooser.showOpenDialog(ChomboSimpleDataViewer.this);
+
+	        if (returnVal == JFileChooser.APPROVE_OPTION){
+	        	File selectedFile = jFileChooser.getSelectedFile();
+	        	String formattedName = null;
+	        	String userName = null;
+	        	if(selectedFile.isFile() && selectedFile.getName().startsWith("SimID_")){
+	        		formattedName = selectedFile.getName();
+	        		userName = selectedFile.getParentFile().getName();
+	        		dataDirTextField.setText(jFileChooser.getSelectedFile().getParentFile().getParentFile().getAbsolutePath());
+	        	}else{
+	        		dataDirTextField.setText(jFileChooser.getSelectedFile().getAbsolutePath());
+	        	}
+	        	if(formattedName != null){
+	        		StringTokenizer st = new StringTokenizer(formattedName,"_");
+	        		st.nextToken();
+	        		simIdField.setText(st.nextToken());
+	        		if(userName != null){
+	        			userNameTextField.setText(userName);
+	        		}
+	        	}
+	        } else {
+	            return;
+	        }
+		}
+	};
 	private JPanel createInputPanel()
 	{
 		JPanel inputPanel = new JPanel(new GridBagLayout());
@@ -340,9 +391,10 @@ public class ChomboSimpleDataViewer extends JFrame {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(2, 2, 2, 2);
 		gbc.anchor = GridBagConstraints.LINE_END;
-		label = new JLabel("Data Dir");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		inputPanel.add(label, gbc);
+		JButton dataBrowseButton = new JButton("Data Dir");
+		dataBrowseButton.setFont(label.getFont().deriveFont(Font.BOLD));
+		inputPanel.add(dataBrowseButton, gbc);
+		dataBrowseButton.addActionListener(dataBrowseActionListener);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -367,6 +419,23 @@ public class ChomboSimpleDataViewer extends JFrame {
 		gbc.insets = new Insets(2, 2, 2, 2);
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		inputPanel.add(simIdField, gbc);
+
+//		gridy ++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		label = new JLabel("RmtPW");
+//		label.setFont(label.getFont().deriveFont(Font.BOLD));
+//		inputPanel.add(label, gbc);
+//		
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		inputPanel.add(remotePasswordField, gbc);
 		
 		gridy ++;
 		JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -556,6 +625,55 @@ public class ChomboSimpleDataViewer extends JFrame {
 		}
 	}
 	
+	private static class SimDataInfoHolder{
+		public SimulationData simData;
+		public File userDir;
+		public SimDataInfoHolder(SimulationData simData, File userDir) {
+			this.simData = simData;
+			this.userDir = userDir;
+		}
+		
+	}
+	private SimDataInfoHolder createSimulationDataFromDir(File dataDir,String userid,VCSimulationDataIdentifier vcDataId) throws Exception{
+		File userDir = new File(dataDir, userid);
+		return new SimDataInfoHolder(new SimulationData(vcDataId, userDir, null),userDir);
+	}
+	private JPasswordField jPasswordField = new JPasswordField();
+	private SimDataInfoHolder createSimulationDataFromRemote(String userid,VCSimulationDataIdentifier vcDataId) throws Exception{
+		SimDataInfoHolder simDataInfoHolder = null;
+		SimulationData simData = null;
+		try{
+			//Try well known primary data dir from windows
+//			if(true){throw new Exception();}
+			File userDir = new File("\\\\cfs01\\ifs\\raid\\vcell\\users",userid);
+			simData = new SimulationData(vcDataId, userDir, null);
+			simDataInfoHolder = new SimDataInfoHolder(simData,userDir);
+		}catch(Exception e){
+			try{
+				//Try well known secondary data dir from windows
+//				if(true){throw new Exception();}
+				File userDir = new File("\\\\cfs02\\ifs\\raid\\vcell\\users",userid);
+				simData = new SimulationData(vcDataId,userDir, null);
+				simDataInfoHolder = new SimDataInfoHolder(simData,userDir);					
+			}catch(Exception e2){
+				//try ssh download from linux server
+				if(DialogUtils.showComponentOKCancelDialog(ChomboSimpleDataViewer.this, jPasswordField, "Enter cluster password for 'vcell'") != JOptionPane.OK_OPTION){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+
+				File tempSimDir = File.createTempFile("VCellUsersDir", ".dir");
+				tempSimDir.delete();
+	        	File tmpdir = new File(tempSimDir.getParentFile(),"VCellUsersDir");
+	        	if(!tmpdir.exists() && !tmpdir.mkdir()){
+	        		throw new Exception("Couldn't make local dir "+tmpdir);
+	        	}				
+	        	File downloadDir = SimDataConnection.downloadSimData(tmpdir, new String(jPasswordField.getPassword()), userid, vcDataId.getSimulationKey(), 0, false);
+				simData = new SimulationData(vcDataId,downloadDir, null);
+				simDataInfoHolder = new SimDataInfoHolder(simData,downloadDir);
+			}
+		}
+		return simDataInfoHolder;
+	}
 	private void retrieveVariablesAndTimes()
 	{
 		AsynchClientTask task0 = new AsynchClientTask("clear", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -575,25 +693,28 @@ public class ChomboSimpleDataViewer extends JFrame {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				String simId = simIdField.getText();
+				String simId = simIdField.getText().trim();
 				if (simId == null || simId.length() == 0)
 				{
 					throw new RuntimeException("Please provide a simulation id.");
 				}
-				String username = userNameTextField.getText();
+				String username = userNameTextField.getText().trim();
 				if (username == null || username.length() == 0)
 				{
 					throw new RuntimeException("Please provide a user name.");
 				}
-				String datadir = dataDirTextField.getText();
-				if (datadir == null || datadir.length() == 0)
-				{
-					throw new RuntimeException("Please provide a user name.");
-				}
 				VCSimulationDataIdentifier vcDataId = new VCSimulationDataIdentifier(new VCSimulationIdentifier(new KeyValue(simId), new User(username, null)), 0);
-				File userDir = new File(datadir, username);
-				simData = new SimulationData(vcDataId, userDir, null);
-				readMeshMetricsFile(userDir, vcDataId, simId);
+				SimDataInfoHolder simDataInfoHolder = null;
+				String datadir = dataDirTextField.getText();
+				if (datadir == null || datadir.length() == 0){
+					simDataInfoHolder = createSimulationDataFromRemote(username, vcDataId);
+					datadir = simDataInfoHolder.userDir.getParent();
+					dataDirTextField.setText(datadir);
+				}else{
+					simDataInfoHolder = createSimulationDataFromDir(new File(datadir), username, vcDataId);					
+				}
+				simData = simDataInfoHolder.simData;
+				readMeshMetricsFile(simDataInfoHolder.userDir, vcDataId, simId);
 				usernames.add(username);
 				userNameTextField.setAutoCompletionWords(usernames);
 				datadirs.add(datadir);
