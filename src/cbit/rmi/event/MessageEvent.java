@@ -51,6 +51,7 @@ public MessageEvent(Object source, MessageSource messageSource, MessageData mess
 	this.messageData = messageData;
 }
 
+public abstract boolean isIntendedFor(User user);
 
 /**
  * Insert the method's description here.

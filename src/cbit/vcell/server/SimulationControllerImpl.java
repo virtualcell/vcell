@@ -96,7 +96,7 @@ private void onClientStatusTopic_SimulationJobStatus(VCMessage simJobStatusMessa
 	
 	SimulationJobStatusEvent simulationJobStatusEvent = new SimulationJobStatusEvent(
 			SimulationControllerImpl.this, simJobStatus.getVCSimulationIdentifier().getID(), 
-			simJobStatus, progress, timepoint);
+			simJobStatus, progress, timepoint, simJobStatus.getVCSimulationIdentifier().getOwner().getName());
 
 	fireSimulationJobStatusEvent(simulationJobStatusEvent);
 }
@@ -267,7 +267,7 @@ private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
 		int jobIndex = simTask.getSimulationJob().getJobIndex();
 		int taskID = simTask.getTaskID();
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
-		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null);
+		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null,vcSimID.getOwner().getName());
 		fireSimulationJobStatusEvent(event);
 	}
 }
@@ -323,7 +323,7 @@ private void onServiceControlTopic_StopSimulation(VCMessage message){
 		adminSessionLog.exception(e);
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, localVCellConnection.getUserLoginInfo().getUser());
 		SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, null, SchedulerStatus.FAILED, taskID, SimulationMessage.jobFailed(e.getMessage()), null, null);
-		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null);
+		SimulationJobStatusEvent event = new SimulationJobStatusEvent(this, Simulation.createSimulationID(simKey), newJobStatus, null, null,vcSimID.getOwner().getName());
 		fireSimulationJobStatusEvent(event);
 	}
 	
