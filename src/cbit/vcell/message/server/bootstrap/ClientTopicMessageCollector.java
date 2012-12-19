@@ -44,7 +44,6 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  */
 public class ClientTopicMessageCollector implements MessageCollector, TopicListener {
 	private EventListenerList listenerList = new EventListenerList();	
-	private User user = null;	
 	private VCMessagingService vcMessagingService = null;
 	private SessionLog log = null;
 
@@ -57,10 +56,9 @@ public class ClientTopicMessageCollector implements MessageCollector, TopicListe
  * @param serviceName java.lang.String
  * @param queueName java.lang.String
  */
-public ClientTopicMessageCollector(VCMessagingService vcMessagingService, User user0, SessionLog log0) {
+public ClientTopicMessageCollector(VCMessagingService vcMessagingService, SessionLog log) {
 	this.vcMessagingService = vcMessagingService;
-	this.user = user0;
-	this.log = log0;
+	this.log = log;
 }
 
 
@@ -148,52 +146,33 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 		}
 		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
 			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
-			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
-				StatusMessage statusMessage = new StatusMessage(message);
-				String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
-				if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
-					userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
-				}
-				
-				SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
-				if (newJobStatus == null) {
-					return;
-				}
-				
-				VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
-				Double progress = statusMessage.getProgress();
-				Double timePoint = statusMessage.getTimePoint();
-				log.print("---onTopicMessage[" + newJobStatus + ", progress=" + progress + ", timepoint=" + timePoint + "]");
-				
-				fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint));		
-			}else{
-				throw new RuntimeException("user "+user.getName()+" received a simstatus event message meant for user "+messageUserName);
+			StatusMessage statusMessage = new StatusMessage(message);
+			String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
+			if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
+				userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
 			}
+			
+			SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
+			if (newJobStatus == null) {
+				return;
+			}
+			
+			VCSimulationIdentifier vcSimID = newJobStatus.getVCSimulationIdentifier();
+			Double progress = statusMessage.getProgress();
+			Double timePoint = statusMessage.getTimePoint();
+			
+			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint, messageUserName));		
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {	
 			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
-			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
-				ExportEvent event = (ExportEvent)message.getObjectContent();
-				log.print("---onTopicMessage[ExportEvent[" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
-				fireExportEvent(event);
-			}else{
-				throw new RuntimeException("user "+user.getName()+" received an export event message meant for user "+messageUserName);
-			}
+			ExportEvent event = (ExportEvent)message.getObjectContent();
+			fireExportEvent(event);
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE)){
 			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
-			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
-				DataJobEvent event = (DataJobEvent)message.getObjectContent();
-				log.print("---onTopicMessage[DataEvent[vcdid=" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
-				fireMessageEvent(event);
-			}else{
-				throw new RuntimeException("user "+user.getName()+" received a data event message meant for user "+messageUserName);
-			}
+			DataJobEvent event = (DataJobEvent)message.getObjectContent();
+			fireMessageEvent(event);
 		} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
 			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
-			if (messageUserName.equals(user.getName()) || messageUserName.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
-				fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST));
-			}else{
-				throw new RuntimeException("user "+user.getName()+" received a broadcast event message meant for user "+messageUserName);
-			}
+			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST,messageUserName));
 		} else{
 			throw new Exception(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message.show());
 		}
@@ -208,9 +187,8 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
  * onException method comment.
  */
 public void init() {
-	String clientMessageFilter = MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR "+MessageConstants.USERNAME_PROPERTY + "='"+MessageConstants.USERNAME_PROPERTY_VALUE_ALL+"'";
-	VCMessageSelector selector = vcMessagingService.createSelector(clientMessageFilter);
-	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer for user "+user.getName(),MessageConstants.PREFETCH_LIMIT_CLIENT_TOPIC);
+	VCMessageSelector selector = null;
+	topicConsumer = new VCTopicConsumer(VCellTopic.ClientStatusTopic, this, selector, "Client Status Topic Consumer",MessageConstants.PREFETCH_LIMIT_CLIENT_TOPIC);
 	vcMessagingService.addMessageConsumer(topicConsumer);
 }
 

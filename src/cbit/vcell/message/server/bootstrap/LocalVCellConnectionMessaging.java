@@ -58,8 +58,6 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private VCMessageSession vcMessageSessionSim = null;
 	private VCMessageSession vcMessageSessionDb = null;
 	
-	private ClientTopicMessageCollector clientMessageCollector = null;
-	
 	private UserLoginInfo userLoginInfo;
 	
 	private SessionLog fieldSessionLog = null;
@@ -69,7 +67,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
 
 	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, String host, 
-		SessionLog sessionLog, VCMessagingService vcMessagingService, LocalVCellServer aLocalVCellServer) 
+		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector, LocalVCellServer aLocalVCellServer) 
 		throws RemoteException, FileNotFoundException {
 		
 		super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
@@ -78,9 +76,8 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		this.fieldSessionLog = sessionLog;
 		this.fieldLocalVCellServer = aLocalVCellServer;
 		this.vcMessagingService = vcMessagingService;
-		clientMessageCollector = new ClientTopicMessageCollector(vcMessagingService, userLoginInfo.getUser(), fieldSessionLog);
 		
-		messageService = new SimpleMessageService();
+		messageService = new SimpleMessageService(userLoginInfo.getUser());
 		clientMessageCollector.addMessageListener(messageService);
 		
 		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
@@ -88,12 +85,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
 		
 		performanceMonitoringFacility = new PerformanceMonitoringFacility(userLoginInfo.getUser(), sessionLog);	
-	}
-	
-public void init(){
-	clientMessageCollector.init();
-}
-	
+	}	
 
 
 /**
@@ -109,9 +101,6 @@ public void close() {
 	}
 	if (vcMessageSessionSim!=null){
 		vcMessageSessionSim.close();
-	}
-	if (clientMessageCollector!=null){
-		clientMessageCollector.close();
 	}
 }
 

@@ -12,6 +12,8 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
+import cbit.vcell.message.messages.MessageConstants;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/16/2006 3:55:11 PM)
@@ -20,6 +22,7 @@ import org.vcell.util.document.User;
 public class VCellMessageEvent extends MessageEvent {
 	public static final int VCELL_MESSAGEEVENT_TYPE_BROADCAST = 2001;
 	int eventType;
+	private String username;
 
 /**
  * VCellMessageEvent constructor comment.
@@ -27,9 +30,10 @@ public class VCellMessageEvent extends MessageEvent {
  * @param messageSource cbit.rmi.event.MessageSource
  * @param messageData cbit.rmi.event.MessageData
  */
-public VCellMessageEvent(Object source, String messageID, MessageData messageData,int messageType) {
+public VCellMessageEvent(Object source, String messageID, MessageData messageData,int messageType,String username) {
 	super(source, new MessageSource(source, messageID), messageData);
 	eventType = messageType;
+	this.username = username;
 }
 
 
@@ -50,6 +54,14 @@ public int getEventTypeID() {
  */
 public User getUser() {
 	return null;
+}
+
+@Override
+public boolean isIntendedFor(User user){
+	if (user == null || username==null || username.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+		return true;
+	}
+	return user.equals(username);
 }
 
 
