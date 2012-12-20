@@ -149,6 +149,7 @@ public static String readFileToString(File file) throws IOException {
 public static File getRelativePath(File sourceDir, File targetFile, boolean bAllowAbsolutePaths) throws IOException {
 //	System.out.println("sourceDir = "+sourceDir.getPath());
 //	System.out.println("targetFile = "+targetFile.getPath());
+	File originalSourceDir = sourceDir;
 	int counter = 0;
 	while (sourceDir!=null && !targetFile.getPath().startsWith(sourceDir.getPath())){
 		sourceDir = sourceDir.getParentFile();
@@ -158,7 +159,7 @@ public static File getRelativePath(File sourceDir, File targetFile, boolean bAll
 		if (bAllowAbsolutePaths){
 			return targetFile;
 		}else{
-			throw new IOException("cannot find relative path between '"+sourceDir.getPath()+"' and '"+targetFile.getPath()); 
+			throw new IOException("cannot find relative path between '"+originalSourceDir.getPath()+"' and '"+targetFile.getPath()); 
 		}
 	}
 	String sourcePath = sourceDir.getPath();
