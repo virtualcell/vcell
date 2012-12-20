@@ -10,6 +10,8 @@
 
 package cbit.rmi.event;
 
+import org.vcell.util.document.User;
+
 import cbit.vcell.mongodb.VCMongoMessage;
 
 
@@ -20,17 +22,20 @@ import cbit.vcell.mongodb.VCMongoMessage;
  */
 public class SimpleMessageService implements MessageService, MessageListener {
 	private MessageQueue messageQueue = new MessageQueue();
+	private User user = null;
 /**
  * Insert the method's description here.
  * Creation date: (11/14/2000 12:19:31 AM)
  */
-public SimpleMessageService() {
+public SimpleMessageService(User user) {
+	this.user = user;
 }
 
 public void messageEvent(MessageEvent event) {
-	VCMongoMessage.sendClientMessageEventQueued(event);
-	messageQueue.push(event);
-	
+	if (event.isIntendedFor(user)){
+		VCMongoMessage.sendClientMessageEventQueued(event);
+		messageQueue.push(event);
+	}	
 }
 
 public MessageEvent[] getMessageEvents() {

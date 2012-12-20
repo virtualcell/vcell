@@ -169,6 +169,13 @@ public String getUserName() {
 	return getUser().getName();
 }
 
+@Override
+public boolean isIntendedFor(User user){
+	if (user == null || getUser()==null){
+		return true;
+	}
+	return user.equals(getUser());
+}
 
 /**
  * Insert the method's description here.
