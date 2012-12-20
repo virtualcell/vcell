@@ -1,0 +1,215 @@
+Index: src/cbit/vcell/message/server/db/DatabaseServer.java
+===================================================================
+--- src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12556)
++++ src/cbit/vcell/message/server/db/DatabaseServer.java	(revision 12555)
+@@ -95,7 +95,7 @@
+ 			logdir = args[1];
+ 		}
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+-		initLog(serviceInstanceStatus, logdir);
++		//initLog(serviceInstanceStatus, logdir);
+ 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
+ 
+ 		//
+Index: src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java
+===================================================================
+--- src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12556)
++++ src/cbit/vcell/message/server/dispatcher/SimulationDispatcher.java	(revision 12555)
+@@ -517,8 +517,7 @@
+  			
+ 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
+ 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
+-			
+-			initLog(serviceInstanceStatus, logdir);
++			//		initLog(logdir);
+ 
+ 			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+ 
+Index: src/cbit/vcell/message/server/sim/LocalSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12556)
++++ src/cbit/vcell/message/server/sim/LocalSimulationWorker.java	(revision 12555)
+@@ -206,11 +206,11 @@
+ 		
+ 		VCMongoMessage.serviceStartup(ServiceName.localWorker, new Integer(serviceOrdinal), args);
+ 		String logdir = null;
+-		if (args.length >= 2) {
+-			logdir = args[1];
++		if (args.length > 3) {
++			logdir = args[3];
+ 		}
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.LOCALCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+-		initLog(serviceInstanceStatus, logdir);
++		//initLog(logdir);
+ 		
+ 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+ 		
+Index: src/cbit/vcell/message/server/sim/HtcSimulationWorker.java
+===================================================================
+--- src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12556)
++++ src/cbit/vcell/message/server/sim/HtcSimulationWorker.java	(revision 12555)
+@@ -295,7 +295,7 @@
+ 		}
+ 		
+ 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+-		initLog(serviceInstanceStatus, logdir);
++		//initLog(logdir);
+ 		
+ 		//
+ 		// JMX registration
+Index: src/cbit/vcell/message/server/data/SimDataServer.java
+===================================================================
+--- src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12556)
++++ src/cbit/vcell/message/server/data/SimDataServer.java	(revision 12555)
+@@ -139,7 +139,7 @@
+ 			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DATA, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+ 			serviceName = ServiceName.simData;
+ 		}
+-		initLog(serviceInstanceStatus, logdir);
++		//initLog(serviceInstanceStatus, logdir);
+ 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
+ 
+ 		//
+Index: src/cbit/vcell/message/server/ServiceProvider.java
+===================================================================
+--- src/cbit/vcell/message/server/ServiceProvider.java	(revision 12556)
++++ src/cbit/vcell/message/server/ServiceProvider.java	(revision 12555)
+@@ -14,8 +14,6 @@
+ import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+ import java.io.PrintStream;
+-import java.text.SimpleDateFormat;
+-import java.util.Date;
+ 
+ import org.vcell.util.SessionLog;
+ 
+@@ -150,25 +148,26 @@
+ 	}
+ }
+ 
+-public static void initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
++protected static void initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
+ 	if (serviceInstanceStatus == null) {
+ 		throw new RuntimeException("initLog: serviceInstanceStatus can't be null");		
+ 	}
+-	if (logDirectory != null && !logDirectory.trim().equals("-")) {
++	if (logDirectory != null) {
+ 		File logdir = new File(logDirectory);
+ 		if (!logdir.exists()) {
+ 			throw new RuntimeException("Log directory doesn't exist");
+ 		}
+ 			
+-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");
+-		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getType().getName()+"_"+serviceInstanceStatus.getOrdinal() + "_"+dateFormat.format(new Date())+".log");
++		// log file name:
++		// hostname_A_Data_0.log : alpha first data on hostname
++		// hostname_B_Db_0.log : beta first database on hostname
++		// hostname_R_Export_0.log : rel first export on hostname
++		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getOrdinal() + ".log");
+ 		java.io.PrintStream ps = new PrintStream(new FileOutputStream(logfile), true); // don't append, auto flush
+-		System.out.println("logging to file " + logfile.getAbsolutePath());
++		System.out.println("log file is " + logfile.getAbsolutePath());
+ 		System.setOut(ps);
+ 		System.setErr(ps);
+-	}else{
+-		System.out.println("logging to stdout");
+-	}
++	}	
+ }
+ 
+ 
+Index: src/cbit/vcell/message/server/ServiceSpec.java
+===================================================================
+--- src/cbit/vcell/message/server/ServiceSpec.java	(revision 12556)
++++ src/cbit/vcell/message/server/ServiceSpec.java	(revision 12555)
+@@ -35,8 +35,7 @@
+ 		PBSCOMPUTE ("PbsC"),	// submit everything to PBS
+ 		LOCALCOMPUTE ("LclC"),   // local pde and ode
+ 		SERVERMANAGER ("ServerManager"),
+-		TESTING_SERVICE ("TestingService"),
+-		RMI ("Rmi");
++		TESTING_SERVICE ("TestingService");
+ 		
+ 		private final String typeName;
+ 		ServiceType(String tn) {
+Index: src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java
+===================================================================
+--- src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java	(revision 12556)
++++ src/cbit/vcell/message/server/bootstrap/LocalVCellBootstrap.java	(revision 12555)
+@@ -10,7 +10,10 @@
+ 
+ package cbit.vcell.message.server.bootstrap;
+ 
++import java.beans.ConstructorProperties;
+ import java.io.FileNotFoundException;
++import java.io.FileOutputStream;
++import java.io.PrintStream;
+ import java.lang.management.ManagementFactory;
+ import java.rmi.RemoteException;
+ import java.rmi.server.UnicastRemoteObject;
+@@ -27,16 +30,11 @@
+ import org.vcell.util.StdoutSessionLog;
+ import org.vcell.util.document.User;
+ import org.vcell.util.document.UserInfo;
+-import org.vcell.util.document.VCellServerID;
+ 
+ import cbit.sql.ConnectionFactory;
+ import cbit.sql.KeyFactory;
+ import cbit.sql.OraclePoolingConnectionFactory;
+ import cbit.vcell.message.VCMessagingService;
+-import cbit.vcell.message.server.ManageUtils;
+-import cbit.vcell.message.server.ServiceInstanceStatus;
+-import cbit.vcell.message.server.ServiceProvider;
+-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+ import cbit.vcell.message.server.jmx.BootstrapMXBean;
+@@ -159,16 +157,24 @@
+ public static void main(java.lang.String[] args) {
+ 	String MESSAGING = "messaging";
+ 	if (args.length != 4) {
+-		System.out.println("usage: cbit.vcell.server.LocalVCellBootstrap host port messaging [logdir|-] \n");
+-		System.out.println(" example -  cbit.vcell.server.LocalVCellBootstrap nrcam.vcell.uchc.edu 40099 messaging /share/apps/vcell/logs");
++		System.out.println("usage: cbit.vcell.server.LocalVCellBootstrap host port messaging [logfile|-] \n");
++		System.out.println(" example -  cbit.vcell.server.LocalVCellBootstrap nrcam.vcell.uchc.edu 40099 messaging server.log");
+ 		System.exit(1);
+ 	}
+ 	try {
+ 		//
++		// Redirect output to the logfile (append if exists)
++		//
++		if (!args[3].equals("-")){
++			System.setOut(new PrintStream(new FileOutputStream(args[3], true), true));
++		}
++		
++		//
+ 		// Create and install a security manager
+ 		//
+ 		//System.setSecurityManager(new RMISecurityManager());
+ 
++		
+ 		Thread.currentThread().setName("Application");
+ 		new PropertyLoader();
+ 
+@@ -190,19 +196,9 @@
+ 			System.out.println("RMI Registry using port ("+rmiPort+") from propertyfile ");
+ 		}
+ 		
+-		Integer serviceOrdinal = new Integer(rmiPort);
+-		VCMongoMessage.serviceStartup(ServiceName.bootstrap, serviceOrdinal, args);
+-		
++
++		VCMongoMessage.serviceStartup(ServiceName.bootstrap, new Integer(rmiPort), args);
+ 		//
+-		// Redirect output to the logfile (append if exists)
+-		//
+-		if (args[3]!=null){
+-			String logdir = args[3];
+-			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.RMI, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+-			ServiceProvider.initLog(serviceInstanceStatus, logdir);
+-		}
+-		
+-		//
+ 		// decide whether it will be a Primary or Slave Server
+ 		//
+ 		String serverConfig = args[2];

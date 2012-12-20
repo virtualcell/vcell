@@ -139,7 +139,7 @@ public static void main(java.lang.String[] args) {
 			serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DATA, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 			serviceName = ServiceName.simData;
 		}
-		//initLog(serviceInstanceStatus, logdir);
+		initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(serviceName, new Integer(serviceOrdinal), args);
 
 		//

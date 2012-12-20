@@ -517,7 +517,8 @@ public class SimulationDispatcher extends ServiceProvider {
  			
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
 					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
-			//		initLog(logdir);
+			
+			initLog(serviceInstanceStatus, logdir);
 
 			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 
