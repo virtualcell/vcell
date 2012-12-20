@@ -113,4 +113,13 @@ public User getUser() {
 public VCDataJobID getVcDataJobID() {
 	return vcDataJobID;
 }
+
+@Override
+public boolean isIntendedFor(User user){
+	if (user == null || getUser()==null){
+		return true;
+	}
+	return user.equals(getUser());
+}
+
 }
