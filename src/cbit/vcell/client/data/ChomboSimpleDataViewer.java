@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -41,6 +42,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -133,6 +135,32 @@ public class ChomboSimpleDataViewer extends JFrame {
 			refreshTable();
 		}
 	}
+	
+	private static class SolTableCellRenderer extends DefaultTableCellRenderer
+	{
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			// TODO Auto-generated method stub
+			Component label = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+					row, column);
+			setForeground(Color.black);
+			if (!isSelected)
+			{
+				if (value instanceof Number)
+				{
+					if (((Number) value).doubleValue() == BASEFAB_REAL_SETVAL)
+					{
+						setForeground(Color.gray);
+					}
+				}
+			}
+			return label;
+		}
+		
+	}
+	
 	private static class SolTableModel extends AbstractTableModel
 	{
 		private static final int COL_INDEX = 0;
@@ -148,6 +176,11 @@ public class ChomboSimpleDataViewer extends JFrame {
 		@Override
 		public int getColumnCount() {
 			return cols.length;
+		}
+
+		@Override
+		public Class<?> getColumnClass(int columnIndex) {
+			return Number.class;
 		}
 
 		@Override
@@ -259,6 +292,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 		}
 	}
 	
+	public static final double BASEFAB_REAL_SETVAL = 1.23456789e+300;
+	public static final String ERROR_VAR_SUFFIX = "__error";
 	private JPanel mainPanel = new JPanel();
 	private JList varList = new JList();
 	private JButton okButton = new JButton("Go");
@@ -302,6 +337,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
+		gbc.weightx = 0.2;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(2, 2, 2, 2);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		solLabel.setFont(solLabel.getFont().deriveFont(Font.BOLD));
@@ -310,7 +347,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(2, 2, 2, 20);
+		gbc.insets = new Insets(2, 2, 2, 10);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		solPanel.add(timePlotButton, gbc);
 		
@@ -528,6 +565,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 		BeanUtils.centerOnScreen(this);
 		
 		solTable.setModel(solTableModel);
+		solTable.setDefaultRenderer(Number.class, new SolTableCellRenderer());
 		meshMetricsTable.setModel(meshMetricsTableModel);
 		timePlotTable.setModel(timePlotTableModel);
 		varList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -621,7 +659,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 		{
 			userNameTextField.setText("fgao1");
 			dataDirTextField.setText("C:\\chombo\\data\\users\\");
-			simIdField.setText("77396269");
+//			simIdField.setText("77396269");
+			simIdField.setText("77764707");
 		}
 	}
 	
