@@ -16,7 +16,6 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.UserLoginInfo;
 
 /**
@@ -65,8 +64,7 @@ public Object rpc(ServiceType serviceType, String methodName, Object[] args, boo
  */
 public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
 	VCRpcRequest vcRpcRequest = new VCRpcRequest(userLoginInfo.getUser(), serviceType, methodName, args);
-	VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo);
 	int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, "120000")); // default to 2 minutes.
-	return vcMessagingSession.sendRpcMessage(queue, vcRpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
+	return vcMessagingSession.sendRpcMessage(queue, vcRpcRequest, returnRequired, timeoutMS, specialProperties, specialValues, userLoginInfo);
 }
 }
