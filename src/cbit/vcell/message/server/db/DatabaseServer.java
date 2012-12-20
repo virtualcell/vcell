@@ -95,7 +95,7 @@ public static void main(java.lang.String[] args) {
 			logdir = args[1];
 		}
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.DB, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		//initLog(serviceInstanceStatus, logdir);
+		initLog(serviceInstanceStatus, logdir);
 		VCMongoMessage.serviceStartup(ServiceName.database, new Integer(serviceOrdinal), args);
 
 		//

@@ -295,7 +295,7 @@ public static void main(java.lang.String[] args) {
 		}
 		
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.PBSCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		//initLog(logdir);
+		initLog(serviceInstanceStatus, logdir);
 		
 		//
 		// JMX registration
