@@ -98,7 +98,7 @@ public boolean isIntendedFor(User user){
 	if (user == null || username==null || username.equalsIgnoreCase(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
 		return true;
 	}
-	return user.equals(username);
+	return user.getName().equals(username);
 }
 
 /**
