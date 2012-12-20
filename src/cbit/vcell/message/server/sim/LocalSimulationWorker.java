@@ -206,11 +206,11 @@ public static void main(java.lang.String[] args) {
 		
 		VCMongoMessage.serviceStartup(ServiceName.localWorker, new Integer(serviceOrdinal), args);
 		String logdir = null;
-		if (args.length > 3) {
-			logdir = args[3];
+		if (args.length >= 2) {
+			logdir = args[1];
 		}
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.LOCALCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-		//initLog(logdir);
+		initLog(serviceInstanceStatus, logdir);
 		
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
