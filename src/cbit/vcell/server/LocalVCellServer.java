@@ -27,6 +27,7 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.bootstrap.ClientTopicMessageCollector;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionMessaging;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -49,6 +50,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private ExportServiceImpl exportServiceImpl = null;
 	private java.util.Date bootTime = new java.util.Date();
 	private SimulationDatabase simulationDatabase = null;
+	private ClientTopicMessageCollector clientTopicMessageCollector = null;
 
 	private long CLEANUP_INTERVAL = 600*1000;	
 	
@@ -60,8 +62,12 @@ public LocalVCellServer(String argHostName, VCMessagingService vcMessagingServic
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellServer,0));
 	this.hostName = argHostName;
 	this.vcMessagingService = vcMessagingService;
-	adminDbServer = dbServer;
 	this.sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
+	if (this.vcMessagingService!=null){
+		clientTopicMessageCollector = new ClientTopicMessageCollector(vcMessagingService,sessionLog);
+		clientTopicMessageCollector.init();
+	}
+	adminDbServer = dbServer;
 	this.dataCachetable = new Cachetable(10*Cachetable.minute);
 	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
@@ -92,8 +98,7 @@ private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws
 		if (vcMessagingService == null){
 			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), simulationDatabase, getDataSetControllerImpl(), getExportServiceImpl());
 		} else {
-			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), vcMessagingService, this);
-			((LocalVCellConnectionMessaging)localConn).init();
+			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), vcMessagingService, clientTopicMessageCollector, this);
 			VCMongoMessage.sendClientConnectionNew(localConn.getUserLoginInfo());
 		}
 		vcellConnectionList.addElement(localConn);
