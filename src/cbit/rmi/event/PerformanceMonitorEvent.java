@@ -83,6 +83,14 @@ public User getUser() {
 }
 
 @Override
+public boolean isIntendedFor(User user){
+	if (user == null || getUser()==null){
+		return true;
+	}
+	return user.equals(getUser());
+}
+
+@Override
 public boolean isSupercededBy(MessageEvent messageEvent) {
 	return false;
 }

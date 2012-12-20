@@ -41,15 +41,14 @@ import cbit.vcell.simdata.LocalDataSetController;
  * Creation date: (Unknown)
  * @author: Jim Schaff.
  */
-@SuppressWarnings("serial")
 public class LocalVCellConnection implements VCellConnection, ExportListener, DataJobListener {
 	private SimulationController simulationController = null;
 	private SimulationControllerImpl simulationControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
 	private DataSetControllerImpl dataSetControllerImpl = null;
 	private UserMetaDbServer userMetaDbServer = null;
-	private SimpleMessageService messageService = new SimpleMessageService();
-	private SimpleMessageCollector messageCollector = new SimpleMessageCollector();
+	private SimpleMessageService messageService = null;
+	private SimpleMessageCollector messageCollector = null;
 	//
 	private UserLoginInfo userLoginInfo;
 
@@ -75,7 +74,8 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, String host, SessionLog
 	this.fieldSessionLog = sessionLog;
 	this.simulationControllerImpl = new SimulationControllerImpl(sessionLog, simulationDatabase, this);
 	sessionLog.print("new LocalVCellConnection(" + userLoginInfo.getUserName() + ")");
-	
+	messageService = new SimpleMessageService(userLoginInfo.getUser());
+	messageCollector = new SimpleMessageCollector();
 	messageCollector.addMessageListener(messageService);
 	
 	this.exportServiceImpl = exportServiceImpl;
