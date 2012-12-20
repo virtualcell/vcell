@@ -10,10 +10,7 @@
 
 package cbit.vcell.message.server.bootstrap;
 
-import java.beans.ConstructorProperties;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -30,11 +27,16 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServiceInstanceStatus;
+import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.message.server.jmx.BootstrapMXBean;
@@ -157,24 +159,16 @@ public java.lang.String getVCellSoftwareVersion() {
 public static void main(java.lang.String[] args) {
 	String MESSAGING = "messaging";
 	if (args.length != 4) {
-		System.out.println("usage: cbit.vcell.server.LocalVCellBootstrap host port messaging [logfile|-] \n");
-		System.out.println(" example -  cbit.vcell.server.LocalVCellBootstrap nrcam.vcell.uchc.edu 40099 messaging server.log");
+		System.out.println("usage: cbit.vcell.server.LocalVCellBootstrap host port messaging [logdir|-] \n");
+		System.out.println(" example -  cbit.vcell.server.LocalVCellBootstrap nrcam.vcell.uchc.edu 40099 messaging /share/apps/vcell/logs");
 		System.exit(1);
 	}
 	try {
-		//
-		// Redirect output to the logfile (append if exists)
-		//
-		if (!args[3].equals("-")){
-			System.setOut(new PrintStream(new FileOutputStream(args[3], true), true));
-		}
-		
 		//
 		// Create and install a security manager
 		//
 		//System.setSecurityManager(new RMISecurityManager());
 
-		
 		Thread.currentThread().setName("Application");
 		new PropertyLoader();
 
@@ -196,8 +190,18 @@ public static void main(java.lang.String[] args) {
 			System.out.println("RMI Registry using port ("+rmiPort+") from propertyfile ");
 		}
 		
-
-		VCMongoMessage.serviceStartup(ServiceName.bootstrap, new Integer(rmiPort), args);
+		Integer serviceOrdinal = new Integer(rmiPort);
+		VCMongoMessage.serviceStartup(ServiceName.bootstrap, serviceOrdinal, args);
+		
+		//
+		// Redirect output to the logfile (append if exists)
+		//
+		if (args[3]!=null){
+			String logdir = args[3];
+			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.RMI, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+			ServiceProvider.initLog(serviceInstanceStatus, logdir);
+		}
+		
 		//
 		// decide whether it will be a Primary or Slave Server
 		//

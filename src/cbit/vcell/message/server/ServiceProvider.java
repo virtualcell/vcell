@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.vcell.util.SessionLog;
 
@@ -148,26 +150,25 @@ public void stopService() {
 	}
 }
 
-protected static void initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
+public static void initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
 	if (serviceInstanceStatus == null) {
 		throw new RuntimeException("initLog: serviceInstanceStatus can't be null");		
 	}
-	if (logDirectory != null) {
+	if (logDirectory != null && !logDirectory.trim().equals("-")) {
 		File logdir = new File(logDirectory);
 		if (!logdir.exists()) {
 			throw new RuntimeException("Log directory doesn't exist");
 		}
 			
-		// log file name:
-		// hostname_A_Data_0.log : alpha first data on hostname
-		// hostname_B_Db_0.log : beta first database on hostname
-		// hostname_R_Export_0.log : rel first export on hostname
-		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getOrdinal() + ".log");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");
+		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getType().getName()+"_"+serviceInstanceStatus.getOrdinal() + "_"+dateFormat.format(new Date())+".log");
 		java.io.PrintStream ps = new PrintStream(new FileOutputStream(logfile), true); // don't append, auto flush
-		System.out.println("log file is " + logfile.getAbsolutePath());
+		System.out.println("logging to file " + logfile.getAbsolutePath());
 		System.setOut(ps);
 		System.setErr(ps);
-	}	
+	}else{
+		System.out.println("logging to stdout");
+	}
 }
 
 
