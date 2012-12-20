@@ -35,7 +35,8 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		PBSCOMPUTE ("PbsC"),	// submit everything to PBS
 		LOCALCOMPUTE ("LclC"),   // local pde and ode
 		SERVERMANAGER ("ServerManager"),
-		TESTING_SERVICE ("TestingService");
+		TESTING_SERVICE ("TestingService"),
+		RMI ("Rmi");
 		
 		private final String typeName;
 		ServiceType(String tn) {
