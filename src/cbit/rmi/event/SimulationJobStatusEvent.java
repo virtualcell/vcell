@@ -12,6 +12,7 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -24,18 +25,20 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public class SimulationJobStatusEvent extends MessageEvent {
 	private SimulationJobStatus jobStatus = null;
 	private Double progress = null;
-	private Double timePoint = null;	
+	private Double timePoint = null;
+	private String username = null;
 /**
  * SimulationStatusEvent constructor comment.
  * @param source java.lang.Object
  * @param messageSource cbit.rmi.event.MessageSource
  * @param messageData cbit.rmi.event.MessageData
  */
-public SimulationJobStatusEvent(Object source, String simID, SimulationJobStatus jobStatus0, Double progress0, Double timePoint0) {
+public SimulationJobStatusEvent(Object source, String simID, SimulationJobStatus jobStatus0, Double progress0, Double timePoint0, String username) {
 	super(source, new MessageSource(source, simID), new MessageData(new Double[] { progress0, timePoint0 }));
 	jobStatus = jobStatus0;
 	progress = progress0;
 	timePoint = timePoint0;
+	this.username = username;
 }
 /**
  * Insert the method's description here.
@@ -89,6 +92,15 @@ public Double getTimepoint() {
 public User getUser() {
 	return null;
 }
+
+@Override
+public boolean isIntendedFor(User user){
+	if (user == null || username==null || username.equalsIgnoreCase(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+		return true;
+	}
+	return user.getName().equals(username);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (2/10/2004 2:26:56 PM)
