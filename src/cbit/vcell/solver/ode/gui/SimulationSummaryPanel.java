@@ -78,6 +78,7 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 				}
 				if (event.getPropertyName().equals("solverTaskDescription")) {
 					displayTask();
+					displayMesh();
 				}
 				if (event.getPropertyName().equals("meshSpecification")) {
 					displayMesh();
