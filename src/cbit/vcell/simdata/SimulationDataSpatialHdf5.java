@@ -29,12 +29,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.solver.SolverUtilities;
 
 public class SimulationDataSpatialHdf5
 {
