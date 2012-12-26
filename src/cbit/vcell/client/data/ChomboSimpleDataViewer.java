@@ -38,11 +38,14 @@ import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import oracle.net.aso.l;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -62,8 +65,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataSetIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.SimulationDataSpatialHdf5;
+import cbit.vcell.simdata.SimulationDataSpatialHdf5.SimDataSet;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -81,8 +87,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 	
 	private static class MeshMetricsTableModel extends AbstractTableModel
 	{
-		private List<String> cols = new ArrayList<String>();
-		private List<double[]> values = new ArrayList<double[]>();
+		private String[] cols = new String[0];
+		private List<Number[]> values = new ArrayList<Number[]>();
 		
 		@Override
 		public int getRowCount() {
@@ -91,31 +97,27 @@ public class ChomboSimpleDataViewer extends JFrame {
 
 		@Override
 		public int getColumnCount() {
-			return cols.size();
+			return cols.length;
 		}
 
-		private boolean isIndexColumn(int columnIndex)
-		{
-			String col = cols.get(columnIndex);
-			return col.equalsIgnoreCase("i") || col.equalsIgnoreCase("j")
-					|| col.equalsIgnoreCase("k") || col.equalsIgnoreCase("index");
-		}
+//		private boolean isIndexColumn(int columnIndex)
+//		{
+//			String col = cols.get(columnIndex);
+//			return col.equalsIgnoreCase("i") || col.equalsIgnoreCase("j")
+//					|| col.equalsIgnoreCase("k") || col.equalsIgnoreCase("index");
+//		}
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			double d = values.get(rowIndex)[columnIndex];
-			if (isIndexColumn(columnIndex))
-			{
-				return (int)d;
-			}
+			Number d = values.get(rowIndex)[columnIndex];
 			return d;
 		}
 
 		@Override
 		public String getColumnName(int column) {
-			return cols.get(column);
+			return cols[column];
 		}
 		
-		public void setData(List<String> cols, List<double[]> values)
+		public void setData(String[] cols, List<Number[]> values)
 		{
 			this.cols = cols;
 			this.values = values;
@@ -130,7 +132,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 		
 		public void clear()
 		{
-			cols.clear();
+			cols = new String[0];
 			values.clear();
 			refreshTable();
 		}
@@ -293,7 +295,6 @@ public class ChomboSimpleDataViewer extends JFrame {
 	}
 	
 	public static final double BASEFAB_REAL_SETVAL = 1.23456789e+300;
-	public static final String ERROR_VAR_SUFFIX = "__error";
 	private JPanel mainPanel = new JPanel();
 	private JList varList = new JList();
 	private JButton okButton = new JButton("Go");
@@ -311,7 +312,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 	private JComboBox timeComboBox = new JComboBox();
 	private JLabel solLabel = new JLabel("Solution");
 	private JLabel timePlotLabel = new JLabel("Time Plot");
-	private SimulationData simData = null;
+	private SimulationDataSpatialHdf5 simData = null;
 	private EventListener listener = new EventListener();
 	private Set<String> simIds = new HashSet<String>();
 	private Set<String> usernames = new HashSet<String>();
@@ -321,6 +322,11 @@ public class ChomboSimpleDataViewer extends JFrame {
 	private MeshMetricsTableModel meshMetricsTableModel = new MeshMetricsTableModel();
 	private static boolean debug = false;
 	private JPanel timePlotPanel;
+	private JTextField maxErrorTextField = new JTextField();
+	private JTextField l2ErrorTextField = new JTextField();
+	private JTextField meanTextField = new JTextField();
+	private JTextField sumVolFracTextField = new JTextField();
+	private JPanel errorPanel = null;
 	
 	private ChomboSimpleDataViewer()
 	{
@@ -329,6 +335,87 @@ public class ChomboSimpleDataViewer extends JFrame {
 		initialize();
 	}
 
+	private JPanel getErrorPanel()
+	{
+		if (errorPanel == null)
+		{
+			errorPanel = new JPanel();
+			errorPanel.setLayout(new GridBagLayout());
+			errorPanel.setBorder(GuiConstants.TAB_PANEL_BORDER);
+			
+			meanTextField.setEditable(false);
+			sumVolFracTextField.setEditable(false);
+			maxErrorTextField.setEditable(false);
+			l2ErrorTextField.setEditable(false);
+			
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			JLabel label = new JLabel("Mean");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			errorPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			errorPanel.add(meanTextField, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			label = new JLabel("Vol Frac Sum");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			errorPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			errorPanel.add(sumVolFracTextField, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			label = new JLabel("Max Error");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			errorPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			errorPanel.add(maxErrorTextField, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 1;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			label = new JLabel("Relative L2 Error");
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			errorPanel.add(label, gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(2, 2, 2, 2);
+			errorPanel.add(l2ErrorTextField, gbc);
+		}
+		
+		return errorPanel;
+	}
+	
 	private JPanel createSolPanel()
 	{
 		JPanel solPanel = new JPanel(new GridBagLayout());
@@ -337,7 +424,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.weightx = 0.2;
+		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(2, 2, 2, 2);
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -350,19 +437,28 @@ public class ChomboSimpleDataViewer extends JFrame {
 		gbc.insets = new Insets(2, 2, 2, 10);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		solPanel.add(timePlotButton, gbc);
-		
+				
 		++ gridy;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.gridheight = GridBagConstraints.REMAINDER;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.insets = new Insets(2, 2, 2, 2);
 		gbc.fill = GridBagConstraints.BOTH;
 		solPanel.add(new JScrollPane(solTable), gbc);
 		
+		++ gridy;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(2, 2, 2, 2);
+		solPanel.add(getErrorPanel(), gbc);
+
 		return solPanel;
 	}
 	
@@ -640,9 +736,9 @@ public class ChomboSimpleDataViewer extends JFrame {
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (value instanceof DataIdentifier)
+				if (value instanceof DataSetIdentifier)
 				{
-					setText(((DataIdentifier) value).getName());
+					setText(((DataSetIdentifier) value).getName());
 				}
 				return this;
 			}
@@ -665,34 +761,33 @@ public class ChomboSimpleDataViewer extends JFrame {
 	}
 	
 	private static class SimDataInfoHolder{
-		public SimulationData simData;
+		public SimulationDataSpatialHdf5 simData;
 		public File userDir;
-		public SimDataInfoHolder(SimulationData simData, File userDir) {
+		public SimDataInfoHolder(SimulationDataSpatialHdf5 simData, File userDir) {
 			this.simData = simData;
 			this.userDir = userDir;
 		}
-		
 	}
 	private SimDataInfoHolder createSimulationDataFromDir(File dataDir,String userid,VCSimulationDataIdentifier vcDataId) throws Exception{
 		File userDir = new File(dataDir, userid);
-		return new SimDataInfoHolder(new SimulationData(vcDataId, userDir, null),userDir);
+		return new SimDataInfoHolder(new SimulationDataSpatialHdf5(vcDataId, userDir, null),userDir);
 	}
 	private JPasswordField jPasswordField = new JPasswordField();
 	private SimDataInfoHolder createSimulationDataFromRemote(String userid,VCSimulationDataIdentifier vcDataId) throws Exception{
 		SimDataInfoHolder simDataInfoHolder = null;
-		SimulationData simData = null;
+		SimulationDataSpatialHdf5 simData = null;
 		try{
 			//Try well known primary data dir from windows
 //			if(true){throw new Exception();}
-			File userDir = new File("\\\\cfs01\\ifs\\raid\\vcell\\users",userid);
-			simData = new SimulationData(vcDataId, userDir, null);
+			File userDir = new File("\\\\cfs01.cam.uchc.edu\\ifs\\raid\\vcell\\users",userid);
+			simData = new SimulationDataSpatialHdf5(vcDataId, userDir, null);
 			simDataInfoHolder = new SimDataInfoHolder(simData,userDir);
 		}catch(Exception e){
 			try{
 				//Try well known secondary data dir from windows
 //				if(true){throw new Exception();}
-				File userDir = new File("\\\\cfs02\\ifs\\raid\\vcell\\users",userid);
-				simData = new SimulationData(vcDataId,userDir, null);
+				File userDir = new File("\\\\cfs02.cam.uchc.edu\\raid\\vcell\\users",userid);
+				simData = new SimulationDataSpatialHdf5(vcDataId,userDir, null);
 				simDataInfoHolder = new SimDataInfoHolder(simData,userDir);					
 			}catch(Exception e2){
 				//try ssh download from linux server
@@ -707,7 +802,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 	        		throw new Exception("Couldn't make local dir "+tmpdir);
 	        	}				
 	        	File downloadDir = SimDataConnection.downloadSimData(tmpdir, new String(jPasswordField.getPassword()), userid, vcDataId.getSimulationKey(), 0, false);
-				simData = new SimulationData(vcDataId,downloadDir, null);
+				simData = new SimulationDataSpatialHdf5(vcDataId,downloadDir, null);
 				simDataInfoHolder = new SimDataInfoHolder(simData,downloadDir);
 			}
 		}
@@ -753,7 +848,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 					simDataInfoHolder = createSimulationDataFromDir(new File(datadir), username, vcDataId);					
 				}
 				simData = simDataInfoHolder.simData;
-				readMeshMetricsFile(simDataInfoHolder.userDir, vcDataId, simId);
+				simData.readVarAndFunctionDataIdentifiers();
 				usernames.add(username);
 				userNameTextField.setAutoCompletionWords(usernames);
 				datadirs.add(datadir);
@@ -774,22 +869,19 @@ public class ChomboSimpleDataViewer extends JFrame {
 					dcm.addElement(t);
 				}
 				timeComboBox.setModel(dcm);
-				DataIdentifier[] dis = simData.getVarAndFunctionDataIdentifiers(null);
+				meshMetricsTableModel.setData(simData.getChomboMesh().getMetricsColumnNames(), simData.getChomboMesh().getMetricsNumbers());
+				List<DataSetIdentifier> dsiList = simData.getDataSetIdentifiers();
 				DefaultListModel dlm = new DefaultListModel();
-				for (DataIdentifier di : dis)
+				for (DataSetIdentifier dsi : dsiList)
 				{
-					if (!di.isFunction() && !di.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)
-							&& !di.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX))
-					{
-						dlm.addElement(di);
-					}
+					dlm.addElement(dsi);
 				}
 				varList.setModel(dlm);
 				if (times.length > 0)
 				{
 					timeComboBox.setSelectedIndex(0);
 				}
-				if (dis.length > 0)
+				if (dsiList.size() > 0)
 				{
 					varList.setSelectedIndex(0);
 				}
@@ -806,7 +898,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 			return;
 		}
 		final int index = (Integer) solTable.getValueAt(solTable.getSelectedRow(), SolTableModel.COL_INDEX);
-		DataIdentifier selectedVar = (DataIdentifier)varList.getSelectedValue();
+		DataSetIdentifier selectedVar = (DataSetIdentifier)varList.getSelectedValue();
 		final String varName = selectedVar.getName();
 		
 		AsynchClientTask task0 = new AsynchClientTask("clear", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -825,8 +917,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 				double[] values = new double[times.length];
 				for (int i = 0; i < times.length; ++ i)
 				{
-					SimDataBlock simDataBlock = simData.getSimDataBlock(null, varName, times[i]);
-					values[i] = simDataBlock.getData()[index];
+					SimDataSet simDataBlock = simData.retrieveSimDataSet(times[i], varName);
+					values[i] = simDataBlock.solValues[index];
 				}
 				hashTable.put("values", values);
 			}
@@ -846,61 +938,72 @@ public class ChomboSimpleDataViewer extends JFrame {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2}, false);
 	}
 	
-	private void readMeshMetricsFile(File userDir, VCSimulationDataIdentifier vcDataId, String simId) throws IOException 
-	{
-		File meshMetricsFile = new File(userDir, vcDataId.getID() + ".chombo.memmetrics"); 
-		if (!meshMetricsFile.exists())
-		{
-			return;
-		}
-		BufferedReader br = null;
-		try
-		{
-			br = new BufferedReader(new FileReader(meshMetricsFile));
-			List<String> cols = new ArrayList<String>();
-			List<double[]> values = new ArrayList<double[]>();
-			String line = br.readLine();
-			if (line != null)
-			{
-				StringTokenizer st = new StringTokenizer(line, ",");
-				while (st.hasMoreTokens())
-				{
-					String token = st.nextToken();
-					cols.add(token);
-				}
-			}
-			while (true)
-			{
-				line = br.readLine();
-				if (line == null)
-				{
-					break;
-				}
-				double[] dvalues = new double[cols.size()];
-				StringTokenizer st = new StringTokenizer(line, ",");
-				int cnt = 0;
-				while (st.hasMoreTokens())
-				{
-					String token = st.nextToken();
-					dvalues[cnt] = Double.parseDouble(token);
-					++ cnt;
-				}
-				assert cnt == cols.size();
-				values.add(dvalues);
-			}
-			meshMetricsTableModel.setData(cols, values);
-		}
-		finally
-		{
-			if (br != null)
-			{
-				br.close();
-			}
-		}
-	}
+//	private void readMeshMetricsFile(File userDir, VCSimulationDataIdentifier vcDataId, String simId) throws IOException 
+//	{
+//		File meshMetricsFile = new File(userDir, vcDataId.getID() + ".chombo.memmetrics"); 
+//		if (!meshMetricsFile.exists())
+//		{
+//			return;
+//		}
+//		BufferedReader br = null;
+//		try
+//		{
+//			br = new BufferedReader(new FileReader(meshMetricsFile));
+//			List<String> cols = new ArrayList<String>();
+//			List<double[]> values = new ArrayList<double[]>();
+//			String line = br.readLine();
+//			if (line != null)
+//			{
+//				StringTokenizer st = new StringTokenizer(line, ",");
+//				while (st.hasMoreTokens())
+//				{
+//					String token = st.nextToken();
+//					cols.add(token);
+//				}
+//			}
+//			while (true)
+//			{
+//				line = br.readLine();
+//				if (line == null)
+//				{
+//					break;
+//				}
+//				double[] dvalues = new double[cols.size()];
+//				StringTokenizer st = new StringTokenizer(line, ",");
+//				int cnt = 0;
+//				while (st.hasMoreTokens())
+//				{
+//					String token = st.nextToken();
+//					dvalues[cnt] = Double.parseDouble(token);
+//					++ cnt;
+//				}
+//				assert cnt == cols.size();
+//				values.add(dvalues);
+//			}
+//			meshMetricsTableModel.setData(cols, values);
+//		}
+//		finally
+//		{
+//			if (br != null)
+//			{
+//				br.close();
+//			}
+//		}
+//	}
 
 	private void retrieveData()
 	{
+		final Double time = (Double)timeComboBox.getSelectedItem();
+		if (time == null)
+		{
+			return;
+		}
+		DataSetIdentifier selectedVar = (DataSetIdentifier)varList.getSelectedValue();
+		if (selectedVar == null)
+		{
+			return;
+		}
+		final String varName = selectedVar.getName();
 		AsynchClientTask task0 = new AsynchClientTask("clear", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			
 			@Override
@@ -920,11 +1023,8 @@ public class ChomboSimpleDataViewer extends JFrame {
 				{
 					return;
 				}
-				double time = (Double)timeComboBox.getSelectedItem();
-				DataIdentifier selectedVar = (DataIdentifier)varList.getSelectedValue();
-				String varName = selectedVar.getName();
-				SimDataBlock simDataBlock = simData.getSimDataBlock(null, varName, time);
-				hashTable.put("simDataBlock", simDataBlock);
+				SimDataSet simDataSet = simData.retrieveSimDataSet(time, varName);
+				hashTable.put("simDataSet", simDataSet);
 			}
 		};
 		
@@ -932,13 +1032,17 @@ public class ChomboSimpleDataViewer extends JFrame {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				SimDataBlock simDataBlock = (SimDataBlock) hashTable.get("simDataBlock");
-				if (simDataBlock == null)
+				SimDataSet simDataSet = (SimDataSet) hashTable.get("simDataSet");
+				if (simDataSet == null)
 				{
 					return;
 				}
-				solLabel.setText("Variable " + simDataBlock.getPDEDataInfo().getVarName() + " @ Time " + simDataBlock.getPDEDataInfo().getSimTime());
-				solTableModel.setValues(simDataBlock.getData());
+				solLabel.setText("Variable " + varName + " @ Time " + time);
+				solTableModel.setValues(simDataSet.solValues);
+				meanTextField.setText(simDataSet.mean == null ? "" : simDataSet.mean.toString());
+				sumVolFracTextField.setText(simDataSet.sumVolFrac == null ? "" : simDataSet.sumVolFrac.toString());
+				maxErrorTextField.setText(simDataSet.maxError == null ? "" : simDataSet.maxError.toString());
+				l2ErrorTextField.setText(simDataSet.l2Error == null ? "" : simDataSet.l2Error + "".toString());
 			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0, task1, task2}, false);
