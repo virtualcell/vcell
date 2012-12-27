@@ -69,8 +69,8 @@ plot view or table in data view in the Reference Data tab.
 	</para>
 	<para>
 	Secondly, you click "Solve by Copasi" to run the parameter estimation and acquire the results. You can stop at any time by clicking “Stop” button while
-	it’s running. After the task is completed, you can use “Plot Best Solution” to plot the estimated solution for the optimized variable and reference data.
-	To save and apply the solution of the parameter estimation to the model, click “Save solution as new Simulation”.
+	it’s running. After the task is completed, you can use “Plot” to plot the estimated solution for the optimized variable and reference data.
+	To save and apply the solution of the parameter estimation to the model, click “Save solution as new Simulation...”.
 	</para>
 	<para> 
 	Although, the reference data remains associated with the Application, optimized parameter values returned under the “Optimization” tab will be lost unless
