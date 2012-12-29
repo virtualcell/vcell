@@ -810,6 +810,10 @@ public class ChomboSimpleDataViewer extends JFrame {
 				varList.setModel(dlm);
 				solTableModel.clear();
 				meshMetricsTableModel.clear();
+				meanTextField.setText(null);
+				maxErrorTextField.setText(null);
+				sumVolFracTextField.setText(null);
+				l2ErrorTextField.setText(null);
 			}
 		};
 		
@@ -1002,6 +1006,10 @@ public class ChomboSimpleDataViewer extends JFrame {
 				timePlotTableModel.clear();
 				solLabel.setText("Solution");
 				timePlotLabel.setText("Time Plot");
+				meanTextField.setText(null);
+				maxErrorTextField.setText(null);
+				sumVolFracTextField.setText(null);
+				l2ErrorTextField.setText(null);
 			}
 		};
 		
