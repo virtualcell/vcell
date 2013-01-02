@@ -24,9 +24,12 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-import cbit.vcell.message.VCRpcConsumer;
+import cbit.vcell.message.VCPooledQueueConsumer;
+import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
@@ -47,7 +50,10 @@ import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
  */
 public class DatabaseServer extends ServiceProvider {
 	private DatabaseServerImpl databaseServerImpl = null;
-	private VCRpcConsumer rpcConsumer = null;	
+	private VCQueueConsumer rpcConsumer = null;	
+	private VCRpcMessageHandler rpcMessageHandler = null;
+	private VCPooledQueueConsumer pooledQueueConsumer = null;
+	private VCMessageSession sharedProducerSession = null;
 	
 	/**
 	 * Insert the method's description here.
@@ -63,7 +69,12 @@ public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServe
 }
 
 private void init() throws Exception {
-	rpcConsumer = new VCRpcConsumer(databaseServerImpl, VCellQueue.DbRequestQueue, ServiceType.DB, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
+	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.databaseThreadsProperty));
+	this.sharedProducerSession = vcMessagingService.createProducerSession();
+	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue, log);
+	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, numDatabaseThreads, sharedProducerSession);
+	this.pooledQueueConsumer.initThreadPool();
+	rpcConsumer = new VCQueueConsumer(VCellQueue.DbRequestQueue, this.pooledQueueConsumer, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
 	VCMessagingDelegate delegate = new VCMessagingDelegate() {
 		public void onMessagingException(Exception e) {
@@ -75,6 +86,15 @@ private void init() throws Exception {
 	
 	initControlTopicListener();
 }
+
+
+
+@Override
+public void stopService() {
+	this.pooledQueueConsumer.shutdownAndAwaitTermination();
+	super.stopService();
+}
+
 /**
  * Starts the application.
  * @param args an array of command-line arguments
