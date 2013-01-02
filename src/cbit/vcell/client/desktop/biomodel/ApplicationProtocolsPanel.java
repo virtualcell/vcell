@@ -78,20 +78,19 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
 		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
+		microscopeMeasurementPanel.setSimulationContext(simulationContext);
 		
 		// show events panel only if application is non-spatial
 		// boolean bNonSpatial = simulationContext.getGeometry().getDimension() == 0 && !simulationContext.isStoch();
-		boolean bSpatial = simulationContext.getGeometry().getDimension() > 0 && !simulationContext.isStoch();
+		boolean bODE = simulationContext.getGeometry().getDimension() < 1 && !simulationContext.isStoch();
 		ProtocolsPanelTab eventsTab = new ProtocolsPanelTab(ProtocolsPanelTabID.events, eventsDisplayPanel, null);
-		if (!bSpatial) {
+		if (bODE) {
 			eventsDisplayPanel.setSimulationContext(simulationContext);
-			tabbedPane.addTab(eventsTab.id.title, eventsTab.icon, eventsTab.component);
-		}
-
-		// hide events tab if application is spatial
-		if (bSpatial) {	 
-			microscopeMeasurementPanel.setSimulationContext(simulationContext);
-			tabbedPane.remove(eventsTab.component);
+			tabbedPane.setEnabledAt(ProtocolsPanelTabID.events.ordinal(), true);
+			
+		} else {	// hide events tab if application is spatial
+			tabbedPane.setEnabledAt(ProtocolsPanelTabID.events.ordinal(), false);
+			eventsTab.component.setEnabled(false);
 		}
 	}
 	
