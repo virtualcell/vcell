@@ -20,7 +20,7 @@ public abstract class VCMessageSessionLocal implements VCMessageSession {
 	}
 
 	@Override
-	public void sendQueueMessage(VCellQueue queue, VCMessage message) throws VCMessagingException {
+	public void sendQueueMessage(VCellQueue queue, VCMessage message, Boolean persistent, Long timeToLiveMS) throws VCMessagingException {
 		throw new RuntimeException("send Queue Message not implemented - must override sendQueueMessage() to implement");
 	}
 

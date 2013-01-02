@@ -122,13 +122,13 @@ public class SimulationDispatcher extends ServiceProvider {
 					for (SimulationJobStatus simJobStatus : allActiveJobs){
 						simKeys.add(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
 					}
-					final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
 						int maxJobsPerSite = BatchScheduler.getMaxJobsPerSite();
 						int maxOdePerUser = BatchScheduler.getMaxOdeJobsPerUser();
 						int maxPdePerUser = BatchScheduler.getMaxPdeJobsPerUser();
 						VCellServerID serverID = VCellServerID.getSystemServerID();
 						
+						final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 						WaitingJob[] waitingJobs = BatchScheduler.schedule(allActiveJobs, simulationRequirementsMap, maxJobsPerSite, maxOdePerUser, maxPdePerUser, serverID, log);
 						
 						//
@@ -221,7 +221,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			VCMessage message = simMonitorThreadSession.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
 			message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
 			synchronized (notifyObject) {
-				simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message);
+				simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
 				try {
 					long waitTime = MessageConstants.MINUTE_IN_MS*5;
 					long startWaitTime = System.currentTimeMillis();

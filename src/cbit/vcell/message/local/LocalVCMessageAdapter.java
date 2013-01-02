@@ -30,7 +30,7 @@ public class LocalVCMessageAdapter extends VCMessageSessionLocal {
 	}
 	
 	@Override
-	public synchronized void sendQueueMessage(VCellQueue vcQueue, VCMessage vcMessage) throws VCMessagingException {
+	public synchronized void sendQueueMessage(VCellQueue vcQueue, VCMessage vcMessage, Boolean persistent, Long timeToLive) throws VCMessagingException {
 		System.out.println("\n ##====>>  ##====>>  ##====>>  ##====>>  ##====>>  ##====>> LocalVCellMessageAdapter queuing message for queue "+vcQueue.getName()+", msg="+vcMessage.show()+"\n");
 		messageRecords.add(new MessageRecord(vcQueue, vcMessage));
 	}
