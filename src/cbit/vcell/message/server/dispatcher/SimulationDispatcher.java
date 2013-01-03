@@ -308,7 +308,7 @@ public class SimulationDispatcher extends ServiceProvider {
 					String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
 					System.out.println("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")\n\n");
 					SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
-					System.out.println(simStateMachine.show());
+//					System.out.println(simStateMachine.show());
 					VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage,simStateMachine);
 					simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
 					if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
@@ -331,8 +331,8 @@ public class SimulationDispatcher extends ServiceProvider {
 	/**
 	 * Scheduler constructor comment.
 	 */
-	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, SessionLog log) throws Exception {
-		super(vcMessagingService,serviceInstanceStatus,log);
+	public SimulationDispatcher(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SimulationDatabase simulationDatabase, SessionLog log, boolean bSlaveMode) throws Exception {
+		super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
 		this.simulationDatabase = simulationDatabase;
 		this.htcProxy = htcProxy;
 	}
@@ -532,7 +532,7 @@ public class SimulationDispatcher extends ServiceProvider {
 
 			VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 
-			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, log);
+			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, log, false);
 			simulationDispatcher.init();
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);

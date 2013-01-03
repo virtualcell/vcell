@@ -63,12 +63,12 @@ public class DatabaseServer extends ServiceProvider {
 /**
  * Scheduler constructor comment.
  */
-public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService, SessionLog log) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,log);
+public DatabaseServer(ServiceInstanceStatus serviceInstanceStatus, DatabaseServerImpl databaseServerImpl, VCMessagingService vcMessagingService, SessionLog log, boolean bSlaveMode) throws Exception {
+	super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
 	this.databaseServerImpl = databaseServerImpl;
 }
 
-private void init() throws Exception {
+public void init() throws Exception {
 	int numDatabaseThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.databaseThreadsProperty));
 	this.sharedProducerSession = vcMessagingService.createProducerSession();
 	rpcMessageHandler = new VCRpcMessageHandler(databaseServerImpl, VCellQueue.DbRequestQueue, log);
@@ -132,7 +132,7 @@ public static void main(java.lang.String[] args) {
 		
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, log);
+		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, log, false);
         databaseServer.init();
     } catch (Throwable e) {
 	    e.printStackTrace(System.out); 
