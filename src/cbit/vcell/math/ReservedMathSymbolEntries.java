@@ -55,33 +55,36 @@ public class ReservedMathSymbolEntries {
 
 	private static HashMap<String,ReservedVariable> getSymbolTableEntries(){
 		if (symbolTableEntries==null){
-			symbolTableEntries = new HashMap<String, ReservedVariable>();
-			symbolTableEntries.put(ReservedVariable.TIME.getName(),ReservedVariable.TIME);
-			symbolTableEntries.put(ReservedVariable.X.getName(),ReservedVariable.X);
-			symbolTableEntries.put(ReservedVariable.Y.getName(),ReservedVariable.Y);
-			symbolTableEntries.put(ReservedVariable.Z.getName(),ReservedVariable.Z);
+			HashMap<String,ReservedVariable> symbolTableEntries_0 = new HashMap<String, ReservedVariable>();
+			symbolTableEntries_0.put(ReservedVariable.TIME.getName(),ReservedVariable.TIME);
+			symbolTableEntries_0.put(ReservedVariable.X.getName(),ReservedVariable.X);
+			symbolTableEntries_0.put(ReservedVariable.Y.getName(),ReservedVariable.Y);
+			symbolTableEntries_0.put(ReservedVariable.Z.getName(),ReservedVariable.Z);
+			symbolTableEntries = symbolTableEntries_0;
 		}
 		return symbolTableEntries;
 	}
 	
 	private static HashMap<String,SymbolTableFunctionEntry> getMathSymbolTableFunctionEntries(){
 		if (mathSymbolTableFunctionEntries==null){
-			mathSymbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(),MathFunctionDefinitions.fieldFunctionDefinition);
-			mathSymbolTableFunctionEntries.put(MathFunctionDefinitions.gradientFunctionDefinition.getName(),MathFunctionDefinitions.gradientFunctionDefinition);
+			HashMap<String,SymbolTableFunctionEntry> mathSymbolTableFunctionEntries_0 = new HashMap<String, SymbolTableFunctionEntry>();
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.Function_regionArea_current.getName(),MathFunctionDefinitions.Function_regionArea_current);
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.Function_regionArea_indexed.getName(),MathFunctionDefinitions.Function_regionArea_indexed);
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.Function_regionVolume_current.getName(),MathFunctionDefinitions.Function_regionVolume_current);
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.Function_regionVolume_indexed.getName(),MathFunctionDefinitions.Function_regionVolume_indexed);
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.fieldFunctionDefinition.getName(),MathFunctionDefinitions.fieldFunctionDefinition);
+			mathSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.gradientFunctionDefinition.getName(),MathFunctionDefinitions.gradientFunctionDefinition);
+			mathSymbolTableFunctionEntries = mathSymbolTableFunctionEntries_0;			
 		}
 		return mathSymbolTableFunctionEntries;
 	}
 	
 	private static HashMap<String,SymbolTableFunctionEntry> getPostProcessingSymbolTableFunctionEntries(){
 		if (postProcessingSymbolTableFunctionEntries==null){
-			postProcessingSymbolTableFunctionEntries = new HashMap<String, SymbolTableFunctionEntry>();
-			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.convFunctionDefinition.getName(),MathFunctionDefinitions.convFunctionDefinition);
-			postProcessingSymbolTableFunctionEntries.put(MathFunctionDefinitions.projectFunctionDefinition.getName(),MathFunctionDefinitions.projectFunctionDefinition);
+			HashMap<String, SymbolTableFunctionEntry> postProcessingSymbolTableFunctionEntries_0 = new HashMap<String, SymbolTableFunctionEntry>();
+			postProcessingSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.convFunctionDefinition.getName(),MathFunctionDefinitions.convFunctionDefinition);
+			postProcessingSymbolTableFunctionEntries_0.put(MathFunctionDefinitions.projectFunctionDefinition.getName(),MathFunctionDefinitions.projectFunctionDefinition);
+			postProcessingSymbolTableFunctionEntries = postProcessingSymbolTableFunctionEntries_0;
 		}
 		return postProcessingSymbolTableFunctionEntries;
 	}
