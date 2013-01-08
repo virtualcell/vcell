@@ -18,12 +18,6 @@ package cbit.image;
 public class PixelClassLimitException extends ImageException {
 /**
  * PixelClassLimitException constructor comment.
- */
-public PixelClassLimitException() {
-	super();
-}
-/**
- * PixelClassLimitException constructor comment.
  * @param s java.lang.String
  */
 public PixelClassLimitException(String s) {

@@ -2,9 +2,10 @@ package cbit.vcell.geometry.gui;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.awt.image.MemoryImageSource;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 
 import javax.swing.ImageIcon;
 
@@ -69,19 +70,15 @@ public class GeometryThumbnailImageFactoryAWT implements GeometryThumbnailImageF
 				byte ired = reds[cmapIndex];
 				byte igrn = greens[cmapIndex];
 				byte iblu = blues[cmapIndex];
-				MemoryImageSource mis1 = new MemoryImageSource(currSampledImage.getNumX(), 
-						currSampledImage.getNumY(), 
-						new java.awt.image.IndexColorModel(8,2,
-								new byte[]{0,ired},
-								new byte[]{0,igrn},
-								new byte[]{0,iblu},
-								new byte[]{0,(byte)(200)}),
-								zBuf, 
-								0, currSampledImage.getNumX());
-				ImageIcon theImageIcon =
-					new ImageIcon(Toolkit.getDefaultToolkit().createImage(mis1).
-							getScaledInstance(REAL_SAMPLE_X,REAL_SAMPLE_Y,
-									Image.SCALE_AREA_AVERAGING));
+				IndexColorModel colorModel = new IndexColorModel(8,2,
+						new byte[]{0,ired},
+						new byte[]{0,igrn},
+						new byte[]{0,iblu},
+						new byte[]{0,(byte)(200)});
+				int width = currSampledImage.getNumX();
+				int height = currSampledImage.getNumY();
+				BufferedImage bufferedImage = getImage(colorModel, zBuf, width, height);
+				ImageIcon theImageIcon = new ImageIcon(bufferedImage.getScaledInstance(REAL_SAMPLE_X,REAL_SAMPLE_Y,Image.SCALE_AREA_AVERAGING));
 				brightG2D.drawImage(theImageIcon.getImage(), 0, 0, theImageIcon.getImageObserver());
 			}
 			int rgb[] = brightImage.getRGB(0, 0, REAL_SAMPLE_X, REAL_SAMPLE_Y, null, 0, REAL_SAMPLE_X);
@@ -89,5 +86,37 @@ public class GeometryThumbnailImageFactoryAWT implements GeometryThumbnailImageF
 		}
 		return null;
 	}
-
+	
+	private static BufferedImage getImage(IndexColorModel indexColorModel, byte[] imageIndiciesIntoPalette, int width, int height){
+		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED, indexColorModel);
+		WritableRaster raster = bufferedImage.getRaster();
+		DataBufferByte dataBuffer = (DataBufferByte)raster.getDataBuffer();
+		System.arraycopy(imageIndiciesIntoPalette, 0, dataBuffer.getData(), 0,  imageIndiciesIntoPalette.length);
+		return bufferedImage;
+	}
+	
+//	public static void main(String args[]){
+//		try {
+//			byte[] imagePixels = new byte[100*100];
+//			for (int i=0;i<100;i++){
+//				for (int j=0;j<100;j++){
+//					double radius = Math.sqrt(((i-50)*(i-50)) + ((j-50)*(j-50)));
+//					imagePixels[i+100*j] = (radius>50)?((byte)1):((byte)0);
+//				}
+//			}
+//			IndexColorModel colorModel = new IndexColorModel(8,2,
+//					new byte[]{0,(byte)200},
+//					new byte[]{0,(byte)0},
+//					new byte[]{0,(byte)0},
+//					new byte[]{(byte)200,(byte)200});
+//			int width = 100;
+//			int height = 100;
+//			BufferedImage bufferedImage = getImage(colorModel, imagePixels, width, height);
+//			ImageIO.write(bufferedImage, "gif", new File("C:\\temp\\GeometryThumbnailImageFactoryAWT_test.gif"));
+//			
+//			System.out.println("done");
+//		}catch (Exception e){
+//			e.printStackTrace(System.out);
+//		}
+//	}
 }

@@ -367,19 +367,6 @@ private void connPtoP3SetTarget() {
 /**
  * Comment
  */
-public javax.swing.Icon createIcon(VCImage vcImage) throws cbit.image.GifParsingException, ImageException {
-	if (vcImage==null){
-		return null;
-	}else{
-		GIFImage gifImage = new cbit.image.GIFImage(cbit.image.BrowseImage.gifFromVCImage(vcImage));
-		return new javax.swing.ImageIcon(gifImage.getJavaImage(),"preview of Geometry");
-	}
-}
-
-
-/**
- * Comment
- */
 public javax.swing.Icon createIcon(VCImage sampledImage, Geometry geom) throws cbit.image.GifParsingException, ImageException {
 	if (sampledImage==null){
 		return null;
