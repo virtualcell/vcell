@@ -551,7 +551,11 @@ public synchronized CartesianMesh getMesh() throws DataAccessException, MathExce
  */
 private synchronized File getMeshFile() throws FileNotFoundException {
 	VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<BEGIN>>");
-	File meshFile = new File(userDirectory,vcDataId.getID()+".mesh");
+	File meshFile = new File(userDirectory,vcDataId.getID()+SimDataConstants.MESHFILE_EXTENSION+".hdf5");
+	if(meshFile.exists()){
+		return meshFile;
+	}
+	meshFile = new File(userDirectory,vcDataId.getID()+SimDataConstants.MESHFILE_EXTENSION);
 	if (meshFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<EXIT-meshfile>>");
 		return meshFile;
@@ -1008,8 +1012,8 @@ public synchronized long getSizeInBytes() {
  */
 public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputContext) throws IOException, DataAccessException {
 	// Is this zip format?
-	File zipFile1 = new File(userDirectory,vcDataId.getID()+".zip");
-	File zipFile2 = new File(userDirectory,vcDataId.getID()+"00.zip");
+	File zipFile1 = new File(userDirectory,vcDataId.getID()+(isChombo()?".hdf5.zip":".zip"));
+	File zipFile2 = new File(userDirectory,vcDataId.getID()+(isChombo()?"00.hdf5.zip":"00.zip"));
 	bZipFormat1 = false;
 	bZipFormat2 = false;
 	if (zipFile1.exists()) {
@@ -1270,9 +1274,15 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		while (st.hasMoreTokens()){
 			String iteration = st.nextToken();
 			String filename = st.nextToken();
+			if(isChombo()){
+				filename = filename+".hdf5";
+			}
 			String time = null;
 			if (bZipFormat2) {
 				String zipname = st.nextToken();
+				if(isChombo()){
+					zipname = zipname.substring(0, zipname.indexOf(".zip"))+".hdf5.zip";
+				}
 				time = st.nextToken();
 				zipFilenames[index] = (new File(zipname)).getName();
 			} else {
@@ -1305,7 +1315,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
  * This method was created in VisualAge.
  * @param logFile java.io.File
  */
-private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) throws FileNotFoundException, IOException, MathException {
+private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) throws Exception {
 	if (meshFile.exists()){
 		long lastModified = meshFile.lastModified();
 		if (lastModified == meshFileLastModified){
@@ -1321,9 +1331,19 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	//
 	// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 	//
-	mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFile());
+	if(isChombo()){
+//		SimulationDataSpatialHdf5 simulationDataSpatialHdf5 = new SimulationDataSpatialHdf5(vcDataId,userDirectory,null);
+//		simulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers();
+		mesh = new CartesianMesh.ChomboMesh(SimulationDataSpatialHdf5.readMeshFile(getMeshFile()));
+
+	}else{
+		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFile());
+	}
 }
 
+private boolean isChombo() throws FileNotFoundException{
+	return getMeshFile().getName().endsWith(".hdf5");
+}
 
 /**
  * This method was created in VisualAge.
@@ -1365,7 +1385,7 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT normally>>");
 	} catch (FileNotFoundException e) {
 		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-file not found>>");
-	} catch (IOException e) {
+	} catch (Exception e) {
 		e.printStackTrace(System.out);
 		VCMongoMessage.sendTrace("SimulationData.refreshMeshFile() <<EXIT-IOException>>");
 		throw new DataAccessException(e.getMessage());

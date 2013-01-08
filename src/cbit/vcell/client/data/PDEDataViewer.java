@@ -482,6 +482,9 @@ public class PDEDataViewer extends DataViewer {
 			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
 		public boolean isDefined(int dataIndex){
+			if(pdeDataContext.getCartesianMesh() instanceof CartesianMesh.ChomboMesh){//Chombo Hack
+				return true;
+			}
 			return isDefined(pdeDataContext.getDataIdentifier(),dataIndex);
 		}
 		public boolean isDefined(DataIdentifier dataIdentifier,int dataIndex){
@@ -1145,11 +1148,14 @@ public void dataJobMessage(final DataJobEvent dje) {
  * Creation date: (9/25/2005 1:53:00 PM)
  */
 private DataValueSurfaceViewer getDataValueSurfaceViewer() {
-
 	try{
 	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
 		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+		if(cartesianMesh instanceof CartesianMesh.ChomboMesh){//Chombo Hack
+			fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
+			return fieldDataValueSurfaceViewer;
+		}
 		meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces();
 		SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
 

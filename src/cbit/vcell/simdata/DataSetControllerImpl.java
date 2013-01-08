@@ -2657,6 +2657,13 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") evaluating function");
 			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
+		if(getMesh(vcdID) instanceof CartesianMesh.ChomboMesh){
+			for (int i = 0; i < simDataBlock.getData().length; i++) {
+				if(simDataBlock.getData()[i] == 1.23456789e300){
+					simDataBlock.getData()[i] = Double.NaN;
+				}
+			}
+		}
 		if (simDataBlock != null) {
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")  <<EXIT-simDataBlock not null>>");
 			return simDataBlock;

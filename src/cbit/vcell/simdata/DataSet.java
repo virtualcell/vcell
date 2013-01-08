@@ -11,6 +11,15 @@
 package cbit.vcell.simdata;
 import java.io.*;
 import java.util.*;
+import java.util.zip.ZipFile;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 import cbit.vcell.math.VariableType;
 
@@ -68,17 +77,27 @@ double[] getData(String varName, File zipFile) throws IOException {
 			}
 
 			// read data from zip file
-			BufferedInputStream bis = new BufferedInputStream(is);	
-			DataInputStream dis = new DataInputStream(bis);
+			
+			DataInputStream dis = null;
 			try {
-				dis.skip(dataBlock.getDataOffset());
-				int size = dataBlock.getSize();
-				data = new double[size];
-				for (int j=0;j<size;j++){
-					data[j] = dis.readDouble();
-				}	
+				if(isChombo(zipFile)){
+					try{
+						data = readHDF5(is, varName);
+					}catch(Exception e){
+						throw new IOException(e.getMessage(),e);
+					}
+				}else{
+					BufferedInputStream bis = new BufferedInputStream(is);
+					dis = new DataInputStream(bis);
+					dis.skip(dataBlock.getDataOffset());
+					int size = dataBlock.getSize();
+					data = new double[size];
+					for (int j=0;j<size;j++){
+						data[j] = dis.readDouble();
+					}
+				}
 			}finally{
-				dis.close();
+				if(dis != null){dis.close();}
 				if (zipZipFile != null) {
 					zipZipFile.close();
 				}
@@ -241,13 +260,22 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 			length = file.length();
 		}
 	
-		BufferedInputStream bis = new BufferedInputStream(is);
-		dataInputStream = new DataInputStream(bis);
-		fileHeader.read(dataInputStream);
-		for (int i = 0; i < fileHeader.numBlocks; i++) {
-			DataBlock dataBlock = new DataBlock();
-			dataBlock.readBlockHeader(dataInputStream);
-			dataBlockList.addElement(dataBlock);
+		if(isChombo(zipFile)){
+			try {
+				readHDF5(is,null);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new IOException(e.getMessage(),e);
+			}
+		}else{
+			BufferedInputStream bis = new BufferedInputStream(is);
+			dataInputStream = new DataInputStream(bis);
+			fileHeader.read(dataInputStream);
+			for (int i = 0; i < fileHeader.numBlocks; i++) {
+				DataBlock dataBlock = new DataBlock();
+				dataBlock.readBlockHeader(dataInputStream);
+				dataBlockList.addElement(dataBlock);
+			}
 		}
 	}finally{
 		if (dataInputStream != null) {
@@ -259,7 +287,67 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	}
 }
 
+private boolean isChombo(File zipFile){
+	return zipFile.getName().endsWith(".hdf5.zip");
+}
+private double[] readHDF5(InputStream is,String varName) throws Exception{
+	
+	File tempFile = null;
+	FileFormat fileFormat = null;
+	FileFormat solFile = null;
+	try{
+		tempFile = File.createTempFile("temp", "hdf5");
+		OutputStream out=new FileOutputStream(tempFile);
+		byte buf[]=new byte[1024];
+		int len;
+		while((len=is.read(buf))>0){
+			out.write(buf,0,len);
+		}
+		out.close();
+		
+		fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
+		solFile.open();
+		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
+		Group rootGroup = (Group)rootNode.getUserObject();
+		Group solGroup = (Group)rootGroup.getMemberList().get(0);
 
+		List<HObject> memberList = solGroup.getMemberList();
+		for (HObject member : memberList)
+		{
+			if (!(member instanceof Dataset)){
+				continue;
+			}
+			Dataset dataset = (Dataset)member;
+			String dsname = dataset.getName();
+			if(dsname.equals(varName)){
+				return (double[])dataset.read();
+			}
+			int vt = -1;
+			List<Attribute> solAttrList = dataset.getMetadata();
+			for (Attribute attr : solAttrList)
+			{
+				String attrName = attr.getName();
+				if(attr.getName().equals("variable type")){
+					Object obj = attr.getValue();
+					vt = ((int[])obj)[0];
+					break;
+				}
+			}
+			double[] solValues = (double[]) dataset.read();
+			dataBlockList.addElement(DataBlock.createDataBlock(dsname, vt, solValues.length, 0));
+		}
+		return null;
+	}finally{
+		if(solFile != null){try{solFile.close();}catch(Exception e){e.printStackTrace();}}
+		if(fileFormat != null){try{fileFormat.close();}catch(Exception e){e.printStackTrace();}}
+		if(tempFile != null){
+			if(!tempFile.delete()){
+				System.err.println("couldn't delete temp file "+tempFile.getAbsolutePath());
+			}
+		}
+	}
+}
 public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
 	
 	FileOutputStream fos = null;

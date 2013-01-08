@@ -399,7 +399,7 @@ private void recodeDataForDomain0() {
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < tempRecodedData.length; i ++) {
 			if (bRecoding) {
-				if (vt.equals(VariableType.VOLUME)) {
+				if (vt.equals(VariableType.VOLUME) && !(cartesianMesh instanceof CartesianMesh.ChomboMesh)) {
 					int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						tempRecodedData[i] = illegalNumber;
@@ -409,7 +409,7 @@ private void recodeDataForDomain0() {
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						tempRecodedData[i] = illegalNumber;
 					}
-				} else if (vt.equals(VariableType.MEMBRANE)) {
+				} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh instanceof CartesianMesh.ChomboMesh)) {
 					int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
 					int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
 					int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
@@ -1727,6 +1727,9 @@ private SourceDataInfo calculateSourceDataInfo(CartesianMesh mesh, double[] sdiD
 				0, 
 				mesh.getSizeZ(), 
 				0); 
+	}
+	if(mesh instanceof CartesianMesh.ChomboMesh){
+		sdi.setIsChombo(true);
 	}
 	return sdi;
 }

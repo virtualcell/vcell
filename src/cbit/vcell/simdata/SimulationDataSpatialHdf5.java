@@ -26,7 +26,9 @@ import ncsa.hdf.object.h5.H5CompoundDS;
 
 import org.vcell.chombo.ChomboBox;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Origin;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.math.Variable;
@@ -77,6 +79,24 @@ public class SimulationDataSpatialHdf5
 		public String[] getMetricsColumnNames()
 		{
 			return metricsColumnNames;
+		}
+		public Origin getOrigin(){
+			return new Origin(origin[0],origin[1],origin[2]);
+		}
+		public Extent getExtent(){
+			return new Extent(extent[0],(extent[1]==0?.5:extent[1]),(extent[2]==0?.5:extent[2]));
+		}
+		public int getSizeX(){
+			return nx[0];
+		}
+		public int getSizeY(){
+			return (nx[1]==0?1:nx[1]);
+		}
+		public int getSizeZ(){
+			return (nx[2]==0?1:nx[2]);
+		}
+		public int getDimension(){
+			return dimension;
 		}
 	}
 		
@@ -168,7 +188,9 @@ public class SimulationDataSpatialHdf5
 	public synchronized void readVarAndFunctionDataIdentifiers() throws Exception {
 		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers Entry");
 		readLogFile();
-		readMeshFile();
+		if(chomboMesh != null){
+			chomboMesh = readMeshFile(new File(userDirectory, getMeshFileName()));
+		}
 		
 		if (logfileEntryList.size() > 0) 
 		{
@@ -200,15 +222,15 @@ public class SimulationDataSpatialHdf5
 	private static final String SOLUTION_DATASET_ATTR_MAX_ERROR = "max error";
 	private static final String SOLUTION_DATASET_ATTR_RELATIVE_L2ERROR = "relative L2 error";
 
-	private void readMeshFile() throws Exception {
-		if (chomboMesh != null)
-		{
-			return;
-		}
-		chomboMesh = new ChomboMesh();
-		File mfile = new File(userDirectory, getMeshFileName());
+	public static ChomboMesh readMeshFile(File chomboMeshFile) throws Exception {
+//		if (chomboMesh != null)
+//		{
+//			return;
+//		}
+		ChomboMesh chomboMesh = new ChomboMesh();
+//		File mfile = new File(userDirectory, getMeshFileName());
 		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		FileFormat meshFile = fileFormat.createInstance(mfile.getAbsolutePath(), FileFormat.READ);
+		FileFormat meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
 		meshFile.open();
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)meshFile.getRootNode();
 		Group rootGroup = (Group)rootNode.getUserObject();
@@ -325,6 +347,7 @@ public class SimulationDataSpatialHdf5
 				}
 			}
 		}
+		return chomboMesh;
 	}
 
 	private String getLogFileName()
