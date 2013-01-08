@@ -30,6 +30,7 @@ import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
 import cbit.vcell.geometry.gui.CurveRenderer;
+import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -1394,15 +1395,19 @@ private void updateInfo(MouseEvent mouseEvent) {
 							}
 						}
 					}
+					boolean isChombo = getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh;
 					if (infoS == null && getSourceDataInfo() != null) {
 						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
 						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
+//						if(isChombo){
+//							quantizedWC = getSourceDataInfo().getChombotWorldCoordinateFromIndex(ci);
+//						}
 						String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
 						String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
 						String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
 						infoS = 
-							"(" + xCoordString +
+							(isChombo?"Chombo":"")+"(" + xCoordString +
 							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +
 							(getSourceDataInfo().getZSize() > 1?"," + zCoordString:"") + ") "+
 							"["+volumeIndex+"]"+
@@ -1410,13 +1415,18 @@ private void updateInfo(MouseEvent mouseEvent) {
 							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
 							(getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex))?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
-						if(getDataInfoProvider() != null){
-							PDEDataViewer.VolumeDataInfo volumeDataInfo =
-								getDataInfoProvider().getVolumeDataInfo(volumeIndex);
+						if(getDataInfoProvider() != null ){
 							infoS+= "          ";
-							infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
-							infoS+= " svID="+volumeDataInfo.subvolumeID;
-							infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh){
+								infoS+="Chombo Info TBI";
+							}else{
+								PDEDataViewer.VolumeDataInfo volumeDataInfo =
+									getDataInfoProvider().getVolumeDataInfo(volumeIndex);
+								
+								infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
+								infoS+= " svID="+volumeDataInfo.subvolumeID;
+								infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+							}
 						}
 						String curveDescr = CurveRenderer.getROIDescriptions(wc,getCurveRenderer());
 						if(curveDescr != null){infoS+= "     "+curveDescr;}

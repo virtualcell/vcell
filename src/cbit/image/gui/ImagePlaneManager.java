@@ -140,6 +140,10 @@ public double getSliceWorldCoordinate() {
 public SourceDataInfo getSourceDataInfo() {
 	return fieldSourceDataInfo;
 }
+
+public boolean isChombo(){
+	return getSourceDataInfo().isChombo();
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 12:27:01 PM)

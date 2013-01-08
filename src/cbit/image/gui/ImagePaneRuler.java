@@ -154,6 +154,7 @@ public int getWorldPixelSize() {
  */
 protected void paintComponent(java.awt.Graphics g) {
 	super.paintComponent(g);
+	boolean isChombo = getImagePlaneManager().isChombo();
 	//
 	if(getImagePlaneManager() == null ){
 		return;
@@ -208,9 +209,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						lastPrintPoint = tempPrintpoint;
 						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isChombo?1.0/(2*getWorldPixelSize()):0),0);
 						}else if(lastHighPoint == (end-1)){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(1,0);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((isChombo?1.0-1.0/(2*getWorldPixelSize()):1),0);
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((double)lastPrintPoint/(double)getWorldPixelSize(),0);
 						}
@@ -279,9 +280,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						lastPrintPoint = tempPrintpoint;
 						org.vcell.util.Coordinate coord = null;
 						if(lastLowPoint == 0){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isChombo?1.0/(2*getWorldPixelSize()):0));
 						}else if(lastHighPoint == (end-1)){
-							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,1);
+							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(isChombo?1.0-1.0/(2*getWorldPixelSize()):1));
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(double)lastPrintPoint/(double)getWorldPixelSize());
 						}
