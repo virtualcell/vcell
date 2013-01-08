@@ -9,22 +9,25 @@
  */
 
 package cbit.image;
-import java.awt.image.ImageObserver;
-import java.io.Serializable;
-import java.awt.image.PixelGrabber;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
 import java.awt.image.DirectColorModel;
-import java.util.Vector;
+import java.awt.image.IndexColorModel;
+import java.awt.image.PixelGrabber;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 import org.vcell.util.ISize;
 /**
  * This type was created in VisualAge.
  */
-public class NativeImage implements Serializable,ImageObserver{
+public class NativeImage implements Serializable{
 	private byte nativeData[] = null;
 	private ISize size = null;
-	private boolean imageError = false;
 
 	//Do this stuff instead of using IndexColorModel and DirectColorModel directly because they aren't Serializable
 	private byte[] newIndexPixels = null;	//index color pixels
@@ -66,7 +69,7 @@ private byte[] createIndexPixels() throws Exception {
 	if (newIndexPixels != null) {
 		return newIndexPixels;
 	}
-	Vector indexes = new Vector(); // distinct pixel colors(Color Map)
+	ArrayList<Integer> indexes = new ArrayList<Integer>(); // distinct pixel colors(Color Map)
 	byte[] tryIndexPixels = new byte[newRGBAPixels.length]; //create space for new pixels
 	for (int c = 0; c < newRGBAPixels.length; c += 1) {
 		Integer currentPixelColor = new Integer(newRGBAPixels[c]);
@@ -76,7 +79,7 @@ private byte[] createIndexPixels() throws Exception {
 				colorMap = null;
 				throw new Exception("Create index pixels exceeded limit of " + colorMapLimit);
 			}
-			indexes.addElement(currentPixelColor); //add new Pixel Color to Color Map
+			indexes.add(currentPixelColor); //add new Pixel Color to Color Map
 			index = (byte) (indexes.size() - 1);
 		}
 		tryIndexPixels[c] = index; //add new Pixel
@@ -84,7 +87,7 @@ private byte[] createIndexPixels() throws Exception {
 	//make packed colormap array for IndexColorMap R,G,B
 	byte[] trycolorMap = new byte[indexes.size() * IndexColorMap.RGB_PACK_SIZE];
 	for (int c = 0; c < indexes.size(); c += 1) {
-		int rgba = ((Integer) indexes.elementAt(c)).intValue();
+		int rgba = ((Integer) indexes.get(c)).intValue();
 		int packCount = c * IndexColorMap.RGB_PACK_SIZE;
 		trycolorMap[packCount] = (byte) ((rgba >> 16) & 0xff); //red
 		trycolorMap[packCount + 1] = (byte) ((rgba >> 8) & 0xff);//green
@@ -185,8 +188,13 @@ public byte[] getIndexPixels() throws Exception {
  * This method was created in VisualAge.
  * @return java.awt.Image
  */
-public java.awt.Image getJavaImage() {
-	return java.awt.Toolkit.getDefaultToolkit().createImage(nativeData, 0, nativeData.length);
+public BufferedImage getJavaImage() {
+	try {
+		return ImageIO.read(new ByteArrayInputStream(nativeData));
+	} catch (IOException e) {
+		e.printStackTrace();
+		throw new RuntimeException("failed to read Native image :"+e.getMessage(),e);
+	}
 }
 
 
@@ -217,42 +225,9 @@ public ISize getSize() {
 	if(this.size != null){
 		return size;
 	}
-	java.awt.Image javaImage = getJavaImage();
-	
-	int height;
-	int width;
-	do{
-		height = javaImage.getHeight(this);
-		width = javaImage.getWidth(this);
-		if(imageError){
-			throw new RuntimeException();
-		}
-	}while((height == -1) || (width == -1));
-		
-	this.size = new ISize(width,height,1);
+	BufferedImage javaImage = getJavaImage();
+	this.size = new ISize(javaImage.getWidth(),javaImage.getHeight(),1);
 	return this.size;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param img Image
- * @param info int
- * @param x int
- * @param y int
- * @param width int
- * @param height int
- */
-public boolean imageUpdate(java.awt.Image img,int info,int x,int y,int width,int height){
-	if((info & (ImageObserver.ERROR + ImageObserver.ABORT)) != 0){
-		imageError = true;
-		return false;//No further update needed
-	}
-
-	if(((info & ImageObserver.WIDTH) != 0) && ((info & ImageObserver.HEIGHT) != 0)){
-		return false;//No further update needed, have width and height
-	}
-	return true;//More Info needed
-}
 }

@@ -16,15 +16,13 @@ package cbit.image;
 public class ImageException extends Exception {
 /**
  * ImageException constructor comment.
- */
-public ImageException() {
-	super();
-}
-/**
- * ImageException constructor comment.
  * @param s java.lang.String
  */
-public ImageException(String s) {
-	super(s);
-}
+	public ImageException(String s) {
+		super(s);
+	}
+	
+	public ImageException(String s, Exception e) {
+		super(s,e);
+	}
 }

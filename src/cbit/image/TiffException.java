@@ -16,12 +16,6 @@ package cbit.image;
 public class TiffException extends ImageException {
 /**
  * TiffException constructor comment.
- */
-public TiffException() {
-	super();
-}
-/**
- * TiffException constructor comment.
  * @param s java.lang.String
  */
 public TiffException(String s) {

@@ -10,27 +10,28 @@
 
 package cbit.vcell.psf;
 
-import java.util.Hashtable;
-
 import static cbit.vcell.xml.VFrapXmlHelper.checkNameAvailability;
 
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.Hashtable;
+
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
+
 import cbit.image.ImageException;
 import cbit.image.ImageFile;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -45,7 +46,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.units.VCUnitDefinition;
 
 public class PointSpreadFunctionManagement {
 

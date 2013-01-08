@@ -1202,7 +1202,8 @@ private void insertVCImage(InsertHashtable hash, Connection con, User user,VCIma
 	try{
 		insertBrowseImageDataSQL(con, browseImageKey, newVersion.getVersionKey()/*imageKey*/, image);
 	}catch(cbit.image.GifParsingException e){
-		throw new DataAccessException("Error Parsing BrowseImage");
+		log.exception(e);
+		throw new DataAccessException("Error Parsing BrowseImage",e);
 	}
 	VCPixelClass vcPixelClasses[] = image.getPixelClasses();
 	for (int i = 0; i < vcPixelClasses.length; i++){

@@ -10,12 +10,7 @@
 
 package cbit.image;
 import java.awt.Color;
-import java.awt.Frame;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.image.ImageObserver;
-import java.awt.image.PixelGrabber;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -29,15 +24,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import javax.imageio.ImageIO;
+
 import org.vcell.util.Extent;
 
 
 public class ImageFile
 {
-	private static final int IMAGENOTREADY		= 0;
-	private static final int PIXELGRABBERERROR	= 1;
-	private static final int PIXELGRABBEROK		= 2;
-
 	public static final int BYTEORDER_PC = 1;
 	public static final int BYTEORDER_UNIX = 2;
 	
@@ -96,7 +89,7 @@ public ImageFile(VCImage vcImage) throws ImageException {
  * This method was created in VisualAge.
  * @param img java.awt.Image
  */
-public ImageFile(java.awt.Image img) throws ImageException{
+public ImageFile(BufferedImage img) throws ImageException{
 	loadImage(img);
 }
 
@@ -128,57 +121,30 @@ public ImageFile(String filename) throws ImageException, FileNotFoundException, 
 			System.out.println("ImageFile:ImageFile("+filename+"), exception loading TIFF, trying zip format, exception="+e2.getMessage());
 			byte buffer[] = new byte[65536];
 			FileInputStream fis = new FileInputStream(filename);
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			int numBytesRead = 0;
-			while ((numBytesRead = fis.read(buffer)) > 0){
-				bos.write(buffer,0,numBytesRead);
-			}
-			byte imageData[] = bos.toByteArray();
-			byte entries[][] = getZipFileEntries(imageData);
-			if (entries!=null){
-				VCImage vcImage = getVCImageFromZSeries(entries);
-				createFromVCImage(vcImage);
-				System.out.println("ImageFile.ImageFile("+filename+"), read successfully");
-			}else{
-				throw new ImageException("Image format not recognized for file '"+filename+"'");
+			try {
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				int numBytesRead = 0;
+				while ((numBytesRead = fis.read(buffer)) > 0){
+					bos.write(buffer,0,numBytesRead);
+				}
+				byte imageData[] = bos.toByteArray();
+				byte entries[][] = getZipFileEntries(imageData);
+				if (entries!=null){
+					VCImage vcImage = getVCImageFromZSeries(entries);
+					createFromVCImage(vcImage);
+					System.out.println("ImageFile.ImageFile("+filename+"), read successfully");
+				}else{
+					throw new ImageException("Image format not recognized for file '"+filename+"'");
+				}
+			}finally {
+				if (fis!=null){
+					fis.close();
+				}
 			}
 		}
 	}
 	
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @param urlString java.lang.String
- */
-private void createFromURL(java.net.URL url) throws InterruptedException {
-System.out.print("creating image from url ...");
-	java.awt.Image image = java.awt.Toolkit.getDefaultToolkit().getImage(url);
-System.out.println("done");
-System.out.print("getting image width ...");
-	ImageObserver imageObserver = new ImageObserver() {
-		public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height){
-			return false;
-		}
-	};
-	while (image.getWidth(imageObserver)<0){}
-System.out.println("done");
-	while (image.getHeight(imageObserver)<0){}
-	sizeX = image.getWidth(imageObserver);
-	sizeY = image.getHeight(imageObserver);
-System.out.println("width="+sizeX+" height="+sizeY);
-	originalRGB = new int[sizeX*sizeY]; 
-	PixelGrabber pg = new PixelGrabber(image,0,0,sizeX,sizeY,originalRGB,0,sizeX);
-	pg.grabPixels();
-	if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
-		bValid=false;
-		throw new InterruptedException("image fetch aborted or errored");
-	}	
-	bValid=true;
-	return;
-}
-
 
 /**
  * Insert the method's description here.
@@ -214,32 +180,23 @@ public String getFilename() throws ImageException {
 }
 
 
-	private int getRawPixelsFromImage(Image fileImage)
-	{
-		sizeX = 0;
-		sizeY = 0;
-		sizeZ = 1;
-		if((sizeX = fileImage.getWidth(null)) != -1)
-		{
-			if((sizeY = fileImage.getHeight(null)) != -1)
-			{
-				originalRGB = null;
-				originalRGB = new int[sizeX*sizeY];
-				java.awt.image.PixelGrabber pg = new java.awt.image.PixelGrabber(fileImage,0,0,sizeX,sizeY,originalRGB,0,sizeX);
-				try
-				{
-					if(pg.grabPixels() != true)
-					{
-						System.out.println("ImageProcess: ERROR Grabbing Pixels");
-						return(PIXELGRABBERERROR);
-					}
-					else return(PIXELGRABBEROK);
-				}
-				catch(InterruptedException e) {return(PIXELGRABBERERROR);}
-			}
+private void getRawPixelsFromImage(BufferedImage bufferedImage) throws ImageException {
+	
+	sizeX = bufferedImage.getWidth();
+	sizeY = bufferedImage.getHeight();
+	sizeZ = 1;
+	int[] origRGB = new int[sizeX*sizeY];
+	java.awt.image.PixelGrabber pg = new java.awt.image.PixelGrabber(bufferedImage,0,0,sizeX,sizeY,origRGB,0,sizeX);
+	try	{
+		if(!pg.grabPixels()){
+			throw new ImageException("ImageProcess: ERROR Grabbing Pixels");
 		}
-		return(IMAGENOTREADY);
+		this.originalRGB = origRGB;
+	} catch(InterruptedException e) {
+		e.printStackTrace(System.out);
+		throw new ImageException("ImageProcess: ERROR Grabbing Pixels: "+e.getMessage(),e);
 	}
+}
 
 
 /**
@@ -498,47 +455,24 @@ public boolean isValid() {
 }
 
 
-private void loadImage(java.awt.Image fileImage) throws ImageException {
-
-//************************ Franks stuff ********************************
-
-	MediaTracker mt = new MediaTracker(new Frame());
-	mt.addImage(fileImage,0);
-	try {
-		mt.waitForID(0);
-	} catch (InterruptedException e) {
-		e.printStackTrace(System.out);
-	} catch (NullPointerException e){
-		throw new ImageException("error reading native image file "+imageName);
-	}
-	if(mt.isErrorID(0) == true){
-		throw new ImageException("error reading native image file "+imageName);
-	}
-
-//************************ Franks stuff ********************************
-
-	int result;
-	do{ 
-		result = getRawPixelsFromImage(fileImage); 
-	} while(result == IMAGENOTREADY);
-	
-	if (result == PIXELGRABBERERROR){
-		throw new ImageException("error interpreting parsing image file "+imageName);
-	}	
+private void loadImage(BufferedImage fileImage) throws ImageException {
+	getRawPixelsFromImage(fileImage); 
 	bValid = true;
 }
 
 
-void loadNativeFormat(String imageName) throws ImageException, FileNotFoundException {
+void loadNativeFormat(String imageName) throws ImageException, IOException {
 	bValid = false;
 	this.imageName = imageName;
 	if(imageName == null){
 		throw new ImageException("image filename null");
 	}	
 	File nf = new File(imageName);
-	if(nf.exists() == false) throw new FileNotFoundException("file "+imageName+" not found");
+	if (!nf.exists()){
+		throw new FileNotFoundException("file "+imageName+" not found");
+	}
 	
-	Image fileImage = Toolkit.getDefaultToolkit().getImage(imageName);
+	BufferedImage fileImage = ImageIO.read(new File(imageName));
 	loadImage(fileImage);
 }
 
