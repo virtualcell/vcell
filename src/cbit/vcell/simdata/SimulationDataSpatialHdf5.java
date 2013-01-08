@@ -188,7 +188,7 @@ public class SimulationDataSpatialHdf5
 	public synchronized void readVarAndFunctionDataIdentifiers() throws Exception {
 		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers Entry");
 		readLogFile();
-		if(chomboMesh != null){
+		if(chomboMesh == null){
 			chomboMesh = readMeshFile(new File(userDirectory, getMeshFileName()));
 		}
 		
