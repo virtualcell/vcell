@@ -1274,15 +1274,9 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		while (st.hasMoreTokens()){
 			String iteration = st.nextToken();
 			String filename = st.nextToken();
-			if(isChombo()){
-				filename = filename+".hdf5";
-			}
 			String time = null;
 			if (bZipFormat2) {
 				String zipname = st.nextToken();
-				if(isChombo()){
-					zipname = zipname.substring(0, zipname.indexOf(".zip"))+".hdf5.zip";
-				}
 				time = st.nextToken();
 				zipFilenames[index] = (new File(zipname)).getName();
 			} else {
