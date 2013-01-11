@@ -17,6 +17,7 @@ import java.util.zip.ZipFile;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
@@ -229,6 +230,9 @@ public class SimulationDataSpatialHdf5
 //		}
 		ChomboMesh chomboMesh = new ChomboMesh();
 //		File mfile = new File(userDirectory, getMeshFileName());
+		if(H5.H5open() < 0){
+			throw new Exception("H5.H5open() failed");
+		}
 		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 		if(fileFormat == null){
 			throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
