@@ -230,6 +230,9 @@ public class SimulationDataSpatialHdf5
 		ChomboMesh chomboMesh = new ChomboMesh();
 //		File mfile = new File(userDirectory, getMeshFileName());
 		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		if(fileFormat == null){
+			throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
+		}
 		FileFormat meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
 		meshFile.open();
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)meshFile.getRootNode();
