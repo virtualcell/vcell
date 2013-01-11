@@ -41,15 +41,15 @@ public class SimulationDataSpatialHdf5
 	public static class SimLogFileEntry
 	{
 		int iteration;
-		String simFileName;
-		String zipFileName;
+		String simHdf5FileName;
+		String hdf5ZipFileName;
 		double time;
 		public SimLogFileEntry(int iteration, String simFileName,
 				String zipFileName, double time) {
 			super();
 			this.iteration = iteration;
-			this.simFileName = simFileName;
-			this.zipFileName = zipFileName;
+			this.simHdf5FileName = simFileName;
+			this.hdf5ZipFileName = zipFileName;
 			this.time = time;
 		}
 	}
@@ -154,8 +154,8 @@ public class SimulationDataSpatialHdf5
 	public static final String LOG_EXT = ".log";
 	public static final String HDF5_EXT = ".hdf5";
 	public static final String MESH_HDF5_EXT = ".mesh.hdf5";
-	public static final String SIM_ZIP_HDF5_EXT = ".hdf5.zip";
-	public static final String SIM_ZIP_EXT = ".zip";
+//	public static final String SIM_ZIP_HDF5_EXT = ".hdf5.zip";
+//	public static final String SIM_ZIP_EXT = ".zip";
 	
 	private VCDataIdentifier vcDataId = null;
 	private List<DataSetIdentifier> dataSetIdentifierList = Collections.synchronizedList(new ArrayList<DataSetIdentifier>());
@@ -557,9 +557,8 @@ public class SimulationDataSpatialHdf5
 		{
 			throw new IOException("no data found for time " + time);
 		}
-		File hdf5ZipFile = new File(logEntry.zipFileName.replace(SIM_ZIP_EXT, SIM_ZIP_HDF5_EXT));
+		File hdf5ZipFile = new File(logEntry.hdf5ZipFileName);
 		hdf5ZipFile = new File(userDirectory, hdf5ZipFile.getName());
-		String simHdf5FileName = logEntry.simFileName + HDF5_EXT;
 		
 		ZipFile	hdf5ZipZipFile = null;
 		File tempFile = null;
@@ -568,7 +567,7 @@ public class SimulationDataSpatialHdf5
 		try
 		{
 			hdf5ZipZipFile = DataSet.openZipFile(hdf5ZipFile);
-			ZipEntry simEntry = hdf5ZipZipFile.getEntry(simHdf5FileName);
+			ZipEntry simEntry = hdf5ZipZipFile.getEntry(logEntry.simHdf5FileName);
 			
 			// read data from zip file
 			bis = new BufferedInputStream(hdf5ZipZipFile.getInputStream(simEntry));
