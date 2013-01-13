@@ -193,30 +193,33 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					Geometry mathGeometry = sim.getMathDescription().getGeometry();
 					ISize newSize = meshSpecification.getSamplingSize();
 					ISize defaultSize = mathGeometry.getGeometrySpec().getDefaultSampledImageSize();
-					int defaultTotalVolumeElements = mathGeometry.getGeometrySurfaceDescription().getVolumeSampleSize().getXYZ();
-					int newTotalVolumeElements = meshSpecification.getSamplingSize().getXYZ();
-					if (defaultTotalVolumeElements > newTotalVolumeElements) { // coarser
-						Geometry resampledGeometry = (Geometry) BeanUtils.cloneSerializable(mathGeometry);
-						GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
-						geoSurfaceDesc.setVolumeSampleSize(newSize);
-						geoSurfaceDesc.updateAll();
-						
-						if (mathGeometry.getGeometrySurfaceDescription().getGeometricRegions() == null) {
-							mathGeometry.getGeometrySurfaceDescription().updateAll();
-						}
-						int defaultNumGeometricRegions = mathGeometry.getGeometrySurfaceDescription().getGeometricRegions().length;
-						int numGeometricRegions = geoSurfaceDesc.getGeometricRegions().length;
-						if (numGeometricRegions != defaultNumGeometricRegions) {
-							String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_4, 
-									newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), 
-									sim.getName(), numGeometricRegions, defaultNumGeometricRegions);
-							String result = PopupGenerator.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
-									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-							if (result == null || !result.equals(UserMessage.OPTION_OK)) {
-								continue;
+					if (!sim.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+					{
+						int defaultTotalVolumeElements = mathGeometry.getGeometrySurfaceDescription().getVolumeSampleSize().getXYZ();
+						int newTotalVolumeElements = meshSpecification.getSamplingSize().getXYZ();
+						if (defaultTotalVolumeElements > newTotalVolumeElements) { // coarser
+							Geometry resampledGeometry = (Geometry) BeanUtils.cloneSerializable(mathGeometry);
+							GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
+							geoSurfaceDesc.setVolumeSampleSize(newSize);
+							geoSurfaceDesc.updateAll();
+							
+							if (mathGeometry.getGeometrySurfaceDescription().getGeometricRegions() == null) {
+								mathGeometry.getGeometrySurfaceDescription().updateAll();
 							}
-						}
-					} 
+							int defaultNumGeometricRegions = mathGeometry.getGeometrySurfaceDescription().getGeometricRegions().length;
+							int numGeometricRegions = geoSurfaceDesc.getGeometricRegions().length;
+							if (numGeometricRegions != defaultNumGeometricRegions) {
+								String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_4, 
+										newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), 
+										sim.getName(), numGeometricRegions, defaultNumGeometricRegions);
+								String result = PopupGenerator.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
+										new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+								if (result == null || !result.equals(UserMessage.OPTION_OK)) {
+									continue;
+								}
+							}
+						} 
+					}
 					
 					if (mathGeometry.getGeometrySpec().hasImage()) { // if it's an image.
 						if (defaultSize.getX() + 1 < newSize.getX() 

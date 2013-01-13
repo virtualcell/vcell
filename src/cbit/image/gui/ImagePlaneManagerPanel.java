@@ -1395,7 +1395,7 @@ private void updateInfo(MouseEvent mouseEvent) {
 							}
 						}
 					}
-					boolean isChombo = getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh;
+					boolean isChombo = getDataInfoProvider() != null && getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh;
 					if (infoS == null && getSourceDataInfo() != null) {
 						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);

@@ -65,6 +65,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JPanel settingsPanel;
 	private JLabel meshRefinementLabel;
 	private JLabel labelMeshRefinementTitle;
+	private JLabel labelFinestMeshTitle;
+	private JLabel labelFinestMesh;
 	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
@@ -177,7 +179,17 @@ private void displayMesh() {
 				int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
 				labelMeshRefinementTitle.setVisible(true);
 				getJLabelMeshRefinement().setVisible(true);
+				labelFinestMeshTitle.setVisible(true);
+				labelFinestMesh.setVisible(true);
 				
+				ISize finestISize = chomboSolverSpec.getFinestSamplingSize(getSimulation().getMeshSpecification().getSamplingSize());
+				int nx = finestISize.getX();
+				int ny = finestISize.getY();
+				int nz = finestISize.getZ();
+				String text = (getSimulation().getMeshSpecification().getGeometry().getDimension() == 2 
+						? nx + "x" + ny + " = " + nx * ny
+						: nx + "x" + ny + "x" + nz + " = " + nx * ny * nz) + " elements";
+				labelFinestMesh.setText(text);
 				boolean bHasRefinement = numRefinementLevels > 0;
 				if (bHasRefinement) {
 					String refinementText = numRefinementLevels + " level(s), Refinement ratio(s): ";
@@ -195,6 +207,8 @@ private void displayMesh() {
             } else {
             	labelMeshRefinementTitle.setVisible(false);
             	getJLabelMeshRefinement().setVisible(false);
+            	labelFinestMesh.setVisible(false);
+            	labelFinestMeshTitle.setVisible(false);
             }
         }
     } catch (Exception exc) {
@@ -844,9 +858,25 @@ private void initialize() {
 		constraints = new java.awt.GridBagConstraints();
 		constraints.gridx = 1; constraintsJLabelMesh.gridy = gridy;
 		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraints.gridwidth = GridBagConstraints.REMAINDER;
+		constraints.gridwidth = 2;
 		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabelMeshRefinement(), constraints);
+		
+		constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 3; constraints.gridy = gridy;
+		constraints.anchor = java.awt.GridBagConstraints.EAST;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		labelFinestMeshTitle = new JLabel("Finest Level Mesh:");
+		add(labelFinestMeshTitle, constraints);
+		
+		constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 4; constraintsJLabelMesh.gridy = gridy;
+		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraints.gridwidth = GridBagConstraints.REMAINDER;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		labelFinestMesh = new JLabel();
+		labelFinestMesh.setForeground(java.awt.Color.blue);
+		add(labelFinestMesh, constraints);
 		
 		gridy ++;
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
