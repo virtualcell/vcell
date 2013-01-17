@@ -415,7 +415,8 @@ public Parameter getModelParameterByMathName(String mathParamName)
 	for(ParameterMappingSpec pms : paraMappingSpecs)
 	{
 		Variable var = getMathSymbolMapping().getVariable(pms.getModelParameter());
-		if(var.getName().equals(mathParamName))
+		//if(var.getName().equals(mathParamName))
+		if((var!=null) && (var.getName().equals(mathParamName)))
 		{
 			return pms.getModelParameter();
 		}
