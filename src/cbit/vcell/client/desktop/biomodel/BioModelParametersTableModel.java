@@ -28,6 +28,7 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
@@ -461,9 +462,7 @@ public void setValueAt(Object value, int row, int col) {
 				case COLUMN_DESCRIPTION:
 					return scale * parm1.getDescription().compareToIgnoreCase(parm2.getDescription());
 				case COLUMN_EXPRESSION:
-					String exp1 = parm1.getExpression() == null ? "" : parm1.getExpression().infix();						
-					String exp2 = parm2.getExpression() == null ? "" : parm2.getExpression().infix();						
-					return scale * exp1.compareToIgnoreCase(exp2);
+					return TableUtil.expressionCompare(parm1.getExpression(), parm2.getExpression(), ascending);
 				case COLUMN_PATH:
 					return scale * parm1.getNameScope().getPathDescription().compareToIgnoreCase(parm2.getNameScope().getPathDescription());
 				case COLUMN_UNIT:
