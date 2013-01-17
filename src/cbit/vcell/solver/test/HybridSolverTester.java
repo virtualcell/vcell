@@ -64,7 +64,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
  * The class does multiple hybrid stochastic runs and saves the results in one/multilple file(s).
- * Input parameter: String mathModelVCMLFileName, int ramdomSeedStart, int numRuns, String varNamesStr(colon delimited).
+ * Input parameter: String mathModelVCMLFileName, int startingTrialNo. , int numTrials, String varNamesStr(colon delimited), boolean bPrintTime.
  * The output will be files. One file for a variable. File contains the times as rows and variable concentration at each trial as columns.
  * The output file is named as simIDxxxx_varName_startingTrialNo.txt, tab delimited.
  * Creation date: (8/6/2012)
@@ -76,13 +76,15 @@ public class HybridSolverTester {
 	private int startTrialNo = 1;
 	private int numRuns = 1;
 	private String[] varNames = null;
+	private boolean bPrintTime = true; //by default print out time
 	private List<double[][]> results = new ArrayList<double[][]>(); //arraylist length is the num of var names, double[1+numRuns][numTimePoints] the first row is times
 	
-	public HybridSolverTester(String mathModelVCMLFileName, int startTrialNo, int numRuns, String varNamesStr){
+	public HybridSolverTester(String mathModelVCMLFileName, int startTrialNo, int numRuns, String varNamesStr, boolean bPrintTime){
 		this.mathModelVCMLFileName = mathModelVCMLFileName;
 		this.startTrialNo = startTrialNo;
 		this.numRuns = numRuns;
 		this.varNames = getVarNames(varNamesStr);
+		this.bPrintTime = bPrintTime;
 	}
 	
 	private String[] getVarNames(String varNamesStr) {
@@ -172,6 +174,10 @@ public class HybridSolverTester {
 					double[][] data = results.get(j);
 					if(data != null){
 						for(int k=0; k<data.length; k++){
+							if(!bPrintTime && k==0)
+							{
+								continue;
+							}
 							String rowStr = (k==0)?"Time\t":("trialNo_" + (startTrialNo+k-1) + "\t");
 							double[] rowData = data[k];
 							for(int q=0; q<rowData.length; q++){
@@ -261,7 +267,7 @@ public class HybridSolverTester {
 							}
 						);
 		for(File f:files){
-			System.out.println("Deleting file..." + f.getAbsolutePath());
+			//System.out.println("Deleting file..." + f.getAbsolutePath());
 			f.delete();
 		}
 			
@@ -270,13 +276,13 @@ public class HybridSolverTester {
 	//arguments: vcml file name, starting random seed, number of runs, var names
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
-		if(args.length != 4)
+		if(args.length != 5)
 		{
-			System.out.println("usage: HybridSolverTest mathVCMLFileName randomSeedStart numRuns varNames(delimited by :)");
+			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime");
 			System.exit(1);
 		}
 		try{
-			HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3]);
+			HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
 			hst.runHybridTest();
 		}catch(Exception e){
 			e.printStackTrace(System.out);
