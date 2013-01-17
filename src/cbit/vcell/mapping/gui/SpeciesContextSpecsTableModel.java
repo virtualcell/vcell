@@ -413,30 +413,60 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 				}
 				case COLUMN_INITIAL: {
 					Expression initExp1 = speciesContextSpec1.getInitialConditionParameter().getExpression();
-					String infix1 = (initExp1!=null)?(initExp1.infix()):("");
 					Expression initExp2 = speciesContextSpec2.getInitialConditionParameter().getExpression();
-					String infix2 = (initExp2!=null)?(initExp2.infix()):("");
-					if (ascending){
-						return infix1.compareToIgnoreCase(infix2);
-					}else{
-						return infix2.compareToIgnoreCase(infix1);
-					}
+					return TableUtil.expressionCompare(initExp1, initExp2, ascending);
 				}
 				case COLUMN_DIFFUSION: {
 					Expression diffExp1 = speciesContextSpec1.getDiffusionParameter().getExpression();
-					String infix1 = (diffExp1!=null)?(diffExp1.infix()):("");
 					Expression diffExp2 = speciesContextSpec2.getDiffusionParameter().getExpression();
-					String infix2 = (diffExp2!=null)?(diffExp2.infix()):("");
-					if (ascending){
-						return infix1.compareToIgnoreCase(infix2);
-					}else{
-						return infix2.compareToIgnoreCase(infix1);
-					}
+					return TableUtil.expressionCompare(diffExp1, diffExp2, ascending);
 				}	
 			}
 			return 1;
 		}
 	};
+}
+
+public static class TableUtil {
+	// detects whether expressions within this column contain numbers, alphanumeric expressions or a mix
+	// and sorts accordingly (numbers first (sorted numerically), alphanumeric expr next (sorted alphabetically w. ignore case))
+	public static int expressionCompare(Expression e1, Expression e2, boolean ascending) {
+		if(e1 == null || e2 == null) {
+			return 0;
+		}
+		if(e1.isNumeric() && !e2.isNumeric()) {
+			if (ascending) {
+				return -1;
+			} else {
+				return 1;
+			}
+		} else if(!e1.isNumeric() && e2.isNumeric()) {
+			if (ascending) {
+				return 1;
+			} else {
+				return -1;
+			}
+		} else if(!e1.isNumeric() && !e2.isNumeric()) {		// both are not-numbers
+			String infix1 = (e1!=null)?(e1.infix()):("");
+			String infix2 = (e2!=null)?(e2.infix()):("");
+			if (ascending){
+				return infix1.compareToIgnoreCase(infix2);
+			}else{
+				return infix2.compareToIgnoreCase(infix1);
+			}
+
+		} else {	// both are numbers
+			String infix1 = (e1!=null)?(e1.infix()):("");
+			Float f1 = Float.valueOf(infix1);
+			String infix2 = (e2!=null)?(e2.infix()):("");
+			Float f2 = Float.valueOf(infix2);
+			if(ascending) {
+				return f1.compareTo(f2);
+			} else {
+				return f2.compareTo(f1);
+			}
+		}
+	}
 }
 
 }

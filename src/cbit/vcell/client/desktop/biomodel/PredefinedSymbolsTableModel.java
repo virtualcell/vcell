@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.PredefinedSymbolTableFunctionEntry;
@@ -124,15 +125,15 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 				case COLUMN_DESCRIPTION:
 					return scale * getDescription(o1).compareToIgnoreCase(getDescription(o2));
 				case COLUMN_EXPRESSION:
-					String exp1 = getExpression(o1);
-					String exp2 = getExpression(o2);
-					if (exp1 == null) {
-						exp1 = "";
+					Expression e1 = null;
+					Expression e2 = null;
+					if (o1 instanceof Model.ReservedSymbol) {
+						e1 = ((Model.ReservedSymbol) o1).getExpression();
 					}
-					if (exp2 == null) {
-						exp2 = "";
+					if (o2 instanceof Model.ReservedSymbol) {
+						e2 = ((Model.ReservedSymbol) o2).getExpression();
 					}
-					return scale * exp1.compareToIgnoreCase(exp2);
+					return TableUtil.expressionCompare(e1, e2, ascending);
 				case COLUMN_UNIT:
 					String u1 = o1.getUnitDefinition() == null ? "" : o1.getUnitDefinition().getSymbol();
 					String u2 = o2.getUnitDefinition() == null ? "" : o2.getUnitDefinition().getSymbol();
