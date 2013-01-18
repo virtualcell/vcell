@@ -59,13 +59,13 @@ public class BatchJobSubmissionGenerator {
     	PrintWriter pw2 = null;
 		try {
 			pw2 = new PrintWriter(submissionFile);
-			pw2.println("#!/bin/bash");
-			pw2.println("for i in {1.." + TOTAL_NUM_JOB + "}");
-			pw2.println("do");
-			pw2.println("\techo \"submit job $i ---\"");
-			pw2.println("\tqsub job$i.sub");
-			pw2.println("\tsleep 40");
-			pw2.println("done");
+			pw2.print("#!/bin/bash\n");
+			pw2.print("for i in {1.." + TOTAL_NUM_JOB + "}\n");
+			pw2.print("do\n");
+			pw2.print("\techo \"submit job $i ---\"\n");
+			pw2.print("\tqsub job$i.sub\n");
+			pw2.print("\tsleep 40\n");
+			pw2.print("done\n");
 			pw2.close();	
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
