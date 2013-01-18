@@ -14,7 +14,7 @@ import org.vcell.util.FileUtils;
  * After executing this java file, jobxxx.sub files and submission script and runhybridtest script will be saved in the working directory.
  */
 public class BatchJobSubmissionGenerator {
-	public static final String WORK_DIR = "D:\\testHybrid\\batchSubmissionFiles\\";
+	public static final String WORK_DIR = "C:\\testHybrid\\batchSubmissionFiles\\";
 	public static final String JOB_FILE_BASE_NAME = "job";
     public static final String JOB_FILE_EXT = ".sub";
     public static final String SUBMISSION_SCRIPT_FILE_NAME = "submission";
@@ -36,7 +36,7 @@ public class BatchJobSubmissionGenerator {
 				pw1 = new PrintWriter(file);
 				pw1.println("#PBS -N hybrid" + (j+1));
 				pw1.println("#PBS -m a");
-				pw1.println("#PBS -M lye@uchc.edu");
+				pw1.println("#PBS -M boris@neuron.uchc.edu");
 				pw1.println("#PBS -j oe");
 				pw1.println("#PBS -k oe");
 				pw1.println("#PBS -r n");
