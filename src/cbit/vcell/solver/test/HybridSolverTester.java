@@ -15,53 +15,30 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 
-import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.VersionFlag;
 
-import cbit.image.gui.SourceDataInfo;
-import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 /**
  * The class does multiple hybrid stochastic runs and saves the results in one/multilple file(s).
  * Input parameter: String mathModelVCMLFileName, int startingTrialNo. , int numTrials, String varNamesStr(colon delimited), boolean bPrintTime.
