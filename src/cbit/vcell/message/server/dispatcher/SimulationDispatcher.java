@@ -120,7 +120,10 @@ public class SimulationDispatcher extends ServiceProvider {
 					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs();
 					ArrayList<KeyValue> simKeys = new ArrayList<KeyValue>();
 					for (SimulationJobStatus simJobStatus : allActiveJobs){
-						simKeys.add(simJobStatus.getVCSimulationIdentifier().getSimulationKey());
+						KeyValue simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey();
+						if (!simKeys.contains(simKey)){
+							simKeys.add(simKey);
+						}
 					}
 					final Map<KeyValue,SimulationRequirements> simulationRequirementsMap = simulationDatabase.getSimulationRequirements(simKeys);
 					if (allActiveJobs != null && allActiveJobs.length > 0) {
