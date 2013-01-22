@@ -81,11 +81,16 @@ public class ConvolutionDataGenerator extends DataGenerator {
 	}
 	
 	private ConvolutionDataGeneratorKernel kernel;
-	private Expression function;
-	public ConvolutionDataGenerator(String name, ConvolutionDataGeneratorKernel kernel, Expression f) {
+	private Expression volFunction;
+	private Expression memFunction;
+	public ConvolutionDataGenerator(String name, ConvolutionDataGeneratorKernel kernel, Expression volFunc, Expression memFunc) {
 		super(name, null);
 		this.kernel = kernel;
-		function = f;
+		if (volFunc == null || memFunc == null){
+			throw new RuntimeException("both volume and membrane functions must be defined for ConvolutionDataGenerator");
+		}
+		volFunction = volFunc;
+		memFunction = memFunc;
 	}
 	public ConvolutionDataGenerator(String argName, CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
 		super(argName, null);
@@ -106,9 +111,12 @@ public class ConvolutionDataGenerator extends DataGenerator {
 				if (token.equalsIgnoreCase(VCML.KernelGaussian)) {
 					kernel = new GaussianConvolutionDataGeneratorKernel(tokens); 
 				}				
-			} else if (token.equalsIgnoreCase(VCML.Function)) {
-				function = new Expression(tokens.readToSemicolon());
-			} else {
+			} else if (token.equalsIgnoreCase(VCML.Function)||token.equalsIgnoreCase(VCML.VolFunction)) {
+				volFunction = new Expression(tokens.readToSemicolon());
+			} else if (token.equalsIgnoreCase(VCML.MemFunction)) {
+				memFunction = new Expression(tokens.readToSemicolon());
+			} 
+			else {
 				throw new MathFormatException("unexpected identifier "+token);
 			}
 
@@ -118,15 +126,22 @@ public class ConvolutionDataGenerator extends DataGenerator {
 	@Override
 	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		kernel.bind(symbolTable);
-		if (function!=null){
-			function.bindExpression(symbolTable);
+		if (volFunction!=null){
+			volFunction.bindExpression(symbolTable);
+		}
+		if (memFunction!=null){
+			memFunction.bindExpression(symbolTable);
 		}
 	}
 	
-	public Expression getFunction() {
-		return function;
+	public Expression getVolFunction() {
+		return volFunction;
 	}
 
+	public Expression getMemFunction() {
+		return memFunction;
+	}
+	
 	public ConvolutionDataGeneratorKernel getKernel() {
 		return kernel;
 	}
@@ -143,7 +158,10 @@ public class ConvolutionDataGenerator extends DataGenerator {
 		if (!Compare.isEqualOrNull(kernel, cdg.kernel)){
 			return false;
 		}
-		if (!Compare.isEqualOrNull(function, cdg.function)){
+		if (!Compare.isEqualOrNull(volFunction, cdg.volFunction)){
+			return false;
+		}
+		if (!Compare.isEqualOrNull(memFunction, cdg.memFunction)){
 			return false;
 		}
 		return true;
@@ -151,10 +169,13 @@ public class ConvolutionDataGenerator extends DataGenerator {
 
 	@Override
 	public String getVCML() throws MathException {
-		return VCML.ConvolutionDataGenerator + "  " + getQualifiedName() + " " + VCML.BeginBlock + "\n"
-				+ "\t\t" + kernel.getVCML() + "\n"
-				+ "\t\t" + VCML.Function + "\t" + function.infix()+";\n"
-				+ "\t" + VCML.EndBlock + "\n";
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(VCML.ConvolutionDataGenerator + "  " + getQualifiedName() + " " + VCML.BeginBlock + "\n");
+		buffer.append("\t\t" + kernel.getVCML() + "\n");
+		buffer.append("\t\t" + VCML.VolFunction + "\t" + volFunction.infix()+";\n");
+		buffer.append("\t\t" + VCML.MemFunction + "\t" + memFunction.infix()+";\n");
+		buffer.append("\t" + VCML.EndBlock + "\n");
+		return buffer.toString();
 	}
 
 }

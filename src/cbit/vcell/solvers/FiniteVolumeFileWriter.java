@@ -214,6 +214,8 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		EXPLICIT_DATA_GENERATOR,
 		PROJECTION_DATA_GENERATOR,
 		GAUSSIAN_CONVOLUTION_DATA_GENERATOR,
+		GAUSSIAN_CONVOLUTION_VOL_FUNCTION,
+		GAUSSIAN_CONVOLUTION_MEM_FUNCTION,
 		
 		CHOMBO_SPEC_BEGIN,
 		DIMENSION,
@@ -380,11 +382,14 @@ private void writePostProcessingBlock() throws Exception{ // SolverException, Ex
 			ConvolutionDataGeneratorKernel kernel = convolutionDataGenerator.getKernel();
 			if (kernel instanceof GaussianConvolutionDataGeneratorKernel) {
 				GaussianConvolutionDataGeneratorKernel gck = (GaussianConvolutionDataGeneratorKernel)kernel;
-				Expression function = subsituteExpression(convolutionDataGenerator.getFunction(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				Expression volFunction = subsituteExpression(convolutionDataGenerator.getVolFunction(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				Expression memFunction = subsituteExpression(convolutionDataGenerator.getMemFunction(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 				Expression sigmaXY = subsituteExpression(gck.getSigmaXY_um(), VariableDomain.VARIABLEDOMAIN_VOLUME);
 				Expression sigmaZ = subsituteExpression(gck.getSigmaZ_um(), VariableDomain.VARIABLEDOMAIN_VOLUME);
+				String volFuncStr = volFunction.infix();
+				String memFuncStr = memFunction.infix();
 				printWriter.println(FVInputFileKeyword.GAUSSIAN_CONVOLUTION_DATA_GENERATOR + " " + varName + " " + domainName 
-						+ " " + sigmaXY.infix() + " " + sigmaZ.infix() + " " + function.infix()  +";");
+						+ " " + sigmaXY.infix() + " " + sigmaZ.infix() + " " + FVInputFileKeyword.GAUSSIAN_CONVOLUTION_VOL_FUNCTION+ " " + volFuncStr + "; " + FVInputFileKeyword.GAUSSIAN_CONVOLUTION_MEM_FUNCTION+ " " + memFuncStr +";");
 			}
 		} else if (dataGenerator instanceof ROIDataGenerator) {
 			/*
