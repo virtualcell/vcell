@@ -2338,10 +2338,18 @@ private Element getXML(ConvolutionDataGenerator convolutionDataGenerator) {
 	}
 	element.addContent(kernelElement);
 	
-	Element e = new Element(XMLTags.FunctionTag);
-	e.addContent(mangleExpression(convolutionDataGenerator.getFunction()));
-	element.addContent(e);	
-
+	if (convolutionDataGenerator.getVolFunction()!=null){
+		Element e = new Element(XMLTags.VolumeFunctionTag);
+		e.addContent(mangleExpression(convolutionDataGenerator.getVolFunction()));
+		element.addContent(e);
+	}
+	
+	if (convolutionDataGenerator.getMemFunction()!=null){
+		Element e = new Element(XMLTags.MembraneFunctionTag);
+		e.addContent(mangleExpression(convolutionDataGenerator.getMemFunction()));
+		element.addContent(e);
+	}
+	
 	return element;
 }
 

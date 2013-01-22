@@ -305,6 +305,8 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(getTemplate_FastSystem());
 		autoCompletionWords.add(BoundaryConditionType.NEUMANN_STRING);
 		autoCompletionWords.add(VCML.Function);
+		autoCompletionWords.add(VCML.VolFunction);
+		autoCompletionWords.add(VCML.MemFunction);
 		autoCompletionWords.add(VCML.InFlux);
 		autoCompletionWords.add(VCML.Initial);
 		autoCompletionWords.add(getTemplate_JumpCondition());
@@ -504,6 +506,8 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.FastSystem);
 		keywords.add(BoundaryConditionType.NEUMANN_STRING);
 		keywords.add(VCML.Function);
+		keywords.add(VCML.VolFunction);
+		keywords.add(VCML.MemFunction);
 		keywords.add(VCML.InFlux);
 		keywords.add(VCML.Initial);
 		keywords.add(VCML.JumpCondition);

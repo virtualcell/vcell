@@ -2787,16 +2787,29 @@ private ExplicitDataGenerator getExplicitDataGenerator(Element element) {
 private ConvolutionDataGenerator getConvolutionDataGenerator(Element element) {
 	String name = unMangle( element.getAttributeValue( XMLTags.NameAttrTag) );
 
-	Element e = element.getChild(XMLTags.FunctionTag, vcNamespace);
-	String s = e.getText();	
-	Expression function = unMangleExpression(s);
+	Expression volumeFunction = null;
+	Element volumeFunctionElement = element.getChild(XMLTags.FunctionTag, vcNamespace);
+	if (volumeFunctionElement == null){
+		volumeFunctionElement = element.getChild(XMLTags.VolumeFunctionTag, vcNamespace);
+	}
+	if (volumeFunctionElement != null){
+		String s = volumeFunctionElement.getText();	
+		volumeFunction = unMangleExpression(s);
+	}
+	
+	Expression membraneFunction = null;	
+	Element membraneFunctionElement = element.getChild(XMLTags.MembraneFunctionTag, vcNamespace);
+	if (membraneFunctionElement != null){
+		String s = membraneFunctionElement.getText();	
+		membraneFunction = unMangleExpression(s);
+	}
 	
 	ConvolutionDataGeneratorKernel kernel = null;
 	Element kernelElement = element.getChild(XMLTags.Kernel, vcNamespace);
 	String kernelType = kernelElement.getAttributeValue(XMLTags.TypeAttrTag);
 	if (kernelType.equals(XMLTags.KernelType_Gaussian)) {
 		Element e0 = kernelElement.getChild(XMLTags.KernelGaussianSigmaXY, vcNamespace);
-		s = e0.getText();	
+		String s = e0.getText();	
 		Expression sigmaXY = unMangleExpression(s);
 		
 		e0 = kernelElement.getChild(XMLTags.KernelGaussianSigmaZ, vcNamespace);
@@ -2806,7 +2819,7 @@ private ConvolutionDataGenerator getConvolutionDataGenerator(Element element) {
 		kernel = new GaussianConvolutionDataGeneratorKernel(sigmaXY, sigmaZ);
 	}
 	
-	ConvolutionDataGenerator cdg = new ConvolutionDataGenerator(name, kernel, function);
+	ConvolutionDataGenerator cdg = new ConvolutionDataGenerator(name, kernel, volumeFunction, membraneFunction);
 	return cdg;
 }
 

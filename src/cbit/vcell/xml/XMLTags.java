@@ -253,6 +253,8 @@ public class XMLTags {
     public final static String ExpressionTag = "Expression";
     public final static String NameAttrTag = "Name";
     public final static String FunctionTag = "Function";
+    public final static String VolumeFunctionTag = "VolumeFunction";
+    public final static String MembraneFunctionTag = "MembraneFunction";
     
     public final static String AnnotatedFunctionTag = "AnnotatedFunction";
     public final static String ErrorStringTag = "ErrorString";
