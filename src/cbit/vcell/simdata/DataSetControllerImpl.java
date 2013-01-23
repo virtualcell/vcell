@@ -646,7 +646,8 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 				Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
 				populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
 			}catch(Exception e){
-				throw new IOException("Error reading file");
+				log.exception(e);
+				throw new IOException("Error reading file",e);
 			}finally{
 				if(testFile != null){testFile.close();}
 			}

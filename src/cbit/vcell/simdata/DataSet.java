@@ -80,7 +80,7 @@ double[] getData(String varName, File zipFile) throws IOException {
 			
 			DataInputStream dis = null;
 			try {
-				if(isChombo(zipFile)){
+				if(is!=null && zipFile!=null && isChombo(zipFile)){
 					try{
 						data = readHDF5(is, varName);
 					}catch(Exception e){
@@ -260,7 +260,7 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 			length = file.length();
 		}
 	
-		if(isChombo(zipFile)){
+		if(is != null && zipFile!=null && isChombo(zipFile)){
 			try {
 				readHDF5(is,null);
 			} catch (Exception e) {
