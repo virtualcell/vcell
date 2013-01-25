@@ -510,13 +510,14 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //			if(!participantType.equals("Catalyst") && !participantType.equals("Control")  && 
 //					(bpObject instanceof PhysicalEntity && ((PhysicalEntity)bpObject).getCellularLocation() != null))
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
-//			else if(bpObject instanceof Transport){
-//				if(bioModel.getModel().getMembranes().size() > 0)
-//					location = bioModel.getModel().getMembranes().get(0).getName();
-//				else
-//					location = bioModel.getModel().getStructures()[0].getName();
-//			}
-//			else
+//			else 
+			if(bpObject instanceof Transport){
+				if(bioModel.getModel().getMembranes().size() > 0)
+					location = bioModel.getModel().getMembranes().get(0).getName();
+				else
+					location = bioModel.getModel().getStructures()[0].getName();
+			}
+			else
 				location = bioModel.getModel().getStructures()[0].getName();
 			conversionTableRow.setLocation(location);
 		}
@@ -584,9 +585,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
 //			}
 //			else{
-//				if(bioModel.getModel().getMembranes().size() > 0)
-//					location = bioModel.getModel().getMembranes().get(0).getOutsideFeature().getName();
-//				else
+				if(bioModel.getModel().getMembranes().size() > 0)
+					location = bioModel.getModel().getMembranes().get(0).getOutsideFeature().getName();
+				else
 					location = bioModel.getModel().getStructures()[0].getName(); 
 //			}
 			conversionTableRow.setLocation(location);
@@ -601,9 +602,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
 //			}
 //			else{
-//				if(bioModel.getModel().getMembranes().size() > 0)
-//					location = bioModel.getModel().getMembranes().get(0).getInsideFeature().getName();
-//				else
+				if(bioModel.getModel().getMembranes().size() > 0)
+					location = bioModel.getModel().getMembranes().get(0).getInsideFeature().getName();
+				else
 					location = bioModel.getModel().getStructures()[0].getName(); 
 //			}
 			conversionTableRow.setLocation(location);
@@ -613,13 +614,13 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //			if(!participantType.equals("Catalyst") && !participantType.equals("Control")  && 
 //					(bpObject instanceof PhysicalEntity && ((PhysicalEntity)bpObject).getCellularLocation() != null))
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
-//			else if(bpObject instanceof Transport){
-//				if(bioModel.getModel().getMembranes().size() > 0)
-//					location = bioModel.getModel().getMembranes().get(0).getName();
-//				else
-//					location = bioModel.getModel().getStructures()[0].getName();
-//			}
-//			else
+//			else 
+			if(bpObject instanceof Transport){
+				if(bioModel.getModel().getMembranes().size() > 0)
+					location = bioModel.getModel().getMembranes().get(0).getName();
+				else
+					location = bioModel.getModel().getStructures()[0].getName();
+			} else
 				location = bioModel.getModel().getStructures()[0].getName();
 			conversionTableRow.setLocation(location);
 		}
