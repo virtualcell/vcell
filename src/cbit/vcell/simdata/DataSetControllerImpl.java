@@ -654,7 +654,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			//uncomment it for Debug
 			//do_iterate(dataProcessingOutputFileDDF5);
 		}else{
-			throw new FileNotFoundException("file not found");
+			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileDDF5.getName()+"' not found");
 		}
 
 		return dataProcessingOutput;

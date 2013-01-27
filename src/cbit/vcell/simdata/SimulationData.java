@@ -1012,8 +1012,14 @@ public synchronized long getSizeInBytes() {
  */
 public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputContext) throws IOException, DataAccessException {
 	// Is this zip format?
-	File zipFile1 = new File(userDirectory,vcDataId.getID()+(isChombo()?".hdf5.zip":".zip"));
-	File zipFile2 = new File(userDirectory,vcDataId.getID()+(isChombo()?"00.hdf5.zip":"00.zip"));
+	boolean bIsChombo = false;
+	try {
+		bIsChombo = isChombo();
+	}catch (FileNotFoundException e){
+		e.printStackTrace(System.out);
+	}
+	File zipFile1 = new File(userDirectory,vcDataId.getID()+(bIsChombo?".hdf5.zip":".zip"));
+	File zipFile2 = new File(userDirectory,vcDataId.getID()+(bIsChombo?"00.hdf5.zip":"00.zip"));
 	bZipFormat1 = false;
 	bZipFormat2 = false;
 	if (zipFile1.exists()) {
