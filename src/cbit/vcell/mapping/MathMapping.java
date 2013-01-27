@@ -2244,11 +2244,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}else if (scm.getVariable() instanceof VolVariable && scm.getDependencyExpression()==null){
 				VolVariable variable = (VolVariable)scm.getVariable();
 				Equation equation = null;
-				if (scm.isPDERequired() && sm instanceof FeatureMapping){
-					//
-					// PDE
-					//
-					if (((FeatureMapping)sm).getGeometryClass() == subVolume){
+				if (sm.getGeometryClass() == subVolume){
+					if (scm.isPDERequired()){
 						//
 						// species context belongs to this subDomain
 						//
@@ -2269,15 +2266,15 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						((PdeEquation)equation).setVelocityZ((scs.getVelocityZParameter().getExpression()==null)?(null) : new Expression(getMathSymbol(scs.getVelocityZParameter(),sm.getGeometryClass())));
 						
 						subDomain.replaceEquation(equation);
+					} else {
+						//
+						// ODE - species context belongs to this subDomain
+						//
+						Expression initial = new Expression(getMathSymbol(initConcParameter,null));
+						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(timeUnit),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
+						equation = new OdeEquation(variable,initial,rate);
+						subDomain.replaceEquation(equation);
 					}
-				}else if (sm.getGeometryClass() == subVolume){
-					//
-					// ODE - species context belongs to this subDomain
-					//
-					Expression initial = new Expression(getMathSymbol(initConcParameter,null));
-					Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(timeUnit),simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass());
-					equation = new OdeEquation(variable,initial,rate);
-					subDomain.replaceEquation(equation);
 				}
 			}
 		}
@@ -2423,13 +2420,14 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				//
 				// independant variable, create an equation object
 				//
-				Equation equation = null;
-				MemVariable variable = (MemVariable)scm.getVariable();
-				if (scm.isPDERequired()){
-					//
-					// PDE
-					//
-					if (sm.getGeometryClass() == surfaceClass){
+				if (sm.getGeometryClass() == surfaceClass){
+					Equation equation = null;
+					MemVariable variable = (MemVariable)scm.getVariable();
+					if (scm.isPDERequired()){
+						//
+						// PDE
+						//
+					
 						//
 						// species context belongs to this subDomain
 						//
@@ -2444,12 +2442,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						((PdeEquation)equation).setBoundaryZm((scs.getBoundaryZmParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZmParameter(),sm.getGeometryClass())));
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):new Expression(getMathSymbol(scs.getBoundaryZpParameter(),sm.getGeometryClass())));
 						memSubDomain.replaceEquation(equation);
-					}
-				} else {
-					//
-					// ODE					
-					//
-					if (sm.getGeometryClass() == surfaceClass){
+					} else {
+						//
+						// ODE					
+						//
 						//
 						// species context belongs to this subDomain
 						//
