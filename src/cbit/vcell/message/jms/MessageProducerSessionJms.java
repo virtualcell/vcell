@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -87,6 +88,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					messageProducer.send(rpcMessage);
 					session.commit();
 					VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
+System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = "+rpcMessage.getJMSMessageID());
 					String filter = MessageConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
 					MessageConsumer replyConsumer = session.createConsumer(commonTemporaryQueue,filter);
 					Message replyMessage = replyConsumer.receive(timeoutMS);
@@ -131,11 +133,21 @@ public class MessageProducerSessionJms implements VCMessageSession {
 			}
 		}
 
-		public void sendQueueMessage(VCellQueue queue, VCMessage message) throws VCMessagingException {
+		@Override
+		public void sendQueueMessage(VCellQueue queue, VCMessage message, Boolean persistent, Long timeToLiveMS) throws VCMessagingException {
 			if (message instanceof VCMessageJms){
+				MessageProducer messageProducer = null;
 				try {
 					Destination destination = session.createQueue(queue.getName());
-					MessageProducer messageProducer = session.createProducer(destination);
+					messageProducer = session.createProducer(destination);
+					if (persistent==null || persistent.booleanValue()){
+						messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+					}else{
+						messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+					}
+					if (timeToLiveMS!=null){
+						messageProducer.setTimeToLive(timeToLiveMS);
+					}
 					messageProducer.send(((VCMessageJms)message).getJmsMessage());
 					if (bIndependent){
 						session.commit();
@@ -143,10 +155,22 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					VCMongoMessage.sendJmsMessageSent(message,queue);
 				} catch (JMSException e) {
 					onException(e);
+				} finally {
+					if (messageProducer != null){
+						try {
+							messageProducer.close();
+						} catch (JMSException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}else{
 				throw new RuntimeException("expected JMS message for JMS message service");
 			}
+		}
+		
+		public void sendQueueMessage(VCellQueue queue, VCMessage message) throws VCMessagingException {
+			sendQueueMessage(queue,message,null,null);
 		}
 		
 		public void sendTopicMessage(VCellTopic topic, VCMessage message) throws VCMessagingException {

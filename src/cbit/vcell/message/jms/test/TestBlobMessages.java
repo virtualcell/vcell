@@ -57,7 +57,7 @@ public class TestBlobMessages {
 	        		VCMessageSession session = sessions.get(s);
 		        	VCMessage message = session.createObjectMessage(new byte[40000*(i+1)]);
 //		        	VCMessage message = session.createObjectMessage(new byte[100000000]);
-		        	session.sendQueueMessage(VCellQueue.JimQueue, message);
+		        	session.sendQueueMessage(VCellQueue.JimQueue, message, false, 100000L);
 		        	session.commit();
 		        }
 	        }

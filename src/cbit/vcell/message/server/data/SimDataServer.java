@@ -25,6 +25,8 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -33,8 +35,10 @@ import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.VCPooledQueueConsumer;
+import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
-import cbit.vcell.message.VCRpcConsumer;
+import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
@@ -57,7 +61,10 @@ import cbit.vcell.simdata.DataSetControllerImpl;
  */
 public class SimDataServer extends ServiceProvider implements ExportListener, DataJobListener {
 	private DataServerImpl dataServerImpl = null;
-	private VCRpcConsumer rpcConsumer = null;	
+	private VCQueueConsumer rpcConsumer = null;	
+	private VCRpcMessageHandler rpcMessageHandler = null;
+	private VCPooledQueueConsumer pooledQueueConsumer = null;
+	private VCMessageSession sharedProducerSession = null;
 
 
 /**
@@ -81,15 +88,22 @@ private void init() throws Exception {
 	
 	VCMessageSelector selector;
 	ServiceType serviceType = serviceInstanceStatus.getType();
+	int numThreads;
 	if (serviceType == ServiceType.DATAEXPORT){
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+exportOnlyFilter);
+		numThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.exportdataThreadsProperty));
 	}else if (serviceType == ServiceType.DATA){
 		selector = vcMessagingService.createSelector(dataRequestFilter+" AND "+dataOnlyFilter);
+		numThreads = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.simdataThreadsProperty));
 	}else{
 		throw new RuntimeException("expecting either Service type of "+ServiceType.DATA+" or "+ServiceType.DATAEXPORT);
 	}
 
-	rpcConsumer = new VCRpcConsumer(dataServerImpl, VCellQueue.DataRequestQueue, serviceType, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
+	this.sharedProducerSession = vcMessagingService.createProducerSession();
+	rpcMessageHandler = new VCRpcMessageHandler(dataServerImpl, VCellQueue.DataRequestQueue, log);
+	this.pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, numThreads, sharedProducerSession);
+	this.pooledQueueConsumer.initThreadPool();
+	rpcConsumer = new VCQueueConsumer(VCellQueue.DataRequestQueue, pooledQueueConsumer, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
 
 	VCMessagingDelegate delegate = new VCMessagingDelegate() {
 		public void onMessagingException(Exception e) {
@@ -100,6 +114,12 @@ private void init() throws Exception {
 	vcMessagingService.addMessageConsumer(rpcConsumer);
 	
 	initControlTopicListener();
+}
+
+@Override
+public void stopService() {
+	this.pooledQueueConsumer.shutdownAndAwaitTermination();
+	super.stopService();
 }
 
 /**
