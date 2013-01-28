@@ -95,6 +95,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 
 	public void init() throws Exception{
+		initControlTopicListener();
+		
 		ServiceInstanceStatus dispatcherServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DISPATCH,99,ManageUtils.getHostName(), new Date(), true);
 		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, dispatcherServiceInstanceStatus, simulationDatabase, new StdoutSessionLog("DISPATCH"), true);
 		simulationDispatcher.init();
