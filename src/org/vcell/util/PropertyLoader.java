@@ -67,6 +67,10 @@ public class PropertyLoader {
 	
 	//
 	public static final String corbaEnabled					= "vcell.corbaEnabled";
+	public static final String databaseThreadsProperty		= "vcell.databaseThreads";
+	public static final String exportdataThreadsProperty	= "vcell.exportdataThreads";
+	public static final String simdataThreadsProperty		= "vcell.simdataThreads";
+	public static final String htcworkerThreadsProperty		= "vcell.htcworkerThreads";
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";
 	public static final String simdataCacheSizeProperty		= "vcell.simdataCacheSize";
 	public static final String numProcessorsProperty		= "vcell.numProcessors";
@@ -198,6 +202,10 @@ public class PropertyLoader {
 		hybridMilAdaptiveExecutableProperty,
 		
 		corbaEnabled,
+		databaseThreadsProperty,
+		exportdataThreadsProperty,
+		simdataThreadsProperty,
+		htcworkerThreadsProperty,
 		databaseCacheSizeProperty,
 		simdataCacheSizeProperty,
 		numProcessorsProperty,

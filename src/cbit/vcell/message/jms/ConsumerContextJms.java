@@ -21,7 +21,6 @@ import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingConsumer;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCRpcConsumer;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
 import cbit.vcell.message.messages.MessageConstants;
@@ -69,73 +68,8 @@ public class ConsumerContextJms implements Runnable {
 						topicConsumer.getTopicListener().onTopicMessage(vcMessage, temporaryMessageProducerSession);
 						jmsSession.commit();
 						vcMessage.removeBlobFile();
-					} else {
-						VCRpcConsumer rpcConsumer = (VCRpcConsumer)vcConsumer;
-						if (!(jmsMessage instanceof ObjectMessage)){
-							jmsSession.commit();
-							throw new VCMessagingException("expecting ObjectMessage");
-						}
-						ObjectMessage objectMessage = (ObjectMessage)jmsMessage;
-						VCMessageJms rpcVCMessage = new VCMessageJms(objectMessage);
-						rpcVCMessage.loadBlobFile();
-						VCMongoMessage.sendJmsMessageReceived(rpcVCMessage,vcConsumer.getVCDestination());
-						Serializable object = (Serializable)rpcVCMessage.getObjectContent();
-						if (!(object instanceof VCRpcRequest)){
-							jmsSession.commit();
-							throw new VCMessagingException("expecting RpcRequest in message");
-						}
-						VCRpcRequest vcRpcRequest = null;
-						if (object instanceof VCRpcRequest){
-							vcRpcRequest = (VCRpcRequest)object;
-						}
-						
-						java.io.Serializable returnValue = null;
-						try {
-							//
-							// invoke the local RPC implementation and collect either the return value or the exception that was thrown
-							//
-
-							returnValue = (Serializable) vcRpcRequest.rpc(rpcConsumer.getServiceImplementation(), log);
-						} catch (Exception ex) {
-							log.exception(ex);
-							returnValue = ex; // if exception occurs, send client the exception
-						}
-
-						// check the return value for non-seriablable objects
-						if (returnValue != null && returnValue.getClass().isArray()) {
-							Class<?> componentClass = returnValue.getClass().getComponentType();
-							if (!componentClass.isPrimitive() && !Serializable.class.isAssignableFrom(componentClass)) {
-								returnValue = new ClassCastException("Not serializable:" + componentClass);
-							}
-						}
-
-						// reply to "reply-to" queue with the return value or exception.
-						long clientTimeoutMS = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.vcellClientTimeoutMS)); 
-						Queue replyTo = (Queue)jmsMessage.getJMSReplyTo();
-						
-						//
-						// use MessageProducerSessionJms to create the replyMessage (allows "Blob" messages to be formed as needed).
-						//
-						MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(jmsSession);
-						VCMessageJms vcReplyMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(returnValue);
-						Message replyMessage = vcReplyMessage.getJmsMessage();
-						
-						replyMessage.setStringProperty(MessageConstants.METHOD_NAME_PROPERTY, vcRpcRequest.getMethodName());
-						replyMessage.setJMSCorrelationID(jmsMessage.getJMSMessageID());
-//{
-//Enumeration<String> props = replyMessage.getPropertyNames();
-//while (props.hasMoreElements()){
-//	System.out.println("ReplyMessage property="+props.nextElement());
-//}
-//}
-						MessageProducer replyProducer = jmsSession.createProducer(replyTo);
-						replyProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-						replyProducer.setTimeToLive(clientTimeoutMS);
-						replyProducer.send(replyMessage);
-						replyProducer.close();
-						jmsSession.commit();		//commit		
-						VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest,rpcVCMessage);
-						rpcVCMessage.removeBlobFile();
+					}else{
+						throw new RuntimeException("unexpected VCConsumer type "+vcConsumer);
 					}
 				}else{
 //						System.out.println(toString()+"no message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");

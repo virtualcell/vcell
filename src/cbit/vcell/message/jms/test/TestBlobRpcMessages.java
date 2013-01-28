@@ -3,23 +3,18 @@ package cbit.vcell.message.jms.test;
 import java.util.ArrayList;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCRpcConsumer;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.jms.VCMessageJms;
-import cbit.vcell.message.jms.test.TestRPC.MyRpcServer;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.VCRpcMessageHandler;
+import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
  * Hello world!
@@ -56,12 +51,14 @@ public class TestBlobRpcMessages {
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
 	    	
 	    	VCMessagingService messagingService = VCMessagingService.createInstance();
+	    	StdoutSessionLog log = new StdoutSessionLog("log");
 
 	        // reading message and computing sum
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
 	        for (int i=0;i<NUM_COMSUMERS;i++){
-				VCRpcConsumer rpcConsumer = new VCRpcConsumer(myRpcServer, VCellQueue.JimQueue, ServiceType.TESTING_SERVICE, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
+	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellQueue.JimQueue, log);
+				VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
 	        	messagingService.addMessageConsumer(rpcConsumer);
 	        }
 	    		        
