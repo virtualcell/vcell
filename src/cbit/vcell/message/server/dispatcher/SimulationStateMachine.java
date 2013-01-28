@@ -1,9 +1,9 @@
 package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+//import java.util.List;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -53,88 +53,88 @@ public class SimulationStateMachine {
 	
 	private KeyValue simKey;
 	private int jobIndex;
-	private ArrayList<StateMachineTransition> stateMachineTransitions = new ArrayList<StateMachineTransition>();
-	public static class StateMachineTransition {
-		public final AbstractStateMachineEvent event;
-		public final SimulationJobStatus oldSimJobStatus;
-		public final SimulationJobStatus newSimJobStatus;
-		public StateMachineTransition(AbstractStateMachineEvent event, SimulationJobStatus oldSimJobStatus, SimulationJobStatus newSimJobStatus){
-			this.event = event;
-			this.oldSimJobStatus = oldSimJobStatus;
-			this.newSimJobStatus = newSimJobStatus;
-		}
-		public String toString(){
-			return "event=("+event+") : oldJobStatus=("+oldSimJobStatus+") : newJobStatus=("+newSimJobStatus+")";
-		}
-	}
+	//private ArrayList<StateMachineTransition> stateMachineTransitions = new ArrayList<StateMachineTransition>();
+//	public static class StateMachineTransition {
+//		public final AbstractStateMachineEvent event;
+//		public final SimulationJobStatus oldSimJobStatus;
+//		public final SimulationJobStatus newSimJobStatus;
+//		public StateMachineTransition(AbstractStateMachineEvent event, SimulationJobStatus oldSimJobStatus, SimulationJobStatus newSimJobStatus){
+//			this.event = event;
+//			this.oldSimJobStatus = oldSimJobStatus;
+//			this.newSimJobStatus = newSimJobStatus;
+//		}
+//		public String toString(){
+//			return "event=("+event+") : oldJobStatus=("+oldSimJobStatus+") : newJobStatus=("+newSimJobStatus+")";
+//		}
+//	}
 	
 	//==============================================================
 	//
 	// input events (archived for debugging purposes)
 	//
 	//==============================================================
-	public abstract class AbstractStateMachineEvent {
-		final long timestampMS = System.currentTimeMillis();
-		final Integer taskID;
-		public AbstractStateMachineEvent(Integer taskID){
-			this.taskID = taskID;
-		}
-		protected String getTimeAndTaskString(){
-			return "timeStampMS="+timestampMS+",elaspedTimeS="+((System.currentTimeMillis()-timestampMS)/1000)+", taskID='"+taskID+"'";
-		}
-	}
-	public class WorkerStateMachineEvent extends AbstractStateMachineEvent {
-		final WorkerEvent workerEvent;
-		public WorkerStateMachineEvent(Integer taskID, WorkerEvent workerEvent){
-			super(taskID);
-			this.workerEvent = workerEvent;
-		}
-		public String toString(){
-			return "WorkerStateMachineEvent("+getTimeAndTaskString()+",workerEvent='"+workerEvent.toString()+"')";
-		}
-	}
-	public class StartStateMachineEvent extends AbstractStateMachineEvent {
-		public StartStateMachineEvent(Integer taskID){
-			super(taskID);
-		}
-		public String toString(){
-			return "StartStateMachineEvent("+getTimeAndTaskString()+")";
-		}
-	}
-	public class StopStateMachineEvent extends AbstractStateMachineEvent {
-		public StopStateMachineEvent(Integer taskID){
-			super(taskID);
-		}
-		public String toString(){
-			return "StopStateMachineEvent("+getTimeAndTaskString()+")";
-		}
-	}
-	public class PreloadStateMachineEvent extends AbstractStateMachineEvent {
-		public PreloadStateMachineEvent(Integer taskID){
-			super(taskID);
-		}
-		public String toString(){
-			return "PreloadStateMachineEvent("+getTimeAndTaskString()+")";
-		}
-	}
-	public class DispatchStateMachineEvent extends AbstractStateMachineEvent {
-		public DispatchStateMachineEvent(Integer taskID){
-			super(taskID);
-		}
-		public String toString(){
-			return "DispatchStateMachineEvent("+getTimeAndTaskString()+")";
-		}
-	}
-	public class AbortStateMachineEvent extends AbstractStateMachineEvent {
-		public final String failureMessage;
-		public AbortStateMachineEvent(Integer taskID, String failureMessage){
-			super(taskID);
-			this.failureMessage = failureMessage;
-		}
-		public String toString(){
-			return "AbortStateMachineEvent("+getTimeAndTaskString()+")";
-		}
-	}
+//	public abstract class AbstractStateMachineEvent {
+//		final long timestampMS = System.currentTimeMillis();
+//		final Integer taskID;
+//		public AbstractStateMachineEvent(Integer taskID){
+//			this.taskID = taskID;
+//		}
+//		protected String getTimeAndTaskString(){
+//			return "timeStampMS="+timestampMS+",elaspedTimeS="+((System.currentTimeMillis()-timestampMS)/1000)+", taskID='"+taskID+"'";
+//		}
+//	}
+//	public class WorkerStateMachineEvent extends AbstractStateMachineEvent {
+//		final WorkerEvent workerEvent;
+//		public WorkerStateMachineEvent(Integer taskID, WorkerEvent workerEvent){
+//			super(taskID);
+//			this.workerEvent = workerEvent;
+//		}
+//		public String toString(){
+//			return "WorkerStateMachineEvent("+getTimeAndTaskString()+",workerEvent='"+workerEvent.toString()+"')";
+//		}
+//	}
+//	public class StartStateMachineEvent extends AbstractStateMachineEvent {
+//		public StartStateMachineEvent(Integer taskID){
+//			super(taskID);
+//		}
+//		public String toString(){
+//			return "StartStateMachineEvent("+getTimeAndTaskString()+")";
+//		}
+//	}
+//	public class StopStateMachineEvent extends AbstractStateMachineEvent {
+//		public StopStateMachineEvent(Integer taskID){
+//			super(taskID);
+//		}
+//		public String toString(){
+//			return "StopStateMachineEvent("+getTimeAndTaskString()+")";
+//		}
+//	}
+//	public class PreloadStateMachineEvent extends AbstractStateMachineEvent {
+//		public PreloadStateMachineEvent(Integer taskID){
+//			super(taskID);
+//		}
+//		public String toString(){
+//			return "PreloadStateMachineEvent("+getTimeAndTaskString()+")";
+//		}
+//	}
+//	public class DispatchStateMachineEvent extends AbstractStateMachineEvent {
+//		public DispatchStateMachineEvent(Integer taskID){
+//			super(taskID);
+//		}
+//		public String toString(){
+//			return "DispatchStateMachineEvent("+getTimeAndTaskString()+")";
+//		}
+//	}
+//	public class AbortStateMachineEvent extends AbstractStateMachineEvent {
+//		public final String failureMessage;
+//		public AbortStateMachineEvent(Integer taskID, String failureMessage){
+//			super(taskID);
+//			this.failureMessage = failureMessage;
+//		}
+//		public String toString(){
+//			return "AbortStateMachineEvent("+getTimeAndTaskString()+")";
+//		}
+//	}
 
 	
 	public SimulationStateMachine(KeyValue simKey, int jobIndex){
@@ -145,9 +145,9 @@ public class SimulationStateMachine {
 	public SimulationStateMachine(SimulationJobStatus[] simJobStatus) {
 		this.simKey = simJobStatus[0].getVCSimulationIdentifier().getSimulationKey();
 		this.jobIndex = simJobStatus[0].getJobIndex();
-		for (SimulationJobStatus jobStatus : simJobStatus){
-			addStateMachineTransition(new StateMachineTransition(new PreloadStateMachineEvent(jobStatus.getTaskID()), null, jobStatus));
-		}
+//		for (SimulationJobStatus jobStatus : simJobStatus){
+//			addStateMachineTransition(new StateMachineTransition(new PreloadStateMachineEvent(jobStatus.getTaskID()), null, jobStatus));
+//		}
 	}
 	
 	public KeyValue getSimKey() {
@@ -158,22 +158,22 @@ public class SimulationStateMachine {
 		return jobIndex;
 	}
 
-	public List<StateMachineTransition> getStateMachineTransitions() {
-		return stateMachineTransitions;
-	}
+//	public List<StateMachineTransition> getStateMachineTransitions() {
+//		return stateMachineTransitions;
+//	}
 	
-	public String show(){
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("SimulationStateMachine for SimID='"+simKey+"', jobIndex="+jobIndex+"\n");
-		for (StateMachineTransition stateMachineTransition : stateMachineTransitions){
-			buffer.append(stateMachineTransition+"\n");
-		}
-		return buffer.toString();
-	}
+//	public String show(){
+//		StringBuffer buffer = new StringBuffer();
+//		buffer.append("SimulationStateMachine for SimID='"+simKey+"', jobIndex="+jobIndex+"\n");
+//		for (StateMachineTransition stateMachineTransition : stateMachineTransitions){
+//			buffer.append(stateMachineTransition+"\n");
+//		}
+//		return buffer.toString();
+//	}
 
-	private void addStateMachineTransition(StateMachineTransition stateMachineTransition){
-		stateMachineTransitions.add(stateMachineTransition);
-	}
+//	private void addStateMachineTransition(StateMachineTransition stateMachineTransition){
+//		stateMachineTransitions.add(stateMachineTransition);
+//	}
 
 	public synchronized void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
 		WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
@@ -439,7 +439,7 @@ public class SimulationStateMachine {
 		}else{
 			VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
 		}
-		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(taskID, workerEvent), oldSimulationJobStatus, newJobStatus));
+//		addStateMachineTransition(new StateMachineTransition(new WorkerStateMachineEvent(taskID, workerEvent), oldSimulationJobStatus, newJobStatus));
 
 	}
 
@@ -499,7 +499,7 @@ public class SimulationStateMachine {
 				newTaskID, SimulationMessage.MESSAGE_JOB_WAITING, newQueueStatus, newExeStatus);
 		
 		simulationDatabase.insertSimulationJobStatus(newJobStatus);
-		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(newTaskID), oldSimulationJobStatus, newJobStatus));
+//		addStateMachineTransition(new StateMachineTransition(new StartStateMachineEvent(newTaskID), oldSimulationJobStatus, newJobStatus));
 			
 		StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
 		message.sendToClient(session);
@@ -561,7 +561,7 @@ public class SimulationStateMachine {
 			message.sendToClient(session);
 		
 		}
-		addStateMachineTransition(new StateMachineTransition(new DispatchStateMachineEvent(taskID), oldSimulationJobStatus, newSimJobStatus));
+//		addStateMachineTransition(new StateMachineTransition(new DispatchStateMachineEvent(taskID), oldSimulationJobStatus, newSimJobStatus));
 
 	}
 
@@ -602,7 +602,7 @@ public class SimulationStateMachine {
 			session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);	
 			
 			simulationDatabase.updateSimulationJobStatus(newJobStatus);
-			addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(taskID), simJobStatus, newJobStatus));
+//			addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(taskID), simJobStatus, newJobStatus));
 
 			// update client
 			StatusMessage message = new StatusMessage(newJobStatus, user.getName(), null, null);
@@ -664,7 +664,7 @@ public class SimulationStateMachine {
 				taskID, SimulationMessage.jobFailed(failureMessage), newQueueStatus, newExeStatus);
 		
 		simulationDatabase.updateSimulationJobStatus(newJobStatus);
-		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(taskID, failureMessage), oldJobStatus, newJobStatus));
+//		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(taskID, failureMessage), oldJobStatus, newJobStatus));
 
 		String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
 		StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
@@ -672,17 +672,17 @@ public class SimulationStateMachine {
 		log.print("Send status to client: " + msgForClient);
 	}
 
-	public int getLatestKnownTaskID() {
-		int taskID = -1;
-		for (StateMachineTransition transition : stateMachineTransitions){
-			if (transition.event.taskID!=null && transition.event.taskID>taskID){
-				taskID = transition.event.taskID;
-			}
-			if (transition.newSimJobStatus!=null && transition.newSimJobStatus.getTaskID()>taskID){
-				taskID = transition.newSimJobStatus.getTaskID();
-			}
-		}
-		return taskID;
-	}
-
+//	public int getLatestKnownTaskID() {
+//		int taskID = -1;
+//		for (StateMachineTransition transition : stateMachineTransitions){
+//			if (transition.event.taskID!=null && transition.event.taskID>taskID){
+//				taskID = transition.event.taskID;
+//			}
+//			if (transition.newSimJobStatus!=null && transition.newSimJobStatus.getTaskID()>taskID){
+//				taskID = transition.newSimJobStatus.getTaskID();
+//			}
+//		}
+//		return taskID;
+//	}
+//
 }

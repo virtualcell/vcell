@@ -67,8 +67,8 @@ public class LocalSimulationWorker extends ServiceProvider  {
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public LocalSimulationWorker(VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
-	super(vcMessagingService, serviceInstanceStatus, log);
+public LocalSimulationWorker(VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
+	super(vcMessagingService, serviceInstanceStatus, log, bSlaveMode);
 }
 
 public final String getJobSelector() {
@@ -221,7 +221,7 @@ public static void main(java.lang.String[] args) {
 		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
  
         SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-		LocalSimulationWorker localSimulationWorker = new LocalSimulationWorker(vcMessagingService, serviceInstanceStatus, log);
+		LocalSimulationWorker localSimulationWorker = new LocalSimulationWorker(vcMessagingService, serviceInstanceStatus, log, false);
 		localSimulationWorker.initControlTopicListener();
 		localSimulationWorker.initQueueConsumer();
 		

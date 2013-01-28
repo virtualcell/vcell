@@ -1,0 +1,34 @@
+#!/bin/bash
+shopt -s -o nounset
+
+jmxport=1234
+jmxhost=sigcluster2-c0-0.cam.uchc.edu
+jmxargs="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=${jmxport} -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${jmxhost}"
+
+ordinal=123
+memoryMB=3000
+site=GENERATED
+batchSystemType=SGE
+mainclass=cbit.vcell.message.server.combined.VCellServices
+
+siteRootDir=/share/apps/vcell/deployed/${site}
+siteResDir=${siteRootDir}/resources
+siteCfgDir=${siteRootDir}/configs
+siteLibDir=${siteRootDir}/lib
+logdir=/share/apps/vcell/logs/${site}
+jvmmem=-Xmx${memoryMB}M
+
+arguments="${ordinal} ${logdir} ${batchSystemType}"
+
+# add hdf5 to lib path
+export LD_LIBRARY_PATH=${siteLibDir}:$LD_LIBRARY_PATH
+
+jre=java
+jvm_jars=GENERATED
+
+jvmprop="${jvmmem} -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+
+nohup ${jre} -cp ${jvm_jars} ${jmxargs} ${jvmprop} ${mainclass} ${arguments} &
+
+exit 0
+
