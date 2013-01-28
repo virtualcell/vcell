@@ -39,14 +39,16 @@ public abstract class ServiceProvider {
 	protected VCMessagingService vcMessagingService = null;
 	protected VCTopicConsumer vcTopicConsumer = null;
 	protected SessionLog log = null;
+	public final boolean bSlaveMode;
 
 /**
  * JmsMessaging constructor comment.
  */
-protected ServiceProvider(VCMessagingService vcMessageService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) {
+protected ServiceProvider(VCMessagingService vcMessageService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log, boolean bSlaveMode) {
 	this.log = log;
 	this.vcMessagingService = vcMessageService;
 	this.serviceInstanceStatus = serviceInstanceStatus;
+	this.bSlaveMode = bSlaveMode;
 }
 
 
@@ -79,6 +81,10 @@ private final String getDaemonControlFilter() {
  * Creation date: (11/19/2001 5:29:47 PM)
  */
 public void initControlTopicListener() {
+	if (bSlaveMode){
+		return;
+	}
+	
 	TopicListener listener = new TopicListener() {
 
 		public void onTopicMessage(VCMessage message, VCMessageSession session) {
@@ -132,6 +138,9 @@ public void initControlTopicListener() {
  * Creation date: (12/10/2003 8:42:49 AM)
  */
 public void stopService() {
+	if (bSlaveMode){
+		return;
+	}
 	try {
 		Thread t = new Thread() {
 			public void run() {
