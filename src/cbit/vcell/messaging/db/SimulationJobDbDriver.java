@@ -124,34 +124,58 @@ public SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverI
  * @param imageName java.lang.String
  */
 public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection con, List<KeyValue> simKeys) throws SQLException {
-	StringBuffer simKeyListBuffer = new StringBuffer();
-	for (int i=0;i<simKeys.size();i++){
-		KeyValue key = simKeys.get(i);
-		simKeyListBuffer.append(key);
-		if (i<simKeys.size()-1){
-			simKeyListBuffer.append(",");
-		}
-	}
-	String sql = "SELECT " + simTable.id.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
-			+ " FROM " + simTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
-			+ " WHERE " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
-			+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName()
-			+ " AND " + simTable.id.getQualifiedColName() + " in ( "+ simKeyListBuffer.toString() + " )";
-			
-	//log.print(sql);
-	Statement stmt = con.createStatement();
-	HashMap<KeyValue,SimulationRequirements> simulationRequirementsMap = new HashMap<KeyValue,SimulationRequirements>();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		while (rset.next()) {
-			KeyValue simKey = new KeyValue(rset.getBigDecimal(simTable.id.toString()));
-			int dimension = rset.getInt(geometryTable.dimension.toString());			
-			simulationRequirementsMap.put(simKey,new SimulationRequirements(simKey, dimension));
-		}
-	} finally {
-		stmt.close();
-	}
+	ArrayList<KeyValue> simKeysRemaining = new ArrayList<KeyValue>(simKeys);
 	
+	HashMap<KeyValue,SimulationRequirements> simulationRequirementsMap = new HashMap<KeyValue,SimulationRequirements>();
+	
+	final int ORACLE_MAX_NUMBER_OF_EXPRESSIONS_IN_LIST = 1000;
+	final int MAX_KEYS_PER_STATEMENT = ORACLE_MAX_NUMBER_OF_EXPRESSIONS_IN_LIST / 2;
+	while (!simKeysRemaining.isEmpty()){
+		//
+		// get MAX_KEYS_PER_STATEMENT simkeys to operate on at once ... oracle doesn't like more than 1000.
+		//
+		ArrayList<KeyValue> simKeysSubset = new ArrayList<KeyValue>();
+		int count=0;
+		for (KeyValue key : simKeysRemaining){
+			simKeysSubset.add(key);
+			if (count >= MAX_KEYS_PER_STATEMENT){
+				break;
+			}
+			count++;
+		}
+		simKeysRemaining.removeAll(simKeysSubset);
+		
+		//
+		// get Simulation Requirements for subset of simKeys and store in simulationRequirementsMap
+		//
+		StringBuffer simKeyListBuffer = new StringBuffer();
+		boolean bFirst = true;
+		for (KeyValue key : simKeysSubset){
+			if (!bFirst){
+				simKeyListBuffer.append(",");
+			}
+			simKeyListBuffer.append(key);
+			bFirst = false;
+		}
+		String sql = "SELECT " + simTable.id.getQualifiedColName() + "," + geometryTable.dimension.getQualifiedColName()
+				+ " FROM " + simTable.getTableName() + "," + mathDescTable.getTableName() + "," + geometryTable.getTableName()
+				+ " WHERE " + simTable.mathRef.getQualifiedColName() + "=" + mathDescTable.id.getQualifiedColName()
+				+ " AND " + geometryTable.id.getQualifiedColName() + "=" + mathDescTable.geometryRef.getQualifiedColName()
+				+ " AND " + simTable.id.getQualifiedColName() + " in ( "+ simKeyListBuffer.toString() + " )";
+				
+		//log.print(sql);
+		Statement stmt = con.createStatement();
+		try {
+			ResultSet rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				KeyValue simKey = new KeyValue(rset.getBigDecimal(simTable.id.toString()));
+				int dimension = rset.getInt(geometryTable.dimension.toString());			
+				simulationRequirementsMap.put(simKey,new SimulationRequirements(simKey, dimension));
+			}
+		} finally {
+			stmt.close();
+		}
+	}		
 	return simulationRequirementsMap;
 }
 
