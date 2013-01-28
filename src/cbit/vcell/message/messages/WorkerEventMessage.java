@@ -289,7 +289,7 @@ public static WorkerEventMessage sendWorkerAlive(VCMessageSession session, Objec
  * @throws VCMessagingException 
  */
 private void sendWorkerEvent(VCMessageSession session) throws VCMessagingException {
-	session.sendQueueMessage(VCellQueue.WorkerEventQueue, toMessage(session));
+	session.sendQueueMessage(VCellQueue.WorkerEventQueue, toMessage(session), true, null);
 }
 
 

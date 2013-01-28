@@ -89,7 +89,7 @@ private void parse(VCMessage message) throws XmlParseException {
  * @throws VCMessagingException 
  */
 public void sendSimulationTask(VCMessageSession session) throws VCMessagingException {
-	session.sendQueueMessage(VCellQueue.SimJobQueue, toMessage(session));
+	session.sendQueueMessage(VCellQueue.SimJobQueue, toMessage(session),true,null);
 }
 
 

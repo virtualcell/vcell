@@ -58,7 +58,7 @@ public class TestQueues {
 	        		sum ++;
 	        		VCMessageSession session = sessions.get(s);
 		        	VCMessage message = session.createTextMessage("message "+i+" from session "+s);
-		        	session.sendQueueMessage(VCellQueue.JimQueue, message);
+		        	session.sendQueueMessage(VCellQueue.JimQueue, message, false, 100000L);
 		        	session.commit();
 		        }
 	        	Thread.sleep(2000);
