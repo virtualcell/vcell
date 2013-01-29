@@ -36,7 +36,8 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		LOCALCOMPUTE ("LclC"),   // local pde and ode
 		SERVERMANAGER ("ServerManager"),
 		TESTING_SERVICE ("TestingService"),
-		RMI ("Rmi");
+		RMI ("Rmi"), 
+		MASTER ("Master");
 		
 		private final String typeName;
 		ServiceType(String tn) {

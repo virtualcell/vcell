@@ -74,12 +74,12 @@ public class SimDataServer extends ServiceProvider implements ExportListener, Da
  * @param log
  * @throws Exception
  */
-public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, SessionLog log) throws Exception {
-	super(vcMessagingService,serviceInstanceStatus,log);
+public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl dataServerImpl, VCMessagingService vcMessagingService, SessionLog log, boolean bSlaveMode) throws Exception {
+	super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
 	this.dataServerImpl = dataServerImpl;
 }
 
-private void init() throws Exception {
+public void init() throws Exception {
 	
 	String dataRequestFilter = "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') " +
 									" AND (" + SERVICE_TYPE_PROPERTY + "='" + ServiceType.DATA.getName() + "')";
@@ -180,7 +180,7 @@ public static void main(java.lang.String[] args) {
 
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, log);
+        SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, log, false);
         //add dataJobListener
         dataSetControllerImpl.addDataJobListener(simDataServer);
         // add export listener
