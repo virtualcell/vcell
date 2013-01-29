@@ -12,13 +12,14 @@ package cbit.image;
 
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.ImageProducer;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -37,25 +38,7 @@ public class BrowseImage {
 public BrowseImage() {
 	super();
 }
-/**
- * This method was created in VisualAge.
- * @return java.lang.Integer
- * @param vci VCImage
- */
-private static byte[] gifFromImage(byte[] image, ImageFilter imageFilter) throws IOException {
-	java.awt.Image imageTemp = java.awt.Toolkit.getDefaultToolkit().createImage(image);
-	return gifFromImageProducer(imageTemp.getSource(), imageFilter);
-}
-/**
- * This method was created in VisualAge.
- * @return java.lang.Integer
- * @param vci VCImage
- */
-private static byte[] gifFromImageProducer(ImageProducer ip, ImageFilter imageFilter) throws IOException {
-	FilteredImageSource fis = new FilteredImageSource(ip, imageFilter);
-	Image image = Toolkit.getDefaultToolkit().createImage(fis);
-	return createGifFromImage(image);
-}
+
 private static byte[] createGifFromImage(Image image) throws IOException{
 	image = new ImageIcon(image).getImage();
 	BufferedImage bi = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB);
@@ -71,27 +54,43 @@ private static byte[] createGifFromImage(Image image) throws IOException{
  * @return java.lang.Integer
  * @param vci VCImage
  */
-public static byte[] gifFromVCImage(VCImage vci) throws ImageException {
-	try {
-		return gifFromVCImage(vci, new ImageFilter());
-	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new ImageException(e.getMessage());
-	}
-}
-/**
- * This method was created in VisualAge.
- * @return java.lang.Integer
- * @param vci VCImage
- */
-private static byte[] gifFromVCImage(VCImage vci, ImageFilter imageFilter) throws ImageException, IOException {
+public static byte[] gifFromVCImage(VCImage vci) throws ImageException, IOException {
 	byte[] grey = new byte[256];
-	for (int c = 0; c < 256; c += 1)
+	for (int c = 0; c < 256; c += 1){
 		grey[c] = (byte) c;
+	}
 	IndexColorModel icm = new IndexColorModel(8, 256, grey, grey, grey);
-	MemoryImageSource mis = new MemoryImageSource(vci.getNumX(), vci.getNumY(), icm, vci.getPixels(), 0, vci.getNumX());
-	return gifFromImageProducer(mis, imageFilter);
+	BufferedImage bufferedImage = new BufferedImage(vci.getNumX(), vci.getNumY()*vci.getNumZ(), BufferedImage.TYPE_BYTE_INDEXED, icm);
+	WritableRaster raster = bufferedImage.getRaster();
+	DataBufferByte dataBuffer = (DataBufferByte)raster.getDataBuffer();
+	System.arraycopy(vci.getPixels(), 0, dataBuffer.getData(), 0,  vci.getPixels().length);
+	ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+	ImageIO.write(bufferedImage, "gif", byteArrayOutputStream);
+	byteArrayOutputStream.close();
+	return byteArrayOutputStream.toByteArray();
 }
+
+//public static void main(String args[]){
+//	try {
+//		byte[] imagePixels = new byte[100*100];
+//		for (int i=0;i<100;i++){
+//			for (int j=0;j<100;j++){
+//				double radius = Math.sqrt(((i-50)*(i-50)) + ((j-50)*(j-50)));
+//				imagePixels[i+100*j] = (byte)(3.5*radius);
+//			}
+//		}
+//		cbit.image.VCImageUncompressed vcImageUncompressed = new cbit.image.VCImageUncompressed(null,imagePixels,new org.vcell.util.Extent(1,1,1),100,100,1);
+//		byte[] gifImageBytes = cbit.image.BrowseImage.gifFromVCImage(vcImageUncompressed);
+//		java.io.FileOutputStream fos = new java.io.FileOutputStream(new java.io.File("c:\\temp\\darkCenter.gif"));
+//		fos.write(gifImageBytes);
+//		fos.close();
+//		
+//		System.out.println("done");
+//	}catch (Exception e){
+//		e.printStackTrace(System.out);
+//	}
+//}
+
 /**
  * This method was created in VisualAge.
  * @return byte[]
@@ -104,7 +103,8 @@ public static GIFImage makeBrowseGIFImage(cbit.image.VCImage vci) throws cbit.im
 	try{
 		return new GIFImage(makeBrowseImage(vci));
 	}catch(Exception e){
-		throw new cbit.image.GifParsingException(e.getMessage());
+		e.printStackTrace(System.out);
+		throw new cbit.image.GifParsingException("Error creating gif image: "+e.getMessage(),e);
 	}
 }
 /**
@@ -117,8 +117,8 @@ public static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.I
 		throw new ImageException("ImageAttributes.makeBrowseImage: Bad parameters");
 	}
 	try {
-		byte[] newgif = gifFromVCImage(vci, new java.awt.image.ImageFilter());
-		java.awt.Image imageTemp = java.awt.Toolkit.getDefaultToolkit().createImage(newgif);
+		byte[] newgif = gifFromVCImage(vci);
+		BufferedImage imageTemp = ImageIO.read(new ByteArrayInputStream(newgif));
 		int xw = -1;
 		int yw = -1;
 		if (vci.getNumX() < vci.getNumY()){
@@ -128,26 +128,6 @@ public static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.I
 		}
 		java.awt.Image browseImage = imageTemp.getScaledInstance(xw, yw, java.awt.Image.SCALE_REPLICATE);
 		return createGifFromImage(browseImage);
-	}catch (IOException e){
-		e.printStackTrace(System.out);
-		throw new ImageException(e.getMessage());
-	}
-}
-/**
- * This method was created in VisualAge.
- * @return byte[][]
- * @param vci cbit.image.VCImageCompressed
- */
-public static GIFImage makePixelClassImage(VCImage vci, byte[] browseImage, VCPixelClass pixelClass) throws ImageException, cbit.image.GifParsingException {
-	try {
-		VCImageUncompressed vciu = new VCImageUncompressed(vci);
-		int pixel = pixelClass.getPixel();
-		HighlightImageFilter hif = new HighlightImageFilter((byte) pixel, (byte) pixel, (byte) pixel, (byte) 255, (byte) 0, (byte) 0);
-		if (browseImage != null) {
-			return new GIFImage(gifFromImage(browseImage, hif));
-		} else {
-			return new GIFImage(gifFromVCImage(vciu, hif));
-		}
 	}catch (IOException e){
 		e.printStackTrace(System.out);
 		throw new ImageException(e.getMessage());
