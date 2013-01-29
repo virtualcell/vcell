@@ -1204,12 +1204,14 @@ private void writeMolecules() throws ExpressionException, MathException {
 			}
 		}		
 	}
-	max_mol = Math.max(50000, max_mol * 10);
+	
 	if (max_mol > MAX_MOL_LIMIT) {
 		throw new MathException(VCellErrorMessages.getSmoldynMaxMolReachedErrorMessage((long)max_mol, MAX_MOL_LIMIT));
-	}
-	printWriter.println("# molecules");	
-	printWriter.println(SmoldynKeyword.max_mol + " " + (long)max_mol);
+	} 
+	
+	printWriter.println("# molecules");
+	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(50000, max_mol * 10));
+	printWriter.println(SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
 	printWriter.println(sb);
 }
 
