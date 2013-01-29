@@ -109,7 +109,7 @@ echo "killing running instance for ${serviceid}"
 ps ux | grep "${mainclass} ${arguments}" | grep -v grep | awk '{ print "killing "$2; system("kill -9 " $2)}'
 
 # remove log file
-rm ${logdir}/*_${servicetype}_${ordinal}_*
+#rm ${logdir}/${siteUpperCase}_${servicetype}_${ordinal}_*.log
 
 # copy jar files to local dir
 #localServiceDir=/cm/local/vcell/${site}/${serviceid}
