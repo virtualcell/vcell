@@ -98,7 +98,9 @@ public class VCML {
 	public final static String BeginBlock 				= "{";
 	public final static String EndBlock 				= "}";
 	public final static String EndExpression 			= ";";
-	public final static String Function					= "Function";
+	public final static String Function 				= "Function";
+	public final static String VolFunction				= "VolFunction";
+	public final static String MemFunction				= "MemFunction";
 	public final static String MathOverrides			= "MathOverrides";
 	public final static String SolverTaskDescription	= "SolverTaskDescription";
 	public final static String TaskType					= "TaskType";

@@ -91,6 +91,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -2565,13 +2566,38 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	
 	if (simContext.getMicroscopeMeasurement()!=null && simContext.getMicroscopeMeasurement().getFluorescentSpecies().size()>0){
 		MicroscopeMeasurement measurement = simContext.getMicroscopeMeasurement();
-		Expression concExp = new Expression(0.0);
-		for (SpeciesContext sc : measurement.getFluorescentSpecies()){
-			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(sc.getStructure()).getGeometryClass();
-			concExp = Expression.add(concExp,new Expression(getMathSymbol(sc, geometryClass)));
+		Expression volumeConcExp = new Expression(0.0);
+		Expression membraneDensityExp = new Expression(0.0);
+		for (SpeciesContext speciesContext : measurement.getFluorescentSpecies()){
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure()).getGeometryClass();
+			StructureMapping structureMapping = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+			StructureMappingParameter unitSizeParameter = structureMapping.getUnitSizeParameter();
+			Expression mappedSpeciesContextExpression = Expression.mult(unitSizeParameter.getExpression(),new Expression(getMathSymbol(speciesContext, geometryClass)));
+			if (geometryClass instanceof SubVolume){
+				// volume function
+				Expression unitFactor = null;
+				if (speciesContext.getUnitDefinition().compareEqual(model.getUnitSystem().getInstance("uM"))){
+					//
+					// current units are uM, desired units are molecules.um-3  (divide by KMOLE)
+					//
+					unitFactor = Expression.invert(new Expression(model.getReservedSymbolByRole(ReservedSymbolRole.KMOLE),null));
+				}else{
+					unitFactor = new Expression(1.0);
+				}
+				volumeConcExp = Expression.add(volumeConcExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flatten();
+			}else if (geometryClass instanceof SurfaceClass){
+				// membrane function
+				Expression unitFactor = new Expression(1.0);
+				membraneDensityExp = Expression.add(membraneDensityExp,Expression.mult(unitFactor,mappedSpeciesContextExpression)).flatten();
+			}else{
+				throw new MathException("unsupported geometry mapping for microscopy measurement");
+			}
 		}
 		ConvolutionKernel kernel = measurement.getConvolutionKernel();
 		if (kernel instanceof ExperimentalPSF){
+			if (!membraneDensityExp.isZero()){
+				throw new MappingException("membrane variables and functions not yet supported for Z projection in Microcopy Measurements");
+			}
 			ExperimentalPSF psf = (ExperimentalPSF)kernel;
 			DataSymbol psfDataSymbol = psf.getPSFDataSymbol();
 			if (psfDataSymbol instanceof FieldDataSymbol){
@@ -2586,17 +2612,20 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						new Expression("'"+fieldDataSymbol.getFieldDataVarType()+"'"));
 				varHash.addVariable(new Function("__PSF__",psfExp,null));
 			}
-			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,concExp,new Expression("__PSF__"));
+			Expression convExp = Expression.function(ConvFunctionDefinition.FUNCTION_name,volumeConcExp,new Expression("__PSF__"));
 			varHash.addVariable(newFunctionOrConstant(measurement.getName(),convExp,null));
 			
 		} else if (kernel instanceof GaussianConvolutionKernel) {
 			GaussianConvolutionKernel gaussianConvolutionKernel = (GaussianConvolutionKernel) kernel;
 			GaussianConvolutionDataGeneratorKernel mathKernel = new GaussianConvolutionDataGeneratorKernel(gaussianConvolutionKernel.getSigmaXY_um(), gaussianConvolutionKernel.getSigmaZ_um());
-			ConvolutionDataGenerator dataGenerator = new ConvolutionDataGenerator(measurement.getName(), mathKernel, concExp);
+			ConvolutionDataGenerator dataGenerator = new ConvolutionDataGenerator(measurement.getName(), mathKernel, volumeConcExp, membraneDensityExp);
 			mathDesc.getPostProcessingBlock().addDataGenerator(dataGenerator);
 		} else if (kernel instanceof ProjectionZKernel){
 			if (mathDesc.getGeometry().getDimension() == 3) {
-				ProjectionDataGenerator dataGenerator = new ProjectionDataGenerator(measurement.getName(), null, ProjectionDataGenerator.Axis.z, ProjectionDataGenerator.Operation.sum, concExp);
+				if (!membraneDensityExp.isZero()){
+					throw new MappingException("membrane variables and functions not yet supported for Z projection in Microcopy Measurements");
+				}
+				ProjectionDataGenerator dataGenerator = new ProjectionDataGenerator(measurement.getName(), null, ProjectionDataGenerator.Axis.z, ProjectionDataGenerator.Operation.sum, volumeConcExp);
 				mathDesc.getPostProcessingBlock().addDataGenerator(dataGenerator);
 			} else {
 				throw new MappingException("Z Projection is only supported in 3D spatial applications.");
