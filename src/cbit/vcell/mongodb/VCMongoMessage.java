@@ -15,7 +15,6 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
@@ -429,7 +428,7 @@ public final class VCMongoMessage {
 			addHeader(dbObject,MongoMessage_msgtype_obsoleteJob);
 
 			dbObject.put(MongoMessage_info,failureMessage);
-			dbObject.put(MongoMessage_simStateMachineDump,simStateMachine.show());
+//			dbObject.put(MongoMessage_simStateMachineDump,simStateMachine.show());
 			
 			addObject(dbObject,jobStatus);
 			

@@ -14,16 +14,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -101,8 +95,8 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	 * @param argParentNode cbit.vcell.appserver.ComputationalNode
 	 * @param argInitialContext javax.naming.Context
 	 */
-public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log) throws DataAccessException, FileNotFoundException, UnknownHostException {
-	super(vcMessagingService, serviceInstanceStatus, log);
+public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingService, ServiceInstanceStatus serviceInstanceStatus, SessionLog log, boolean bSlaveMode) throws DataAccessException, FileNotFoundException, UnknownHostException {
+	super(vcMessagingService, serviceInstanceStatus, log, bSlaveMode);
 	this.htcProxy = htcProxy;
 }
 
@@ -122,6 +116,11 @@ public final String getJobSelector() {
 	jobSelector += ")))";
 	
 	return jobSelector;
+}
+
+public void init() {
+	initControlTopicListener();
+	initQueueConsumer();
 }
 
 private void initServiceControlTopicListener() {
@@ -380,9 +379,9 @@ public static void main(java.lang.String[] args) {
 		htcProxy.checkServerStatus();
 
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log);
-		simulationWorker.initControlTopicListener();
-		simulationWorker.initQueueConsumer();
+		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
+		simulationWorker.init();
+		
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
 		VCMongoMessage.sendException(e);
@@ -390,8 +389,6 @@ public static void main(java.lang.String[] args) {
 		System.exit(-1);
 	}
 }
-
-
 
 
 }
