@@ -151,6 +151,7 @@ public class PropertyLoader {
 	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
 	public static final String htcComputeResources = "vcell.htc.computeresources";
 	public static final String htcBatchSystemQueue = "vcell.htc.queue";
+	public static final String htcLogDir = "vcell.htc.logdir";
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
 	
@@ -281,6 +282,7 @@ public class PropertyLoader {
 		htcComputeResources,
 		htcBatchSystemQueue,
 		pbsHomeDir,
+		htcLogDir,
 
 		
 		limitJobMemoryMB,

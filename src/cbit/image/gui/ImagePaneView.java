@@ -292,7 +292,7 @@ private void handleException(java.lang.Throwable exception) {
 private void imagePaneView_Initialize() {
 	//This gives us events even if there are no listeners registered
 	//This is done as part of the process of consuming events that turn into pan and zoom
-	//processMouseEvent and processMouseMotionEvent are overriden to detect pan and zoom
+	//processMouseEvent and processMouseMotionEvent are overridden to detect pan and zoom
 	enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK | java.awt.AWTEvent.MOUSE_MOTION_EVENT_MASK);
 }
 /**
