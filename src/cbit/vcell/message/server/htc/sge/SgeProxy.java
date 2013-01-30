@@ -15,6 +15,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.util.xml.XmlUtil;
@@ -258,34 +259,18 @@ denied: job "6894" does not exist
 	@Override
 	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
 		try {
-			VCellServerID serverID = VCellServerID.getSystemServerID();
 
+			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
+		    if (!(htcLogDirString.endsWith("/"))){
+		    	htcLogDirString = htcLogDirString+"/";
+		    }
+			
 			StringWriter sw = new StringWriter();
 
 		    sw.append("#!/bin/csh\n");
 		    sw.append("#$ -N " + jobName + "\n");
-		    sw.append("#$ -o " + jobName+".log\n");
+		    sw.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
 //			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
-
-			//
-			// specify the queue to run on ... currently using the default queue
-			//
-			
-//			switch (jobCategory){
-//				case HTC_SIMULATION_JOB:{
-//					String sgeWorkQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsWorkQueuePrefix, SGE_WORK_QUEUE_PREFIX);
-//					sw.append("#$ -q "+sgeWorkQueueNamePrefix + serverID.toCamelCase()+"\n");
-//					break;
-//				}
-//				case HTC_SERVICE_JOB:{
-//					String sgeServiceQueueNamePrefix = PropertyLoader.getProperty(PropertyLoader.pbsServiceQueuePrefix, SGE_SERVICE_QUEUE_PREFIX);
-//					sw.append("#$ -q "+sgeServiceQueueNamePrefix + serverID.toCamelCase()+"\n");
-//					break;
-//				}
-//				default: {
-//					throw new ExecutableException("Invalid jobCategory: "+jobCategory.name());				
-//				}
-//			}
 
 		    long jobMemoryMB = (SGE_MEM_OVERHEAD_MB+((long)memSize));
 		    sw.append("#$ -j y\n");

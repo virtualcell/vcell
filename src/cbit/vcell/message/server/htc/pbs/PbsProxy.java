@@ -173,9 +173,13 @@ public final class PbsProxy extends HtcProxy {
 	@Override
 	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
 		try {
-			VCellServerID serverID = VCellServerID.getSystemServerID();
 
-			StringWriter sw = new StringWriter();
+			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
+		    if (!(htcLogDirString.endsWith("/"))){
+		    	htcLogDirString = htcLogDirString+"/";
+		    }
+
+		    StringWriter sw = new StringWriter();
 
 			sw.append("# Generated without file template. assuming /bin/bash shell\n");
 			sw.append("#PBS -N " + jobName+"\n");
@@ -186,6 +190,7 @@ public final class PbsProxy extends HtcProxy {
 			}
 			sw.append("#PBS -m a\n");
 			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
+//			sw.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
 			sw.append("#PBS -j oe\n");
 			sw.append("#PBS -k oe\n");
 			sw.append("#PBS -r n\n");

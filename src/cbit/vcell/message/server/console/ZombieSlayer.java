@@ -111,6 +111,8 @@ public class ZombieSlayer {
 		
 			RunningPbsJobRecord suspectPbsJobRecord = null;
 			SimulationJobStatus.SchedulerStatus schedulerStatus = null;
+			int foundRunningJobsCount = 0;
+			int surefireZombieCount = 0;
 				
 			Iterator<RunningPbsJobRecord> jobRecordIter = runningPbsJobRecords.iterator();
 			while (jobRecordIter.hasNext()){
@@ -131,6 +133,8 @@ public class ZombieSlayer {
 				
 				if (suspectPbsJobRecord.getLastKnownSchedulerStatus()!=SimulationJobStatus.SchedulerStatus.RUNNING) {
 					zombieCandidateIDs.add(new SuspectSimJobID(suspectPbsJobRecord.getSimID(), suspectPbsJobRecord.getSimJobIndex(), suspectPbsJobRecord.getLastKnownSchedulerStatus(), suspectPbsJobRecord.getPbsJobId()));
+				} else {
+					foundRunningJobsCount++;
 				}
 				
 			}	
@@ -142,16 +146,20 @@ public class ZombieSlayer {
 			String killForSureString = "/cm/shared/apps/torque/2.5.5/bin/qdel";
 			while (zombieCandidateIter.hasNext()){
 				zombieSuspect = zombieCandidateIter.next();
-				System.out.println(zombieSuspect.getKeyValue().toString()+"_"+zombieSuspect.getJobIndex()+"   status in DB = "+zombieSuspect.getSchedulerStatus());
-				if (zombieSuspect.getSchedulerStatus()==null) {
+				System.out.println(String.valueOf(zombieSuspect.getPbsJobId())+"  "+zombieSuspect.getKeyValue().toString()+"_"+zombieSuspect.getJobIndex()+"   status in DB = "+zombieSuspect.getSchedulerStatus());
+				if ((zombieSuspect.getSchedulerStatus()==null) || (zombieSuspect.getSchedulerStatus().toString().equals(SimulationJobStatus.SchedulerStatus.STOPPED.toString()))) {
 					killForSureString = killForSureString+" "+String.valueOf(zombieSuspect.getPbsJobId());
+					surefireZombieCount++;
 				}
 			}
 	
 			
 			System.out.println();
+			System.out.println("Total number of jobs reported by \"qstat | grep S_\" : "+runningPbsJobRecords.size());
+			System.out.println("Number of jobs found running as expected by the database: "+foundRunningJobsCount);
 			System.out.println("Number of suspected zombies = "+zombieCandidateIDs.size()+"\n");
-			System.out.println("qdel command to slay the surefire zombies is:");
+			System.out.println("Number of surefire (null SchedulerStatus) zombies is: "+surefireZombieCount);
+			System.out.println("qdel command to slay the surefire (null SchedulerStatus) zombies is:");
 			System.out.println(killForSureString);
 	
 			System.exit(0);
