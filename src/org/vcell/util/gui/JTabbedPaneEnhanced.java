@@ -11,9 +11,15 @@
 package org.vcell.util.gui;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 
 @SuppressWarnings("serial")
 public class JTabbedPaneEnhanced extends JTabbedPane {
