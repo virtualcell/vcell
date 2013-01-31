@@ -245,7 +245,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			Map<HtcJobID,HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
 			for (HtcJobID htcJobID : runningSimulations){
 				HtcJobInfo jobInfo = jobInfos.get(htcJobID);
-				if (jobInfo.isFound()){
+				if (jobInfo!=null && jobInfo.isFound()){
 					try {
 						String simJobName = jobInfo.getJobName();
 						HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
