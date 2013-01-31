@@ -1,4 +1,5 @@
 #!/bin/bash
+LD_LIBRARY_PATH_SAVED=LD_LIBRARY_PATH
 shopt -s -o nounset
 
 jmxport=1234
@@ -21,7 +22,7 @@ jvmmem=-Xmx${memoryMB}M
 arguments="${ordinal} ${logdir} ${batchSystemType}"
 
 # add hdf5 to lib path
-export LD_LIBRARY_PATH=${siteLibDir}:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${siteLibDir}:$LD_LIBRARY_PATH_SAVED
 
 jre=java
 jvm_jars=GENERATED
