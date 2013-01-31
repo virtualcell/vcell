@@ -14,22 +14,32 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -37,6 +47,9 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -65,6 +78,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel electricalPropertiesLabel;
 	// wei's code
 	private BioModel bioModel = null;
+	private JScrollPane linkedPOScrollPane;
 	// done
 	
 	private final static KineticsDescription[] Simple_Reaction_Kinetic_Types = {
@@ -238,16 +252,50 @@ private void initialize() {
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 3;
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
+				
+		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotation and Pathway Links", false);
+		collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
+
+		JPanel jp1 = new JPanel();
+		jp1.setLayout(new GridBagLayout());
 		
-		gridy ++;
-		annotationTextArea = new javax.swing.JTextArea(2,20);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		JLabel pathwayLink = new JLabel("Linked Pathway Object(s): ");
+		jp1.add(pathwayLink, gbc);
+		
+		linkedPOScrollPane = new JScrollPane();
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		jp1.add(linkedPOScrollPane, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		collapsiblePanel.getContentPanel().add(jp1, gbc);
+		
+		annotationTextArea = new JTextArea(2,20);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
-		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Add Annotation Here", false);
-		collapsiblePanel.getContentPanel().setLayout(new BorderLayout());
-		collapsiblePanel.getContentPanel().add(jsp, BorderLayout.CENTER);
-		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		JScrollPane jp2 = new JScrollPane(annotationTextArea);
+		collapsiblePanel.getContentPanel().add(jp2, gbc);
+
+		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
@@ -257,7 +305,6 @@ private void initialize() {
 		add(collapsiblePanel, gbc);
 				
 		setBackground(Color.white);
-		
 		getKineticsTypeComboBox().addActionListener(eventHandler);
 		getKineticsTypeComboBox().setEnabled(false);
 		initKineticChoices();
@@ -449,6 +496,48 @@ private KineticsDescription getKineticType(Kinetics kinetics) {
 	}
 }
 
+private String listLinkedPathwayObjects(){
+//	Kinetics kinetics = reactionStep.getKinetics();
+	if (reactionStep == null) {
+		return "no selected reaction";
+	}
+	if(bioModel == null || bioModel.getModel() == null){
+		return "no biomodel";
+	}
+	JPanel panel = new JPanel();
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+	String linkedPOlist = "";
+	for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(reactionStep)){
+		if(relObject == null) {
+			continue;
+		}
+		final BioPaxObject bpObject = relObject.getBioPaxObject();
+		if(bpObject == null) {
+			continue;
+		}
+		if(bpObject instanceof Entity){
+			String name = new String();
+			if(((Entity)bpObject).getName().isEmpty()) {
+				name = ((Entity)bpObject).getID();
+			} else {
+				name = ((Entity)bpObject).getName().get(0);
+			}
+			JLabel label = new JLabel("<html><u>" + name + "</u></html>");
+			label.setForeground(Color.blue);
+			label.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2) {
+						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
+						selectionManager.setSelectedObjects(new Object[]{bpObject});
+					}
+				}
+			});
+			panel.add(label);
+		}
+	}
+	linkedPOScrollPane.setViewportView(panel);
+	return linkedPOlist;
+}
 
 private JButton getJToggleButton() {
 	if (jToggleButton == null) {
@@ -463,7 +552,6 @@ private JButton getJToggleButton() {
 				if (kinetics!=null && kinetics.getReactionStep()!=null && kinetics.getReactionStep().getStructure() instanceof Feature){
 					sizeUnits = MU+"m"+CUBED;
 				}
-
 				if (kinetics instanceof DistributedKinetics){
 					try {
 						String response = DialogUtils.showInputDialog0(ReactionPropertiesPanel.this, "enter compartment size ["+sizeUnits+"]", "1.0");
@@ -550,7 +638,6 @@ private void initKineticChoices() {
 		}
 	}
 	getKineticsTypeComboBox().setModel(model);
-	
 	return;
 }
 
@@ -574,8 +661,8 @@ protected void updateInterface() {
 		nameTextField.setText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
-
 	}
+	listLinkedPathwayObjects();
 }
 
 @Override
@@ -620,6 +707,4 @@ public void setBioModel(BioModel newValue) {
 public void setSelectionManager(SelectionManager selectionManager) {
 	super.setSelectionManager(selectionManager);
 }
-
-
 }
