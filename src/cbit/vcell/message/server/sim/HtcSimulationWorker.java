@@ -246,8 +246,8 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
     if (!htcLogDirString.endsWith("/")){
     	htcLogDirString = htcLogDirString+"/";
     }
-	String subFile = htcLogDirString+simTask.getSimulationJob().getSimulationJobID() + clonedHtcProxy.getSubmissionFileExtension();
-	String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
+    String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
+	String subFile = htcLogDirString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 	
 	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
 	
