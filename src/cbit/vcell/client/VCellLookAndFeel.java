@@ -13,58 +13,37 @@ package cbit.vcell.client;
 import java.awt.Font;
 
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import cbit.vcell.resource.ResourceUtil;
 
 public class VCellLookAndFeel {
 	
-	
-	public static boolean USE_NIMBUS_IF_AVAILABLE = true;
-	
 	public static Font defaultFont = null;
 	public static void setVCellLookAndFeel() {
-		System.out.println("About to set the look and feel.  Before setting, we're using: "+UIManager.getLookAndFeel().getName());
-		String foundNimbusClassName = null;
-		boolean nimbusFound = false;
-		try {
-			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				System.out.println(info.getName());
-				if ("Nimbus".equals(info.getName())) {
-					foundNimbusClassName = info.getClassName();
-					nimbusFound = true;
-			        break;
-			    }
+//		if (!ResourceUtil.bLinux) {
+			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
+			try {
+				System.out.println("bMac = "+ResourceUtil.bMac+"     bWindows = "+ResourceUtil.bWindows+"      bLinux = "+ResourceUtil.bLinux);
+				System.out.println("About to set the look and feel.  Before setting, we're using: "+UIManager.getLookAndFeel().getName());
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (UnsupportedLookAndFeelException e) {
+				e.printStackTrace();
 			}
-
-		if (!ResourceUtil.bMac && nimbusFound && USE_NIMBUS_IF_AVAILABLE){
-			UIManager.setLookAndFeel(foundNimbusClassName);
-		} else {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		}
-			
-		} catch (UnsupportedLookAndFeelException e) {
-			    e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-		} catch (InstantiationException e) {
-				e.printStackTrace();
-		} catch (IllegalAccessException e) {
-				e.printStackTrace();
-		}
-
-		System.out.println(UIManager.getLookAndFeel().getDefaults().get("defaultFont").toString());
-		UIManager.getLookAndFeel().getDefaults().put("defaultFont",new Font("sansans", Font.PLAIN,11));
-		System.out.println(UIManager.getLookAndFeel().getDefaults().get("defaultFont").toString());
-		
+//		}
 		if (defaultFont == null) {			
-			defaultFont = UIManager.getFont("Label.font");	
+			defaultFont = UIManager.getFont("Label.font");		
 			if (ResourceUtil.bMac) {
 				defaultFont = defaultFont.deriveFont(defaultFont.getSize2D() - 2);		
 			}
-	}
-
+		}
+		if (ResourceUtil.bMac) {
 	        UIManager.put("Button.font",defaultFont);
 	        UIManager.put("CheckBox.font",defaultFont);
 	        UIManager.put("CheckBoxMenuItem.font",defaultFont);
@@ -113,8 +92,7 @@ public class VCellLookAndFeel {
 	        UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
 	        
 	        System.getProperties().put("swing.component.sizevariant", "small");
-		
-		
+		}
 		
 		System.out.println("After setting, we're using: "+UIManager.getLookAndFeel().getName());
 	}
