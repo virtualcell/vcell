@@ -83,7 +83,7 @@ public class PathwayModel {
 			Iterator<String> iterator = diagramObjectsID.iterator();
 			while(iterator.hasNext()) {
 				String doid = URIUtil.getLocalName(iterator.next());
-				if(doid.equals(bpObjectID)) {
+				if(doid.equals(bpObjectID) || bpObjectID.contains(doid)) {
 					newBiopaxObjects.add(bpObject);
 				}
 			}
