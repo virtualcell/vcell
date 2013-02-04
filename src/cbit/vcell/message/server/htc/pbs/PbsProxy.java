@@ -35,15 +35,15 @@ public final class PbsProxy extends HtcProxy {
 	private final static String UNKNOWN_JOB_ID_QSTAT_RESPONSE = "Unknown Job Id";
 	protected final static String PBS_SUBMISSION_FILE_EXT = ".pbs.sub";
 
-	private static String QSTAT_FULL_CLUSTER_COMMAND_PATH = "//cm//shared//apps//torque//2.5.5//bin//qstat";
+	private static String QSTAT_FULL_CLUSTER_COMMAND_PATH = PropertyLoader.getRequiredProperty("qstatFullClusterCommandPath");
 	
-	private final static String JOB_CMD_SUBMIT = "/cm/shared/apps/torque/2.5.5/bin/qsub";
-	private final static String JOB_CMD_DELETE = "/cm/shared/apps/torque/2.5.5/bin/qdel";
-	private final static String JOB_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";	
-	private final static String JOB_CMD_HISTORY = "/cm/shared/apps/torque/2.5.5/bin/tracejob";
+	private final static String JOB_CMD_SUBMIT = PropertyLoader.getRequiredProperty("jobSubmitCommand");
+	private final static String JOB_CMD_DELETE = PropertyLoader.getRequiredProperty("jobDeleteCommand");
+	private final static String JOB_CMD_STATUS = PropertyLoader.getRequiredProperty("jobStatusCommand");	
+	private final static String JOB_CMD_HISTORY = PropertyLoader.getRequiredProperty("jobHistoryCommand");
 	//public final static String SERVER_CMD_STATUS = "qstat";
-	private final static String SERVER_CMD_STATUS = "/cm/shared/apps/torque/2.5.5/bin/qstat";
-	private final static int PBS_MEM_OVERHEAD_MB = 70;
+	private final static String SERVER_CMD_STATUS = PropertyLoader.getRequiredProperty("serverJobStatusCommand");
+	private final static int PBS_MEM_OVERHEAD_MB = PropertyLoader.getIntProperty("htcMemoryOverhead", 70);
 
 	public PbsProxy(CommandService commandService){
 		super(commandService);
