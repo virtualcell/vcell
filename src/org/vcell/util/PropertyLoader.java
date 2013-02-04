@@ -32,6 +32,7 @@ public class PropertyLoader {
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String serviceSubmitScript = "vcell.service.submitScript";
 	
+	public static final String qstatFullClusterCommandPath 	= "vcell.htc.qstatFullClusterCommandPath";
 	public static final String jobSubmitCommand 			= "vcell.htc.jobSubmitCommand";
 	public static final String jobDeleteCommand 			= "vcell.htc.jobDeleteCommand";
 	public static final String jobStatusCommand 			= "vcell.htc.jobStatusCommand";
@@ -194,6 +195,7 @@ public class PropertyLoader {
 		secondarySimDataDirProperty,
 		serviceSubmitScript,
 
+		qstatFullClusterCommandPath,
 		jobSubmitCommand,
 		jobDeleteCommand,
 		jobStatusCommand,
