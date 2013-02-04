@@ -32,6 +32,14 @@ public class PropertyLoader {
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String serviceSubmitScript = "vcell.service.submitScript";
 	
+	public static final String jobSubmitCommand 			= "vcell.htc.jobSubmitCommand";
+	public static final String jobDeleteCommand 			= "vcell.htc.jobDeleteCommand";
+	public static final String jobStatusCommand 			= "vcell.htc.jobStatusCommand";
+	public static final String jobHistoryCommand 			= "vcell.htc.jobHistoryCommand";
+	public static final String serverJobStatusCommand 		= "vcell.htc.serverJobStatusCommand";
+	public static final String htcMemoryOverhead			= "vcell.htc.htcMemoryOverhead"; 
+	
+	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
 	public static final String exeOutputProperty			= "vcell.c++.exeoutput";
@@ -185,6 +193,14 @@ public class PropertyLoader {
 		primarySimDataDirProperty,
 		secondarySimDataDirProperty,
 		serviceSubmitScript,
+
+		jobSubmitCommand,
+		jobDeleteCommand,
+		jobStatusCommand,
+		jobHistoryCommand,
+		serverJobStatusCommand,
+		htcMemoryOverhead,
+		
 		
 		compilerProperty,
 		linkerProperty,
