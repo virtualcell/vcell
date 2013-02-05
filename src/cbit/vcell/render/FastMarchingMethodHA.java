@@ -193,14 +193,17 @@ public class FastMarchingMethodHA {
 		if(deltaX==0 || deltaY==0 || deltaZ==0) {
 			throw new RuntimeException("The distance between voxels cannot be zero");
 		}
-		if(deltaX != deltaY) {
+		double epsilonXY = 0.1;		// tolerances between distances between pixels on various axes (empirical)
+		double epsilonXYZ = 0.9;
+		double epsilonXZ = 1.1;
+		if(Math.abs(deltaX - deltaY) > Math.max(deltaX, deltaY)*epsilonXY) {	// replaced  if(deltaX != deltaY)
 			throw new RuntimeException("Distances between the X and Y voxels must be the same");
 		}
-		if(deltaX > deltaZ) {
+		if((epsilonXYZ*deltaX > deltaZ) || (epsilonXYZ*deltaY > deltaZ)) {		// replaced  if(deltaX > deltaZ)
 			throw new RuntimeException("Distances between the Z voxels must be equal or greater " + 
 					"than the distances between voxels on the other axes.");
 		}
-		if(deltaX < deltaZ) {
+		if((epsilonXZ*deltaX < deltaZ) || (epsilonXZ*deltaY < deltaZ)) {		// replaced  if(deltaX < deltaZ)
 			differentZDistance = true;
 		}
 		
