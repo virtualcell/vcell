@@ -2,8 +2,8 @@
 LD_LIBRARY_PATH_SAVED=LD_LIBRARY_PATH
 shopt -s -o nounset
 
-jmxport=1234
-jmxhost=sigcluster2-c0-0.cam.uchc.edu
+jmxport=GENERATED
+jmxhost=GENERATED
 jmxargs="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=${jmxport} -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${jmxhost}"
 
 ordinal=123
@@ -29,7 +29,11 @@ jvm_jars=GENERATED
 
 jvmprop="${jvmmem} -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
 
-nohup ${jre} -cp ${jvm_jars} ${jmxargs} ${jvmprop} ${mainclass} ${arguments} &
+#
+# IMPORTANT:  ${jmxargs} must be first because we are filtering on it for the kill script in DeployVCell.
+#
+
+nohup ${jre}  ${jmxargs} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments} &
 
 exit 0
 
