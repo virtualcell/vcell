@@ -15,19 +15,17 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -52,6 +50,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -66,13 +65,9 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Executable;
 import org.vcell.util.NumberUtils;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -94,11 +89,10 @@ import cbit.plot.SingleXPlot2D;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.MessageEvent;
-import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -131,11 +125,9 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
@@ -146,8 +138,6 @@ import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
 /**
@@ -287,6 +277,16 @@ public class PDEDataViewer extends DataViewer {
 	private JMenuItem statisticsMenuItem;
 	private JMenuItem snapShotMenuItem;
 	
+//	private JButton ivjJButtonStatistics = null;
+	private Simulation fieldSimulation = null;
+
+	// labels for local sim log file location
+	private JPanel buttonsAndLabelsPanel = null;
+	private JPanel locationLabelsPanel = null;
+	private JTextField localSimLogFilePathTextField = null;
+
+	// private JLabel ivjLocalSimLogFilePathLabel = null;
+
 	private DataProcessingResultsPanel dataProcessingResultsPanel;
 
 	private static final String EXPORT_DATA_TABNAME = "Export Data";
@@ -351,6 +351,20 @@ public class PDEDataViewer extends DataViewer {
 						}
 					}
 //					dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
+					
+					if (getPdeDataContext() != null) {
+						// for local sim, get location of sim file and update log file location label
+						if (getPdeDataContext().getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier) {
+							LocalVCSimulationDataIdentifier localVCSimId = (LocalVCSimulationDataIdentifier)getPdeDataContext().getVCDataIdentifier();
+							String localSimLogFilePath = localVCSimId.getLocalDirectory().getAbsolutePath() + "\\" + localVCSimId.getVcSimID().getID() + "_" + localVCSimId.getJobIndex() + "_.log";
+							// buttonsAndLabelsPanel should have 2 components (JPanelButtons and JPanelLocationLabels. If there are more than one component, 
+							// the labelsPanel is already added to it, so no need to add it twice.
+							if (!buttonsAndLabelsPanel.isAncestorOf(getJPanelLoctionLabels())) {
+								buttonsAndLabelsPanel.add(getJPanelLoctionLabels(), BorderLayout.SOUTH);
+							}
+							localSimLogFilePathTextField.setText(localSimLogFilePath);
+						}
+					}
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
 					//set Smoldyn flag for exports to create "particle" media
@@ -518,8 +532,6 @@ public class PDEDataViewer extends DataViewer {
 		}
 	}
 
-//	private JButton ivjJButtonStatistics = null;
-	private Simulation fieldSimulation = null;
 
 public PDEDataViewer() {
 	super();
@@ -1256,11 +1268,7 @@ private ExportMonitorPanel getExportMonitorPanel1() {
 			ivjExportMonitorPanel1.setName("ExportMonitorPanel1");
 			ivjExportMonitorPanel1.setPreferredSize(new Dimension(453, 150));
 			ivjExportMonitorPanel1.setBorder(ivjLocalBorder);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -1450,6 +1458,50 @@ private void snapshotROI() {
 //	}
 //	return ivjJButtonSnapshotROI;
 //}
+
+// Panel to display log file location of local simulation
+private javax.swing.JPanel getJPanelLoctionLabels() {
+	if (locationLabelsPanel == null) {
+		try {
+			locationLabelsPanel = new javax.swing.JPanel();
+			locationLabelsPanel.setName("JPanelLocationLabels");
+			// location label
+			JLabel locationLabel = new JLabel("Location of simulation data log file: ");
+			locationLabel.setHorizontalAlignment(SwingConstants.CENTER);
+			locationLabelsPanel.add(locationLabel);
+			// location of sim data path
+			localSimLogFilePathTextField = new JTextField();
+			localSimLogFilePathTextField.setEditable(false);
+			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
+			localSimLogFilePathTextField.setBorder(null);
+			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
+			locationLabelsPanel.add(localSimLogFilePathTextField);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return locationLabelsPanel;
+}
+
+/**
+ * Panel to put the buttonsPanel and log file location labels panel together.
+ * Return the JPanel1 property value.
+ * @return javax.swing.JPanel
+ */
+private javax.swing.JPanel getJPanelButtonsAndLabels() {
+	if (buttonsAndLabelsPanel == null) {
+		try {
+			buttonsAndLabelsPanel = new JPanel(new BorderLayout());
+			buttonsAndLabelsPanel.setName("JPanelButtonsAndLabels");
+			buttonsAndLabelsPanel.add(getJPanelButtons(), BorderLayout.CENTER);
+			//  add the labels panel if it is a local sim and there is a log file to display - done in evntHandler.propertyChange()
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return buttonsAndLabelsPanel;
+}
+
 
 /**
  * Return the JPanel1 property value.
@@ -1717,7 +1769,7 @@ private javax.swing.JPanel getViewData() {
 		try {
 			sliceViewPanel = new JPanel(new BorderLayout());
 			sliceViewPanel.add(getPDEDataContextPanel1(), BorderLayout.CENTER);
-			sliceViewPanel.add(getJPanelButtons(), BorderLayout.SOUTH);
+			sliceViewPanel.add(getJPanelButtonsAndLabels(), BorderLayout.SOUTH);
 			
 			ivjViewData = new javax.swing.JPanel();
 			ivjViewData.setName("ViewData");
