@@ -1385,9 +1385,6 @@ private void keepModified(Object object) {
 	//process events for loading the model displayed in the comparison panel
 	public VCDocument processComparisonResult() throws Exception {
 		try { 
-			final String DEF_VCML_SL = "http://www.nrcam.uchc.edu/xml/biomodel.xsd";            //assuming its only used for VCML
-			String schemaLocation = cbit.vcell.xml.XMLTags.VCML_NS + " " + 
-			                        org.vcell.util.PropertyLoader.getProperty(org.vcell.util.PropertyLoader.vcmlSchemaUrlProperty, DEF_VCML_SL); 
 			NodeInfo root = (NodeInfo)getTree().getModel().getRoot();
 			//if (!isNormal(root)) {
 				//displayMessage(this, "Please resolve all tagged elements/attributes before proceeding.");

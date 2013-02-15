@@ -6,11 +6,12 @@ jmxport=GENERATED
 jmxhost=GENERATED
 jmxargs="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=${jmxport} -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=${jmxhost}"
 
-ordinal=123
-memoryMB=3000
+rmihost=GENERATED
+rmiport=GENERATED
+memoryMB=800
 site=GENERATED
 batchSystemType=GENERATED
-mainclass=cbit.vcell.message.server.combined.VCellServices
+mainclass=cbit.vcell.message.server.bootstrap.LocalVCellBootstrap
 
 siteRootDir=/share/apps/vcell/deployed/${site}
 siteResDir=${siteRootDir}/resources
@@ -19,7 +20,7 @@ siteLibDir=${siteRootDir}/lib
 logdir=/share/apps/vcell/logs/${site}
 jvmmem=-Xmx${memoryMB}M
 
-arguments="${ordinal} ${logdir} ${batchSystemType}"
+arguments="${rmihost} ${rmiport} messaging ${logdir}"
 
 # add hdf5 to lib path
 export LD_LIBRARY_PATH=${siteLibDir}:$LD_LIBRARY_PATH_SAVED
