@@ -50,7 +50,7 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 		ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, sessionLog);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, sessionLog);
-		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase);
+		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase, 0);
 	} catch (java.rmi.RemoteException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage(),e);

@@ -689,17 +689,6 @@ private javax.swing.JSplitPane getJSplitPane1() {
 	return ivjJSplitPane1;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (4/5/2006 10:07:25 AM)
- * @return java.lang.String
- */
-private String getLocalVCellBootstrapUrl() {
-	String rmiHost = PropertyLoader.getRequiredProperty(PropertyLoader.rmiBootstrapHost);
-	int rmiPort = PropertyLoader.getIntProperty(PropertyLoader.rmiPortRegistry, 1099);
-	return "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
-}
-
 
 /**
  * Return the MessageResetButton property value.
@@ -2692,20 +2681,35 @@ private void refresh () {
 		userList.clear();
 		try {
 			if (vcellBootstrap == null) {
-				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(getLocalVCellBootstrapUrl());
+				String rmiHostPortString = DialogUtils.showInputDialog0(this,  "enter VCell RMI bootstrap host:port", "rmi-rel.cam.uchc.edu:40105");
+				String hostPort[] = rmiHostPortString.split(":");
+				if (hostPort == null || hostPort.length != 2){
+					throw new RuntimeException("expecting hostname:port, invalid input \""+rmiHostPortString+"\"");
+				}
+				String rmiHost = hostPort[0];
+				int rmiPort = Integer.parseInt(hostPort[1]);
+				String rmiUrl = "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
+
+				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(rmiUrl);
 				String clearTextPassword = null;
 				if(VCellDBAdminpassword == null){
 					clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
 				}
 				vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
-				//everything OK, save cache password
-				VCellDBAdminpassword = clearTextPassword;
+				if (vcellServer!=null){
+					//everything OK, save cache password
+					VCellDBAdminpassword = clearTextPassword;
+				}else{
+					vcellBootstrap = null;
+				}
 			}		
 			
-			ServerInfo serverInfo = vcellServer.getServerInfo();
-			User[] users = serverInfo.getConnectedUsers();
-			for (int i = 0; i < users.length; i ++) {
-				userList.add(new SimpleUserConnection(users[i], new Date()));
+			if (vcellServer!=null){
+				ServerInfo serverInfo = vcellServer.getServerInfo();
+				User[] users = serverInfo.getConnectedUsers();
+				for (int i = 0; i < users.length; i ++) {
+					userList.add(new SimpleUserConnection(users[i], new Date()));
+				}
 			}
 		} catch (Exception ex) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Exception:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);

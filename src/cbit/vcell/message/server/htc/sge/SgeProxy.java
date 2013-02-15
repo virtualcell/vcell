@@ -30,14 +30,13 @@ import cbit.vcell.message.server.htc.HtcProxy;
 public class SgeProxy extends HtcProxy {
 	private final static int QDEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
-	private final static String QSTAT_UNKNOWN_JOB_RESPONSE = "Following jobs do not exist:";
 	protected final static String SGE_SUBMISSION_FILE_EXT = ".sge.sub";
 
-	private final static String JOB_CMD_SUBMIT = "/opt/gridengine/bin/lx26-amd64/qsub";
-	private final static String JOB_CMD_DELETE = "/opt/gridengine/bin/lx26-amd64/qdel";
-	private final static String JOB_CMD_STATUS = "/opt/gridengine/bin/lx26-amd64/qstat";
-	private final static String JOB_CMD_QACCT = "/opt/gridengine/bin/lx26-amd64/qacct";
-	private final static int SGE_MEM_OVERHEAD_MB = 70;
+	// note: full commands use the PropertyLoader.htcPbsHome path.
+	private final static String JOB_CMD_SUBMIT = "qsub";
+	private final static String JOB_CMD_DELETE = "qdel";
+	private final static String JOB_CMD_STATUS = "qstat";
+	private final static String JOB_CMD_QACCT = "qacct";
 
 	
 	public SgeProxy(CommandService commandService) {
@@ -189,13 +188,18 @@ arid         undefined
 
 		HtcJobStatus iStatus = null;
 
-		String[] qstat_cmd = new String[]{JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+
+		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
 		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
 
 		HashMap<String,String> outputMap = parseOutput(commandOutput);
 		
 		if (outputMap == null){
-			String[] qacct_cmd = new String[]{JOB_CMD_QACCT, "-j", sgeJobID.getSgeJobID()};
+			String[] qacct_cmd = new String[]{SGE_HOME + JOB_CMD_QACCT, "-j", sgeJobID.getSgeJobID()};
 			commandOutput = commandService.command(qacct_cmd);
 
 			outputMap = parseOutput(commandOutput);
@@ -237,8 +241,13 @@ denied: job "6894" does not exist
 			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
 		}
 		SgeJobID sgeJobID = (SgeJobID)htcJobId;
+		
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
 
-		String[] cmd = new String[]{JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
+		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
 		try {
 			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
@@ -272,7 +281,9 @@ denied: job "6894" does not exist
 		    sw.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
 //			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
 
-		    long jobMemoryMB = (SGE_MEM_OVERHEAD_MB+((long)memSize));
+			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
+
+		    long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
 		    sw.append("#$ -j y\n");
 //		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 		    sw.append("# -cwd\n");
@@ -355,7 +366,11 @@ denied: job "6894" does not exist
 			return null;
 		}
 
-		String[] completeCommand = new String[] {JOB_CMD_SUBMIT, "-terse", sub_file};
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		
@@ -383,7 +398,11 @@ denied: job "6894" does not exist
 	
 	@Override
 	public void checkServerStatus() throws ExecutableException {
-		CommandOutput commandOutput = commandService.command(new String[] {JOB_CMD_STATUS, "-f"});
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+		CommandOutput commandOutput = commandService.command(new String[] {SGE_HOME + JOB_CMD_STATUS, "-f"});
 
 		String output = commandOutput.getStandardOutput();
 		/*
@@ -408,7 +427,11 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
    6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
    6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
  */
-		String[] cmd = constructShellCommand(commandService, new String[]{JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 		CommandOutput commandOutput = commandService.command(cmd);
 		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
 		
@@ -446,7 +469,11 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 
 	public HtcJobInfo getJobInfo(HtcJobID htcJobID) throws ExecutableException {
 		Vector<String> cmdV = new Vector<String>();
-		cmdV.add(JOB_CMD_STATUS);
+		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+		cmdV.add(SGE_HOME + JOB_CMD_STATUS);
 		cmdV.add("-f");
 		cmdV.add("-j");
 		cmdV.add(((SgeJobID)htcJobID).getSgeJobID());

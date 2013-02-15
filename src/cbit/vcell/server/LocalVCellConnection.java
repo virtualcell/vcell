@@ -10,12 +10,10 @@
 
 package cbit.vcell.server;
 import java.io.FileNotFoundException;
-import java.net.URL;
 import java.sql.SQLException;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.DataJobEvent;
@@ -157,23 +155,6 @@ public SimulationController getSimulationController() {
 		simulationController = new LocalSimulationController(getUserLoginInfo().getUser(),simulationControllerImpl,getSessionLog());
 	}
 	return simulationController;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/2/01 11:15:49 PM)
- * @return cbit.vcell.server.URLFinder
- * @exception java.rmi.RemoteException The exception description.
- */
-public URLFinder getURLFinder() throws java.rmi.RemoteException {
-	try {
-		return new URLFinder(	new URL(PropertyLoader.getRequiredProperty(PropertyLoader.tutorialURLProperty)),
-								new URL(PropertyLoader.getRequiredProperty(PropertyLoader.userGuideURLProperty)));
-	}catch (java.net.MalformedURLException e){
-		getSessionLog().exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
 }
 
 

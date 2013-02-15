@@ -122,7 +122,7 @@ public class CellQuanVCTranslator extends Translator {
 		mathns = Namespace.getNamespace(MATHML_NS);
 		nm = new NameManager();
 		nl = new NameList();
-		schemaLocation = CELLMLTags.CELLML_NS + " " + PropertyLoader.getProperty(PropertyLoader.cellmlSchemaUrlProperty, Translator.DEF_CELLML_SL);
+		schemaLocation = CELLMLTags.CELLML_NS + " " + Translator.DEF_CELLML_SL;
 		schemaLocationPropName = XmlUtil.NS_SCHEMA_LOC_PROP_NAME;
     } 
 
