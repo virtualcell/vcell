@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -23,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -50,7 +52,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 	private JButton importButton = null;
 	private JTextField textFieldSearch = null;
 	private JPopupMenu addPopupMenu;
-	private JMenuItem addSelectedOnlyMenuItem, addWithNeighborsMenuItem;
+	private JMenuItem addSelectedOnlyMenuItem, addWithInteractionsMenuItem, addWithComponentsMenueItem, addWithComplexesMenuItem;
+	private JLabel pathwayTitleLabel;
 	
 	private void searchTable() {
 		String searchText = textFieldSearch.getText();
@@ -67,9 +70,13 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 				getAddPopupMenu().show(importButton, 0, importButton.getHeight());
 //				importPathway();
 			} else if (e.getSource() == addSelectedOnlyMenuItem) {
-				importPathway(false);
-			} else if (e.getSource() == addWithNeighborsMenuItem) {
-				importPathway(true);
+				importPathway(false, false, false);
+			} else if (e.getSource() == addWithInteractionsMenuItem) {
+				importPathway(false, false, true);
+			} else if (e.getSource() == addWithComponentsMenueItem) {
+				importPathway(false, true, true);
+			} else if (e.getSource() == addWithComplexesMenuItem) {
+				importPathway(true, true, true);
 			}
 		}
 		public void valueChanged(ListSelectionEvent e) {
@@ -96,16 +103,23 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	public void importPathway(boolean isNeighborsIncluded) {
+	public void importPathway(boolean addComplexes, boolean addComponents, boolean addInteractions) {
 		ArrayList<BioPaxObject> selectedBioPaxObjects = new ArrayList<BioPaxObject>();
-		for (int i = 0; i < table.getRowCount(); i ++) {
-			PhysiologyRelationshipTableRow entitySelectionTableRow = tableModel.getValueAt(i);
-			if (entitySelectionTableRow.selected()) { 
-				selectedBioPaxObjects.add(entitySelectionTableRow.getBioPaxObject()); 
-			}
+		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		for (int row : rows) {
+			BioPaxObject bioPaxObject = tableModel.getValueAt(row);
+			selectedBioPaxObjects.add(bioPaxObject);
 		}
 		PathwaySelectionExpander selectionExpander = new PathwaySelectionExpander();
-		selectionExpander.expandSelection(pathwayData.getPathwayModel(), selectedBioPaxObjects, isNeighborsIncluded);
+		PathwayModel rawPathwayModel = pathwayData.getPathwayModel();
+		if(addComplexes) { selectionExpander.forPhysicalEntitiesAddComplexes(rawPathwayModel, selectedBioPaxObjects); }
+		if(addComponents) { selectionExpander.forComplexesAddComponents(rawPathwayModel, selectedBioPaxObjects); }
+		if(addInteractions) { selectionExpander.forPhysicalEntitiesAddInteractions(rawPathwayModel, selectedBioPaxObjects); }
+		selectionExpander.forInteractionsAddControls(rawPathwayModel, selectedBioPaxObjects);
+		selectionExpander.forInteractionsAddParticipants(rawPathwayModel, selectedBioPaxObjects);
 		PathwayModel selectedPathwayModel = new PathwayModel();
 		HashSet<BioPaxObject> objectsToDelete = new HashSet<BioPaxObject>();
 		for (BioPaxObject candidateObject : selectedBioPaxObjects){
@@ -146,6 +160,7 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		table.setModel(tableModel);
 		table.disableUneditableForeground();
 		importButton = new JButton("Import", new DownArrowIcon());
+		importButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		importButton.setEnabled(false);
 		importButton.addActionListener(eventHandler);
 		
@@ -154,6 +169,18 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		int gridy = 0;
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 6;
+		gbc.fill = GridBagConstraints.BOTH;
+		pathwayTitleLabel = new JLabel();
+		pathwayTitleLabel.setFont(pathwayTitleLabel.getFont().deriveFont(Font.BOLD));
+		pathwayTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+		add(pathwayTitleLabel, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -217,6 +244,8 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 		if (pathwayData == null) {
 			return;
 		}
+		String pathwayName = pathwayData.getTopLevelPathwayName();
+		pathwayTitleLabel.setText(pathwayName);
 		tableModel.setPathwayModel(pathwayData.getPathwayModel());
 		
 		GuiUtils.flexResizeTableColumns(table);
@@ -224,17 +253,24 @@ public class BioModelEditorPathwayPanel extends DocumentEditorSubPanel {
 
 	public void setBioModel(BioModel bioModel) {
 		this.bioModel = bioModel;
+		tableModel.setBioModel(bioModel);
 	}
 	
 	private JPopupMenu getAddPopupMenu() {
 		if (addPopupMenu == null) {
 			addPopupMenu = new JPopupMenu();
-			addSelectedOnlyMenuItem = new JMenuItem("Add Selected Only");
+			addSelectedOnlyMenuItem = new JMenuItem("Selected Only");
 			addSelectedOnlyMenuItem.addActionListener(eventHandler);			
-			addWithNeighborsMenuItem = new JMenuItem("Add with Neighbors");
-			addWithNeighborsMenuItem.addActionListener(eventHandler);
+			addWithInteractionsMenuItem = new JMenuItem("Plus Interactions");
+			addWithInteractionsMenuItem.addActionListener(eventHandler);
+			addWithComponentsMenueItem = new JMenuItem("Plus Components");
+			addWithComponentsMenueItem.addActionListener(eventHandler);
+			addWithComplexesMenuItem = new JMenuItem("Plus Complexes");
+			addWithComplexesMenuItem.addActionListener(eventHandler);
 			addPopupMenu.add(addSelectedOnlyMenuItem);
-			addPopupMenu.add(addWithNeighborsMenuItem);	
+			addPopupMenu.add(addWithInteractionsMenuItem);
+			addPopupMenu.add(addWithComponentsMenueItem);
+			addPopupMenu.add(addWithComplexesMenuItem);	
 		}
 		return addPopupMenu;
 	}
