@@ -2412,7 +2412,14 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 	// Check if any of the compartments have spatial dimension 0
 	for (int i = 0; i < (int)sbmlModel.getNumCompartments(); i++) {
 		Compartment comp = (Compartment)sbmlModel.getCompartment(i);
-		if (comp.getSpatialDimensions() == 0) {
+
+		if (level > 2) {
+			// level 3+ does not have default value for spatialDimension. So cannot assume a value.
+			if (!comp.isSetSpatialDimensions()) {
+				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment '" + comp.getId() + "' spatial dimension is not set; default value cannot be assumed in an SBML Level 3 model.");
+			}
+		} 
+		if (comp.getSpatialDimensions() == 0 || comp.getSpatialDimensions() == 1) {
 			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
 		}
 	}
@@ -2676,8 +2683,10 @@ protected void addReactions(VCMetaData metaData) {
 					SpatialSpeciesRxnPlugin ssrplugin = null;
 					// (a) the requiredElements attributes should be 'spatial'
 					ssrplugin = (SpatialSpeciesRxnPlugin)sbmlRxn.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-					if (ssrplugin.getIsLocal()) {
+					if (ssrplugin != null && ssrplugin.getIsLocal()) {
 						kinetics = new GeneralKinetics(vcReactions[i]);
+					} else {
+						kinetics = new GeneralLumpedKinetics(vcReactions[i]);
 					}
 						
 				} else {
@@ -2867,6 +2876,12 @@ protected void addGeometry() {
 	// get a Geometry object via SpatialModelPlugin object.
 	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
 
+	// (2/15/2013) For now, allow model to be imported even without geometry defined. Issue a warning.
+	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
+		localIssueList.add(new Issue(sbmlModel.getId(), IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
+		return;
+		// throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+	}
 	
 	// get a CoordComponent object via the Geometry object.	
 	ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
@@ -2899,9 +2914,6 @@ protected void addGeometry() {
 	Extent vcExtent = new Extent(extentX, extentY, extentZ);
 	
 	// from geometry definition, find out which type of geometry : image or analytic or CSG
-	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
-		throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
-	}
 	
 	AnalyticGeometry analyticGeometryDefinition = null;
 	CSGeometry csGeometry = null;
