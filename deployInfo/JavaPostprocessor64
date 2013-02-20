@@ -22,7 +22,7 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #
 shopt -s -o nounset
 
-jvmprop=-Xmx${postprocessor_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile}"
+jvmprop="-Xmx${postprocessor_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile}"
 
 arguments=$*
 

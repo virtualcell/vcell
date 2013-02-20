@@ -5,9 +5,6 @@
 #--------------------------------------
 # common definitions
 #--------------------------------------
-common_jre=java
-common_jvm_jars=GENERATED
-
 common_site=GENERATED
 common_batchSystemType=GENERATED
 
@@ -17,11 +14,13 @@ common_siteRootDir=/share/apps/vcell/deployed/${common_site}
 common_siteResDir=${common_siteRootDir}/resources
 
 common_siteCfgDir=${common_siteRootDir}/configs
-common_propertyfile=${common_siteCfgDir}/vcell64.properties"
+common_propertyfile=${common_siteCfgDir}/vcell64.properties
 
 common_siteLibDir=${common_siteRootDir}/lib
 export LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
+common_jre=java
+common_jvm_jars=GENERATED
 
 #--------------------------------------
 # rmi bootstrap services (http port, high port)
