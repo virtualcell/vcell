@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.jdom.Element;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.message.server.cmd.CommandService;
@@ -39,8 +37,8 @@ public class SgeProxy extends HtcProxy {
 	private final static String JOB_CMD_QACCT = "qacct";
 
 	
-	public SgeProxy(CommandService commandService) {
-		super(commandService);
+	public SgeProxy(CommandService commandService, String htcUser) {
+		super(commandService, htcUser);
 	}
 	
 
@@ -212,12 +210,6 @@ arid         undefined
 			return new HtcJobStatus(SGEJobStatus.RUNNING);
 		}
 	}
-
-	@Override
-	public String getPendingReason(HtcJobID htcJobId) throws ExecutableException, HtcException {
-		return "unknown status";
-	}
-
 	
 	/**
 	 * qdel 6894
@@ -266,7 +258,7 @@ denied: job "6894" does not exist
 	}
 	
 	@Override
-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
 		try {
 
 			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
@@ -374,21 +366,12 @@ denied: job "6894" does not exist
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		
-		if (isServiceJob){
-			try {
-				commandService.deleteFile(sub_file);
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new ExecutableException(e.getMessage());
-			}
-		}
-		
 		return new SgeJobID(jobid);
 	}
 
 	@Override
 	public HtcProxy cloneThreadsafe() {
-		return new SgeProxy(getCommandService().clone());
+		return new SgeProxy(getCommandService().clone(), getHtcUser());
 	}
 
 	@Override
@@ -396,31 +379,6 @@ denied: job "6894" does not exist
 		return SGE_SUBMISSION_FILE_EXT;
 	}
 	
-	@Override
-	public void checkServerStatus() throws ExecutableException {
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
-		CommandOutput commandOutput = commandService.command(new String[] {SGE_HOME + JOB_CMD_STATUS, "-f"});
-
-		String output = commandOutput.getStandardOutput();
-		/*
-queuename                      qtype resv/used/tot. load_avg arch          states
----------------------------------------------------------------------------------
-all.q@compute-0-0.local        BIP   0/0/64         0.00     lx26-amd64    
----------------------------------------------------------------------------------
-all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64    
-		 */	
-		StringTokenizer st = new StringTokenizer(output, "\n");	
-		st.nextToken();
-		st.nextToken();
-		String line = st.nextToken();
-		st = new StringTokenizer(line, " ");
-		String queueName = st.nextToken();	
-		System.out.println("first SGE Queue name : "+queueName);
-	}
-
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
 /*
@@ -431,7 +389,7 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 		if (!SGE_HOME.endsWith("/")){
 			SGE_HOME += "/";
 		}
-		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "|", "grep", getHtcUser(),"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 		CommandOutput commandOutput = commandService.command(cmd);
 		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
 		
@@ -444,7 +402,6 @@ all.q@compute-0-1.local        BIP   0/0/64         0.00     lx26-amd64
 		}
 		return serviceJobIDs;
 	}
-
 
 	@Override
 	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {

@@ -347,11 +347,11 @@ public static void main(java.lang.String[] args) {
 		HtcProxy htcProxy = null;
 		switch(batchSystemType){
 			case PBS:{
-				htcProxy = new PbsProxy(commandService);
+				htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 				break;
 			}
 			case SGE:{
-				htcProxy = new SgeProxy(commandService);
+				htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 				break;
 			}
 		}
@@ -367,8 +367,6 @@ public static void main(java.lang.String[] args) {
  
         VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-		htcProxy.checkServerStatus();
-
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
 		simulationWorker.init();

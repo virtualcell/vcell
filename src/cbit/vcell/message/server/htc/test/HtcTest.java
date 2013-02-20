@@ -1,14 +1,11 @@
 package cbit.vcell.message.server.htc.test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcException;
@@ -41,9 +38,9 @@ public class HtcTest {
 			cmdssh = new CommandServiceSsh(host, username, password);
 			HtcProxy htcProxy = null;
 			if (htcType.equalsIgnoreCase("PBS")){
-				htcProxy = new PbsProxy(cmdssh);
+				htcProxy = new PbsProxy(cmdssh,username);
 			}else if (htcType.equalsIgnoreCase("SGE")){
-				htcProxy = new SgeProxy(cmdssh);
+				htcProxy = new SgeProxy(cmdssh,username);
 			}else{
 				throw new RuntimeException("unrecognized htc type = "+htcType);
 			}
@@ -57,39 +54,6 @@ public class HtcTest {
 			e.printStackTrace();
 		}finally{
 			if(cmdssh != null){cmdssh.close();}
-		}
-	}
-
-	public static void testGetServiceJobInfos(HtcProxy htcProxy, VCellServerID serverID) throws Exception{
-		cbit.vcell.mongodb.VCMongoMessage.enabled = false;
-		List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
-		Map<HtcJobID,HtcJobInfo> sjinfos = htcProxy.getJobInfos(htcJobIDs);
-		for(HtcJobInfo sjInfo : sjinfos.values()){
-			String jobID = null;
-			if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.pbs.PbsJobID){
-				jobID = ((cbit.vcell.message.server.htc.pbs.PbsJobID)sjInfo.getHtcJobID()).getPbsJobID();
-			}else if(sjInfo.getHtcJobID() instanceof cbit.vcell.message.server.htc.sge.SgeJobID){
-				jobID = ((cbit.vcell.message.server.htc.sge.SgeJobID)sjInfo.getHtcJobID()).getSgeJobID();
-			}
-			System.out.println(sjInfo.getJobName()+" "+jobID+" "+sjInfo.getOutputPath()+" "+sjInfo.getErrorPath());
-		}
-	}
-	private static void testServices(HtcProxy htcProxy, VCellServerID serverID)	throws ExecutableException, HtcException, HtcJobNotFoundException {
-		try {
-			System.out.println("getting services");
-			List<HtcJobID> htcJobIDs = htcProxy.getRunningServiceJobIDs(serverID); 
-			for (HtcJobID jobID : htcJobIDs){
-				if (jobID instanceof PbsJobID){
-					System.out.println("serviceJobID : "+((PbsJobID)jobID).getPbsJobID());
-					htcProxy.killJob(jobID);
-				}else if (jobID instanceof SgeJobID){
-					System.out.println("serviceJobID : "+((SgeJobID)jobID).getSgeJobID());
-					htcProxy.killJob(jobID);
-				}
-			}
-			System.out.println("done getting services");
-		} catch (Exception e1) {
-			e1.printStackTrace(System.out);
 		}
 	}
 
