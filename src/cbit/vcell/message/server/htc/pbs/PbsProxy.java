@@ -34,8 +34,8 @@ public final class PbsProxy extends HtcProxy {
 	private final static String JOB_CMD_DELETE = "qdel";
 	private final static String JOB_CMD_STATUS = "qstat";
 
-	public PbsProxy(CommandService commandService){
-		super(commandService);
+	public PbsProxy(CommandService commandService, String htcUser){
+		super(commandService, htcUser);
 	}
 	
 	@Override
@@ -96,55 +96,6 @@ public final class PbsProxy extends HtcProxy {
 
 
 	@Override
-	public String getPendingReason(HtcJobID htcJobId) throws ExecutableException, HtcException {
-		if (!(htcJobId instanceof PbsJobID)){
-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
-		}
-		PbsJobID pbsJobID = (PbsJobID)htcJobId;
-
-		String PBS_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcPbsHome);
-		if (!PBS_HOME.endsWith("/")){
-			PBS_HOME += "/";
-		}
-
-		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
-		CommandOutput commandOutput = commandService.command(cmd);
-
-		String output = commandOutput.getStandardOutput();
-
-		/*
-
-		pbssrv: 
-		                                                            Req'd  Req'd   Elap
-		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
-		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
-		29908.pbssrv    vcell    workqAlp S_32925452  30022   1   1  100mb   --  R 00:29
-		   Job run at Mon Apr 27 at 08:28 on (dll-2-6-6:ncpus=1:mem=102400kb)
-
-		 */
-		String pendingReason = "unknown pending reason";
-
-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
-		while (st.hasMoreTokens()) {
-			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
-				if (st.hasMoreTokens()) {
-					st.nextToken();
-				}
-				if (st.hasMoreTokens()) {
-					st.nextToken();
-				}
-				pendingReason = "";
-				while (st.hasMoreTokens()) {
-					pendingReason += st.nextToken();
-				}
-				break;
-			}			
-		}
-		return pendingReason;
-	}
-
-
-	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
 		if (!(htcJobId instanceof PbsJobID)){
 			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
@@ -174,7 +125,7 @@ public final class PbsProxy extends HtcProxy {
 	}
 
 	@Override
-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
+	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
 		try {
 
 			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
@@ -288,21 +239,12 @@ public final class PbsProxy extends HtcProxy {
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		
-		if (isServiceJob){
-			try {
-				commandService.deleteFile(sub_file);
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new ExecutableException(e.getMessage());
-			}
-		}
-		
 		return new PbsJobID(jobid);
 	}
 	
 	@Override
 	public PbsProxy cloneThreadsafe() {
-		return new PbsProxy(getCommandService().clone());
+		return new PbsProxy(getCommandService().clone(),htcUser);
 	}
 
 	@Override
@@ -310,27 +252,6 @@ public final class PbsProxy extends HtcProxy {
 		return PBS_SUBMISSION_FILE_EXT;
 	}
 	
-	@Override
-	public void checkServerStatus() throws ExecutableException {
-		String PBS_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcPbsHome);
-		if (!PBS_HOME.endsWith("/")){
-			PBS_HOME += "/";
-		}
-		CommandOutput commandOutput = commandService.command(new String[] {PBS_HOME + JOB_CMD_STATUS, "-B"});
-
-		String output = commandOutput.getStandardOutput();
-		/*
-	Server             Max   Tot   Que   Run   Hld   Wat   Trn   Ext Status
-	---------------- ----- ----- ----- ----- ----- ----- ----- ----- -----------
-	dll-2-1-1            0     0     0     0     0     0     0     0 Active
-		 */	
-		StringTokenizer st = new StringTokenizer(output, "\n");	
-		st.nextToken();
-		st.nextToken();
-		String line = st.nextToken();
-		st = new StringTokenizer(line, " ");
-		String pbsServer = st.nextToken();	
-	}
 	
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
@@ -339,7 +260,7 @@ public final class PbsProxy extends HtcProxy {
 			if (!PBS_HOME.endsWith("/")){
 				PBS_HOME += "/";
 			}
-			String[] cmd = constructShellCommand(commandService, new String[]{PBS_HOME + JOB_CMD_STATUS, "|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+			String[] cmd = constructShellCommand(commandService, new String[]{PBS_HOME + JOB_CMD_STATUS, "|", "grep", htcUser,"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 			CommandOutput commandOutput = commandService.command(cmd);
 			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
