@@ -1,3 +1,5 @@
+#!/bin/bash
+
 printusage() {
 	echo "Usage: JavaPostprocessor64 simKey userid userKey jobindex taskid solverExitCode"
 	exit 1
@@ -7,24 +9,28 @@ printusage() {
 if [ "$#" != "6" ] ; then 
 	printusage
 fi
-site=GENERATED
 
-# set up cmd and cmd rguments
-mainclass=GENERATED
-#SolverPostprocessor
+#
+# include common variable definitions
+#
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+jvmprop=-Xmx${postprocessor_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile}"
+
 arguments=$*
 
-siteRootDir=/share/apps/vcell/deployed/${site}
-siteResDir=${siteRootDir}/resources
-siteCfgDir=${siteRootDir}/configs
-logdir=/share/apps/vcell/logs/${site}
+echo "starting postprocessor"
 
-jre=java
-jvm_jars=GENERATED
-jvmprop="-Xmx500M -Dvcell.propertyfile=${siteCfgDir}/vcell64.properties"
+nice ${common_jre} -cp ${common_jvm_jars} ${jvmprop} ${postprocessor_mainclass} ${arguments}
 
-echo "starting ${serviceid} on ${nodename}"
-nice ${jre} -cp ${jvm_jars} ${jvmprop} ${mainclass} ${arguments}
+echo "postprocessor returned"
 
 exit 0
 
