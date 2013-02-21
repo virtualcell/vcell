@@ -32,9 +32,9 @@ shopt -s -o nounset
 #  shared:  /share/apps/vcell/mssmcluster/mssm/bin
 #  shared:  /share/apps/vcell/mssmcluster/mssm/configs
 #  shared:  /share/apps/vcell/mssmcluster/mssm/resources
-#  vm:      /vcell/deploy/services/mssm/configs
-#  vm:      /vcell/deploy/services/mssm/resources
-#  vm:      /vcell/deploy/services/mssm/logs
+#  vm:      /vcell/deploy/services/mssm/configs/configs
+#  vm:      /vcell/deploy/services/mssm/configs/resources
+#  vm:      /vcell/deploy/services/mssm/configs/logs
 #  vm:      /var/www
 #
 VCELL_SITE=ALPHA
