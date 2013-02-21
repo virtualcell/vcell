@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.message.VCMessageSession;
@@ -29,8 +28,8 @@ public class LocalSimulationControllerMessaging extends java.rmi.server.UnicastR
  * MessagingSimulationController constructor comment.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log) throws java.rmi.RemoteException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSimulationController,0));
+public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog log, int rmiPort) throws java.rmi.RemoteException {
+	super(rmiPort);
 	this.fieldSessionLog = log;
 	simServerProxy = new RpcSimServerProxy(userLoginInfo, vcMessageSession, fieldSessionLog);
 }

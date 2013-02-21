@@ -2285,8 +2285,7 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 	
-	String onlineResourcesURL = System.getProperty(PropertyLoader.onlineResourcesURL);
-	PopupGenerator.browserLauncher(this, onlineResourcesURL,
+	PopupGenerator.browserLauncher(this, "http://vcell.org",
 		"Please visit "+"http://vcell.org"+" for Online Help",
 		getTopLevelWindowManager().isApplet());
 }

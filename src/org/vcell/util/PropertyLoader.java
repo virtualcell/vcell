@@ -13,11 +13,6 @@ package org.vcell.util;
 import java.util.Arrays;
 import java.util.Vector;
 
-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
-
-
-
-
 
 public class PropertyLoader {
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
@@ -30,15 +25,13 @@ public class PropertyLoader {
 	public static final String tempDirProperty				= "vcell.tempdir";
 	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
-	public static final String serviceSubmitScript = "vcell.service.submitScript";
 	
-	public static final String qstatFullClusterCommandPath 	= "vcell.htc.qstatFullClusterCommandPath";
-	public static final String jobSubmitCommand 			= "vcell.htc.jobSubmitCommand";
-	public static final String jobDeleteCommand 			= "vcell.htc.jobDeleteCommand";
-	public static final String jobStatusCommand 			= "vcell.htc.jobStatusCommand";
-	public static final String jobHistoryCommand 			= "vcell.htc.jobHistoryCommand";
-	public static final String serverJobStatusCommand 		= "vcell.htc.serverJobStatusCommand";
-	public static final String htcMemoryOverhead			= "vcell.htc.htcMemoryOverhead"; 
+	public static final String jobMemoryOverheadMB			= "vcell.htc.jobMemoryOverheadMB";
+	public static final String htcBatchSystemQueue			= "vcell.htc.queue";
+	public static final String htcLogDir					= "vcell.htc.logdir";
+	public static final String htcUser						= "vcell.htc.user";
+	public static final String htcPbsHome		 			= "vcell.htc.pbs.home";
+	public static final String htcSgeHome		 			= "vcell.htc.sge.home";
 	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
@@ -55,6 +48,9 @@ public class PropertyLoader {
 	//
 	public static final String sundialsSolverExecutableProperty		= "vcell.sundialsSolver.executable";
 	
+	// Smoldyn
+	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
+	
 	//Stoch properties
 	public static final String stochExecutableProperty		= "vcell.stoch.executable";	
 	public static final String hybridEMExecutableProperty	= "vcell.hybridEM.executable";
@@ -70,43 +66,22 @@ public class PropertyLoader {
 	public static final String bioformatsClasspath			= "vcell.bioformatsClasspath";
 	public static final String bioformatsJarDownloadURL		= "vcell.bioformatsJarDownloadURL";
 	
-	// Smoldyn
-	public static final String smoldynExecutableProperty		= "vcell.smoldyn.executable";
-	
 	//
-	public static final String corbaEnabled					= "vcell.corbaEnabled";
 	public static final String databaseThreadsProperty		= "vcell.databaseThreads";
 	public static final String exportdataThreadsProperty	= "vcell.exportdataThreads";
 	public static final String simdataThreadsProperty		= "vcell.simdataThreads";
 	public static final String htcworkerThreadsProperty		= "vcell.htcworkerThreads";
+	
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";
 	public static final String simdataCacheSizeProperty		= "vcell.simdataCacheSize";
-	public static final String numProcessorsProperty		= "vcell.numProcessors";
-	public static final String maxJavaMemoryBytesProperty	= "vcell.maxJavaMemoryBytes";
-	public static final String serverStatisticsProperty		= "vcell.serverStatistics";
+	
 	public static final String exportBaseURLProperty		= "vcell.export.baseURL";
 	public static final String exportBaseDirProperty		= "vcell.export.baseDir";
-	public static final String exportUseLocalDataServer		= "vcell.export.useLocalDataServer";
-	public static final String userGuideURLProperty			= "vcell.help.userGuideURL";	
-	public static final String tutorialURLProperty			= "vcell.help.tutorialURL";
 	
 	public static final String dbDriverName					= "vcell.server.dbDriverName";
 	public static final String dbConnectURL					= "vcell.server.dbConnectURL";
 	public static final String dbUserid						= "vcell.server.dbUserid";
 	public static final String dbPassword					= "vcell.server.dbPassword";
-	public static final String dbPoolTimeoutSec				= "vcell.server.dbPoolTimeoutSec";
-
-	public static final String vcmlSchemaUrlProperty		= "vcell.xml.vcmlSchemaUrl";
-	public static final String sbml1SchemaUrlProperty		= "vcell.xml.sbml1SchemaUrl";
-	public static final String sbml2SchemaUrlProperty		= "vcell.xml.sbml2SchemaUrl";
-	public static final String cellmlSchemaUrlProperty      = "vcell.xml.cellmlSchemaUrl"; 
-	
-	public static final String dataSetCrawlerEnabled		= "vcell.dataSetCrawlerEnabled";
-	public static final String dataSetCrawlerIntervalMinutes= "vcell.dataSetCrawlerIntervalMinutes";
-	public static final String simDataServerHost			= "vcell.simDataServerHost";
-	public static final String odeComputeServerHosts		= "vcell.odeComputeServerHosts";   // comma-separated list of hosts
-	public static final String pdeComputeServerHosts		= "vcell.pdeComputeServerHosts";   // comma-separated list of hosts
-	public static final String hostSeparator	= ",";
 
 	public static final String jmsProvider				= "vcell.jms.provider";
 	public static final String jmsProviderValueActiveMQ		= "ActiveMQ";
@@ -114,56 +89,29 @@ public class PropertyLoader {
 	public static final String jmsURL					= "vcell.jms.url";
 	public static final String jmsUser					= "vcell.jms.user";
 	public static final String jmsPassword				= "vcell.jms.password";
+	
 	public static final String jmsSimReqQueue			= "vcell.jms.queue.simReq";
 	public static final String jmsDataRequestQueue		= "vcell.jms.queue.dataReq";
 	public static final String jmsDbRequestQueue		= "vcell.jms.queue.dbReq";
 	public static final String jmsSimJobQueue			= "vcell.jms.queue.simJob";
 	public static final String jmsWorkerEventQueue		= "vcell.jms.queue.workerEvent";
-	public static final String jmsWorkerPrefetchCount	= "vcell.jms.workerPrefetchCount";
-	public static final String jmsServicePrefetchCount	= "vcell.jms.servicePrefetchCount";
+	public static final String jmsServiceControlTopic	= "vcell.jms.topic.serviceControl";
+	public static final String jmsDaemonControlTopic	= "vcell.jms.topic.daemonControl";
+	public static final String jmsClientStatusTopic		= "vcell.jms.topic.clientStatus";
+
 	public static final String jmsBlobMessageMinSize	= "vcell.jms.blobMessageMinSize";
 	public static final String jmsBlobMessageTempDir	= "vcell.jms.blobMessageTempDir";
+	public static final String vcellClientTimeoutMS 	= "vcell.client.timeoutMS";
 
 	public static final String maxOdeJobsPerUser	= "vcell.server.maxOdeJobsPerUser";
 	public static final String maxPdeJobsPerUser	= "vcell.server.maxPdeJobsPerUser";
 	public static final String maxJobsPerScan		= "vcell.server.maxJobsPerScan";
 	public static final String maxJobsPerSite		= "vcell.server.maxJobsPerSite";
+	public static final String limitJobMemoryMB		= "vcell.limit.jobMemoryMB";
 	
-	public static final String jmsServiceControlTopic	= "vcell.jms.topic.serviceControl";
-	public static final String jmsDaemonControlTopic	= "vcell.jms.topic.daemonControl";
-	public static final String jmsClientStatusTopic		= "vcell.jms.topic.clientStatus";
-
-	public static final String rmiPortAdminDbServer			= "vcell.rmi.port.adminDbServer";
-	public static final String rmiPortDataSetController		= "vcell.rmi.port.dataSetController";
-	public static final String rmiPortSimulationController	= "vcell.rmi.port.simulationController";
-	public static final String rmiPortSolverController		= "vcell.rmi.port.solverController";
-	public static final String rmiPortUserMetaDbServer		= "vcell.rmi.port.userMetaDbServer";
-	public static final String rmiPortVCellBootstrap		= "vcell.rmi.port.vcellBootstrap";
-	public static final String rmiPortVCellConnection		= "vcell.rmi.port.vcellConnection";
-	public static final String rmiPortVCellServer			= "vcell.rmi.port.vcellServer";
-	public static final String rmiPortMessageHandler		= "vcell.rmi.port.messageHandler";
-	public static final String rmiPortRegistry				= "vcell.rmi.port.registry";
-	public static final String rmiBootstrapHost				= "vcell.rmi.host";
-
-	public static final String serverManageConfig = "vcell.messaging.serverManagerConfig";
-	public static final String bootstrapConfig = "vcell.messaging.bootstrapConfig";
-
 	public static final String vcellSoftwareVersion = "vcell.softwareVersion";
 
 	public static final String vcellServerHost = "vcell.serverHost";
-
-	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
-	
-	public static final String htcBatchSystemType = "vcell.htc.batchSystemType";
-	public static final String    htcBatchSystemTypeValue_PBS = BatchSystemType.PBS.name();
-	public static final String    htcBatchSystemTypeValue_SGE = BatchSystemType.SGE.name();
-	public static final String htcComputeResources = "vcell.htc.computeresources";
-	public static final String htcBatchSystemQueue = "vcell.htc.queue";
-	public static final String htcLogDir = "vcell.htc.logdir";
-	
-	public static final String pbsHomeDir = "vcell.pbs.homeDir";
-	
-	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
 	public static final String vcellSMTPHostName = "vcell.smtp.hostName";
 	public static final String vcellSMTPPort = "vcell.smtp.port";
@@ -172,11 +120,6 @@ public class PropertyLoader {
 	public static final String javaSimulationExecutable = "vcell.javaSimulation.executable";
 	public static final String simulationPreprocessor = "vcell.simulation.preprocessor";
 	public static final String simulationPostprocessor = "vcell.simulation.postprocessor";
-	public final static String mathSBMLDirectory = "vcell.mathSBML.directory";
-	public final static String COPASIExecutable = "vcell.COPASI.executable";
-	public final static String mathematicaKernelExecutable = "vcell.mathematica.kernel.executable";
-
-	public final static String onlineResourcesURL = "vcell.onlineResourcesURL";
 
 	public final static String mongodbHost						= "vcell.mongodb.host";
 	public final static String mongodbPort						= "vcell.mongodb.port";   // default 27017
@@ -189,15 +132,14 @@ public class PropertyLoader {
 		tempDirProperty,
 		primarySimDataDirProperty,
 		secondarySimDataDirProperty,
-		serviceSubmitScript,
 		
-		qstatFullClusterCommandPath,
-		jobSubmitCommand,
-		jobDeleteCommand,
-		jobStatusCommand,
-		jobHistoryCommand,
-		serverJobStatusCommand,
-		htcMemoryOverhead,
+		htcPbsHome,
+		htcSgeHome,
+		jobMemoryOverheadMB,
+		htcBatchSystemQueue,
+		htcLogDir,
+		htcUser,
+		
 		
 		compilerProperty,
 		linkerProperty,
@@ -213,42 +155,29 @@ public class PropertyLoader {
 		
 		sundialsSolverExecutableProperty,
 		
+		smoldynExecutableProperty,
+		
 		stochExecutableProperty,
 		hybridEMExecutableProperty,
 		hybridMilExecutableProperty,
 		hybridMilAdaptiveExecutableProperty,
 		
-		corbaEnabled,
+		visitSmoldynVisitExecutableProperty,
+		visitSmoldynScriptPathProperty,
+		
 		databaseThreadsProperty,
 		exportdataThreadsProperty,
 		simdataThreadsProperty,
 		htcworkerThreadsProperty,
 		databaseCacheSizeProperty,
 		simdataCacheSizeProperty,
-		numProcessorsProperty,
-		maxJavaMemoryBytesProperty,
-		serverStatisticsProperty,
 		exportBaseURLProperty,
 		exportBaseDirProperty,
-		exportUseLocalDataServer,
-		userGuideURLProperty,
-		tutorialURLProperty,
 		
 		dbDriverName,
 		dbConnectURL,
 		dbUserid,
 		dbPassword,
-		dbPoolTimeoutSec,
-		
-		vcmlSchemaUrlProperty,
-		sbml1SchemaUrlProperty,
-		sbml2SchemaUrlProperty,
-		cellmlSchemaUrlProperty,
-		dataSetCrawlerEnabled,
-		dataSetCrawlerIntervalMinutes,
-		simDataServerHost,
-		odeComputeServerHosts,
-		pdeComputeServerHosts,
 		
 		jmsProvider,
 		jmsURL,
@@ -259,57 +188,33 @@ public class PropertyLoader {
 		jmsDbRequestQueue,
 		jmsSimJobQueue,
 		jmsWorkerEventQueue,
-		jmsWorkerPrefetchCount,
-		jmsServicePrefetchCount,
+		jmsServiceControlTopic,
+		jmsDaemonControlTopic,
+		jmsClientStatusTopic,
+		
 		jmsBlobMessageMinSize,
 		jmsBlobMessageTempDir,
+		vcellClientTimeoutMS,
+		
 
 		maxOdeJobsPerUser,
 		maxPdeJobsPerUser,
 		maxJobsPerScan,
 		maxJobsPerSite,
+		limitJobMemoryMB,
 		
-		jmsServiceControlTopic,
-		jmsDaemonControlTopic,
-		jmsClientStatusTopic,
-		serverManageConfig,
-		bootstrapConfig,
 
 		vcellSoftwareVersion,
 
 		vcellServerHost,
 
-		rmiPortAdminDbServer,
-		rmiPortDataSetController,
-		rmiPortSimulationController,
-		rmiPortSolverController,
-		rmiPortUserMetaDbServer,
-		rmiPortVCellBootstrap,
-		rmiPortVCellConnection,
-		rmiPortVCellServer,
-		rmiPortMessageHandler,
-		rmiPortRegistry,
-
-		vcellClientTimeoutMS,
-		
-		htcComputeResources,
-		htcBatchSystemQueue,
-		pbsHomeDir,
-		htcLogDir,
-
-		
-		limitJobMemoryMB,
-		
 		vcellSMTPHostName,
 		vcellSMTPPort,
 		vcellSMTPEmailAddress,
 		
 		javaSimulationExecutable,
 		simulationPreprocessor,
-		
-		mathSBMLDirectory,
-		COPASIExecutable,
-		mathematicaKernelExecutable,
+		simulationPostprocessor,
 		
 		mongodbHost,
 		mongodbPort,
