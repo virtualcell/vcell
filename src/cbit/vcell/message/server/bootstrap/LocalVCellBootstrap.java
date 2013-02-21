@@ -91,10 +91,10 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, VCMessagingService vcMessagingService, SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException, DataAccessException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellBootstrap,0));
+private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, VCMessagingService vcMessagingService, SimulationDatabase simulationDatabase, int rmiPort) throws RemoteException, FileNotFoundException, DataAccessException {
+	super(rmiPort);
 	this.adminDbServer = adminDbServer;
-	this.localVCellServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase);
+	this.localVCellServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase, rmiPort);
 }
 /**
  * This method was created by a SmartGuide.
@@ -183,12 +183,7 @@ public static void main(java.lang.String[] args) {
 				// do nothing, "localhost" is ok
 			}
 		}
-		int argRmiPort = Integer.parseInt(args[1]);
-		int rmiPort = PropertyLoader.getIntProperty(PropertyLoader.rmiPortRegistry, argRmiPort);
-
-		if (argRmiPort!=rmiPort){
-			System.out.println("RMI Registry using port ("+rmiPort+") from propertyfile ");
-		}
+		int rmiPort = Integer.parseInt(args[1]);
 		
 		Integer serviceOrdinal = new Integer(rmiPort);
 		VCMongoMessage.serviceStartup(ServiceName.bootstrap, serviceOrdinal, args);
@@ -227,7 +222,7 @@ public static void main(java.lang.String[] args) {
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
 		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, log);
-		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase);
+		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
 
 		//
 		// JMX registration
