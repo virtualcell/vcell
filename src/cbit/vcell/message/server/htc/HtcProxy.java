@@ -83,11 +83,7 @@ public abstract class HtcProxy {
 			}
 		}
 	}
-	protected enum HtcJobCategory {
-		HTC_SIMULATION_JOB,
-		HTC_SERVICE_JOB;
-	}
-	
+
 	public static class SimTaskInfo {
 		public final KeyValue simId;
 		public final int jobIndex;
@@ -101,39 +97,31 @@ public abstract class HtcProxy {
 	}
 	
 	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
-	protected CommandService commandService = null;
+	protected final CommandService commandService;
+	protected final String htcUser;
 
 	
-	public HtcProxy(CommandService commandService){
+	public HtcProxy(CommandService commandService, String htcUser){
 		this.commandService = commandService;
+		this.htcUser = htcUser;
 	}
 
 	public abstract HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException;
 
 	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
-	public abstract String getPendingReason(HtcJobID jobid) throws ExecutableException, HtcException;
-
 	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SIMULATION_JOB, null, false, exitCommand, exitCodeReplaceTag);
+		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, null, exitCommand, exitCodeReplaceTag);
 	}
 
 	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SIMULATION_JOB, secondCommand, false, exitCommand, exitCodeReplaceTag);
-	}
-
-	public HtcJobID submitServiceJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, HtcJobCategory.HTC_SERVICE_JOB, null, true, null, null);
+		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag);
 	}
 	
-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, HtcJobCategory jobCategory, String[] secondCommand, boolean isServiceJob, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
+	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
 	
-	public final List<HtcJobID> getRunningServiceJobIDs(VCellServerID serverID) throws ExecutableException {
-		return getRunningJobIDs(serverID.toString().toUpperCase()+"_");
-	}
-
 	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
 		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
 	}
@@ -144,6 +132,10 @@ public abstract class HtcProxy {
 
 	public final CommandService getCommandService() {
 		return commandService;
+	}
+
+	public final String getHtcUser() {
+		return htcUser;
 	}
 
 	public static SimTaskInfo getSimTaskInfoFromSimJobName(String simJobName) throws HtcException{
@@ -198,8 +190,6 @@ public abstract class HtcProxy {
 
 	public abstract String getSubmissionFileExtension();
 
-	public abstract void checkServerStatus() throws ExecutableException;
-	
 	/**
 	 * for unix-style commands that have (e.g. pipes), using the java Runtime.exec(String[] cmd), the pipe requires a shell to operate properly.
 	 * the SSH command already invokes this with a shell, so it is not required.

@@ -10,13 +10,11 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.DataJobListener;
@@ -33,7 +31,6 @@ import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellServer;
 import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
-import cbit.vcell.server.URLFinder;
 import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
@@ -62,17 +59,19 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	
 	private SessionLog fieldSessionLog = null;
 	private LocalVCellServer fieldLocalVCellServer = null;
-	private String fieldHost = null;
 
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
+	private int rmiPort;
 
-	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, String host, 
-		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector, LocalVCellServer aLocalVCellServer) 
+	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, 
+		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector, LocalVCellServer aLocalVCellServer, int argRmiPort) 
 		throws RemoteException, FileNotFoundException {
 		
-		super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
+		super(argRmiPort);
+		
+		this.rmiPort = argRmiPort;
+		
 		this.userLoginInfo = userLoginInfo;
-		this.fieldHost = host;
 		this.fieldSessionLog = sessionLog;
 		this.fieldLocalVCellServer = aLocalVCellServer;
 		this.vcMessagingService = vcMessagingService;
@@ -139,7 +138,7 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getDataSetController()");
 	if (dataSetControllerMessaging == null) {
 		vcMessageSessionData = vcMessagingService.createProducerSession();
-		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), vcMessageSessionData, fieldSessionLog);
+		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), vcMessageSessionData, fieldSessionLog, rmiPort);
 	}
 	return dataSetControllerMessaging;
 }
@@ -163,27 +162,11 @@ SimpleMessageService getMessageService() {
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationControllerMessaging == null){
 		vcMessageSessionSim = vcMessagingService.createProducerSession();
-		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), vcMessageSessionSim, fieldSessionLog);
+		simulationControllerMessaging = new LocalSimulationControllerMessaging(getUserLoginInfo(), vcMessageSessionSim, fieldSessionLog, rmiPort);
 	}
 	return simulationControllerMessaging;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/2/01 11:15:49 PM)
- * @return cbit.vcell.server.URLFinder
- * @exception java.rmi.RemoteException The exception description.
- */
-public URLFinder getURLFinder() {
-	try {
-		return new URLFinder(	new URL(PropertyLoader.getRequiredProperty(PropertyLoader.tutorialURLProperty)),
-								new URL(PropertyLoader.getRequiredProperty(PropertyLoader.userGuideURLProperty)));
-	} catch (java.net.MalformedURLException e){
-		fieldSessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
-}
 
 /**
  * This method was created by a SmartGuide.
@@ -204,7 +187,7 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
 		vcMessageSessionDb = vcMessagingService.createProducerSession();
-		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), vcMessageSessionDb, fieldSessionLog);
+		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), vcMessageSessionDb, fieldSessionLog, rmiPort);
 	}
 	return userMetaDbServerMessaging;
 }

@@ -498,11 +498,11 @@ public class SimulationDispatcher extends ServiceProvider {
 			HtcProxy htcProxy = null;
 			switch(batchSystemType){
 				case PBS:{
-					htcProxy = new PbsProxy(commandService);
+					htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;
 				}
 				case SGE:{
-					htcProxy = new SgeProxy(commandService);
+					htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;
 				}
 				default: {

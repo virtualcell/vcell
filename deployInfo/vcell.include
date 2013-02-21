@@ -1,0 +1,74 @@
+#
+# GENERAL INCLUDE FILE FOR COMMON VCELL VARIABLES
+#
+
+#--------------------------------------
+# common definitions
+#--------------------------------------
+common_site=GENERATED
+common_batchSystemType=GENERATED
+
+common_logdir=/share/apps/vcell/logs/${common_site}
+
+common_siteRootDir=/share/apps/vcell/deployed/${common_site}
+common_siteResDir=${common_siteRootDir}/resources
+
+common_siteCfgDir=${common_siteRootDir}/configs
+common_propertyfile=${common_siteCfgDir}/vcell64.properties
+
+common_siteLibDir=${common_siteRootDir}/lib
+export LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
+
+common_jre=java
+common_jvm_jars=GENERATED
+
+#--------------------------------------
+# rmi bootstrap services (http port, high port)
+#    common definitions
+#--------------------------------------
+bootstrap_mainclass=GENERATED
+bootstrap_policyfile=${common_siteCfgDir}/java.policy
+bootstrap_rmihost=GENERATED
+bootstrap_jmxhost=${bootstrap_rmihost}
+bootstrap_memoryMB=800
+
+#--------------------------------------
+# rmi bootstrap services (http port) "vcellbootstrap_http"
+#--------------------------------------
+bootstrap_http_rmiport=GENERATED
+bootstrap_http_jmxport=GENERATED
+
+#--------------------------------------
+# rmi bootstrap services (high port) "vcellbootstrap_high"
+#--------------------------------------
+bootstrap_high_rmiport=GENERATED
+bootstrap_high_jmxport=GENERATED
+
+
+#--------------------------------------
+# vcell service "vcellservice"
+#--------------------------------------
+vcellservice_mainclass=GENERATED
+vcellservice_jmxhost=GENERATED
+vcellservice_jmxport=GENERATED
+
+vcellservice_memoryMB=3000
+
+#--------------------------------------
+# solver preProcessor "JavaPreprocessor64"
+#--------------------------------------
+preprocessor_mainclass=GENERATED
+preprocessor_memoryMB=500
+
+#--------------------------------------
+# solver postProcessor "JavaPostprocessor64"
+#--------------------------------------
+postprocessor_mainclass=GENERATED
+postprocessor_memoryMB=500
+
+#--------------------------------------
+# Java Solver "JavaSimExe64"
+#--------------------------------------
+javasolver_mainclass=GENERATED
+javasolver_memoryMB=1000
+

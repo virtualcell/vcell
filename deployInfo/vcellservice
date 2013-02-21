@@ -9,7 +9,7 @@ jmxargs="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authentic
 ordinal=123
 memoryMB=3000
 site=GENERATED
-batchSystemType=SGE
+batchSystemType=GENERATED
 mainclass=cbit.vcell.message.server.combined.VCellServices
 
 siteRootDir=/share/apps/vcell/deployed/${site}
