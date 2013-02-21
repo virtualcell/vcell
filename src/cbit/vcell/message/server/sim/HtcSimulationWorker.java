@@ -102,18 +102,6 @@ public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingServ
 
 public final String getJobSelector() {
 	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
-	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
-	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
-	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
-	int count = 0;
-	while (st.hasMoreTokens()) {
-		if (count > 0) {
-			jobSelector = ", ";
-		}
-		jobSelector += "'" + st.nextToken() + "'";
-		count ++;
-	}
-	jobSelector += ")))";
 	
 	return jobSelector;
 }
@@ -359,11 +347,11 @@ public static void main(java.lang.String[] args) {
 		HtcProxy htcProxy = null;
 		switch(batchSystemType){
 			case PBS:{
-				htcProxy = new PbsProxy(commandService);
+				htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 				break;
 			}
 			case SGE:{
-				htcProxy = new SgeProxy(commandService);
+				htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 				break;
 			}
 		}
@@ -379,8 +367,6 @@ public static void main(java.lang.String[] args) {
  
         VCMessagingService vcMessagingService = VCMessagingService.createInstance();
 		
-		htcProxy.checkServerStatus();
-
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);
 		simulationWorker.init();

@@ -14,7 +14,6 @@ import java.rmi.RemoteException;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VersionInfo;
@@ -48,8 +47,8 @@ public class LocalUserMetaDbServerMessaging extends java.rmi.server.UnicastRemot
 /**
  * This method was created in VisualAge.
  */
-public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession,SessionLog sessionLog) throws RemoteException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortUserMetaDbServer,0));
+public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession,SessionLog sessionLog, int rmiPort) throws RemoteException {
+	super(rmiPort);
 	this.log = sessionLog;
 	this.dbServerProxy = new RpcDbServerProxy(userLoginInfo, vcMessageSession, log);
 }

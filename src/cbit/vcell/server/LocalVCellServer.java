@@ -52,6 +52,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private java.util.Date bootTime = new java.util.Date();
 	private SimulationDatabase simulationDatabase = null;
 	private ClientTopicMessageCollector clientTopicMessageCollector = null;
+	private int rmiPort;
 
 	private long CLEANUP_INTERVAL = 600*1000;	
 	
@@ -59,8 +60,9 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(String argHostName, VCMessagingService vcMessagingService, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase) throws RemoteException, FileNotFoundException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellServer,0));
+public LocalVCellServer(String argHostName, VCMessagingService vcMessagingService, AdminDatabaseServer dbServer, SimulationDatabase simulationDatabase, int argRmiPort) throws RemoteException, FileNotFoundException {
+	super(argRmiPort);
+	this.rmiPort = argRmiPort;
 	this.hostName = argHostName;
 	this.vcMessagingService = vcMessagingService;
 	this.sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
@@ -99,7 +101,7 @@ private synchronized void addVCellConnection(UserLoginInfo userLoginInfo) throws
 		if (vcMessagingService == null){
 			localConn = new LocalVCellConnection(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), simulationDatabase, getDataSetControllerImpl(), getExportServiceImpl());
 		} else {
-			localConn = new LocalVCellConnectionMessaging(userLoginInfo, hostName, new StdoutSessionLog(userLoginInfo.getUser().getName()), vcMessagingService, clientTopicMessageCollector, this);
+			localConn = new LocalVCellConnectionMessaging(userLoginInfo, new StdoutSessionLog(userLoginInfo.getUser().getName()), vcMessagingService, clientTopicMessageCollector, this, rmiPort);
 			VCMongoMessage.sendClientConnectionNew(localConn.getUserLoginInfo());
 		}
 		vcellConnectionList.addElement(localConn);
