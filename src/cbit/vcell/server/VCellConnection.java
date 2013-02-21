@@ -38,17 +38,7 @@ DataSetController getDataSetController() throws DataAccessException, RemoteExcep
  * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationController getSimulationController() throws RemoteException;
-/**
- * Insert the method's description here.
- * Creation date: (3/2/01 11:15:25 PM)
- * @return cbit.vcell.server.URLFinder
- * @exception java.rmi.RemoteException The exception description.
- */
-URLFinder getURLFinder() throws RemoteException;
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
+
 public UserLoginInfo getUserLoginInfo() throws RemoteException;
 /**
  * This method was created by a SmartGuide.

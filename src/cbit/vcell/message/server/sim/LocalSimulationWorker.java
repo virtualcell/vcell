@@ -14,7 +14,6 @@ import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.StringTokenizer;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -73,18 +72,6 @@ public LocalSimulationWorker(VCMessagingService vcMessagingService, ServiceInsta
 
 public final String getJobSelector() {
 	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
-	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
-	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
-	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
-	int count = 0;
-	while (st.hasMoreTokens()) {
-		if (count > 0) {
-			jobSelector = ", ";
-		}
-		jobSelector += "'" + st.nextToken() + "'";
-		count ++;
-	}
-	jobSelector += ")))";
 	
 	return jobSelector;
 }

@@ -141,7 +141,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		}
 
 		try {
-			PropertyLoader.loadProperties();		
+			PropertyLoader.loadProperties();
+			CommandService.bQuiet = true;
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
@@ -163,11 +164,11 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			HtcProxy htcProxy = null;
 			switch(batchSystemType){
 				case PBS:{
-					htcProxy = new PbsProxy(commandService);
+					htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;
 				}
 				case SGE:{
-					htcProxy = new SgeProxy(commandService);
+					htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
 					break;
 				}
 				default: {

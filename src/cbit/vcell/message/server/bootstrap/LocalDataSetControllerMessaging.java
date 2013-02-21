@@ -13,7 +13,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -45,8 +44,8 @@ public class LocalDataSetControllerMessaging extends UnicastRemoteObject impleme
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog sLog) throws RemoteException {
-	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortDataSetController,0));
+public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, VCMessageSession vcMessageSession, SessionLog sLog, int rmiPort) throws RemoteException {
+	super(rmiPort);
 	this.sessionLog = sLog;
 	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, vcMessageSession, sessionLog);
 }

@@ -360,23 +360,9 @@ protected void initialize() throws SolverException {
 	
 	autoCode(false);
 	
-//	String baseName = cppCoderVCell.getBaseFilename();
-//	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
-//	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
-	boolean bCORBA = false;
-
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 	
-	try{
-		bCORBA = Boolean.getBoolean(PropertyLoader.corbaEnabled);
-	}catch (Throwable t){}
-
-	if (bCORBA) {
-		throw new RuntimeException("MathExecutableCORBA not supported");
-		//executable = new MathExecutableCORBA(exeFile,mathDesc.getSimulationID(),getSessionLog());
-	}else{
-		setMathExecutable(new MathExecutable(getMathExecutableCommand()));
-	}
+	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
 
 }
 
