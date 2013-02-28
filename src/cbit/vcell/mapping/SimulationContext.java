@@ -264,6 +264,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private AnalysisTask[] fieldAnalysisTasks = null;
 	private boolean bStoch;
 	private boolean bConcentration = true;
+	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
 	private MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement("fluor",new ProjectionZKernel(),new Expression(0.0));
 
@@ -1970,6 +1971,8 @@ public void checkValidity() throws MappingException
 		}
 	}
 }
+
+
 public boolean isUsingConcentration() {
 	return bConcentration;
 }
@@ -1982,6 +1985,20 @@ public void setUsingConcentration(boolean bUseConcentration) /*throws MappingExc
 		firePropertyChange(PROPERTY_NAME_USE_CONCENTRATION, oldValue, bConcentration);
 	}
 }
+
+public boolean isRandomizeInitCondition() {
+	return bRandomizeInitCondition;
+}
+
+public void setRandomizeInitCondition(boolean bRandomize) {
+	if(isStoch()) //do it only when it is stochastic application
+	{
+		boolean oldValue = bRandomizeInitCondition;
+		bRandomizeInitCondition = bRandomize;
+	}
+}
+
+
 //specially created for loading from database, used in ServerDocumentManager.saveBioModel()
 public void updateSpeciesIniCondition(SimulationContext simContext) throws MappingException, PropertyVetoException
 {
