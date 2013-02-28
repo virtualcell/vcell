@@ -81,6 +81,7 @@ import org.sbml.libsbml.SampledVolume;
 import org.sbml.libsbml.SpatialCompartmentPlugin;
 import org.sbml.libsbml.SpatialModelPlugin;
 import org.sbml.libsbml.SpatialParameterPlugin;
+import org.sbml.libsbml.SpatialSpeciesRxnPlugin;
 import org.sbml.libsbml.SpatialSymbolReference;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
@@ -93,6 +94,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
@@ -179,6 +182,10 @@ public class SBMLSpatialImporter {
 	
 	// SBMLAnnotationUtil to get the SBML-related annotations, notes, free-text annotations from a Biomodel VCMetaData
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
+
+	// issue list for medium-level warnings while importing 
+	private Vector<Issue> localIssueList = new Vector<Issue>();
+	
 
 	/* A lightweight inner class to contain the SBML and VC concentration units for species. Needed when running the Semantics test suite.
 	 * When SBML model is imported into VCell and a simulation is run, the units of the generated results are different from
@@ -328,7 +335,8 @@ protected void addCompartments(VCMetaData metaData) {
 							// deal with unit conversion, since default unit for membrane (area) in SBML is m2 and in VCell is always um2.
 							newCompartment.setOutside(newMembrane.getOutsideFeature().getName());
 							sbmlCompartment.setOutside(newCompartment.getId());
-							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+sbmlCompartment.getId()+" size is not set.");
+							localIssueList.add(new Issue(newMembrane, IssueCategory.SBMLImport_CompartmentSize , "compartment '"+sbmlCompartment.getId()+"' size is not set.", Issue.SEVERITY_WARNING));
+							// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+sbmlCompartment.getId()+" size is not set.");
 						}
 						newMembrane.setParentStructure(outsideStructure);
 					}
@@ -543,7 +551,8 @@ protected void addInitialAssignments() {
 			} else if (mp != null) {
 				mp.setExpression(initAssignMathExpr);
 			} else {
-				logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
+				localIssueList.add(new Issue(initAssignMathExpr, IssueCategory.SBMLImport_UnsupportedAttributeOrElement , "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
+				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -993,7 +1002,8 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		// If species is not present, and modifierNum > 0, it was not previously added as a reactant and/or pdt, hence can add it as a catalyst.
 		if (modifierNum > 0) {
 			if (bAddedAsReactant || bAddedAsProduct) {
-				logger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
+				localIssueList.add(new Issue(speciesContext, IssueCategory.SBMLImport_Reaction, "Species '" + speciesContext.getName() + "' was already added as a reactant and/or product to '" + vcRxn.getName() + "'; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
+				// logger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
 			} else {
 				vcRxn.addCatalyst(speciesContext);
 			}
@@ -1050,7 +1060,8 @@ protected void addReactions(VCMetaData metaData) {
 						} else if (fluxOptionStr.equals(XMLTags.FluxOptionElectricalOnly)) {
 							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 						} else {
-							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
+							localIssueList.add(new Issue(vcReactions[i], IssueCategory.SBMLImport_Reaction, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
+							// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
 						}
 					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
@@ -1124,12 +1135,20 @@ protected void addReactions(VCMetaData metaData) {
 				// if bLocalParamMatchesCompId is <F> and if kLawRateExpr DOESN'T HAVE 	compartment_id : LumpedKinetics  
 				// if bLocalParamMatchesCompId is <F> and if kLawRateExpr 	  HAS 		compartment_id : GeneralKinetics  
 				// if bLocalParamMatchesCompId is <T> and if kLawRateExpr DOESN'T HAVE  compartment_id : SHOULDN'T HAPPEN (it means there is a kLaw local param with compartment_id, but kLaw expression doesn't contain copartment_id, which is not possible.  
-				if ((bLocalParamMatchesCompId && kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL)) || (!bLocalParamMatchesCompId && !kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL))) {
-					kinetics = new GeneralLumpedKinetics(vcReactions[i]);
-				} else if (kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL) && !bLocalParamMatchesCompId) {
+				
+				// since this is spatialImporter, check for 'SpatialReactionPlugin' 'isLocal' flag, if it is true, reaction should be 'GeneralKinetics'.
+				SpatialSpeciesRxnPlugin ssrplugin = null;
+				ssrplugin = (SpatialSpeciesRxnPlugin)sbmlRxn.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+				if (ssrplugin != null && ssrplugin.getIsLocal()) {
 					kinetics = new GeneralKinetics(vcReactions[i]);
 				} else {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Cannot have a local parameter which does not occur in kinetic law expression for SBML reaction : " + rxnName);
+					if ((bLocalParamMatchesCompId && kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL)) || (!bLocalParamMatchesCompId && !kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL))) {
+						kinetics = new GeneralLumpedKinetics(vcReactions[i]);
+					} else if (kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL) && !bLocalParamMatchesCompId) {
+						kinetics = new GeneralKinetics(vcReactions[i]);
+					} else {
+						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Cannot have a local parameter which does not occur in kinetic law expression for SBML reaction : " + rxnName);
+					}
 				}
 	
 				// set kinetics on vcReaction
@@ -1721,7 +1740,8 @@ private void setSpeciesInitialConditions() {
 				if (initExpr == null) {
 					// no assignment rule (and there was no initConc or initAmt); if it doesn't have initialAssignment, throw warning and set it to 0.0
 					if (sbmlModel.getInitialAssignment(speciesName) == null) {
-						logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
+						localIssueList.add(new Issue(initExpr, IssueCategory.SBMLImport_MissingSpeciesInitCondition , "no initial condition for species "+speciesName+", assuming 0.0", Issue.SEVERITY_WARNING));
+						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
 					}
 					initExpr = new Expression(0.0);
 				}
@@ -2071,6 +2091,27 @@ public BioModel getBioModel() {
 	sbmlAnnotationUtil.readNotes(bioModel, sbmlModel);
 
 	bioModel.refreshDependencies();
+	
+	Issue warningIssues[] = (Issue[])BeanUtils.getArray(localIssueList,Issue.class);
+	if (warningIssues!=null && warningIssues.length>0){
+		StringBuffer messageBuffer = new StringBuffer("Issues encountered during SBML Import:\n\n");
+		int issueCount=0;
+		for (int i = 0; i < warningIssues.length; i++){
+			if (warningIssues[i].getSeverity()==Issue.SEVERITY_WARNING || warningIssues[i].getSeverity()==Issue.SEVERITY_INFO){
+				messageBuffer.append(warningIssues[i].getCategory()+" "+warningIssues[i].getSeverityName()+" : "+warningIssues[i].getMessage()+"\n");
+				issueCount++;
+			}
+		}
+		if (issueCount>0){
+			try {
+				logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS, messageBuffer.toString());
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+			}
+			// PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+		}
+	}
+
 	return bioModel;
 }
 
@@ -2458,6 +2499,12 @@ protected void addGeometry() {
 	// get a Geometry object via SpatialModelPlugin object.
 	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
 
+	// (2/27/2013) For now, allow model to be imported even without geometry defined. Issue a warning.
+	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
+		localIssueList.add(new Issue(sbmlModel.getId(), IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
+		return;
+		// throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+	}
 	
 	// get a CoordComponent object via the Geometry object.	
 	ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
@@ -2909,11 +2956,13 @@ private void checkIdentifiersNameLength() throws Exception {
 	// Check compartment name lengths
 	ListOf listofIds = sbmlModel.getListOfCompartments();
 	boolean bLongCompartmentName = false;
+	Object issueSource = null;
 	for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 		Compartment compartment = (Compartment)listofIds.get(i);
 		String compartmentName = compartment.getId();
 		if (compartmentName.length() > 64) {
 			bLongCompartmentName = true;
+			issueSource = compartment;
 		}
 	}
 	// Check species name lengths
@@ -2924,6 +2973,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String speciesName = species.getId();
 		if (speciesName.length() > 64) {
 			bLongSpeciesName = true;
+			issueSource = species;
 		}
 	}
 	// Check parameter name lengths
@@ -2934,6 +2984,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String paramName = param.getId();
 		if (paramName.length() > 64) {
 			bLongParameterName = true;
+			issueSource = param;
 		}
 	}
 	// Check reaction name lengths
@@ -2944,6 +2995,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		String rxnName = rxn.getId();
 		if (rxnName.length() > 64) {
 			bLongReactionName = true;
+			issueSource = rxn;
 		}
 	}
 
@@ -2963,7 +3015,8 @@ private void checkIdentifiersNameLength() throws Exception {
 		}
 		warningMsg = warningMsg + "that have ids/names that are longer than 64 characters. \n\nUser is STRONGLY recommeded to shorten " +
 						"the names to avoid problems with the length of expressions these names might be used in.";
-		logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
+		localIssueList.add(new Issue(issueSource, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, warningMsg, Issue.SEVERITY_WARNING));
+		// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
 	}
 }
 }
