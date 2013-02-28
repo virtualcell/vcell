@@ -2252,8 +2252,14 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 	// Check if any of the compartments have spatial dimension 0
 	for (int i = 0; i < (int)sbmlModel.getNumCompartments(); i++) {
 		Compartment comp = (Compartment)sbmlModel.getCompartment(i);
-		if (comp.getSpatialDimensions() == 0) {
-			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
+		if (level > 2) {
+			// level 3+ does not have default value for spatialDimension. So cannot assume a value.
+			if (!comp.isSetSpatialDimensions()) {
+				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment '" + comp.getId() + "' spatial dimension is not set; default value cannot be assumed in an SBML Level 3 model.");
+			}
+		} 
+		if (comp.getSpatialDimensions() == 0 || comp.getSpatialDimensions() == 1) {
+			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0 or 1; this is not supported in VCell");
 		}
 	}
 }
