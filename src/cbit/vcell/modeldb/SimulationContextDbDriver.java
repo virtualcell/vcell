@@ -38,7 +38,6 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -787,10 +786,7 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 		outputFnContext.setOutputFunctions(outputFunctionList);
 	}
 	
-	BioEvent[] bioEvents = SimContextTable.table.getBioEvents(con, simContext);
-	if (bioEvents != null && bioEvents.length > 0) {
-		simContext.setBioEvents(bioEvents);
-	}
+	SimContextTable.table.readAppComponents(con, simContext);
 	
 	for (GeometryClass gc : simContext.getGeometry().getGeometryClasses()) {
 		StructureSizeSolver.updateUnitStructureSizes(simContext, gc);

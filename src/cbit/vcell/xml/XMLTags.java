@@ -107,6 +107,7 @@ public class XMLTags {
     public final static String OperationAttrTag = "Operation"; //stoch
     public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
     public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
+    public final static String RandomizeInitConditionTag = "RandomizeInitCondition"; //used for stochastic application. store boolean for randomizing initial condition
     //END-MATHMODEL
 
     //TAGS RELATED TO VERSION
@@ -457,6 +458,7 @@ public class XMLTags {
 	
 	// for database storage of simContext (application) related components
 	public final static String ApplicationComponents = "AppComponents";
+	public static final String ApplicationSpecificFlagsTag = "ApplicationSpecificFlags";
 	
 	public final static String MembraneRandomVariableTag = "MembraneRandomVariable";
 	public final static String VolumeRandomVariableTag = "VolumeRandomVariable";

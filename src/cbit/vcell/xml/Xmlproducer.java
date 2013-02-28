@@ -1286,13 +1286,18 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 	if (param.isStoch())
 	{
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
-		if(param.isUsingConcentration())
-		{
+		if(param.isUsingConcentration()) {
 			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
-		}	
-		else
-		{
+		} else {
 			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "false");
+		}
+		// write out 'randomizeInitConditin' flag only if non-spatial stochastic simContext
+		if(param.getGeometry().getDimension() == 0) {
+			if (param.isRandomizeInitCondition()) {
+				simulationcontext.setAttribute(XMLTags.RandomizeInitConditionTag, "true");
+			} else {
+				simulationcontext.setAttribute(XMLTags.RandomizeInitConditionTag, "false");
+			}
 		}
 	}
 	else
