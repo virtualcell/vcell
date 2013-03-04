@@ -22,7 +22,6 @@ import org.vcell.util.VCellThreadChecker;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.mapping.MathMapping.UnitFactorParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -52,6 +51,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -67,7 +67,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.VCellErrorMessages;
 /**
@@ -653,12 +652,12 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					MassActionSolver.substituteParameters(expCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
-					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
+					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
 				}
 			}
 			else
 			{
-				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Binding radius of " + reactionStep.getName() +" is null."));
+				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Binding radius of " + reactionStep.getName() +" is null."));
 			}
 			
 			List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();

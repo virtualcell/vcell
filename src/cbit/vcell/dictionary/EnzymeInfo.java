@@ -9,6 +9,10 @@
  */
 
 package cbit.vcell.dictionary;
+
+import cbit.vcell.model.FormalSpeciesInfo;
+import cbit.vcell.model.FormalSpeciesType;
+
 /**
  * Class that represents a single enzyme from a database
  * Creation date: (6/24/2002 10:38:00 AM)

@@ -10,8 +10,8 @@
 
 package cbit.vcell.client.server;
 
-import cbit.vcell.server.UserLoginInfo;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 /**
  * Insert the type's description here.

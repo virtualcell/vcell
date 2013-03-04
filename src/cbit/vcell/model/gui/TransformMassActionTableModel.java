@@ -19,11 +19,11 @@ import cbit.gui.ScopedExpression;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.solver.stoch.MassActionSolver;
 
 
 /**

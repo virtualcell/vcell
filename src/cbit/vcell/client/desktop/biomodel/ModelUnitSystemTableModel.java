@@ -17,8 +17,8 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.model.ModelUnitSystem.ModelUnitSystemEntry;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")

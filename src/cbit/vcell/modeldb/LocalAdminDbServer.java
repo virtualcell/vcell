@@ -18,6 +18,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -25,7 +26,6 @@ import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.

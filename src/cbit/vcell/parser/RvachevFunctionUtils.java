@@ -2,9 +2,6 @@ package cbit.vcell.parser;
 
 import java.util.HashSet;
 
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
 
 public class RvachevFunctionUtils {
 
@@ -22,34 +19,6 @@ public class RvachevFunctionUtils {
 //		 System.out.println(newExp.infix());
 		 newExp = newExp.convertToRvachevFunction();
 		 return newExp;
-	}
-	
-	public static Expression[] convertAnalyticGeometryToRvachevFunction(GeometrySpec geoSpec) throws ExpressionException {
-		SubVolume[] subVolumes = geoSpec.getSubVolumes();
-		int numSubVolumes = subVolumes.length;
-		Expression[] newExps = new Expression[numSubVolumes];
-		if (numSubVolumes == 1) {
-			newExps[0] = new Expression(-1.0);			
-		} else {
-			for (int i = 0; i < numSubVolumes - 1; i ++) {		
-				if (!(subVolumes[i] instanceof AnalyticSubVolume)) {
-					throw new RuntimeException("Subdomain " + i + " is not a analytic subdomain.");
-				}
-				AnalyticSubVolume subvolume = (AnalyticSubVolume)subVolumes[i];
-				newExps[i] = convertToRvachevFunction(subvolume.getExpression());
-				if (newExps[numSubVolumes - 1] == null) {
-					newExps[numSubVolumes - 1] = Expression.negate(newExps[i]);
-				} else {
-					newExps[numSubVolumes - 1] = Expression.max(newExps[numSubVolumes - 1], Expression.negate(newExps[i]));
-				}
-			}
-			for (int i = 1; i < numSubVolumes - 1; i ++) {
-				for (int j = 0; j < i; j ++) {
-					newExps[i] = Expression.max(newExps[i], Expression.negate(newExps[j]));
-				}			
-			}
-		}		
-		return newExps;
 	}
 	
 	// change use of * and + to && and ||

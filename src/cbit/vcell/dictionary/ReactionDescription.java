@@ -12,6 +12,7 @@ package cbit.vcell.dictionary;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.SpeciesDescription;
 /**
  * Insert the type's description here.
  * Creation date: (4/23/2003 1:42:35 PM)

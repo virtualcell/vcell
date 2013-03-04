@@ -16,10 +16,10 @@ import java.sql.SQLException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */

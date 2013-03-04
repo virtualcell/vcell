@@ -20,20 +20,19 @@ import java.util.Map;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -109,6 +108,10 @@ public abstract class ReactionStep implements BioModelEntityObject,
 		@Override
 		public String getPathDescription() {
 			return "Model / Reaction("+ReactionStep.this.getName()+")";
+		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.reactionStepType;
 		}
 	}
 	

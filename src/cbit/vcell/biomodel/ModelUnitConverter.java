@@ -1,8 +1,5 @@
-package cbit.vcell.model;
+package cbit.vcell.biomodel;
 
-import java.util.ArrayList;
-
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
@@ -12,6 +9,12 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ScopedSymbolTable;

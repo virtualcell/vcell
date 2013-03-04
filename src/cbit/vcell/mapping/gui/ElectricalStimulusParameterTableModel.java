@@ -15,7 +15,6 @@ import java.util.Comparator;
 
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -23,6 +22,7 @@ import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**

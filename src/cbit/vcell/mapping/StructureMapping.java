@@ -85,6 +85,10 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			}
 			return null;
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.structureMappingType;
+		}
 	}
 	
 	public class StructureMappingParameter extends Parameter implements ExpressionContainer {

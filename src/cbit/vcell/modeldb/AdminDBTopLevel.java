@@ -23,6 +23,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
@@ -35,7 +36,6 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**

@@ -14,7 +14,7 @@ import java.util.Set;
 
 import javax.swing.table.TableModel;
 
-import cbit.gui.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
 public interface AutoCompleteTableModel extends TableModel {

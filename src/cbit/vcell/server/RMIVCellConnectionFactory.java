@@ -11,6 +11,7 @@
 package cbit.vcell.server;
 
 import org.vcell.util.VCellThreadChecker;
+import org.vcell.util.document.UserLoginInfo;
 
 
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {

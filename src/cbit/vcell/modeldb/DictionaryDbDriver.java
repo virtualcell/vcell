@@ -25,8 +25,6 @@ import cbit.sql.QueryHashtable;
 import cbit.vcell.dictionary.CompoundAliasTable;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.CompoundTable;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBSpeciesTable;
 import cbit.vcell.dictionary.EnzymeAliasTable;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -35,11 +33,13 @@ import cbit.vcell.dictionary.EnzymeTable;
 import cbit.vcell.dictionary.FormalCompound;
 import cbit.vcell.dictionary.FormalEnzyme;
 import cbit.vcell.dictionary.FormalProtein;
-import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinAliasTable;
 import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.dictionary.ProteinTable;
 import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.FormalSpeciesType;
 import cbit.vcell.model.ReactionStepInfo;
 
 

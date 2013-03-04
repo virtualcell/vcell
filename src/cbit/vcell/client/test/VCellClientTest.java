@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 
 import org.jdom.Document;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 
 import cbit.util.xml.VCLogger;
@@ -26,7 +27,6 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.

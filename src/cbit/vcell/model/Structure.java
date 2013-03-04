@@ -73,6 +73,10 @@ public abstract class Structure implements Serializable, ScopedSymbolTable, Matc
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return Structure.this;
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.structureType;
+		}
 	}
 
 	public class StructureSize extends ModelQuantity {

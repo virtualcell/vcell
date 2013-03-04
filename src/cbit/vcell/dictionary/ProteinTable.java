@@ -16,6 +16,7 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.model.DBFormalSpecies;
 
 /**
  * Represents a table for storing Protein information in a database

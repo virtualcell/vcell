@@ -12,6 +12,8 @@ package cbit.vcell.dictionary;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.FormalSpeciesType;
 
 /**
  * Insert the type's description here.

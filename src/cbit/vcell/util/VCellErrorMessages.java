@@ -13,10 +13,10 @@ package cbit.vcell.util;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
-import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
+
 
 public class VCellErrorMessages {
 //	public static void main(String[] args) {
@@ -30,9 +30,9 @@ public class VCellErrorMessages {
 //			exception.printStackTrace(System.out);
 //		}
 //	}
-	public static String getMassActionSolverMessage(ReactionStep rs, String reasonStr) 
+	public static String getMassActionSolverMessage(String reactionStepName, String reasonStr) 
 	{
-		return "Failed to intepret kinetic rate for reaction '" + rs.getName() + "' as mass action.\n" + "     " + reasonStr;
+		return "Failed to intepret kinetic rate for reaction '" + reactionStepName + "' as mass action.\n" + "     " + reasonStr;
 	}
 	
 	

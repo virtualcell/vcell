@@ -8,9 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.gui;
+package cbit.vcell.parser;
 
-import cbit.vcell.parser.SymbolTableEntry;
 
 public interface AutoCompleteSymbolFilter {
 	boolean accept(SymbolTableEntry ste);

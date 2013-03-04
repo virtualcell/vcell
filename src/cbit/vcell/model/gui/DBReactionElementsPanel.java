@@ -21,13 +21,13 @@ public class DBReactionElementsPanel extends javax.swing.JPanel {
 	static class RCJLabel extends javax.swing.JLabel{
 		//
 		private char type;
-		private cbit.vcell.dictionary.SpeciesDescription dbsd = null;
+		private cbit.vcell.model.SpeciesDescription dbsd = null;
 		private int stoich;
 		private boolean bResolved = false;
 		private boolean bSelectable = true;
 		private Boolean bFluxResolvedInside;
 		//
-		public RCJLabel(cbit.vcell.dictionary.SpeciesDescription argdbsd,int argStoich,char argType){
+		public RCJLabel(cbit.vcell.model.SpeciesDescription argdbsd,int argStoich,char argType){
 			super();
 			if(	argType != ReactionDescription.RX_ELEMENT_REACTANT &&
 				argType != ReactionDescription.RX_ELEMENT_PRODUCT && 
@@ -60,7 +60,7 @@ public class DBReactionElementsPanel extends javax.swing.JPanel {
 		public int getStoich(){
 			return stoich;
 		}
-		public cbit.vcell.dictionary.SpeciesDescription getSpeciesDescription(){
+		public cbit.vcell.model.SpeciesDescription getSpeciesDescription(){
 			return dbsd;
 		}
 		public void setResolved(boolean argResolved){
@@ -783,7 +783,7 @@ public static void main(java.lang.String[] args) {
  * @param rcjl java.lang.Object
  * @param bResolved boolean
  */
-public void markResolved(cbit.vcell.dictionary.SpeciesDescription dbfs, boolean bResolved) {
+public void markResolved(cbit.vcell.model.SpeciesDescription dbfs, boolean bResolved) {
 	//cbit.vcell.dictionary.SpeciesDescription dbfs = rcjl.getSpeciesDescription();
 	//do this because fluxes are special
 	for(int i = 0; i < getReactionElementJPanel().getComponentCount();i+= 1){
@@ -804,7 +804,7 @@ public void markResolved(cbit.vcell.dictionary.SpeciesDescription dbfs, boolean 
  * @param rcjl java.lang.Object
  * @param bResolved boolean
  */
-public void markSelectable(cbit.vcell.dictionary.SpeciesDescription dbfs, boolean bSelectable) {
+public void markSelectable(cbit.vcell.model.SpeciesDescription dbfs, boolean bSelectable) {
 	//cbit.vcell.dictionary.SpeciesDescription dbfs = rcjl.getSpeciesDescription();
 	//do this because fluxes are special
 	for(int i = 0; i < getReactionElementJPanel().getComponentCount();i+= 1){
@@ -824,7 +824,7 @@ public void markSelectable(cbit.vcell.dictionary.SpeciesDescription dbfs, boolea
  * Creation date: (4/22/2003 4:21:01 PM)
  * @param dbfs cbit.vcell.dictionary.SpeciesDescription
  */
-public void reactionAddCatalyst(cbit.vcell.dictionary.SpeciesDescription dbfs) {
+public void reactionAddCatalyst(cbit.vcell.model.SpeciesDescription dbfs) {
 
 	addCatalystComponent(new RCJLabel(dbfs,0,ReactionDescription.RX_ELEMENT_CATALYST));
 	
@@ -836,7 +836,7 @@ public void reactionAddCatalyst(cbit.vcell.dictionary.SpeciesDescription dbfs) {
  * Creation date: (4/22/2003 4:21:01 PM)
  * @param dbfs cbit.vcell.dictionary.SpeciesDescription
  */
-public void reactionAddFlux(cbit.vcell.dictionary.SpeciesDescription dbfs,boolean bInside,int stoich) {
+public void reactionAddFlux(cbit.vcell.model.SpeciesDescription dbfs,boolean bInside,int stoich) {
 
 	for(int i = 0 ; i < getReactionElementJPanel().getComponentCount();i+= 1){
 		java.awt.Component comp = getReactionElementJPanel().getComponent(i);
@@ -880,7 +880,7 @@ public void reactionAddFlux(cbit.vcell.dictionary.SpeciesDescription dbfs,boolea
  * Creation date: (4/22/2003 4:21:01 PM)
  * @param dbfs cbit.vcell.dictionary.SpeciesDescription
  */
-public void reactionAddProduct(cbit.vcell.dictionary.SpeciesDescription dbfs,int stoich) {
+public void reactionAddProduct(cbit.vcell.model.SpeciesDescription dbfs,int stoich) {
 
 	getReactionElementJPanel().remove(getProductJLabel());
 	if(getReactionElementJPanel().getComponent(getReactionElementJPanel().getComponentCount()-1) instanceof RCJLabel && ((RCJLabel)getReactionElementJPanel().getComponent(getReactionElementJPanel().getComponentCount()-1)).getType() == ReactionDescription.RX_ELEMENT_PRODUCT){
@@ -896,7 +896,7 @@ public void reactionAddProduct(cbit.vcell.dictionary.SpeciesDescription dbfs,int
  * Creation date: (4/22/2003 4:21:01 PM)
  * @param dbfs cbit.vcell.dictionary.SpeciesDescription
  */
-public void reactionAddReactant(cbit.vcell.dictionary.SpeciesDescription dbfs,int stoich) {
+public void reactionAddReactant(cbit.vcell.model.SpeciesDescription dbfs,int stoich) {
 
 	getReactionElementJPanel().remove(getReactantJLabel());
 	if(getReactionElementJPanel().getComponent(0) instanceof RCJLabel && ((RCJLabel)getReactionElementJPanel().getComponent(0)).getType() == ReactionDescription.RX_ELEMENT_REACTANT){

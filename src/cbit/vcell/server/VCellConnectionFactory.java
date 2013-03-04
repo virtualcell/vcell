@@ -10,6 +10,8 @@
 
 package cbit.vcell.server;
 
+import org.vcell.util.document.UserLoginInfo;
+
 /**
  * This type was created in VisualAge.
  */

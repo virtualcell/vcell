@@ -530,17 +530,17 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				}
 				if(!pasteToModel.contains(copyFromSpecies)){// Doesn't have Species (==)
 					//see if we have a species with DBSpecies that matches
-					Species[] speciesFromDBSpeciesArr = (copyFromSpecies.getDBSpecies() != null ? pasteToModel.getSpecies(copyFromSpecies.getDBSpecies()) : null);
-					if(/*bUseDBSpecies && */speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
-						//Choose the species in struct if exists
-						newSpecies = speciesFromDBSpeciesArr[0];
-						for(int i=0;i<speciesFromDBSpeciesArr.length;i+= 1){
-							if(pasteToModel.getSpeciesContext(speciesFromDBSpeciesArr[i], pasteToStruct) != null){
-								newSpecies = speciesFromDBSpeciesArr[i];
-								break;
-							}
-						}
-					}else{// No DBSpecies match
+//					Species[] speciesFromDBSpeciesArr = (copyFromSpecies.getDBSpecies() != null ? pasteToModel.getSpecies(copyFromSpecies.getDBSpecies()) : null);
+//					if(/*bUseDBSpecies && */speciesFromDBSpeciesArr != null && speciesFromDBSpeciesArr.length > 0){//DBSpecies match
+//						//Choose the species in struct if exists
+//						newSpecies = speciesFromDBSpeciesArr[0];
+//						for(int i=0;i<speciesFromDBSpeciesArr.length;i+= 1){
+//							if(pasteToModel.getSpeciesContext(speciesFromDBSpeciesArr[i], pasteToStruct) != null){
+//								newSpecies = speciesFromDBSpeciesArr[i];
+//								break;
+//							}
+//						}
+//					}else{// No DBSpecies match
 						//See if there is a species with same name
 						newSpecies = pasteToModel.getSpecies(copyFromSpecies.getCommonName());
 						if( newSpecies == null){//No name matches
@@ -549,7 +549,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 							pasteToModel.addSpecies(newSpecies);
 							speciesHash.put(copyFromSpecies, newSpecies);
 						}
-					}
+//					}
 				}else{// Has species (==)
 					newSpecies = copyFromSpecies;
 				}

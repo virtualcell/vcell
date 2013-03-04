@@ -12,6 +12,7 @@ package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VersionableFamily;
 
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -23,7 +24,6 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.SolverResultSetInfo;
@@ -225,16 +225,16 @@ public BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws org
 /**
  * getBoundSpecies method comment.
  */
-public cbit.vcell.dictionary.DBSpecies getBoundSpecies(cbit.vcell.dictionary.DBFormalSpecies dbfs) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.dictionary.DBSpecies)rpc("getBoundSpecies",new Object[]{userLoginInfo.getUser(), dbfs});
+public cbit.vcell.model.DBSpecies getBoundSpecies(cbit.vcell.model.DBFormalSpecies dbfs) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.model.DBSpecies)rpc("getBoundSpecies",new Object[]{userLoginInfo.getUser(), dbfs});
 }
 
 
 /**
  * getDatabaseSpecies method comment.
  */
-public cbit.vcell.dictionary.DBFormalSpecies[] getDatabaseSpecies(java.lang.String likeString, boolean isBound, cbit.vcell.dictionary.FormalSpeciesType speciesType, int restrictSearch, int rowLimit, boolean bOnlyUser) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.dictionary.DBFormalSpecies[])rpc("getDatabaseSpecies",new Object[]{userLoginInfo.getUser(), likeString,new Boolean(isBound),speciesType,new Integer(restrictSearch),new Integer(rowLimit), new Boolean(bOnlyUser)});
+public cbit.vcell.model.DBFormalSpecies[] getDatabaseSpecies(java.lang.String likeString, boolean isBound, cbit.vcell.model.FormalSpeciesType speciesType, int restrictSearch, int rowLimit, boolean bOnlyUser) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.model.DBFormalSpecies[])rpc("getDatabaseSpecies",new Object[]{userLoginInfo.getUser(), likeString,new Boolean(isBound),speciesType,new Integer(restrictSearch),new Integer(rowLimit), new Boolean(bOnlyUser)});
 }
 
 

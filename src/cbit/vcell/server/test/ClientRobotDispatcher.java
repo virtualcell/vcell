@@ -30,20 +30,21 @@ public ClientRobotDispatcher() {
  */
 public static void main(String[] args) {
 	try {
-		if (args.length!=4){
-			System.out.println("usage:\n  ClientRobotDispatcher  numRobots  serverHost userid password");
+		if (args.length!=5){
+			System.out.println("usage:\n  ClientRobotDispatcher  numRobots  serverHost userid password biomodelfile");
 			System.exit(1);
 		}
 		int numRobots = Integer.parseInt(args[0]);
 		String host = args[1];
 		String userid = args[2];
 		String password = args[3];
+		File biomodelfile = new File(args[4]);
 
 		PropertyLoader.loadProperties();
 		
 		ClientRobotDispatcher clientRobotDispatcher = new ClientRobotDispatcher();
 		
-		clientRobotDispatcher.test(numRobots,host,userid,password);
+		clientRobotDispatcher.test(numRobots,host,userid,password,biomodelfile);
 
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
@@ -59,7 +60,7 @@ public static void main(String[] args) {
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-private void test(int numRobots, String host, String userid, String password) {
+private void test(int numRobots, String host, String userid, String password, File biomodelfile) {
 	
 	StdoutSessionLog globalLog = new StdoutSessionLog("globalLog");
 	Thread threads[] = new Thread[numRobots];
@@ -67,7 +68,7 @@ private void test(int numRobots, String host, String userid, String password) {
 	for (int i=0;i<numRobots;i++){
 		String robotName = "robot"+i;
 		MixedSessionLog robotLog = new MixedSessionLog(new StringSessionLog(robotName),globalLog);
-		this.clientRobotList.addElement(new ClientRobot(robotName,host,userid,password,robotLog));
+		this.clientRobotList.addElement(new ClientRobot(robotName,host,userid,password,biomodelfile,robotLog));
 	}
 
 	for (int i=0;i<clientRobotList.size();i++){

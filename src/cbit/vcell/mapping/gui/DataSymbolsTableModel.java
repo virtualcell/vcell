@@ -17,12 +17,12 @@ import java.util.Set;
 
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationRightSideTableModel;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 /**
  * Insert the type's description here.

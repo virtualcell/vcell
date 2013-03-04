@@ -70,7 +70,6 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ReactionEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
@@ -99,6 +98,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")

@@ -17,13 +17,13 @@ import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DBSpeciesTable;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;

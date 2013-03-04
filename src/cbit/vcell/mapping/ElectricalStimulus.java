@@ -22,7 +22,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -30,6 +29,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -91,6 +91,10 @@ public abstract class ElectricalStimulus implements Matchable, java.io.Serializa
 		}
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return ElectricalStimulus.this.parameterContext;
+		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.electricalStimulusType;
 		}
 	}
 

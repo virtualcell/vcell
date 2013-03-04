@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
@@ -41,9 +40,6 @@ import org.vcell.util.document.Versionable;
 
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.dictionary.DBSpecies;
-import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -55,7 +51,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
@@ -364,11 +359,15 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			if (super.isPeer(nameScope)) {
 				return true;
 			}
-			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return ((nameScope instanceof BioNameScope) && (((BioNameScope)nameScope).getNamescopeType() == NamescopeType.mathmappingType) && nameScope.isPeer(this));
 		}
 		@Override
 		public String getPathDescription() {
 			return "Global";
+		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.modelType;
 		}
 	}
 

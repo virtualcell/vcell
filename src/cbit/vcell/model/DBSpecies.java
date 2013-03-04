@@ -8,7 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary;
+package cbit.vcell.model;
+
+
 /**
  * Superclass of all possible species to be added to the VCell
  * Creation date: (6/24/2002 10:44:36 AM)

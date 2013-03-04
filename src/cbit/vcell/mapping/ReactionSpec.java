@@ -32,7 +32,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
 	private ReactionStep reactionStep = null;
@@ -89,6 +88,10 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		}
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionSpec.this;
+		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.reactionSpecType;
 		}
 	}
 
