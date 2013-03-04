@@ -186,6 +186,10 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider {
 			}
 			return (nameScope == MathMapping_4_8.this.simContext.getNameScope() || nameScope == MathMapping_4_8.this.simContext.getModel().getNameScope());
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.mathmappingType;
+		}
 	}
 
 	public class MathMappingParameter extends Parameter implements ExpressionContainer {

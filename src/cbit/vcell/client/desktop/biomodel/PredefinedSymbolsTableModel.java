@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.PredefinedSymbolTableFunctionEntry;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;

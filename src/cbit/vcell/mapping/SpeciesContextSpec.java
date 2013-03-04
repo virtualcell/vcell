@@ -86,6 +86,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			}
 			return null;
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.speciesContextSpecType;
+		}
 	}
 	
 	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer {

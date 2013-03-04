@@ -67,6 +67,10 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			}
 			return null;
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.bioeventType;
+		}
 	}
 	
 	public class EventAssignment implements Matchable, Serializable {

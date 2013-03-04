@@ -74,6 +74,10 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return ElectricalDevice.this;
 		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.electricalDeviceType;
+		}
 	}
 
 	public class ElectricalDeviceParameter extends Parameter {

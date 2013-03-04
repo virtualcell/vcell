@@ -3,9 +3,13 @@ package cbit.vcell.server.test;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.File;
+
 import org.vcell.util.document.BioModelInfo;
 
 import cbit.vcell.model.*;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.util.*;
@@ -19,18 +23,20 @@ public class ClientRobot extends cbit.vcell.client.test.ClientTester implements 
 	private String userid = null;
 	private String password = null;
 	private MixedSessionLog log = null;
+	private File bioModelFile = null;
 	private cbit.vcell.client.server.ClientServerManager managerManager = null;
 	private String name = null;
 
 /**
  * ClientRobot constructor comment.
  */
-public ClientRobot(String argName, String argHost, String argUserid, String argPassword, MixedSessionLog argSessionLog) {
+public ClientRobot(String argName, String argHost, String argUserid, String argPassword, File bioModelFile, MixedSessionLog argSessionLog) {
 	this.name = argName;
 	this.host = argHost;
 	this.userid = argUserid;
 	this.password = argPassword;
 	this.log = argSessionLog;
+	this.bioModelFile = bioModelFile;
 }
 
 
@@ -74,7 +80,7 @@ public void run() {
 		setManagerManager(cbit.vcell.client.test.ClientTester.mainInit(args,"ClientRobot",null));
 		for (int i=0;i<10;i++){
 			log.print("Robot "+getName()+ "starting loop : "+i);
-			BioModel bioModel = BioModelTest.getExampleWithImage();
+			BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelFile));
 			String newName = "bioModel_"+getName()+"_"+Math.random();
 			log.print("Saving bioModel \""+newName+"\"");
 			getManagerManager().getDocumentManager().saveAsNew(bioModel,newName,null);

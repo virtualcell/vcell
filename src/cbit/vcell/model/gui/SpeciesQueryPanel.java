@@ -22,13 +22,13 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.dictionary.CompoundInfo;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.dictionary.EnzymeInfo;
-import cbit.vcell.dictionary.FormalSpeciesInfo;
-import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.FormalSpeciesInfo;
+import cbit.vcell.model.FormalSpeciesType;
 /**
  * Insert the type's description here.
  * Creation date: (2/4/2003 6:52:51 PM)

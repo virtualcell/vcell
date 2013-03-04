@@ -27,7 +27,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -47,6 +46,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;

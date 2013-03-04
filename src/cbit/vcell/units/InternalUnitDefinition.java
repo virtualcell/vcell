@@ -15,9 +15,6 @@ import java.util.Iterator;
 
 import org.vcell.util.Matchable;
 
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.parser.Expression;
-
 import ucar.units.Base;
 import ucar.units.BaseQuantity;
 import ucar.units.BaseUnit;

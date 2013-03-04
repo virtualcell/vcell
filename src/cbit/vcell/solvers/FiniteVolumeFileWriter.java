@@ -79,7 +79,6 @@ import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.PseudoConstant;
-import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
@@ -94,6 +93,7 @@ import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.microscopy.ROIDataGenerator;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -1855,7 +1855,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			}
 		} else {
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
-			Expression[] rvachevExps = RvachevFunctionUtils.convertAnalyticGeometryToRvachevFunction(geometrySpec);
+			Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
 			for (int i = 0; i < numSubVolumes; i++) {
 				printWriter.print(subVolumes[i].getName() + " " + phases[i] + " ");
 				if (subVolumes[i] instanceof AnalyticSubVolume) {
@@ -1877,5 +1877,33 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
 		printWriter.println();
+	}
+
+	public static Expression[] convertAnalyticGeometryToRvachevFunction(GeometrySpec geoSpec) throws ExpressionException {
+		SubVolume[] subVolumes = geoSpec.getSubVolumes();
+		int numSubVolumes = subVolumes.length;
+		Expression[] newExps = new Expression[numSubVolumes];
+		if (numSubVolumes == 1) {
+			newExps[0] = new Expression(-1.0);			
+		} else {
+			for (int i = 0; i < numSubVolumes - 1; i ++) {		
+				if (!(subVolumes[i] instanceof AnalyticSubVolume)) {
+					throw new RuntimeException("Subdomain " + i + " is not a analytic subdomain.");
+				}
+				AnalyticSubVolume subvolume = (AnalyticSubVolume)subVolumes[i];
+				newExps[i] = RvachevFunctionUtils.convertToRvachevFunction(subvolume.getExpression());
+				if (newExps[numSubVolumes - 1] == null) {
+					newExps[numSubVolumes - 1] = Expression.negate(newExps[i]);
+				} else {
+					newExps[numSubVolumes - 1] = Expression.max(newExps[numSubVolumes - 1], Expression.negate(newExps[i]));
+				}
+			}
+			for (int i = 1; i < numSubVolumes - 1; i ++) {
+				for (int j = 0; j < i; j ++) {
+					newExps[i] = Expression.max(newExps[i], Expression.negate(newExps[j]));
+				}			
+			}
+		}		
+		return newExps;
 	}
 }

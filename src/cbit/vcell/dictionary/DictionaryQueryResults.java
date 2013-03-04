@@ -10,6 +10,9 @@
 
 package cbit.vcell.dictionary;
 
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/22/2003 3:09:39 PM)

@@ -15,6 +15,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
@@ -30,7 +31,6 @@ import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellConnectionFactory;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.SimulationController;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;

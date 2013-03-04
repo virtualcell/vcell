@@ -49,7 +49,6 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
@@ -57,6 +56,7 @@ import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;

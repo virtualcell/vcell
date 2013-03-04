@@ -8,7 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary;
+package cbit.vcell.model;
+
 
 /**
  * Insert the type's description here.

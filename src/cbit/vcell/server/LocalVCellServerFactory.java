@@ -15,6 +15,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;

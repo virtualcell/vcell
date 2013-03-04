@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
-import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.model.DBFormalSpecies;
 /**
  * Insert the type's description here.
  * Creation date: (9/15/2003 3:15:48 PM)
@@ -60,7 +60,7 @@ public ReactionQuerySpec(String argReactantLikeString, DBFormalSpecies argReacta
  * Creation date: (9/15/2003 3:30:32 PM)
  * @return cbit.vcell.dictionary.DBFormalSpecies
  */
-public cbit.vcell.dictionary.DBFormalSpecies getAnyReactionParticipantBoundSpecies() {
+public cbit.vcell.model.DBFormalSpecies getAnyReactionParticipantBoundSpecies() {
 	return anyReactionParticipantBoundSpecies;
 }
 
@@ -80,7 +80,7 @@ public java.lang.String getAnyReactionParticipantLikeString() {
  * Creation date: (9/15/2003 3:30:32 PM)
  * @return cbit.vcell.dictionary.DBFormalSpecies
  */
-public cbit.vcell.dictionary.DBFormalSpecies getCatalystBoundSpecies() {
+public cbit.vcell.model.DBFormalSpecies getCatalystBoundSpecies() {
 	return catalystBoundSpecies;
 }
 
@@ -100,7 +100,7 @@ public java.lang.String getCatalystLikeString() {
  * Creation date: (9/15/2003 3:30:32 PM)
  * @return cbit.vcell.dictionary.DBFormalSpecies
  */
-public cbit.vcell.dictionary.DBFormalSpecies getProductBoundSpecies() {
+public cbit.vcell.model.DBFormalSpecies getProductBoundSpecies() {
 	return productBoundSpecies;
 }
 
@@ -120,7 +120,7 @@ public java.lang.String getProductLikeString() {
  * Creation date: (9/15/2003 3:30:32 PM)
  * @return cbit.vcell.dictionary.DBFormalSpecies
  */
-public cbit.vcell.dictionary.DBFormalSpecies getReactantBoundSpecies() {
+public cbit.vcell.model.DBFormalSpecies getReactantBoundSpecies() {
 	return reactantBoundSpecies;
 }
 

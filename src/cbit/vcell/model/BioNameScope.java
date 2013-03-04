@@ -18,6 +18,22 @@ import cbit.vcell.parser.NameScope;
  * @author: Jim Schaff
  */
 public abstract class BioNameScope extends AbstractNameScope {
+	
+	public enum NamescopeType {
+		modelType,
+		structureType,
+		reactionStepType,
+
+		simulationContextType,
+		speciesContextSpecType,
+		reactionSpecType,
+		bioeventType,
+		electricalDeviceType,
+		electricalStimulusType,
+
+		mathmappingType,
+		structureMappingType,
+	}
 /**
  * BioNameScope constructor comment.
  */
@@ -32,4 +48,6 @@ public BioNameScope() {
 public boolean isPeer(NameScope nameScope){
 		return false;
 }
+
+public abstract NamescopeType getNamescopeType();
 }

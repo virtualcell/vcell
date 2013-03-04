@@ -17,6 +17,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
@@ -32,7 +33,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;

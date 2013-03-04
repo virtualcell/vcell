@@ -35,7 +35,6 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
@@ -47,6 +46,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**

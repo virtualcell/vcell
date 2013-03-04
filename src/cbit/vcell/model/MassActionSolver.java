@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver.stoch;
+package cbit.vcell.model;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -19,20 +19,9 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -160,7 +149,7 @@ public class MassActionSolver {
 	}
 
 	
-	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs ) throws ExpressionException, MathException, DivideByZeroException{
+	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
 		MassActionFunction maFunc = new MassActionFunction();
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
@@ -174,7 +163,7 @@ public class MassActionSolver {
 		//reaction with membrane current can not be transformed to mass action
 		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 		{
-			throw new MathException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+			throw new ModelException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
 		}
 		
 		for(int i=0; i<rp.length; i++)
@@ -313,7 +302,7 @@ public class MassActionSolver {
 		// e.g. A+B <-> A+B, A+2B <-> A+2B
 		if(ExpressionUtils.functionallyEquivalent(R_exp, P_exp, false, 1e-8, 1e-8))
 		{
-			throw new MathException(VCellErrorMessages.getMassActionSolverMessage(rs, "Identical reactants and products not supported for stochastic models."));
+			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Identical reactants and products not supported for stochastic models."));
 		}
 		if (R_exp.compareEqual(new Expression(1)) &&  P_exp.compareEqual(new Expression(1))){
 			// no reactants, no products ... nothing to do
@@ -336,7 +325,7 @@ public class MassActionSolver {
 				solution[1] = solution[1].simplify(); //solution[1] is reverse rate. 
 			} catch (MatrixException e) {
 				e.printStackTrace();
-				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(rs, "MatrixException: " + e.getMessage()));
+				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "MatrixException: " + e.getMessage()));
 			}
 			forwardExp = new Expression(solution[0].infixString());
 			reverseExp = new Expression(solution[1].infixString());
@@ -364,7 +353,7 @@ public class MassActionSolver {
 		Expression constructedExp_withoutCatalyst = removeCatalystFromExp(constructedExp, rs);
 		if(! ExpressionUtils.functionallyEquivalent(orgExp_withoutCatalyst, constructedExp_withoutCatalyst, false, 1e-8, 1e-8))
 		{
-			throw new MathException(VCellErrorMessages.getMassActionSolverMessage(rs, "Mathmatical form incompatable with mass action."));
+			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Mathmatical form incompatable with mass action."));
 		}
 		//check if forward rate constant and reverse rate constant both can be evaluated to constants(numbers) after substituting all parameters.
 		if(forwardExp != null)
@@ -374,7 +363,7 @@ public class MassActionSolver {
 				substituteParameters(forwardExpCopy, true).evaluateConstant();
 			}catch(ExpressionException e)
 			{
-				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(rs, "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
+				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
 			}
 		}
 		if(reverseExp != null)
@@ -384,7 +373,7 @@ public class MassActionSolver {
 				substituteParameters(reverseExpCopy, true).evaluateConstant();
 			}catch(ExpressionException e)
 			{
-				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(rs, "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
+				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
 			}
 		}
 		maFunc.setForwardRate(forwardExp);

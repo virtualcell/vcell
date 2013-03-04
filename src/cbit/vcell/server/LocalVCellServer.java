@@ -24,6 +24,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessagingService;

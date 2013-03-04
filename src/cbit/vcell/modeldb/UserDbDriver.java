@@ -24,8 +24,8 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */

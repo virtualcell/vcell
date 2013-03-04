@@ -18,15 +18,15 @@ import org.vcell.util.document.User;
 
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.dictionary.CompoundInfo;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.FormalCompound;
 import cbit.vcell.dictionary.FormalEnzyme;
 import cbit.vcell.dictionary.FormalProtein;
-import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.FormalSpeciesType;
 import cbit.vcell.model.ReactionStepInfo;
 /**
  * This type was created in VisualAge.

@@ -15,13 +15,13 @@ import javax.swing.JTable;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.GradientFunctionDefinition;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

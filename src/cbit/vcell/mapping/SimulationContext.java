@@ -37,7 +37,6 @@ import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.data.DataContext;
@@ -54,7 +53,6 @@ import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
-import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
@@ -65,6 +63,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -137,6 +136,10 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 				return true;
 			}
 			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+		}
+		@Override
+		public NamescopeType getNamescopeType() {
+			return NamescopeType.simulationContextType;
 		}
 	}
 
