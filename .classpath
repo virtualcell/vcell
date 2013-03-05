@@ -36,10 +36,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/new_mail.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/GlgGraphLayoutNG.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/thirdParty.jar" sourcepath="lib/vcellClientThirdParty.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/sonic_Client.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/sonic_XA.jar"/>
-	<classpathentry kind="lib" path="lib/sonic_Crypto.jar"/>
-	<classpathentry kind="lib" path="lib/sonic_Selector.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jai_core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jdom_1.0.jar"/>

@@ -15,8 +15,8 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
  * Insert the type's description here.
@@ -49,7 +49,7 @@ protected AbstractRpcServerProxy(UserLoginInfo userLoginInfo, VCMessageSession v
  * @param args java.lang.Object[]
  * @exception java.lang.Exception The exception description.
  */
-public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired) throws Exception {
+public Object rpc(RpcServiceType serviceType, String methodName, Object[] args, boolean returnRequired) throws Exception {
 	return rpc(serviceType, methodName, args, returnRequired, null, null);
 }
 
@@ -62,7 +62,7 @@ public Object rpc(ServiceType serviceType, String methodName, Object[] args, boo
  * @param args java.lang.Object[]
  * @exception java.lang.Exception The exception description.
  */
-public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
+public Object rpc(RpcServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
 	VCRpcRequest vcRpcRequest = new VCRpcRequest(userLoginInfo.getUser(), serviceType, methodName, args);
 	int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, "120000")); // default to 2 minutes.
 	return vcMessagingSession.sendRpcMessage(queue, vcRpcRequest, returnRequired, timeoutMS, specialProperties, specialValues, userLoginInfo);

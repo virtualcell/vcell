@@ -24,6 +24,7 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.messages.WorkerEventMessage;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -46,7 +47,7 @@ public class SolverPreprocessor  {
 	 * @throws VCMessagingException 
 	 */
 	public static void sendFailureAndExit(HTCSolver htcSolver, SimulationTask simTask, String hostName, SimulationMessage simMessage) throws VCMessagingException{
-		VCMessagingService service = VCMessagingService.createInstance();
+		VCMessagingService service = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		VCMessageSession session = service.createProducerSession();
 		try {
 			WorkerEventMessage.sendFailed(session, htcSolver, simTask, hostName, simMessage);

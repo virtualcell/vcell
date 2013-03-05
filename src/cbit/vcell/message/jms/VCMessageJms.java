@@ -22,7 +22,7 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 
 public class VCMessageJms implements VCMessage {
 	
@@ -33,16 +33,19 @@ public class VCMessageJms implements VCMessage {
 	
 	private transient Serializable blobObject = null;
 	private transient File blobFile = null;
+	private VCMessagingDelegate delegate = null;
 	
 	private Message jmsMessage = null;
 		
-	public VCMessageJms(Message jmsMessage){
+	public VCMessageJms(Message jmsMessage, VCMessagingDelegate delegate){
 		this.jmsMessage = jmsMessage;
+		this.delegate = delegate;
 	}
 	
-	public VCMessageJms(Message jmsMessage, Serializable blobObject){
+	public VCMessageJms(Message jmsMessage, Serializable blobObject, VCMessagingDelegate delegate){
 		this.jmsMessage = jmsMessage;
 		this.blobObject = blobObject;
+		this.delegate = delegate;
 	}
 	
 	public Message getJmsMessage(){
@@ -95,7 +98,7 @@ public class VCMessageJms implements VCMessage {
 				ois.close();
 				bis.close();
 				fis.close();
-				VCMongoMessage.sendTrace("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+				delegate.onTraceEvent("VCMessageJms.loadBlobFile(): size="+jmsMessage.getIntProperty(BLOB_MESSAGE_OBJECT_SIZE)+", type="+jmsMessage.getStringProperty(BLOB_MESSAGE_OBJECT_TYPE)+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
@@ -111,7 +114,7 @@ public class VCMessageJms implements VCMessage {
 			try {
 				blobFile.delete();
 			}catch (Exception e){
-				VCMongoMessage.sendException(e);
+				delegate.onException(e);
 				e.printStackTrace(System.out);
 			}
 		}
@@ -294,7 +297,7 @@ public class VCMessageJms implements VCMessage {
 	}
 	
 	private void handleJMSException(JMSException e){
-		VCMongoMessage.sendException(e);
+		delegate.onException(e);
 		e.printStackTrace(System.out);
 	}
 
@@ -355,7 +358,7 @@ public class VCMessageJms implements VCMessage {
 					buffer.append(" " + propName + "='" + value + "'");
 				} catch (MessagePropertyNotFoundException ex) {
 					// definitely should not happen
-					VCMongoMessage.sendException(ex);
+					delegate.onException(ex);
 				}
 			}
 			int maxContentLength = 120;

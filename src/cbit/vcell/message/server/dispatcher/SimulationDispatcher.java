@@ -39,6 +39,7 @@ import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
@@ -48,6 +49,7 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -222,7 +224,7 @@ public class SimulationDispatcher extends ServiceProvider {
 		
 		private void flushWorkerEventQueue() throws VCMessagingException{
 			VCMessage message = simMonitorThreadSession.createObjectMessage(new Long(VCMongoMessage.getServiceStartupTime()));
-			message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
+			message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
 			synchronized (notifyObject) {
 				simMonitorThreadSession.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
 				try {
@@ -442,7 +444,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			//
 			// process WorkerEventQueue flush message
 			//
-			if (vcMessage.propertyExists(MessageConstants.MESSAGE_TYPE_PROPERTY) && vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_FLUSH_VALUE)){
+			if (vcMessage.propertyExists(VCMessagingConstants.MESSAGE_TYPE_PROPERTY) && vcMessage.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_FLUSH_VALUE)){
 				if (simMonitorThread!=null){
 					try {
 						synchronized (simMonitorThread.notifyObject){
@@ -533,7 +535,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
 
-			VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 
 			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, log, false);
 			simulationDispatcher.init();

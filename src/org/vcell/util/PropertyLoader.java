@@ -85,7 +85,6 @@ public class PropertyLoader {
 
 	public static final String jmsProvider				= "vcell.jms.provider";
 	public static final String jmsProviderValueActiveMQ		= "ActiveMQ";
-	public static final String jmsProviderValueSonicMQ		= "SonicMQ";
 	public static final String jmsURL					= "vcell.jms.url";
 	public static final String jmsUser					= "vcell.jms.user";
 	public static final String jmsPassword				= "vcell.jms.password";

@@ -31,6 +31,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
@@ -283,7 +284,7 @@ public void startSimulation(Simulation simulation, SessionLog userSessionLog) th
 		public void onLocalVCMessage(VCDestination destination, VCMessage vcMessage) {
 			if (destination == VCellTopic.ClientStatusTopic && vcMessage.getObjectContent() instanceof SimulationJobStatus){
 				onClientStatusTopic_SimulationJobStatus(vcMessage);
-			}else if (destination == VCellQueue.SimJobQueue && vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE)){
+			}else if (destination == VCellQueue.SimJobQueue && vcMessage.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE)){
 				onSimJobQueue_SimulationTask(vcMessage);
 			}else{
 				throw new RuntimeException("SimulationControllerImpl.startSimulation().objectMessageListener:: expecting object message with SimulationJobStatus to topic "+VCellTopic.ClientStatusTopic.getName()+": received \""+vcMessage.show()+"\"");
@@ -342,7 +343,7 @@ public void stopSimulation(Simulation simulation) throws FileNotFoundException, 
 	LocalVCMessageListener localVCMessageListener = new LocalVCMessageListener(){
 		
 		public void onLocalVCMessage(VCDestination destination, VCMessage objectMessage) {
-			String messageTypeProperty = MessageConstants.MESSAGE_TYPE_PROPERTY;
+			String messageTypeProperty = VCMessagingConstants.MESSAGE_TYPE_PROPERTY;
 			String stopSimulationValue = MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE;
 			if (destination == VCellTopic.ClientStatusTopic && objectMessage.getObjectContent() instanceof SimulationJobStatus){
 				onClientStatusTopic_SimulationJobStatus(objectMessage);

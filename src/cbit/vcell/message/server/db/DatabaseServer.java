@@ -26,13 +26,13 @@ import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCPooledQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -76,12 +76,6 @@ public void init() throws Exception {
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DbRequestQueue, this.pooledQueueConsumer, null, "Database RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DB_REQUEST);
 
-	VCMessagingDelegate delegate = new VCMessagingDelegate() {
-		public void onMessagingException(Exception e) {
-			log.exception(e);
-		}
-	};
-	vcMessagingService.setDelegate(delegate);
 	vcMessagingService.addMessageConsumer(rpcConsumer);
 	
 	initControlTopicListener();
@@ -130,7 +124,7 @@ public static void main(java.lang.String[] args) {
 		KeyFactory	keyFactory = new OracleKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 		
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		DatabaseServer databaseServer = new DatabaseServer(serviceInstanceStatus, databaseServerImpl, vcMessagingService, log, false);
         databaseServer.init();

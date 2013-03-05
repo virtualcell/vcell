@@ -18,6 +18,7 @@ import org.vcell.util.document.User;
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
@@ -25,7 +26,6 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -59,12 +59,12 @@ public WorkerEventMessage(SimulationDatabase simulationDatabase, VCMessage messa
 }
 
 public static String getWorkerEventSelector_ProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
+	return "(("+VCMessagingConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
 			"("+MessageConstants.WORKEREVENT_STATUS+" IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
 }
 
 public static String getWorkerEventSelector_NotProgressAndData(){
-	return "(("+MessageConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
+	return "(("+VCMessagingConstants.MESSAGE_TYPE_PROPERTY+"='"+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE+"') AND "+
 			"("+MessageConstants.WORKEREVENT_STATUS+" NOT IN ('"+WorkerEvent.JOB_PROGRESS+"', '"+WorkerEvent.JOB_DATA+"') ) )";
 }
 
@@ -91,10 +91,10 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		throw new RuntimeException("Null message");
 	}	
 
-	if (!message.propertyExists(MessageConstants.MESSAGE_TYPE_PROPERTY)){
-		throw new RuntimeException("Wrong message: expecting property "+MessageConstants.MESSAGE_TYPE_PROPERTY);
+	if (!message.propertyExists(VCMessagingConstants.MESSAGE_TYPE_PROPERTY)){
+		throw new RuntimeException("Wrong message: expecting property "+VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 	}
-	String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+	String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 	if (!msgType.equals(MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE)) {
 		throw new RuntimeException("Wrong message type: "+msgType+", expecting: "+MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	}
@@ -111,7 +111,7 @@ private void parseMessage(SimulationDatabase simDatabase, VCMessage message) thr
 		// from c++ executable
 		int status = message.getIntProperty(MessageConstants.WORKEREVENT_STATUS);
 		String hostname = message.getStringProperty(MessageConstants.HOSTNAME_PROPERTY);
-		String username = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+		String username = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 		int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
 		int jobIndex = message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY);
 		Long longkey = message.getLongProperty(MessageConstants.SIMKEY_PROPERTY);
@@ -300,7 +300,7 @@ private void sendWorkerEvent(VCMessageSession session) throws VCMessagingExcepti
  */
 private VCMessage toMessage(VCMessageSession session) {		
 	VCMessage message = session.createObjectMessage(workerEvent);
-	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
+	message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_WORKEREVENT_VALUE);
 	return message;
 }
 
