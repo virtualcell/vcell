@@ -28,6 +28,7 @@ import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
@@ -37,6 +38,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -71,7 +73,7 @@ public LocalSimulationWorker(VCMessagingService vcMessagingService, ServiceInsta
 }
 
 public final String getJobSelector() {
-	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+	String jobSelector = "(" + VCMessagingConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
 	
 	return jobSelector;
 }
@@ -199,7 +201,7 @@ public static void main(java.lang.String[] args) {
 		ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.LOCALCOMPUTE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 		initLog(serviceInstanceStatus, logdir);
 		
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		//
 		// JMX registration

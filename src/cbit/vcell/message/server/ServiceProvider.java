@@ -22,6 +22,7 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
@@ -69,7 +70,7 @@ public void closeTopicConsumer() {
  * @return java.lang.String
  */
 private final String getDaemonControlFilter() {
-	return MessageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
+	return VCMessagingConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
 		+ "('" + MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
 		+ ",'" + MessageConstants.MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
 		+ ",'" + MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'"
@@ -89,7 +90,7 @@ public void initControlTopicListener() {
 
 		public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			try {
-				String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+				String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 				String serviceID = null;
 				
 				if (msgType == null) {
@@ -98,7 +99,7 @@ public void initControlTopicListener() {
 				
 				if (msgType.equals(MessageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {			
 					VCMessage reply = session.createObjectMessage(ServiceProvider.this.serviceInstanceStatus);
-					reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE);
+					reply.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_IAMALIVE_VALUE);
 					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					log.print("sending reply [" + reply.toString() + "]");
 					if (message.getReplyTo() != null) {
@@ -109,7 +110,7 @@ public void initControlTopicListener() {
 					}
 				} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {				
 					VCMessage reply = session.createObjectMessage(serviceInstanceStatus);
-					reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+					reply.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
 					reply.setStringProperty(MessageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 					session.sendTopicMessage(VCellTopic.DaemonControlTopic, reply);			
 					log.print("sending reply [" + reply.toString() + "]");

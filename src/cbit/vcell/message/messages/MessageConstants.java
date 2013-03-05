@@ -16,9 +16,6 @@ package cbit.vcell.message.messages;
  */
 public interface MessageConstants {
 	
-	public static final String METHOD_NAME_PROPERTY		= "MethodName";	
-	public static final String USERNAME_PROPERTY		= "UserName";
-	public static final String 		USERNAME_PROPERTY_VALUE_ALL = "All";
 	public static final String SIZE_MB_PROPERTY			= "SizeMB";
 	public static final String SIMKEY_PROPERTY			= "SimKey";
 	public static final String JOBINDEX_PROPERTY		= "JobIndex";
@@ -33,11 +30,8 @@ public interface MessageConstants {
 	public static final String WORKEREVENT_STATUSMSG	= "WorkerEvent_StatusMsg";
 	
 
-	public static final String JMSCORRELATIONID_PROPERTY	= "JMSCorrelationID";
-	
 	public static final String MESSAGE_TYPE_SIMULATION_JOB_VALUE		= "SimulationJob";
 	public static final String MESSAGE_TYPE_SIMSTATUS_VALUE				= "SimStatus";
-	public static final String MESSAGE_TYPE_RPC_SERVICE_VALUE			= "RPCService";
 	public static final String MESSAGE_TYPE_EXPORT_EVENT_VALUE			= "ExportEvent";
 	public static final String MESSAGE_TYPE_DATA_EVENT_VALUE			= "DataEvent";
 	public static final String MESSAGE_TYPE_STOPSIMULATION_VALUE		= "StopSimulation";	
@@ -52,12 +46,9 @@ public interface MessageConstants {
 	public static final String MESSAGE_TYPE_WORKEREVENT_VALUE			= "WorkerEvent";
 
 	
-	public static final String MESSAGE_TYPE_PROPERTY	= "MessageType";
-
 	public static final String COMPUTE_RESOURCE_PROPERTY	= "ComputeResource";	
 	
 	public static final String HOSTNAME_PROPERTY		= "HostName";
-	public static final String SERVICE_TYPE_PROPERTY	= "ServiceType";
 	public static final String SERVICE_ID_PROPERTY		= "ServiceID";	
 	
 	public static final int SECOND_IN_MS = 1000; // in milliseconds

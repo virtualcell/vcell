@@ -12,7 +12,7 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.VCMessagingConstants;
 
 /**
  * Insert the type's description here.
@@ -58,7 +58,7 @@ public User getUser() {
 
 @Override
 public boolean isIntendedFor(User user){
-	if (user == null || username==null || username.equals(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+	if (user == null || username==null || username.equals(VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL)){
 		return true;
 	}
 	return user.getName().equals(username);

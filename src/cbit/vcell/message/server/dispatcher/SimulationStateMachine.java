@@ -1,9 +1,7 @@
 package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
-//import java.util.ArrayList;
 import java.util.Date;
-//import java.util.List;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -16,6 +14,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
@@ -591,11 +590,11 @@ public class SimulationStateMachine {
 			//
 			log.print("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
 			VCMessage msg = session.createMessage();
-			msg.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
+			msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
 			msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
 			msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
 			msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
-			msg.setStringProperty(MessageConstants.USERNAME_PROPERTY, user.getName());
+			msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
 			if (simExeStatus.getHtcJobID()!=null){
 				msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
 			}
@@ -666,7 +665,7 @@ public class SimulationStateMachine {
 		simulationDatabase.updateSimulationJobStatus(newJobStatus);
 //		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(taskID, failureMessage), oldJobStatus, newJobStatus));
 
-		String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
+		String userName = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
 		StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 		msgForClient.sendToClient(session);
 		log.print("Send status to client: " + msgForClient);

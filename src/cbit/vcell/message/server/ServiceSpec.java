@@ -16,6 +16,8 @@ import org.vcell.util.ComparableObject;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.VCellServerID;
 
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
+
 
 
 
@@ -27,7 +29,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	private int memoryMB;	
 	
 	
-	public enum ServiceType { 
+	public enum ServiceType implements RpcServiceType { 
 		DB ("Db"),	
 		DATA ("Data"),
 		DATAEXPORT ("Exprt"),

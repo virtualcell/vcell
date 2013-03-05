@@ -13,9 +13,6 @@ package org.vcell.pathway.sbpax;
 import java.util.HashMap;
 import java.util.Map;
 
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.units.VCUnitDefinition;
-
 public class UOMEToVCUnitMapper {
 
 	protected static Map<UnitOfMeasurement, String> uome2vcell = 

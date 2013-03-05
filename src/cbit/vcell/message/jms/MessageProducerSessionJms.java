@@ -24,22 +24,24 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingInvocationTargetException;
+import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.mongodb.VCMongoMessage;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
+		private VCMessagingServiceJms vcMessagingServiceJms = null;
 		private TemporaryQueue commonTemporaryQueue = null;
 		private Connection connection = null;
 		private Session session = null;
 		protected boolean bIndependent;
 		
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
+			this.vcMessagingServiceJms = vcMessagingServiceJms;
 			this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
 			this.connection.setExceptionListener(new ExceptionListener() {
 				public void onException(JMSException arg0) {
@@ -53,7 +55,8 @@ public class MessageProducerSessionJms implements VCMessageSession {
 			this.bIndependent = true;
 		}
 
-		public MessageProducerSessionJms(Session session) {
+		public MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms) {
+			this.vcMessagingServiceJms = vcMessagingServiceJms;
 			this.session = session;
 			this.bIndependent = false;
 		}
@@ -70,12 +73,12 @@ public class MessageProducerSessionJms implements VCMessageSession {
 				//
 				// use MessageProducerSessionJms to create the rpcRequest message (allows "Blob" messages to be formed as needed).
 				//
-				MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(session);
+				MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(session,vcMessagingServiceJms);
 				VCMessageJms vcRpcRequestMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(vcRpcRequest);
 				Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
 				
-				rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
-				rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
+				rpcMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,VCMessagingConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
+				rpcMessage.setStringProperty(VCMessagingConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
 				if (specialValues != null) {
 					for (int i = 0; i < specialValues.length; i ++) {
 						rpcMessage.setObjectProperty(specialProperties[i], specialValues[i]);
@@ -87,9 +90,9 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					messageProducer.setTimeToLive(timeoutMS);
 					messageProducer.send(rpcMessage);
 					session.commit();
-					VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
+					vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = "+rpcMessage.getJMSMessageID());
-					String filter = MessageConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
+					String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
 					MessageConsumer replyConsumer = session.createConsumer(commonTemporaryQueue,filter);
 					Message replyMessage = replyConsumer.receive(timeoutMS);
 					replyConsumer.close();
@@ -101,7 +104,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 						throw new JMSException("Server is temporarily not responding, please try again. If problem persists, contact VCell_Support@uchc.edu." +
 								" (server=" + vcRpcRequest.getRequestedServiceType().getName() + ", method=" + vcRpcRequest.getMethodName() +")");
 					} else {
-						VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage);
+						VCMessageJms vcReplyMessage = new VCMessageJms(replyMessage, vcMessagingServiceJms.getDelegate());
 						vcReplyMessage.loadBlobFile();
 						Object returnValue = vcReplyMessage.getObjectContent();
 						vcReplyMessage.removeBlobFile();
@@ -116,7 +119,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					messageProducer.setTimeToLive(timeoutMS);
 					messageProducer.send(rpcMessage);
 					commit();
-					VCMongoMessage.sendRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
+					vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 					return null;
 				}
 			} catch (JMSException e){
@@ -152,7 +155,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					if (bIndependent){
 						session.commit();
 					}
-					VCMongoMessage.sendJmsMessageSent(message,queue);
+					vcMessagingServiceJms.getDelegate().onMessageSent(message,queue);
 				} catch (JMSException e) {
 					onException(e);
 				} finally {
@@ -182,7 +185,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					if (bIndependent){
 						session.commit();
 					}
-					VCMongoMessage.sendJmsMessageSent(message,topic);
+					vcMessagingServiceJms.getDelegate().onMessageSent(message,topic);
 				} catch (JMSException e) {
 					e.printStackTrace(System.out);
 					onException(e);
@@ -211,7 +214,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 		public VCMessage createTextMessage(String text) {
 			try {
 				Message jmsMessage = session.createTextMessage(text);
-				return new VCMessageJms(jmsMessage);
+				return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
@@ -254,14 +257,14 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_FILE_NAME, blobFile.getName());
 					objectMessage.setStringProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_TYPE, object.getClass().getName());
 					objectMessage.setIntProperty(VCMessageJms.BLOB_MESSAGE_OBJECT_SIZE, serializedBytes.length);
-					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
-					return new VCMessageJms(objectMessage,object);
+					vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (BLOB) size="+serializedBytes.length+", type="+object.getClass().getName()+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+					return new VCMessageJms(objectMessage,object, vcMessagingServiceJms.getDelegate());
 				}else{
 					ObjectMessage objectMessage = (ObjectMessage)session.createObjectMessage(object);
 					int size = (serializedBytes!=null)?(serializedBytes.length):(0);
 					String objectType = (serializedBytes!=null)?(object.getClass().getName()):("NULL");
-					VCMongoMessage.sendTrace("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size="+size+", type="+objectType+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
-					return new VCMessageJms(objectMessage);
+					vcMessagingServiceJms.getDelegate().onTraceEvent("MessageProducerSessionJms.createObjectMessage: (NOBLOB) size="+size+", type="+objectType+", elapsedTime = "+(System.currentTimeMillis()-t1)+" ms");
+					return new VCMessageJms(objectMessage, vcMessagingServiceJms.getDelegate());
 				}
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
@@ -276,7 +279,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 		public VCMessage createMessage() {
 			try {
 				Message jmsMessage = session.createMessage();
-				return new VCMessageJms(jmsMessage);
+				return new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 			} catch (JMSException e) {
 				e.printStackTrace(System.out);
 				onException(e);
@@ -302,5 +305,10 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 			}catch (JMSException e){
 				onException(e);
 			}
+		}
+
+		@Override
+		public VCMessagingDelegate getDelegate() {
+			return vcMessagingServiceJms.getDelegate();
 		}
 	}

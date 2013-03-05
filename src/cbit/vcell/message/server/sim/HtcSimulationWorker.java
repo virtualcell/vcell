@@ -17,7 +17,6 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -37,6 +36,7 @@ import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCPooledQueueConsumer;
@@ -50,6 +50,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -101,7 +102,7 @@ public HtcSimulationWorker(HtcProxy htcProxy, VCMessagingService vcMessagingServ
 }
 
 public final String getJobSelector() {
-	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+	String jobSelector = "(" + VCMessagingConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
 	
 	return jobSelector;
 }
@@ -116,7 +117,7 @@ private void initServiceControlTopicListener() {
 
 		public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			try {
-				String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+				String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 				
 				if (msgType == null) {
 					return;
@@ -365,7 +366,7 @@ public static void main(java.lang.String[] args) {
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
  
-        VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+        VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
 		HtcSimulationWorker simulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, serviceInstanceStatus, log, false);

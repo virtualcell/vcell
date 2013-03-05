@@ -9,10 +9,6 @@
  */
 
 package cbit.vcell.message.server.data;
-import static cbit.vcell.message.messages.MessageConstants.MESSAGE_TYPE_PROPERTY;
-import static cbit.vcell.message.messages.MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE;
-import static cbit.vcell.message.messages.MessageConstants.SERVICE_TYPE_PROPERTY;
-
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.Date;
@@ -25,24 +21,23 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCPooledQueueConsumer;
-import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -81,8 +76,8 @@ public SimDataServer(ServiceInstanceStatus serviceInstanceStatus, DataServerImpl
 
 public void init() throws Exception {
 	
-	String dataRequestFilter = "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') " +
-									" AND (" + SERVICE_TYPE_PROPERTY + "='" + ServiceType.DATA.getName() + "')";
+	String dataRequestFilter = "(" + VCMessagingConstants.MESSAGE_TYPE_PROPERTY + "='" + VCMessagingConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') " +
+									" AND (" + VCMessagingConstants.SERVICE_TYPE_PROPERTY + "='" + ServiceType.DATA.getName() + "')";
 	String exportOnlyFilter = "(" + ServiceType.DATAEXPORT.getName() + " is NOT NULL)";
 	String dataOnlyFilter = "(" + ServiceType.DATAEXPORT.getName() + " is NULL)";
 	
@@ -105,12 +100,6 @@ public void init() throws Exception {
 	this.pooledQueueConsumer.initThreadPool();
 	rpcConsumer = new VCQueueConsumer(VCellQueue.DataRequestQueue, pooledQueueConsumer, selector, serviceType.getName()+" RPC Server Thread", MessageConstants.PREFETCH_LIMIT_DATA_REQUEST);
 
-	VCMessagingDelegate delegate = new VCMessagingDelegate() {
-		public void onMessagingException(Exception e) {
-			log.exception(e);
-		}
-	};
-	vcMessagingService.setDelegate(delegate);
 	vcMessagingService.addMessageConsumer(rpcConsumer);
 	
 	initControlTopicListener();
@@ -178,7 +167,7 @@ public static void main(java.lang.String[] args) {
 		
 		DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);
 
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
         SimDataServer simDataServer = new SimDataServer(serviceInstanceStatus, dataServerImpl, vcMessagingService, log, false);
         //add dataJobListener
@@ -201,8 +190,8 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	try {
 		VCMessageSession dataSession = vcMessagingService.createProducerSession();
 		VCMessage dataEventMessage = dataSession.createObjectMessage(event);
-		dataEventMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
-		dataEventMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
+		dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
+		dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
 		
 		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 		dataSession.close();
@@ -221,8 +210,8 @@ public void exportMessage(cbit.rmi.event.ExportEvent event) {
 	try {
 		VCMessageSession dataSession = vcMessagingService.createProducerSession();
 		VCMessage exportEventMessage = dataSession.createObjectMessage(event);
-		exportEventMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
-		exportEventMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
+		exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
+		exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
 		
 		dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 		dataSession.close();

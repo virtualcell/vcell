@@ -12,7 +12,7 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -95,7 +95,7 @@ public User getUser() {
 
 @Override
 public boolean isIntendedFor(User user){
-	if (user == null || username==null || username.equalsIgnoreCase(MessageConstants.USERNAME_PROPERTY_VALUE_ALL)){
+	if (user == null || username==null || username.equalsIgnoreCase(VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL)){
 		return true;
 	}
 	return user.getName().equals(username);

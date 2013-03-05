@@ -14,6 +14,7 @@ import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
@@ -791,8 +792,8 @@ public final class VCMongoMessage {
 		if (message.propertyExists(MessageConstants.TASKID_PROPERTY)){
 			dbObject.put(MongoMessage_taskId, message.getIntProperty(MessageConstants.TASKID_PROPERTY));
 		}
-		if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
-			dbObject.put(MongoMessage_userName, message.getStringProperty(MessageConstants.USERNAME_PROPERTY));
+		if (message.propertyExists(VCMessagingConstants.USERNAME_PROPERTY)){
+			dbObject.put(MongoMessage_userName, message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY));
 		}
 		if (message.propertyExists(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY)){
 			dbObject.put(MongoMessage_simProgress, message.getDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY));
