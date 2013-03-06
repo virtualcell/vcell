@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.math;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.Expression;
 /**
  * extends VarIniCondition, to distinguish iniCount from iniConcentration 
@@ -32,6 +34,14 @@ public String getVCML()
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("\t"+VCML.VarIniCount+"\t"+getVar().getName()+"\t"+getIniVal().infix()+";\n");
 	return buffer.toString();
+}
+
+@Override
+public boolean compareEqual(Matchable obj) {
+	if (!(obj instanceof VarIniCount)) {
+		return false;
+	}
+	return compareEqual0((VarIniCount)obj);
 }
 
 }

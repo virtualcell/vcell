@@ -50,16 +50,8 @@ public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingExce
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(Matchable obj)
+protected boolean compareEqual0(VarIniCondition varIniCondition)
 {
-	if (obj == null) {
-		return false;
-	}
-	if (!(obj instanceof VarIniCondition)) {
-		return false;
-	}
-	
-	VarIniCondition varIniCondition = (VarIniCondition) obj;
 	if(!iniValue.compareEqual(varIniCondition.iniValue) ) return false;//initial value
 	if(!var.compareEqual(varIniCondition.getVar())) return false; //variable
 	

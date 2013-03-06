@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.math;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.parser.Expression;
 /**
  * extends VarIniCondition, to distinguish iniConcentration from iniCount
@@ -20,6 +22,14 @@ public class VarIniPoissonExpectedCount extends VarIniCondition
 	public VarIniPoissonExpectedCount(Variable argVar, Expression argIniVal) {
 		super(argVar, argIniVal);
 		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (!(obj instanceof VarIniPoissonExpectedCount)) {
+			return false;
+		}
+		return compareEqual0((VarIniPoissonExpectedCount)obj);
 	}
 
 	/**

@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -59,8 +60,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 	private SimulationContext fieldSimulationContext = null;
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
-	private JPanel radioButtonPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
 	private ButtonGroup radioGroup = null; //added in July, 2008. Enable selection of initial concentration or amount
+	private JPanel radioButtonandCheckboxPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
+	private JCheckBox randomizeInitCondnCheckBox = null;	//added in Feb, 2013. Enable randomization of initial concentration or amount
 	private JSortTable table = null;
 	private SpeciesContextSpecsTableModel tableModel = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -109,6 +111,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 				amountRadioButton_actionPerformed();
 			} else if (e.getSource() == getConcentrationRadioButton()) {
 				concentrationRadioButton_actionPerformed();
+			} else if (e.getSource() == getRandomizeInitCondnCheckbox()) {
+				// only need to set simContext.isRandomizeInitCondn? 
+				getSimulationContext().setRandomizeInitCondition(getRandomizeInitCondnCheckbox().isSelected());
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -217,18 +222,19 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
 }
 
 //added in july 2008, to accommodate two radio buttons with flow layout.
-private JPanel getRadioButtonPanel()
+private JPanel getRadioButtonAndCheckboxPanel()
 {
-	if(radioButtonPanel == null)
+	if(radioButtonandCheckboxPanel == null)
 	{
 		JLabel label = new JLabel("Initial Condition: ");
-		radioButtonPanel = new JPanel(new FlowLayout());
-		radioButtonPanel.add(label);
+		radioButtonandCheckboxPanel = new JPanel(new FlowLayout());
+		radioButtonandCheckboxPanel.add(label);
 		getButtonGroup();
-		radioButtonPanel.add(getConcentrationRadioButton());
-		radioButtonPanel.add(getAmountRadioButton());
+		radioButtonandCheckboxPanel.add(getConcentrationRadioButton());
+		radioButtonandCheckboxPanel.add(getAmountRadioButton());
+		radioButtonandCheckboxPanel.add(getRandomizeInitCondnCheckbox());
 	}
-	return radioButtonPanel;
+	return radioButtonandCheckboxPanel;
 }
 
 public void concentrationRadioButton_actionPerformed() {
@@ -315,6 +321,16 @@ private JRadioButton getAmountRadioButton()
 	return amtRadioButton;
 }
 
+private JCheckBox getRandomizeInitCondnCheckbox()
+{
+	if(randomizeInitCondnCheckBox == null)
+	{
+		randomizeInitCondnCheckBox = new JCheckBox("Randomize Initial Condition");;
+	}
+	return randomizeInitCondnCheckBox;
+}
+
+
 private ButtonGroup getButtonGroup()
 {
 	if(radioGroup == null)
@@ -329,12 +345,15 @@ private ButtonGroup getButtonGroup()
 private void updateTopScrollPanel()
 {
 	if (getSimulationContext().isStoch()) {
-		getRadioButtonPanel().setVisible(true);
+		getRadioButtonAndCheckboxPanel().setVisible(true);
 		boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
 		getConcentrationRadioButton().setSelected(bUsingConcentration);
 		getAmountRadioButton().setSelected(!bUsingConcentration);
+		// ' make randomizeInitialCondition' checkBox visible only if application is non-spatial stochastic
+		getRandomizeInitCondnCheckbox().setVisible(getSimulationContext().getGeometry().getDimension() == 0);
+		getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());	
 	} else {
-		getRadioButtonPanel().setVisible(false);
+		getRadioButtonAndCheckboxPanel().setVisible(false);
 	}
 }
 
@@ -389,7 +408,7 @@ private void initialize() {
 		// user code end
 		setName("InitialConditionsPanel");
 		setLayout(new BorderLayout());
-		add(getRadioButtonPanel(), BorderLayout.NORTH);
+		add(getRadioButtonAndCheckboxPanel(), BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 
 		getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
@@ -399,6 +418,7 @@ private void initialize() {
 		getJMenuItemPasteAll().addActionListener(ivjEventHandler);
 		getAmountRadioButton().addActionListener(ivjEventHandler);
 		getConcentrationRadioButton().addActionListener(ivjEventHandler);
+		getRandomizeInitCondnCheckbox().addActionListener(ivjEventHandler);
 			
 		DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)

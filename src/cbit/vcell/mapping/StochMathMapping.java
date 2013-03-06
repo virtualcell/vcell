@@ -865,7 +865,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			if (initParm!=null)
 			{
 				VarIniCondition varIni = null;
-				if(getSimulationContext().isUsingConcentration() && !scSpecs[i].isConstant())
+				if(!scSpecs[i].isConstant() && getSimulationContext().isRandomizeInitCondition())
 				{
 					varIni = new VarIniPoissonExpectedCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
 				}
