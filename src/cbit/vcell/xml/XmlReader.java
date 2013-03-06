@@ -4509,14 +4509,22 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
 	boolean bUseConcentration = true;
+	boolean bRandomizeInitCondition = false;
+	
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true")))
 		bStoch = true;
 	if(bStoch)
 	{
-		if((param.getAttributeValue(XMLTags.ConcentrationAttrTag)!= null) && (param.getAttributeValue(XMLTags.ConcentrationAttrTag).equals("false")))
-		{
+		// stochastic and using concentration vs amount
+		if((param.getAttributeValue(XMLTags.ConcentrationAttrTag)!= null) && (param.getAttributeValue(XMLTags.ConcentrationAttrTag).equals("false"))) {
 			bUseConcentration = false;
 		}
+
+		// stochastic and randomizing initial conditions or not (for non-spatial)
+		if((param.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (param.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
+			bRandomizeInitCondition = true;
+		}
+
 	}
 	//Retrieve Geometry
 	Geometry newgeometry = null;
@@ -4579,6 +4587,11 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 		//set if using concentration
 		newsimcontext.setUsingConcentration(bUseConcentration);
+		
+		// set if randomizing init condition or not (for stochastic applications
+		if (bStoch) {
+			newsimcontext.setRandomizeInitCondition(bRandomizeInitCondition);
+		}
 		 
 	} catch(java.beans.PropertyVetoException e) {
 		e.printStackTrace(System.out);

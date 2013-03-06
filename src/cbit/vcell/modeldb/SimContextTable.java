@@ -203,7 +203,29 @@ public String getSQLValueList(SimulationContext simContext,KeyValue mathDescKey,
  */
 public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	Element appComponentsElement = new Element(XMLTags.ApplicationComponents);
+
+	// Add element for application flags : bStoch, bUseConcentration, bRandomizeInitCondition, and any other new flags that might be introduced.
 	
+	// for now, create the element only if application is stochastic. Can change it later.
+	if (simContext.isStoch()) {
+//		appRelatedFlagsElement.setAttribute(XMLTags.StochAttrTag, "true");
+//		if(simContext.isUsingConcentration()) {
+//			appRelatedFlagsElement.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+//		} else {
+//			appRelatedFlagsElement.setAttribute(XMLTags.ConcentrationAttrTag, "false");
+//		}
+		// add 'randomizeInitCondition' flag only if simContext is non-spatial
+		if (simContext.getGeometry().getDimension() == 0) {
+			Element appRelatedFlagsElement = new Element(XMLTags.ApplicationSpecificFlagsTag);
+			if(simContext.isRandomizeInitCondition()) {
+				appRelatedFlagsElement.setAttribute(XMLTags.RandomizeInitConditionTag, "true");
+			} else {
+				appRelatedFlagsElement.setAttribute(XMLTags.RandomizeInitConditionTag, "false");
+			}
+			appComponentsElement.addContent(appRelatedFlagsElement);			
+		}
+	}
+		
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	// first fill in bioevents from simContext
 	BioEvent[] bioEvents = simContext.getBioEvents();
@@ -240,7 +262,7 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 }
 		
 /**
- * getAppComponentsElement : retireves the <AppComponents> element from the database when requested.
+ * getAppComponentsElement : retrieves the <AppComponents> element from the database when requested.
  * @param con
  * @param simContextRef
  * @return
@@ -271,8 +293,7 @@ private Element getAppComponentsElement(Connection con, KeyValue simContextRef) 
 }
 
 /**
- * getBioEvents : retrieves the <BioEvents> element from <AppComponents> from database and via XMLReader, constructs the 
- * BioEvents list for the simContext. 
+ * readAppComponents : reads the additional simContext components like bioevents/application related flags (for stochastic, at the moment), if present, and sets them on simContext.
  * @param con
  * @param simContext
  * @return
@@ -285,6 +306,16 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 	try {
 		Element appComponentsElement = getAppComponentsElement(con, simContext.getVersion().getVersionKey());
 		if (appComponentsElement != null) {
+			Element appRelatedFlags = appComponentsElement.getChild(XMLTags.ApplicationSpecificFlagsTag);
+			if (appRelatedFlags != null) {
+				// for now, only reading the 'randomizeInitCondition' attribute, since 'isStoch' and 'isUsingconcentration' are read in by other means; so not messing with those fields of simContext.
+				boolean bRandomizeInitCondition = false;
+				if ((appRelatedFlags.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (appRelatedFlags.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
+					bRandomizeInitCondition = true;
+				}
+				simContext.setRandomizeInitCondition(bRandomizeInitCondition);
+			}
+			
 			XmlReader xmlReader = new XmlReader(false);
 			// get bioEvents
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
