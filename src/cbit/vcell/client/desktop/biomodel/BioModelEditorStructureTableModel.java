@@ -154,7 +154,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 				}
 			}
 			refreshData();
-//			updateStructureComboBox();
 		} else if (evt.getSource() instanceof Structure) {
 			fireTableRowsUpdated(0, getRowCount());
 		}

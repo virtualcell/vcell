@@ -43,6 +43,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
@@ -311,7 +312,6 @@ private void initialize() {
 				}
 				return this;
 			}
-			
 		};
 	
 		positiveFeatureComboBox.setRenderer(comboBoxListCellRenderer);
@@ -365,8 +365,8 @@ public void setModel(Model model) {
 	negativeFeatureComboBox.setModel(dataModelNeg);
 	if (structure instanceof Membrane) {
 		Membrane membrane = (Membrane)structure;
-		if (fieldModel.getElectricalTopology().getPositiveFeature(membrane) != null) {
-			positiveFeatureComboBox.setSelectedItem(fieldModel.getElectricalTopology().getPositiveFeature(membrane).getName());
+		if (fieldModel.getElectricalTopology().getNegativeFeature(membrane) != null) {
+			negativeFeatureComboBox.setSelectedItem(fieldModel.getElectricalTopology().getNegativeFeature(membrane).getName());
 		}
 	}
 
@@ -426,8 +426,19 @@ private void updateInterface() {
 		StructureSize structureSize = structure.getStructureSize();
 		sizeTextField.setText(structureSize.getName() + " [" + structureSize.getUnitDefinition().getSymbolUnicode() + "]");
 		if (bMembrane) {
-			MembraneVoltage memVoltage = ((Membrane)structure).getMembraneVoltage();
+			Membrane membrane = (Membrane)structure;
+			MembraneVoltage memVoltage = membrane.getMembraneVoltage();
 			voltageTextField.setText(memVoltage.getName() + " [" + memVoltage.getUnitDefinition().getSymbolUnicode() + "]");
+			// if membrane has +ve/-ve feature set, set the comboBox with that selection. 
+			ElectricalTopology electricalTopology = fieldModel.getElectricalTopology();
+			Feature positiveFeature = electricalTopology.getPositiveFeature(membrane);
+			if (positiveFeature != null) {
+				positiveFeatureComboBox.setSelectedItem(positiveFeature.getName());
+			}
+			Feature negativeFeature = electricalTopology.getNegativeFeature(membrane);
+			if (negativeFeature != null) {
+				negativeFeatureComboBox.setSelectedItem(negativeFeature.getName());
+			}
 		}
 	} else {
 		annotationTextArea.setText(null);
