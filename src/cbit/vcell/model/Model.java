@@ -170,6 +170,34 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return outsideFeatures.get(membrane);
 		}
 		
+		public void refresh() {
+			Structure[] structures = getStructures();
+			for (Structure struct : structures) {
+				if (struct instanceof Feature) {
+					Membrane enclosingMem = getMembrane((Feature)struct);
+					if (enclosingMem != null && !contains(enclosingMem)) {
+						enclosingMembrane.remove(struct);
+						if (getInsideFeature(enclosingMem) != null) {
+							insideFeatures.remove(enclosingMem);
+						}
+						if (getOutsideFeature(enclosingMem) != null) {
+							outsideFeatures.remove(enclosingMem);
+						}
+					}
+				} else if (struct instanceof Membrane) {
+					Membrane membrane = (Membrane)struct;
+					Feature insideFeature = getInsideFeature(membrane);
+					if (insideFeature != null && !(contains(insideFeature))) {
+						insideFeatures.remove(membrane);
+						enclosingMembrane.remove(insideFeature);
+					}
+					Feature outsideFeature = getOutsideFeature(membrane);
+					if (outsideFeature != null && !(contains(outsideFeature))) {
+						outsideFeatures.remove(membrane);
+					}
+				}
+			}
+		}
 		
 		public boolean enclosedBy(Structure structure, Structure parentStructure){
 			if (structure instanceof Feature){
@@ -288,24 +316,93 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return negativeFeatures.get(membrane);
 		}
 		
-		public void populateFromStructureTopology() {
-			// if the positive & negative features for the membranes are already set, do not override using struct topology.
-			if (positiveFeatures.isEmpty() && negativeFeatures.isEmpty()) {
-				for (Structure struct : fieldStructures) {
-					if (struct instanceof Membrane) {
-						Membrane membrane = (Membrane)struct;
-						Feature positiveFeature = structureTopology.getInsideFeature(membrane);
-						Feature negativeFeature = structureTopology.getOutsideFeature(membrane);
-						
-						if (positiveFeature != null) {
-							electricalTopology.setPositiveFeature(membrane, positiveFeature);
-						}
-						if (negativeFeature != null) {
-							electricalTopology.setNegativeFeature(membrane, negativeFeature);
-						}
+		public void gatherIssues(List<Issue> issueList) {
+			// check if membranes in model have positive and negative features set.
+			for (Structure struct : getStructures()) {
+				if (struct instanceof Membrane) {
+					Membrane membrane = (Membrane)struct;
+					String issueMsgPrefix = "Membrane '" + membrane.getName() + "' ";
+					Feature positiveFeature = getPositiveFeature(membrane);
+					if (positiveFeature == null) {
+						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
+					}
+					Feature negativeFeature = getNegativeFeature(membrane);
+					if (negativeFeature == null) {
+						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Negative feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
+					}
+					if (positiveFeature != null && negativeFeature != null && positiveFeature.compareEqual(negativeFeature)) {
+						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
 					}
 				}
 			}
+		}
+		
+		public void populateFromStructureTopology() {
+			// if the positive & negative features for the membranes are already set, do not override using struct topology.
+			Structure[] structures = getStructures();
+			for (Structure struct : structures) {
+				if (struct instanceof Membrane) {
+					Membrane membrane = (Membrane)struct;
+					Feature positiveFeatureFromStructTopology = getStructureTopology().getInsideFeature(membrane);
+					Feature positiveFeatureFromElectricalTopology = getPositiveFeature(membrane);
+					if (positiveFeatureFromStructTopology != null) {
+						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
+							// if there is an entry in the positiveFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
+							electricalTopology.positiveFeatures.remove(membrane);
+						} else {
+							// if positiveFeature from structTopology != null, and the membrane does not have an entry in positiveFeatures hashMap, add it.
+							electricalTopology.setPositiveFeature(membrane, positiveFeatureFromStructTopology);
+						}
+					} else {
+						// if there is no positiveFeature from structTopology, and the membrane's entry in positiveFeatures hashMap is not in the model, remove the entry.
+						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
+							electricalTopology.positiveFeatures.remove(membrane);
+						}
+					} 
+					
+					Feature negativeFeatureFromStructTopology = getStructureTopology().getOutsideFeature(membrane);
+					Feature negativeFeatureFromElectricalTopology = getNegativeFeature(membrane);
+					if (negativeFeatureFromStructTopology != null) {
+						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
+							// if there is an entry in the negativeFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
+							electricalTopology.negativeFeatures.remove(membrane);
+						} else {
+							// if negativeFeature from structTopology != null, and the membrane does not have an entry in negativeFeatures hashMap, add it.
+							electricalTopology.setNegativeFeature(membrane, negativeFeatureFromStructTopology);
+						}
+					} else {
+						// if there is no negativeFeature from structTopology, and the membrane's entry in negativeFeatures hashMap is not in the model, remove the entry.
+						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
+							electricalTopology.negativeFeatures.remove(membrane);
+						}
+					} 
+				}
+			}
+		}
+		
+		public void refresh() {
+			// if any membrane has been removed, remove its entry in the positiveFetures and negativeFeatures hashMap (separately?)
+			Set<Membrane> membranesSet = positiveFeatures.keySet();
+			Iterator<Membrane> membranesIter = membranesSet.iterator();
+			while (membranesIter.hasNext()) {
+				Membrane membrane = membranesIter.next();
+				if (!contains(membrane)) {
+					membranesIter.remove();
+					// positiveFeatures.remove(membrane);
+				}
+			}
+			membranesSet = negativeFeatures.keySet();
+			membranesIter = membranesSet.iterator();
+			while (membranesIter.hasNext()) {
+				Membrane membrane = membranesIter.next();
+				if (!contains(membrane)) {
+					membranesIter.remove();
+					// negativeFeatures.remove(membrane);
+				}
+			}
+
+			// now populate electrical topology (+ve features and -ve features hashMap based on structureTopology, if a heirarchy exists.
+			populateFromStructureTopology();
 		}
 		
 		@Override
@@ -1167,6 +1264,10 @@ public void gatherIssues(List<Issue> issueList) {
 		}
 	}
 	
+	//
+	// gather issues for electrical topology (unspecified +ve or -ve features, or +ve feature == -ve feature
+	//
+	getElectricalTopology().gatherIssues(issueList);
 }
 
 
@@ -2067,24 +2168,23 @@ public void removeStructure(Structure removedStructure) throws PropertyVetoExcep
 	
 	//Check that the feature is empty
 	String errorMessage = null;
-		for (int i=0;i<fieldReactionSteps.length;i++){
-		if (fieldReactionSteps[i].getStructure() == removedStructure){
-				errorMessage = "cannot contain Reactions";
-				break;
-			}
+	for (int i=0;i<fieldReactionSteps.length;i++){
+	if (fieldReactionSteps[i].getStructure() == removedStructure){
+			errorMessage = "cannot contain Reactions";
+			break;
 		}
-		for (int i=0;i<fieldSpeciesContexts.length;i++){
-		if (fieldSpeciesContexts[i].getStructure() == removedStructure){
-				errorMessage = "cannot contain Species";
-				break;
-			}
+	}
+	for (int i=0;i<fieldSpeciesContexts.length;i++){
+	if (fieldSpeciesContexts[i].getStructure() == removedStructure){
+			errorMessage = "cannot contain Species";
+			break;
 		}
+	}
 
-		if(errorMessage != null){
-		throw new RuntimeException("Remove model compartment Error\nStructure to be removed '"+removedStructure.getName()+"' "+errorMessage+".");
-		}
+	if(errorMessage != null){
+		throw new RuntimeException("Remove model compartment Error\n\nStructure to be removed : '"+removedStructure.getName()+"' : "+errorMessage+".");
+	}
 
-	
 	//
 	// remove this structure
 	//
@@ -2450,6 +2550,11 @@ public void setStructures(Structure[] structures) throws java.beans.PropertyVeto
 	for (int i=0;i<structures.length;i++){	
 		structures[i].setModel(this);
 	}
+	
+	// if structures changed, structureTopology and electrical topology might need to be adjusted
+	structureTopology.refresh();
+	electricalTopology.refresh();
+	
 	refreshDiagrams();
 	firePropertyChange(PROPERTY_NAME_STRUCTURES, oldValue, structures);
 

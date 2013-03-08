@@ -85,6 +85,8 @@ public class Issue implements java.io.Serializable, Matchable {
 		
 		Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning,
 		
+		MembraneElectricalPolarityError,
+		
 		SBMLImport_UnsupportedAttributeOrElement, 
 		SBMLImport_Reaction, 
 		SBMLImport_MissingSpeciesInitCondition
