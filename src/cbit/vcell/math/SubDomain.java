@@ -9,8 +9,12 @@
  */
 
 package cbit.vcell.math;
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Vector;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -22,12 +26,59 @@ import cbit.vcell.parser.Expression;
  */
 public abstract class SubDomain implements Serializable, Matchable {
 	private String name = null;
+
+
 	private Vector<Equation> equationList = new Vector<Equation>();
 	private FastSystem fastSystem = null;
 	private ArrayList<JumpProcess> listOfJumpProcesses = null;
 	private ArrayList<VarIniCondition> listOfVarIniConditions = null;
 	private ArrayList<ParticleJumpProcess> listOfParticleJumpProcesses = null;
 	private ArrayList<ParticleProperties> listOfParticleProperties = null;
+	
+	private ArrayList<BoundaryConditionSpec> listOfBoundaryConditionSpecs = null;
+	
+	// To specify the <MembraneName, BoundaryConditionType> for each compartmentsubDomain
+	public static class BoundaryConditionSpec implements Matchable, Serializable {
+		
+		private String boundarySubdomainName = null;
+		private BoundaryConditionType boundaryConditionType = null;
+
+		public BoundaryConditionSpec(String boundarySubdomainName, BoundaryConditionType bcType) {
+			super();
+			this.boundarySubdomainName = boundarySubdomainName;
+			this.boundaryConditionType = bcType;
+		}
+		
+		public String getBoundarySubdomainName() {
+			return boundarySubdomainName;
+		}
+		
+		public BoundaryConditionType getBoundaryConditionType() {
+			return boundaryConditionType;
+		}
+		
+		public boolean compareEqual(Matchable obj) {
+			if (obj instanceof BoundaryConditionSpec){
+				BoundaryConditionSpec bcv = (BoundaryConditionSpec)obj;
+				if(!Compare.isEqual(boundarySubdomainName,bcv.boundarySubdomainName))  {
+					return false;
+				}
+				if (!Compare.isEqual(boundaryConditionType, bcv.boundaryConditionType)){
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		public String getVCML() {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("\t"+VCML.BoundaryConditionSpec+"\t"+getBoundarySubdomainName()+"\t"+getBoundaryConditionType().boundaryTypeStringValue()+"\n");
+			return buffer.toString();
+		}
+
+	}
+	
 
 /**
  * This method was created by a SmartGuide.
@@ -39,6 +90,7 @@ protected SubDomain (String name) {
 	listOfParticleProperties = new ArrayList<ParticleProperties>();
 	listOfJumpProcesses = new ArrayList<JumpProcess>();
 	listOfVarIniConditions = new ArrayList<VarIniCondition>();
+	listOfBoundaryConditionSpecs = new ArrayList<BoundaryConditionSpec>();
 }
 
 
@@ -102,6 +154,11 @@ public void addVarIniCondition(VarIniCondition newVarIniCondition) throws MathEx
 	listOfVarIniConditions.add(newVarIniCondition);
 }
 
+public void addBoundaryConditionSpec(BoundaryConditionSpec newBoundaryConditionSpec) throws MathException {
+	if(getBoundaryConditionSpec(newBoundaryConditionSpec.getBoundarySubdomainName())!=null)
+		throw new MathException("BoundaryCondition spec for : '"+ newBoundaryConditionSpec.getBoundarySubdomainName()+"' already exists");
+	listOfBoundaryConditionSpecs.add(newBoundaryConditionSpec);
+}
 
 /**
  * This method was created in VisualAge.
@@ -141,52 +198,31 @@ protected boolean compareEqual0(Object object) {
 	//
 	// compare jumpProcesses
 	//
-	if ((listOfJumpProcesses != null) && (subDomain.listOfJumpProcesses != null))
-	{
-		JumpProcess jumpProcesses1[] = (JumpProcess[]) listOfJumpProcesses.toArray(new JumpProcess[0]);
-		JumpProcess jumpProcesses2[] = (JumpProcess[]) subDomain.listOfJumpProcesses.toArray(new JumpProcess[0]);
-		
-		if (!Compare.isEqualOrNull(jumpProcesses1, jumpProcesses2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
-			return false;
-		}
+	if (!Compare.isEqualOrNull(listOfJumpProcesses, subDomain.listOfJumpProcesses)){ 
+		return false;
 	}
-	else return false;
+
 	//
 	// compare varIniConditions
 	//
-	if ((listOfVarIniConditions != null) && (subDomain.listOfVarIniConditions != null))
-	{
-		VarIniCondition varIniConditions1[] = (VarIniCondition[]) listOfVarIniConditions.toArray(new VarIniCondition[0]);
-		VarIniCondition varIniConditions2[] = (VarIniCondition[]) subDomain.listOfVarIniConditions.toArray(new VarIniCondition[0]);
-		if (!Compare.isEqualOrNull(varIniConditions1,varIniConditions2)){
-			return false;
-		}
+	if (!Compare.isEqualOrNull(listOfVarIniConditions,subDomain.listOfVarIniConditions)) {
+		return false;
+	}
+
 	
-	}
-	else return false;
-		
-	if ((listOfParticleProperties != null) && (subDomain.listOfParticleProperties != null))
-	{
-		ParticleProperties pps1[] = (ParticleProperties[]) listOfParticleProperties.toArray(new ParticleProperties[0]);
-		ParticleProperties pps2[] = (ParticleProperties[]) subDomain.listOfParticleProperties.toArray(new ParticleProperties[0]);
-		
-		if (!Compare.isEqualOrNull(pps1, pps2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
-			return false;
-		}
-	} else {
+	if (!Compare.isEqualOrNull(listOfParticleProperties, subDomain.listOfParticleProperties)){ 
 		return false;
 	}
-	if ((listOfParticleJumpProcesses != null) && (subDomain.listOfParticleJumpProcesses != null))
-	{
-		ParticleJumpProcess pjps1[] = (ParticleJumpProcess[]) listOfParticleJumpProcesses.toArray(new ParticleJumpProcess[0]);
-		ParticleJumpProcess pjps2[] = (ParticleJumpProcess[]) subDomain.listOfParticleJumpProcesses.toArray(new ParticleJumpProcess[0]);
-		
-		if (!Compare.isEqualOrNull(pjps1, pjps2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
-			return false;
-		}
-	} else {
+
+	if (!Compare.isEqualOrNull(listOfParticleJumpProcesses, subDomain.listOfParticleJumpProcesses)){ 
 		return false;
 	}
+	
+	// boundaryConditionSpecs
+	if (!Compare.isEqualOrNull(listOfBoundaryConditionSpecs, subDomain.listOfBoundaryConditionSpecs)){ 
+		return false;
+	}
+
 	return true;
 }
 
@@ -287,7 +323,6 @@ public String getName() {
 	return name;
 }
 
-
 /**
  * Get a variable initial condition from the list by it's index.
  * Creation date: (6/27/2006 10:40:07 AM)
@@ -326,6 +361,68 @@ public VarIniCondition getVarIniCondition(Variable var)
  */
 public List<VarIniCondition> getVarIniConditions() {
 	return Collections.unmodifiableList(listOfVarIniConditions);
+}
+
+
+public BoundaryConditionSpec getBoundaryConditionSpec(int index) {
+	if(index<listOfBoundaryConditionSpecs.size())
+		return (BoundaryConditionSpec)listOfBoundaryConditionSpecs.get(index);
+	return null;
+}
+
+
+/**
+ * Get a boundaryConditionSpec from list by boundaryConditionSpec's name.
+ * @return boundaryConditionSpec
+ * @param varName java.lang.String
+ */
+public BoundaryConditionSpec getBoundaryConditionSpec(String boundaryConditionSpecName)
+{
+	for (BoundaryConditionSpec bcs : listOfBoundaryConditionSpecs){
+		if (bcs.getBoundarySubdomainName().equals(boundaryConditionSpecName)){
+			return bcs;
+		}
+	}
+	return null;
+}
+
+
+/**
+ * Return the reference of the boundaryConditionSpec list.
+ * @return java.util.Vector
+ */
+public List<BoundaryConditionSpec> getBoundaryconditionSpecs() {
+	return Collections.unmodifiableList(listOfBoundaryConditionSpecs);
+}
+
+
+/**
+ * Remove a BoundaryConditionSpec from list by it's index.
+ * @param index int
+ */
+public void removeBoundaryConditionSpec(int index) {
+	listOfBoundaryConditionSpecs.remove(index);
+}
+
+
+/**
+ * Remove a BoundaryConditionSpec from list by it's name in the list.
+ * @param varName java.lang.String
+ */
+public void removeBoundaryConditionSpec(String bcSubdomainName) {
+	for (BoundaryConditionSpec bcs : listOfBoundaryConditionSpecs){
+		if(bcs.getBoundarySubdomainName().equals(bcSubdomainName)){
+			listOfBoundaryConditionSpecs.remove(bcs);
+		}
+	}	
+}
+
+
+/**
+ * empty theBoundaryConditionSpec list
+ */
+public void removeBoundaryConditionSpecs() {
+	listOfBoundaryConditionSpecs.clear();
 }
 
 
@@ -372,7 +469,7 @@ public void removeJumpProcesses()
 
 
 /**
- * Remove a variable initial conditino from list by it's index.
+ * Remove a variable initial condition from list by it's index.
  * Creation date: (6/27/2006 10:04:45 AM)
  * @param index int
  */
@@ -461,4 +558,6 @@ public void trimTrivialEquations(MathDescription mathDesc) {
 		}
 	}
 }
+
+
 }

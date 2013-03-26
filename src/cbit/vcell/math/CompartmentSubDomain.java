@@ -172,17 +172,26 @@ public String getVCML(int spatialDimension) {
 		buffer.append("\t"+VCML.Priority+" "+priority+"\n");
 	}	
 	if (spatialDimension>=1){
-		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension>=2){
-		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension==3){
-		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.boundaryTypeStringValue()+"\n");
 	}
+	
+	// BoundaryconditionSpecs
+	if (getBoundaryconditionSpecs().size() > 0) {
+		for (BoundaryConditionSpec bcs : getBoundaryconditionSpecs()) {
+			buffer.append(bcs.getVCML());
+		}
+		buffer.append("\n");
+	}
+	
 	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){
 		Equation equ = enum1.nextElement();
@@ -194,7 +203,6 @@ public String getVCML(int spatialDimension) {
 	//Var initial conditions
 	if(getVarIniConditions().size()>0)
 	{
-		
 		for(VarIniCondition vic : getVarIniConditions()){
 			buffer.append(vic.getVCML());
 		}
@@ -279,6 +287,13 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
 			String type = tokens.nextToken();
 			boundaryConditionTypeZp = new BoundaryConditionType(type);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.BoundaryConditionSpec)) {
+			String name = tokens.nextToken();
+			String type = tokens.nextToken();
+			BoundaryConditionSpec  bcs = new BoundaryConditionSpec(name, new BoundaryConditionType(type));
+			addBoundaryConditionSpec(bcs);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.PdeEquation)){

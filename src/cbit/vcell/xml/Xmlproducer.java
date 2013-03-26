@@ -145,6 +145,8 @@ import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
+import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PostProcessingBlock;
@@ -1277,17 +1279,17 @@ private Element getXML(FeatureMapping param) {
 	Element boundariestypes = new Element(XMLTags.BoundariesTypesTag);
 	
 	//Xm
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXm, param.getBoundaryConditionTypeXm().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXm, param.getBoundaryConditionTypeXm().boundaryTypeStringValue());
 	//Xp
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXp, param.getBoundaryConditionTypeXp().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueXp, param.getBoundaryConditionTypeXp().boundaryTypeStringValue());
 	//Ym
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYm, param.getBoundaryConditionTypeYm().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYm, param.getBoundaryConditionTypeYm().boundaryTypeStringValue());
 	//Yp
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYp, param.getBoundaryConditionTypeYp().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueYp, param.getBoundaryConditionTypeYp().boundaryTypeStringValue());
 	//Zm
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZm, param.getBoundaryConditionTypeZm().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZm, param.getBoundaryConditionTypeZm().boundaryTypeStringValue());
 	//Zp
-	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZp, param.getBoundaryConditionTypeZp().toString());
+	boundariestypes.setAttribute(XMLTags.BoundaryAttrValueZp, param.getBoundaryConditionTypeZp().boundaryTypeStringValue());
 	
 	feature.addContent( boundariestypes ); //add boundaries to the feature
 
@@ -1818,33 +1820,39 @@ private Element getXML(CompartmentSubDomain param) throws XmlParseException{
 	//Xm
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().boundaryTypeStringValue());
 	compartment.addContent(boundary);
 	//Xp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().boundaryTypeStringValue());
 	compartment.addContent(boundary);
 	//Ym
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().boundaryTypeStringValue());
 	compartment.addContent(boundary);
 	//Yp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().boundaryTypeStringValue());
 	compartment.addContent(boundary);
 	//Zm
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().boundaryTypeStringValue());
 	compartment.addContent(boundary);
 	//Zp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().boundaryTypeStringValue());
 	compartment.addContent(boundary);
+	
+	// add BoundaryConditionSpecs
+	for (BoundaryConditionSpec bcs : param.getBoundaryconditionSpecs()) {
+		compartment.addContent(getXML(bcs));
+	}
+	
 	//Add Equations
 	Enumeration<Equation> enum1 = param.getEquations();
 	while (enum1.hasMoreElements()){
@@ -2539,6 +2547,7 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	Element membrane = new Element(XMLTags.MembraneSubDomainTag);
 	
 	//Add attributes
+	membrane.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
 	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
 	
@@ -2547,32 +2556,32 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	//Xm
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXm().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 	//Xp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueXp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionXp().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 	//Ym
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYm().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 	//Yp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueYp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionYp().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 	//Zm
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZm);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZm().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 	//Zp
 	boundary = new Element(XMLTags.BoundaryTypeTag);
 	boundary.setAttribute(XMLTags.BoundaryAttrTag, XMLTags.BoundaryAttrValueZp);
-	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().toString());
+	boundary.setAttribute(XMLTags.BoundaryTypeAttrTag, param.getBoundaryConditionZp().boundaryTypeStringValue());
 	membrane.addContent(boundary);
 
 	//Add Equation subelements
@@ -2721,6 +2730,17 @@ private Element getXML(PdeEquation param) throws XmlParseException {
 	if (boundaries.getAttributes().size() >0){
 		pde.addContent(boundaries);
 	}
+	
+	// add BoundaryConditionValue
+	if (param.getBoundaryconditionValues().size() > 0) {
+		for (BoundaryConditionValue bcv : param.getBoundaryconditionValues()) {
+			Element bcValueElement = new Element(XMLTags.BoundaryConditionValueTag);
+			bcValueElement.setAttribute(XMLTags.NameAttrTag, mangle(bcv.getSubdomainName()));
+			bcValueElement.setAttribute(XMLTags.BoundaryValueExpressionTag, mangleExpression(bcv.getBoundaryConditionExpression()));
+			pde.addContent(bcValueElement);
+		}
+	}
+	
 	//add Rate
 	Element rate = new Element(XMLTags.RateTag);
 	if (param.getRateExpression() != null) {
@@ -2895,6 +2915,16 @@ private Element getXML(VarIniCondition param)
 	varIni.addContent(mangleExpression(param.getIniVal()));
 	return varIni;
 }
+
+private Element getXML(BoundaryConditionSpec param) 
+{
+	Element bcSpec = new Element(XMLTags.BoundaryConditionSpecTag);
+	//Add atribute
+	bcSpec.setAttribute(XMLTags.BoundarySubdomainNameTag, mangle(param.getBoundarySubdomainName()));
+	bcSpec.setAttribute(XMLTags.BoundaryTypeTag, param.getBoundaryConditionType().boundaryTypeStringValue());
+	return bcSpec;
+}
+
 
 /**
  * This method returns a XML representation of a VolumeRegionEquation object.

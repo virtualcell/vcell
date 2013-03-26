@@ -804,42 +804,42 @@ protected void addSpecies() {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXm = spplugin.getBoundaryCondition();
 								sbmlBCXm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCXm.setType(sm.getBoundaryConditionTypeXm().toString());
+								sbmlBCXm.setType(sm.getBoundaryConditionTypeXm().boundaryTypeStringValue());
 								sbmlBCXm.setCoordinateBoundary(ccX.getBoundaryMin().getSpatialId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXp) && (ccX != null)) {
 								// set BoundaryCondn Xp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCXp = spplugin.getBoundaryCondition();
 								sbmlBCXp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().toString());
+								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
 								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMax().getSpatialId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYm)  && (ccY != null)) {
 								// set BoundaryCondn Ym element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYm = spplugin.getBoundaryCondition();
 								sbmlBCYm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().toString());
+								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
 								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMin().getSpatialId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYp) && (ccY != null)){
 								// set BoundaryCondn Yp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCYp = spplugin.getBoundaryCondition();
 								sbmlBCYp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().toString());
+								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
 								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMax().getSpatialId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZm)  && (ccZ != null)) {
 								// set BoundaryCondn Zm element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZm = spplugin.getBoundaryCondition();
 								sbmlBCZm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().toString());
+								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
 								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMin().getSpatialId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZp)  && (ccZ != null)) {
 								// set BoundaryCondn Zp element in SpatialParameterPlugin for param
 								BoundaryCondition sbmlBCZp = spplugin.getBoundaryCondition();
 								sbmlBCZp.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().toString());
+								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
 								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMax().getSpatialId());
 							} 
 							if (role == SpeciesContextSpec.ROLE_VelocityX) {

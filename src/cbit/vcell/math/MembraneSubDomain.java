@@ -243,17 +243,20 @@ public CompartmentSubDomain getOutsideCompartment() {
 public String getVCML(int spatialDimension) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCML.MembraneSubDomain+" "+insideCompartment.getName()+" "+outsideCompartment.getName()+" {\n");
+	if (getName() != null) {
+		buffer.append("\t"+VCML.Name+"\t "+getName()+"\n");
+	}
 	if (spatialDimension>=1){
-		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension>=2){
-		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension==3){
-		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.boundaryTypeStringValue()+"\n");
 	}
 	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){
@@ -311,6 +314,14 @@ public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws
 			OdeEquation ode = new OdeEquation((MemVariable)var, null,null);
 			ode.read(tokens);
 			addEquation(ode);
+			continue;
+		}	
+		if (token.equalsIgnoreCase(VCML.Name)){
+			String name = tokens.nextToken();
+			if (!name.equals(getName())) {
+				throw new MathException("Membrane subdomain name in math and MembraneSubdomain object do not match.");
+			}
+			
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.BoundaryXm)){

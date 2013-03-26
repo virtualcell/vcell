@@ -709,38 +709,38 @@ protected void addParameters() throws Exception {
 							// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping
 							// to the value of 'type' from SBML parameter Boundary Condn. 
 							String bcXmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeXm().toString().equals(bcXmType)) {
+							if (!sm.getBoundaryConditionTypeXm().boundaryTypeStringValue().equals(bcXmType)) {
 								sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
 							}
 							// set expression for boundary condition in speciesContextSpec
 							vcSpContextsSpec.getBoundaryXmParameter().setExpression(valueExpr);
 						} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
 							String bcXpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeXp().toString().equals(bcXpType)) {
+							if (!sm.getBoundaryConditionTypeXp().boundaryTypeStringValue().equals(bcXpType)) {
 								sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
 							}
 							vcSpContextsSpec.getBoundaryXpParameter().setExpression(valueExpr);
 						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
 							String bcYmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeYm().toString().equals(bcYmType)) {
+							if (!sm.getBoundaryConditionTypeYm().boundaryTypeStringValue().equals(bcYmType)) {
 								sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
 							}
 							vcSpContextsSpec.getBoundaryYmParameter().setExpression(valueExpr);
 						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
 							String bcYpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeYp().toString().equals(bcYpType)) {
+							if (!sm.getBoundaryConditionTypeYp().boundaryTypeStringValue().equals(bcYpType)) {
 								sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
 							}
 							vcSpContextsSpec.getBoundaryYpParameter().setExpression(valueExpr);
 						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
 							String bcZmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeZm().toString().equals(bcZmType)) {
+							if (!sm.getBoundaryConditionTypeZm().boundaryTypeStringValue().equals(bcZmType)) {
 								sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
 							}
 							vcSpContextsSpec.getBoundaryZmParameter().setExpression(valueExpr);
 						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
 							String bcZpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeZp().toString().equals(bcZpType)) {
+							if (!sm.getBoundaryConditionTypeZp().boundaryTypeStringValue().equals(bcZpType)) {
 								sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
 							}
 							vcSpContextsSpec.getBoundaryZpParameter().setExpression(valueExpr);
@@ -3033,12 +3033,12 @@ protected void addGeometry() {
 
 	// get  listOfDomainTypes via the Geometry object.	
 	ListOfDomainTypes listOfDomainTypes = sbmlGeometry.getListOfDomainTypes();
-	if (listOfDomainTypes == null) {
+	if (listOfDomainTypes == null || listOfDomainTypes.size() < 1) {
 		throw new RuntimeException("Cannot have 0 domainTypes in geometry"); 
 	}
 	// get a listOfDomains via the Geometry object.	
 	ListOfDomains listOfDomains = sbmlGeometry.getListOfDomains();
-	if (listOfDomains == null) {
+	if (listOfDomains == null || listOfDomains.size() < 1) {
 		throw new RuntimeException("Cannot have 0 domains in geometry"); 
 	}
 	
@@ -3069,7 +3069,7 @@ protected void addGeometry() {
 		if (selectedGeometryDefinition == analyticGeometryDefinition) {
 			// get an analyticVol object via the listOfAnalyticVol (from AnalyticGeometry) object.	
 			ListOfAnalyticVolumes listOfAnalyticVols = analyticGeometryDefinition.getListOfAnalyticVolumes();
-			if (listOfAnalyticVols == null) {
+			if (listOfAnalyticVols == null || listOfAnalyticVols.size() < 1) {
 				throw new RuntimeException("Cannot have 0 Analytic volumes in analytic geometry"); 
 			}
 			for (int i = 0; i < analyticGeometryDefinition.getNumAnalyticVolumes(); i++) {
@@ -3315,32 +3315,32 @@ protected void addGeometry() {
 					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
 					if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getSpatialId())) {
 						String bcXmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeXm().toString().equals(bcXmType)) {
+						if (!sm.getBoundaryConditionTypeXm().boundaryTypeStringValue().equals(bcXmType)) {
 							sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
 						}
 					} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
 						String bcXpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeXp().toString().equals(bcXpType)) {
+						if (!sm.getBoundaryConditionTypeXp().boundaryTypeStringValue().equals(bcXpType)) {
 							sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
 						}
 					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
 						String bcYmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeYm().toString().equals(bcYmType)) {
+						if (!sm.getBoundaryConditionTypeYm().boundaryTypeStringValue().equals(bcYmType)) {
 							sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
 						}
 					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
 						String bcYpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeYp().toString().equals(bcYpType)) {
+						if (!sm.getBoundaryConditionTypeYp().boundaryTypeStringValue().equals(bcYpType)) {
 							sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
 						}
 					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
 						String bcZmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeZm().toString().equals(bcZmType)) {
+						if (!sm.getBoundaryConditionTypeZm().boundaryTypeStringValue().equals(bcZmType)) {
 							sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
 						}
 					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
 						String bcZpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeZp().toString().equals(bcZpType)) {
+						if (!sm.getBoundaryConditionTypeZp().boundaryTypeStringValue().equals(bcZpType)) {
 							sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
 						}
 					}

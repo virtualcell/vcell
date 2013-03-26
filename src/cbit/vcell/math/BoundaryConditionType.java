@@ -181,7 +181,7 @@ public String getUnits() {
  * @return int
  */
 public int hashCode() {
-	return toString().hashCode();
+	return boundaryTypeStringValue().hashCode();
 }
 
 
@@ -216,7 +216,7 @@ public boolean isPERIODIC() {
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
-public String toString() {
+public String boundaryTypeStringValue() {
 	if (isDIRICHLET()){
 		return DIRICHLET_STRING;
 	}

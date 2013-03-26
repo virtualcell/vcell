@@ -83,6 +83,10 @@ public class VCML {
 	public final static String BoundaryYp				= "BoundaryYp";
 	public final static String BoundaryZm				= "BoundaryZm";
 	public final static String BoundaryZp				= "BoundaryZp";
+	// For boundary Value/Spec
+	public final static String BoundaryConditionSpec	= "Boundary";			// BoundaryConditionSpec
+	public final static String BoundaryConditionValue	= "BoundaryValue";		// BoundaryConditionValue		
+	
 	public final static String VelocityX				= "VelocityX";
 	public final static String VelocityY				= "VelocityY";
 	public final static String VelocityZ				= "VelocityZ";

@@ -76,12 +76,14 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
@@ -831,6 +833,62 @@ JUMP_CONDITION_END
 */
 private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws ExpressionException, MathException {
 	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
+	// equations for boundaryValues for inner compartment subdomain
+	CompartmentSubDomain innerCompSubDomain = msd.getInsideCompartment();
+	Enumeration<Equation> innercompSubDomEqnsEnum = innerCompSubDomain.getEquations();
+	while (innercompSubDomEqnsEnum.hasMoreElements()) {
+		Equation eqn = innercompSubDomEqnsEnum.nextElement();
+		if (eqn instanceof PdeEquation) {
+			PdeEquation pdeEqn = (PdeEquation)eqn;
+			BoundaryConditionValue boundaryValue = pdeEqn.getBoundaryConditionValue(msd.getName());
+			if (boundaryValue != null) {
+				// check if the type of BoundaryConditionSpec for this membraneSubDomain (msd) in the (inner) compartmentSubDomain is Flux; if not, it cannot be handled.
+				BoundaryConditionSpec bcs = innerCompSubDomain.getBoundaryConditionSpec(msd.getName());
+				if (bcs == null) {
+					throw new MathException("No Boundary type specified for '" + msd.getName() + "' in '" + innerCompSubDomain.getName() + "'.");
+				}
+				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChombSolver) {
+					throw new MathException("Boundary type '" + bcs.getBoundaryConditionType().boundaryTypeStringValue() + "' for compartmentSubDomain '" + innerCompSubDomain.getName() + "' not handled by the chosen solver. Expecting boundary condition of type 'Flux'.");
+				}
+				if (pdeEqn.getVariable().getDomain() == null || pdeEqn.getVariable().getDomain().getName().equals(msd.getInsideCompartment().getName())) {
+					printWriter.println("JUMP_CONDITION_BEGIN " + pdeEqn.getVariable().getName());
+					Expression flux = subsituteExpression(boundaryValue.getBoundaryConditionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+					String infix = replaceVolumeVariable(getSimulationTask(), msd, flux);
+					printWriter.println(bcs.getBoundaryConditionType().boundaryTypeStringValue().toUpperCase()  + " " + msd.getInsideCompartment().getName() + " " + infix + ";");
+					printWriter.println("JUMP_CONDITION_END");
+					printWriter.println();
+				}
+			}
+		}
+	}
+	
+	// equations for boundaryValues for outer compartment subdomain
+	CompartmentSubDomain outerCompSubDomain = msd.getOutsideCompartment();
+	Enumeration<Equation> outerCompSubDomEqnsEnum = outerCompSubDomain.getEquations();
+	while (outerCompSubDomEqnsEnum.hasMoreElements()) {
+		Equation eqn = outerCompSubDomEqnsEnum.nextElement();
+		if (eqn instanceof PdeEquation) {
+			PdeEquation pdeEqn = (PdeEquation)eqn;
+			BoundaryConditionValue boundaryValue = pdeEqn.getBoundaryConditionValue(msd.getName());
+			if (boundaryValue != null) {
+				// check if the type of BoundaryConditionSpec for this membraneSubDomain (msd) in the (inner) compartmentSubDomain is Flux; if not, it cannot be handled.
+				BoundaryConditionSpec bcs = outerCompSubDomain.getBoundaryConditionSpec(msd.getName());
+				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChombSolver) {
+					throw new MathException("Boundary type '" + bcs.getBoundaryConditionType().boundaryTypeStringValue() + "' for compartmentSubDomain '" + outerCompSubDomain.getName() + "' not handled by the chosen solver. Expecting boundary condition of type 'Flux'.");
+				}
+				if (pdeEqn.getVariable().getDomain() == null || pdeEqn.getVariable().getDomain().getName().equals(msd.getOutsideCompartment().getName())) {
+					printWriter.println("JUMP_CONDITION_BEGIN " + pdeEqn.getVariable().getName());
+					Expression flux = subsituteExpression(boundaryValue.getBoundaryConditionExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+					String infix = replaceVolumeVariable(getSimulationTask(), msd, flux);
+					printWriter.println(bcs.getBoundaryConditionType().boundaryTypeStringValue().toUpperCase() + " " + msd.getOutsideCompartment().getName() + " " + infix + ";");
+					printWriter.println("JUMP_CONDITION_END");
+					printWriter.println();
+				}
+			}
+		}
+	}
+
+	
 	while (enum1.hasMoreElements()) {
 		JumpCondition jc = enum1.nextElement();
 		printWriter.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
@@ -839,7 +897,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 		{
 			Expression flux = subsituteExpression(jc.getInFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 			String infix = replaceVolumeVariable(getSimulationTask(), msd, flux);
-			printWriter.println("FLUX " + msd.getInsideCompartment().getName() + " " + infix + ";");
+			printWriter.println(BoundaryConditionType.NEUMANN_STRING.toUpperCase() + " " + msd.getInsideCompartment().getName() + " " + infix + ";");
 		}
 		
 		if (jc.getVariable().getDomain() == null || jc.getVariable().getDomain().getName().equals(msd.getOutsideCompartment().getName())) 
@@ -847,7 +905,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 			// outflux
 			Expression flux = subsituteExpression(jc.getOutFluxExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 			String infix = replaceVolumeVariable(simTask, msd, flux);
-			printWriter.println("FLUX " + msd.getOutsideCompartment().getName() + " " + infix + ";");
+			printWriter.println(BoundaryConditionType.NEUMANN_STRING.toUpperCase() + " "  + msd.getOutsideCompartment().getName() + " " + infix + ";");
 		}		
 		printWriter.println("JUMP_CONDITION_END");
 		printWriter.println();
@@ -1404,8 +1462,8 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 				  		}
 			 		}
 			  	}
-				if (totalNumCompartments == listOfSubDomains.size()
-						|| listOfSubDomains.size() == 0 && simTask.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+				if ( (totalNumCompartments == listOfSubDomains.size()) ||
+					 (listOfSubDomains.size() == 0 && simTask.getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE))) {
 					printWriter.print(" true");
 				} else {
 					printWriter.print(" false");
