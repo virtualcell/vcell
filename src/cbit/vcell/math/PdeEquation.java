@@ -10,14 +10,18 @@
 
 package cbit.vcell.math;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -45,6 +49,47 @@ public class PdeEquation extends Equation {
 	private Expression gradientY = null;
 	private Expression gradientZ = null;
 
+	private ArrayList<BoundaryConditionValue> listOfInternalBoundaryValues = new ArrayList<PdeEquation.BoundaryConditionValue>();
+	
+	public class BoundaryConditionValue implements Matchable, Serializable {
+		
+		private String subDomainName = null;
+		private Expression boundaryConditionExpr = null;
+
+		public BoundaryConditionValue(String name, Expression expression) {
+			super();
+			this.subDomainName = name;
+			this.boundaryConditionExpr = expression;
+		}
+		
+		public String getSubdomainName() {
+			return subDomainName;
+		}
+		
+		public Expression getBoundaryConditionExpression() {
+			return boundaryConditionExpr;
+		}
+		
+		public boolean compareEqual(Matchable obj) {
+			if (obj instanceof BoundaryConditionValue){
+				BoundaryConditionValue bcv = (BoundaryConditionValue)obj;
+				if(!Compare.isEqual(subDomainName,bcv.subDomainName))  {
+					return false;
+				}
+				if (!Compare.isEqual(getBoundaryConditionExpression(), bcv.getBoundaryConditionExpression())){
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		public String getVCML() {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("\t\t"+VCML.BoundaryConditionValue+"\t"+getSubdomainName()+"\t"+getBoundaryConditionExpression().infix()+";\n");
+			return buffer.toString();
+		}
+	}
 /**
  * This method was created by a SmartGuide.
  * @param volVar cbit.vcell.math.VolVariable
@@ -142,6 +187,12 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqualOrNull(gradientZ,equ.gradientZ)){
 		return false;
 	}
+	
+	// boundaryConditionValues
+	if (!Compare.isEqualOrNull(listOfInternalBoundaryValues, equ.listOfInternalBoundaryValues)) { 
+		return false;
+	}
+
 	return true;
 }
 
@@ -232,6 +283,65 @@ public Expression getDiffusionExpression() {
 	return diffusionExp;
 }
 
+
+public BoundaryConditionValue getBoundaryConditionValue(int index) {
+	if (index < listOfInternalBoundaryValues.size())
+		return (BoundaryConditionValue)listOfInternalBoundaryValues.get(index);
+	return null;
+}
+
+
+/**
+ * Get a boundaryConditionValue from list by boundaryConditionValue's name.
+ * @return boundaryConditionValue
+ * @param varName java.lang.String
+ */
+public BoundaryConditionValue getBoundaryConditionValue(String boundaryCondnValueName) {
+	for (BoundaryConditionValue bcv : listOfInternalBoundaryValues){
+		if (bcv.getSubdomainName().equals(boundaryCondnValueName)) {
+			return bcv;
+		}
+	}
+	return null;
+}
+
+
+/**
+ * Return the reference of the boundaryConditionValues list.
+ * @return java.util.Vector
+ */
+public List<BoundaryConditionValue> getBoundaryconditionValues() {
+	return Collections.unmodifiableList(listOfInternalBoundaryValues);
+}
+
+/**
+ * Remove a BoundaryConditionValue from list by it's index.
+ * @param index int
+ */
+public void removeBoundaryConditionValue(int index) {
+	listOfInternalBoundaryValues.remove(index);
+}
+
+
+/**
+ * Remove a BoundaryConditionValue from list by it's name in the list.
+ * @param subDomainName java.lang.String
+ */
+public void removeBoundaryConditionValue(String bcValueName) {
+	for (BoundaryConditionValue bcs : listOfInternalBoundaryValues){
+		if(bcs.getSubdomainName().equals(bcValueName)){
+			listOfInternalBoundaryValues.remove(bcs);
+		}
+	}	
+}
+
+
+/**
+ * empty theBoundaryConditionValue list
+ */
+public void removeBoundaryConditionValues() {
+	listOfInternalBoundaryValues.clear();
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -354,6 +464,15 @@ public String getVCML() {
 	if (boundaryZp != null){
 		buffer.append("\t\t"+VCML.BoundaryZp+" "+boundaryZp.infix()+";\n");
 	}	
+	
+	// BoundaryconditionValues
+	if (getBoundaryconditionValues().size() > 0) {
+		for (BoundaryConditionValue bcv : getBoundaryconditionValues()) {
+			buffer.append(bcv.getVCML());
+		}
+		buffer.append("\n");
+	}
+
 	if (velocityX != null){
 		buffer.append("\t\t"+VCML.VelocityX+"\t "+velocityX.infix()+";\n");
 	}	
@@ -437,7 +556,7 @@ public Expression getVelocityZ() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void read(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
+public void read(CommentStringTokenizer tokens) throws MathFormatException, MathException, ExpressionException {
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
@@ -489,7 +608,17 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
 			boundaryZp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
+		}
+		
+		// boundaryConditionValues
+		if (token.equalsIgnoreCase(VCML.BoundaryConditionValue)){
+			String name = tokens.nextToken();
+			Expression expression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			BoundaryConditionValue bcv = new BoundaryConditionValue(name, expression);
+			addBoundaryConditionValue(bcv);
+			continue;
 		}			
+
 		if (token.equalsIgnoreCase(VCML.VelocityX)){
 			velocityX = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 			continue;
@@ -517,6 +646,13 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 		throw new MathFormatException("unexpected identifier "+token);
 	}	
 		
+}
+
+
+public void addBoundaryConditionValue(BoundaryConditionValue newBoundaryConditionValue) throws MathException {
+	if(getBoundaryConditionValue(newBoundaryConditionValue.getSubdomainName())!=null)
+		throw new MathException("BoundaryCondition value for : '"+ newBoundaryConditionValue.getSubdomainName()+"' already exists");
+	listOfInternalBoundaryValues.add(newBoundaryConditionValue);
 }
 
 
@@ -708,14 +844,31 @@ public boolean isDummy(MathSymbolTable simSymbolTable, CompartmentSubDomain this
 			  			MembraneSubDomain memSubDomain = (MembraneSubDomain)subDomain;
 				  		if (memSubDomain.getInsideCompartment() == thisCompartment) {
 				  			JumpCondition jump = memSubDomain.getJumpCondition(volVar);
-				  			if (!testZero(simSymbolTable, jump.getInFluxExpression())) {
+				  			if (jump != null && !testZero(simSymbolTable, jump.getInFluxExpression())) {
 				  				return false; // non zero jump condition
 				  			}
 				  		} else 	if (memSubDomain.getOutsideCompartment() == thisCompartment) {
 				  			JumpCondition jump = memSubDomain.getJumpCondition(volVar);
-				  			if (!testZero(simSymbolTable, jump.getOutFluxExpression())) {
+				  			if (jump != null && !testZero(simSymbolTable, jump.getOutFluxExpression())) {
 				  				return false; // non zero jump condition
 				  			}
+				  		}
+				  		// check if BoundaryConditionValue is defined for var on membrane
+				  		try { 
+					  		BoundaryConditionValue boundaryValue = getBoundaryConditionValue(memSubDomain.getName());
+							if (boundaryValue != null) {
+								Expression boundaryValExpr = boundaryValue.getBoundaryConditionExpression();
+								BoundaryConditionSpec boundarySpec = thisCompartment.getBoundaryConditionSpec(memSubDomain.getName());
+								if (boundarySpec != null) {
+									boolean bZeroFlux = boundarySpec.getBoundaryConditionType().isNEUMANN() && testZero(simSymbolTable, boundaryValExpr);
+									boolean bUniformDirichlet = boundarySpec.getBoundaryConditionType().isDIRICHLET() && testZero(simSymbolTable, Expression.add(boundaryValExpr, Expression.negate(getInitialExpression())));
+									if (!bZeroFlux && !bUniformDirichlet) {
+										return false;
+									}
+								}
+					  		}
+				  		} catch (ExpressionException e) {
+				  			e.printStackTrace(System.out);
 				  		}
 			  		}
 		  		}
@@ -781,8 +934,8 @@ public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws Mat
 			JumpCondition jump = membranes[i].getJumpCondition((VolVariable)getVariable());
 			if (jump != null) {
 				jump.checkValid(mathDesc,membranes[i]);
-			}
-		}
+			} 
+		}		
 	} else if (getVariable() instanceof MemVariable) {
 		if (getVelocityX() != null 
 			|| getVelocityY() != null

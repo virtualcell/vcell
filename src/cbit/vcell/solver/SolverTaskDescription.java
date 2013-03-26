@@ -159,12 +159,12 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 public SolverTaskDescription(Simulation simulation) {
 	super();
 	addPropertyChangeListener(this);
+	setSimulation(simulation);
 	try {
 		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
-	setSimulation(simulation);
 }
 
 /**

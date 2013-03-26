@@ -282,6 +282,12 @@ public class XMLTags {
     public final static String BoundaryTypeAttrValueNeumann = "Neumann";
     public final static String BoundaryTypeAttrValueDirichlet = "Dirichlet";
     public final static String BoundaryExpressionTag = "BoundaryExpression";
+    // tags for boundaryConditionValue and BoundaryConditionSpec to be used in CompartmentSubDomain and PDEquation.
+    public final static String BoundaryConditionValueTag = "BoundaryConditionValue";
+    public final static String BoundaryValueExpressionTag = "Value";
+    public final static String BoundaryConditionSpecTag = "BoundaryConditionSpec";
+    public final static String BoundarySubdomainNameTag = "BoundarySubdomainName";
+    
     public final static String BoundariesTag = "Boundaries";
     public final static String PdeEquationTag = "PdeEquation";
     public final static String OdeEquationTag = "OdeEquation";

@@ -166,9 +166,11 @@ import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
@@ -563,6 +565,21 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 			throw new XmlParseException("Unknown BoundaryConditionType: " + tempelement.getAttributeValue(XMLTags.BoundaryAttrTag));
 		}
 	}
+	
+	//process BoundaryConditionSpecs
+	iterator = param.getChildren( XMLTags.BoundaryConditionSpecTag, vcNamespace ).iterator();
+	if(iterator != null) {
+		while (iterator.hasNext()) {
+			Element tempelement = (Element)iterator.next();
+			try {
+				subDomain.addBoundaryConditionSpec( getBoundaryConditionSpec(tempelement) );
+			} catch (MathException e) {
+				e.printStackTrace();
+				throw new XmlParseException("A MathException was fired when adding a BoundaryConditionSpec to the compartmentSubDomain " + name, e);
+			}
+		}
+	}
+
 
 	//process OdeEquations
 	iterator = param.getChildren( XMLTags.OdeEquationTag, vcNamespace ).iterator();
@@ -3509,6 +3526,12 @@ private MembraneRegionVariable getMembraneRegionVariable(Element param) {
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
 private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
+
+	// no need to do anything with the 'Name' attribute : constructor of MembraneSubDomain creates name from inside/outside compartmentSubDomains.
+//	String msdName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+//	if ( msdName != null) {
+//	}
+
 	//get compartmentSubDomain references
 	//inside
 	String name = unMangle( param.getAttributeValue(XMLTags.InsideCompartmentTag) );
@@ -4098,6 +4121,23 @@ private PdeEquation getPdeEquation(Element param, MathDescription mathDesc) thro
                 pdeEquation.setBoundaryZp(newexp);
             }
         }
+
+        //process BoundaryConditionValues
+        {
+	    	Iterator<Element> iterator = param.getChildren( XMLTags.BoundaryConditionValueTag, vcNamespace ).iterator();
+	    	if(iterator != null) {
+	    		while (iterator.hasNext()) {
+	    			tempelement = (Element)iterator.next();
+	    			try {
+	    				pdeEquation.addBoundaryConditionValue( getBoundaryConditionValue(tempelement, pdeEquation) );
+	    			} catch (MathException e) {
+	    				e.printStackTrace();
+	    				throw new XmlParseException("A MathException was fired when adding a BoundaryConditionValue to the compartmentSubDomain " + name, e);
+	    			}
+	    		}
+	    	}
+    	}
+
         {
 	        //add Velocity
 	        Element velocityE = param.getChild(XMLTags.VelocityTag, vcNamespace);
@@ -5821,6 +5861,32 @@ private VarIniCondition getVarIniCount(Element param, MathDescription md) throws
 	} catch (Exception e){e.printStackTrace();}
 	
 	return null;	
+}
+
+
+private BoundaryConditionSpec getBoundaryConditionSpec(Element param) throws XmlParseException, MathException {
+	//retrieve values
+	String boundarySubdomainName = unMangle( param.getAttributeValue(XMLTags.BoundarySubdomainNameTag) );
+	String boundarySubdomainType = unMangle( param.getAttributeValue(XMLTags.BoundaryTypeTag) );
+
+	if (boundarySubdomainName != null && boundarySubdomainType != null) {
+		BoundaryConditionSpec bcs = new BoundaryConditionSpec(boundarySubdomainName, new BoundaryConditionType(boundarySubdomainType));
+		return bcs;		
+	}
+	return null;
+}
+
+
+private BoundaryConditionValue getBoundaryConditionValue(Element param, PdeEquation pde) throws XmlParseException, MathException {
+	//retrieve values
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	Expression valueExpr = unMangleExpression( param.getAttributeValue(XMLTags.BoundaryValueExpressionTag) );
+
+	if (name != null && valueExpr != null) { 
+		BoundaryConditionValue bcv = pde.new BoundaryConditionValue(name, valueExpr);
+		return bcv;		
+	}
+	return null;
 }
 
 private VarIniCondition getVarIniPoissonExpectedCount(Element param, MathDescription md) throws XmlParseException, MathException, ExpressionException

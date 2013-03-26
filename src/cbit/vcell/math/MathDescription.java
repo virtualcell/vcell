@@ -42,6 +42,8 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.MathCompareResults.Decision;
+import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -1918,12 +1920,12 @@ public boolean isSpatialStoch() {
 	}
 	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()) {
-		Variable var = enum1.nextElement();
+		Variable var = enum1.nextElement();		
 		if (!(var instanceof ParticleVariable || var instanceof Constant || var instanceof Function)) {
 			return false;
 		}
-	}
-	return true;	
+	} 
+	return true;
 }
 
 public boolean isValid() {
@@ -2425,10 +2427,18 @@ public void gatherIssues(List<Issue> issueList) {
 							if (subDomain2 instanceof MembraneSubDomain){
 								MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 								if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
-									if (membraneSubDomain.getJumpCondition(volVar)==null){
+									JumpCondition jumpCondition = membraneSubDomain.getJumpCondition(volVar);
+									BoundaryConditionValue boundaryValue = ((PdeEquation)equ).getBoundaryConditionValue(membraneSubDomain.getName());
+									// if PDE variable does not have jump condition OR boundaryValue (neither or both are not allowed), its an error.  
+									if ((jumpCondition==null && boundaryValue == null) || (jumpCondition != null && boundaryValue != null)){
 										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
 											VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
 										issueList.add(issue);
+									}
+									if (boundaryValue != null && (subDomain.getBoundaryConditionSpec(membraneSubDomain.getName()) == null)) {
+										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+												VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10A, varName, subDomain.getName(), membraneSubDomain.getName(), membraneSubDomain.getName(), subDomain.getName()), Issue.SEVERITY_ERROR);
+											issueList.add(issue);
 									}
 								}
 							}
@@ -3378,6 +3388,21 @@ public boolean hasRegionSizeFunctions() {
 
 public final PostProcessingBlock getPostProcessingBlock() {
 	return postProcessingBlock;
+}
+
+
+public boolean hasDirichletAtMembrane() {
+	for (SubDomain subDomain : subDomainList) {
+		if (subDomain instanceof CompartmentSubDomain) {
+			List<BoundaryConditionSpec> bcsList = ((CompartmentSubDomain)subDomain).getBoundaryconditionSpecs();
+			for (BoundaryConditionSpec boundaryConditionSpec : bcsList) {
+				if (boundaryConditionSpec.getBoundaryConditionType().isDIRICHLET()) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 }

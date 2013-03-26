@@ -99,12 +99,12 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		FeatureMapping fm = (FeatureMapping)structureMapping;
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");
-		buffer.append("'"+fm.getBoundaryConditionTypeXm().toString() + "',");
-		buffer.append("'"+fm.getBoundaryConditionTypeXp().toString() + "',");
-		buffer.append("'"+fm.getBoundaryConditionTypeYm().toString() + "',");
-		buffer.append("'"+fm.getBoundaryConditionTypeYp().toString() + "',");
-		buffer.append("'"+fm.getBoundaryConditionTypeZm().toString() + "',");
-		buffer.append("'"+fm.getBoundaryConditionTypeZp().toString() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeXm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeXp().boundaryTypeStringValue() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeYm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeYp().boundaryTypeStringValue() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeZm().boundaryTypeStringValue() + "',");
+		buffer.append("'"+fm.getBoundaryConditionTypeZp().boundaryTypeStringValue() + "',");
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");

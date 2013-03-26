@@ -49,7 +49,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_VolumeRegionEquations("Volume Region Equations"),
 		Feature_RegionSizeFunctions("Region Size Functions"),
 		Feature_GradientSourceTerm("Gradient Source Term"),
-		Feature_PostProcessingBlock("Post Processing");
+		Feature_PostProcessingBlock("Post Processing"),
+		Feature_DirichletAtMembraneBoundary("Dirichlet (Value) Boundary Condition at Membrane");
 				
 		private String name;
 		private SolverFeature(String name) {
@@ -65,8 +66,11 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 	public static SolverFeature[] OdeFastSystemFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
 	};
-	public static SolverFeature[] PdeFeatureSet = new SolverFeature[] {
+	public static SolverFeature[] PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeature[] {
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic
+	};
+	public static SolverFeature[] PdeFeatureSetWithDirichletAtMembrane = new SolverFeature[] {
+		SolverFeature.Feature_DirichletAtMembraneBoundary
 	};
 	public static SolverFeature[] PdeFastSystemFeatureSet = new SolverFeature[] {
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
@@ -1017,6 +1021,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 	case TYPE_CHOMBO:
 		featureSet.add(SolverFeature.Feature_Spatial);
 		featureSet.add(SolverFeature.Feature_Deterministic);
+		featureSet.add(SolverFeature.Feature_DirichletAtMembraneBoundary);
 		break;
 	}
 	return featureSet;
@@ -1031,6 +1036,8 @@ public static SolverDescription getDefaultSolverDescription(Simulation simulatio
 			return SolverDescription.Smoldyn;
 		} else if (mathDescription.hasFastSystems()) {
 			return SolverDescription.FiniteVolumeStandalone;
+		} else if (mathDescription.hasDirichletAtMembrane()) {
+			return SolverDescription.Chombo;
 		} else {
 			return SolverDescription.SundialsPDE;
 		}
@@ -1053,8 +1060,10 @@ public static SolverDescription[] getSupportingSolverDescriptions(MathDescriptio
 		} else {
 			if (mathDescription.hasFastSystems()) { // PDE with FastSystem
 				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFastSystemFeatureSet);
+			} else if (mathDescription.hasDirichletAtMembrane()) { 
+				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithDirichletAtMembrane);
 			} else {
-				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSet);
+				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithoutDirichletAtMembrane);
 			}
 		}
 	} else if (mathDescription.isNonSpatialStoch()) {

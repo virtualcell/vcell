@@ -296,6 +296,8 @@ public boolean hasUnappliedChanges() {
 private static Set<String> getAutoCompletionWords() {
 	if (autoCompletionWords.size() == 0) {
 		autoCompletionWords.add(VCML.BoundaryXm);
+		autoCompletionWords.add(VCML.BoundaryConditionSpec);
+		autoCompletionWords.add(VCML.BoundaryConditionValue);
 		autoCompletionWords.add(VCML.CompartmentSubDomain);
 		autoCompletionWords.add(VCML.Constant);
 		autoCompletionWords.add(VCML.Diffusion);
@@ -315,6 +317,7 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.MembraneRate);
 		autoCompletionWords.add(VCML.MembraneRegionVariable);
 		autoCompletionWords.add(VCML.MembraneSubDomain);
+		autoCompletionWords.add(VCML.Name);		// for 'name' of MembraneSubdomain
 		autoCompletionWords.add(VCML.MembraneVariable);
 		autoCompletionWords.add(getTemplate_OdeEquation());
 		autoCompletionWords.add(VCML.OutFlux);
@@ -400,11 +403,13 @@ private static String getTemplate_PdeEquation() {
 	return VCML.PdeEquation + " varName " + VCML.BeginBlock + "\n"
 		+ "\t\t" + VCML.BoundaryXm + " 0.0;\n"
 		+ "\t\t" + VCML.BoundaryXp + " 0.0;\n"
+		+ "\n\t\t" + VCML.BoundaryConditionValue + "\tMembraneSubdomainName \t0.0;" + "\n\n" 
 		+ "\t\t" + VCML.Rate + " 0.0;\n" 
 		+ "\t\t" + VCML.Diffusion + " 0.0;\n" 
 		+ "\t\t" + VCML.Initial + " 0.0;\n"
 		+ "\t" + VCML.EndBlock + "\n";
 }
+
 private static String getTemplate_JumpCondition() {	
 	return VCML.JumpCondition + " varName " + VCML.BeginBlock + "\n" 
 		+ "\t\t" + VCML.InFlux + " 0.0;\n" 
@@ -496,6 +501,8 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.BoundaryYp);
 		keywords.add(VCML.BoundaryZm);
 		keywords.add(VCML.BoundaryZp);
+		keywords.add(VCML.BoundaryConditionSpec);
+		keywords.add(VCML.BoundaryConditionValue);
 		keywords.add(VCML.CompartmentSubDomain);
 		keywords.add(VCML.Constant);
 		keywords.add(VCML.Diffusion);
@@ -517,6 +524,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.MembraneRegionEquation);
 		keywords.add(VCML.MembraneRegionVariable);
 		keywords.add(VCML.MembraneSubDomain);
+		keywords.add(VCML.Name);
 		keywords.add(VCML.MembraneVariable);
 		keywords.add(VCML.OdeEquation);
 		keywords.add(VCML.OutFlux);
