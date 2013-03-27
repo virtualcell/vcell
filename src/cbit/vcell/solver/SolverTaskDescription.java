@@ -73,12 +73,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 public SolverTaskDescription(Simulation simulation, CommentStringTokenizer tokenizer) throws DataAccessException {
 	super();
 	addPropertyChangeListener(this);
+	setSimulation(simulation);
 	try {
 		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
-	setSimulation(simulation);
 	readVCML(tokenizer);
 }
 
@@ -92,6 +92,20 @@ public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccess
 	readVCML(tokenizer);
 }
 
+/**
+ * One of three ways to construct a SolverTaskDescription.  This constructor
+ * is used when creating a new SolverTaskDescription.
+ */
+public SolverTaskDescription(Simulation simulation) {
+	super();
+	addPropertyChangeListener(this);
+	setSimulation(simulation);
+	try {
+		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
+	}catch (java.beans.PropertyVetoException e){
+		e.printStackTrace(System.out);
+	}
+}
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -152,20 +166,6 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-/**
- * One of three ways to construct a SolverTaskDescription.  This constructor
- * is used when creating a new SolverTaskDescription.
- */
-public SolverTaskDescription(Simulation simulation) {
-	super();
-	addPropertyChangeListener(this);
-	setSimulation(simulation);
-	try {
-		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-	}
-}
 
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
