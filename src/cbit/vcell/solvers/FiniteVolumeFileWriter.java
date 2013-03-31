@@ -134,7 +134,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
 	private int psfFieldIndex = -1;
-	private boolean bChombSolver = false;
+	private boolean bChomboSolver = false;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -241,7 +241,7 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry g
 	super(pw, simTask, arg_bMessaging);
 	resampledGeometry = geo;
 	userDirectory = dir;
-	bChombSolver = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver();
+	bChomboSolver = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver();
 }
 
 private Expression subsituteExpression(Expression exp, VariableDomain variableDomain) throws ExpressionException  {
@@ -281,7 +281,7 @@ public void write(String[] parameterNames) throws Exception {
 	Variable originalVars[] = null;
 	Simulation simulation = simTask.getSimulation();
 	MathDescription mathDesc = simulation.getMathDescription();
-	if (bChombSolver)
+	if (bChomboSolver)
 	{
 		writeJMSParamters();	
 		writeSimulationParamters();	
@@ -601,10 +601,14 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 	Enumeration<Equation> enum_equ = volSubDomain.getEquations();
 	while (enum_equ.hasMoreElements()){
 		Equation equation = enum_equ.nextElement();
-		if (equation instanceof VolumeRegionEquation){
-			writeCompartmentRegion_VarContext_Equation(volSubDomain, (VolumeRegionEquation)equation);
-		} else {
-			writeCompartment_VarContext_Equation(volSubDomain, equation);
+		// for chombo solver, only write equations for variables that are defined in this compartment
+		if (!bChomboSolver || equation.getVariable().getDomain().getName().equals(volSubDomain.getName()))
+		{
+			if (equation instanceof VolumeRegionEquation){
+				writeCompartmentRegion_VarContext_Equation(volSubDomain, (VolumeRegionEquation)equation);
+			} else {
+				writeCompartment_VarContext_Equation(volSubDomain, equation);
+			}
 		}
 		
 		if (equation instanceof PdeEquation){
@@ -616,11 +620,14 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 	// this is needed to encode possible jump conditions for PDE's defined in adjacent subDomains.
 	//    THIS WILL BE NO LONGER NEEDED WHEN JUMP CONDITIONS ARE STORED WITH MEMBRANES (OR WITH THE VOLUME VAR CONTEXT THAT DEFINES THE PDE).
 	//
-	for (int i = 0; i < pdeVolVariableList.size(); i++){
-		VolVariable volVar = pdeVolVariableList.elementAt(i);
-		boolean bSteady = simulation.getMathDescription().isPdeSteady(volVar);
-		PdeEquation dummyPdeEquation = new PdeEquation(volVar, bSteady, new Expression(0.0), new Expression(0.0), new Expression(0.0));
-		writeCompartment_VarContext_Equation(volSubDomain, dummyPdeEquation);
+	if (!bChomboSolver)
+	{
+		for (int i = 0; i < pdeVolVariableList.size(); i++){
+			VolVariable volVar = pdeVolVariableList.elementAt(i);
+			boolean bSteady = simulation.getMathDescription().isPdeSteady(volVar);
+			PdeEquation dummyPdeEquation = new PdeEquation(volVar, bSteady, new Expression(0.0), new Expression(0.0), new Expression(0.0));
+			writeCompartment_VarContext_Equation(volSubDomain, dummyPdeEquation);
+		}
 	}
 }
 
@@ -642,7 +649,7 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 	printWriter.println(FVInputFileKeyword.INITIAL + " " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_VOLUME);
 	printWriter.println(FVInputFileKeyword.RATE + " " + rateExpression.infix() + ";");
-	if (bChombSolver && equation.getExactSolution() != null)
+	if (bChomboSolver && equation.getExactSolution() != null)
 	{
 		printWriter.println(FVInputFileKeyword.EXACT + " " + subsituteExpression(equation.getExactSolution(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 	}
@@ -847,7 +854,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 				if (bcs == null) {
 					throw new MathException("No Boundary type specified for '" + msd.getName() + "' in '" + innerCompSubDomain.getName() + "'.");
 				}
-				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChombSolver) {
+				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChomboSolver) {
 					throw new MathException("Boundary type '" + bcs.getBoundaryConditionType().boundaryTypeStringValue() + "' for compartmentSubDomain '" + innerCompSubDomain.getName() + "' not handled by the chosen solver. Expecting boundary condition of type 'Flux'.");
 				}
 				if (pdeEqn.getVariable().getDomain() == null || pdeEqn.getVariable().getDomain().getName().equals(msd.getInsideCompartment().getName())) {
@@ -873,7 +880,7 @@ private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Expressi
 			if (boundaryValue != null) {
 				// check if the type of BoundaryConditionSpec for this membraneSubDomain (msd) in the (inner) compartmentSubDomain is Flux; if not, it cannot be handled.
 				BoundaryConditionSpec bcs = outerCompSubDomain.getBoundaryConditionSpec(msd.getName());
-				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChombSolver) {
+				if (bcs != null && !bcs.getBoundaryConditionType().compareEqual(BoundaryConditionType.getNEUMANN()) && !bChomboSolver) {
 					throw new MathException("Boundary type '" + bcs.getBoundaryConditionType().boundaryTypeStringValue() + "' for compartmentSubDomain '" + outerCompSubDomain.getName() + "' not handled by the chosen solver. Expecting boundary condition of type 'Flux'.");
 				}
 				if (pdeEqn.getVariable().getDomain() == null || pdeEqn.getVariable().getDomain().getName().equals(msd.getOutsideCompartment().getName())) {
@@ -1430,6 +1437,10 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		if (vars[i] instanceof VolumeRandomVariable || vars[i] instanceof MembraneRandomVariable) {
 			rvList.add((RandomVariable)vars[i]);		
 		} else if (vars[i] instanceof VolVariable) {
+			if (bChomboSolver && domainName == null)
+			{
+				throw new MathException(SolverDescription.Chombo.getDisplayLabel() + " requires all variables are defined in a domain");
+			}
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
 				boolean hasTimeVaryingDiffusionOrAdvection = simSymbolTable.hasTimeVaryingDiffusionOrAdvection(volVar);
@@ -1484,6 +1495,10 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		} else if (vars[i] instanceof VolumeRegionVariable) {
 			printWriter.println("VOLUME_REGION " + varName + " " + domainName);
 		} else if (vars[i] instanceof MemVariable) {
+			if (bChomboSolver && domainName == null)
+			{
+				throw new MathException(SolverDescription.Chombo.getDisplayLabel() + " requires all variables are defined in a domain");
+			}
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
 				printWriter.println("MEMBRANE_PDE " + varName + " " + domainName + " " + simSymbolTable.hasTimeVaryingDiffusionOrAdvection(memVar));
@@ -1681,7 +1696,7 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 	printWriter.println("INITIAL " + subsituteExpression(equation.getInitialExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE).infix() + ";");
 	Expression rateExpression = subsituteExpression(equation.getRateExpression(), VariableDomain.VARIABLEDOMAIN_MEMBRANE);
 	printWriter.println("RATE " + replaceVolumeVariable(simTask, memSubDomain, rateExpression) + ";");
-	if (bChombSolver && equation.getExactSolution() != null)
+	if (bChomboSolver && equation.getExactSolution() != null)
 	{
 		printWriter.println(FVInputFileKeyword.EXACT + " " + subsituteExpression(equation.getExactSolution(), VariableDomain.VARIABLEDOMAIN_VOLUME).infix() + ";");
 	}
@@ -1841,12 +1856,12 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	}
 	
 	private void writeChomboSpec() throws ExpressionException, SolverException, PropertyVetoException, ClassNotFoundException, IOException, GeometryException, ImageException {
-		Simulation simulation = getSimulationTask().getSimulation();
-		SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
-		if (!bChombSolver) {
+		if (!bChomboSolver) {
 			return;
 		}
 		
+		Simulation simulation = getSimulationTask().getSimulation();
+		SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
 		ChomboSolverSpec chomboSolverSpec = solverTaskDescription.getChomboSolverSpec();
 		GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_BEGIN);
