@@ -5,5 +5,7 @@
 	<classpathentry kind="lib" path="lib/org.restlet.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/VCell_5.3"/>
 	<classpathentry kind="lib" path="lib/json-20090211.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.vcell.simtool2"/>
+	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="lib/gson-2.2.2-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

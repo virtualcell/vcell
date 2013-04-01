@@ -1,5 +1,6 @@
 package org.vcell.rest.server;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -15,14 +16,31 @@ import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
+import org.restlet.engine.adapter.HttpRequest;
+import org.restlet.engine.connector.HttpInboundRequest;
 import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
 import org.restlet.security.MapVerifier;
 import org.restlet.util.Series;
+import org.vcell.simtool2.data.SimsSearchResponse;
+import org.vcell.simtool2.data.SimHolder;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
+
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
+import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class SimApplication extends Application {
 	public static final String ROOT_URI = "file:///c:/temp/";  
@@ -87,19 +105,79 @@ public class SimApplication extends Application {
     	};  
     	
     	Restlet allsims = new Restlet(getContext()){
+    		private SimulationJobStatus[] getSimulationJobStatus() throws DataAccessException, SQLException{
+    			if (simulationDatabase!=null){
+    				return simulationDatabase.getActiveJobs();
+    			}else{
+    				return new SimulationJobStatus[] { 
+    						new SimulationJobStatus(VCellServerID.getServerID("JIMS"),
+									new VCSimulationIdentifier(new KeyValue("123"),new User("schaff",new KeyValue("222"))), 
+									0, // jobIndex
+									new Date(), // submission date
+									SchedulerStatus.RUNNING,
+									0, // taskID
+									SimulationMessage.MESSAGE_JOB_RUNNING_UNKNOWN,
+									new SimulationQueueEntryStatus(new Date(), 1, SimulationQueueID.QUEUE_ID_SIMULATIONJOB),
+									new SimulationExecutionStatus(new Date(), "myhost", new Date(), null, false, null)),
+    						new SimulationJobStatus(VCellServerID.getServerID("JIMS"),
+									new VCSimulationIdentifier(new KeyValue("124"),new User("schaff",new KeyValue("222"))), 
+									0, // jobIndex
+									new Date(), // submission date
+									SchedulerStatus.QUEUED,
+									0, // taskID
+									SimulationMessage.MESSAGE_JOB_RUNNING_UNKNOWN,
+									new SimulationQueueEntryStatus(new Date(), 1, SimulationQueueID.QUEUE_ID_SIMULATIONJOB),
+									new SimulationExecutionStatus(new Date(), "myhost", new Date(), null, false, null)) 
+    				};
+    			}
+    		}
+    		
     	    @Override  
     	    public void handle(Request request, Response response) {  
     	        // Print the user name of the requested orders  
     	    	try {
-    	    		SimulationJobStatus[] simJobStatusList = simulationDatabase.getActiveJobs();
-    	    		final String FIELD_ID 			= "ID";
-    	    		final String FIELD_USER 		= "User";
-    	    		final String FIELD_JOBID 		= "Job ID";
-    	    		final String FIELD_STATUS 		= "Status";
-    	    		final String FIELD_STARTDATE 	= "Start Date";
+    	    		SimulationJobStatus[] simJobStatusList = getSimulationJobStatus();
+    	    		Gson gson = new Gson();
+    	    		SimsSearchResponse simsResponse = new SimsSearchResponse();
+    	    		simsResponse.query = ""+request.getResourceRef();
+    	    		simsResponse.results = new ArrayList<SimHolder>();
+    	    		for (SimulationJobStatus simJobStatus : simJobStatusList) {
+						SimHolder holder = new SimHolder();
+						holder.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
+						holder.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
+						holder.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
+						holder.jobIndex = simJobStatus.getJobIndex();
+						holder.taskId = simJobStatus.getTaskID();
+						SimulationExecutionStatus simulationExecutionStatus = simJobStatus.getSimulationExecutionStatus();
+						if (simulationExecutionStatus!=null && simulationExecutionStatus.getHtcJobID()!=null){
+							holder.htcJobId = simulationExecutionStatus.getHtcJobID().toDatabase();
+						}
+						holder.status = simJobStatus.getSchedulerStatus().getDescription();
+						if (simJobStatus.getStartDate()!=null){
+							holder.startdate = simJobStatus.getStartDate().getTime();
+						}
+						if (simJobStatus.getSimulationMessage()!=null){
+							holder.message = simJobStatus.getSimulationMessage().getDisplayMessage();
+						}
+						if (simJobStatus.getServerID()!=null){
+							holder.site = simJobStatus.getServerID().toCamelCase();
+						}
+						if (simJobStatus.getComputeHost()!=null){
+							holder.computeHost = simJobStatus.getComputeHost();
+						}
+						simsResponse.results.add(holder);
+					}
+    	    		final String FIELD_SIMKEY		= "SimKey";
+    	    		final String FIELD_USERNAME		= "UserName";
+    	    		final String FIELD_USERKEY		= "UserKey";
     	    		final String FIELD_JOBINDEX 	= "Job Index";
     	    		final String FIELD_TASKID 		= "Task ID";
+    	    		final String FIELD_HTCJOBID		= "HTC JobID";
+    	    		final String FIELD_STATUS 		= "Status";
+    	    		final String FIELD_STARTDATE 	= "Start Date";
     	    		final String FIELD_MESSAGE 		= "Message";
+    	    		final String FIELD_SITE 		= "Site";
+    	    		final String FIELD_COMPUTEHOST	= "ComputeHost";
 //    	    		Series headers = (Series)request.getAttributes().get("org.restlet.http.headers");
 //    	    		String[] acceptsArray = headers.getValuesArray("Accept");
 //    	    		List<Preference<MediaType>> mediaTypes = request.getClientInfo().getAcceptedMediaTypes();
@@ -111,22 +189,8 @@ public class SimApplication extends Application {
     	    		MediaType preferredMediaType = request.getClientInfo().getPreferredMediaType(supportedMediaTypes);
     	    		
     	    		if (MediaType.APPLICATION_JSON.equals(preferredMediaType)){
-    	    			JSONArray array = new JSONArray();
-	    	    		for (SimulationJobStatus simJobStatus : simJobStatusList) {
-	    	    			JSONObject obj = new JSONObject();
-	    	    			obj.put(FIELD_ID, 			simJobStatus.getVCSimulationIdentifier().getID());
-	    	    			obj.put(FIELD_USER, 		simJobStatus.getVCSimulationIdentifier().getOwner().getName());
-	    	    			obj.put(FIELD_JOBID, 		simJobStatus.getSimulationExecutionStatus().getHtcJobID());
-	    	    			obj.put(FIELD_STATUS, 		simJobStatus.getSchedulerStatus().getDescription());
-	    	    			obj.put(FIELD_STARTDATE, 	simJobStatus.getStartDate());
-	    	    			obj.put(FIELD_JOBINDEX, 	simJobStatus.getJobIndex());
-	    	    			obj.put(FIELD_TASKID, 		simJobStatus.getTaskID());
-	    	    			obj.put(FIELD_MESSAGE, 		simJobStatus.getSimulationMessage());
-	    	    			array.put(obj);
-	    	    		}
-	    	    		JSONObject results = new JSONObject();
-	    	    		results.put("results",array);
-	    	    		response.setEntity(results.toString(), MediaType.APPLICATION_JSON);  
+    	    			String jsonString = gson.toJson(simsResponse);
+ 	    	    		response.setEntity(jsonString, MediaType.APPLICATION_JSON);  
     	    		}else if (MediaType.TEXT_HTML.equals(preferredMediaType)){// if (accepts.contains("text/html")){
     	    			StringBuffer buffer = new StringBuffer();
     	    			buffer.append("<!DOCTYPE html>\n");
@@ -138,27 +202,38 @@ public class SimApplication extends Application {
     	    			
     	    			buffer.append("<h1>Running VCell Simulations</h1>");
     	    			
+    	    			buffer.append("<br/>");
+    	    			buffer.append(gson.toJson(simsResponse));
+       	    			buffer.append("<br/>");
+       	    			buffer.append("<br/>");
+       	    			
     	    			buffer.append("<table border='1'>\n");
     	    			buffer.append("<tr>\n");
-    	    			buffer.append("<th>"+FIELD_ID+"</th>\n");
-    	    			buffer.append("<th>"+FIELD_USER+"</th>\n");
-    	    			buffer.append("<th>"+FIELD_JOBID+"</th>\n");
-    	    			buffer.append("<th>"+FIELD_STATUS+"</th>\n");
-    	    			buffer.append("<th>"+FIELD_STARTDATE+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_SIMKEY+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_USERNAME+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_USERKEY+"</th>\n");
     	    			buffer.append("<th>"+FIELD_JOBINDEX+"</th>\n");
     	    			buffer.append("<th>"+FIELD_TASKID+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_HTCJOBID+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_STATUS+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_STARTDATE+"</th>\n");
     	    			buffer.append("<th>"+FIELD_MESSAGE+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_SITE+"</th>\n");
+    	    			buffer.append("<th>"+FIELD_COMPUTEHOST+"</th>\n");
     	    			buffer.append("</tr>\n");
-	    	    		for (SimulationJobStatus simJobStatus : simJobStatusList) {
+	    	    		for (SimHolder simJobStatusHolder : simsResponse.results) {
 	       	    			buffer.append("<tr>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getVCSimulationIdentifier().getID()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getVCSimulationIdentifier().getOwner().getName()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getSimulationExecutionStatus().getHtcJobID()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getSchedulerStatus().getDescription()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getStartDate()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getJobIndex()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getTaskID()+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatus.getSimulationMessage()+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.simKey+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.userName+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.userKey+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.jobIndex+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.taskId+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.htcJobId+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.status+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.startdate+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.message+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.site+"</td>\n");
+	       	    			buffer.append("<td>"+simJobStatusHolder.computeHost+"</td>\n");
 	       	    			buffer.append("</tr>\n");
 	       	    		}
     	    			buffer.append("</table>\n");
@@ -186,7 +261,7 @@ public class SimApplication extends Application {
     	router.attach("/users/{user}", account);  
     	router.attach("/users/{user}/orders", orders);  
     	router.attach("/users/{user}/orders/{order}", order);  
-    	router.attach("/sims", allsims);
+    	router.attach("/sim", allsims);
     	 
     	return router;  
     }  

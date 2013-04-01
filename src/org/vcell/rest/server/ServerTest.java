@@ -33,14 +33,15 @@ public class ServerTest extends ServerResource {
 			PropertyLoader.loadProperties();
 			final SessionLog log = new StdoutSessionLog("SimInfoServer");
 
-			KeyFactory keyFactory = new OracleKeyFactory();
-			DbDriver.setKeyFactory(keyFactory);
-			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-			final SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
-
+//			KeyFactory keyFactory = new OracleKeyFactory();
+//			DbDriver.setKeyFactory(keyFactory);
+//			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+//			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+//			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+//			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
+//			final SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
+			final SimulationDatabase simulationDatabase = null;
+			
 			// // Create the HTTP server and listen on port 8182
 			// new Server(Protocol.HTTP, 8182, ServerTest.class).start();
 
