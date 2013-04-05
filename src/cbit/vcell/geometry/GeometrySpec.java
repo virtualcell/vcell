@@ -509,6 +509,15 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 					SubVolume subVolume = getAnalyticOrCSGSubVolume(coordX,coordY,coordZ);
 					if (subVolume!=null){
 						handles[displayIndex] = (byte)subVolume.getHandle();
+					} else {
+						AnalyticSubVolume backgroundSubVol = new AnalyticSubVolume(getFreeSubVolumeName("background"), new Expression(1.0));
+						try {
+							this.addAnalyticSubVolumeOrCSGObject(backgroundSubVol, false);
+						} catch (PropertyVetoException e) {
+							e.printStackTrace(System.out);
+							throw new GeometryException("Issue adding a background subvolume to geometry : " + e.getMessage());
+						}
+						handles[displayIndex] = (byte)backgroundSubVol.getHandle();
 					}
 					displayIndex++;
 				}
@@ -731,10 +740,6 @@ public FilamentGroup getFilamentGroup() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
 private int getFreeSubVolumeHandle() {
 	int count=0;
 	while (getSubVolume(count)!=null){
@@ -744,12 +749,12 @@ private int getFreeSubVolumeHandle() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
 public String getFreeSubVolumeName() {
-	String featureName = "subdomain";
+	return getFreeSubVolumeName("subdomain");
+}
+
+
+private String getFreeSubVolumeName(String featureName) {
 	int count=0;
 	while (getSubVolume(featureName+count)!=null){
 		count++;
@@ -758,10 +763,6 @@ public String getFreeSubVolumeName() {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.image.FileImage
- */
 public VCImage getImage() {
 	return vcImage;
 }
