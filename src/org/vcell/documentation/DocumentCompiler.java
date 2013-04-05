@@ -86,12 +86,7 @@ public class DocumentCompiler {
 			DocumentCompiler docCompiler = new DocumentCompiler();
 			docCompiler.batchRun();
 			docCompiler.generateHelpMap();
-			boolean makeHTML_TOC_flag = false;
-			if (args.length>0 && args[0].equals("-html")) {
-				makeHTML_TOC_flag = true;
-				System.out.println("Generating HTML index selected");
-			} 
-			docCompiler.validateTOC(makeHTML_TOC_flag);
+			docCompiler.validateTOC();
 			docCompiler.copyHelpSet();
 			docCompiler.generateHelpSearch();
 			
@@ -299,11 +294,7 @@ public class DocumentCompiler {
 	}
 	
 	
-	private void validateTOC() throws Exception {    //not used presently.  Added for compatibility with previous API 
-		validateTOC(false);
-	}
-	
-	private void validateTOC(boolean makeHtmlToc) throws Exception
+	private void validateTOC() throws Exception
 	{
 		File tocSourceFile =  new File(docSourceDir, tocFileName);
 		//
@@ -327,10 +318,8 @@ public class DocumentCompiler {
 		
 		// copy the Table of Contents to the target directory.
 		FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));			
-		if (makeHtmlToc) {
-			System.out.println("Calling buildHtmlIndex");
-			buildHtmlIndex(root);
-		}
+		//System.out.println("Calling buildHtmlIndex");
+		buildHtmlIndex(root);
 	}
 	
 	private void copyHelpSet() throws Exception
@@ -373,32 +362,22 @@ public class DocumentCompiler {
 	}
 	
 	private void buildIndexHtml(Element element, int level,PrintWriter tocPrintWriter) throws IOException{
-
-		System.out.print("<br>\n");
-		tocPrintWriter.print("<br>\n");
-		for (int i=1; i<level; ++i) {
-			System.out.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-			tocPrintWriter.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-		}
-			
-
 		if (element.getName().equals(VCellDocTags.tocitem_tag)){
 			String target = element.getAttributeValue(VCellDocTags.target_attr);
 			if (target!=null){
 				// first look for a documentPage as the target, else check if it is a Definition page.
 				DocumentPage documentPage = documentation.getDocumentPage(new DocLink(target,target));
-				if (documentPage==null){
-					String definitionPageTarget = definitionXMLFileName.replace(".xml",""); /// exception ... ignore files with this name;
-					if (!target.equals(definitionPageTarget)){
-						throw new RuntimeException("table of contents referencing nonexistant target '"+target+"'");
-					}
-				}else{
-					//String fileNameNoExt = documentPage.getTemplateFile().getName().replace(".xml","");
+				if (documentPage!=null){
 					String linkText = documentPage.getTitle();
-					//String linkText = fileNameNoExt;
 					File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
 					targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
 					String pathString = getHelpRelativePath(docTargetDir, targetHtmlFile);
+					System.out.print("<br>\n");
+					tocPrintWriter.print("<br>\n");
+					for (int i=1; i<level; ++i) {
+						System.out.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+						tocPrintWriter.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+					}
 					System.out.println("<a href=\""+pathString+"\">"+linkText+"</a>");
 					tocPrintWriter.println("<a href=\""+pathString+"\">"+linkText+"</a>");
 				}
