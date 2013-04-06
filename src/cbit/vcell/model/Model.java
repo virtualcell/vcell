@@ -2340,20 +2340,6 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 }
 
 
-/**
- * Sets the modelParameters index property (cbit.vcell.model.ModelParameter[]) value.
- * @param index The index value into the property array.
- * @param modelParameters The new value for the property.
- * @see #getModelParameters
- */
-public void setModelParameters(int index, ModelParameter modelParameters) {
-	ModelParameter oldValue = fieldModelParameters[index];
-	fieldModelParameters[index] = modelParameters;
-	if (oldValue != null && !oldValue.equals(modelParameters)) {
-		firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, null, fieldModelParameters);
-	};
-}
-
 
 /**
  * Sets the name property (java.lang.String) value.

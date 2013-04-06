@@ -135,6 +135,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.matrix.test.SVDTest;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralKinetics;
@@ -147,11 +148,15 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -569,6 +574,7 @@ protected void addParameters() throws Exception {
 		return;
 	}
 	Model vcModel = simContext.getModel();
+	ArrayList<ModelParameter> vcModelParamsList = new ArrayList<Model.ModelParameter>();
 	
 	// create a hash of reserved symbols so that if there is any reserved symbol occurring as a global parameter in the SBML model,
 	// the hash can be used to check for reserved symbols, so that it will not be added as a global parameter in VCell, 
@@ -769,10 +775,11 @@ protected void addParameters() throws Exception {
 					// record global parameter name in annotation if it is longer than 64 characeters
 					vcGlobalParam.setDescription("Parameter Name : " + paramName);
 				}
-				vcModel.addModelParameter(vcGlobalParam);
+				vcModelParamsList.add(vcGlobalParam);
 			}
 		}
 	}	// end for - sbmlModel.parameters
+	vcModel.setModelParameters(vcModelParamsList.toArray(new ModelParameter[0]));
 }
 
 /**
@@ -799,74 +806,74 @@ private Expression adjustExpression(Expression valueExpr, Model model) throws Pr
  *  addReactionParticipant :
  *		Adds reactants and products and modifiers to a reaction.
  *		Input args are the sbml reaction, vc reaction
- *		This method was created mainly to handle reactions where there are reactants and/or products that appear multiple times
- *		in a reaction. Virtual Cell now allows the import of such reactions.
+ *		This method was created mainly to handle reactions where there are reactants and/or products that appear multiple times in a reaction.
+ *		Virtual Cell now allows the import of such reactions.
  *		
 **/
 private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
 	Model vcModel = simContext.getModel();
 
-	// for each species in the sbml model,
-	for (int i = 0; i < (int)sbmlModel.getNumSpecies(); i++){
-		org.sbml.libsbml.Species sbmlSpecies = sbmlModel.getSpecies(i);
-		boolean bSpeciesPresent = false;
-		int reactantNum = 0;	// will be (stoichiometry_of_species) for every occurance of species as reactant
-		int pdtNum = 0;			// will be (stoichiometry_of_species) for every occurance of species as product.
-		int modifierNum = 0;
-		boolean bAddedAsReactant = false;
-		boolean bAddedAsProduct = false;
-		
-		// get the matching speciesContext for the sbmlSpecies - loop thro' the speciesContext list to find a match 
-		// in the species name retrieved from the listofReactants or Pts. 
-		SpeciesContext speciesContext = null;
-		String sbmlSpId = sbmlSpecies.getId();
-		speciesContext = vcModel.getSpeciesContext(sbmlSpId);
-		
-		
-		if (!(vcRxn instanceof FluxReaction)) {
-			// check if it is present as reactant, if so, how many reactants
-			for (int j = 0; j < (int)sbmlRxn.getNumReactants(); j++){
-				SpeciesReference spRef = sbmlRxn.getReactant(j);
+	if (!(vcRxn instanceof FluxReaction)) {
+		// reactants in sbmlRxn
+		HashMap<String, Integer> sbmlReactantsHash = new HashMap<String, Integer>();
+		for (int j = 0; j < (int)sbmlRxn.getNumReactants(); j++){
+			SpeciesReference spRef = sbmlRxn.getReactant(j);
+			String sbmlReactantSpId = spRef.getSpecies();
+			if (sbmlModel.getSpecies(sbmlReactantSpId) != null) {		// check if spRef is in sbml model
 				// If stoichiometry of speciesRef is not an integer, it is not handled in the VCell at this time; no point going further
+				double stoichiometry = 0.0;
+				if (level < 3) {	// for SBML models < L3, default stoichiometry is 1, if field is not set.
+					stoichiometry = 1.0; 		// default value of stoichiometry, if not set.
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+						}
+					} 
+				} else {
+					if (spRef.isSetStoichiometry()) {
+						stoichiometry = spRef.getStoichiometry();
+						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+						}
+					} else {
+						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + sbmlReactantSpId + "' and no default value can be assumed.");
+						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");						
+					}
+				}
 				
-				double stoichiometry = 0.0;
-				if (level < 3) {	// for sBML models < L3, default stoichiometry is 1, if field is not set.
-					stoichiometry = 1.0; 		// default value of stoichiometry, if not set.
-					if (spRef.isSetStoichiometry()) {
-						stoichiometry = spRef.getStoichiometry();
-						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
-						}
-					} 
+				if (sbmlReactantsHash.get(sbmlReactantSpId) == null) {
+					// if sbmlReactantSpId is NOT in sbmlReactantsHash, add it with its stoichiometry
+					sbmlReactantsHash.put(sbmlReactantSpId, Integer.valueOf((int)stoichiometry));
 				} else {
-					if (spRef.isSetStoichiometry()) {
-						stoichiometry = spRef.getStoichiometry();
-						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
-						}
-					} else {
-						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");
-						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");
-					}
+					// if sbmlReactantSpId IS in sbmlReactantsHash, update its stoichiometry value to (existing-from-hash + stoichiometry) and put it back in hash  
+					int intStoich = sbmlReactantsHash.get(sbmlReactantSpId).intValue();
+					intStoich += (int)stoichiometry;
+					sbmlReactantsHash.put(sbmlReactantSpId, Integer.valueOf(intStoich));
 				}
-				if (spRef.getSpecies().equals(sbmlSpId)) {
-					reactantNum += (int)stoichiometry;
-					bSpeciesPresent = true;
-				}
-			}
+			} else {
+				// spRef is not in model, throw exception
+				throw new RuntimeException("Reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+			}	// end - if (spRef is species in model)
+		}	// end - for reactants
+		
+		// now add the reactants for the sbml reaction from sbmlReactionParticipantsHash as reactants to vcRxn
+		Iterator<String> sbmlReactantsIter = sbmlReactantsHash.keySet().iterator();
+		while (sbmlReactantsIter.hasNext()) {
+			String sbmlReactantStr = sbmlReactantsIter.next();
+			SpeciesContext speciesContext = vcModel.getSpeciesContext(sbmlReactantStr);
+			int stoich = sbmlReactantsHash.get(sbmlReactantStr).intValue();
+			((SimpleReaction)vcRxn).addReactant(speciesContext, stoich);
+		}
 	
-			// If species is present, add it as a reactant with its cumulative stoichiometry
-			if (bSpeciesPresent) {
-				((SimpleReaction)vcRxn).addReactant(speciesContext, reactantNum);
-				bAddedAsReactant = true;
-				bSpeciesPresent = false;
-			}
-	
-			// check if it is present as product, if so, how many products
-			for (int j = 0; j < (int)sbmlRxn.getNumProducts(); j++){
-				SpeciesReference spRef = sbmlRxn.getProduct(j);
+		// products in sbmlRxn
+		HashMap<String, Integer> sbmlProductsHash = new HashMap<String, Integer>();
+		for (int j = 0; j < (int)sbmlRxn.getNumProducts(); j++){
+			SpeciesReference spRef = sbmlRxn.getProduct(j);
+			String sbmlProductSpId = spRef.getSpecies();
+			if (sbmlModel.getSpecies(sbmlProductSpId) != null) {		// check if spRef is in sbml model
 				// If stoichiometry of speciesRef is not an integer, it is not handled in the VCell at this time; no point going further
 				double stoichiometry = 0.0;
 				if (level < 3) {	// for sBML models < L3, default stoichiometry is 1, if field is not set.
@@ -874,557 +881,76 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} 
 				} else {
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + spRef.getSpecies() + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");
+							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} else {
-						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");
-						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");
+						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the product '" + sbmlProductSpId + "' and no default value can be assumed.");
+						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");						
 					}
 				}
-				if (spRef.getSpecies().equals(sbmlSpId)) {
-					pdtNum  += (int)stoichiometry;
-					bSpeciesPresent = true;
+
+				if (sbmlProductsHash.get(sbmlProductSpId) == null) {
+					// if sbmlProductSpId is NOT in sbmlProductsHash, add it with its stoichiometry
+					sbmlProductsHash.put(sbmlProductSpId, Integer.valueOf((int)stoichiometry));
+				} else {
+					// if sbmlProductSpId IS in sbmlProductsHash, update its stoichiometry value to (existing-value-from-hash + stoichiometry) and put it back in hash  
+					int intStoich = sbmlProductsHash.get(sbmlProductSpId).intValue();
+					intStoich += (int)stoichiometry;
+					sbmlProductsHash.put(sbmlProductSpId, Integer.valueOf(intStoich));
 				}
-			}
-	
-			// If species is present, add it as a product with its cumulative stoichiometry
-			if (bSpeciesPresent) {
-				((SimpleReaction)vcRxn).addProduct(speciesContext, pdtNum);
-				bAddedAsProduct = true;
-				bSpeciesPresent = false;
-			}
-		}
-
-		// check if it is present as modifier, if so, how many modifiers
-		for (int j = 0; j < (int)sbmlRxn.getNumModifiers(); j++){
-			ModifierSpeciesReference spRef = sbmlRxn.getModifier(j);
-			if (spRef.getSpecies().equals(sbmlSpId)) {
-				modifierNum++;
-			}
-		}
-
-		// If species is present and modifierNum > 0, species was already added as reactant and/or pdt, so cannot be added as catalyst; throw exception.
-		// If species is not present, and modifierNum > 0, it was not previously added as a reactant and/or pdt, hence can add it as a catalyst.
-		if (modifierNum > 0) {
-			if (bAddedAsReactant || bAddedAsProduct) {
-				localIssueList.add(new Issue(speciesContext, IssueCategory.SBMLImport_Reaction, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
-				// logger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
 			} else {
+				// spRef is not in model, throw exception
+				throw new RuntimeException("Product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+			}	// end - if (spRef is species in model)
+		}	// end - for products
+
+		// now add the products for the sbml reaction from sbmlProductsHash as products to vcRxn
+		Iterator<String> sbmlProductsIter = sbmlProductsHash.keySet().iterator();
+		while (sbmlProductsIter.hasNext()) {
+			String sbmlProductStr = sbmlProductsIter.next();
+			SpeciesContext speciesContext = vcModel.getSpeciesContext(sbmlProductStr);
+			int stoich = sbmlProductsHash.get(sbmlProductStr).intValue();
+			((SimpleReaction)vcRxn).addProduct(speciesContext, stoich);
+		}
+	}	// end - if (vcRxn NOT FluxRxn)
+
+	// modifiers
+	for (int j = 0; j < (int)sbmlRxn.getNumModifiers(); j++){
+		ModifierSpeciesReference spRef = sbmlRxn.getModifier(j);
+		String sbmlSpId = spRef.getSpecies();
+		if (sbmlModel.getSpecies(sbmlSpId) != null) {
+			// check if this modifier species is preesent in vcRxn (could have been added as reactamt/product/catalyst). 
+			// If alreay a catalyst in vcRxn, do nothing
+			ArrayList<ReactionParticipant> vcRxnParticipants = getVCReactionParticipantsFromSymbol(vcRxn, sbmlSpId);
+			SpeciesContext speciesContext = vcModel.getSpeciesContext(sbmlSpId);
+			if (vcRxnParticipants == null || vcRxnParticipants.size() == 0) {
+				// If not in reactionParticipantList of vcRxn, add as catalyst.
 				vcRxn.addCatalyst(speciesContext);
-			}
-		}
-	}
-}
-/**
- * addReactions:
- *
- */
-
-/*
-protected void addReactionsOld(VCMetaData metaData) {
-	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
-	}
-	ListOf listofReactions = sbmlModel.getListOfReactions();
-	if (listofReactions == null) {
-		System.out.println("No Reactions");
-		return;
-	}
-	ReactionStep[] vcReactions = new ReactionStep[(int)sbmlModel.getNumReactions()];
-	Model vcModel = simContext.getModel();
-	ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
-//	ReservedSymbol kMole = vcModel.getKMOLE();
-//	VCUnitDefinition KmoleUnits = kMole.getUnitDefinition();
-	SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
-	try {
-		for (int i = 0; i < sbmlModel.getNumReactions(); i++) {
-			org.sbml.libsbml.Reaction sbmlRxn = (org.sbml.libsbml.Reaction)listofReactions.get(i);
-			String rxnName = sbmlRxn.getId();
-			// Check of reaction annotation is present; if so, does it have an embedded element (flux or simpleRxn).
-			// Create a fluxReaction or simpleReaction accordingly.
-			Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlRxn);
-			Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement); 
-			// XMLNode embeddedRxnElement = null;
-			if (sbmlImportRelatedElement != null) {
-				Element embeddedRxnElement = getEmbeddedElementInAnnotation(sbmlImportRelatedElement, REACTION);
-				if (embeddedRxnElement != null) {
-					if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
-						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attributes.
-						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
-						Structure struct = vcModel.getStructure(structName);
-						if (!(struct instanceof Membrane)) {
-							throw new RuntimeException("Appears that the flux reaction is not occuring on a membrane.");
-						}
-						vcReactions[i] = new FluxReaction((Membrane)struct, null, rxnName);
-						vcReactions[i].setModel(vcModel);
-						// Set the fluxOption on the flux reaction based on whether it is molecular, molecular & electrical, electrical.
-						String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
-						if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularOnly)) {
-							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
-						} else if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
-							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
-						} else if (fluxOptionStr.equals(XMLTags.FluxOptionElectricalOnly)) {
-							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
-						} else {
-							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
-						}
-					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
-						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
-						vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
-					}
-				} else {
-					vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
-				}
 			} else {
-				vcReactions[i] = new SimpleReaction(reactionStructure, rxnName);
+				for (ReactionParticipant rp : vcRxnParticipants) {
+					if (rp instanceof Reactant || rp instanceof Product) {
+						// If already a reactant or product in vcRxn, add warning to localIssuesList, don't do anything
+						localIssueList.add(new Issue(speciesContext, IssueCategory.SBMLImport_Reaction, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
+						break;
+					}
+				}
 			}
-			
-			// set annotations and notes on vcReactions[i]
-			sbmlAnnotationUtil.readAnnotation(vcReactions[i], sbmlRxn);
-			sbmlAnnotationUtil.readNotes(vcReactions[i], sbmlRxn);
-			// record reaction name in annotation if it is greater than 64 characters. Choosing 64, since that is (as of 12/2/08) 
-			// the limit on the reactionName length.
-			if (rxnName.length() > 64) {
-				StringBuffer oldRxnAnnotation = new StringBuffer(metaData.getFreeTextAnnotation(vcReactions[i]));
-				oldRxnAnnotation.append("\n\n" + rxnName);
-				metaData.setFreeTextAnnotation(vcReactions[i], oldRxnAnnotation.toString());
-			}
-			vcModel.addReactionStep(vcReactions[i]);
-
-			// Now add the reactants, products, modifiers as specified by the sbmlRxn
-			addReactionParticipants(sbmlRxn, vcReactions[i]);
-			
-			KineticLaw kLaw = sbmlRxn.getKineticLaw();
-			Kinetics kinetics = null;
-			if (kLaw != null) {
-				// Convert the formula from kineticLaw into MathML and then to an expression (infix) to be used in VCell kinetics
-				ASTNode sbmlRateMath = kLaw.getMath();
-				Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
-				Expression vcRateExpression = new Expression(kLawRateExpr);
-	
-				// Check the kinetic rate equation for occurances of any species in the model that is not a reaction participant.
-				// If there exists any such species, it should be added as a modifier (catalyst) to the reaction.
-				for (int k = 0; k < vcSpeciesContexts.length; k++){
-					if (vcRateExpression.hasSymbol(vcSpeciesContexts[k].getName())) {
-						if ((sbmlRxn.getReactant(vcSpeciesContexts[k].getName()) == null) && 
-							(sbmlRxn.getProduct(vcSpeciesContexts[k].getName()) == null) && 
-							(sbmlRxn.getModifier(vcSpeciesContexts[k].getName()) == null)) {
-							// This means that the speciesContext is not a reactant, product or modifier : it has to be added to the VC Rxn as a catalyst
-							vcReactions[i].addCatalyst(vcSpeciesContexts[k]);
-						}
-					}
-				}
-	
-				// Retrieve the compartment in which the reaction takes place
-				Compartment compartment = sbmlModel.getCompartment(reactionStructure.getName());
-				if (compartment == null) {
-					throw new RuntimeException("The compartment corresponding to " + reactionStructure.getName() + " was not found");
-				}
-				
-				// Check if the kLaw rate equation has compartment_id (corresponding to reactionStructure); and if so, 
-				// check if the id is a local parameter, in that case, the local parameter takes precendence.
-				boolean bLocalParamMatchesCompId = false;
-				ListOf listofLocalParams = kLaw.getListOfParameters();
-				String COMPARTMENTSIZE_SYMBOL = compartment.getId();
-				for (int j = 0; j < kLaw.getNumParameters(); j++) {
-					org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
-					String paramName = param.getId();
-					// Check if reaction rate param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
-					// If so, change the name of the kinetic param (say, by adding reaction name to it).
-					if (paramName.equals(COMPARTMENTSIZE_SYMBOL)) {
-						bLocalParamMatchesCompId = true;
-					}
-				}
-				// if local kLaw param matches compartment_id, local param takes precedence,
-				// if bLocalParamMatchesCompId is <T> and if kLawRateExpr     HAS 		compartment_id : LumpedKinetics  
-				// if bLocalParamMatchesCompId is <F> and if kLawRateExpr DOESN'T HAVE 	compartment_id : LumpedKinetics  
-				// if bLocalParamMatchesCompId is <F> and if kLawRateExpr 	  HAS 		compartment_id : GeneralKinetics  
-				// if bLocalParamMatchesCompId is <T> and if kLawRateExpr DOESN'T HAVE  compartment_id : SHOULDN'T HAPPEN (it means there is a kLaw local param with compartment_id, but kLaw expression doesn't contain copartment_id, which is not possible.  
-				if ((bLocalParamMatchesCompId && kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL)) || (!bLocalParamMatchesCompId && !kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL))) {
-					kinetics = new GeneralLumpedKinetics(vcReactions[i]);
-				} else if (kLawRateExpr.hasSymbol(COMPARTMENTSIZE_SYMBOL) && !bLocalParamMatchesCompId) {
-					kinetics = new GeneralKinetics(vcReactions[i]);
-				} else {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Cannot have a local parameter which does not occur in kinetic law expression for SBML reaction : " + rxnName);
-				}
-	
-				// set kinetics on vcReaction
-				vcReactions[i].setKinetics(kinetics);
-	
-				// If the name of the rate parameter has been changed by user, or matches with global/local param, 
-				// it has to be changed.
-				resolveRxnParameterNameConflicts(sbmlRxn, kinetics, sbmlImportRelatedElement);
-				
-				// Deal with units : kinetic rate units is in substance/time; obtain substance units, time units from
-				// kLaw (L2V1) and obtain kLawRateUnit.
-				// kinetic law substance unit :
-				String kLawSubstanceUnitStr = null;
-				if (kLaw.isSetSubstanceUnits()) {
-					kLawSubstanceUnitStr = kLaw.getSubstanceUnits();
-				}
-				VCUnitDefinition kLawSubstanceUnit = getSBMLUnit(kLawSubstanceUnitStr, SBMLUnitTranslator.SUBSTANCE);
-	
-				// kinetic law time unit :
-				String kLawTimeUnitStr = null;
-				if (kLaw.isSetTimeUnits()) {
-					kLawTimeUnitStr = kLaw.getTimeUnits();
-				}
-				VCUnitDefinition kLawTimeUnit = getSBMLUnit(kLawTimeUnitStr, SBMLUnitTranslator.TIME);
-	
-				// kinetic law rate unit in SBML is in terms of substance/time
-				VCUnitDefinition kLawRateUnit = kLawSubstanceUnit.divideBy(kLawTimeUnit);
-				VCUnitDefinition VC_RateUnit = null;
-				VCUnitDefinition SBML_RateUnit = kLawRateUnit;
-	
-				
-				//  Now, based on the kinetic law expression, see if the rate is expressed in concentration/time or substance/time :
-				//  If the compartment_id of the compartment corresponding to the structure in which the reaction takes place 
-				//  occurs in the rate law expression, it is in concentration/time; divide it by the compartment size and bring in 
-				//  the rate law as 'Distributed' kinetics. If not, the rate law is in substance/time; bring it in (as is) as 
-				//  'Lumped' kinetics. 
-				  
-				
-				if (kinetics instanceof GeneralKinetics) {
-					// rate law is in terms of concentration/time; use GeneralKinetics ('Distributed' kinetics) 
-	
-					// convert kLawRateUnit (above) from substance/time to concentration/time by dividing by size (of compartment) units
-					// deal with compartment size
-					VCUnitDefinition compartmentSizeUnit = getSBMLUnit(compartment.getUnits(), getSpatialDimensionBuiltInName((int)compartment.getSpatialDimensions()));
-					SBML_RateUnit = SBML_RateUnit.divideBy(compartmentSizeUnit);
-	
-					// Virtual cell rate unit in terms of concentration/time. Units depend on whether reaction is in feature or membrane
-					if (reactionStructure instanceof Feature) {
-						VC_RateUnit = vcModelUnitSystem.getVolumeReactionRateUnit();
-					} else if (reactionStructure instanceof Membrane) {
-						if (vcReactions[i] instanceof FluxReaction) {
-							VC_RateUnit = vcModelUnitSystem.getFluxReactionUnit();
-						} else if (vcReactions[i] instanceof SimpleReaction) {
-							VC_RateUnit = vcModelUnitSystem.getMembraneReactionRateUnit();
-						}
-					}
-					//   Depending on SBML substance units (moles or molecules) and if the reaction is on a membrane or feature, 
-					//   an intermediate unit conversion is required between SBML and VC units before evaluating 
-					//   the 'dimensionless' scale factor (see next step below) 
-					if (reactionStructure instanceof Membrane && vcReactions[i] instanceof SimpleReaction) {
-						if (kLawSubstanceUnit.divideBy(KmoleUnits).isCompatible(vcModelUnitSystem.getMembraneSubstanceUnit())) {
-							SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
-							vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(kMole, kMole.getNameScope())));
-						} 
-					} else	if ( (reactionStructure instanceof Feature) || (reactionStructure instanceof Membrane && vcReactions[i] instanceof FluxReaction) ) {
-						if (kLawSubstanceUnit.multiplyBy(KmoleUnits).isCompatible(vcModelUnitSystem.getVolumeSubstanceUnit())) {
-							SBML_RateUnit = SBML_RateUnit.multiplyBy(KmoleUnits);
-							vcRateExpression = Expression.mult(vcRateExpression, new Expression(kMole, kMole.getNameScope()));
-						} 
-					}
-	
-					//   Converting rate expression into density/time (for VCell). We need to divide by compartmentSize to remove the size from
-					//   the existing equation, but since just dividing by size will accumulate the variables (VCell expression handling), we 
-					//   differentiate the rate expression to remove the compartmentSize var from the original expression.
-					//   (No need to check if rate expression has COMP_SYMBOL, since we wouldn't be in this loop otherwise, but checking anyway). 
-					 
-					if (vcRateExpression.hasSymbol(COMPARTMENTSIZE_SYMBOL)) {
-						vcRateExpression = removeCompartmentScaleFactorInRxnRateExpr(vcRateExpression, COMPARTMENTSIZE_SYMBOL, rxnName);
-						kinetics.setParameterValue(kinetics.getAuthoritativeParameter(),vcRateExpression);
-					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Reaction " + rxnName + " cannot have GeneralKinetics since kinetic law expression is not in terms of concentration/time");
-					}
-				} else if (kinetics instanceof LumpedKinetics){
-					// rate law is in substance/time; use 'Lumped' Kinetics.
-					// SBML_RateUnit = kLawRateUnit; - in terms of substance/time - leave it as is.
-					// Virtual cell rate unit in terms of substance/time. Units depend on whether reaction is in feature or membrane
-					VC_RateUnit = vcModelUnitSystem.getLumpedReactionRateUnit();
-	
-					//   Depending on SBML substance units (moles or molecules) and if the reaction is on a membrane or feature, 
-					//   an intermediate unit conversion is required between SBML and VC units before evaluating 
-					//   the 'dimensionless' scale factor (see next step below) 
-					if (kLawSubstanceUnit.divideBy(KmoleUnits).isCompatible(vcModelUnitSystem.getLumpedSubstanceUnit())) {
-						SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
-						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(kMole, kMole.getNameScope())));
-					}
-					
-					// set the kinetics rate parameter.
-					kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), vcRateExpression);
-	
-					// sometimes, the reaction rate can contain a compartment name, not necessarily the compartment the reaction takes place.
-	 				for (int kk = 0; kk < (int)sbmlModel.getNumCompartments(); kk++){
-						Compartment comp1 = sbmlModel.getCompartment(kk);
-						boolean bCompFoundInLocalParams = false;
-						for (int ll = 0; ll < kLaw.getNumParameters(); ll++) {
-							if (comp1.getId().equals(((Parameter)listofLocalParams.get((long)ll)).getId())) {
-								bCompFoundInLocalParams = true;
-							}
-						}
-						if (vcRateExpression.hasSymbol(comp1.getId()) && !bCompFoundInLocalParams) {
-							//   this compartmentSize is being used in the rate expr, but since compSizes are now proxy parameters, their actual sizes 
-							//   need not be added as a kinetic parameter. Compare the units of the compSize in SBML (usually L) with VCell (um3)
-							//   The expr from SBML is in terms of SBML units, and it is now in VC units, but we have to translate them back to SBML units 
-							//   within the expr; then we translate the SBML rate units into VCell units.
-							//   we convert sizes into SBML (using 'comp_sizefactor'); so that the SBML expression is consistent; 
-							//   then we translate the SBML expression into VCell units (using 'sbmlRateFactor') - happens later
-							
-							// If there is a conversion factor, we need to use it ('comp*comp_Sizefactor' instead of 'comp').This conversion factor
-							// needs to be added; but add it as a global parameter if it doesn't already exist.
-							if (!comp1.getId().equals(compartment.getId())) {
-								int spatialDim = (int)comp1.getSpatialDimensions();
-								String spatialDimBuiltInName = getSpatialDimensionBuiltInName(spatialDim);
-								VCUnitDefinition sbmlSizeUnit = getSBMLUnit(comp1.getUnits(), spatialDimBuiltInName);
-								// Need to convert the size unit (vol or area) into VC compatible units (um3, um2) if it is not already in VC compatible units
-								double factor = 1.0;
-								VCUnitDefinition vcSizeUnit = null;
-								if (spatialDim == 3) {
-									vcSizeUnit = vcModelUnitSystem.getVolumeUnit();
-								} else if (spatialDim == 2) {
-									vcSizeUnit = vcModelUnitSystem.getAreaUnit();
-								}
-								factor  = vcSizeUnit.convertTo(factor, sbmlSizeUnit);
-								if (factor != 1.0) {
-									String COMPSIZE_PARAMETER = comp1.getId() + "_SizeUnitFactor";
-									Expression adjSizeExpr = new Expression(factor);
-									VCUnitDefinition adjSizeUnit = sbmlSizeUnit.divideBy(vcSizeUnit);
-									// if a global with the name doesn't exists, add it as a global to VCell.
-									ModelParameter comp1Param = vcModel.getModelParameter(COMPSIZE_PARAMETER); 
-									if (comp1Param == null) {
-										 comp1Param = vcModel.new ModelParameter(COMPSIZE_PARAMETER, adjSizeExpr, Model.ROLE_UserDefined, adjSizeUnit);
-										 String annotation = "Conversion from VC size units to SBML size units";
-										 comp1Param.setModelParameterAnnotation(annotation);
-										 vcModel.addModelParameter(comp1Param);
-									}
-									// adjust reaction rate expr with comp*comp_SizeUnitParam
-									Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
-									newRateExpr.substituteInPlace(new Expression(comp1.getId()), new Expression(comp1.getId()+"*"+COMPSIZE_PARAMETER));
-									kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr.flatten());
-								}
-							} else {
-								logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Reaction " + rxnName + " rate expression contains the compartment in which the reaction takes place; the kinetics should not be Lumped kinetics");
-							}
-						}
-					}	// end for - compartments in model loop
-				}
-				
-				// Handle the unit conversion factor - common for both type of kinetics, though the SBML_RateUnit and VC_RateUnit are different.
-				String SBMLFACTOR_PARAMETER = "sbmlRateFactor";
-				// Check if kLaw rate expression param has same name other SBase elements in the namespace,
-				// we don't want to override them with a local param in kLaw.
-				while ( (kLawRateExpr.hasSymbol(SBMLFACTOR_PARAMETER)) || 
-						(sbmlModel.getParameter(SBMLFACTOR_PARAMETER) != null) || 
-						(sbmlModel.getCompartment(SBMLFACTOR_PARAMETER) != null) || 
-						(sbmlModel.getSpecies(SBMLFACTOR_PARAMETER) != null)) {
-					SBMLFACTOR_PARAMETER = TokenMangler.getNextEnumeratedToken(SBMLFACTOR_PARAMETER);
-				}
-				// introduce "dimensionless" scale factor for the reaction rate (after adjusting sbml rate for sbml compartment size)
-				// note that although physically dimensionless, the VCUnitDefinition will likely have a non-unity scale conversion (e.g. 1e-3)
-				double rateScalefactor = 1.0;
-				if (VC_RateUnit.isCompatible(SBML_RateUnit)) { 
-					rateScalefactor = SBML_RateUnit.convertTo(rateScalefactor, VC_RateUnit);
-					VCUnitDefinition rateFactorUnit = VC_RateUnit.divideBy(SBML_RateUnit);
-					if (rateScalefactor == 1.0 && rateFactorUnit.equals(vcModelUnitSystem.getInstance_DIMENSIONLESS())) {
-						// Ignore the factor since rateFactor and its units are 1
-					} else {
-						Expression newRateExpr = Expression.mult(kinetics.getAuthoritativeParameter().getExpression(), new Expression(SBMLFACTOR_PARAMETER));
-						kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr);
-						kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER), new Expression(rateScalefactor));
-						kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER).setUnitDefinition(rateFactorUnit);
-					}
-				} else {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to scale the unit for kinetic rate: " + VC_RateUnit.getSymbol() + " -> " + SBML_RateUnit.getSymbol());
-				}
-				
-				//  ************ <<<< Scale units of SPECIES in all expressions to VC concentration units ************
-				//
-				// If the rate expression has any species, the units of the species are in concentration units.
-				// We need to convert them from SBML unit to VCell unit. If the spatial dimension of the compartment is 0, we do not handle it
-				// at this time, throw an exception.
-				//
-				vcRateExpression = kinetics.getAuthoritativeParameter().getExpression();
-				for (int k = 0; k < vcSpeciesContexts.length; k++){
-					if (vcRateExpression.hasSymbol(vcSpeciesContexts[k].getName())) {
-						org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[k].getName());
-						// Check if species name is used as a local parameter in the klaw. If so, the parameter in the local namespace 
-						// takes precedence. So ignore unit conversion for the species with the same name. 
-						boolean bSpeciesNameFoundInLocalParamList = false;
-						for (int ll = 0; ll < kLaw.getNumParameters(); ll++) {
-							org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(ll);
-							String paramName = param.getId();
-							if (paramName.equals(species.getId())) {
-								bSpeciesNameFoundInLocalParamList = true;
-								break; 		// break out of klaw local params loop
-							}
-						}
-						if (bSpeciesNameFoundInLocalParamList) {
-							break;			// break out of speciesContexts loop
-						}
-						
-						// Get the SBML and VC units for the species
-						SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(species.getId());
-						VCUnitDefinition VC_conc_unit = sbvcSubstUnits.getVCConcentrationUnits();
-						VCUnitDefinition SBML_conc_unit = sbvcSubstUnits.getSBConcentrationUnits();
-
-						 //  the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
-						 //  within the expr; then we translate the SBML rate units into VCell units.
-						 //  we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
-						 //  into VCell units (using 'sbmlRateFactor') 
-						SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcUnit", VC_conc_unit, SBML_conc_unit, kMole);
-						if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(vcModelUnitSystem.getInstance_DIMENSIONLESS())) ) {
-							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
-							// No conversion is required, and we don't need to include a concentration scale factor for the species.
-						} else {
-							// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
-							// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
-							String CONCFACTOR_PARAMETER = species.getId() + "_ConcFactor";
-							// Check if this parameter is in the local param list of kLaw
-							Parameter localParam = kLaw.getParameter(CONCFACTOR_PARAMETER);
-							if (localParam != null) {
-								// the concentration factor for this species already exists; multiply species_ConcFactor with the 
-								// new concentration factor value. For eg., if the concFactor 
-								// for species 's1' has a value 'V1' and si_ConcFactor exists in local params, multiply
-								// 's1_ConcFactor*V1'
-								Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
-								Expression modifiedSpeciesExpression = Expression.mult(new Expression(species.getId()), concScaleFactor.getExpression());
-								newRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpeciesExpression);
-								kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr.flatten());
-							} else {
-								// If CONCFACTOR_PARAM is not already in the kinetic expression, include it.
-								Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
-								if (!newRateExpr.hasSymbol(CONCFACTOR_PARAMETER)) {
-									newRateExpr.substituteInPlace(new Expression(species.getId()), new Expression(species.getId()+"*"+CONCFACTOR_PARAMETER));
-									kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr.flatten());
-								}
-								ModelParameter mp = vcModel.getModelParameter(CONCFACTOR_PARAMETER);
-								if (mp == null) {
-									// no global CONCFACTOR found (and there was no local), add it is as local.
-									kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor.getExpression().flatten());
-									kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor.getUnitDefinition());
-								} else if (mp != null) {
-									// Check if this parameter is in the global param list of sbmlModel. If there is a global parameter,
-									// compute glParam*concScaleFactor value. Check its value with model parameter of same name in VC model, if it exists.
-									// If they are not equal, there is a problem. If they are equal, don't need to add CONCFACTOR as local param (the vc global
-									// value will be used).
-									Expression tempConcFactorExpr = concScaleFactor.getExpression();
-									Parameter glParam = sbmlModel.getParameter(CONCFACTOR_PARAMETER);
-									if (glParam != null) {
-										Expression paramValExpr = getValueFromAssignmentRule(glParam.getId());
-										if (paramValExpr == null) {
-											if (glParam.isSetValue()) {
-												double value = glParam.getValue();
-												paramValExpr = new Expression(value);
-											}
-										}
-										tempConcFactorExpr = Expression.mult(tempConcFactorExpr, paramValExpr);
-									} 
-									if (!mp.getExpression().compareEqual(tempConcFactorExpr)) {
-										// if there is a CONCFACTOR global with different value from the present local CONCFACTOR,
-										// throw exception, since the concentration factors for the species should be the same.
-										logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Species '" + species.getId() + "' concentration factor values in global scope and local scope cannot be different.");
-									}
-								}	// if - else (mp == null)
-							}	// if - else (localParam != null)
-						}	// end - if concScaleFactor
-					}	// end - vcSpecContext found in vcRateExpression
-				}	// end for - k (vcSpeciesContext)
-				
-				
-				//  ************ <<<< Scale units of TIME if present in kinetic expressions (to VC time units : secs) ************
-				
-				// If kinetic rate expression has time 't' in it, and if SBML time unit is not in seconds, we need to multiply
-				// the 't' in the kinetic rate expression with the conversion factor (t_ConvFactor)
-				// 't' is in VC units (secs), convert it back to SBML units; hence, we take the inverse of 
-				// the time factor (getSBMLTimeUnitsFactor() converts from SBML to VC units)
-
-				double timeFactor = 1.0/getSBMLTimeUnitsFactor();
-				vcRateExpression = kinetics.getAuthoritativeParameter().getExpression();
-				String t = vcModel.getTIME().getName();
-				if ((timeFactor != 1.0) && (vcRateExpression.hasSymbol(t))) {
-					String TIME_CONVFACTOR = t + "_ConvFactor";
-					// If TIME_CONVFACTOR is not already in the kinetic expression, include it.
-					if (!vcRateExpression.hasSymbol(TIME_CONVFACTOR)) {
-						vcRateExpression.substituteInPlace(new Expression(t), new Expression(t+"*"+TIME_CONVFACTOR));
-						kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), vcRateExpression);
-					}
-					// Check if TIME_CONVFACTOR is a global parameter, if not, add it as a local parameter. 
-					ModelParameter mp = vcModel.getModelParameter(TIME_CONVFACTOR);
-					if (mp == null) {
-						// no global TIME_CONVFACTOR found (and there was no local), add it is as local.
-						kinetics.setParameterValue(kinetics.getKineticsParameter(TIME_CONVFACTOR), new Expression(timeFactor));
-						kinetics.getKineticsParameter(TIME_CONVFACTOR).setUnitDefinition(vcModelUnitSystem.getInstance_DIMENSIONLESS());
-					} 
-				}	// if - (timeFactor != 1)
-	
-
-				
-				// If there are any global parameters used in the kinetics, and if they have species,
-				// check if the species are already reactionParticipants in the reaction. If not, add them as catalysts.
-				KineticsProxyParameter[] kpps = kinetics.getProxyParameters();
-				for (int j = 0; j < kpps.length; j++) {
-					if (kpps[j].getTarget() instanceof ModelParameter) {
-						ModelParameter mp = (ModelParameter)kpps[j].getTarget();
-					    HashSet<String> refSpeciesNameHash = new HashSet<String>(); 
-					    getReferencedSpeciesInExpr(mp.getExpression(), refSpeciesNameHash);
-					    java.util.Iterator<String> refSpIterator = refSpeciesNameHash.iterator();
-						while (refSpIterator.hasNext()) {
-					    	String spName = refSpIterator.next();
-					    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spName);
-							if (vcReactions[i].getReactionParticipantFromSymbol(sp.getId()) == null) {
-								// This means that the speciesContext is not a reactant, product or modifier : it has to be added as a catalyst
-								vcReactions[i].addCatalyst(vcModel.getSpeciesContext(sp.getId()));
-							}
-						}
-	
-					}
-				}
-				
-				// Introduce all remaining local parameters from the SBML model - local params cannot be defined by rules.
-				for (int j = 0; j < kLaw.getNumParameters(); j++) {
-					org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
-					String paramName = param.getId();
-					// check if sbml local param is in kinetic params list; if so, add its value. 
-					KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
-					if (kineticsParameter != null) {
-						kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
-						VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
-						kineticsParameter.setUnitDefinition(paramUnit);
-					} else {
-						// check if it is a proxy parameter (specifically, speciesContext or model parameter (structureSize too)).
-						KineticsProxyParameter kpp = kinetics.getProxyParameter(paramName);
-						// if there is a proxy param with same name as sbml kinetic local param, if proxy param
-						// is a model global parameter, change proxy param to local, set its value 
-						// and units to local param values
-						if (kpp != null && kpp.getTarget() instanceof ModelParameter) {
-							kinetics.convertParameterType(kpp, false);
-							kineticsParameter = kinetics.getKineticsParameter(paramName);
-							kinetics.setParameterValue(kineticsParameter, new Expression(param.getValue()));
-							VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
-							kineticsParameter.setUnitDefinition(paramUnit);
-						}
-					}
-				}
-			} else {
-				// sbmlKLaw was null, so creating a GeneralKinetics with 0.0 as rate.
-				kinetics = new GeneralKinetics(vcReactions[i]); 
-			} // end - if-else  KLaw != null
-
-			// set the reaction kinetics, and add reaction to the vcell model.
-			kinetics.resolveUndefinedUnits();
-			// System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
-			if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
-				simContext.getReactionContext().getReactionSpec(vcReactions[i]).setReactionMapping(ReactionSpec.FAST);
-			}
-		}	// end - for vcReactions
-	} catch (Exception e1) {
-		e1.printStackTrace(System.out);
-		throw new RuntimeException(e1.getMessage());
-	}
+		} else {
+			// spRef is not in model, throw exception
+			throw new RuntimeException("Modifier '" + sbmlSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+		}	// end - if (spRef is species in model)
+	}	// end - for modifiers
 }
 
-*/
 
 /**
  *  addAssignmentRules :
@@ -2575,6 +2101,18 @@ private void checkIdentifiersNameLength() throws Exception {
 }
 
 
+private ArrayList<ReactionParticipant> getVCReactionParticipantsFromSymbol(ReactionStep reactionStep, String reactParticipantName) {
+
+	ReactionParticipant rp_Array[] = reactionStep.getReactionParticipants();
+	ArrayList<ReactionParticipant> matchingRxnParticipants = new ArrayList<ReactionParticipant>(); 
+	for (int i = 0; i < rp_Array.length; i++) {
+		if (AbstractNameScope.getStrippedIdentifier(reactParticipantName).equals(rp_Array[i].getSpeciesContext().getName())){
+			matchingRxnParticipants.add(rp_Array[i]);
+		}
+	}
+	return matchingRxnParticipants;
+}   
+
 /**
  * addReactions:
  *
@@ -2723,12 +2261,12 @@ protected void addReactions(VCMetaData metaData) {
 						while (refSpIterator.hasNext()) {
 					    	String spName = refSpIterator.next();
 					    	org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spName);
-							if (vcReactions[i].getReactionParticipantFromSymbol(sp.getId()) == null) {
+					    	ArrayList<ReactionParticipant> rpArray = getVCReactionParticipantsFromSymbol(vcReactions[i], sp.getId());
+							if (rpArray == null || rpArray.size() == 0) {
 								// This means that the speciesContext is not a reactant, product or modifier : it has to be added as a catalyst
 								vcReactions[i].addCatalyst(vcModel.getSpeciesContext(sp.getId()));
 							}
 						}
-	
 					}
 				}
 				
@@ -3084,7 +2622,7 @@ protected void addGeometry() {
 					((AnalyticSubVolume)vcSubvolume).setExpression(subVolExpr);
 				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
-					throw new RuntimeException("Unable to set expression on subVolume '" + vcSubvolume.getName() + "'" + e.getMessage());
+					throw new RuntimeException("Unable to set expression on subVolume '" + vcSubvolume.getName() + "'. " + e.getMessage());
 				}
 			}
 		}

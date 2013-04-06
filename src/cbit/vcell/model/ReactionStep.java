@@ -384,17 +384,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 
-public ReactionParticipant getReactionParticipantFromSymbol(String reactParticipantName) {
-
-	ReactionParticipant rp_Array[] = getReactionParticipants();
-	
-	for (int i = 0; i < rp_Array.length; i++) {
-		if (AbstractNameScope.getStrippedIdentifier(reactParticipantName).equals(rp_Array[i].getSpeciesContext().getName())){
-			return rp_Array[i];
-		}
-	}
-	return null;
-}   
 /**
  * Gets the reactionParticipants property (cbit.vcell.model.ReactionParticipant[]) value.
  * @return The reactionParticipants property value.
