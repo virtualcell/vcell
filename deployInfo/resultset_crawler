@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#
+# include common variable definitions
+#
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+. $DIR/vcell.include
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+jvmprop="-Xmx${resultset_crawler_memoryMB}M -Dvcell.propertyfile=${common_propertyfile}"
+
+arguments=$*
+
+${common_jre} -cp ${common_jvm_jars} ${jvmprop} ${resultset_crawler_mainclass} ${arguments}
