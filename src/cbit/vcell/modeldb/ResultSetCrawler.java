@@ -10,8 +10,11 @@
 
 package cbit.vcell.modeldb;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -43,7 +46,8 @@ public class ResultSetCrawler {
 	private cbit.sql.ConnectionFactory conFactory = null;
 	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
-	private File dataRootDir = null;
+	private File primaryDataRootDir = null;
+	private File secondaryDataRootDir = null;
 	private String outputDirName = null;
 	
 	class BaseNameFilter implements java.io.FilenameFilter {
@@ -85,7 +89,11 @@ private ResultSetCrawler(ConnectionFactory argConFactory, AdminDBTopLevel adminD
 	this.log = argSessionLog;
 	this.adminDbTopLevel = adminDbTopLevel;
 	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log);
-	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
+	primaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
+	secondaryDataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty));
+	if (primaryDataRootDir.equals(secondaryDataRootDir)){
+		secondaryDataRootDir = null;
+	}
 	outputDirName = argOutputDirName;
 }
 
@@ -463,17 +471,22 @@ private void scan(File userDir, ExternalDataIdentifier[] extDataIDArr, Vector si
  */
 private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLException, DataAccessException, java.rmi.RemoteException {
 		
-	File userDirs[] = dataRootDir.listFiles();
-	log.print("Total user directories: " + userDirs.length);
+	ArrayList<File> userDirs = new ArrayList<File>();
+	
+	File primaryUserDirs[] = primaryDataRootDir.listFiles();
+	userDirs.addAll(Arrays.asList(primaryUserDirs));
+	if (secondaryDataRootDir!=null){
+		File secondaryUserDirs[] = secondaryDataRootDir.listFiles();
+		userDirs.addAll(Arrays.asList(secondaryUserDirs));
+	}
+	log.print("Total user directories: " + userDirs.size());
 
 	org.vcell.util.document.UserInfo userInfos[] = adminDbTopLevel.getUserInfos(true);	
 	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log);
 
-	File userDir = null;
 	File outputDir = getOutputDirectory();
-	for (int i = 0; i < userDirs.length; i ++){
+	for (File userDir : userDirs){
 		try {
-			userDir = userDirs[i];
 			log.print("----------------------------------------------------------");
 			log.print("USER: " + userDir.getName());
 
@@ -519,16 +532,19 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 private void scanAUser(String username, boolean bScanOnly) throws SQLException, DataAccessException, java.rmi.RemoteException {
 
 	try {	
-		File userDir = new File(dataRootDir, username);
-		File outputDir = getOutputDirectory();
-		
-		if (!userDir.exists() || !userDir.isDirectory()) {
-			log.alert("UserDir " + userDir + " doesn't exist or is not a directory");
+		ArrayList<File> userDirs = new ArrayList<File>();
+		userDirs.add(new File(primaryDataRootDir, username));
+		if (!userDirs.get(0).exists() || !userDirs.get(0).isDirectory()) {
+			log.alert("UserDir " + userDirs.get(0) + " doesn't exist or is not a directory");
 			return;
 		}
-
-		log.print("----------------------------------------------------------");
-		log.print("USER: " + userDir.getName());
+		if (secondaryDataRootDir!=null){
+			userDirs.add(new File(secondaryDataRootDir, username));
+			if (!userDirs.get(1).exists() || !userDirs.get(1).isDirectory()) {
+				log.alert("UserDir " + userDirs.get(1) + " doesn't exist or is not a directory");
+				userDirs.remove(1);
+			}
+		}
 
 		User user = adminDbTopLevel.getUser(username,true);
 		
@@ -543,8 +559,15 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,org.vcell.util.document.VersionableType.Simulation,false,false, true);
 		SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
 		ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
-		scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
-		log.print("----------------------------------------------------------");
+
+		File outputDir = getOutputDirectory();
+		for (File userDir : userDirs){
+			log.print("----------------------------------------------------------");
+			log.print("USER: " + userDir.getName());
+	
+			scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
+			log.print("----------------------------------------------------------");
+		}
 	} catch (Exception ex) {
 		log.exception(ex);
 	}				
@@ -557,7 +580,7 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
  * @param user cbit.vcell.server.User
  * @param simInfo cbit.vcell.solver.SimulationInfo
  */
-public void updateSimResults(User user, VCSimulationDataIdentifier vcSimDataID) throws java.io.IOException, DataAccessException {	
+private void updateSimResults_NOTUSED(User user, VCSimulationDataIdentifier vcSimDataID) throws java.io.IOException, DataAccessException {	
 	if (user==null){
 		throw new IllegalArgumentException("user was null");
 	}
@@ -565,12 +588,21 @@ public void updateSimResults(User user, VCSimulationDataIdentifier vcSimDataID) 
 		throw new IllegalArgumentException("vcSimDataID was null");
 	}
 	
+	if (secondaryDataRootDir==null){
+		throw new DataAccessException("cannot updateSimResults in database, secondaryDataDirectory not specified");
+	}
+	
 	//
 	// find userDirectory for this user
 	//
-	File userDir = new File(dataRootDir, user.getName());
-	if (!userDir.exists() || !userDir.isDirectory()) {
-		throw new java.io.FileNotFoundException("data directory for user " + user + " not found");
+	File primaryUserDir = new File(primaryDataRootDir, user.getName());
+	if (!primaryUserDir.exists() || !primaryUserDir.isDirectory()) {
+		throw new java.io.FileNotFoundException("primary data directory for user " + user + " not found");
+	}
+	File secondaryUserDir = new File(secondaryDataRootDir, user.getName());
+	if (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory()) {
+		System.out.println("secondary data directory for user " + user + " not found");
+		secondaryUserDir = null;
 	}
 	//
 	// get snapshot of this resultSetInfo for current user and simInfo only
@@ -584,7 +616,10 @@ public void updateSimResults(User user, VCSimulationDataIdentifier vcSimDataID) 
 		throw new DataAccessException(e.getMessage());
 	}
 
-	File logFile = getLogFile(userDir, vcSimDataID);
+	File logFile = getLogFile(primaryUserDir, vcSimDataID);
+	if (logFile==null && secondaryUserDir!=null){
+		logFile = getLogFile(secondaryUserDir, vcSimDataID);
+	}
 	
 	if (logFile != null) {
 		//

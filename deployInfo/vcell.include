@@ -74,3 +74,8 @@ postprocessor_memoryMB=500
 javasolver_mainclass=GENERATED
 javasolver_memoryMB=1000
 
+#--------------------------------------
+# result set crawler
+#--------------------------------------
+resultset_crawler_mainclass=GENERATED
+resultset_crawler_memoryMB=3000
