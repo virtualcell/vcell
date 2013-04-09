@@ -26,11 +26,14 @@ public class SimpleJobStatus implements ComparableObject {
 	private SimulationJobStatus jobStatus = null;
 	private SolverTaskDescription solverTaskDesc = null;
 	private Long elapsedTime = null;
+	private Integer meshSpecX = null;
+	private Integer meshSpecY= null;
+	private Integer meshSpecZ = null;
 
 /**
  * SimpleJobStatus constructor comment.
  */
-public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc) {	
+public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ) {	
 	super();
 	this.userID = user;
 	this.jobStatus = arg_jobStatus;
@@ -43,6 +46,9 @@ public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTas
 			this.elapsedTime = ((System.currentTimeMillis()-getStartDate().getTime()));
 		}
 	}
+	this.meshSpecX = meshSpecX;
+	this.meshSpecY = meshSpecY;
+	this.meshSpecZ = meshSpecZ;
 
 }
 
@@ -72,6 +78,17 @@ public java.util.Date getEndDate() {
 	return jobStatus.getEndDate();
 }
 
+public Integer getMeshSpecX(){
+	return this.meshSpecX;
+}
+
+public Integer getMeshSpecY(){
+	return this.meshSpecY;
+}
+
+public Integer getMeshSpecZ(){
+	return this.meshSpecZ;
+}
 
 /**
  * Insert the method's description here.
@@ -109,6 +126,35 @@ public String getSolverDescriptionVCML() {
 		return "Error: Null Solver Description";
 	}
 	return solverTaskDesc.getVCML();
+}
+
+public String getMeshSampling(){
+	if (this.meshSpecX==null){
+		return "no mesh";
+	}else if (this.meshSpecY!=null){
+		if (this.meshSpecZ!=null){
+			return "mesh ("+meshSpecX.intValue()+","+meshSpecY.intValue()+","+meshSpecZ.intValue()+") = "+getMeshSize()+" volume elements";
+		}else{
+			return "mesh ("+meshSpecX.intValue()+","+meshSpecY.intValue()+") = "+getMeshSize()+" volume elements";
+		}
+	}else{
+		return "mesh ("+meshSpecX.intValue()+") = "+getMeshSize()+" volume elements";
+	}
+}
+
+public long getMeshSize(){
+	if (meshSpecX!=null){
+		long size = meshSpecX.intValue();
+		if (meshSpecY!=null){
+			size *= meshSpecY.intValue();
+		}
+		if (meshSpecZ!=null){
+			size *= meshSpecZ.intValue();
+		}
+		return size;
+	}else{
+		return 0;
+	}
 }
 
 
@@ -206,6 +252,6 @@ public Object[] toObjects() {
 	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
 		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
-		elapsedTime};
+		elapsedTime, new Long(getMeshSize())};
 }
 }
