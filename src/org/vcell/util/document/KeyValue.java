@@ -59,7 +59,7 @@ public boolean compareEqual(Matchable obj) {
  */
 public boolean equals(Object obj) {
 	if (obj instanceof KeyValue){
-		return compareEqual((Matchable)obj);
+		return ((KeyValue)obj).value.equals(value);
 	}
 	return false;
 }
