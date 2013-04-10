@@ -24,6 +24,7 @@ import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
@@ -32,6 +33,7 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.SimulationMessage;
@@ -132,7 +134,7 @@ protected void init() throws JMSException {
 		public void onTopicMessage(VCMessage vcMessage, VCMessageSession session) {
 			log.print("JavaSimulationExecutable::onControlTopicMessage(): " + vcMessage.show());
 			try {
-				String msgType = vcMessage.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+				String msgType = vcMessage.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 
 				if (msgType != null && msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE)) {			
 					Long longkey = vcMessage.getLongProperty(MessageConstants.SIMKEY_PROPERTY);
@@ -212,7 +214,7 @@ public static void main(String[] args) {
 		PropertyLoader.loadProperties();
 		VCMongoMessage.enabled = false;
 		
-		vcMessagingService = VCMessagingService.createInstance();
+		vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		worker = new JavaSimulationExecutable(vcMessagingService, args);
 		worker.init();

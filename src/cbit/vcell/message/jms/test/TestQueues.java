@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.RollbackException;
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.VCellQueue;
@@ -37,13 +37,7 @@ public class TestQueues {
 		try {
 	    	PropertyLoader.loadProperties();
 	    	
-	    	VCMessagingService messagingService = VCMessagingService.createInstance();
-	    	VCMessagingDelegate messagingDelegate = new VCMessagingDelegate() {
-				public void onMessagingException(Exception e) {
-					e.printStackTrace(System.out);
-				}
-			};
-			messagingService.setDelegate(messagingDelegate);
+	    	VCMessagingService messagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
 	    	
 	        final Calculator calculator = new Calculator();
 	        

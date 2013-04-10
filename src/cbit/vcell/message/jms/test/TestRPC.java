@@ -5,6 +5,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingInvocationTargetException;
@@ -40,7 +41,7 @@ public class TestRPC {
 			
 			PropertyLoader.loadProperties();
 			
-    		VCMessagingService messagingService = VCMessagingService.createInstance();
+    		VCMessagingService messagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
     		StdoutSessionLog log = new StdoutSessionLog("log");
 	    	
 	        // reading message and computing sum

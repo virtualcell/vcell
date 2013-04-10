@@ -30,11 +30,13 @@ import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -208,7 +210,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			
 			DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
-			VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 			
 			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
 
@@ -226,8 +228,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			VCMessageSession dataSession = vcMessagingService.createProducerSession();
 			VCMessage dataEventMessage = dataSession.createObjectMessage(event);
-			dataEventMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
-			dataEventMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
+			dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
+			dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
 			
 			dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 			dataSession.close();
@@ -240,8 +242,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			VCMessageSession dataSession = vcMessagingService.createProducerSession();
 			VCMessage exportEventMessage = dataSession.createObjectMessage(event);
-			exportEventMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
-			exportEventMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
+			exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
+			exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
 			
 			dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 			dataSession.close();

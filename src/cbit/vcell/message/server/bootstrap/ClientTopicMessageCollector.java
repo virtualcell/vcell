@@ -13,7 +13,6 @@ import javax.swing.event.EventListenerList;
 
 import org.vcell.util.BigString;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.User;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -27,6 +26,7 @@ import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCTopicConsumer;
@@ -140,16 +140,16 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 		
 		setTimeSinceLastMessage(System.currentTimeMillis());
 
-		String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+		String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 		if(msgType == null){
 			throw new Exception(this.getClass().getName()+".onTopicMessage: message type NULL for message "+message);
 		}
 		if (msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
-			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String messageUserName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			StatusMessage statusMessage = new StatusMessage(message);
-			String userName = MessageConstants.USERNAME_PROPERTY_VALUE_ALL;
-			if (message.propertyExists(MessageConstants.USERNAME_PROPERTY)){
-				userName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String userName = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
+			if (message.propertyExists(VCMessagingConstants.USERNAME_PROPERTY)){
+				userName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			}
 			
 			SimulationJobStatus newJobStatus = statusMessage.getJobStatus();
@@ -163,15 +163,15 @@ public void onTopicMessage(VCMessage message, VCMessageSession session) {
 			
 			fireSimulationJobStatusEvent(new SimulationJobStatusEvent(this, vcSimID.getID(), newJobStatus, progress, timePoint, messageUserName));		
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {	
-			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String messageUserName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			ExportEvent event = (ExportEvent)message.getObjectContent();
 			fireExportEvent(event);
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE)){
-			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String messageUserName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			DataJobEvent event = (DataJobEvent)message.getObjectContent();
 			fireMessageEvent(event);
 		} else if (msgType.equals(MessageConstants.MESSAGE_TYPE_BROADCASTMESSAGE_VALUE)) {
-			String messageUserName = message.getStringProperty(MessageConstants.USERNAME_PROPERTY);
+			String messageUserName = message.getStringProperty(VCMessagingConstants.USERNAME_PROPERTY);
 			fireMessageEvent(new VCellMessageEvent(this, System.currentTimeMillis() + "", new MessageData((BigString)message.getObjectContent()), VCellMessageEvent.VCELL_MESSAGEEVENT_TYPE_BROADCAST,messageUserName));
 		} else{
 			throw new Exception(this.getClass().getName()+".onControlTopicMessage: Unimplemented message "+message.show());
