@@ -13,12 +13,14 @@ package org.vcell.util.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -49,9 +51,6 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
-import edu.stanford.ejalbert.BrowserLauncher;
-import edu.stanford.ejalbert.BrowserLauncherRunner;
-import edu.stanford.ejalbert.exceptionhandler.BrowserLauncherErrorHandler;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)
@@ -216,39 +215,24 @@ public class DialogUtils {
 		}.dispatchWrapRuntime();
 	}
 	
-/**
- * Insert the method's description here.
- * Creation date: (8/26/2005 3:26:35 PM)
- */
-public static void browserLauncher(final Component requester, final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
-	//(isApplet==true)
-	//  Do not use BrowserLauncher as it will sometimes destroy VCell Applets
-	//  depending on which browser is running the applet and which OS the
-	//  browser is running on.
 	
-	//(messageToUserIfFail)
-	//  Should provide the user with the URL they can
-	//  manually navigate to for the information requested
-	
-	try{
-		if(isApplet){
-			throw new Exception("VCell Applet forbidden to launch local WWW Browser");
-		}
-		new Thread(
-			new BrowserLauncherRunner(
-				new BrowserLauncher(null),
-				targetURL,
-				new BrowserLauncherErrorHandler() {
-					public void handleException(Exception e){
-						browserLauncherError(requester, e,messageToUserIfFail);
-					}
-				}
-			)
-			).start();
-	}catch(Throwable e){
-		browserLauncherError(requester, e,messageToUserIfFail);
+	public static void openURLWithExternalBrowser(String url) throws Exception {
+		Desktop.getDesktop().browse(new URL(url).toURI());
 	}
-}
+	
+	public static void browserLauncher(final Component requester, final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
+		
+		
+		//(messageToUserIfFail)
+		//  Should provide the user with the URL they can
+		//  manually navigate to for the information requested
+
+		try {
+			openURLWithExternalBrowser(targetURL);
+		}catch(Throwable e){
+			browserLauncherError(requester, e,messageToUserIfFail);
+		}
+	}
 
 
 /**
