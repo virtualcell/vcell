@@ -29,15 +29,14 @@ import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.InteractionRadius;
+import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.ParticleProperties;
-import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -45,12 +44,14 @@ import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -67,7 +68,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.VCellErrorMessages;
 /**
@@ -643,12 +643,12 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					MassActionSolver.substituteParameters(expCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
-					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
+					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
 				}
 			}
 			else
 			{
-				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Binding radius of " + reactionStep.getName() +" is null."));
+				throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Binding radius of " + reactionStep.getName() +" is null."));
 			}
 			
 			List<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();

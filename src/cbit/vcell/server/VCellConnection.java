@@ -14,6 +14,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.PerformanceMonitorEvent;

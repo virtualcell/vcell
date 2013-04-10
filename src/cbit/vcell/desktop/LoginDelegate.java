@@ -1,6 +1,6 @@
 package cbit.vcell.desktop;
 
-import cbit.vcell.server.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo;
 
 public interface LoginDelegate {
 

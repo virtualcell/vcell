@@ -27,6 +27,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
@@ -53,7 +54,6 @@ import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.server.LocalVCellServer;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellServer;

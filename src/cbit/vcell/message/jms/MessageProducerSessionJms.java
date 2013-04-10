@@ -20,6 +20,7 @@ import javax.jms.TemporaryQueue;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -30,7 +31,6 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.server.UserLoginInfo;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
