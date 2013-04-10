@@ -14,6 +14,7 @@ package cbit.vcell.message.messages;
 import cbit.vcell.message.MessagePropertyNotFoundException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -114,7 +115,7 @@ private void parseMessage(VCMessage message) {
 	}
 
 	try {
-		String msgType = message.getStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY);
+		String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
 		if (msgType != null && !msgType.equals(MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE)) {
 			throw new RuntimeException("Wrong message");
 		}
@@ -165,8 +166,8 @@ public void sendToClient(VCMessageSession session) throws VCMessagingException {
  */
 private VCMessage toMessage(VCMessageSession session) {
 	VCMessage message = session.createObjectMessage(jobStatus);
-	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE);
-	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, userName);
+	message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE);
+	message.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, userName);
 	if (progress != null) {
 		message.setDoubleProperty(MessageConstants.SIMULATION_STATUS_PROGRESS_PROPERTY, progress.doubleValue());
 	}

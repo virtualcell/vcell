@@ -1,30 +1,19 @@
 package cbit.vcell.message.jms;
 
-import java.io.Serializable;
-
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingConsumer;
-import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCQueueConsumer;
-import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.mongodb.VCMongoMessage;
 
 public class ConsumerContextJms implements Runnable {
 	public static final long CONSUMER_POLLING_INTERVAL_MS = 2000;
@@ -52,19 +41,19 @@ public class ConsumerContextJms implements Runnable {
 //						System.out.println(toString()+"===============message received within "+CONSUMER_POLLING_INTERVAL_MS+" ms");
 					if (vcConsumer instanceof VCQueueConsumer){
 						VCQueueConsumer queueConsumer = (VCQueueConsumer)vcConsumer;
-						VCMessageJms vcMessage = new VCMessageJms(jmsMessage);
+						VCMessageJms vcMessage = new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 						vcMessage.loadBlobFile();
-						VCMongoMessage.sendJmsMessageReceived(vcMessage,vcConsumer.getVCDestination());
-						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession);
+						vcMessagingServiceJms.getDelegate().onMessageReceived(vcMessage,vcConsumer.getVCDestination());
+						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession,vcMessagingServiceJms);
 						queueConsumer.getQueueListener().onQueueMessage(vcMessage, temporaryMessageProducerSession);
 						jmsSession.commit();
 						vcMessage.removeBlobFile();
 					} else if (vcConsumer instanceof VCTopicConsumer){
 						VCTopicConsumer topicConsumer = (VCTopicConsumer)vcConsumer;
-						VCMessageJms vcMessage = new VCMessageJms(jmsMessage);
+						VCMessageJms vcMessage = new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 						vcMessage.loadBlobFile();
-						VCMongoMessage.sendJmsMessageReceived(vcMessage,vcConsumer.getVCDestination());
-						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession);
+						vcMessagingServiceJms.getDelegate().onMessageReceived(vcMessage,vcConsumer.getVCDestination());
+						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession,vcMessagingServiceJms);
 						topicConsumer.getTopicListener().onTopicMessage(vcMessage, temporaryMessageProducerSession);
 						jmsSession.commit();
 						vcMessage.removeBlobFile();
@@ -126,7 +115,7 @@ public class ConsumerContextJms implements Runnable {
 	}
 	
 	private void onException(JMSException e){
-		VCMongoMessage.sendException(e);
+		vcMessagingServiceJms.getDelegate().onException(e);
 		e.printStackTrace(System.out);
 	}
 	

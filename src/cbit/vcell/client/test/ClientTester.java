@@ -7,6 +7,7 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessagingService;
 /**
  * This type was created in VisualAge.
@@ -154,7 +155,7 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 		org.vcell.util.SessionLog log = new org.vcell.util.NullSessionLog();
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
 		vcServerFactory = new cbit.vcell.server.LocalVCellServerFactory(userid,new UserLoginInfo.DigestedPassword(password),"<<local>>",vcMessagingService,conFactory,keyFactory,log);
 	}
 	return vcServerFactory;

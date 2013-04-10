@@ -7,6 +7,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCMessagingService;
@@ -50,7 +51,7 @@ public class TestBlobRpcMessages {
 	    	PropertyLoader.loadProperties();
 	    	//System.getProperties().setProperty(PropertyLoader.jmsURL,"tcp://nrcamdev5.cam.uchc.edu:61616");
 	    	
-	    	VCMessagingService messagingService = VCMessagingService.createInstance();
+	    	VCMessagingService messagingService = VCMessagingService.createInstance(new SimpleMessagingDelegate());
 	    	StdoutSessionLog log = new StdoutSessionLog("log");
 
 	        // reading message and computing sum

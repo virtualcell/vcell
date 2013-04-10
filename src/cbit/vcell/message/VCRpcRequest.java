@@ -19,18 +19,20 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
-
-
 /**
  * Insert the type's description here.
  * Creation date: (5/13/2003 1:41:34 PM)
  * @author: Fei Gao
  */
 public class VCRpcRequest implements java.io.Serializable {
+	
+	public interface RpcServiceType {
+		public String getName();
+	}
+	
 	private User user = null;
 	private Object[] args = null;
-	private ServiceType requestedServiceType = null; // refer to "databaseServer", "dataServer", "***";
+	private RpcServiceType requestedServiceType = null; // refer to "databaseServer", "dataServer", "***";
 	private String methodName = null;	
 	private Long requestTimestampMS;
 	private Long beginProcessingTimestampMS;
@@ -41,7 +43,7 @@ public class VCRpcRequest implements java.io.Serializable {
  * @param argEstimatedSizeMB double
  * @param argUserid java.lang.String
  */
-public VCRpcRequest(User user0, ServiceType st, String methodName0, Object[] arglist) {
+public VCRpcRequest(User user0, RpcServiceType st, String methodName0, Object[] arglist) {
 	this.user = user0;
 	this.requestedServiceType = st;
 	this.methodName = methodName0;
@@ -69,7 +71,7 @@ public String getMethodName() {
  * Creation date: (12/30/2003 9:16:45 AM)
  * @return java.lang.String
  */
-public ServiceType getRequestedServiceType() {
+public RpcServiceType getRequestedServiceType() {
 	return requestedServiceType;
 }
 /**
