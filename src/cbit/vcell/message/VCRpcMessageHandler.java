@@ -4,10 +4,6 @@ import java.io.Serializable;
 
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.message.messages.MessageConstants;
-import cbit.vcell.mongodb.VCMongoMessage;
-
-
 public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 	private Object serviceImplementation = null;
 	private VCellQueue queue = null;
@@ -20,7 +16,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 	}
 	
 	public void onQueueMessage(VCMessage rpcVCMessage, VCMessageSession session) {
-		VCMongoMessage.sendJmsMessageReceived(rpcVCMessage,queue);
+		session.getDelegate().onMessageReceived(rpcVCMessage,queue);
 		Serializable object = (Serializable)rpcVCMessage.getObjectContent();
 		if (!(object instanceof VCRpcRequest)){
 			throw new RuntimeException("expecting RpcRequest in message");
@@ -61,7 +57,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 			vcReplyMessage = session.createObjectMessage(returnValue);
 		}
 
-		vcReplyMessage.setStringProperty(MessageConstants.METHOD_NAME_PROPERTY, vcRpcRequest.getMethodName());
+		vcReplyMessage.setStringProperty(VCMessagingConstants.METHOD_NAME_PROPERTY, vcRpcRequest.getMethodName());
 		vcReplyMessage.setCorrelationID(rpcVCMessage.getMessageID());
 		Boolean persistent = new Boolean(false);
 		try {
@@ -73,6 +69,6 @@ System.out.println("sent reply message with JMSCorrelationID to "+vcReplyMessage
 			log.exception(e);
 			throw new RuntimeException("error sending reply to RPC message: "+e.getMessage(),e);
 		}
-		VCMongoMessage.sendRpcRequestProcessed(vcRpcRequest,rpcVCMessage);
+		session.getDelegate().onRpcRequestProcessed(vcRpcRequest,rpcVCMessage);
 	}
 }

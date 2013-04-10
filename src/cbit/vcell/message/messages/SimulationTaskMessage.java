@@ -14,6 +14,7 @@ package cbit.vcell.message.messages;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -109,11 +110,11 @@ private VCMessage toMessage(VCMessageSession session) throws VCMessagingExceptio
 		throw new VCMessagingException("failed to restore Simulation Task from XML",e);
 	}		
 
-	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE); // must have
+	message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE); // must have
 	message.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, simTask.getSimulationJob().getJobIndex()); // must have
 	message.setIntProperty(MessageConstants.TASKID_PROPERTY, simTask.getTaskID()); // must have
 	
-	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, simTask.getUserName()); // might be used to remove from the job queue when do stopSimulation
+	message.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, simTask.getUserName()); // might be used to remove from the job queue when do stopSimulation
 	message.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simTask.getSimKey() + "")); // might be used to remove from the job queue when do stopSimulation
 
 	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedMemorySizeMB()); // for worker message filter

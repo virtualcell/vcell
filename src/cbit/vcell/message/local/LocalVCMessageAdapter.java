@@ -2,9 +2,11 @@ package cbit.vcell.message.local;
 
 import java.util.ArrayList;
 
+import cbit.vcell.message.SimpleMessagingDelegate;
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 
@@ -47,5 +49,10 @@ public class LocalVCMessageAdapter extends VCMessageSessionLocal {
 			localVCMessageListener.onLocalVCMessage(messageRecord.vcDestination, messageRecord.vcMessage);
 		}
 		messageRecords.clear();
+	}
+
+	@Override
+	public VCMessagingDelegate getDelegate() {
+		return new SimpleMessagingDelegate();
 	}
 }

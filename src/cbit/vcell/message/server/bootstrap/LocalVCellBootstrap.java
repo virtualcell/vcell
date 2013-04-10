@@ -35,6 +35,7 @@ import cbit.sql.KeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
@@ -205,7 +206,7 @@ public static void main(java.lang.String[] args) {
 			throw new Exception("expecting '" + MESSAGING + "' as third argument");
 		}
 		//VCMessagingService vcMessagingService = new VCMessagingServiceSonicMQ();
-		VCMessagingService vcMessagingService = VCMessagingService.createInstance();
+		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
 		
