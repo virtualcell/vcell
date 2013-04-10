@@ -27,6 +27,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.sql.ConnectionFactory;
@@ -48,7 +49,6 @@ import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 
 public class UserRegistrationOP implements Serializable{
 	

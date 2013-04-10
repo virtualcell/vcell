@@ -24,8 +24,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.server.UserLoginInfo;
 
 /**
  * Insert the type's description here.

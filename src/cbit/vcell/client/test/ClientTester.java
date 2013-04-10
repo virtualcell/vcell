@@ -2,11 +2,12 @@ package cbit.vcell.client.test;
 
 import java.awt.Frame;
 
+import org.vcell.util.document.UserLoginInfo;
+
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.message.VCMessagingService;
-import cbit.vcell.server.UserLoginInfo;
 /**
  * This type was created in VisualAge.
  */

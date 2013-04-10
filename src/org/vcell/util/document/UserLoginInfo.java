@@ -8,12 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package org.vcell.util.document;
 
 import java.io.Serializable;
 
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.User;
 
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {

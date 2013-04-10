@@ -10,9 +10,9 @@
 
 package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**

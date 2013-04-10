@@ -18,7 +18,9 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
@@ -31,8 +33,6 @@ import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.server.UserRegistrationOP;
 /**
  * Insert the type's description here.

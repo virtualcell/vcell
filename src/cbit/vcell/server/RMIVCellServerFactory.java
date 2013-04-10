@@ -14,6 +14,7 @@ import java.rmi.*;
 
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
 
 /**
  * This type was created in VisualAge.

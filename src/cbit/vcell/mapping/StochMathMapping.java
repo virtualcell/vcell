@@ -41,6 +41,7 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -60,7 +61,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.VCellErrorMessages;
 /**
@@ -659,12 +659,12 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 							}
 						}catch(ExpressionException e)
 						{
-							throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Problem with Kon parameter in " + reactionStep.getName() +":  '" + KonCopy.infix() + "', " + e.getMessage()));
+							throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Problem with Kon parameter in " + reactionStep.getName() +":  '" + KonCopy.infix() + "', " + e.getMessage()));
 						}
 					}
 					else
 					{
-						throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep, "Kon parameter of " + reactionStep.getName() +" is null."));
+						throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Kon parameter of " + reactionStep.getName() +" is null."));
 					}
 				}
 			    boolean isForwardRatePresent = false;

@@ -1,4 +1,4 @@
-package cbit.vcell.math;
+package cbit.vcell.microscopy;
 
 import java.io.File;
 import java.util.StringTokenizer;
@@ -16,6 +16,10 @@ import org.vcell.util.document.User;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.math.DataGenerator;
+import cbit.vcell.math.FieldFunctionDefinition;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSet;

@@ -2,6 +2,8 @@ package cbit.vcell.message.local;
 
 import java.io.Serializable;
 
+import org.vcell.util.document.UserLoginInfo;
+
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -9,7 +11,6 @@ import cbit.vcell.message.VCMessagingInvocationTargetException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.server.UserLoginInfo;
 
 public abstract class VCMessageSessionLocal implements VCMessageSession {
 

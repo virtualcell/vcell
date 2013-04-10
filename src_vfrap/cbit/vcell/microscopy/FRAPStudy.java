@@ -63,7 +63,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.ROIDataGenerator;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
