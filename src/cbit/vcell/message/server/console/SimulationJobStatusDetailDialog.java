@@ -30,7 +30,7 @@ public class SimulationJobStatusDetailDialog extends javax.swing.JDialog {
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private javax.swing.JPanel ivjJPanel3 = null;
-	private javax.swing.JScrollPane ivjJScrollPane1 = null;
+	private javax.swing.JScrollPane statusMessageScrollPane = null;
 	private javax.swing.JTextField ivjComputeHostTextField = null;
 	private javax.swing.JTextField ivjEndDateTextField = null;
 	private javax.swing.JTextField ivjSimIDTextField = null;
@@ -48,7 +48,7 @@ public class SimulationJobStatusDetailDialog extends javax.swing.JDialog {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JPanel ivjJPanel10 = null;
 	private javax.swing.JPanel ivjJPanel11 = null;
-	private javax.swing.JScrollPane ivjJScrollPane2 = null;
+	private javax.swing.JScrollPane solverDescriptionScrollPane = null;
 	private javax.swing.JTextArea ivjSolverDescTextArea = null;
 	private javax.swing.JButton ivjResubmitButton = null;
 	private javax.swing.JButton ivjStopButton = null;
@@ -635,8 +635,8 @@ private javax.swing.JPanel getJPanel11() {
 			ivjJPanel11 = new javax.swing.JPanel();
 			ivjJPanel11.setName("JPanel11");
 			ivjJPanel11.setLayout(getJPanel11GridLayout());
-			getJPanel11().add(getJScrollPane2(), getJScrollPane2().getName());
-			getJPanel11().add(getJScrollPane1(), getJScrollPane1().getName());
+			getJPanel11().add(getSolverDescriptionScrollPane(), getSolverDescriptionScrollPane().getName());
+			getJPanel11().add(getStatusMessageScrollPane(), getStatusMessageScrollPane().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1201,13 +1201,13 @@ private java.awt.FlowLayout getJPanel9FlowLayout() {
  * @return javax.swing.JScrollPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
+private javax.swing.JScrollPane getStatusMessageScrollPane() {
+	if (statusMessageScrollPane == null) {
 		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			ivjJScrollPane1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Status Message"));
-			getJScrollPane1().setViewportView(getStatusMessageTextArea());
+			statusMessageScrollPane = new javax.swing.JScrollPane();
+			statusMessageScrollPane.setName("JScrollPane1");
+			statusMessageScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Status Message"));
+			statusMessageScrollPane.setViewportView(getStatusMessageTextArea());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1216,7 +1216,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJScrollPane1;
+	return statusMessageScrollPane;
 }
 
 /**
@@ -1224,13 +1224,13 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return javax.swing.JScrollPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane2() {
-	if (ivjJScrollPane2 == null) {
+private javax.swing.JScrollPane getSolverDescriptionScrollPane() {
+	if (solverDescriptionScrollPane == null) {
 		try {
-			ivjJScrollPane2 = new javax.swing.JScrollPane();
-			ivjJScrollPane2.setName("JScrollPane2");
-			ivjJScrollPane2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Solver Description"));
-			getJScrollPane2().setViewportView(getSolverDescTextArea());
+			solverDescriptionScrollPane = new javax.swing.JScrollPane();
+			solverDescriptionScrollPane.setName("JScrollPane2");
+			solverDescriptionScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Solver Description"));
+			solverDescriptionScrollPane.setViewportView(getSolverDescTextArea());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1239,7 +1239,7 @@ private javax.swing.JScrollPane getJScrollPane2() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJScrollPane2;
+	return solverDescriptionScrollPane;
 }
 
 /**
@@ -1656,7 +1656,7 @@ public void setStatus() {
 	getEndDateTextField().setText(jobStatus.getEndDate() == null ? "" : dateTimeFormatter.format(jobStatus.getEndDate()));
 	getServerIDTextField().setText(jobStatus.getEndDate() == null ? "" : jobStatus.getServerID());
 	getTaskIDTextField().setText(jobStatus.getTaskID() == null ? "" : jobStatus.getTaskID() + "");
-	getSolverDescTextArea().setText(jobStatus.getSolverDescriptionVCML());
+	getSolverDescTextArea().setText(jobStatus.getSolverDescriptionVCML()+"\n"+jobStatus.getMeshSampling());
 	getSolverDescTextArea().setCaretPosition(0);
 	getStatusMessageTextArea().setText(jobStatus.getStatusMessage());
 	getStatusMessageTextArea().setCaretPosition(0);
