@@ -14,6 +14,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
@@ -24,7 +25,6 @@ import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;

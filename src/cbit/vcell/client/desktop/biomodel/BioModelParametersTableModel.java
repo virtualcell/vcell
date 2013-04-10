@@ -20,7 +20,6 @@ import java.util.Set;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.gui.AutoCompleteSymbolFilter;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -39,6 +38,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;

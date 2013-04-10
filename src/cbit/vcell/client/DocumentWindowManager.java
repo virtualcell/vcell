@@ -19,6 +19,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.rmi.event.DataJobEvent;
@@ -31,7 +32,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;

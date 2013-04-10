@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.VCellClient;
@@ -34,7 +35,6 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;
-import cbit.vcell.server.UserLoginInfo;
 
 public class MathGenerationDebugger extends JPanel {
 	private JTextField simContextTextField;

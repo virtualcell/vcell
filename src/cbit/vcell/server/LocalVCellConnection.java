@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;

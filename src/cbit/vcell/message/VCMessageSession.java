@@ -2,7 +2,8 @@ package cbit.vcell.message;
 
 import java.io.Serializable;
 
-import cbit.vcell.server.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo;
+
 
 public interface VCMessageSession {
 	public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException;	

@@ -26,14 +26,14 @@ public class Species implements	VetoableChangeListener, Cacheable, Identifiable 
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private java.lang.String fieldCommonName = null;
 	private String fieldAnnotation = null;
-	private cbit.vcell.dictionary.DBSpecies fieldDBSpecies = null;
+	private cbit.vcell.model.DBSpecies fieldDBSpecies = null;
 
 public Species(String commonName,String argAnnotation) throws IllegalArgumentException {
 	this(commonName,argAnnotation,null);
 }      
 
 
-public Species(String commonName,String argAnnotation, cbit.vcell.dictionary.DBSpecies argDBSpecies) throws IllegalArgumentException {
+public Species(String commonName,String argAnnotation, cbit.vcell.model.DBSpecies argDBSpecies) throws IllegalArgumentException {
 	this.fieldAnnotation = argAnnotation;
 	this.fieldDBSpecies = argDBSpecies;
 	
@@ -194,7 +194,7 @@ public java.lang.String getCommonName() {
  * @return The speciesReference property value.
  * @see #setSpeciesReference
  */
-public cbit.vcell.dictionary.DBSpecies getDBSpecies() {
+public cbit.vcell.model.DBSpecies getDBSpecies() {
 	return fieldDBSpecies;
 }
 
@@ -290,8 +290,8 @@ public void setCommonName(java.lang.String commonName) throws java.beans.Propert
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getCommonName
  */
-public void setDBSpecies(cbit.vcell.dictionary.DBSpecies argDBSpecies) throws java.beans.PropertyVetoException {
-	cbit.vcell.dictionary.DBSpecies oldValue = fieldDBSpecies;
+public void setDBSpecies(cbit.vcell.model.DBSpecies argDBSpecies) throws java.beans.PropertyVetoException {
+	cbit.vcell.model.DBSpecies oldValue = fieldDBSpecies;
 	fireVetoableChange("dbFormalSpecies", oldValue, argDBSpecies);
 	fieldDBSpecies = argDBSpecies;
 	firePropertyChange("dbFormalSpecies", oldValue, argDBSpecies);

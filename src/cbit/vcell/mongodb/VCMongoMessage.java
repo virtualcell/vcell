@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.MessageEvent;
@@ -23,7 +24,6 @@ import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.server.UserLoginInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationMessage.DetailedState;
