@@ -37,13 +37,14 @@ bootstrap_memoryMB=800
 #--------------------------------------
 bootstrap_http_rmiport=GENERATED
 bootstrap_http_jmxport=GENERATED
+bootstrap_http_processLabel=${common_site}-rmi-http
 
 #--------------------------------------
 # rmi bootstrap services (high port) "vcellbootstrap_high"
 #--------------------------------------
 bootstrap_high_rmiport=GENERATED
 bootstrap_high_jmxport=GENERATED
-
+bootstrap_high_processLabel=${common_site}-rmi-high
 
 #--------------------------------------
 # vcell service "vcellservice"
@@ -51,6 +52,7 @@ bootstrap_high_jmxport=GENERATED
 vcellservice_mainclass=GENERATED
 vcellservice_jmxhost=GENERATED
 vcellservice_jmxport=GENERATED
+vcellservice_processLabel=${common_site}-master
 
 vcellservice_memoryMB=3000
 
@@ -72,3 +74,8 @@ postprocessor_memoryMB=500
 javasolver_mainclass=GENERATED
 javasolver_memoryMB=1000
 
+#--------------------------------------
+# result set crawler
+#--------------------------------------
+resultset_crawler_mainclass=GENERATED
+resultset_crawler_memoryMB=3000
