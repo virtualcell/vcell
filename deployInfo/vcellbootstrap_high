@@ -13,6 +13,11 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 shopt -s -o nounset
 
 #
+# Process label for identifying service from ps -ef output
+#
+procLabel="-DprocessLabel=${bootstrap_high_processLabel}"
+
+#
 # Java Management Extensions
 #
 jmxargs="-Dcom.sun.management.jmxremote"
@@ -26,9 +31,9 @@ jvmprop="-Xmx${vcellservice_memoryMB}M -Djava.security.policy=${bootstrap_policy
 arguments="${bootstrap_rmihost} ${bootstrap_high_rmiport} messaging ${common_logdir}"
 
 #
-# IMPORTANT:  ${jmxargs} must be first because we are filtering on it for the kill script in DeployVCell.
+# IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
-nohup ${common_jre} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
+nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
 
 exit 0
 

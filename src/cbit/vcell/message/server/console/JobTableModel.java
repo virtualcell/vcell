@@ -35,12 +35,13 @@ public class JobTableModel extends VCellSortTableModel<ComparableObject> {
 	private final static int columnIndex_StartDate = 9;
 	private final static int columnIndex_EndDate = 10;
 	private final static int columnIndex_ElapsedTime = 11;
+	private final static int columnIndex_MeshSize = 12;
 
 /**
  * JobTableModel constructor comment.
  */
 public JobTableModel() {
-	super(new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)"});
+	super(new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)", "Mesh Size"});
 }
 
 
@@ -57,6 +58,8 @@ public Class getColumnClass(int columnIndex) {
 		return Date.class;
 	} else if (columnIndex == columnIndex_ElapsedTime){
 		return Long.class;
+	} else if (columnIndex == columnIndex_MeshSize){
+		return Number.class;
 	} else {		
 		return String.class;
 	}

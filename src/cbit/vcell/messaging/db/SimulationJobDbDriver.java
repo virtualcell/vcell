@@ -343,7 +343,8 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 	StringBuffer sql = new StringBuffer();
 	
 	sql.append("SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
-		+ "," + simTable.ownerRef.getQualifiedColName() + "," + simTable.taskDescription.getQualifiedColName() 
+		+ "," + simTable.ownerRef.getQualifiedColName() + "," + simTable.taskDescription.getQualifiedColName()
+		+ "," + simTable.meshSpecX.getQualifiedColName() + "," + simTable.meshSpecY.getQualifiedColName() + "," + simTable.meshSpecZ.getQualifiedColName()
 		+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName() 
 		+ " WHERE " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
 		+ " AND " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName());
@@ -370,12 +371,22 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 				if (taskDesc != null) {
 					std = new cbit.vcell.solver.SolverTaskDescription(new org.vcell.util.CommentStringTokenizer(org.vcell.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
-				
 			} catch (DataAccessException ex) {
 				log.exception(ex);
 			}
-		
-			resultList.add(new SimpleJobStatus(username, simJobStatus, std));
+			Integer meshSizeX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
+			if (rset.wasNull()){
+				meshSizeX = null;
+			}
+			Integer meshSizeY = rset.getInt(SimulationTable.table.meshSpecY.getUnqualifiedColName());
+			if (rset.wasNull()){
+				meshSizeY = null;
+			}
+			Integer meshSizeZ = rset.getInt(SimulationTable.table.meshSpecZ.getUnqualifiedColName());
+			if (rset.wasNull()){
+				meshSizeZ = null;
+			}
+			resultList.add(new SimpleJobStatus(username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ));
 		} 
 	} finally {
 		stmt.close();		
