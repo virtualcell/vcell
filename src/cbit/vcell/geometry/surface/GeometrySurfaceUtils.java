@@ -15,6 +15,7 @@ package cbit.vcell.geometry.surface;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.image.ImageException;
+import cbit.image.VCImage;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryUnitSystem;
 import cbit.vcell.geometry.RegionImage;
@@ -78,22 +79,6 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 	
 	java.util.Vector regionList = new java.util.Vector();
 	cbit.vcell.geometry.RegionImage.RegionInfo regionInfos[] = regionImage.getRegionInfos();
-	// check for samples (pixels?) that do not correspond to subVolumes
-	try {
-		int count = 0;
-		byte samples[] = geometrySpec.getSampledImage().getCurrentValue().getPixels();
-		for (int i = 0; i < samples.length; i++){
-			if (samples[i] == -1){
-				count++;
-			}
-		}
-		if (count>0){
-			throw new RuntimeException("Invalid Geometry - " + count + " of "+samples.length + " samples of geometry domain didn't map to any subdomain");
-		}
-	} catch (ImageException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Error getting sampled image for geometry : " + e.getMessage(), e);
-	}
 	for (int i = 0; i < regionInfos.length; i++){
 		cbit.vcell.geometry.RegionImage.RegionInfo regionInfo = regionInfos[i];
 		System.out.println(regionInfo);
