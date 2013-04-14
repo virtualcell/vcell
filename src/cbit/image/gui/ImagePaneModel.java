@@ -520,6 +520,10 @@ public void setSourceData(SourceDataInfo sourceData) {
 	fieldSourceData = sourceData;
 	Dimension beforeDimension = fieldDimension;
 	setDimension(calculateDimension());
+	if (fieldSourceData != null && fieldSourceData.isChombo())
+	{
+		fieldMode = NORMAL_MODE;
+	}
 	if(beforeDimension == getDimension()){
 		//Do this since dimension didn't
 		if(oldValue != null && sourceData != null && !oldValue.getOrigin().equals(sourceData.getOrigin())){
