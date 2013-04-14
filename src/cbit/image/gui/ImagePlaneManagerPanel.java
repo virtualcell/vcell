@@ -149,7 +149,11 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
 		getCurveRenderer().setWorldDelta(new org.vcell.util.Coordinate(wd_x, wd_y, wd_z));
 		org.vcell.util.Origin o = getSourceDataInfo().getOrigin();
 		getCurveRenderer().setWorldOrigin(new org.vcell.util.Coordinate(o.getX(), o.getY(), o.getZ()));
-		getCurveRenderer().setDefaultLineWidthMultiplier((double) getimagePaneModel().getZoom());
+		double lineWidth = (double) getimagePaneModel().getZoom();
+		if (getimagePaneModel().getMode() == ImagePaneModel.NORMAL_MODE) {
+			lineWidth /= 2;
+		}
+		getCurveRenderer().setDefaultLineWidthMultiplier(lineWidth);
 	} else {
 		getCurveRenderer().setWorldDelta(null);
 	}

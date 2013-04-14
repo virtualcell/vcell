@@ -375,6 +375,7 @@ private void updateImagePlaneData() {
 	double yExtent = Coordinate.convertAxisFromStandardXYZToNormal(ext.getX(),ext.getY(),ext.getZ(),Coordinate.Y_AXIS,getNormalAxis());
 	//
 	SourceDataInfo sdi = new SourceDataInfo(type, data, null, startIndex + startDelta, xSize, xIncrement, xOrigin, xExtent, ySize, yIncrement, yOrigin, yExtent);
+	sdi.setIsChombo(sdiSource.isChombo());
 	setImagePlaneData(sdi);
 }
 /**
