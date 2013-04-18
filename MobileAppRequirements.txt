@@ -1,0 +1,31 @@
+Mobile App Requirements:
+
+----Primary Requirements-------
+authenticate as an existing vcell user
+get list of active (waiting/queued/running/completed) simulations
+view simulation execution status for running simulations (progress)
+retrieve nonspatial simulation results
+plot simulation results
+stop a running or queued simulation.
+
+----Manage resource quotas-----
+remove data for unused simulations
+view simulation results storage quota
+sort simulations by storage usage.
+
+----Start simulations----------
+get list of recently completed simulations
+view simulations by model branch/version
+start a non-running simulation
+
+----Advanced-------------------
+compare two simulation results.
+share simulation plots with another user.
+have a vcell "friend" list.
+switch user??
+Asynchronous notification of simulation completed.
+
+----Related capabilities------
+run simulations locally/interactively.
+model editing
+change simulation parameters

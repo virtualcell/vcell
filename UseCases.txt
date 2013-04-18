@@ -1,0 +1,7 @@
+Use Cases
+
+check on running simulations
+manage storage quotas
+view simulation results (nonspatial) as plots.
+manage "friends"
+share results with friend.

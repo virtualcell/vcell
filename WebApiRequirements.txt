@@ -1,0 +1,35 @@
+Web API Requirements:
+
+----Primary Requirements-------
+authenticate each request to a vcell user
+provide authorization for all requests by user/roll.
+get list of active (waiting/queued/running/completed) simulations for user.
+view simulation execution status for running simulations (progress).
+retrieve nonspatial simulation results.
+stop a running or queued simulation for user.
+
+----Manage resource quotas-----
+remove data for a simulation (resets to not run).
+provide user simulation results storage quota
+provide storage usage by simulation (ordered by size)
+
+----Start simulations----------
+get list of recently completed simulations
+view simulations by model branch/version
+start a non-running simulation
+
+----Advanced-------------------
+provide a uri for a dataset/plot combination that can be shared.
+support vcell account "friend" lists.
+Asynchronous notification of simulation completed.
+simulations can be marked by user with textual tags
+simulations can be searched by tags, date, size, solvertype
+
+----Related capabilities------
+provide list of models
+create retrieve update delete models
+create retrieve update delete simulations
+
+
+support Java, Android, IOS, Web Browser interfaces.
+

@@ -1,37 +1,24 @@
-package org.vcell.rest.server;
+package org.vcell.rest;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.restlet.Application;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
-import org.restlet.engine.adapter.HttpRequest;
-import org.restlet.engine.connector.HttpInboundRequest;
-import org.restlet.resource.Directory;
+import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.routing.Router;
-import org.restlet.security.ChallengeAuthenticator;
-import org.restlet.security.MapVerifier;
-import org.restlet.util.Series;
-import org.vcell.simtool2.data.SimsSearchResponse;
-import org.vcell.simtool2.data.SimHolder;
+import org.vcell.rest.common.SimsSearchResponse;
+import org.vcell.rest.common.SimulationTaskRepresentation;
+import org.vcell.rest.server.SimulationTaskServerResource;
+import org.vcell.rest.server.SimulationTasksServerResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
-
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
@@ -39,71 +26,49 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
-public class SimApplication extends Application {
+import com.google.gson.Gson;
+
+public class VCellApiApplication extends WadlApplication {
 	public static final String ROOT_URI = "file:///c:/temp/";  
 
-	SimulationDatabase simulationDatabase = null;
+	public SimulationDatabase simulationDatabase = null;
+	public AdminDBTopLevel adminDBTopLevel = null;
 	
-	public SimApplication(SimulationDatabase simulationDatabase) {
+	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel) {
+        setName("RESTful VCell API application");
+        setDescription("Simulation management API");
+        setOwner("VCell Project/UCHC");
+        setAuthor("VCell Team");
 		this.simulationDatabase = simulationDatabase;
+		this.adminDBTopLevel = adminDbTopLevel;
 	}
 
 	@Override  
     public Restlet createInboundRoot() {  
     	
-    	// Create a root router  
+	    System.setProperty("java.net.preferIPv4Stack", "true");
+	    
+	    
+   	// Create a root router  
     	Router router = new Router(getContext());  
     	  
-    	// Attach a guard to secure access to the directory  
-    	ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), ChallengeScheme.HTTP_BASIC, "Tutorial");  
-    	MapVerifier verifier = new MapVerifier();  
-    	verifier.getLocalSecrets().put("scott", "tiger".toCharArray());  
-    	guard.setVerifier(verifier);
-
-    	router.attach("/docs/", guard);  
+//    	// Attach a guard to secure access to the directory  
+//    	ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), ChallengeScheme.HTTP_BASIC, "Tutorial");  
+//    	MapVerifier verifier = new MapVerifier();  
+//    	verifier.getLocalSecrets().put("scott", "tiger".toCharArray());  
+//    	guard.setVerifier(verifier);
+//
+//    	router.attach("/docs/", guard);  
+//    	  
+//    	// Create a directory able to expose a hierarchy of files  
+//    	Directory directory = new Directory(getContext(), ROOT_URI);  
+//    	guard.setNext(directory);  
     	  
-    	// Create a directory able to expose a hierarchy of files  
-    	Directory directory = new Directory(getContext(), ROOT_URI);  
-    	guard.setNext(directory);  
-    	  
-    	// Create the account handler  
-    	Restlet account = new Restlet() {  
-    	    @Override  
-    	    public void handle(Request request, Response response) {  
-    	        // Print the requested URI path  
-    	        String message = "Account of user \""  
-    	                + request.getAttributes().get("user") + "\"";  
-    	        response.setEntity(message, MediaType.TEXT_PLAIN);  
-    	    }  
-    	};  
-    	  
-    	// Create the orders handler  
-    	Restlet orders = new Restlet(getContext()) {  
-    	    @Override  
-    	    public void handle(Request request, Response response) {  
-    	        // Print the user name of the requested orders  
-    	        String message = "Orders of user \""  
-    	                + request.getAttributes().get("user") + "\"";  
-    	        response.setEntity(message, MediaType.TEXT_PLAIN);  
-    	    }  
-    	};  
-    	  
-    	// Create the order handler  
-    	Restlet order = new Restlet(getContext()) {  
-    	    @Override  
-    	    public void handle(Request request, Response response) {  
-    	        // Print the user name of the requested orders  
-    	        String message = "Order \""  
-    	                + request.getAttributes().get("order")  
-    	                + "\" for user \""  
-    	                + request.getAttributes().get("user") + "\"";  
-    	        response.setEntity(message, MediaType.TEXT_PLAIN);  
-    	    }  
-    	};  
-    	
+     	
     	Restlet allsims = new Restlet(getContext()){
     		private SimulationJobStatus[] getSimulationJobStatus() throws DataAccessException, SQLException{
     			if (simulationDatabase!=null){
@@ -140,31 +105,9 @@ public class SimApplication extends Application {
     	    		Gson gson = new Gson();
     	    		SimsSearchResponse simsResponse = new SimsSearchResponse();
     	    		simsResponse.query = ""+request.getResourceRef();
-    	    		simsResponse.results = new ArrayList<SimHolder>();
+    	    		simsResponse.results = new ArrayList<SimulationTaskRepresentation>();
     	    		for (SimulationJobStatus simJobStatus : simJobStatusList) {
-						SimHolder holder = new SimHolder();
-						holder.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
-						holder.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
-						holder.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
-						holder.jobIndex = simJobStatus.getJobIndex();
-						holder.taskId = simJobStatus.getTaskID();
-						SimulationExecutionStatus simulationExecutionStatus = simJobStatus.getSimulationExecutionStatus();
-						if (simulationExecutionStatus!=null && simulationExecutionStatus.getHtcJobID()!=null){
-							holder.htcJobId = simulationExecutionStatus.getHtcJobID().toDatabase();
-						}
-						holder.status = simJobStatus.getSchedulerStatus().getDescription();
-						if (simJobStatus.getStartDate()!=null){
-							holder.startdate = simJobStatus.getStartDate().getTime();
-						}
-						if (simJobStatus.getSimulationMessage()!=null){
-							holder.message = simJobStatus.getSimulationMessage().getDisplayMessage();
-						}
-						if (simJobStatus.getServerID()!=null){
-							holder.site = simJobStatus.getServerID().toCamelCase();
-						}
-						if (simJobStatus.getComputeHost()!=null){
-							holder.computeHost = simJobStatus.getComputeHost();
-						}
+						SimulationTaskRepresentation holder = new SimulationTaskRepresentation(simJobStatus);
 						simsResponse.results.add(holder);
 					}
     	    		final String FIELD_SIMKEY		= "SimKey";
@@ -221,19 +164,19 @@ public class SimApplication extends Application {
     	    			buffer.append("<th>"+FIELD_SITE+"</th>\n");
     	    			buffer.append("<th>"+FIELD_COMPUTEHOST+"</th>\n");
     	    			buffer.append("</tr>\n");
-	    	    		for (SimHolder simJobStatusHolder : simsResponse.results) {
+	    	    		for (SimulationTaskRepresentation simulationTaskRepresentation : simsResponse.results) {
 	       	    			buffer.append("<tr>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.simKey+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.userName+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.userKey+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.jobIndex+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.taskId+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.htcJobId+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.status+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.startdate+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.message+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.site+"</td>\n");
-	       	    			buffer.append("<td>"+simJobStatusHolder.computeHost+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.simKey+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.userName+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.userKey+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.jobIndex+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.taskId+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.htcJobId+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.status+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.startdate+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.message+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.site+"</td>\n");
+	       	    			buffer.append("<td>"+simulationTaskRepresentation.computeHost+"</td>\n");
 	       	    			buffer.append("</tr>\n");
 	       	    		}
     	    			buffer.append("</table>\n");
@@ -258,10 +201,9 @@ public class SimApplication extends Application {
     	};
     	  
     	// Attach the handlers to the root router  
-    	router.attach("/users/{user}", account);  
-    	router.attach("/users/{user}/orders", orders);  
-    	router.attach("/users/{user}/orders/{order}", order);  
-    	router.attach("/sim", allsims);
+    	///router.attach("/users/{user}", account);  
+    	router.attach("/users/{user}/simulationTask", SimulationTasksServerResource.class);  
+    	router.attach("/users/{user}/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
     	 
     	return router;  
     }  
