@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/serializer.jar"/>
+	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet"/>
 	<classpathentry kind="lib" path="lib/json-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-all-1.9.11.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/VCell_5.3"/>
 	<classpathentry kind="lib" path="lib/json-20090211.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/org.vcell.simtool2"/>
@@ -15,7 +19,8 @@
 	<classpathentry kind="lib" path="lib/asm-1.0-RC1.jar" sourcepath="lib/asm-1.0-RC1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.7.jar" sourcepath="lib/commons-codec-1.7-sources.jar"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.wadl.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet.ext.wadl"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet.ext.xml"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

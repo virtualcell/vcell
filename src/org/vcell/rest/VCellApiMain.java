@@ -1,8 +1,8 @@
 package org.vcell.rest;
 
-import org.restlet.Application;
-import org.restlet.Component;
 import org.restlet.data.Protocol;
+import org.restlet.ext.wadl.WadlApplication;
+import org.restlet.ext.wadl.WadlComponent;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -26,21 +26,27 @@ public class VCellApiMain {
 	public static void main(String[] args) {
 		try {
 			
-			PropertyLoader.loadProperties();
-			final SessionLog log = new StdoutSessionLog("VCellWebApi");
-			KeyFactory keyFactory = new OracleKeyFactory();
-			DbDriver.setKeyFactory(keyFactory);
-			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
-//			SimulationDatabase simulationDatabase = null;
+			SimulationDatabase simulationDatabase = null;
+			AdminDBTopLevel adminDbTopLevel = null;
+			
+			try {
+				PropertyLoader.loadProperties();
+				final SessionLog log = new StdoutSessionLog("VCellWebApi");
+				KeyFactory keyFactory = new OracleKeyFactory();
+				DbDriver.setKeyFactory(keyFactory);
+				ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+				adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+				ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
+				simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-			Component component = new Component();
+			WadlComponent component = new WadlComponent();
 			component.getServers().add(Protocol.HTTP, 8182);
 			
-			Application app = new VCellApiApplication(simulationDatabase,adminDbTopLevel);
+			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel);
 			component.getDefaultHost().attach(app);  
 			component.start();
 			System.out.println("component ended.");

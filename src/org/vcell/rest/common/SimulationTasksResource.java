@@ -33,6 +33,7 @@
 
 package org.vcell.rest.common;
 
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
 /**
@@ -46,7 +47,7 @@ public interface SimulationTasksResource {
      * @return The list of accounts.
      */
     @Get("json")
-    public SimulationTaskRepresentation[] retrieve();
+    public SimulationTaskRepresentation[] get_json();
 
 //    /**
 //     * Add the given account to the list and returns its position as an
@@ -59,6 +60,7 @@ public interface SimulationTasksResource {
 //    @Post
 //    public String add(SimulationTaskRepresentation simTask);
     
-    
+    @Get("html")
+    public Representation get_html();
 
 }
