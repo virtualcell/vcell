@@ -1417,8 +1417,13 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 			// verify that handles are non-negative
 			//
 			if (sv.getHandle()<0){
-				throw new PropertyVetoException("subdomain handle="+sv.getHandle()+" must be positive",event);
+				throw new PropertyVetoException("subdomain handle="+sv.getHandle()+" must be non-negative",event);
 			}
+			
+			if (sv.getName() == null || sv.getName().length() < 1){
+				throw new PropertyVetoException("Subdomain name cannot be null or blank : ",event);
+			}
+
 			//
 			// verify that handles and names are unique
 			//
@@ -1483,4 +1488,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 		}
 	}
 }
-	}
+
+}
+
