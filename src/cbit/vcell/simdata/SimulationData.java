@@ -54,6 +54,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.FunctionFileGenerator;
 /**
  * This type was created in VisualAge.
@@ -1214,10 +1215,11 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	//
 	StringBuffer stringBuffer = new StringBuffer();
 	FileInputStream is = null;
+	BufferedReader br = null;
 	try {
 		is = new FileInputStream(logFile);
 		InputStreamReader reader = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(reader);
+		br = new BufferedReader(reader);
 		char charArray[] = new char[10000];
 		while (true) {
 			int numRead = br.read(charArray, 0, charArray.length);
@@ -1230,6 +1232,14 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	}finally{
 		if (is != null){
 			is.close();
+		}
+		if (br != null)
+		{
+			try {
+				br.close();
+			} catch (IOException ex) {
+				// ignore
+			}
 		}
 	}
 	VCMongoMessage.sendTrace("SimulationData.readLog() log file read into string buffer");
@@ -1334,8 +1344,10 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	if(isChombo()){
 //		SimulationDataSpatialHdf5 simulationDataSpatialHdf5 = new SimulationDataSpatialHdf5(vcDataId,userDirectory,null);
 //		simulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers();
-		mesh = new CartesianMesh.ChomboMesh(SimulationDataSpatialHdf5.readMeshFile(getMeshFile()));
-
+		mesh = CartesianMeshChombo.readMeshFile(getMeshFile());
+		// test serialization
+		//byte[] byteArray = BeanUtils.toSerialized(mesh);
+		//mesh = (CartesianMeshChombo) BeanUtils.fromSerialized(byteArray);
 	}else{
 		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFile());
 	}

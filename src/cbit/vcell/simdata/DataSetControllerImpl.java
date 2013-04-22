@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,8 +36,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
@@ -112,6 +109,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.solvers.MembraneElement;
@@ -2658,7 +2656,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ") evaluating function");
 			simDataBlock = evaluateFunction(outputContext,vcdID,simData,function,time);
 		}
-		if(getMesh(vcdID) instanceof CartesianMesh.ChomboMesh){
+		if(getMesh(vcdID).isChomboMesh()){
 			for (int i = 0; i < simDataBlock.getData().length; i++) {
 				if(simDataBlock.getData()[i] == 1.23456789e300){
 					simDataBlock.getData()[i] = Double.NaN;

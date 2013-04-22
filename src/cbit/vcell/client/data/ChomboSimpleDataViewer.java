@@ -58,6 +58,7 @@ import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.simdata.DataSetIdentifier;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationDataSpatialHdf5;
 import cbit.vcell.simdata.SimulationDataSpatialHdf5.SimDataSet;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -142,7 +143,7 @@ public class ChomboSimpleDataViewer extends JFrame {
 			{
 				if (value instanceof Number)
 				{
-					if (((Number) value).doubleValue() == BASEFAB_REAL_SETVAL)
+					if (((Number) value).doubleValue() == SimDataConstants.BASEFAB_REAL_SETVAL)
 					{
 						setForeground(Color.gray);
 					}
@@ -284,7 +285,6 @@ public class ChomboSimpleDataViewer extends JFrame {
 		}
 	}
 	
-	public static final double BASEFAB_REAL_SETVAL = 1.23456789e+300;
 	private JPanel mainPanel = new JPanel();
 	private JList varList = new JList();
 	private JButton okButton = new JButton("Go");

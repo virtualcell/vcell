@@ -78,4 +78,6 @@ public interface SimDataConstants {
 
 	public static final String VCG_FILE_EXTENSION = ".vcg";
 	
+	public static final double BASEFAB_REAL_SETVAL = 1.23456789e+300;
+	
 }

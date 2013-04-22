@@ -12,9 +12,7 @@ package cbit.image.gui;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
@@ -26,11 +24,11 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
 
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
 import cbit.vcell.geometry.gui.CurveRenderer;
-import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -149,11 +147,7 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
 		getCurveRenderer().setWorldDelta(new org.vcell.util.Coordinate(wd_x, wd_y, wd_z));
 		org.vcell.util.Origin o = getSourceDataInfo().getOrigin();
 		getCurveRenderer().setWorldOrigin(new org.vcell.util.Coordinate(o.getX(), o.getY(), o.getZ()));
-		double lineWidth = (double) getimagePaneModel().getZoom();
-		if (getimagePaneModel().getMode() == ImagePaneModel.NORMAL_MODE) {
-			lineWidth /= 2;
-		}
-		getCurveRenderer().setDefaultLineWidthMultiplier(lineWidth);
+		getCurveRenderer().setDefaultLineWidthMultiplier((double) getimagePaneModel().getZoom());
 	} else {
 		getCurveRenderer().setWorldDelta(null);
 	}
@@ -1388,18 +1382,35 @@ private void updateInfo(MouseEvent mouseEvent) {
 				wc = getImagePlaneManager().getWorldCoordinateFromUnitized2D(unitP.getX(), unitP.getY());
 				if(wc != null){
 					if(getCurveValueProvider() != null){
-						CurveSelectionInfo[] curveCSIArr = getCurveRenderer().getCloseCurveSelectionInfos(wc);
-						if(curveCSIArr != null){
-							for(int i = 0;i < curveCSIArr.length;i+= 1){
-								CurveSelectionInfo csiSegment = getCurveRenderer().getClosestSegmentSelectionInfo(wc,curveCSIArr[i].getCurve());
-								if(csiSegment != null){
-									String infoTemp = getCurveValueProvider().getCurveValue(csiSegment);
-									if(infoTemp != null){infoS = infoTemp;bNeedsMembraneCursor = true;break;}
+						if (getSourceDataInfo() != null && getSourceDataInfo().isChombo()) {
+							// for chombo, can't use closest curve method, one irregular point has one curve, it can be very far
+							CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
+							CurveSelectionInfo csiSegment = getCurveValueProvider().findChomboCurveSelectionInfoForPoint(ci);
+							if (csiSegment != null) {
+								String infoTemp = getCurveValueProvider().getCurveValue(csiSegment);
+								if(infoTemp != null){
+									infoS = infoTemp;
+									bNeedsMembraneCursor = true;
+								}
+							}
+						} else {
+							CurveSelectionInfo[] curveCSIArr = getCurveRenderer().getCloseCurveSelectionInfos(wc);
+							if(curveCSIArr != null){
+								for(int i = 0;i < curveCSIArr.length;i+= 1){
+									CurveSelectionInfo csiSegment = getCurveRenderer().getClosestSegmentSelectionInfo(wc,curveCSIArr[i].getCurve());
+									if(csiSegment != null){
+										String infoTemp = getCurveValueProvider().getCurveValue(csiSegment);
+										if(infoTemp != null){
+											infoS = infoTemp;
+											bNeedsMembraneCursor = true;
+											break;
+										}
+									}
 								}
 							}
 						}
 					}
-					boolean isChombo = getDataInfoProvider() != null && getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh;
+					boolean isChombo = getDataInfoProvider() != null && getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh();
 					if (infoS == null && getSourceDataInfo() != null) {
 						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
@@ -1421,7 +1432,7 @@ private void updateInfo(MouseEvent mouseEvent) {
 							(getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex))?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
 						if(getDataInfoProvider() != null ){
 							infoS+= "          ";
-							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh() instanceof CartesianMesh.ChomboMesh){
+							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()){
 								infoS+="Chombo Info TBI";
 							}else{
 								PDEDataViewer.VolumeDataInfo volumeDataInfo =
@@ -1440,8 +1451,13 @@ private void updateInfo(MouseEvent mouseEvent) {
 					}
 				}
 			}
-			if(bNeedsMembraneCursor){getimagePaneView1().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));}
-			else{setToolCursor();}
+			if(bNeedsMembraneCursor){
+				getimagePaneView1().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+			}
+			else{
+				getimagePaneView1().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				setToolCursor();
+			}
 		}else{
 			lastValidMouseEvent = null;
 		}

@@ -170,9 +170,16 @@ public org.vcell.util.CoordinateIndex getDataIndexFromUnitized(double unitizedX,
 	if(unitizedX < 0 || unitizedX > 1 || unitizedY < 0 || unitizedY > 1 || unitizedZ < 0 || unitizedZ > 1){
 		return null;
 	}
-	int xCoordIndex = (getXSize()==1)?(0):((int) Math.round(unitizedX * (getXSize()-1)));
-	int yCoordIndex = (getYSize()==1)?(0):((int) Math.round(unitizedY * (getYSize()-1)));
-	int zCoordIndex = (getZSize()==1)?(0):((int) Math.round(unitizedZ * (getZSize()-1)));
+	int xCoordIndex, yCoordIndex, zCoordIndex;
+	if (isChombo) {
+		xCoordIndex = (getXSize()==1)?(0):((int)(unitizedX * getXSize()));
+		yCoordIndex = (getYSize()==1)?(0):((int)(unitizedY * getYSize()));
+		zCoordIndex = (getZSize()==1)?(0):((int)(unitizedZ * getZSize()));
+	} else {
+		xCoordIndex = (getXSize()==1)?(0):((int) Math.round(unitizedX * (getXSize()-1)));
+		yCoordIndex = (getYSize()==1)?(0):((int) Math.round(unitizedY * (getYSize()-1)));
+		zCoordIndex = (getZSize()==1)?(0):((int) Math.round(unitizedZ * (getZSize()-1)));
+	}
 	return new org.vcell.util.CoordinateIndex(xCoordIndex,yCoordIndex,zCoordIndex);
 }
 
@@ -289,7 +296,7 @@ public void setIsChombo(boolean isChombo){
 }
 public Coordinate getWorldCoordinateFromIndex(org.vcell.util.CoordinateIndex ci) {
 	if(isChombo){
-		return getChombotWorldCoordinateFromIndex(ci);
+		return getChomboWorldCoordinateFromIndex(ci);
 	}else{
 		return getVCellWorldCoordinateFromIndex(ci);
 	}
@@ -300,7 +307,7 @@ private Coordinate getVCellWorldCoordinateFromIndex(org.vcell.util.CoordinateInd
 	double z = (getZSize()==1)?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):(((double)ci.z/(double)(getZSize()-1))*extent.getZ() + origin.getZ());
 	return new Coordinate(x, y, z);
 }
-private Coordinate getChombotWorldCoordinateFromIndex(org.vcell.util.CoordinateIndex ci) {
+private Coordinate getChomboWorldCoordinateFromIndex(org.vcell.util.CoordinateIndex ci) {
 	double x = (getXSize()==1?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS):(extent.getX()/getXSize())*(ci.x+.5) + origin.getX());
 	double y = (getYSize()==1?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS):(extent.getY()/getYSize())*(ci.y+.5) + origin.getY());
 	double z = (getZSize()==1?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):(extent.getZ()/getZSize())*(ci.z+.5) + origin.getZ());
@@ -325,7 +332,7 @@ private Coordinate geVCellWorldCoordinateFromUnitized(double unitizedX, double u
 }
 private Coordinate geChomboWorldCoordinateFromUnitized(double unitizedX, double unitizedY, double unitizedZ) {
 
-	return getChombotWorldCoordinateFromIndex(new CoordinateIndex((int)(unitizedX*getXSize()),(int)(unitizedY*getYSize()),(int)(unitizedZ*getZSize())));
+	return getChomboWorldCoordinateFromIndex(new CoordinateIndex((int)(unitizedX*getXSize()),(int)(unitizedY*getYSize()),(int)(unitizedZ*getZSize())));
 }
 
 //int t = ((int)(((double)lastPrintPoint/(double)getWorldPixelSize())*8));
@@ -446,4 +453,5 @@ public boolean isDataNull() {
 public boolean needsColorConversion() {
 	return !(type == INT_RGB_TYPE);
 }
+
 }

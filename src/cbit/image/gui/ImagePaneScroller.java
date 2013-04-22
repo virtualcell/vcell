@@ -893,8 +893,7 @@ getJScrollPane1().getViewport().reshape(
 				SourceDataInfo sdi = getImagePaneModel().getSourceData();
 				int boundsXSize = (int)getJScrollPane1().getViewportBorderBounds().getWidth();
 				int boundsYSize = (int)getJScrollPane1().getViewportBorderBounds().getHeight();
-				boolean bMeshMode = getImagePaneModel().getMode() == ImagePaneModel.MESH_MODE;
-				int zoom = Math.min(boundsXSize/(sdi.getXSize()*(bMeshMode?2:1)),boundsYSize/(sdi.getYSize()*(bMeshMode?2:1)));
+				int zoom = Math.min(boundsXSize/(sdi.getXSize()*2),boundsYSize/(sdi.getYSize()*2));
 				zoom = (zoom < 1?1:zoom);
 				getImagePaneModel().setZoom(zoom);
 				

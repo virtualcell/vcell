@@ -338,7 +338,11 @@ public org.vcell.util.Coordinate snapWorldCoordinateFace(org.vcell.util.Coordina
  */
 private Coordinate standardXYZFromUnitized(double x, double y) {
 
-	double z = (sliceBoundary()==1)?(0.0):(double)worldSlice()/(double)(sliceBoundary()-1);
+	double z = 0;
+	if (sliceBoundary() > 1)
+	{
+		z = (isChombo())?(double)worldSlice()/(double)(sliceBoundary()):(double)worldSlice()/(double)(sliceBoundary()-1);
+	}
 	return Coordinate.convertCoordinateFromNormalToStandardXYZ(x,y,z,getNormalAxis());
 }
 /**

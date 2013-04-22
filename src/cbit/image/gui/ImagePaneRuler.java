@@ -165,6 +165,8 @@ protected void paintComponent(java.awt.Graphics g) {
 	//}
 	((java.awt.Graphics2D)g).setFont(lastSmallFont);
 	//
+	int elementLength = getSingleElementLengthInPixels();
+	int halfElementLength = elementLength / 2;
 	if(getOrientation() == ORIENT_HORIZONTAL){
 		//
 		int descOffset = 0;
@@ -192,7 +194,8 @@ protected void paintComponent(java.awt.Graphics g) {
 		int horzGap = 60;
 		//
 		for(int x = start;x<end;x+= 1){
-			if(((x-(getSingleElementLengthInPixels()/2))%getSingleElementLengthInPixels() == 0) || x == start || x == (end-1)){
+			boolean bDrawLine = isChombo ? x % elementLength == 0 : (x-halfElementLength)%elementLength == 0;
+			if(bDrawLine || x == start || x == (end-1)){
 				//mark off the mesh elements
 				g.drawLine(x,(int)getPreferredSize().getHeight()-1-(len/2),x,(int)getPreferredSize().getHeight()-1);
 				//keep track of boundary between mesh elements
@@ -200,10 +203,11 @@ protected void paintComponent(java.awt.Graphics g) {
 				lastHighPoint = x;
 				if(lastLowPoint != -1 && lastHighPoint != -1){//when we start having 2 boundaries we can calculate the middles
 					int tempPrintpoint = lastLowPoint+((lastHighPoint-lastLowPoint)/2);
-					if((lastLowPoint == 0 || lastHighPoint == (end-1) || (tempPrintpoint-lastPrintPoint) >= horzGap && end-tempPrintpoint >= horzGap) && getImagePlaneManager() != null){
+					boolean bPrintPoint = isChombo ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength : lastLowPoint == 0 || lastHighPoint == (end-1);
+					if((bPrintPoint || (tempPrintpoint-lastPrintPoint) >= horzGap && end-tempPrintpoint >= horzGap) && getImagePlaneManager() != null){
 						//g.drawLine(lastLowPoint,(int)getPreferredSize().getHeight()-1-len,lastLowPoint,(int)getPreferredSize().getHeight()-1);
 						//g.drawLine(lastHighPoint,(int)getPreferredSize().getHeight()-1-len,lastHighPoint,(int)getPreferredSize().getHeight()-1);
-						if(lastPrintPoint != start && lastHighPoint != (end-1)){//dont print middle marks at begin or end
+						if(isChombo || (lastPrintPoint != start && lastHighPoint != (end-1))){//dont print middle marks at begin or end
 							g.drawLine(tempPrintpoint,(int)getPreferredSize().getHeight()-1-len+2,tempPrintpoint,(int)getPreferredSize().getHeight()-1-2);
 						}
 						lastPrintPoint = tempPrintpoint;
@@ -223,9 +227,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());
 						if(lastLowPoint == 0){
-							g.drawString(val,2,(int)lm.getAscent()+descOffset);
+							g.drawString(val,(isChombo ? tempPrintpoint : 2) ,(int)lm.getAscent()+descOffset);
 						}else if(lastHighPoint == (end-1)){
-							g.drawString(val,end-(int)r2d.getWidth(),(int)lm.getAscent()+descOffset);
+							g.drawString(val,(isChombo ? tempPrintpoint : end-(int)r2d.getWidth()),(int)lm.getAscent()+descOffset);
 						}else{
 							g.drawString(val,lastPrintPoint-(((int)r2d.getWidth())/2),(int)lm.getAscent()+descOffset);
 						}
@@ -264,17 +268,19 @@ protected void paintComponent(java.awt.Graphics g) {
 		int vertGap = 20;
 		//
 		for(int y = start;y<end;y+= 1){
-			if((y-(getSingleElementLengthInPixels()/2))%getSingleElementLengthInPixels() == 0 || y == start || y == (end-1)){
+			boolean bDrawLine = isChombo ? y % elementLength == 0 : (y-halfElementLength)%elementLength == 0;
+			if(bDrawLine || y == start || y == (end-1)){
 				g.drawLine((int)getPreferredSize().getWidth()-1-(len/2),y,(int)getPreferredSize().getWidth()-1,y);
 				//
 				lastLowPoint = lastHighPoint;
 				lastHighPoint = y;
 				if(lastLowPoint != -1 && lastHighPoint != -1){
 					int tempPrintpoint = lastLowPoint+((lastHighPoint-lastLowPoint)/2);
-					if((lastLowPoint == 0 || lastHighPoint == (end-1) || (tempPrintpoint-lastPrintPoint) >= vertGap && end-tempPrintpoint >= vertGap) && getImagePlaneManager() != null){
+					boolean bPrintPoint = isChombo ? tempPrintpoint == halfElementLength || end - tempPrintpoint == halfElementLength :  lastLowPoint == 0 || lastHighPoint == (end-1);
+					if((bPrintPoint || (tempPrintpoint-lastPrintPoint) >= vertGap && end-tempPrintpoint >= vertGap) && getImagePlaneManager() != null){
 						//g.drawLine((int)getPreferredSize().getWidth()-1-len,lastLowPoint,(int)getPreferredSize().getWidth()-1,lastLowPoint);
 						//g.drawLine((int)getPreferredSize().getWidth()-1-len,lastHighPoint,(int)getPreferredSize().getWidth()-1,lastHighPoint);						
-						if(lastPrintPoint != start && lastHighPoint != (end-1)){//dont print middle marks at begin or end
+						if(isChombo || (lastPrintPoint != start) && lastHighPoint != (end-1)){//dont print middle marks at begin or end
 							g.drawLine((int)getPreferredSize().getWidth()-1-len+2,tempPrintpoint,(int)getPreferredSize().getWidth()-1-2,tempPrintpoint);						
 						}
 						lastPrintPoint = tempPrintpoint;
@@ -294,9 +300,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());
 						if(lastLowPoint == 0){
-							g.drawString(val,2+descOffset,(int)lm.getAscent());
+							g.drawString(val,2+descOffset,(isChombo ? tempPrintpoint : 0) + (int)lm.getAscent());
 						}else if(lastHighPoint == (end-1)){
-							g.drawString(val,2+descOffset,end-1);
+							g.drawString(val,2+descOffset,(isChombo ? tempPrintpoint : (end-1)));
 						}else{
 							g.drawString(val,2+descOffset,lastPrintPoint+(int)lm.getAscent()/2);
 						}
