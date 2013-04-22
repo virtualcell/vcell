@@ -412,7 +412,7 @@ private void addGeometry(org.sbml.libsbml.Model sbmlModel, MathModel vcMathModel
 	    compartment.setId("compartment" + i);
 		if (vcGeometricRegions[i] instanceof VolumeGeometricRegion) {
 			domain.setDomainType(((VolumeGeometricRegion)vcGeometricRegions[i]).getSubVolume().getName());
-			domain.setImplicit(false);
+//			domain.setImplicit(false);
 	    	compartment.setSpatialDimensions(3);
 			InteriorPoint interiorPt = domain.createInteriorPoint();
 			int regionID = ((VolumeGeometricRegion)vcGeometricRegions[i]).getRegionID();
@@ -452,7 +452,7 @@ private void addGeometry(org.sbml.libsbml.Model sbmlModel, MathModel vcMathModel
 			GeometricRegion geomRegion1 = vcSurfaceGeomReg.getAdjacentGeometricRegions()[1];
 			SurfaceClass surfaceClass = vcGSD.getSurfaceClass(((VolumeGeometricRegion)geomRegion0).getSubVolume(), ((VolumeGeometricRegion)geomRegion1).getSubVolume());
 			domain.setDomainType(surfaceClass.getName());
-			domain.setImplicit(true);
+//			domain.setImplicit(true);
 	    	compartment.setSpatialDimensions(2);
 
 			// adjacent domains : 2 adjacent domain objects for each surfaceClass in VC.
