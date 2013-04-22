@@ -119,8 +119,13 @@ public java.awt.geom.Point2D.Double calculateImagePointUnitized(java.awt.Point p
 	if (getDimension().height <= 1){
 		throw new RuntimeException("ImagePaneModel dimension.height=="+getDimension().height+" should be > 1");
 	}
-	x = (double) pixelPoint.x / (double) (getDimension().width-1);
-	y = (double) pixelPoint.y / (double) (getDimension().height-1);
+	if (fieldMode == NORMAL_MODE) {
+		x = (double) pixelPoint.x / (double) getDimension().width;
+		y = (double) pixelPoint.y / (double) getDimension().height;
+	} else {
+		x = (double) pixelPoint.x / (double) (getDimension().width-1);
+		y = (double) pixelPoint.y / (double) (getDimension().height-1);
+	}
 	return new java.awt.geom.Point2D.Double(x, y);
 }
 
@@ -333,7 +338,7 @@ private int getScaledLength(int unScaledLength,int zoom,int mode) {
 			result = zoom * 2 * (unScaledLength - 1);
 		}
 	} else if (mode == NORMAL_MODE) {
-		result = zoom * unScaledLength;
+		result = zoom * 2 * unScaledLength;
 	}
 	return result;
 }
@@ -730,9 +735,9 @@ public void updateViewPortImage() {
 		int modFactorX = 0;
 		int modFactorCompareY = 0;
 		if (fieldMode == NORMAL_MODE) {
-			modFactorCompareX = fieldZoom;
+			modFactorCompareX = fieldZoom * 2;
 			modFactorX = viewPortImageXStart % modFactorCompareX;
-			modFactorCompareY = fieldZoom;
+			modFactorCompareY = fieldZoom * 2;
 		} else if (fieldMode == MESH_MODE) {
 			if (getSourceData().getXSize()==1){
 				modFactorCompareX = 5000; // guaranteed not to use next column

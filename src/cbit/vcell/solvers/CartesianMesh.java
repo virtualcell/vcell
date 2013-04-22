@@ -51,7 +51,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.simdata.SimulationDataSpatialHdf5;
 import cbit.vcell.solvers.MeshRegionInfo.MembraneRegionMapVolumeRegion;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 /**
@@ -61,115 +60,23 @@ import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 @SuppressWarnings("serial")
 public class CartesianMesh implements Serializable, Matchable {
 
-	public static class ChomboMesh extends CartesianMesh implements Serializable{
-		public ChomboMesh(SimulationDataSpatialHdf5.ChomboMesh chomboMesh) throws Exception{
-//			SimulationDataSpatialHdf5.ChomboMesh chomboMesh = simulationDataSpatialHdf5.getChomboMesh();
-			super.setOrigin(chomboMesh.getOrigin());
-			super.setExtent(chomboMesh.getExtent());
-			super.setSize(chomboMesh.getSizeX(),chomboMesh.getSizeY(),chomboMesh.getSizeZ());
-//			newChomboMesh.setOES(chomboMesh.getOrigin(), chomboMesh.getExtent(), chomboMesh.getSizeX(),chomboMesh.getSizeY(),chomboMesh.getSizeZ());
-			int meshSize = chomboMesh.getSizeX()*chomboMesh.getSizeY()*chomboMesh.getSizeZ();
-//			byte[] volElemMapSubdomain = new byte[meshSize];
-//			List<DataSetIdentifier>  dataSetIdentifiers = simulationDataSpatialHdf5.getDataSetIdentifiers();
-//			Vector<String> volumeVarDomains = new Vector<String>();//keep insert order
-//			for(DataSetIdentifier dataSetIdentifier : dataSetIdentifiers){
-//				if(dataSetIdentifier.getVariableType().equals(VariableType.VOLUME)){
-//					String domainName = dataSetIdentifier.getDomain().getName();
-//					if(!volumeVarDomains.contains(domainName)){
-//						volumeVarDomains.add(domainName);
-//					}
-//					int subvolumeID = volumeVarDomains.indexOf(domainName)+1;
-//					SimulationDataSpatialHdf5.SimDataSet simDataSet = simulationDataSpatialHdf5.retrieveSimDataSet(0, dataSetIdentifier.getName());
-//					double[] solValues = simDataSet.solValues;
-//					if(solValues.length != meshSize){
-//						throw new Exception("Mesh and volume sizes don't match");
-//					}
-//					for (int i = 0; i < solValues.length; i++) {
-//						if(solValues[i] != 1.23456789E300){
-//							if(volElemMapSubdomain[i] == 0){
-//								volElemMapSubdomain[i] = (byte)subvolumeID;
-//							}else if(volElemMapSubdomain[i] != subvolumeID){
-//								throw new Exception("multiple subvolumes defined for same element");
-//							}
-//							
-//						}
-//					}
-//				}
-//				
-//			}
-//			int count = 0;
-//			for (int i = 0; i < chomboMesh.getSizeY(); i++) {
-//				for (int j = 0; j < chomboMesh.getSizeX(); j++) {
-//					System.out.print(volElemMapSubdomain[count]);
-//					count++;
-//				}
-//				System.out.println();
-//			}
-//			VCImage vcImage = new VCImageUncompressed(null, volElemMapSubdomain, mesh.getExtent(), chomboMesh.getSizeX(),chomboMesh.getSizeY(),chomboMesh.getSizeZ());
-//			RegionImage regionImage = new RegionImage(vcImage, chomboMesh.getDimension(), mesh.getExtent(), mesh.getOrigin(), RegionImage.NO_SMOOTHING);
-//			count = 0;
-//			for (int i = 0; i < chomboMesh.getSizeY(); i++) {
-//				for (int j = 0; j < chomboMesh.getSizeX(); j++) {
-//					System.out.print(regionImage.getRegionInfoFromOffset(count).getRegionIndex());
-//					count++;
-//				}
-//				System.out.println();
-//			}
-			
-//			byte[] shortRegion = regionImage.getShortEncodedRegionIndexImage();
-//			mesh.meshRegionInfo = new MeshRegionInfo();
-//			mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(BeanUtils.compress(shortRegion), meshSize);
-//			for (int i = 0; i < volumeVarDomains.size(); i++) {
-//				mesh.meshRegionInfo.mapVolumeRegionToSubvolume(volumeRegionID, subvolumeID, volumeRegionVolume, subdomain);
-//			}
-			
-			byte[] shortRegion = new byte[meshSize];;
-			super.meshRegionInfo = new MeshRegionInfo();
-//			newChomboMesh.setMeshRegionInfo(newMeshRegionInfo);
-			super.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(BeanUtils.compress(shortRegion), meshSize);
-			super.meshRegionInfo.mapVolumeRegionToSubvolume(0, 0, 1, "Chombo");
-//			mesh.membraneElements = new MembraneElement[1];
-//			mesh.membraneElements[0] = new MembraneElement(	0,0,1,
-//					0,1,2,3,
-//					0,
-//					0,
-//					0,
-//					0,
-//					0,
-//					0,
-//					0);
-//			me = new MembraneElement(	memIndex,insideIndex,outsideIndex,
-//					neighbor1,neighbor2,neighbor3,neighbor4,
-//					membraneMeshMetrics.areas[memIndex],
-//					membraneMeshMetrics.normals[memIndex][0],
-//					membraneMeshMetrics.normals[memIndex][1],
-//					membraneMeshMetrics.normals[memIndex][2],
-//					membraneMeshMetrics.centroids[memIndex][0],
-//					membraneMeshMetrics.centroids[memIndex][1],
-//					membraneMeshMetrics.centroids[memIndex][2]);
-
-//			return newChomboMesh;
-			
-		}
-	}
-	//
-	private static class MembraneMeshMetrics {
+	protected static class MembraneMeshMetrics {
 		public short[] regionIndexes;
 		public float[] areas;
 		public float[][] normals;
 		public float[][] centroids;
 	}
 	//
-	private byte[] compressedBytes = null;
+	protected byte[] compressedBytes = null;
 		
-	private transient SubdomainInfo subdomainInfo = null;
-	private transient MembraneElement membraneElements[] = null;
-	private transient ContourElement contourElements[] = null;
-	private transient MeshRegionInfo meshRegionInfo = null;
-	private transient ISize size = null;
-	private transient Origin origin = new Origin(0,0,0);
-	private transient Extent extent = new Extent(10,10,10);
-	private transient String version = VERSION_1_0;
+	protected transient SubdomainInfo subdomainInfo = null;
+	protected transient MembraneElement membraneElements[] = null;
+	protected transient ContourElement contourElements[] = null;
+	protected transient MeshRegionInfo meshRegionInfo = null;
+	protected transient ISize size = null;
+	protected transient Origin origin = new Origin(0,0,0);
+	protected transient Extent extent = new Extent(10,10,10);
+	protected transient String version = VERSION_1_0;
 
 	public final static String VERSION_1_0 = "1.0";		// origin, extent, sizeXYZ, 
 														// membrane (membraneIndex, insideVolumeIndex, outsideVolumeIndex)
@@ -532,7 +439,7 @@ public class CartesianMesh implements Serializable, Matchable {
 /**
  * This method was created by a SmartGuide.
  */
-private CartesianMesh () {
+protected CartesianMesh () {
 }
 
 /**
@@ -1464,7 +1371,7 @@ public boolean hasRegionInfo() {
  * @param out java.io.ObjectOutputStream
  * @exception java.io.IOException The exception description.
  */
-private void inflate() {
+protected void inflate() {
 	if (compressedBytes == null) {
 		return;
 	}
@@ -2115,7 +2022,7 @@ private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundEx
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setExtent(Extent argExtent) {
+protected void setExtent(Extent argExtent) {
 	this.extent = argExtent;
 }
 
@@ -2124,7 +2031,7 @@ private void setExtent(Extent argExtent) {
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setOrigin(Origin origin) {
+protected void setOrigin(Origin origin) {
 	this.origin = origin;
 }
 
@@ -2135,11 +2042,14 @@ private void setOrigin(Origin origin) {
  * @param y int
  * @param z int
  */
-private void setSize(int x, int y, int z) {
+protected void setSize(int x, int y, int z) {
 	size = new ISize(x, y, z);
 }
 
-
+protected Object[] getOutputFields() throws IOException
+{
+	return new Object[] { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements, subdomainInfo};
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/13/2004 9:33:11 AM)
@@ -2147,11 +2057,7 @@ private void setSize(int x, int y, int z) {
  * @exception java.io.IOException The exception description.
  */
 private void writeObject(ObjectOutputStream s) throws IOException {
-	Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements, subdomainInfo};
-
-	if (compressedBytes == null) {
-		compressedBytes = BeanUtils.toCompressedSerialized(objArray);
-	}
+	compressedBytes = BeanUtils.toCompressedSerialized(getOutputFields());
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);
 }
@@ -2361,4 +2267,8 @@ public static void test() {
 		}
 	}
 
+	public boolean isChomboMesh()
+	{
+		return false;
+	}
 }

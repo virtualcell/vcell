@@ -10,9 +10,11 @@
 
 package cbit.vcell.simdata.gui;
 
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 
@@ -32,11 +34,12 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.Spline;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveRenderer;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.CartesianMeshChombo;
 
 /**
  * Insert the type's description here.
@@ -399,7 +402,7 @@ private void recodeDataForDomain0() {
 		double max = Double.NEGATIVE_INFINITY;
 		for (int i = 0; i < tempRecodedData.length; i ++) {
 			if (bRecoding) {
-				if (vt.equals(VariableType.VOLUME) && !(cartesianMesh instanceof CartesianMesh.ChomboMesh)) {
+				if (vt.equals(VariableType.VOLUME) && !(cartesianMesh.isChomboMesh())) {
 					int subvol = cartesianMesh.getSubVolumeFromVolumeIndex(i);
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						tempRecodedData[i] = illegalNumber;
@@ -409,7 +412,7 @@ private void recodeDataForDomain0() {
 					if (varDomain != null && !getDataInfoProvider().getSimulationModelInfo().getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
 						tempRecodedData[i] = illegalNumber;
 					}
-				} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh instanceof CartesianMesh.ChomboMesh)) {
+				} else if (vt.equals(VariableType.MEMBRANE) && !(cartesianMesh.isChomboMesh())) {
 					int insideVolumeIndex = cartesianMesh.getMembraneElements()[i].getInsideVolumeIndex();
 					int subvol1 =  cartesianMesh.getSubVolumeFromVolumeIndex(insideVolumeIndex);
 					int outsideVolumeIndex = cartesianMesh.getMembraneElements()[i].getOutsideVolumeIndex();
@@ -1728,10 +1731,35 @@ private SourceDataInfo calculateSourceDataInfo(CartesianMesh mesh, double[] sdiD
 				mesh.getSizeZ(), 
 				0); 
 	}
-	if(mesh instanceof CartesianMesh.ChomboMesh){
+	if(mesh.isChomboMesh()){
 		sdi.setIsChombo(true);
 	}
 	return sdi;
+}
+
+@Override
+public CurveSelectionInfo findChomboCurveSelectionInfoForPoint(CoordinateIndex ci) {
+	if (getPdeDataContext().getCartesianMesh().isChomboMesh())
+	{
+		CartesianMeshChombo chomboMesh = (CartesianMeshChombo) getPdeDataContext().getCartesianMesh();
+		int memIndex = chomboMesh.findMembraneIndexForVolumeIndex(ci);
+		if (memIndex >= 0)
+		{
+			for (Entry<SampledCurve, int[]> entry : membranesAndIndexes.entrySet())
+			{
+				SampledCurve sc = entry.getKey();
+				int[] memIndexes = entry.getValue();
+				for (int idx = 0; idx < memIndexes.length; ++ idx)
+				{
+					if (memIndexes[idx] == memIndex)
+					{
+						return new CurveSelectionInfo(sc, CurveSelectionInfo.TYPE_SEGMENT, idx);
+					}
+				}
+			}
+		}
+	}
+	return null;
 }
 
 }

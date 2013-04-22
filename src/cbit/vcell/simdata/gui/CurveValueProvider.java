@@ -11,6 +11,7 @@
 package cbit.vcell.simdata.gui;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
 
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveSelectionInfo;
@@ -60,4 +61,6 @@ boolean isAddControlPointOK(int tool,Coordinate wc,Curve addedToThisCurve);
 boolean providesInitalCurve(int tool,Coordinate wc);
 
 void setDescription(Curve curve);
+
+CurveSelectionInfo findChomboCurveSelectionInfoForPoint(CoordinateIndex ci);
 }

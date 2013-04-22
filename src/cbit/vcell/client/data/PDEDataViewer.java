@@ -128,6 +128,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
@@ -139,6 +140,7 @@ import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.MembraneElement;
 /**
  * Insert the type's description here.
@@ -496,8 +498,9 @@ public class PDEDataViewer extends DataViewer {
 			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
 		public boolean isDefined(int dataIndex){
-			if(pdeDataContext.getCartesianMesh() instanceof CartesianMesh.ChomboMesh){//Chombo Hack
-				return true;
+			double sol = pdeDataContext.getDataValues()[dataIndex];
+			if (pdeDataContext.getCartesianMesh().isChomboMesh()) { //Chombo Hack
+				return sol != SimDataConstants.BASEFAB_REAL_SETVAL && !Double.isNaN(sol);
 			}
 			return isDefined(pdeDataContext.getDataIdentifier(),dataIndex);
 		}
@@ -1164,7 +1167,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
 		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
-		if(cartesianMesh instanceof CartesianMesh.ChomboMesh){//Chombo Hack
+		if(cartesianMesh.isChomboMesh()){//Chombo Hack
 			fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
 			return fieldDataValueSurfaceViewer;
 		}

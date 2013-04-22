@@ -192,7 +192,7 @@ private DocumentWindow createDocumentWindow() {
 	documentWindow.setSize(JFRAME_SIZE);
 	BeanUtils.centerOnScreen(documentWindow);
 	Point p = documentWindow.getLocation();
-	int numDocWindow = getWindowsHash().size() - 3;
+	int numDocWindow = Math.max(0, getWindowsHash().size() - 3);
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	int offset = 20;
 	int newX = p.x + offset * numDocWindow;
