@@ -603,7 +603,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //				setSmoldynDefaultTimeStep();
 			}
 			if (solverDescription.isChomboSolver()) {
-				if (chomboSolverSpec == null) {
+				if (chomboSolverSpec == null && getSimulation() != null) {
 					chomboSolverSpec = new ChomboSolverSpec(ChomboSolverSpec.getDefaultMaxBoxSize(getSimulation().getMathDescription().getGeometry().getDimension()));
 				}
 				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {

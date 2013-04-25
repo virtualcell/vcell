@@ -242,17 +242,17 @@ public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jo
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
+public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int maxNumRows, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return jobDB.getSimulationJobStatus(con, conditions);
+		return jobDB.getSimulationJobStatus(con, conditions, maxNumRows);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getSimulationJobStatus(conditions,false);
+			return getSimulationJobStatus(conditions,maxNumRows,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

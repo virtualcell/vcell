@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.messaging.db;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +26,11 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.modeldb.BioModelSimContextLinkTable;
+import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.DatabaseConstants;
+import cbit.vcell.modeldb.MathModelSimulationLinkTable;
+import cbit.vcell.modeldb.SimContextTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 
@@ -339,21 +344,39 @@ public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValu
  * @return java.util.List of SimpleJobStatus for managementGUI
  * @param conditions java.lang.String
  */
-public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions) throws java.sql.SQLException {	
-	StringBuffer sql = new StringBuffer();
+public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int maxNumRows) throws java.sql.SQLException {	
 	
+	BioModelSimulationLinkTable bioSimLinkTable = BioModelSimulationLinkTable.table;
+	MathModelSimulationLinkTable mathSimLinkTable = MathModelSimulationLinkTable.table;
+
+	StringBuffer sql = new StringBuffer();
 	sql.append("SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
-		+ "," + simTable.ownerRef.getQualifiedColName() + "," + simTable.taskDescription.getQualifiedColName()
+			+ "," + simTable.ownerRef.getQualifiedColName() + "," + simTable.name.getQualifiedColName() + "," + simTable.taskDescription.getQualifiedColName()
 		+ "," + simTable.meshSpecX.getQualifiedColName() + "," + simTable.meshSpecY.getQualifiedColName() + "," + simTable.meshSpecZ.getQualifiedColName()
+		+ "," + bioSimLinkTable.bioModelRef.getUnqualifiedColName() + "," + mathSimLinkTable.mathModelRef.getUnqualifiedColName() 
 		+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName() 
+		           + "," + bioSimLinkTable.getTableName() + "," + mathSimLinkTable.getTableName()
 		+ " WHERE " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
-		+ " AND " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName());
+		+ " AND " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
+		+ " AND " + bioSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + simTable.id.getQualifiedColName()
+		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + simTable.id.getQualifiedColName()
+		);
 	if (conditions.length() > 0) {
 		sql.append(" AND " + conditions);
 	}
-
-	sql.append(" order by " + jobTable.submitDate.getQualifiedColName());
-	//log.print(sql);
+	sql.append(" order by " + jobTable.submitDate.getQualifiedColName() + " DESC ");  // most recent records first
+	
+	if (maxNumRows>0){
+		//
+		// limit number of rows (have to put the sort in a subquery). 
+		// If in one query rownum will limit the unsorted records first and THEN apply the sort)
+		// - in MySQL there is a LIMIT operator that does what we want, but not ORACLE.
+		//
+		sql.insert(0, "SELECT a.* from (");
+		sql.append(") a WHERE rownum <= "+maxNumRows);
+	}
+	
+	//System.out.println(sql);
 	
 	List<SimpleJobStatus> resultList = new ArrayList<SimpleJobStatus>();
 	Statement stmt = con.createStatement();	
@@ -386,7 +409,23 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 			if (rset.wasNull()){
 				meshSizeZ = null;
 			}
-			resultList.add(new SimpleJobStatus(username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ));
+			String simname = rset.getString(SimulationTable.table.name.getUnqualifiedColName());
+			
+			KeyValue maxParsedBioModelKey = null;
+			String columnName = bioSimLinkTable.bioModelRef.getUnqualifiedColName();
+			BigDecimal maxParsedBioModelKeyString = rset.getBigDecimal(columnName);
+			if (!rset.wasNull() && maxParsedBioModelKeyString!=null){
+				maxParsedBioModelKey = new KeyValue(maxParsedBioModelKeyString);
+			}
+			
+			KeyValue maxParsedMathModelKey = null;
+			columnName = mathSimLinkTable.mathModelRef.getUnqualifiedColName();
+			BigDecimal maxParsedMathModelKeyString = rset.getBigDecimal(columnName);
+			if (!rset.wasNull()  && maxParsedMathModelKeyString!=null){
+				maxParsedBioModelKey = new KeyValue(maxParsedMathModelKeyString);
+			}
+			
+			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, maxParsedBioModelKey, maxParsedMathModelKey));
 		} 
 	} finally {
 		stmt.close();		
