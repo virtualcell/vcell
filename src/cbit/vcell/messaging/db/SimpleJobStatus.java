@@ -9,10 +9,13 @@
  */
 
 package cbit.vcell.messaging.db;
+import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.math.BigDecimal;
 
 import org.vcell.util.ComparableObject;
+import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.solver.SolverTaskDescription;
 
@@ -22,6 +25,7 @@ import cbit.vcell.solver.SolverTaskDescription;
  * @author: Fei Gao
  */
 public class SimpleJobStatus implements ComparableObject {
+	private String simname = null;
 	private String userID = null;
 	private SimulationJobStatus jobStatus = null;
 	private SolverTaskDescription solverTaskDesc = null;
@@ -29,12 +33,15 @@ public class SimpleJobStatus implements ComparableObject {
 	private Integer meshSpecX = null;
 	private Integer meshSpecY= null;
 	private Integer meshSpecZ = null;
+	private KeyValue maxBioModelID = null;
+	private KeyValue maxMathModelID = null;
 
 /**
  * SimpleJobStatus constructor comment.
  */
-public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ) {	
+public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ, KeyValue maxBioModelID, KeyValue maxMathModelID) {	
 	super();
+	this.simname = simname;
 	this.userID = user;
 	this.jobStatus = arg_jobStatus;
 	this.solverTaskDesc = arg_solverTaskDesc;
@@ -49,7 +56,8 @@ public SimpleJobStatus(String user, SimulationJobStatus arg_jobStatus, SolverTas
 	this.meshSpecX = meshSpecX;
 	this.meshSpecY = meshSpecY;
 	this.meshSpecZ = meshSpecZ;
-
+	this.maxBioModelID = maxBioModelID;
+	this.maxMathModelID = maxMathModelID;
 }
 
 
@@ -65,6 +73,25 @@ public java.lang.String getComputeHost() {
 	return jobStatus.getComputeHost();
 }
 
+public SchedulerStatus getSchedulerStatus(){
+	return jobStatus.getSchedulerStatus();
+}
+
+public boolean hasData(){
+	return jobStatus.hasData();
+}
+
+public String getSimName(){
+	return this.simname;
+}
+
+public KeyValue getMaxBioModelID(){
+	return this.maxBioModelID;
+}
+
+public KeyValue getMaxMathModelID(){
+	return this.maxMathModelID;
+}
 
 /**
  * Insert the method's description here.
@@ -254,4 +281,10 @@ public Object[] toObjects() {
 		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
 		elapsedTime, new Long(getMeshSize())};
 }
+
+
+public HtcJobID getHtcJobID() {
+	return jobStatus.getSimulationExecutionStatus().getHtcJobID();
+}
+
 }
