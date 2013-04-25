@@ -4,6 +4,15 @@
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.jetty.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.ajp.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.continuation.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.http.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.io.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.server.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jetty.util.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar"/>
+	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet"/>
 	<classpathentry kind="lib" path="lib/json-2.1.jar"/>

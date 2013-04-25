@@ -26,6 +26,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import com.google.gson.Gson;
+
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -258,6 +260,9 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 			}
 			buffer.append("</table>\n");
 		}
+		
+		Gson gson = new Gson();
+		buffer.append("<br/>"+gson.toJson(simTasks)+"<br/>");
 		
 		buffer.append("</body>\n");
 		buffer.append("</html>\n");

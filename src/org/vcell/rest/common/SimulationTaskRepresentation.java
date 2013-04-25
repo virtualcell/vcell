@@ -6,8 +6,8 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 
 public class SimulationTaskRepresentation {
 	
-	private static final String MODELTYPE_MATH = "MathModel";
-	private static final String MODELTYPE_BIO  = "BioModel";
+	public static final String MODELTYPE_MATH = "MathModel";
+	public static final String MODELTYPE_BIO  = "BioModel";
 
 	public String simKey;
 	

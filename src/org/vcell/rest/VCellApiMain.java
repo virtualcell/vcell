@@ -1,8 +1,11 @@
 package org.vcell.rest;
 
+import org.restlet.Server;
+import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
+import org.restlet.util.Series;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -25,6 +28,12 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
+			if (args.length!=2){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword");
+				System.exit(1);
+			}
+			String keystorePath = args[0];
+			String keystorePassword = args[1];
 			
 			SimulationDatabase simulationDatabase = null;
 			AdminDBTopLevel adminDbTopLevel = null;
@@ -44,7 +53,13 @@ public class VCellApiMain {
 			}
 
 			WadlComponent component = new WadlComponent();
-			component.getServers().add(Protocol.HTTP, 8182);
+//			Server server = component.getServers().add(Protocol.HTTP, 8182);
+			Server server = component.getServers().add(Protocol.HTTPS, 8183);
+			Series<Parameter> parameters = server.getContext().getParameters();
+			parameters.add("keystorePath", keystorePath);
+			parameters.add("keystorePassword", keystorePassword);
+			parameters.add("keystoreType", "JKS");
+			parameters.add("keyPassword", keystorePassword);
 			
 			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel);
 			component.getDefaultHost().attach(app);  
