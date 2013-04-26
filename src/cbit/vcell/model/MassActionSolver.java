@@ -22,6 +22,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.model.Flux.FluxDirection;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -172,6 +173,15 @@ public class MassActionSolver {
 				reactants.add(rp[i]);
 			} else if(rp[i] instanceof Product) {
 				products.add(rp[i]);
+			} else if(rp[i] instanceof Flux) {
+				Flux flux = (Flux)rp[i];
+				if (flux.getFluxDirection().equals(FluxDirection.Reactant)) {
+					reactants.add(rp[i]);
+				} else if (flux.getFluxDirection().equals(FluxDirection.Product)) {
+					products.add(rp[i]);
+				} if (flux.getFluxDirection().equals(FluxDirection.Unknown)) {
+					throw new ModelException("Unknown direction of flux participant '" + rp[i].getSpeciesContext().getName() + "' in flux '" + rxnName + "'");
+				}
 			} else if (rp[i] instanceof Catalyst) {
 				String catalystName = rp[i].getSpeciesContext().getName();
 				// check if the rateExp (duplicatedExp) contains catalystName. We can proceed to convert reaction kinetics to MassAction form
