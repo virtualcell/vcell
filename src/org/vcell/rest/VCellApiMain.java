@@ -35,6 +35,8 @@ public class VCellApiMain {
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
 			
+			System.out.println("connecting to database");
+			
 			SimulationDatabase simulationDatabase = null;
 			AdminDBTopLevel adminDbTopLevel = null;
 			
@@ -52,10 +54,13 @@ public class VCellApiMain {
 				e.printStackTrace();
 			}
 
+			System.out.println("setting up server configuration");
+
 			WadlComponent component = new WadlComponent();
-//			Server server = component.getServers().add(Protocol.HTTP, 8182);
-			Server server = component.getServers().add(Protocol.HTTPS, 8183);
-			Series<Parameter> parameters = server.getContext().getParameters();
+			//Server httpServer = component.getServers().add(Protocol.HTTP, 8182);
+			//Server httpsServer = component.getServers().add(Protocol.HTTPS, 443);
+			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
+			Series<Parameter> parameters = httpsServer.getContext().getParameters();
 			parameters.add("keystorePath", keystorePath);
 			parameters.add("keystorePassword", keystorePassword);
 			parameters.add("keystoreType", "JKS");
@@ -63,6 +68,8 @@ public class VCellApiMain {
 			
 			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel);
 			component.getDefaultHost().attach(app);  
+
+			System.out.println("component start()");
 			component.start();
 			System.out.println("component ended.");
 
@@ -70,4 +77,4 @@ public class VCellApiMain {
 			e.printStackTrace(System.out);
 		}
 	}
-};
+}
