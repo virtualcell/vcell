@@ -44,7 +44,7 @@ public class PropertyLoader {
 	public static final String definesProperty				= "vcell.c++.defines";
 	public static final String libsProperty					= "vcell.c++.libs";
 	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
-	
+	public static final String ldLibraryPathProperty 		= "vcell.ldLibraryPath";
 	//
 	public static final String sundialsSolverExecutableProperty		= "vcell.sundialsSolver.executable";
 	
@@ -151,6 +151,7 @@ public class PropertyLoader {
 		definesProperty,
 		libsProperty,
 		finiteVolumeExecutableProperty,
+		ldLibraryPathProperty,
 		
 		sundialsSolverExecutableProperty,
 		

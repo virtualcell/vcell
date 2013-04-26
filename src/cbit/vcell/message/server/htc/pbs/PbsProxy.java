@@ -151,8 +151,11 @@ public final class PbsProxy extends HtcProxy {
 			sw.append("#PBS -r n\n");
 			sw.append("#PBS -l nice=10\n");
 			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
-			sw.append("export LD_LIBRARY_PATH=/share/apps/sonic/mq8.5.1:$LD_LIBRARY_PATH\n");
-			
+
+			String ldLibraryPathAppend = PropertyLoader.getProperty(PropertyLoader.ldLibraryPathProperty,"");
+			if (!ldLibraryPathAppend.equals("")) {
+				sw.append("export LD_LIBRARY_PATH="+ldLibraryPathAppend+":$LD_LIBRARY_PATH\n");
+			}
 			sw.append("echo\n");
 			sw.append("echo\n");
 			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
