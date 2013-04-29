@@ -186,27 +186,70 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 		// Search Form
 		//
 		buffer.append("<br/>");
-		buffer.append("<center><form>\n");
-		buffer.append("<div>Begin Timestamp: <input type='text' name='"+PARAM_SUBMIT_LOW+"'" + ((submitLow!=null)?(" value='"+submitLow+"'"):("")) + "/>&nbsp;&nbsp;&nbsp;\n");
-		buffer.append("End Timestamp: <input type='text' name='"+PARAM_SUBMIT_HIGH+"'" + ((submitHigh!=null)?(" value='"+submitHigh+"'"):("")) + "/>&nbsp;&nbsp;&nbsp;\n");
-		buffer.append("max num rows: <input type='text' name='"+PARAM_MAX_ROWS+"' value='"+maxRows+"'/></div><br/>\n");
-		buffer.append("<div>ServerID: <input type='text' name='"+PARAM_SERVER_ID+"'" + ((serverID!=null)?(" value='"+serverID.toLowerCase()+"'"):("")) + "/>&nbsp;&nbsp;&nbsp;\n");
-		buffer.append("Compute Host: <input type='text' name='"+PARAM_COMPUTE_HOST+"'" + ((computeHost!=null)?(" value='"+computeHost+"'"):("")) + "/></div><br/>\n");
-		buffer.append("<div>Simulation ID: <input type='text' name='"+PARAM_SIM_ID+"'" + ((simid!=null)?(" value='"+simid+"'"):("")) + "/>&nbsp;&nbsp;&nbsp;\n");
-		buffer.append("Job ID (parameter scan index): <input type='text' name='"+PARAM_JOB_ID+"'" + ((jobid!=null)?(" value='"+jobid+"'"):("")) + "/>&nbsp;&nbsp;&nbsp;\n");
-		buffer.append("Task ID (retry index): <input type='text' name='"+PARAM_TASK_ID+"'" + ((taskid!=null)?(" value='"+taskid+"'"):("")) + "/></div><br/>\n");
+		buffer.append("<center>\n");
+		buffer.append("<form>\n");
+		buffer.append("<table><tbody>\n");
+		buffer.append("<tr>" +
+							"<td>Begin Timestamp</td>" +
+							"<td><input type='text' name='"+PARAM_SUBMIT_LOW+"'" + ((submitLow!=null)?(" value='"+submitLow+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>End Timestamp</td>" +
+							"<td><input type='text' name='"+PARAM_SUBMIT_HIGH+"'" + ((submitHigh!=null)?(" value='"+submitHigh+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>max num rows</td>" +
+							"<td><input type='text' name='"+PARAM_MAX_ROWS+"' value='"+maxRows+"'/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>ServerID</td>" +
+							"<td><input type='text' name='"+PARAM_SERVER_ID+"'" + ((serverID!=null)?(" value='"+serverID.toLowerCase()+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>Compute Host</td>" +
+							"<td><input type='text' name='"+PARAM_COMPUTE_HOST+"'" + ((computeHost!=null)?(" value='"+computeHost+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>Simulation ID</td>" +
+							"<td><input type='text' name='"+PARAM_SIM_ID+"'" + ((simid!=null)?(" value='"+simid+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>Job ID (parameter scan index)</td>" +
+							"<td><input type='text' name='"+PARAM_JOB_ID+"'" + ((jobid!=null)?(" value='"+jobid+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>Task ID (retry index)</td>" +
+							"<td><input type='text' name='"+PARAM_TASK_ID+"'" + ((taskid!=null)?(" value='"+taskid+"'"):("")) + "/></td>" +
+					"</tr>\n");
+		buffer.append("</tbody></table>\n");
 		buffer.append("<br/>");
-		buffer.append("<div>Simulation Status (choose at least one):<br/>\n");
-		buffer.append("waiting<input type='checkbox' name='"+PARAM_STATUS_WAITING+"'" + ((statusWaiting)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;<br/>\n");
-		buffer.append("queued<input type='checkbox' name='"+PARAM_STATUS_QUEUED+"'" + ((statusQueued)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;\n");
-		buffer.append("dispatched<input type='checkbox' name='"+PARAM_STATUS_DISPATCHED+"'" + ((statusDispatched)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;\n");
-		buffer.append("running<input type='checkbox' name='"+PARAM_STATUS_RUNNING+"'" + ((statusRunning)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;<br/>\n");
-		buffer.append("completed<input type='checkbox' name='"+PARAM_STATUS_COMPLETED+"'" + ((statusCompleted)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;\n");
-		buffer.append("failed<input type='checkbox' name='"+PARAM_STATUS_FAILED+"'" + ((statusFailed)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;\n");
-		buffer.append("stopped<input type='checkbox' name='"+PARAM_STATUS_STOPPED+"'" + ((statusStopped)?(" checked='yes'"):(""))+"'/>&nbsp;&nbsp;</div>\n");
-		buffer.append("<br/><br/>");
-		buffer.append("<input type='submit' value='Search' style='font-size:large'>\n");
+		buffer.append("Simulation Status (choose at least one)<br/>\n");
+		buffer.append("<table><tbody>\n");
+		buffer.append("<tr>" +
+							"<td>waiting</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_WAITING+"'" + ((statusWaiting)?(" checked='yes'"):(""))+"'/></td>" +
+							"<td>queued</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_QUEUED+"'" + ((statusQueued)?(" checked='yes'"):(""))+"'/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>dispatched</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_DISPATCHED+"'" + ((statusDispatched)?(" checked='yes'"):(""))+"'/></td>" +
+							"<td>running</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_RUNNING+"'" + ((statusRunning)?(" checked='yes'"):(""))+"'/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>completed</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_COMPLETED+"'" + ((statusCompleted)?(" checked='yes'"):(""))+"'/></td>" +
+							"<td>failed</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_FAILED+"'" + ((statusFailed)?(" checked='yes'"):(""))+"'/></td>" +
+					"</tr>\n");
+		buffer.append("<tr>" +
+							"<td>stopped</td>" +
+							"<td><input type='checkbox' name='"+PARAM_STATUS_STOPPED+"'" + ((statusStopped)?(" checked='yes'"):(""))+"'/></td>" +
+					"</tr>\n");
 //		buffer.append("<font size='+3'><input type='submit' value='Search' style='font-size:large; height:50px; width:100px'></font>\n");
+		buffer.append("</tbody></table>\n");
+		buffer.append("<input type='submit' value='Search' style='font-size:large'>\n");
 		buffer.append("</form></center>\n");
 		buffer.append("<br/>");
 		

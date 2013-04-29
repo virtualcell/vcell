@@ -66,7 +66,9 @@ public class VCellApiMain {
 			parameters.add("keystoreType", "JKS");
 			parameters.add("keyPassword", keystorePassword);
 			
-			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel);
+			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
+			
+			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel,userVerifier);
 			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");

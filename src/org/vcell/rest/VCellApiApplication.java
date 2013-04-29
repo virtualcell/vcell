@@ -1,15 +1,21 @@
 package org.vcell.rest;
 
+import org.restlet.Context;
 import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
+import org.restlet.routing.Template;
+import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.rest.server.filters.Tracer;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -19,6 +25,7 @@ public class VCellApiApplication extends WadlApplication {
 
 	public SimulationDatabase simulationDatabase = null;
 	public AdminDBTopLevel adminDBTopLevel = null;
+	public UserVerifier userVerifier = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -31,13 +38,14 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel) {
+	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel, UserVerifier userVerifier) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
         setAuthor("VCell Team");
 		this.simulationDatabase = simulationDatabase;
 		this.adminDBTopLevel = adminDbTopLevel;
+		this.userVerifier = userVerifier;
 	}
 
 	@Override  
@@ -46,29 +54,60 @@ public class VCellApiApplication extends WadlApplication {
 	    System.setProperty("java.net.preferIPv4Stack", "true");
 	    
 	    
-   	// Create a root router  
-    	Router router = new Router(getContext());  
-    	  
-//    	// Attach a guard to secure access to the directory  
-//    	ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), ChallengeScheme.HTTP_BASIC, "Tutorial");  
-//    	MapVerifier verifier = new MapVerifier();  
-//    	verifier.getLocalSecrets().put("scott", "tiger".toCharArray());  
-//    	guard.setVerifier(verifier);
+		// Attach a guard to secure access to user parts of the api 
+		ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), ChallengeScheme.HTTP_BASIC, "VCellUser");  
+		guard.setVerifier(userVerifier);
+	
+		Router userRouter = new Router(getContext());
+		userRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
+		userRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
+//		userRouter.attach(new Restlet() {
 //
-//    	router.attach("/docs/", guard);  
-//    	  
-//    	// Create a directory able to expose a hierarchy of files  
-//    	Directory directory = new Directory(getContext(), ROOT_URI);  
-//    	guard.setNext(directory);  
-    	  
-     	
-    	  
-    	// Attach the handlers to the root router  
-    	///router.attach("/users/{user}", account);  
-    	router.attach("/users/{user}/simulationTask", SimulationTasksServerResource.class);  
-    	router.attach("/users/{user}/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
-    	 
-    	return router;  
+//		    @Override
+//		    public void handle(Request request, Response response) {
+//		        String entity = "<html><body><h3>unknown page in user portion of web site</h3>" +
+//		        		"Method       : " + request.getMethod()
+//		                + "\nResource URI : " 
+//		                + request.getResourceRef()
+//		                + "\nIP address   : " 
+//		                + request.getClientInfo().getAddress()
+//		                + "\nAgent name   : " 
+//		                + request.getClientInfo().getAgentName()
+//		                + "\nAgent version: "
+//		                + request.getClientInfo().getAgentVersion()
+//		                + "</body></html>";
+//		        response.setEntity(entity, MediaType.TEXT_HTML);
+//		    }
+//
+//		});
+		
+		guard.setNext(userRouter);
+		
+		// Create a root router  
+		Router rootRouter = new Router(getContext());  
+		rootRouter.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
+		rootRouter.attach("/users/{user}", guard); 
+//		rootRouter.attach(new Restlet() {
+//
+//		    @Override
+//		    public void handle(Request request, Response response) {
+//		        String entity = "<html><body><h3>unknown page in unauthenticated portion of web site</h3>" +
+//		        		"Method       : " + request.getMethod()
+//		                + "\nResource URI : " 
+//		                + request.getResourceRef()
+//		                + "\nIP address   : " 
+//		                + request.getClientInfo().getAddress()
+//		                + "\nAgent name   : " 
+//		                + request.getClientInfo().getAgentName()
+//		                + "\nAgent version: "
+//		                + request.getClientInfo().getAgentVersion()
+//		                + "</body></html>";
+//		        response.setEntity(entity, MediaType.TEXT_HTML);
+//		    }
+//
+//		});
+     	    	 
+    	return rootRouter;  
     }  
 	
 }
