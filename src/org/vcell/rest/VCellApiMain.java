@@ -1,5 +1,8 @@
 package org.vcell.rest;
 
+import java.io.File;
+
+import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
@@ -20,6 +23,8 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.ResultSetDBTopLevel;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
 
@@ -28,12 +33,13 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			if (args.length!=2){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword");
+			if (args.length!=3){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword templateDirectory");
 				System.exit(1);
 			}
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
+			String templateDirectory = args[2];
 			
 			System.out.println("connecting to database");
 			
@@ -59,6 +65,7 @@ public class VCellApiMain {
 			WadlComponent component = new WadlComponent();
 			//Server httpServer = component.getServers().add(Protocol.HTTP, 8182);
 			//Server httpsServer = component.getServers().add(Protocol.HTTPS, 443);
+			Client clapClient = component.getClients().add(Protocol.CLAP);
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
 			parameters.add("keystorePath", keystorePath);
@@ -68,7 +75,11 @@ public class VCellApiMain {
 			
 			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
 			
-			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel,userVerifier);
+			Configuration templateConfiguration = new Configuration();
+			templateConfiguration.setDirectoryForTemplateLoading(new File(templateDirectory));
+			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
+			
+			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel,userVerifier,templateConfiguration);
 			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");

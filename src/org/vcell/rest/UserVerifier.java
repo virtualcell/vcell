@@ -15,7 +15,15 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 
 
 public class UserVerifier extends SecretVerifier {
-	private HashMap<String,UserInfo> userMap = new HashMap<String,UserInfo>();
+	public static class AuthenticationInfo {
+		final User user;
+		final DigestedPassword digestedPassword;
+		AuthenticationInfo(User user, DigestedPassword digestedPassword){
+			this.user = user;
+			this.digestedPassword = digestedPassword;
+		}
+	}
+	private HashMap<String,AuthenticationInfo> userMap = new HashMap<String,AuthenticationInfo>();
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private long lastQueryTimestampMS = 0;
 	private final static long MIN_QUERY_TIME_MS = 1000*5; // 5 seconds
@@ -26,17 +34,17 @@ public class UserVerifier extends SecretVerifier {
 
 	public User authenticate(String userid, char[] secret){
 		DigestedPassword digestedPassword = new UserLoginInfo.DigestedPassword(new String(secret));
-		UserInfo userInfo = userMap.get(userid);
-		if (userInfo!=null){
-			if (userInfo.digestedPassword0.equals(digestedPassword)){
-				return new User(userInfo.userid,userInfo.id);
+		AuthenticationInfo authInfo = userMap.get(userid);
+		if (authInfo!=null){
+			if (authInfo.digestedPassword.equals(digestedPassword)){
+				return authInfo.user;
 			}
 		}
 		if ((System.currentTimeMillis()-lastQueryTimestampMS)>MIN_QUERY_TIME_MS){
 			synchronized (adminDbTopLevel) {
-				UserInfo[] userInfos = null;
+				User user = null;
 				try {
-					userInfos = adminDbTopLevel.getUserInfos(true);
+					user = adminDbTopLevel.getUser(userid, digestedPassword,true);
 				} catch (ObjectNotFoundException e) {
 					e.printStackTrace();
 				} catch (DataAccessException e) {
@@ -45,23 +53,11 @@ public class UserVerifier extends SecretVerifier {
 					e.printStackTrace();
 				}
 				// refresh stored list of user infos (for authentication)
-				if (userInfos!=null){
-					userMap.clear();
-					for (UserInfo userInfo2 : userInfos) {
-						userMap.put(userInfo2.userid,userInfo2);
-					}
+				if (user!=null){
+					userMap.put(userid,new AuthenticationInfo(user,digestedPassword));
 				}
 				lastQueryTimestampMS = System.currentTimeMillis();
-				userInfo = userMap.get(userid);
-				if (userInfo!=null){
-					if (userInfo.digestedPassword0.equals(digestedPassword)){
-						return new User(userInfo.userid,userInfo.id);
-					}else{
-						return null;
-					}
-				}else{
-					return null;
-				}
+				return user;
 			}
 		}else{
 			return null;

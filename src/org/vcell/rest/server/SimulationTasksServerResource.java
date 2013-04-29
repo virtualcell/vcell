@@ -2,10 +2,15 @@ package org.vcell.rest.server;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
+import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
 import org.restlet.ext.wadl.MethodInfo;
@@ -17,6 +22,7 @@ import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
+import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationTaskRepresentation;
@@ -25,8 +31,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
-
-import com.google.gson.Gson;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
@@ -39,6 +43,11 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
+
+import com.google.gson.Gson;
+
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.Configuration;
 
 public class SimulationTasksServerResource extends WadlServerResource implements SimulationTasksResource {
 
@@ -127,6 +136,63 @@ public class SimulationTasksServerResource extends WadlServerResource implements
     
 	@Override
 	public Representation get_html() {
+		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations();
+		Map<String,Object> dataModel = new HashMap<String,Object>();
+		
+		dataModel.put("userId", getAttribute(PARAM_USER));
+		dataModel.put("simId", getLongQueryValue(PARAM_SIM_ID));
+		dataModel.put("jobId",  getLongQueryValue(PARAM_JOB_ID));
+		dataModel.put("taskId",  getLongQueryValue(PARAM_TASK_ID));
+		dataModel.put("computeHost", getQueryValue(PARAM_COMPUTE_HOST));
+		dataModel.put("serverId", getQueryValue(PARAM_SERVER_ID));
+		dataModel.put("waiting", getBooleanQueryValue(PARAM_STATUS_WAITING,false));
+		dataModel.put("queued", getBooleanQueryValue(PARAM_STATUS_QUEUED,false));
+		dataModel.put("dispatched", getBooleanQueryValue(PARAM_STATUS_DISPATCHED,false));
+		dataModel.put("running", getBooleanQueryValue(PARAM_STATUS_RUNNING,false));
+		dataModel.put("completed", getBooleanQueryValue(PARAM_STATUS_COMPLETED,false));
+		dataModel.put("failed", getBooleanQueryValue(PARAM_STATUS_FAILED,false));
+		dataModel.put("stopped", getBooleanQueryValue(PARAM_STATUS_STOPPED,false));
+		dataModel.put("submitLow", getLongQueryValue(PARAM_SUBMIT_LOW));
+		dataModel.put("submitHigh", getLongQueryValue(PARAM_SUBMIT_HIGH));
+		dataModel.put("startLow", getLongQueryValue(PARAM_START_LOW));
+		dataModel.put("startHigh", getLongQueryValue(PARAM_START_HIGH));
+		dataModel.put("endLow", getLongQueryValue(PARAM_END_LOW));
+		dataModel.put("endHigh", getLongQueryValue(PARAM_END_HIGH));
+		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
+		if (maxRowsParam!=null){
+			dataModel.put("maxRows", maxRowsParam);
+		}else{
+			dataModel.put("maxRows", 100);
+		}
+
+/**
+ * 		<tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow}/></td></tr>
+<tr><td>End Timestamp</td><td><input type='text' name='submitHigh' value='${submitHigh}/></td></tr>
+<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
+<tr><td>ServerID</td><td><input type='text' name='serverId' value='${serverId}'/></td></tr>
+<tr><td>Compute Host</td><td><input type='text' name='computeHost value='${computeHost}'/></td></tr>
+<tr><td>Simulation ID</td><td><input type='text' name='simId' value='${simId}'/></td></tr>
+<tr><td>Job ID (parameter scan index)</td><td><input type='text' name='jobId' value='${jobId}/></td></tr>
+<tr><td>Task ID (retry index)</td><td><input type='text' name='taskId' value='${taskId}/></td></tr>
+</tbody></table>
+<br/>Simulation Status (choose at least one)<br/>
+<table><tbody>
+<tr><td>waiting</td><td><input type='checkbox' name='waiting' checked='${waiting}/></td><td>queued</td><td><input type='checkbox' name='queued' checked='${queued}/></td></tr>
+<tr><td>dispatched</td><td><input type='checkbox' name='dispatched' checked='${dispatched}/></td><td>running</td><td><input type='checkbox' name='running' checked='${running}'/></td></tr>
+<tr><td>completed</td><td><input type='checkbox' name='completed' checked='${completed}/></td><td>failed</td><td><input type='checkbox' name='failed' checked='${failed}/></td></tr>
+<tr><td>stopped</td><td><input type='checkbox' name='stopped' checked='${stopped}/></td></tr>
+
+ */
+		dataModel.put("simTasks", Arrays.asList(simTasks));
+		Configuration templateConfiguration = ((VCellApiApplication)getApplication()).templateConfiguration;
+
+		Representation formFtl = new ClientResource(LocalReference.createClapReference(getClass().getPackage())+"/form.ftl").get();
+		TemplateRepresentation templateRepresentation = new TemplateRepresentation(formFtl, templateConfiguration, dataModel, MediaType.TEXT_HTML);
+		return templateRepresentation;
+	}
+
+	//@Override
+	public Representation get_html_old() {
 		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations();
 
 		final String FIELD_MODELID		= "Model type:id";

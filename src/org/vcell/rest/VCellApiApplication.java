@@ -19,6 +19,7 @@ import org.vcell.rest.server.filters.Tracer;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import freemarker.template.Configuration;
 
 public class VCellApiApplication extends WadlApplication {
 	public static final String ROOT_URI = "file:///c:/temp/";  
@@ -26,6 +27,7 @@ public class VCellApiApplication extends WadlApplication {
 	public SimulationDatabase simulationDatabase = null;
 	public AdminDBTopLevel adminDBTopLevel = null;
 	public UserVerifier userVerifier = null;
+	public Configuration templateConfiguration = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -38,7 +40,7 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel, UserVerifier userVerifier) {
+	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel, UserVerifier userVerifier, Configuration templateConfiguration) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
@@ -46,6 +48,7 @@ public class VCellApiApplication extends WadlApplication {
 		this.simulationDatabase = simulationDatabase;
 		this.adminDBTopLevel = adminDbTopLevel;
 		this.userVerifier = userVerifier;
+		this.templateConfiguration = templateConfiguration;
 	}
 
 	@Override  
