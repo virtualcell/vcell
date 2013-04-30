@@ -193,9 +193,9 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		}
 	}
 
-    private List<SimpleJobStatus> query(AdminDBTopLevel adminDbTop) throws SQLException, DataAccessException {	
+    private List<SimpleJobStatus> query(AdminDBTopLevel adminDbTop, User vcellUser) throws SQLException, DataAccessException {	
     	
-		String userID = getAttribute(PARAM_USER);
+		String userID = vcellUser.getName();
 		Long simid = getLongQueryValue(PARAM_SIM_ID);
 		Long jobid = getLongQueryValue(PARAM_JOB_ID);
 		Long taskid = getLongQueryValue(PARAM_TASK_ID);
