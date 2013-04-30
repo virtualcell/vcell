@@ -85,6 +85,10 @@ public class UserLoginInfo implements Serializable {
 			}
 			return false;
 		}
+		@Override
+		public int hashCode() {
+			return digestedPasswordStr.hashCode();
+		}
 		
 	}
 	

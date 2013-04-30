@@ -418,7 +418,7 @@ SimulationStatus getSimulationStatus(KeyValue simKey, boolean bEnableRetry) thro
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean bEnableRetry) 
+public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean bEnableRetry) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
