@@ -45,6 +45,104 @@ public class SimulationTaskRepresentation {
 		
 	}
 	
+	
+	
+	public String getSimKey() {
+		return simKey;
+	}
+
+
+
+	public String getSimName() {
+		return simName;
+	}
+
+
+
+	public String getUserName() {
+		return userName;
+	}
+
+
+
+	public String getUserKey() {
+		return userKey;
+	}
+
+
+
+	public String getHtcJobId() {
+		return htcJobId;
+	}
+
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+
+	public long getStartdate() {
+		return startdate;
+	}
+
+
+
+	public int getJobIndex() {
+		return jobIndex;
+	}
+
+
+
+	public int getTaskId() {
+		return taskId;
+	}
+
+
+
+	public String getMessage() {
+		return message;
+	}
+
+
+
+	public String getSite() {
+		return site;
+	}
+
+
+
+	public String getComputeHost() {
+		return computeHost;
+	}
+
+
+
+	public String getSchedulerStatus() {
+		return schedulerStatus;
+	}
+
+
+
+	public boolean isHasData() {
+		return hasData;
+	}
+
+
+
+	public String getModelID() {
+		return modelID;
+	}
+
+
+
+	public String getModelType() {
+		return modelType;
+	}
+
+
+
 	public SimulationTaskRepresentation(SimulationJobStatus simJobStatus){
 		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
 		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();

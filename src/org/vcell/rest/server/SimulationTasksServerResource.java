@@ -18,38 +18,25 @@ import org.restlet.ext.wadl.ParameterInfo;
 import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
-import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
 import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.VCSimulationIdentifier;
 
 import com.google.gson.Gson;
 
-import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.Configuration;
 
-public class SimulationTasksServerResource extends WadlServerResource implements SimulationTasksResource {
+public class SimulationTasksServerResource extends AbstractServerResource implements SimulationTasksResource {
 
     private static final String PARAM_USER = "user";
 	private static final String PARAM_SIM_ID = "simId";
@@ -70,8 +57,15 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 	private static final String PARAM_START_LOW = "startLow";
 	private static final String PARAM_SUBMIT_HIGH = "submitHigh";
 	private static final String PARAM_SUBMIT_LOW = "submitLow";
+	private static final String PARAM_HAS_DATA = "hasData";
 	private static final String PARAM_MAX_ROWS = "maxRows";
 
+	@Override
+	protected void doInit() throws ResourceException {
+		setName("SimulationTask resource");
+		setDescription("The resource containing the list of SimulationTasks status");
+	}
+	
 	@Override
     protected void describe(ApplicationInfo applicationInfo) {
         RepresentationInfo rep = new RepresentationInfo(MediaType.APPLICATION_JSON);
@@ -84,21 +78,6 @@ public class SimulationTasksServerResource extends WadlServerResource implements
         rep.getDocumentations().add(doc);
     }
 
-    @Override
-    protected void doInit() throws ResourceException {
-        setName("SimulationTask resource");
-        setDescription("The resource containing the list of SimulationTasks status");
-    }
-
-
-	@Override
-	protected List<Variant> getWadlVariants() {
-		ArrayList<Variant> variants = new ArrayList<Variant>();
-		variants.add(new Variant(MediaType.APPLICATION_WADL));
-		return variants;
-	}
-
-
 	@Override
 	protected void describeGet(MethodInfo info) {
 		super.describeGet(info);
@@ -110,6 +89,7 @@ public class SimulationTasksServerResource extends WadlServerResource implements
         parameterInfos.add(new ParameterInfo(PARAM_TASK_ID,false,"string",ParameterStyle.QUERY,"VCell simulation task id (retry index)"));
         parameterInfos.add(new ParameterInfo(PARAM_COMPUTE_HOST,false,"string",ParameterStyle.QUERY,"cluster node assigned to job"));
         parameterInfos.add(new ParameterInfo(PARAM_SERVER_ID,false,"string",ParameterStyle.QUERY,"VCell site which owns job (e.g. release, beta)"));
+        parameterInfos.add(new ParameterInfo(PARAM_HAS_DATA,false,"string",ParameterStyle.QUERY,"include jobs if has data (all/yes/no - default=all)"));
         parameterInfos.add(new ParameterInfo(PARAM_STATUS_WAITING,false,"string",ParameterStyle.QUERY,"include jobs status waiting (default=true)"));
         parameterInfos.add(new ParameterInfo(PARAM_STATUS_QUEUED,false,"string",ParameterStyle.QUERY,"include jobs status queued (default=true)"));
         parameterInfos.add(new ParameterInfo(PARAM_STATUS_DISPATCHED,false,"string",ParameterStyle.QUERY,"include jobs status dispatched (default=true)"));
@@ -127,7 +107,6 @@ public class SimulationTasksServerResource extends WadlServerResource implements
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
-
 	
 	@Override
     public SimulationTaskRepresentation[] get_json() {
@@ -145,6 +124,7 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 		dataModel.put("taskId",  getLongQueryValue(PARAM_TASK_ID));
 		dataModel.put("computeHost", getQueryValue(PARAM_COMPUTE_HOST));
 		dataModel.put("serverId", getQueryValue(PARAM_SERVER_ID));
+		dataModel.put("hasData", getQueryValue(PARAM_HAS_DATA));
 		dataModel.put("waiting", getBooleanQueryValue(PARAM_STATUS_WAITING,false));
 		dataModel.put("queued", getBooleanQueryValue(PARAM_STATUS_QUEUED,false));
 		dataModel.put("dispatched", getBooleanQueryValue(PARAM_STATUS_DISPATCHED,false));
@@ -165,278 +145,41 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 			dataModel.put("maxRows", 100);
 		}
 
-/**
- * 		<tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow}/></td></tr>
-<tr><td>End Timestamp</td><td><input type='text' name='submitHigh' value='${submitHigh}/></td></tr>
-<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
-<tr><td>ServerID</td><td><input type='text' name='serverId' value='${serverId}'/></td></tr>
-<tr><td>Compute Host</td><td><input type='text' name='computeHost value='${computeHost}'/></td></tr>
-<tr><td>Simulation ID</td><td><input type='text' name='simId' value='${simId}'/></td></tr>
-<tr><td>Job ID (parameter scan index)</td><td><input type='text' name='jobId' value='${jobId}/></td></tr>
-<tr><td>Task ID (retry index)</td><td><input type='text' name='taskId' value='${taskId}/></td></tr>
-</tbody></table>
-<br/>Simulation Status (choose at least one)<br/>
-<table><tbody>
-<tr><td>waiting</td><td><input type='checkbox' name='waiting' checked='${waiting}/></td><td>queued</td><td><input type='checkbox' name='queued' checked='${queued}/></td></tr>
-<tr><td>dispatched</td><td><input type='checkbox' name='dispatched' checked='${dispatched}/></td><td>running</td><td><input type='checkbox' name='running' checked='${running}'/></td></tr>
-<tr><td>completed</td><td><input type='checkbox' name='completed' checked='${completed}/></td><td>failed</td><td><input type='checkbox' name='failed' checked='${failed}/></td></tr>
-<tr><td>stopped</td><td><input type='checkbox' name='stopped' checked='${stopped}/></td></tr>
-
- */
 		dataModel.put("simTasks", Arrays.asList(simTasks));
-		Configuration templateConfiguration = ((VCellApiApplication)getApplication()).templateConfiguration;
+		
+		
+		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
+		if (autheticatedUser!=null){
+			dataModel.put("userid",autheticatedUser.getIdentifier());
+		}
+		
+		Gson gson = new Gson();
+		dataModel.put("jsonResponse",gson.toJson(simTasks));
+		
+		VCellApiApplication application = (VCellApiApplication)getApplication();
+		Configuration templateConfiguration = application.templateConfiguration;
 
-		Representation formFtl = new ClientResource(LocalReference.createClapReference(getClass().getPackage())+"/form.ftl").get();
+		Representation formFtl = new ClientResource(LocalReference.createClapReference("/simulationTasks.ftl")).get();
 		TemplateRepresentation templateRepresentation = new TemplateRepresentation(formFtl, templateConfiguration, dataModel, MediaType.TEXT_HTML);
 		return templateRepresentation;
 	}
 
-	//@Override
-	public Representation get_html_old() {
-		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations();
 
-		final String FIELD_MODELID		= "Model type:id";
-		final String FIELD_SIMKEY		= "SimKey";
-		final String FIELD_SIMNAME		= "SimName";
-		final String FIELD_USERNAME		= "UserName";
-		final String FIELD_USERKEY		= "UserKey";
-		final String FIELD_JOBINDEX 	= "Job Index";
-		final String FIELD_TASKID 		= "Task ID";
-		final String FIELD_HTCJOBID		= "HTC JobID";
-		final String FIELD_STATUS 		= "Status";
-		final String FIELD_STARTDATE 	= "Start Date";
-		final String FIELD_MESSAGE 		= "Message";
-		final String FIELD_SITE 		= "Site";
-		final String FIELD_HAS_DATA		= "has data";
-		final String FIELD_COMPUTEHOST	= "ComputeHost";
-
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("<!DOCTYPE html>\n");
-		buffer.append("<html>\n");
-		buffer.append("<head>\n");
-		buffer.append("<title>Simulation Tasks</title>\n");
-		buffer.append("</head>\n");
-		buffer.append("<body>\n");
-		
-		buffer.append("<center><h2>Simulation Tasks</h2></center>");
-		
-		//
-		// getting query parameters here so that we can populate query form with current values
-		//
-		String userID = getAttribute(PARAM_USER);
-		Long simid = getLongQueryValue(PARAM_SIM_ID);
-		Long jobid = getLongQueryValue(PARAM_JOB_ID);
-		Long taskid = getLongQueryValue(PARAM_TASK_ID);
-		String computeHost = getQueryValue(PARAM_COMPUTE_HOST);
-		String serverID = getQueryValue(PARAM_SERVER_ID);
-		boolean statusWaiting = getBooleanQueryValue(PARAM_STATUS_WAITING,false);
-		boolean statusQueued = getBooleanQueryValue(PARAM_STATUS_QUEUED,false);
-		boolean statusDispatched = getBooleanQueryValue(PARAM_STATUS_DISPATCHED,false);
-		boolean statusRunning = getBooleanQueryValue(PARAM_STATUS_RUNNING,false);
-		boolean statusCompleted = getBooleanQueryValue(PARAM_STATUS_COMPLETED,false);
-		boolean statusFailed = getBooleanQueryValue(PARAM_STATUS_FAILED,false);
-		boolean statusStopped = getBooleanQueryValue(PARAM_STATUS_STOPPED,false);
-		Long submitLow = getLongQueryValue(PARAM_SUBMIT_LOW);
-		Long submitHigh = getLongQueryValue(PARAM_SUBMIT_HIGH);
-		Long startLow = getLongQueryValue(PARAM_START_LOW);
-		Long startHigh = getLongQueryValue(PARAM_START_HIGH);
-		Long endLow = getLongQueryValue(PARAM_END_LOW);
-		Long endHigh = getLongQueryValue(PARAM_END_HIGH);
-		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
-		int maxRows = 100; // default
-		if (maxRowsParam!=null){
-			maxRows = maxRowsParam.intValue();
-		}
-		
-		//
-		// Search Form
-		//
-		buffer.append("<br/>");
-		buffer.append("<center>\n");
-		buffer.append("<form>\n");
-		buffer.append("<table><tbody>\n");
-		buffer.append("<tr>" +
-							"<td>Begin Timestamp</td>" +
-							"<td><input type='text' name='"+PARAM_SUBMIT_LOW+"'" + ((submitLow!=null)?(" value='"+submitLow+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>End Timestamp</td>" +
-							"<td><input type='text' name='"+PARAM_SUBMIT_HIGH+"'" + ((submitHigh!=null)?(" value='"+submitHigh+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>max num rows</td>" +
-							"<td><input type='text' name='"+PARAM_MAX_ROWS+"' value='"+maxRows+"'/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>ServerID</td>" +
-							"<td><input type='text' name='"+PARAM_SERVER_ID+"'" + ((serverID!=null)?(" value='"+serverID.toLowerCase()+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>Compute Host</td>" +
-							"<td><input type='text' name='"+PARAM_COMPUTE_HOST+"'" + ((computeHost!=null)?(" value='"+computeHost+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>Simulation ID</td>" +
-							"<td><input type='text' name='"+PARAM_SIM_ID+"'" + ((simid!=null)?(" value='"+simid+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>Job ID (parameter scan index)</td>" +
-							"<td><input type='text' name='"+PARAM_JOB_ID+"'" + ((jobid!=null)?(" value='"+jobid+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>Task ID (retry index)</td>" +
-							"<td><input type='text' name='"+PARAM_TASK_ID+"'" + ((taskid!=null)?(" value='"+taskid+"'"):("")) + "/></td>" +
-					"</tr>\n");
-		buffer.append("</tbody></table>\n");
-		buffer.append("<br/>");
-		buffer.append("Simulation Status (choose at least one)<br/>\n");
-		buffer.append("<table><tbody>\n");
-		buffer.append("<tr>" +
-							"<td>waiting</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_WAITING+"'" + ((statusWaiting)?(" checked='yes'"):(""))+"'/></td>" +
-							"<td>queued</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_QUEUED+"'" + ((statusQueued)?(" checked='yes'"):(""))+"'/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>dispatched</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_DISPATCHED+"'" + ((statusDispatched)?(" checked='yes'"):(""))+"'/></td>" +
-							"<td>running</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_RUNNING+"'" + ((statusRunning)?(" checked='yes'"):(""))+"'/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>completed</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_COMPLETED+"'" + ((statusCompleted)?(" checked='yes'"):(""))+"'/></td>" +
-							"<td>failed</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_FAILED+"'" + ((statusFailed)?(" checked='yes'"):(""))+"'/></td>" +
-					"</tr>\n");
-		buffer.append("<tr>" +
-							"<td>stopped</td>" +
-							"<td><input type='checkbox' name='"+PARAM_STATUS_STOPPED+"'" + ((statusStopped)?(" checked='yes'"):(""))+"'/></td>" +
-					"</tr>\n");
-//		buffer.append("<font size='+3'><input type='submit' value='Search' style='font-size:large; height:50px; width:100px'></font>\n");
-		buffer.append("</tbody></table>\n");
-		buffer.append("<input type='submit' value='Search' style='font-size:large'>\n");
-		buffer.append("</form></center>\n");
-		buffer.append("<br/>");
-		
-		if (simTasks.length==0){
-			buffer.append("<h3>query returned no results</h3>\n");
-		}else{
-			buffer.append("<h3>query returned "+simTasks.length+" results</h3>\n");
-			
-			//
-			// results table
-			//
-			buffer.append("<table border='1'>\n");
-			buffer.append("<tr>\n");
-			buffer.append("<th>"+FIELD_MODELID+"</th>\n");
-			buffer.append("<th>"+FIELD_SIMKEY+"</th>\n");
-			buffer.append("<th>"+FIELD_SIMNAME+"</th>\n");
-			buffer.append("<th>"+FIELD_USERNAME+"</th>\n");
-			buffer.append("<th>"+FIELD_USERKEY+"</th>\n");
-			buffer.append("<th>"+FIELD_JOBINDEX+"</th>\n");
-			buffer.append("<th>"+FIELD_TASKID+"</th>\n");
-			buffer.append("<th>"+FIELD_HTCJOBID+"</th>\n");
-			buffer.append("<th>"+FIELD_HAS_DATA+"</th>\n");
-			buffer.append("<th>"+FIELD_STATUS+"</th>\n");
-			buffer.append("<th>"+FIELD_STARTDATE+"</th>\n");
-			buffer.append("<th>"+FIELD_MESSAGE+"</th>\n");
-			buffer.append("<th>"+FIELD_SITE+"</th>\n");
-			buffer.append("<th>"+FIELD_COMPUTEHOST+"</th>\n");
-			buffer.append("</tr>\n");
-			//
-			// one row in table per SimulationTaskRepresentation.
-			//
-			for (SimulationTaskRepresentation simulationTaskRepresentation : simTasks) {
-				buffer.append("<tr>\n");
-				
-				buffer.append("<td>"+simulationTaskRepresentation.modelType+":"+simulationTaskRepresentation.modelID+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.simKey+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.simName+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.userName+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.userKey+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.jobIndex+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.taskId+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.htcJobId+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.hasData+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.status+"</td>\n");
-				buffer.append("<td>"+new Date(simulationTaskRepresentation.startdate)+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.message+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.site+"</td>\n");
-				buffer.append("<td>"+simulationTaskRepresentation.computeHost+"</td>\n");
-	
-				buffer.append("</tr>\n");
-			}
-			buffer.append("</table>\n");
-		}
-		
-		Gson gson = new Gson();
-		buffer.append("<br/>"+gson.toJson(simTasks)+"<br/>");
-		
-		buffer.append("</body>\n");
-		buffer.append("</html>\n");
-		
-		return new StringRepresentation(buffer.toString(), MediaType.TEXT_HTML);
-	}
-
-	private boolean getBooleanQueryValue(String paramName, boolean bDefault) {
-		String stringValue = getQueryValue(paramName);
-		if (stringValue!=null && stringValue.length()>0){
-			return (stringValue.equalsIgnoreCase("true") || stringValue.equalsIgnoreCase("on") || stringValue.equalsIgnoreCase("yes"));
-		}else{
-			return bDefault;
-		}
-	}
-
-	private Long getLongQueryValue(String paramName){
-		String stringValue = getQueryValue(paramName);
-		Long longValue = null;
-		if (stringValue!=null && stringValue.length()>0){
-			try {
-				longValue = Long.parseLong(stringValue);
-			}catch (NumberFormatException e){
-			}
-		}
-		return longValue;
-	}
-	
-	   
 	private SimulationTaskRepresentation[] getSimulationTaskRepresentations() {
 		ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
 		AdminDBTopLevel adminDbTopLevel = ((VCellApiApplication)getApplication()).adminDBTopLevel;
-		if (adminDbTopLevel!=null){
-			try {
-				List<SimpleJobStatus> simJobStatusList = query(adminDbTopLevel);
-				for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
-					SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
-					simTaskReps.add(simTaskRep);
-				}
-			} catch (DataAccessException e) {
-				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
-			} catch (SQLException e) {
-				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+		try {
+			List<SimpleJobStatus> simJobStatusList = query(adminDbTopLevel);
+			for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
+				SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
+				simTaskReps.add(simTaskRep);
 			}
-		}else{
-			simTaskReps.add(new SimulationTaskRepresentation(new SimulationJobStatus(VCellServerID.getServerID("JIMS"),
-							new VCSimulationIdentifier(new KeyValue("123"),new User("schaff",new KeyValue("222"))), 
-							0, // jobIndex
-							new Date(), // submission date
-							SchedulerStatus.RUNNING,
-							0, // taskID
-							SimulationMessage.MESSAGE_JOB_RUNNING_UNKNOWN,
-							new SimulationQueueEntryStatus(new Date(), 1, SimulationQueueID.QUEUE_ID_SIMULATIONJOB),
-							new SimulationExecutionStatus(new Date(), "myhost", new Date(), null, false, null))));
-			simTaskReps.add(new SimulationTaskRepresentation(new SimulationJobStatus(VCellServerID.getServerID("JIMS"),
-							new VCSimulationIdentifier(new KeyValue("124"),new User("schaff",new KeyValue("222"))), 
-							0, // jobIndex
-							new Date(), // submission date
-							SchedulerStatus.QUEUED,
-							0, // taskID
-							SimulationMessage.MESSAGE_JOB_RUNNING_UNKNOWN,
-							new SimulationQueueEntryStatus(new Date(), 1, SimulationQueueID.QUEUE_ID_SIMULATIONJOB),
-							new SimulationExecutionStatus(new Date(), "myhost", new Date(), null, false, null))));
+		} catch (DataAccessException e) {
+			e.printStackTrace();
+			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 		}
 		return simTaskReps.toArray(new SimulationTaskRepresentation[0]);
 	}
@@ -449,6 +192,7 @@ public class SimulationTasksServerResource extends WadlServerResource implements
 		Long taskid = getLongQueryValue(PARAM_TASK_ID);
 		String computeHost = getQueryValue(PARAM_COMPUTE_HOST);
 		String serverID = getQueryValue(PARAM_SERVER_ID);
+		String hasData = getQueryValue(PARAM_HAS_DATA);
 		boolean statusWaiting = getBooleanQueryValue(PARAM_STATUS_WAITING,false);
 		boolean statusQueued = getBooleanQueryValue(PARAM_STATUS_QUEUED,false);
 		boolean statusDispatched = getBooleanQueryValue(PARAM_STATUS_DISPATCHED,false);
@@ -488,7 +232,17 @@ public class SimulationTasksServerResource extends WadlServerResource implements
     	if (serverID!=null && serverID.length()>0){
     		conditions.add("lower(" + SimulationJobTable.table.serverID.getQualifiedColName() + ")='" + serverID + "'");
     	}
-    		
+    	
+    	if (hasData!=null){
+    		if (hasData.equalsIgnoreCase("yes") || hasData.equalsIgnoreCase("y") || hasData.equalsIgnoreCase("true") || hasData.equalsIgnoreCase("t")){
+    			// return only records that have data
+    			conditions.add("lower(" + SimulationJobTable.table.hasData.getQualifiedColName() + ")='y'");
+    		} else if (hasData.equalsIgnoreCase("no") || hasData.equalsIgnoreCase("n") || hasData.equalsIgnoreCase("false") || hasData.equalsIgnoreCase("f")){
+    			// return only records that don't have data
+    			conditions.add(SimulationJobTable.table.hasData.getQualifiedColName() + " is null");
+    		}
+    	} // else all records.
+    	
     	if (userID!=null && userID.length()>0){
     		conditions.add(UserTable.table.userid.getQualifiedColName() + "='" + userID + "'");
     	}

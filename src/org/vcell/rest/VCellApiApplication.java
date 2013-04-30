@@ -1,8 +1,6 @@
 package org.vcell.rest;
 
-import org.restlet.Context;
 import org.restlet.Request;
-import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
@@ -15,7 +13,6 @@ import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
-import org.vcell.rest.server.filters.Tracer;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.AdminDBTopLevel;

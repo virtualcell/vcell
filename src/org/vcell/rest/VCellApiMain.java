@@ -1,7 +1,5 @@
 package org.vcell.rest;
 
-import java.io.File;
-
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -33,13 +31,12 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			if (args.length!=3){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword templateDirectory");
+			if (args.length!=2){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword");
 				System.exit(1);
 			}
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
-			String templateDirectory = args[2];
 			
 			System.out.println("connecting to database");
 			
@@ -76,7 +73,6 @@ public class VCellApiMain {
 			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
 			
 			Configuration templateConfiguration = new Configuration();
-			templateConfiguration.setDirectoryForTemplateLoading(new File(templateDirectory));
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
 			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel,userVerifier,templateConfiguration);

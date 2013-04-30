@@ -7,7 +7,6 @@ import org.restlet.security.SecretVerifier;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
