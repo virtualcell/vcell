@@ -25,6 +25,7 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
@@ -157,7 +158,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		dataModel.put("jsonResponse",gson.toJson(simTasks));
 		
 		VCellApiApplication application = (VCellApiApplication)getApplication();
-		Configuration templateConfiguration = application.templateConfiguration;
+		Configuration templateConfiguration = application.getTemplateConfiguration();
 
 		Representation formFtl = new ClientResource(LocalReference.createClapReference("/simulationTasks.ftl")).get();
 		TemplateRepresentation templateRepresentation = new TemplateRepresentation(formFtl, templateConfiguration, dataModel, MediaType.TEXT_HTML);
@@ -166,22 +167,30 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 
 
 	private SimulationTaskRepresentation[] getSimulationTaskRepresentations() {
-		ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
-		AdminDBTopLevel adminDbTopLevel = ((VCellApiApplication)getApplication()).adminDBTopLevel;
-		try {
-			List<SimpleJobStatus> simJobStatusList = query(adminDbTopLevel);
-			for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
-				SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
-				simTaskReps.add(simTaskRep);
+		VCellApiApplication application = ((VCellApiApplication)getApplication());
+		if (!application.authenticate(getRequest(), getResponse())){
+			// not authenticated
+			return new SimulationTaskRepresentation[0];
+		}else{
+			org.restlet.security.User autheticatedUser = getClientInfo().getUser();
+			User vcellUser = application.getVCellUser(autheticatedUser);
+			ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
+			AdminDBTopLevel adminDbTopLevel = ((VCellApiApplication)getApplication()).getAdminDBTopLevel();
+			try {
+				List<SimpleJobStatus> simJobStatusList = query(adminDbTopLevel, vcellUser);
+				for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
+					SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
+					simTaskReps.add(simTaskRep);
+				}
+			} catch (DataAccessException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 			}
-		} catch (DataAccessException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+			return simTaskReps.toArray(new SimulationTaskRepresentation[0]);
 		}
-		return simTaskReps.toArray(new SimulationTaskRepresentation[0]);
 	}
 
     private List<SimpleJobStatus> query(AdminDBTopLevel adminDbTop) throws SQLException, DataAccessException {	

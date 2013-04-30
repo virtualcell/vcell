@@ -72,4 +72,13 @@ public class UserVerifier extends SecretVerifier {
 			return RESULT_INVALID;
 		}
 	}
+	
+	public User getVCellUser(org.restlet.security.User restletUser){
+		AuthenticationInfo authInfo = this.userMap.get(restletUser.getIdentifier());
+		if (authInfo!=null){
+			return authInfo.user;
+		}else{
+			return null;
+		}
+	}
 }

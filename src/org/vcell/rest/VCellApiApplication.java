@@ -1,6 +1,8 @@
 package org.vcell.rest;
 
+import org.restlet.Context;
 import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
@@ -9,10 +11,10 @@ import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
-import org.restlet.routing.Template;
 import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.util.document.User;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -21,10 +23,11 @@ import freemarker.template.Configuration;
 public class VCellApiApplication extends WadlApplication {
 	public static final String ROOT_URI = "file:///c:/temp/";  
 
-	public SimulationDatabase simulationDatabase = null;
-	public AdminDBTopLevel adminDBTopLevel = null;
-	public UserVerifier userVerifier = null;
-	public Configuration templateConfiguration = null;
+	private SimulationDatabase simulationDatabase = null;
+	private AdminDBTopLevel adminDBTopLevel = null;
+	private UserVerifier userVerifier = null;
+	private ChallengeAuthenticator challengeAuthenticator = null;
+	private Configuration templateConfiguration = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -47,67 +50,67 @@ public class VCellApiApplication extends WadlApplication {
 		this.userVerifier = userVerifier;
 		this.templateConfiguration = templateConfiguration;
 	}
+	
+	private ChallengeAuthenticator createChallengeAuthenticator(UserVerifier userVerifier){
+	    Context context = getContext();
+	    boolean optional = true;
+	    ChallengeScheme challengeScheme = ChallengeScheme.HTTP_BASIC;
+	    String realm = "VCellUser";
+		ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), optional, challengeScheme, realm){
+
+			@Override
+			protected boolean authenticate(Request request, Response response) {
+				if (request.getChallengeResponse() == null){
+					return false;
+				}else{
+					return super.authenticate(request, response);
+				}
+			}
+			
+		};
+		guard.setVerifier(userVerifier);
+		return guard;
+	}
 
 	@Override  
     public Restlet createInboundRoot() {  
     	
 	    System.setProperty("java.net.preferIPv4Stack", "true");
 	    
+	    this.challengeAuthenticator = createChallengeAuthenticator(this.userVerifier);
+	    
 	    
 		// Attach a guard to secure access to user parts of the api 
-		ChallengeAuthenticator guard = new ChallengeAuthenticator(getContext(), ChallengeScheme.HTTP_BASIC, "VCellUser");  
-		guard.setVerifier(userVerifier);
 	
-		Router userRouter = new Router(getContext());
-		userRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
-		userRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
-//		userRouter.attach(new Restlet() {
-//
-//		    @Override
-//		    public void handle(Request request, Response response) {
-//		        String entity = "<html><body><h3>unknown page in user portion of web site</h3>" +
-//		        		"Method       : " + request.getMethod()
-//		                + "\nResource URI : " 
-//		                + request.getResourceRef()
-//		                + "\nIP address   : " 
-//		                + request.getClientInfo().getAddress()
-//		                + "\nAgent name   : " 
-//		                + request.getClientInfo().getAgentName()
-//		                + "\nAgent version: "
-//		                + request.getClientInfo().getAgentVersion()
-//		                + "</body></html>";
-//		        response.setEntity(entity, MediaType.TEXT_HTML);
-//		    }
-//
-//		});
+		Router rootRouter = new Router(getContext());
+		rootRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
+		rootRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
 		
-		guard.setNext(userRouter);
+		this.challengeAuthenticator.setNext(rootRouter);
 		
-		// Create a root router  
-		Router rootRouter = new Router(getContext());  
-		rootRouter.setDefaultMatchingMode(Template.MODE_STARTS_WITH);
-		rootRouter.attach("/users/{user}", guard); 
-//		rootRouter.attach(new Restlet() {
-//
-//		    @Override
-//		    public void handle(Request request, Response response) {
-//		        String entity = "<html><body><h3>unknown page in unauthenticated portion of web site</h3>" +
-//		        		"Method       : " + request.getMethod()
-//		                + "\nResource URI : " 
-//		                + request.getResourceRef()
-//		                + "\nIP address   : " 
-//		                + request.getClientInfo().getAddress()
-//		                + "\nAgent name   : " 
-//		                + request.getClientInfo().getAgentName()
-//		                + "\nAgent version: "
-//		                + request.getClientInfo().getAgentVersion()
-//		                + "</body></html>";
-//		        response.setEntity(entity, MediaType.TEXT_HTML);
-//		    }
-//
-//		});
      	    	 
     	return rootRouter;  
     }  
+	
+    public boolean authenticate(Request request, Response response) {
+        if (!request.getClientInfo().isAuthenticated()) {
+            challengeAuthenticator.challenge(response, false);
+            return false;
+        }
+        return true;
+    }
+
+	public AdminDBTopLevel getAdminDBTopLevel() {
+		return this.adminDBTopLevel;
+	}
+
+	public Configuration getTemplateConfiguration() {
+		return this.templateConfiguration;
+	}
+	
+	public User getVCellUser(org.restlet.security.User authenticatedUser){
+		return userVerifier.getVCellUser(authenticatedUser);
+	}
+
 	
 }
