@@ -15,8 +15,8 @@
 <tr><td>Job ID (parameter scan index)</td><td><input type='text' name='jobId' value='${jobId!""}'/></td></tr>
 <tr><td>Task ID (retry index)</td><td><input type='text' name='taskId' value='${taskId!""}'/></td></tr>
 <tr><td>Has Data</td><td><input type='radio' name='hasData' value='all' <#if (!hasData??) || (hasData == "all")>checked=on</#if>>all</input>
-						<input type='radio' name='hasData' value='yes' <#if hasData == "yes">checked=on</#if>>yes</input>
-						<input type='radio' name='hasData' value='no' <#if hasData == "no">checked=on</#if>>no</input>
+						<input type='radio' name='hasData' value='yes' <#if hasData?? && hasData == "yes">checked=on</#if>>yes</input>
+						<input type='radio' name='hasData' value='no' <#if hasData?? && hasData == "no">checked=on</#if>>no</input>
 						</td></tr>
 
 
