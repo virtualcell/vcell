@@ -9,8 +9,20 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -20,18 +32,17 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
-
 import cbit.vcell.math.VariableType;
 
 public class DataSet implements java.io.Serializable
 {
 
-   private Vector dataBlockList;
+   private Vector<DataBlock> dataBlockList;
    private FileHeader fileHeader;
    private String fileName;
 
 DataSet() {
-	dataBlockList = new Vector();
+	dataBlockList = new Vector<DataBlock>();
 	fileHeader = new FileHeader();
 }
 
@@ -55,57 +66,65 @@ public static double[] fetchSimData(String varName, File file) throws IOExceptio
  */
 double[] getData(String varName, File zipFile) throws IOException {
 	double data[] = null;
-	for (int i=0;i<dataBlockList.size();i++){
-		DataBlock dataBlock = (DataBlock)dataBlockList.elementAt(i);
-		if (varName.trim().equals(dataBlock.getVarName().trim())){
-			File pdeFile = new File(fileName);
-			InputStream is = null;
-			long length = 0;
-			java.util.zip.ZipFile zipZipFile = null;
-
-			if (zipFile == null && !pdeFile.exists()) {
-				throw new FileNotFoundException("file "+fileName+" does not exist");
-			}
-			if (zipFile != null) {
-				zipZipFile = openZipFile(zipFile);
-				java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
-				length = dataEntry.getSize();
-				is = zipZipFile.getInputStream(dataEntry);
-			} else {
-				length = pdeFile.length();
-				is = new FileInputStream(pdeFile);
-			}
-
-			// read data from zip file
-			
-			DataInputStream dis = null;
-			try {
-				if(is!=null && zipFile!=null && isChombo(zipFile)){
-					try{
-						data = readHDF5(is, varName);
-					}catch(Exception e){
-						throw new IOException(e.getMessage(),e);
-					}
-				}else{
+	if (zipFile != null && isChombo(zipFile)) {
+		try {
+			data = readHdf5VariableSolution(zipFile, new File(fileName).getName(), varName);
+		} catch(Exception e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+	else
+	{
+		for (int i=0;i<dataBlockList.size();i++){
+			DataBlock dataBlock = (DataBlock)dataBlockList.elementAt(i);
+			if (varName.trim().equals(dataBlock.getVarName().trim())){
+				File pdeFile = new File(fileName);
+				InputStream is = null;
+				long length = 0;
+				java.util.zip.ZipFile zipZipFile = null;
+	
+				if (zipFile == null && !pdeFile.exists()) {
+					throw new FileNotFoundException("file "+fileName+" does not exist");
+				}
+				if (zipFile != null) {
+					zipZipFile = openZipFile(zipFile);
+					java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
+					length = dataEntry.getSize();
+					is = zipZipFile.getInputStream(dataEntry);
+				} else {
+					length = pdeFile.length();
+					is = new FileInputStream(pdeFile);
+				}
+	
+				// read data from zip file
+				
+				DataInputStream dis = null;
+				try {
 					BufferedInputStream bis = new BufferedInputStream(is);
 					dis = new DataInputStream(bis);
 					dis.skip(dataBlock.getDataOffset());
 					int size = dataBlock.getSize();
 					data = new double[size];
-					for (int j=0;j<size;j++){
+					for (int j = 0; j < size; j++) {
 						data[j] = dis.readDouble();
 					}
-				}
-			}finally{
-				if(dis != null){dis.close();}
-				if (zipZipFile != null) {
-					zipZipFile.close();
-				}
-			}	
-			break;
-		}		
-	}	
-	if (data == null){
+				} finally {
+					try {
+						if (dis != null) {
+							dis.close();
+						}
+						if (zipZipFile != null) {
+							zipZipFile.close();
+						}
+					} catch (Exception ex) {
+						// ignore
+					}
+				}	
+				break;
+			}
+		}
+	}
+	if (data == null) {
 		throw new IOException("DataSet.getData(), data not found for variable '" + varName + "'");
 	}	
 	return data;
@@ -262,7 +281,7 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	
 		if(is != null && zipFile!=null && isChombo(zipFile)){
 			try {
-				readHDF5(is,null);
+				readHdf5SolutionMetaData(is);
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new IOException(e.getMessage(),e);
@@ -290,22 +309,90 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 private boolean isChombo(File zipFile){
 	return zipFile.getName().endsWith(".hdf5.zip");
 }
-private double[] readHDF5(InputStream is,String varName) throws Exception{
-	
-	File tempFile = null;
-	FileFormat fileFormat = null;
-	FileFormat solFile = null;
+
+private static File createTempHdf5File(InputStream is) throws IOException
+{
+	OutputStream out = null;
 	try{
-		tempFile = File.createTempFile("temp", "hdf5");
-		OutputStream out=new FileOutputStream(tempFile);
-		byte buf[]=new byte[1024];
+		File tempFile = File.createTempFile("temp", "hdf5");
+		out=new FileOutputStream(tempFile);
+		byte buf[] = new byte[1024];
 		int len;
-		while((len=is.read(buf))>0){
+		while((len=is.read(buf))>0) {
 			out.write(buf,0,len);
 		}
-		out.close();
+		return tempFile;
+	}
+	finally
+	{
+		try {
+			if (out != null) {
+				out.close();
+			}
+		} catch (Exception ex) {
+			// ignore
+		}
+	}
+}
+
+static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOException
+{
+	InputStream is = null;
+	try
+	{
+		ZipEntry dataEntry = zipFile.getEntry(fileName);
+		is = zipFile.getInputStream(dataEntry);		
+		return createTempHdf5File(is);
+	}
+	finally
+	{
+		try
+		{
+			if (is != null)
+			{
+				is.close();
+			}
+		}
+		catch (Exception ex)
+		{
+			// ignore
+		}
+	}
+}
+
+
+private static File createTempHdf5File(File zipFile, String fileName) throws IOException
+{
+	ZipFile zipZipFile = null;
+	try
+	{
+		zipZipFile = openZipFile(zipFile);		
+		return createTempHdf5File(zipZipFile, fileName);
+	}
+	finally
+	{
+		try
+		{
+			if (zipZipFile != null)
+			{
+				zipZipFile.close();
+			}
+		}
+		catch (Exception ex)
+		{
+			// ignore
+		}
+	}
+}
+
+private void readHdf5SolutionMetaData(InputStream is) throws Exception
+{
+	File tempFile = null;
+	FileFormat solFile = null;
+	try{
+		tempFile = createTempHdf5File(is);
 		
-		fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
 		solFile.open();
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
@@ -320,33 +407,72 @@ private double[] readHDF5(InputStream is,String varName) throws Exception{
 			}
 			Dataset dataset = (Dataset)member;
 			String dsname = dataset.getName();
-			if(dsname.equals(varName)){
-				return (double[])dataset.read();
-			}
 			int vt = -1;
 			List<Attribute> solAttrList = dataset.getMetadata();
 			for (Attribute attr : solAttrList)
 			{
 				String attrName = attr.getName();
-				if(attr.getName().equals("variable type")){
+				if(attrName.equals("variable type")){
 					Object obj = attr.getValue();
 					vt = ((int[])obj)[0];
 					break;
 				}
 			}
-			double[] solValues = (double[]) dataset.read();
-			dataBlockList.addElement(DataBlock.createDataBlock(dsname, vt, solValues.length, 0));
+			long[] dims = dataset.getDims();
+			dataBlockList.addElement(DataBlock.createDataBlock(dsname, vt, (int) dims[0], 0));
 		}
-		return null;
-	}finally{
-		if(solFile != null){try{solFile.close();}catch(Exception e){e.printStackTrace();}}
-		if(fileFormat != null){try{fileFormat.close();}catch(Exception e){e.printStackTrace();}}
-		if(tempFile != null){
-			if(!tempFile.delete()){
-				System.err.println("couldn't delete temp file "+tempFile.getAbsolutePath());
+	} finally {
+		try {
+			if (solFile != null) {
+				solFile.close();
 			}
+			if (tempFile != null) {
+				if (!tempFile.delete()) {
+					System.err.println("couldn't delete temp file " + tempFile);
+				}
+			}
+		} catch(Exception e) {
+			// ignore
 		}
 	}
+}
+
+
+static double[] readHdf5VariableSolution(File zipfile, String fileName, String varName) throws Exception{
+	
+	File tempFile = null;
+	FileFormat solFile = null;
+	try{
+		tempFile = createTempHdf5File(zipfile, fileName);
+		
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
+		solFile.open();
+		if (varName != null)
+		{
+			String varPath = Hdf5Utils.getVarSolutionPath(varName);
+			HObject solObj = FileFormat.findObject(solFile, varPath);
+			if (solObj instanceof Dataset)
+			{
+				Dataset dataset = (Dataset)solObj;
+				return (double[]) dataset.read();
+			}
+		}
+	} finally {
+		try {
+			if (solFile != null) {
+				solFile.close();
+			}
+			if (tempFile != null) {
+				if (!tempFile.delete()) {
+					System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
+				}
+			}
+		} catch(Exception e) {
+			// ignore
+		}
+	}
+	return null;
 }
 public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
 	

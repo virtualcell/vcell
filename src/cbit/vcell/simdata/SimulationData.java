@@ -959,7 +959,8 @@ synchronized double[][][] getSimDataTimeSeries0(
 				tempZipFileNames,
 				tempSimDataFileNames,
 				varNamesInDataSet,
-				indexes
+				indexes,
+				isChombo()
 			);
 		int counter = 0;
 		int progressCounter = 0;
