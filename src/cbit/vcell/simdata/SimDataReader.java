@@ -18,6 +18,10 @@ import java.util.Arrays;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
+import ncsa.hdf.object.Dataset;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.HObject;
+
 import org.vcell.util.DataAccessException;
 
 
@@ -44,6 +48,7 @@ public class SimDataReader{
 	long[][][] sortedVarIndexes = null;
 
 	private int[][][] reMapper;
+	private boolean isChombo = false;
 
 	private ReorderVarIndexes rvi = new ReorderVarIndexes();
 	private class ReorderVarIndexes implements java.util.Comparator<long[]>{
@@ -59,7 +64,7 @@ public class SimDataReader{
  * Creation date: (10/24/2004 3:34:31 PM)
  */
 public SimDataReader(boolean[] argWantsThisTime,double[] argTimes,String[] argZipFileNames,String[] argSimDataFileNames,
-	String[] argVarNames,int[][] argVarIndexes){
+	String[] argVarNames,int[][] argVarIndexes, boolean isChombo){
 
 	// ZipFiles must be stored uncompressed,unencrypted
 	// argVarNames can be in any order and with duplicate names
@@ -77,6 +82,7 @@ public SimDataReader(boolean[] argWantsThisTime,double[] argTimes,String[] argZi
 	wantsThisTime = argWantsThisTime;
 	zipFilenNames = argZipFileNames;
 	simDataFileNames = argSimDataFileNames;
+	this.isChombo = isChombo;
 
 	order(argVarNames,argVarIndexes);	
 }
@@ -92,6 +98,7 @@ public void close(){
 	if(currentZipFile != null){
 		try{
 			currentZipFile.close();
+			currentZipFile = null;
 		}catch(IOException e){
 			error+= "Error closing zipfile "+currentZipFile.getName()+"\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName());
 		}
@@ -100,6 +107,7 @@ public void close(){
 	if(dis != null){
 		try{
 			dis.close();
+			dis = null;
 		}catch(IOException e){
 			error+="Error closing dataInputStream\n"+(error.length() != 0?"\n":"")+(e.getMessage() != null?e.getMessage():e.getClass().getName());
 		}
@@ -109,12 +117,84 @@ public void close(){
 	}
 }
 
+private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exception {
+	if (zipFilenNames == null || zipFilenNames[masterTimeIndex] == null) {
+		return;
+	}
+	if (currentZipFile == null || !currentZipFile.getName().equals(zipFilenNames[masterTimeIndex])) {
+		close();
+		currentZipFile = new ZipFile(zipFilenNames[masterTimeIndex]);
+	}
+	File tempFile = null;
+	FileFormat solFile = null;
+	try {
+		tempFile = DataSet.createTempHdf5File(currentZipFile, simDataFileNames[masterTimeIndex]);
+		
+		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
+		solFile.open();
+	
+		for(int k = 0; k < varNames.length; ++ k) {
+			try {
+				String varPath = Hdf5Utils.getVarSolutionPath(varNames[k]);
+				HObject solObj = FileFormat.findObject(solFile, varPath);
+				if (solObj instanceof Dataset) {
+					Dataset dataset = (Dataset)solObj;
+				
+					double[] sol = (double[]) dataset.read();
+					for(int l = 0;l < varIndexes[k].length; ++ l) {
+						int idx = varIndexes[k][l];					
+						double val =  sol[idx];					
+						int unSortedVarIndex = (int)sortedVarIndexes[k][l][INDEX_ORIGINAL_POSITION];
+						int reMappedVarNameIndex =  reMapper[k][unSortedVarIndex][0];
+						int reMappedVarIndexIndex = reMapper[k][unSortedVarIndex][1];
+						returnValues[reMappedVarNameIndex][reMappedVarIndexIndex] = val;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace(System.out);
+				throw new DataAccessException(e.getMessage(), e);
+			}
+		}
+	} finally {
+		try {
+			if (solFile != null) {
+				solFile.close();
+			}
+			if (tempFile != null) {
+				if (!tempFile.delete()) {
+					System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
+				}
+			}
+		} catch(Exception e) {
+			// ignore
+		}
+	}
+	
+	++ masterTimeIndex;
+	if (masterTimeIndex >= times.length) {
+		close();
+	}
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (10/26/2004 10:18:50 AM)
  */
-public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException,DataAccessException{
+public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException, DataAccessException {
+	if (isChombo) {
+		try {
+			getNextDataAtCurrentTimeChombo(returnValues);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new DataAccessException(e.getMessage(), e);
+		}
+	} else {
+		getNextDataAtCurrentTime0(returnValues);
+	}
+}
+
+private void getNextDataAtCurrentTime0(double[][] returnValues) throws IOException,DataAccessException{
 	
 	if(masterTimeIndex >= times.length){
 		throw new RuntimeException("No More Time Data");
