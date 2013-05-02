@@ -13,12 +13,18 @@ package org.vcell.sbml.vcell;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import org.sbml.libsbml.Model;
+import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLReader;
+import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
 import org.sbml.libsbml.libsbmlConstants;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
@@ -296,5 +302,64 @@ public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefiniti
 
 public static boolean isSbmlBaseUnit(String symbol) {
 	return SbmlBaseUnits.contains(symbol);
+}
+
+/**
+ * convert sbml string into XML (SBML) document, add unit definitions from above selected unitSystem and re-convert to string.
+ * @param sbmlStr
+ * @return
+ */
+public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSystem vcModelUnitSystem) {
+	if (sbmlStr == null || sbmlStr.length() == 0) {
+		throw new RuntimeException("SBMl string is empty, cannot add unit definitions to SBML model.");
+	}
+	
+	ResourceUtil.loadlibSbmlLibray();
+
+	// create a libsbml (sbml) model object, create sbml unitDefinitions for the units above, add to model.
+	SBMLReader sbmlReader = new SBMLReader();
+	SBMLDocument sbmlDocument = sbmlReader.readSBMLFromString(sbmlStr);
+		
+	Model sbmlModel = sbmlDocument.getModel();
+	long sbmlLevel = sbmlModel.getLevel();
+	long sbmlVersion = sbmlModel.getVersion();
+	
+	// Define SUBSTANCE
+	UnitDefinition subsUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeSubstanceUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+	subsUnitDefn.setId(SUBSTANCE);
+	sbmlModel.addUnitDefinition(subsUnitDefn);
+
+	// Define VOLUME
+	UnitDefinition volUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getVolumeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+	volUnitDefn.setId(VOLUME);
+	sbmlModel.addUnitDefinition(volUnitDefn);
+
+	// Define AREA
+	UnitDefinition areaUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getAreaUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+	areaUnitDefn.setId(AREA);
+	sbmlModel.addUnitDefinition(areaUnitDefn);
+
+	// Define LENGTH
+	UnitDefinition lengthUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getLengthUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+	lengthUnitDefn.setId(LENGTH);
+	sbmlModel.addUnitDefinition(lengthUnitDefn);
+
+	// Define TIME
+	UnitDefinition timeUnitDefn = getSBMLUnitDefinition(vcModelUnitSystem.getTimeUnit(), sbmlLevel, sbmlVersion, vcModelUnitSystem);
+	timeUnitDefn.setId(TIME);
+	sbmlModel.addUnitDefinition(timeUnitDefn);
+	
+	// convert sbml model to string and return
+	SBMLWriter sbmlWriter = new SBMLWriter();
+	String modifiedSbmlStr = sbmlWriter.writeToString(sbmlDocument);
+
+	// cleanup
+	sbmlModel.delete();
+	sbmlDocument.delete();
+	sbmlReader.delete();
+	sbmlWriter.delete();	
+
+	return modifiedSbmlStr;
+	
 }
 }
