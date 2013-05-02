@@ -18,21 +18,35 @@ import java.util.EventObject;
 import java.util.Hashtable;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
+import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.sbml.vcell.SBMLUnitTranslator;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
+import cbit.vcell.client.desktop.biomodel.UnitSystemSelectionPanel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.DisplayBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGUtils;
 import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.XmlHelper;
 
 /**
  * Insert the type's description here.
@@ -85,10 +99,93 @@ public String getManagerID() {
  * Comment
  */
 public void importSbml(String bngSbmlStr) {
-	XMLInfo xmlInfo = new XMLInfo(bngSbmlStr);
+	if (bngSbmlStr == null || bngSbmlStr.length() == 0) {
+		throw new RuntimeException("SBMl string is empty, cannot import into VCell.");
+	}
+	
+	//
+	// 1. Convert SBML string from BNG to SBML model, add unitDefintions to SBML model using VCell sbml compatible unit system 
+	// 2. Import unit modified SBML model into VCell as biomodel
+	// 3. Enforce "cleaner" (looking) units on this imported biomodel (can use the units added to the sbml model above)
+	// 4. Convert all LumpedKinetics reactions into DistributedKinetics.
+	// 4. Convert this biomodel into vcml string and pass it into XMLInfo and then to RequestManager to open document.
+	//
+	
+	ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
+	ModelUnitSystem sbmlCompatibleVCModelUnitSystem = ModelUnitSystem.createSBMLUnitSystem(mus.getVolumeSubstanceUnit(), mus.getVolumeUnit(), mus.getAreaUnit(), mus.getLengthUnit(), mus.getTimeUnit());
+	
+	// display to user to change units if desired.
+	UnitSystemSelectionPanel unitSystemSelectionPanel = new UnitSystemSelectionPanel(true);
+	unitSystemSelectionPanel.initialize(sbmlCompatibleVCModelUnitSystem);
+	int retcode = DialogUtils.showComponentOKCancelDialog(getBngOutputPanel(), unitSystemSelectionPanel, "Select new unit system to import into VCell");
+	ModelUnitSystem forcedModelUnitSystem = null;
+	while (retcode == JOptionPane.OK_OPTION){
+		try {
+			forcedModelUnitSystem = unitSystemSelectionPanel.createModelUnitSystem();
+			break;
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			DialogUtils.showErrorDialog(getBngOutputPanel(), e.getMessage(), e);
+			retcode = DialogUtils.showComponentOKCancelDialog(getBngOutputPanel(), unitSystemSelectionPanel, "Select new unit system to import into VCell");
+		}
+	}
+	if (forcedModelUnitSystem == null) {
+		DialogUtils.showErrorDialog(getBngOutputPanel(), "Units are required for import into Virtual Cell.");
+	}
 
-	if (xmlInfo != null) {
-		getRequestManager().openDocument(xmlInfo, this, true);
+	String modifiedSbmlStr = SBMLUnitTranslator.addUnitDefinitionsToSbmlModel(bngSbmlStr, forcedModelUnitSystem);
+	
+	// Create a default VCLogger - SBMLImporter needs it
+    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
+        private StringBuffer buffer = new StringBuffer();
+        public void sendMessage(int messageLevel, int messageType) {
+            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
+            sendMessage(messageLevel, messageType, message);	
+        }
+        public void sendMessage(int messageLevel, int messageType, String message) {
+            System.err.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
+            if (messageLevel == VCLogger.HIGH_PRIORITY) {
+            	throw new RuntimeException("Import failed : " + message);
+            }
+        }
+        public void sendAllMessages() {
+        }
+        public boolean hasMessages() {
+            return false;
+        }
+    };
+    
+    // import sbml String into VCell biomodel
+	try {
+		File sbmlFile = File.createTempFile("temp", ".xml");
+		sbmlFile.deleteOnExit();
+		XmlUtil.writeXMLStringToFile(modifiedSbmlStr, sbmlFile.getAbsolutePath(), true);
+
+		org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new SBMLImporter(sbmlFile.getAbsolutePath(), logger, false);
+		BioModel bioModel = sbmlImporter.getBioModel();
+		
+		// enforce 'cleaner looking' units on vc biomodel (the process of adding unit defintion to sbml model messes up the units, though they are correct units (eg., 1e-6m for um).
+		BioModel modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(bioModel, forcedModelUnitSystem);
+		
+		// convert any reaction that has GeneralLumpedKinetics to GeneralKinetics
+		for (ReactionStep rs : modifiedBiomodel.getModel().getReactionSteps()) {
+			Kinetics kinetics = rs.getKinetics();
+			if (kinetics instanceof LumpedKinetics) {
+				rs.setKinetics(DistributedKinetics.toDistributedKinetics((LumpedKinetics)kinetics));
+			}
+		}
+
+		// convert biomodel to vcml string
+		String vcmlString = XmlHelper.bioModelToXML(modifiedBiomodel);
+
+		XMLInfo xmlInfo = new XMLInfo(vcmlString);
+
+		if (xmlInfo != null) {
+			getRequestManager().openDocument(xmlInfo, this, true);
+		}
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Cound not convert BNG sbml string to VCell biomodel : ", e);
 	}		
 }
 

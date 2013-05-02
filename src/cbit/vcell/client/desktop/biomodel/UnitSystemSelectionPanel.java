@@ -12,7 +12,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -33,9 +32,11 @@ public class UnitSystemSelectionPanel extends JPanel {
 	
 	private ButtonGroup buttonGroup = null;
 	private JRadioButton defaultVCellUnitsButton = null;
-	private JRadioButton arbitraryVCellUnits = null;
-	private JRadioButton arbitrarySBMLUnits = null;
+	private JRadioButton arbitraryVCellUnitsButton = null;
+	private JRadioButton arbitrarySBMLUnitsButton = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
+	
+	private boolean bSbmlCompatible = false;
 	
 	private class InternalEventHandler implements ActionListener, FocusListener {
 
@@ -44,14 +45,14 @@ public class UnitSystemSelectionPanel extends JPanel {
 				ModelUnitSystem defaultUnits = ModelUnitSystem.createDefaultVCModelUnitSystem();
 				initialize(defaultUnits);
 				updateEnable();
-			}else if (e.getSource() == arbitrarySBMLUnits){
+			}else if (e.getSource() == arbitrarySBMLUnitsButton){
 				membraneSubstanceTextField.setText(volumeSubstanceTextField.getText());
 				lumpedReactionSubstanceTextField.setText(volumeSubstanceTextField.getText());
 				updateEnable();
-			}else if (e.getSource() == arbitraryVCellUnits){
+			}else if (e.getSource() == arbitraryVCellUnitsButton){
 				updateEnable();
 			}else if (e.getSource() == volumeSubstanceTextField){
-				if (buttonGroup.isSelected(arbitrarySBMLUnits.getModel())){
+				if (buttonGroup.isSelected(arbitrarySBMLUnitsButton.getModel())){
 					membraneSubstanceTextField.setText(volumeSubstanceTextField.getText());
 					lumpedReactionSubstanceTextField.setText(volumeSubstanceTextField.getText());
 				}
@@ -59,7 +60,7 @@ public class UnitSystemSelectionPanel extends JPanel {
 		}
 
 		public void focusLost(FocusEvent e) {
-			if (e.getSource() == volumeSubstanceTextField && buttonGroup.isSelected(arbitrarySBMLUnits.getModel())){
+			if (e.getSource() == volumeSubstanceTextField && buttonGroup.isSelected(arbitrarySBMLUnitsButton.getModel())){
 				membraneSubstanceTextField.setText(volumeSubstanceTextField.getText());
 				lumpedReactionSubstanceTextField.setText(volumeSubstanceTextField.getText());
 			}
@@ -75,6 +76,13 @@ public class UnitSystemSelectionPanel extends JPanel {
 		super();
 		initialize();
 	}
+	
+	public UnitSystemSelectionPanel(boolean argbSbmlCompatible){
+		super();
+		bSbmlCompatible = argbSbmlCompatible;
+		initialize();
+	}
+
 
 	private void initialize(){
 		JPanel inputPanel = new JPanel(new GridBagLayout());
@@ -328,20 +336,20 @@ public class UnitSystemSelectionPanel extends JPanel {
 		gbc.gridy = 1;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4,4,4,4);
-		arbitrarySBMLUnits = new JRadioButton("sbml compatable");
-		arbitrarySBMLUnits.addActionListener(eventHandler);
-		buttonPanel.add(arbitrarySBMLUnits,gbc);
-		buttonGroup.add(arbitrarySBMLUnits);
+		arbitrarySBMLUnitsButton = new JRadioButton("sbml compatable");
+		arbitrarySBMLUnitsButton.addActionListener(eventHandler);
+		buttonPanel.add(arbitrarySBMLUnitsButton,gbc);
+		buttonGroup.add(arbitrarySBMLUnitsButton);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4,4,4,4);
-		arbitraryVCellUnits = new JRadioButton("general");
-		arbitraryVCellUnits.addActionListener(eventHandler);
-		buttonPanel.add(arbitraryVCellUnits,gbc);
-		buttonGroup.add(arbitraryVCellUnits);
+		arbitraryVCellUnitsButton = new JRadioButton("general");
+		arbitraryVCellUnitsButton.addActionListener(eventHandler);
+		buttonPanel.add(arbitraryVCellUnitsButton,gbc);
+		buttonGroup.add(arbitraryVCellUnitsButton);
 		
 		buttonGroup.setSelected(defaultVCellUnitsButton.getModel(), true);
 		
@@ -361,9 +369,16 @@ public class UnitSystemSelectionPanel extends JPanel {
 			defaultVCellUnitsButton.setSelected(true);
 		}else if (modelUnitSystem.getVolumeSubstanceUnit().compareEqual(modelUnitSystem.getMembraneSubstanceUnit()) &&
 		   	      modelUnitSystem.getVolumeSubstanceUnit().compareEqual(modelUnitSystem.getLumpedReactionSubstanceUnit())){
-			arbitrarySBMLUnits.setSelected(true);
+			arbitrarySBMLUnitsButton.setSelected(true);
 		}else{
-			arbitraryVCellUnits.setSelected(true);
+			arbitraryVCellUnitsButton.setSelected(true);
+		}
+		
+		// if (bSbmlCompatible flag is set, disable the radio buttons (this is used while invoking this panel in BNGOutputPanel to set units on BNG generated sbml)
+		if (bSbmlCompatible) {
+			defaultVCellUnitsButton.setEnabled(false);
+			arbitrarySBMLUnitsButton.setEnabled(false);
+			arbitraryVCellUnitsButton.setEnabled(false);
 		}
 		
 		lengthTextField.setText(modelUnitSystem.getLengthUnit().getSymbol());
@@ -386,7 +401,7 @@ public class UnitSystemSelectionPanel extends JPanel {
 			volumeSubstanceTextField.setEnabled(false);
 			membraneSubstanceTextField.setEnabled(false);
 			lumpedReactionSubstanceTextField.setEnabled(false);
-		}else if (buttonGroup.isSelected(arbitrarySBMLUnits.getModel())){
+		}else if (buttonGroup.isSelected(arbitrarySBMLUnitsButton.getModel())){
 			lengthTextField.setEnabled(true);
 			areaTextField.setEnabled(true);
 			volumeTextField.setEnabled(true);
@@ -394,7 +409,7 @@ public class UnitSystemSelectionPanel extends JPanel {
 			volumeSubstanceTextField.setEnabled(true);
 			membraneSubstanceTextField.setEnabled(false);
 			lumpedReactionSubstanceTextField.setEnabled(false);
-		}else if (buttonGroup.isSelected(arbitraryVCellUnits.getModel())){
+		}else if (buttonGroup.isSelected(arbitraryVCellUnitsButton.getModel())){
 			lengthTextField.setEnabled(true);
 			areaTextField.setEnabled(true);
 			volumeTextField.setEnabled(true);
