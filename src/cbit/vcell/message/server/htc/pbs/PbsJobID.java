@@ -8,8 +8,8 @@ public class PbsJobID extends HtcJobID {
 		super(jobID,BatchSystemType.PBS);
 	}
 	
-	public String getPbsJobID(){
-		return getJobID();
+	public long getPbsJobNumber(){
+		return getJobNumber();
 	}
 		
 }

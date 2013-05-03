@@ -14,16 +14,38 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		PBS,
 		SGE
 	}
+	//
+	// database name = PBS:1200725.master.cm.cluster
+	// jobID = 1200725.master.cm.cluster
+	//   or
+	// jobID = 1200725
+	//
 	private BatchSystemType batchSystemType = null;
-	private String jobID;
+	private long jobNumber;  // required (e.g. 1200725)
+	private String server;     // optional (e.g. "master.cm.cluster")
 	
 	protected HtcJobID(String jobID, BatchSystemType batchSystemType){
-		this.jobID = jobID;
+		if (jobID.contains(".")){
+			int indexOfFirstPeriod = jobID.indexOf(".");
+			this.jobNumber = Long.parseLong(jobID.substring(0,indexOfFirstPeriod));
+			this.server = jobID.substring(indexOfFirstPeriod+1);
+		}else{
+			this.jobNumber = Long.parseLong(jobID);
+			this.server = null;
+		}
 		this.batchSystemType = batchSystemType;
 	}
 	
 	public String toDatabase(){
-		return batchSystemType.name()+":"+this.jobID;
+		if (server!=null){
+			return batchSystemType.name()+":"+this.jobNumber+"."+server;
+		}else{
+			return batchSystemType.name()+":"+this.jobNumber;
+		}
+	}
+	
+	private String toDatabaseShort(){
+		return batchSystemType.name()+":"+this.jobNumber;
 	}
 	
 	public static HtcJobID fromDatabase(String databaseString){
@@ -42,8 +64,12 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		return toDatabase();
 	}
 	
-	protected String getJobID(){
-		return this.jobID;
+	public long getJobNumber(){
+		return this.jobNumber;
+	}
+	
+	public String getServer(){
+		return this.server;
 	}
 	
 	public BatchSystemType getBatchSystemType(){
@@ -53,8 +79,13 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	public boolean compareEqual(Matchable obj) {
 		if (obj instanceof HtcJobID){
 			HtcJobID other = (HtcJobID)obj;
-			if (!Compare.isEqual(jobID,other.jobID)){
+			if (jobNumber != jobNumber){
 				return false;
+			}
+			if (server!=null && other.server!=null){
+				if (!Compare.isEqual(server,other.server)){
+					return false;
+				}
 			}
 			if (batchSystemType != other.batchSystemType){
 				return false;
@@ -68,14 +99,14 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	public boolean equals(Object obj){
 		if (obj instanceof HtcJobID){
 			HtcJobID other = (HtcJobID)obj;
-			return toDatabase().equals(other.toDatabase());
+			return compareEqual(other);
 		}
 		return false;
 	}
 	
 	@Override
 	public int hashCode(){
-		return toDatabase().hashCode();
+		return toDatabaseShort().hashCode();
 	}
 	
 }

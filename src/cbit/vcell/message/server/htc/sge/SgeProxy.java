@@ -191,13 +191,13 @@ arid         undefined
 			SGE_HOME += "/";
 		}
 
-		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
+		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", Long.toString(sgeJobID.getSgeJobNumber())};
 		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
 
 		HashMap<String,String> outputMap = parseOutput(commandOutput);
 		
 		if (outputMap == null){
-			String[] qacct_cmd = new String[]{SGE_HOME + JOB_CMD_QACCT, "-j", sgeJobID.getSgeJobID()};
+			String[] qacct_cmd = new String[]{SGE_HOME + JOB_CMD_QACCT, "-j", Long.toString(sgeJobID.getSgeJobNumber())};
 			commandOutput = commandService.command(qacct_cmd);
 
 			outputMap = parseOutput(commandOutput);
@@ -239,7 +239,7 @@ denied: job "6894" does not exist
 			SGE_HOME += "/";
 		}
 
-		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
+		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, Long.toString(sgeJobID.getSgeJobNumber())};
 		try {
 			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
@@ -433,7 +433,7 @@ denied: job "6894" does not exist
 		cmdV.add(SGE_HOME + JOB_CMD_STATUS);
 		cmdV.add("-f");
 		cmdV.add("-j");
-		cmdV.add(((SgeJobID)htcJobID).getSgeJobID());
+		cmdV.add(Long.toString(((SgeJobID)htcJobID).getSgeJobNumber()));
 		cmdV.add("-xml");
 		CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
 		String xmlString = commandOutput.getStandardOutput();
