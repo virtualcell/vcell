@@ -9,7 +9,7 @@ public class SgeJobID extends HtcJobID {
 		int jobIdInteger = Integer.parseInt(jobID); // attempt to temporarily parse the jobID for input validation.
 	}
 		
-	public String getSgeJobID() {
-		return getJobID();
+	public long getSgeJobNumber() {
+		return getJobNumber();
 	}
 }

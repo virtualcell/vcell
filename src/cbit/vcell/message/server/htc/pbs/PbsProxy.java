@@ -52,7 +52,7 @@ public final class PbsProxy extends HtcProxy {
 			PBS_HOME += "/";
 		}
 		
-		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
+		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", Long.toString(pbsJobID.getPbsJobNumber())};
 		CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
 
 		String output = commandOutput.getStandardOutput();
@@ -106,7 +106,7 @@ public final class PbsProxy extends HtcProxy {
 		if (!PBS_HOME.endsWith("/")){
 			PBS_HOME += "/";
 		}
-		String[] cmd = new String[]{PBS_HOME + JOB_CMD_DELETE, pbsJobID.getPbsJobID()};
+		String[] cmd = new String[]{PBS_HOME + JOB_CMD_DELETE, Long.toString(pbsJobID.getPbsJobNumber())};
 		try {
 			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
@@ -294,7 +294,7 @@ public final class PbsProxy extends HtcProxy {
 			cmdV.add(PBS_HOME + JOB_CMD_STATUS);
 			cmdV.add("-f");
 			for(HtcJobID htcJobID : htcJobIDs){
-				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
+				cmdV.add(Long.toString(((PbsJobID)htcJobID).getPbsJobNumber()));
 			}
 			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
