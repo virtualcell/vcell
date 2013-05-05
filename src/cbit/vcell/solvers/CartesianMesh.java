@@ -2057,7 +2057,9 @@ protected Object[] getOutputFields() throws IOException
  * @exception java.io.IOException The exception description.
  */
 private void writeObject(ObjectOutputStream s) throws IOException {
-	compressedBytes = BeanUtils.toCompressedSerialized(getOutputFields());
+	if (compressedBytes == null) {
+		compressedBytes = BeanUtils.toCompressedSerialized(getOutputFields());
+	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);
 }
