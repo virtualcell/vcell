@@ -160,6 +160,10 @@ private int convertToImageIndex(int mouseIndex) {
 	if (fieldMode == MESH_MODE) {
 		mouseIndex = (mouseIndex + 1) / 2;
 	}
+	else if (fieldMode == NORMAL_MODE)
+	{
+		mouseIndex /= 2; 
+	}
 	return mouseIndex;
 }
 
