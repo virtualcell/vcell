@@ -33,6 +33,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Structure;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -151,6 +152,10 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 						setText(value.toString());
 					}
 				}
+			}
+			
+			if (value instanceof BoundaryConditionType) {
+				setText(((BoundaryConditionType)value).boundaryTypeStringValue());
 			}
 
 			List<Issue> issueList = structureMappingTableModel.getIssues(row, column);
