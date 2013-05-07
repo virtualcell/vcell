@@ -168,10 +168,10 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 
 	private SimulationTaskRepresentation[] getSimulationTaskRepresentations() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		if (!application.authenticate(getRequest(), getResponse())){
-			// not authenticated
-			return new SimulationTaskRepresentation[0];
-		}else{
+//		if (!application.authenticate(getRequest(), getResponse())){
+//			// not authenticated
+//			return new SimulationTaskRepresentation[0];
+//		}else{
 			org.restlet.security.User autheticatedUser = getClientInfo().getUser();
 			User vcellUser = application.getVCellUser(autheticatedUser);
 			ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
@@ -190,7 +190,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
 			}
 			return simTaskReps.toArray(new SimulationTaskRepresentation[0]);
-		}
+//		}
 	}
 
     private List<SimpleJobStatus> query(AdminDBTopLevel adminDbTop, User vcellUser) throws SQLException, DataAccessException {	

@@ -14,6 +14,7 @@ import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
@@ -26,7 +27,7 @@ public class VCellApiApplication extends WadlApplication {
 	private SimulationDatabase simulationDatabase = null;
 	private AdminDBTopLevel adminDBTopLevel = null;
 	private UserVerifier userVerifier = null;
-	private ChallengeAuthenticator challengeAuthenticator = null;
+//	private ChallengeAuthenticator challengeAuthenticator = null;
 	private Configuration templateConfiguration = null;
 	
 	@Override
@@ -77,7 +78,7 @@ public class VCellApiApplication extends WadlApplication {
     	
 	    System.setProperty("java.net.preferIPv4Stack", "true");
 	    
-	    this.challengeAuthenticator = createChallengeAuthenticator(this.userVerifier);
+//	    this.challengeAuthenticator = createChallengeAuthenticator(this.userVerifier);
 	    
 	    
 		// Attach a guard to secure access to user parts of the api 
@@ -86,17 +87,17 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
 		rootRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
 		
-		this.challengeAuthenticator.setNext(rootRouter);
+//		this.challengeAuthenticator.setNext(rootRouter);
 		
      	    	 
     	return rootRouter;  
     }  
 	
     public boolean authenticate(Request request, Response response) {
-        if (!request.getClientInfo().isAuthenticated()) {
-            challengeAuthenticator.challenge(response, false);
-            return false;
-        }
+//        if (!request.getClientInfo().isAuthenticated()) {
+//            challengeAuthenticator.challenge(response, false);
+//            return false;
+//        }
         return true;
     }
 
@@ -109,7 +110,8 @@ public class VCellApiApplication extends WadlApplication {
 	}
 	
 	public User getVCellUser(org.restlet.security.User authenticatedUser){
-		return userVerifier.getVCellUser(authenticatedUser);
+		return new User("schaff",new KeyValue("17"));
+//		return userVerifier.getVCellUser(authenticatedUser);
 	}
 
 	
