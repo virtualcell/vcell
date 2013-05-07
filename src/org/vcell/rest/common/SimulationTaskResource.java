@@ -6,9 +6,9 @@ import org.restlet.resource.Put;
 public interface SimulationTaskResource {
 
 	@Get("json")
-	public SimulationTaskRepresentation retrieve();
+	public SimulationTaskRepresentation get_json();
 	
 	@Put("json")
-	public void store(SimulationTaskRepresentation simulation);
+	public void put_json(SimulationTaskRepresentation simulation);
 	
 }

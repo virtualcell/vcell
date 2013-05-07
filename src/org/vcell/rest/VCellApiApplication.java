@@ -84,6 +84,8 @@ public class VCellApiApplication extends WadlApplication {
 		// Attach a guard to secure access to user parts of the api 
 	
 		Router rootRouter = new Router(getContext());
+		rootRouter.attach("/biomodel", BiomodelsServerResource.class);  
+		rootRouter.attach("/biomodel/{biomodelID}", BiomodelServerResource.class);  
 		rootRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
 		rootRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
 		

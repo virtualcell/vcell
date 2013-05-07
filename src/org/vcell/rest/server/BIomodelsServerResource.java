@@ -37,7 +37,7 @@ import com.google.gson.Gson;
 
 import freemarker.template.Configuration;
 
-public class SimulationTasksServerResource extends AbstractServerResource implements SimulationTasksResource {
+public class BIomodelsServerResource extends AbstractServerResource implements SimulationTasksResource {
 
     private static final String PARAM_USER = "user";
 	private static final String PARAM_SIM_ID = "simId";

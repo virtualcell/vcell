@@ -9,14 +9,16 @@ import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
 import org.restlet.ext.wadl.WadlServerResource;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
-import org.vcell.rest.common.SimulationTaskRepresentation;
-import org.vcell.rest.common.SimulationTaskResource;
+import org.vcell.rest.common.BiomodelRepresentation;
+import org.vcell.rest.common.BiomodelResource;
 
-public class SimulationTaskServerResource extends WadlServerResource implements SimulationTaskResource {
+public class BiomodelServerResource extends WadlServerResource implements BiomodelResource {
 
-	private String simid;
+	private String biomodelid;
 	
 	
     @Override
@@ -34,12 +36,12 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
      */
     @Override
     protected void doInit() throws ResourceException {
-        String simTaskIdAttribute = getAttribute("simTaskId");
+        String simTaskIdAttribute = getAttribute("biomodelid");
 
         if (simTaskIdAttribute != null) {
-            this.simid = simTaskIdAttribute;
-            setName("Resource for simulation \"" + this.simid + "\"");
-            setDescription("The resource describing the simulation task id \"" + this.simid + "\"");
+            this.biomodelid = simTaskIdAttribute;
+            setName("Resource for biomodel \"" + this.biomodelid + "\"");
+            setDescription("The resource describing the simulation task id \"" + this.biomodelid + "\"");
         } else {
             setName("simulation task resource");
             setDescription("The resource describing a simulation task");
@@ -52,23 +54,22 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
 		super.describeGet(info);
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
-        parameterInfos.add(new ParameterInfo("user",false,"string",ParameterStyle.TEMPLATE,"VCell user id"));
-        parameterInfos.add(new ParameterInfo("simTaskID",false,"string",ParameterStyle.TEMPLATE,"VCell simulation task id simkey_jobid"));
+        parameterInfos.add(new ParameterInfo("biomodelid",false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
 
 	@Override
-	public SimulationTaskRepresentation get_json() {
-		SimulationTaskRepresentation sim = new SimulationTaskRepresentation();
-		sim.simKey="123";
-		return sim;
+	public BiomodelRepresentation get_json() {
+		BiomodelRepresentation biomodel = new BiomodelRepresentation();
+		biomodel.modelKey="123";
+		return biomodel;
 	}
 
 	@Override
-	public void put_json(SimulationTaskRepresentation simulation) {
-		// TODO Auto-generated method stub
-
+	public Representation get_html() {
+		StringRepresentation html = new StringRepresentation("biomodelhtml");
+		return html;
 	}
 
 }
