@@ -135,7 +135,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.matrix.test.SVDTest;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralKinetics;
@@ -244,6 +243,7 @@ public class SBMLImporter {
 	}
 
 
+	
 protected void addCompartments(VCMetaData metaData) {
 	if (sbmlModel == null) {
 		throw new RuntimeException("SBML model is NULL");
@@ -364,6 +364,11 @@ protected void addCompartments(VCMetaData metaData) {
 
 protected void addEvents() {
 	if (sbmlModel.getNumEvents() > 0) {
+		// VCell does not support events in spatial model 
+		if (bSpatial) {
+			throw new RuntimeException("Events are not supported in a spatial VCell model.");
+		}
+		
 		ListOfEvents listofEvents = sbmlModel.getListOfEvents();
 
 		Model vcModel = simContext.getModel();
@@ -1414,7 +1419,7 @@ public BioModel getBioModel() {
 	OStringStream oStrStream = new OStringStream();
 	document.printErrors(oStrStream);
 	System.out.println(oStrStream.str());
-		
+	
 	sbmlModel = document.getModel();
 	
 	if (sbmlModel == null) {
@@ -1949,6 +1954,14 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
 		}
 	}
+	
+	// if SBML model is spatial and has events, it cannot be imported, since events are not supported in a spatial VCell model.
+	if (bSpatial) {
+		if (sbmlModel.getNumEvents() > 0) {
+			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Events are not supported in a spatial Virtual Cell model at this time, they are only supported in a non-spatial model.");
+		}
+	}
+	
 }
 
 /**
