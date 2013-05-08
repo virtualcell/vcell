@@ -1,5 +1,7 @@
 package org.vcell.rest;
 
+import java.util.logging.Level;
+
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -12,20 +14,21 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
+import org.vcell.rest.server.BiomodelServerResource;
+import org.vcell.rest.server.BiomodelsServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import freemarker.template.Configuration;
 
 public class VCellApiApplication extends WadlApplication {
-	public static final String ROOT_URI = "file:///c:/temp/";  
 
-	private SimulationDatabase simulationDatabase = null;
 	private AdminDBTopLevel adminDBTopLevel = null;
+	private DatabaseServerImpl databaseServerImpl = null;
 	private UserVerifier userVerifier = null;
 //	private ChallengeAuthenticator challengeAuthenticator = null;
 	private Configuration templateConfiguration = null;
@@ -41,15 +44,16 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(SimulationDatabase simulationDatabase, AdminDBTopLevel adminDbTopLevel, UserVerifier userVerifier, Configuration templateConfiguration) {
+	public VCellApiApplication(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, UserVerifier userVerifier, Configuration templateConfiguration) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
         setAuthor("VCell Team");
-		this.simulationDatabase = simulationDatabase;
 		this.adminDBTopLevel = adminDbTopLevel;
+		this.databaseServerImpl = databaseServerImpl;
 		this.userVerifier = userVerifier;
 		this.templateConfiguration = templateConfiguration;
+		getLogger().setLevel(Level.FINE);
 	}
 	
 	private ChallengeAuthenticator createChallengeAuthenticator(UserVerifier userVerifier){
@@ -105,6 +109,10 @@ public class VCellApiApplication extends WadlApplication {
 
 	public AdminDBTopLevel getAdminDBTopLevel() {
 		return this.adminDBTopLevel;
+	}
+
+	public DatabaseServerImpl getDatabaseServerImpl() {
+		return databaseServerImpl;
 	}
 
 	public Configuration getTemplateConfiguration() {

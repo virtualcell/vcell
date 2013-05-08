@@ -33,13 +33,14 @@ import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.UserTable;
 
 import com.google.gson.Gson;
 
 import freemarker.template.Configuration;
 
-public class BipomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
+public class BiomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
 
     private static final String PARAM_USER = "user";
 	private static final String PARAM_SIM_ID = "simId";
@@ -156,7 +157,7 @@ public class BipomodelsServerResource extends AbstractServerResource implements 
 			dataModel.put("maxRows", 100);
 		}
 
-		dataModel.put("bioModels", Arrays.asList(biomodels));
+		dataModel.put("biomodels", Arrays.asList(biomodels));
 		
 		
 		if (vcellUser!=null){
@@ -180,9 +181,9 @@ public class BipomodelsServerResource extends AbstractServerResource implements 
 //			return new SimulationTaskRepresentation[0];
 //		}else{
 			ArrayList<BiomodelRepresentation> biomodelReps = new ArrayList<BiomodelRepresentation>();
-			AdminDBTopLevel adminDbTopLevel = ((VCellApiApplication)getApplication()).getAdminDBTopLevel();
+			DatabaseServerImpl databaseServerImpl = ((VCellApiApplication)getApplication()).getDatabaseServerImpl();
 			try {
-				List<BioModelInfo> bioModelInfoList = query(adminDbTopLevel, vcellUser);
+				BioModelInfo[] bioModelInfoList = query(databaseServerImpl, vcellUser);
 				for (BioModelInfo bioModelInfo : bioModelInfoList) {
 					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelInfo);
 					biomodelReps.add(biomodelRep);
@@ -198,7 +199,7 @@ public class BipomodelsServerResource extends AbstractServerResource implements 
 //		}
 	}
 
-    private List<BioModelInfo> query(AdminDBTopLevel adminDbTop, User vcellUser) throws SQLException, DataAccessException {	
+    private BioModelInfo[] query(DatabaseServerImpl databaseServerImpl, User vcellUser) throws SQLException, DataAccessException {	
     	
 		String userID = vcellUser.getName();
 		Long simid = getLongQueryValue(PARAM_SIM_ID);
@@ -335,12 +336,12 @@ public class BipomodelsServerResource extends AbstractServerResource implements 
 			conditionsBuffer.append(condition);
 		}
     	
-    	if (statusConditions.size()==0){
-    		// no status conditions wanted ... nothing to query
-    		return new ArrayList<SimpleJobStatus>();
-    	}else{
-	   		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditionsBuffer.toString(), maxRows, true);
-	   		return resultList;
-    	}
+//    	if (statusConditions.size()==0){
+//    		// no status conditions wanted ... nothing to query
+//    		return new BioModelInfo[0];
+//    	}else{
+	   		BioModelInfo[] bioModelInfos = databaseServerImpl.getBioModelInfos(vcellUser, false);
+	   		return bioModelInfos;
+//    	}
     }
  }

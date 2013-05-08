@@ -15,12 +15,9 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -40,19 +37,16 @@ public class VCellApiMain {
 			
 			System.out.println("connecting to database");
 			
-			SimulationDatabase simulationDatabase = null;
 			AdminDBTopLevel adminDbTopLevel = null;
-			
+			DatabaseServerImpl databaseServerImpl = null;
 			try {
 				PropertyLoader.loadProperties();
 				final SessionLog log = new StdoutSessionLog("VCellWebApi");
 				KeyFactory keyFactory = new OracleKeyFactory();
 				DbDriver.setKeyFactory(keyFactory);
 				ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+				databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 				adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-				ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-				simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -75,7 +69,7 @@ public class VCellApiMain {
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
-			WadlApplication app = new VCellApiApplication(simulationDatabase,adminDbTopLevel,userVerifier,templateConfiguration);
+			WadlApplication app = new VCellApiApplication(adminDbTopLevel,databaseServerImpl, userVerifier,templateConfiguration);
 			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");
