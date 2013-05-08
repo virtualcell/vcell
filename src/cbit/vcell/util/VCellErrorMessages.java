@@ -129,6 +129,11 @@ public class VCellErrorMessages {
 	
 	// ========== math description end ================== //
 	
+	// simulation problems
+	public final static String SIMULATION_OVERRIDE_NOTFOUND = "Overridden parameter '"+PLACE_HOLDER+"' in simulation '"+PLACE_HOLDER+"' not no longer exists, please edit this parameter override list";
+	public static final String SIMULATION_SENSANAL_FASTSYSTEM = "Sensitivity Analysis for a math with Fast Systems not supported. disable sensitivity analysis for simulation '"+PLACE_HOLDER+"'";
+
+	
 	public final static String RunSims_1 = "Simulation '" + PLACE_HOLDER + "' is completed already. "
 		+ "\n\nDo you want to continue anyway?";
 	public static final String RunSims_2 = "Simulation '" + PLACE_HOLDER + "' has non-uniform spatial step. " 

@@ -145,7 +145,8 @@ public class MathMapping implements ScopedSymbolTable {
 	private static final String MATH_FUNC_SUFFIX_EVENTASSIGN_INIT = "_init";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old = "_init";
-	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecule_per_um2 = "_init_molecules_per_um2";
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2 = "_init_molecules_per_um2";  // initial surf dens - VCell 5.1 and earlier (hard coded name)
+	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2 = "_init_molecules_um_2";        // initial surf dens - from VCell 5.2 (mangled "molecules.um-2")
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM = "_init_uM";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX = "_init_";
 	
