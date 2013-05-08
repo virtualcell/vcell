@@ -858,6 +858,9 @@ public void gatherIssues(List<Issue> issueVector) {
 	}
 	getOutputFunctionContext().gatherIssues(issueVector);
 	getMicroscopeMeasurement().gatherIssues(issueVector);
+	if (getMathDescription()!=null){
+		getMathDescription().gatherIssues(issueVector);
+	}
 }
 
 

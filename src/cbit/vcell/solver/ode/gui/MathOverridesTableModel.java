@@ -443,4 +443,9 @@ public void setValueAt(Object object, int r, int c) {
 	}
 }
 
+
+public boolean isUnusedParameterRow(int row) {
+	return getMathOverrides().isUnusedParameter(fieldKeys[row]);
+}
+
 }
