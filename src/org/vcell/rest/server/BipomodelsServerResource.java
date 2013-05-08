@@ -22,9 +22,11 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.common.BiomodelRepresentation;
+import org.vcell.rest.common.BiomodelsResource;
 import org.vcell.rest.common.SimulationTaskRepresentation;
-import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
@@ -37,7 +39,7 @@ import com.google.gson.Gson;
 
 import freemarker.template.Configuration;
 
-public class BIomodelsServerResource extends AbstractServerResource implements SimulationTasksResource {
+public class BipomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
 
     private static final String PARAM_USER = "user";
 	private static final String PARAM_SIM_ID = "simId";
@@ -110,12 +112,12 @@ public class BIomodelsServerResource extends AbstractServerResource implements S
 	}
 	
 	@Override
-    public SimulationTaskRepresentation[] get_json() {
+    public BiomodelRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
 		User vcellUser = application.getVCellUser(autheticatedUser);
 		
-        return getSimulationTaskRepresentations(vcellUser);
+        return getBiomodelRepresentations(vcellUser);
     }
     
 	@Override
@@ -124,7 +126,7 @@ public class BIomodelsServerResource extends AbstractServerResource implements S
 		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
 		User vcellUser = application.getVCellUser(autheticatedUser);
 		
-		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations(vcellUser);
+		BiomodelRepresentation[] biomodels = getBiomodelRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
 		dataModel.put("userId", getAttribute(PARAM_USER));
@@ -154,7 +156,7 @@ public class BIomodelsServerResource extends AbstractServerResource implements S
 			dataModel.put("maxRows", 100);
 		}
 
-		dataModel.put("simTasks", Arrays.asList(simTasks));
+		dataModel.put("bioModels", Arrays.asList(biomodels));
 		
 		
 		if (vcellUser!=null){
@@ -162,41 +164,41 @@ public class BIomodelsServerResource extends AbstractServerResource implements S
 		}
 		
 		Gson gson = new Gson();
-		dataModel.put("jsonResponse",gson.toJson(simTasks));
+		dataModel.put("jsonResponse",gson.toJson(biomodels));
 		
 		Configuration templateConfiguration = application.getTemplateConfiguration();
 
-		Representation formFtl = new ClientResource(LocalReference.createClapReference("/simulationTasks.ftl")).get();
+		Representation formFtl = new ClientResource(LocalReference.createClapReference("/biomodels.ftl")).get();
 		TemplateRepresentation templateRepresentation = new TemplateRepresentation(formFtl, templateConfiguration, dataModel, MediaType.TEXT_HTML);
 		return templateRepresentation;
 	}
 
 
-	private SimulationTaskRepresentation[] getSimulationTaskRepresentations(User vcellUser) {
+	private BiomodelRepresentation[] getBiomodelRepresentations(User vcellUser) {
 //		if (!application.authenticate(getRequest(), getResponse())){
 //			// not authenticated
 //			return new SimulationTaskRepresentation[0];
 //		}else{
-			ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
+			ArrayList<BiomodelRepresentation> biomodelReps = new ArrayList<BiomodelRepresentation>();
 			AdminDBTopLevel adminDbTopLevel = ((VCellApiApplication)getApplication()).getAdminDBTopLevel();
 			try {
-				List<SimpleJobStatus> simJobStatusList = query(adminDbTopLevel, vcellUser);
-				for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
-					SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
-					simTaskReps.add(simTaskRep);
+				List<BioModelInfo> bioModelInfoList = query(adminDbTopLevel, vcellUser);
+				for (BioModelInfo bioModelInfo : bioModelInfoList) {
+					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelInfo);
+					biomodelReps.add(biomodelRep);
 				}
 			} catch (DataAccessException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			} catch (SQLException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());
+				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}
-			return simTaskReps.toArray(new SimulationTaskRepresentation[0]);
+			return biomodelReps.toArray(new BiomodelRepresentation[0]);
 //		}
 	}
 
-    private List<SimpleJobStatus> query(AdminDBTopLevel adminDbTop, User vcellUser) throws SQLException, DataAccessException {	
+    private List<BioModelInfo> query(AdminDBTopLevel adminDbTop, User vcellUser) throws SQLException, DataAccessException {	
     	
 		String userID = vcellUser.getName();
 		Long simid = getLongQueryValue(PARAM_SIM_ID);
