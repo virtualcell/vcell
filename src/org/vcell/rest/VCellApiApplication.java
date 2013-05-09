@@ -27,6 +27,13 @@ import freemarker.template.Configuration;
 
 public class VCellApiApplication extends WadlApplication {
 
+	public static final String BIOMODEL = "biomodel";
+	public static final String BIOMODELID = "biomodelid";
+
+	public static final String SIMTASK = "simtask";
+	public static final String SIMTASKID = "simtaskid";
+	
+	
 	private AdminDBTopLevel adminDBTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;
 	private UserVerifier userVerifier = null;
@@ -88,10 +95,10 @@ public class VCellApiApplication extends WadlApplication {
 		// Attach a guard to secure access to user parts of the api 
 	
 		Router rootRouter = new Router(getContext());
-		rootRouter.attach("/biomodel", BiomodelsServerResource.class);  
-		rootRouter.attach("/biomodel/{biomodelID}", BiomodelServerResource.class);  
-		rootRouter.attach("/simulationTask", SimulationTasksServerResource.class);  
-		rootRouter.attach("/simulationTask/{simTaskID}", SimulationTaskServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
+		rootRouter.attach("/"+SIMTASK, SimulationTasksServerResource.class);  
+		rootRouter.attach("/"+SIMTASK+"/{"+SIMTASKID+"}", SimulationTaskServerResource.class);  
 		
 //		this.challengeAuthenticator.setNext(rootRouter);
 		

@@ -13,6 +13,7 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
+import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelResource;
 
@@ -25,7 +26,7 @@ public class BiomodelServerResource extends WadlServerResource implements Biomod
     protected RepresentationInfo describe(MethodInfo methodInfo,
             Class<?> representationClass, Variant variant) {
         RepresentationInfo result = new RepresentationInfo(variant);
-        result.setReference("simulationTask");
+        result.setReference("biomodel");
         return result;
     }
 
@@ -36,7 +37,7 @@ public class BiomodelServerResource extends WadlServerResource implements Biomod
      */
     @Override
     protected void doInit() throws ResourceException {
-        String simTaskIdAttribute = getAttribute("biomodelid");
+        String simTaskIdAttribute = getAttribute(VCellApiApplication.BIOMODELID);
 
         if (simTaskIdAttribute != null) {
             this.biomodelid = simTaskIdAttribute;

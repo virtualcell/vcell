@@ -70,11 +70,11 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
     protected void describe(ApplicationInfo applicationInfo) {
         RepresentationInfo rep = new RepresentationInfo(MediaType.APPLICATION_JSON);
-        rep.setIdentifier("simulationTask");
+        rep.setIdentifier(VCellApiApplication.SIMTASK);
         applicationInfo.getRepresentations().add(rep);
 
         DocumentationInfo doc = new DocumentationInfo();
-        doc.setTitle("SimulationTask");
+        doc.setTitle(VCellApiApplication.SIMTASK);
         doc.setTextContent("jdom containing the simulation task status");
         rep.getDocumentations().add(doc);
     }

@@ -11,6 +11,7 @@ import org.restlet.ext.wadl.RequestInfo;
 import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
+import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTaskResource;
 
@@ -23,7 +24,7 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
     protected RepresentationInfo describe(MethodInfo methodInfo,
             Class<?> representationClass, Variant variant) {
         RepresentationInfo result = new RepresentationInfo(variant);
-        result.setReference("simulationTask");
+        result.setReference(VCellApiApplication.SIMTASK);
         return result;
     }
 
@@ -34,7 +35,7 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
      */
     @Override
     protected void doInit() throws ResourceException {
-        String simTaskIdAttribute = getAttribute("simTaskId");
+        String simTaskIdAttribute = getAttribute(VCellApiApplication.SIMTASKID);
 
         if (simTaskIdAttribute != null) {
             this.simid = simTaskIdAttribute;
@@ -52,8 +53,7 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
 		super.describeGet(info);
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
-        parameterInfos.add(new ParameterInfo("user",false,"string",ParameterStyle.TEMPLATE,"VCell user id"));
-        parameterInfos.add(new ParameterInfo("simTaskID",false,"string",ParameterStyle.TEMPLATE,"VCell simulation task id simkey_jobid"));
+        parameterInfos.add(new ParameterInfo(VCellApiApplication.SIMTASKID,false,"string",ParameterStyle.TEMPLATE,"VCell simulation task id simkey_jobid"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
