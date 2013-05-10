@@ -1081,7 +1081,7 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 			}
 			
 			if(testCase.getTestCriterias() == null || sims.length != testCase.getTestCriterias().length){
-				reportTCBuffer.append("\tERROR "+"Num sims="+sims.length+" does not match testCriteria length="+
+				reportTCBuffer.append("\tNote "+"Num sims="+sims.length+" does not match testCriteria length="+
 							(testCase.getTestCriterias() != null?testCase.getTestCriterias().length+"":"null")+
 					" for TestCase "+(testCase.getVersion() != null?"name="+testCase.getVersion().getName():"key="+testCase.getTCKey())+"\n");
 			}
@@ -1971,6 +1971,7 @@ public void loadModel(VCDocumentInfo vcDocumentInfo) throws DataAccessException{
 }
 
 
+@SuppressWarnings("serial")
 public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew tcrit,final String varName){
 	
 	try {
