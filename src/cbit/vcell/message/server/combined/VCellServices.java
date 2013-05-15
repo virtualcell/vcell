@@ -16,6 +16,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -145,6 +146,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties();
 			CommandService.bQuiet = true;
+			Executable.bQuiet = true;
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
