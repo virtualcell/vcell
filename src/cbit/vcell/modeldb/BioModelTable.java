@@ -179,7 +179,7 @@ public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBM
 	return buffer.toString();
 }
 
-public String getPreparedStatement_BioModelReps(String conditions){
+public String getPreparedStatement_BioModelReps(String conditions, int numRows){
 
 	BioModelTable bmTable = BioModelTable.table;
 	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
@@ -189,7 +189,8 @@ public String getPreparedStatement_BioModelReps(String conditions){
 	
 	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql =  
-			"select " +
+		"select * from "+
+			"(select " +
 			    bmTable.id.getQualifiedColName()+", "+
 			    bmTable.name.getQualifiedColName()+", "+
 			    bmTable.privacy.getQualifiedColName()+", "+
@@ -218,7 +219,9 @@ public String getPreparedStatement_BioModelReps(String conditions){
 			"from "+bmTable.getTableName()+", "+userTable.getTableName()+", "+groupTable.getTableName()+" "+
 			"where "+bmTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
 			"and   "+bmTable.privacy.getQualifiedColName()+" = "+groupTable.groupid.getQualifiedColName()+" "+
-			"and   (("+bmTable.ownerRef.getQualifiedColName()+" =?) or ("+bmTable.privacy.getQualifiedColName()+" = 0) or ("+groupTable.userRef+" =? ))";
+			"and   (("+bmTable.ownerRef.getQualifiedColName()+" =?) or ("+bmTable.privacy.getQualifiedColName()+" = 0) or ("+groupTable.userRef+" =? ))" +
+			"order by "+bmTable.versionDate.getQualifiedColName()+" DESC) "+
+		"where rownum <= ?";
 	
 	if (conditions!=null && conditions.length()>0){
 		sql += " and ("+conditions+")";
@@ -227,13 +230,14 @@ public String getPreparedStatement_BioModelReps(String conditions){
 	return sql;
 }
 
-public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user) throws SQLException{
+public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user, int numRows) throws SQLException{
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelRepsSQL");
 	}
 	BigDecimal userKey = new BigDecimal(user.getID().toString());
 	stmt.setBigDecimal(1, userKey);
 	stmt.setBigDecimal(2, userKey);
+	stmt.setInt(3, numRows);
 }
 
 public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException {
