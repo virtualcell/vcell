@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
  * @author: Ion Moraru
  */
 public class Executable {
+	public static boolean bQuiet = false;
 	private String[] command = null;
 	private Process process = null;
 	private String outputString = "";
@@ -92,7 +93,7 @@ public Executable(String[] command, long arg_timeoutMS) {
  */
 protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
 	
-	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
+	if (!bQuiet) System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
 		// reset just in case
 		setOutputString("");
@@ -127,7 +128,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 			}
 		}
 		// log output
-		System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
+		if (!bQuiet) System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
 		// finally, throw if it was a failure
 		if (getStatus().isError()) {
 			throw new Exception(getErrorString());
@@ -289,6 +290,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 				numReadOut = 0;
 			}
 		} catch (IOException ioexc) {
+			ioexc.printStackTrace();
 			System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdOut: " + ioexc.getMessage());
 			numReadOut = 0;
 		}
@@ -299,6 +301,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 				numReadErr = 0;
 			}
 		} catch (IOException ioexc) {
+			ioexc.printStackTrace();
 			System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while reading StdErr: " + ioexc.getMessage());
 			numReadErr = 0;
 		}
@@ -317,6 +320,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 		inputStreamReaderOut.close();
 		inputStreamReaderErr.close();
 	} catch (IOException ioexc) {
+		ioexc.printStackTrace();
 		System.out.println("EXCEPTION (process " + getCommand() + ") - IOException while closing streams: " + ioexc.getMessage());
 		numReadOut = 0;
 	}
