@@ -9,10 +9,13 @@
  */
 
 package cbit.vcell.modeldb;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -566,6 +569,36 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 	Version newVersion = updateVersionableInit(hash, con, user, bioModelMetaData, bVersion);
 	insertBioModelMetaData(con, user, bioModelMetaData, bmcs,newVersion);
 	return newVersion.getVersionKey();
+}
+
+
+public BioModelRep[] getBioModelReps(Connection con, User user, String conditions)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	if (user == null) {
+		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
+	}
+	log.print("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
+	
+	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions);
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+//	System.out.println(sql);
+	bioModelTable.setPreparedStatement_BioModelReps(stmt, user);
+
+	ArrayList<BioModelRep> bioModelReps = new ArrayList<BioModelRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			BioModelRep bioModelRep = bioModelTable.getBioModelRep(user,rset);
+			bioModelReps.add(bioModelRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	return bioModelReps.toArray(new BioModelRep[bioModelReps.size()]);
 }
 
 }

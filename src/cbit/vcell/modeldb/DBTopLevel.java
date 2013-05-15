@@ -1941,4 +1941,31 @@ KeyValue updateVersionable(User user, Simulation simulation, KeyValue updatedMat
 		conFactory.release(con,lock);
 	}
 }
+
+
+public BioModelRep[] getBioModelReps(User user, String conditions, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions);
+		return biomodelreps;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getBioModelReps(user, conditions, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
 }

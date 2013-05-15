@@ -338,6 +338,11 @@ public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAcces
 }
 
 
+public BioModelRep[] getBioModelReps(User user, String conditions) throws DataAccessException, SQLException {
+	return dbTop.getBioModelReps(user, conditions, true);
+}
+
+
 /**
  * This method was created in VisualAge.
  * @return SimulationInfo
