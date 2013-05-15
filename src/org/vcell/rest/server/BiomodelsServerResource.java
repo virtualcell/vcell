@@ -29,6 +29,7 @@ import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 
@@ -137,9 +138,9 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 			ArrayList<BiomodelRepresentation> biomodelReps = new ArrayList<BiomodelRepresentation>();
 			DatabaseServerImpl databaseServerImpl = ((VCellApiApplication)getApplication()).getDatabaseServerImpl();
 			try {
-				BioModelInfo[] bioModelInfoList = query(databaseServerImpl, vcellUser);
-				for (BioModelInfo bioModelInfo : bioModelInfoList) {
-					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelInfo);
+				BioModelRep[] bioModelReps = query(databaseServerImpl, vcellUser);
+				for (BioModelRep bioModelRep : bioModelReps) {
+					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 					biomodelReps.add(biomodelRep);
 				}
 			} catch (DataAccessException e) {
@@ -153,11 +154,8 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 //		}
 	}
 
-    private BioModelInfo[] query(DatabaseServerImpl databaseServerImpl, User vcellUser) throws SQLException, DataAccessException {	
+    private BioModelRep[] query(DatabaseServerImpl databaseServerImpl, User vcellUser) throws SQLException, DataAccessException {	
     	
-		Long simid = getLongQueryValue(PARAM_SIM_ID);
-		Long jobid = getLongQueryValue(PARAM_JOB_ID);
-		Long taskid = getLongQueryValue(PARAM_TASK_ID);
 		Long savedLow = getLongQueryValue(PARAM_SAVED_LOW);
 		Long savedHigh = getLongQueryValue(PARAM_SAVED_HIGH);
 		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
@@ -167,19 +165,6 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		}
     	ArrayList<String> conditions = new ArrayList<String>();
     	
-    	if (simid!=null){
-   			conditions.add(SimulationJobTable.table.simRef.getQualifiedColName() + "=" + simid);
-     	}
-
-    	if (jobid!=null){
-   			conditions.add(SimulationJobTable.table.jobIndex.getQualifiedColName() + "=" + jobid);
-     	}
-
-    	if (taskid!=null){
-   			conditions.add(SimulationJobTable.table.taskID.getQualifiedColName() + "=" + taskid);
-     	}
-
-     	
     	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
     	
     	if (savedLow != null){
@@ -196,13 +181,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
     		}
 			conditionsBuffer.append(condition);
 		}
-    	
-//    	if (statusConditions.size()==0){
-//    		// no status conditions wanted ... nothing to query
-//    		return new BioModelInfo[0];
-//    	}else{
-	   		BioModelInfo[] bioModelInfos = databaseServerImpl.getBioModelInfos(vcellUser, false);
-	   		return bioModelInfos;
-//    	}
+   		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), maxRows);
+	   	return bioModelReps;
     }
  }

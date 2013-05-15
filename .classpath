@@ -15,14 +15,14 @@
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.freemarker.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet.ext.freemarker"/>
 	<classpathentry kind="lib" path="lib/org.freemarker.jar"/>
+	<classpathentry kind="lib" path="lib/scribe-1.3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/restlet-jse-2.1.2/src/org.restlet"/>
+	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet"/>
 	<classpathentry kind="lib" path="lib/json-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-all-1.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar"/>
 	<classpathentry kind="lib" path="lib/json-20090211.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/org.vcell.simtool2"/>
 	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="lib/gson-2.2.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-2.13.0.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart-2.0-RC2.jar" sourcepath="lib/json-smart-2.0-RC2-sources.jar"/>
@@ -33,6 +33,6 @@
 	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/VCell_5.3"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

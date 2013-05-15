@@ -127,6 +127,7 @@ public class VCellApiApplication extends WadlApplication {
 	}
 	
 	public User getVCellUser(org.restlet.security.User authenticatedUser){
+//		return new User("vcelltestaccount",new KeyValue("152420"));
 		return new User("schaff",new KeyValue("17"));
 //		return userVerifier.getVCellUser(authenticatedUser);
 	}
