@@ -1943,11 +1943,11 @@ KeyValue updateVersionable(User user, Simulation simulation, KeyValue updatedMat
 }
 
 
-public BioModelRep[] getBioModelReps(User user, String conditions, boolean bEnableRetry) throws SQLException, DataAccessException {
+public BioModelRep[] getBioModelReps(User user, String conditions, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions);
+		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions, numRows);
 		return biomodelreps;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1959,7 +1959,7 @@ public BioModelRep[] getBioModelReps(User user, String conditions, boolean bEnab
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getBioModelReps(user, conditions, false);
+			return getBioModelReps(user, conditions, numRows, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

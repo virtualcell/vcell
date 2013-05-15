@@ -338,8 +338,8 @@ public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAcces
 }
 
 
-public BioModelRep[] getBioModelReps(User user, String conditions) throws DataAccessException, SQLException {
-	return dbTop.getBioModelReps(user, conditions, true);
+public BioModelRep[] getBioModelReps(User user, String conditions, int numRows) throws DataAccessException, SQLException {
+	return dbTop.getBioModelReps(user, conditions, numRows, true);
 }
 
 
