@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.export.server;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
@@ -46,9 +47,10 @@ public ASCIIExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 /**
+ * @throws IOException 
  * @deprecated
  */
-private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws DataAccessException, RemoteException {
+private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws DataAccessException, IOException {
 	String simID = vcdID.getID();
 	ExportOutput[] output = new ExportOutput[] {new ExportOutput(false, null, null, null, null)};
 	String dataType = ".csv";
@@ -69,9 +71,10 @@ private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, Use
  * @return cbit.vcell.export.server.ExportOutput[]
  * @param dsc cbit.vcell.server.DataSetController
  * @param timeSpecs cbit.vcell.export.server.TimeSpecs
+ * @throws IOException 
  * @deprecated
  */
-private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws RemoteException, DataAccessException {
+private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs) throws DataAccessException, IOException {
 
 	String simID = vcdID.getID();
 	String dataType = ".csv";
@@ -160,11 +163,12 @@ private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID
 
 /**
  * This method was created in VisualAge.
+ * @throws IOException 
  */
 private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName) 
-						throws RemoteException, DataAccessException {
+						throws DataAccessException, IOException {
 						
 	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
 	Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
@@ -657,9 +661,10 @@ private String getSlice(OutputContext outputContext,User user, DataServerImpl da
 
 /**
  * This method was created in VisualAge.
+ * @throws IOException 
  */
 public ExportOutput[] makeASCIIData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs) 
-						throws RemoteException, DataAccessException {
+						throws DataAccessException, IOException {
 							
 	switch (((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).getDataType()) {
 		case PDE_VARIABLE_DATA:

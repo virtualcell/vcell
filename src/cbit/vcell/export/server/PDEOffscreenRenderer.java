@@ -138,7 +138,11 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
 		int[] internalBuffer = ((DataBufferInt)(imagePaneModel.getViewPortImage().getRaster().getDataBuffer())).getData();
 		Arrays.fill(internalBuffer, getDisplayAdapterService().getSpecialColors()[DisplayAdapterService.NULL_COLOR_OFFSET]);
 	}
-	return imagePaneModel.getViewPortImage();
+	
+	BufferedImage bufferedImage = imagePaneModel.getViewPortImage();
+	imagePaneModel.setDisplayAdapterService(null);
+	return bufferedImage;
+	
 }
 /**
  * Insert the method's description here.
