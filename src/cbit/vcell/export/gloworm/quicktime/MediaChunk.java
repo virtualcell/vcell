@@ -10,6 +10,8 @@
 
 package cbit.vcell.export.gloworm.quicktime;
 
+import java.io.IOException;
+
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
 
 
@@ -20,8 +22,9 @@ public interface MediaChunk {
 /**
  * This method was created in VisualAge.
  * @return java.lang.Byte[]
+ * @throws IOException 
  */
-byte[] getDataBytes();
+byte[] getDataBytes() throws IOException;
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
