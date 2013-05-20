@@ -11,8 +11,10 @@
 package cbit.vcell.export.gloworm.quicktime;
 
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.zip.DataFormatException;
 
 import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.MediaData;
@@ -21,19 +23,17 @@ import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
  * This type was created in VisualAge.
  */
 public class VideoMediaChunk implements MediaChunk {
-	private File dataFile = null;
+	private File dataFile;
 	private String dataFormat;
-	private int numberOfSamples = 0;
 	private int width;
 	private int height;
 	private int offset;
 	private int size;
-	//private byte[] dataBytes = null;
 	private int duration;
 	private String dataReference = "self";
 	private String dataReferenceType = "alis";
 	private SampleDescriptionEntry sampleDescriptionEntry = null;
-	private VideoMediaSampleInfo[] sampleInfos = null;
+	private VideoMediaSampleInfo sampleInfo = null;
 
 	class VideoMediaSampleInfo implements MediaSampleInfo {
 		private VideoMediaSampleInfo(String argFormat, int argDuration, String argType, SampleDescriptionEntry argEntry, int argSize, boolean argKey) {
@@ -70,25 +70,11 @@ public class VideoMediaChunk implements MediaChunk {
 		}
 	};
 
-/**
- * VideoMediaChunk constructor comment.
- */
-public VideoMediaChunk(VideoMediaSample[] samples, File dataFile) throws DataFormatException, IOException {
-	/* creates a chunk that puts data bytes into a file instead of holding them in memory */
-	// if the file does not exist, we create it and initialize the mdat atom header
-	// it the file exists it is expected that it already has a valid mdat atom header
-	this(samples, true, dataFile);
-	writeChunks(dataFile,null);
-	
-}
-
-private void writeChunks(File dataFile, byte[] dataBytes) throws DataFormatException, IOException {
-	this.dataFile = dataFile;
-	boolean mustInit = !dataFile.exists();
+private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOException {
 	// append data bytes to file and clear memory copy
 	RandomAccessFile fw = new RandomAccessFile(dataFile, "rw");
 	fw.seek(dataFile.length());
-	if (mustInit) {
+	if (bInitializeFile) {
 		fw.writeInt(0);
 		fw.writeBytes(MediaData.type);
 		setOffset(8);
@@ -102,139 +88,33 @@ private void writeChunks(File dataFile, byte[] dataBytes) throws DataFormatExcep
 	fw.close();
 }
 
+public VideoMediaChunk(VideoMediaSample sample) throws IOException{
+	init(sample);
+	
+	this.dataFile = File.createTempFile("VideoMediaChunk_", ".tmp");
+	this.dataFile.deleteOnExit();
+	boolean bInitializeFile = true;
 
-/**
- * VideoMediaChunk constructor comment.
- * @throws IOException 
- */
-public VideoMediaChunk(VideoMediaSample[] samples, String dataReference, String dataReferenceType) throws DataFormatException, IOException {
-	/* creates a chunk that holds only a reference */
-	this(samples, false);
-	setDataReference(dataReference);
-	setDataReferenceType(dataReferenceType);
-}
-
-
-/**
- * VideoMediaChunk constructor comment.
- * @throws IOException 
- */
-public VideoMediaChunk(VideoMediaSample[] samples, boolean selfReferenced) throws DataFormatException, IOException {
-	boolean goodSamples = true;
-	byte[] dataBytes = null;
-	int i = 0;
-	while ((goodSamples) && (i < samples.length)) {
-		if (
-			(! samples[i].getDataFormat().equals(samples[0].getDataFormat())) ||
-			(samples[i].getWidth() != samples[0].getWidth()) ||
-			(samples[i].getHeight() != samples[0].getHeight())
-		   ) goodSamples = false;
-		i++;
-	}
-	if (! goodSamples) throw new DataFormatException("Bad Media Sample Array !");
-	else {
-		setDataFormat(samples[0].getDataFormat());
-		setWidth(samples[0].getWidth());
-		setHeight(samples[0].getHeight());
-		setSampleDescriptionEntry(samples[0].getSampleDescriptionEntry());
-		setNumberOfSamples(samples.length);
-		int size = 0;
-		for (int j=0;j<samples.length;j++) size += samples[j].getSize();
-		setSize(size);
-		if (selfReferenced) {
-			dataBytes = new byte[size];
-		}
-		int counter = 0;
-		int duration = 0;
-		sampleInfos = new VideoMediaSampleInfo[samples.length]; 
-		for (int j=0;j<samples.length;j++) {
-			sampleInfos[j] = new VideoMediaSampleInfo(samples[j].getDataFormat(), samples[j].getDuration(), samples[j].getMediaType(), samples[j].getSampleDescriptionEntry(), samples[j].getSize(), samples[j].isKeyFrame());
-			if (selfReferenced) {
-				for (int k=0;k<samples[j].getDataBytes().length;k++) {
-					dataBytes[counter] = samples[j].getDataBytes()[k];
-					counter++;
-				}
-			}
-			duration += samples[j].getDuration();
-		}
-		setDuration(duration);
-	}
-	File tempDataFile = File.createTempFile("VideoMediaChunk_", ".tmp");
-	tempDataFile.deleteOnExit();
-	//System.out.print("Created temp file at: "+tempDataFile.getAbsolutePath()+" for "+dataBytes.length+" bytes ....");
-	writeChunks(tempDataFile,dataBytes);
-	//System.out.println(dataBytes.toString());
+	writeChunks(sample.getDataBytes(),bInitializeFile);
 }
 
 /**
  * VideoMediaChunk constructor comment.
  * @throws IOException 
  */
-public VideoMediaChunk(VideoMediaSample[] samples, boolean selfReferenced, File outputFile) throws DataFormatException, IOException {
-	boolean goodSamples = true;
-	byte[] dataBytes = null;
-	int i = 0;
-	while ((goodSamples) && (i < samples.length)) {
-		if (
-			(! samples[i].getDataFormat().equals(samples[0].getDataFormat())) ||
-			(samples[i].getWidth() != samples[0].getWidth()) ||
-			(samples[i].getHeight() != samples[0].getHeight())
-		   ) goodSamples = false;
-		i++;
-	}
-	if (! goodSamples) throw new DataFormatException("Bad Media Sample Array !");
-	else {
-		setDataFormat(samples[0].getDataFormat());
-		setWidth(samples[0].getWidth());
-		setHeight(samples[0].getHeight());
-		setSampleDescriptionEntry(samples[0].getSampleDescriptionEntry());
-		setNumberOfSamples(samples.length);
-		int size = 0;
-		for (int j=0;j<samples.length;j++) size += samples[j].getSize();
-		setSize(size);
-		if (selfReferenced) {
-			dataBytes = new byte[size];
-		}
-		int counter = 0;
-		int duration = 0;
-		sampleInfos = new VideoMediaSampleInfo[samples.length]; 
-		for (int j=0;j<samples.length;j++) {
-			sampleInfos[j] = new VideoMediaSampleInfo(samples[j].getDataFormat(), samples[j].getDuration(), samples[j].getMediaType(), samples[j].getSampleDescriptionEntry(), samples[j].getSize(), samples[j].isKeyFrame());
-			if (selfReferenced) {
-				for (int k=0;k<samples[j].getDataBytes().length;k++) {
-					dataBytes[counter] = samples[j].getDataBytes()[k];
-					counter++;
-				}
-			}
-			duration += samples[j].getDuration();
-		}
-		setDuration(duration);
-	}	
+public VideoMediaChunk(VideoMediaSample sample, File outputFile) throws IOException  {
+	/* creates a chunk that puts data bytes into a file instead of holding them in memory */
+	// if the file does not exist, we create it and initialize the mdat atom header
+	// it the file exists it is expected that it already has a valid mdat atom header
+	init(sample);
 	
 	if (outputFile==null){
-		outputFile = File.createTempFile("VideoMediaChunk_", ".tmp");
-		outputFile.deleteOnExit();
+		throw new RuntimeException("VideoMediaChunk file is null");
 	}
-	//System.out.print("Created temp file at: "+tempDataFile.getAbsolutePath()+" for "+dataBytes.length+" bytes ....");
-	writeChunks(outputFile,dataBytes);
-	//System.out.println(dataBytes.toString());
+	this.dataFile = outputFile;
+	boolean bInitializeFile = !dataFile.exists();
 
-}
-
-/**
- * VideoMediaChunk constructor comment.
- * @throws IOException 
- */
-public VideoMediaChunk(VideoMediaSample sample) throws DataFormatException, IOException {
-	this(sample, true);
-}
-
-
-/**
- * VideoMediaChunk constructor comment.
- */
-public VideoMediaChunk(VideoMediaSample sample, File dataFile) throws DataFormatException, IOException {
-	this(new VideoMediaSample[] {sample}, dataFile);
+	writeChunks(sample.getDataBytes(), bInitializeFile);
 }
 
 
@@ -243,18 +123,24 @@ public VideoMediaChunk(VideoMediaSample sample, File dataFile) throws DataFormat
  * @throws IOException 
  */
 public VideoMediaChunk(VideoMediaSample sample, String dataReference, String dataReferenceType) throws DataFormatException, IOException {
-	this(new VideoMediaSample[] {sample}, dataReference, dataReferenceType);
+	/* creates a chunk that holds only a reference, used by QuickTime VR */
+	init(sample);
+	
+	setDataReference(dataReference);
+	setDataReferenceType(dataReferenceType);
+	
+	this.dataFile = null;
 }
 
-
-/**
- * VideoMediaChunk constructor comment.
- * @throws IOException 
- */
-public VideoMediaChunk(VideoMediaSample sample, boolean selfReferenced) throws DataFormatException, IOException {
-	this(new VideoMediaSample[] {sample}, selfReferenced);
+private void init(VideoMediaSample sample){
+	setDataFormat(sample.getDataFormat());
+	setWidth(sample.getWidth());
+	setHeight(sample.getHeight());
+	setSampleDescriptionEntry(sample.getSampleDescriptionEntry());
+	setSize(sample.getSize());
+	setDuration(sample.getDuration());
+	sampleInfo = new VideoMediaSampleInfo(sample.getDataFormat(), sample.getDuration(), sample.getMediaType(), sample.getSampleDescriptionEntry(), sample.getSize(), sample.isKeyFrame());
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -262,12 +148,16 @@ public VideoMediaChunk(VideoMediaSample sample, boolean selfReferenced) throws D
  * @throws IOException 
  */
 public byte[] getDataBytes() throws IOException {
-	byte[] bytes = new byte[getSize()];
-	RandomAccessFile fw = new RandomAccessFile(dataFile, "rw");
-	fw.seek(getOffset());
-	fw.read(bytes);
-	fw.close();
-	return bytes;
+	if (dataFile==null){
+		return null; // this happens for QTVR.
+	}else{
+		byte[] bytes = new byte[getSize()];
+		RandomAccessFile fw = new RandomAccessFile(dataFile, "rw");
+		fw.seek(getOffset());
+		fw.read(bytes);
+		fw.close();
+		return bytes;
+	}
 }
 
 
@@ -322,7 +212,7 @@ public int getHeight() {
  * @return SampleDescriptionEntry
  */
 public MediaSampleInfo[] getMediaSampleInfos() {
-	return sampleInfos;
+	return new MediaSampleInfo[] { sampleInfo };
 }
 
 
@@ -340,7 +230,7 @@ public final String getMediaType() {
  * @return int
  */
 public int getNumberOfSamples() {
-	return numberOfSamples;
+	return 1;
 }
 
 
@@ -433,15 +323,6 @@ private void setDuration(int newValue) {
  */
 private void setHeight(int newValue) {
 	this.height = newValue;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @param newValue int
- */
-private void setNumberOfSamples(int newValue) {
-	this.numberOfSamples = newValue;
 }
 
 
