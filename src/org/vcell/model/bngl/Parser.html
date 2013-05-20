@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<TITLE>BNF for Parser.jj</TITLE>
+</HEAD>
+<BODY>
+<H1 ALIGN=CENTER>BNF for Parser.jj</H1>
+<H2 ALIGN=CENTER>NON-TERMINALS</H2>
+<TABLE>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod1">Model</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;BEGIN&gt; &lt;MODEL&gt; ( &lt;BEGIN&gt; ( <A HREF="#prod2">ParameterBlock</A> | <A HREF="#prod3">MolecularDefinitionBlock</A> | <A HREF="#prod4">SeedSpeciesBlock</A> | <A HREF="#prod5">ReactionRulesBlock</A> | <A HREF="#prod6">ObservablesBlock</A> ) )+ &lt;END&gt; &lt;MODEL&gt; ( <A HREF="#prod7">Action</A> )* )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod2">ParameterBlock</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;PARAMETERS&gt; ( <A HREF="#prod8">Parameter</A> )* &lt;END&gt; &lt;PARAMETERS&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod8">Parameter</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;INTEGER&gt; )? ( &lt;IDENTIFIER&gt; ) ( &lt;ESCAPED_EXPRESSION&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod3">MolecularDefinitionBlock</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;MOLECULE&gt; &lt;TYPES&gt; ( ( &lt;INTEGER&gt; )? <A HREF="#prod9">MolecularTypePattern</A> )* &lt;END&gt; &lt;MOLECULE&gt; &lt;TYPES&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod4">SeedSpeciesBlock</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;SPECIES&gt; ( ( &lt;INTEGER&gt; )? <A HREF="#prod10">SeedSpecies</A> )* &lt;END&gt; &lt;SPECIES&gt; | &lt;SEED&gt; &lt;SPECIES&gt; ( ( &lt;INTEGER&gt; )? <A HREF="#prod10">SeedSpecies</A> )* &lt;END&gt; &lt;SEED&gt; &lt;SPECIES&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod10">SeedSpecies</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod11">SpeciesPattern</A> ( &lt;ESCAPED_EXPRESSION&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod5">ReactionRulesBlock</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;REACTION&gt; &lt;RULES&gt; ( ( &lt;INTEGER&gt; )? <A HREF="#prod12">ReactionRule</A> )* &lt;END&gt; &lt;REACTION&gt; &lt;RULES&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod6">ObservablesBlock</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;OBSERVABLES&gt; ( <A HREF="#prod13">Observable</A> )* &lt;END&gt; &lt;OBSERVABLES&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod13">Observable</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( &lt;INTEGER&gt; )? ( ( &lt;MOLECULES&gt; ) | ( &lt;SPECIES&gt; ) ) ( &lt;IDENTIFIER&gt; ) <A HREF="#prod11">SpeciesPattern</A> )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod7">Action</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;ACTION&gt;</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">ReactionRule</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod14">Reactant</A> ( &lt;PLUS&gt; <A HREF="#prod14">Reactant</A> )* ( ( &lt;REACTION_ARROW_RIGHT&gt; ) | ( &lt;REACTION_ARROW_LEFT&gt; ) | ( &lt;REACTION_ARROW_BOTH&gt; ) ) <A HREF="#prod15">Product</A> ( &lt;PLUS&gt; <A HREF="#prod15">Product</A> )* <A HREF="#prod16">KineticsParameter</A> ( &lt;COMMA&gt; <A HREF="#prod16">KineticsParameter</A> )?</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod14">Reactant</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod11">SpeciesPattern</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">Product</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod11">SpeciesPattern</A></TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod16">KineticsParameter</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;IDENTIFIER&gt; | &lt;INTEGER&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod11">SpeciesPattern</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE><A HREF="#prod9">MolecularTypePattern</A> ( &lt;DOT&gt; <A HREF="#prod9">MolecularTypePattern</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod9">MolecularTypePattern</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;IDENTIFIER&gt; ( <A HREF="#prod17">Arguments</A> )? )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">Arguments</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>"(" ( <A HREF="#prod18">ArgumentList</A> )? ")"</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod18">ArgumentList</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( <A HREF="#prod19">MolecularComponentPattern</A> ) ( "," <A HREF="#prod19">MolecularComponentPattern</A> )*</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod19">MolecularComponentPattern</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;IDENTIFIER&gt; ( <A HREF="#prod20">AttributePattern</A> )* ( <A HREF="#prod21">BondPattern</A> )? )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod20">AttributePattern</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( ( &lt;NAMED_ATTRIBUTE&gt; ( &lt;IDENTIFIER&gt; ) ) | ( &lt;VARIABLE_ATTRIBUTE&gt; ( &lt;INTEGER&gt; ) ) )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod21">BondPattern</A></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;BOND&gt; &lt;INTEGER&gt; ) </TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;BOND&gt; &lt;PLUS&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;BOND&gt; &lt;QUESTION_MARK&gt; )</TD>
+</TR>
+<TR>
+<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
+<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;BOND&gt; &lt;MINUS&gt; )</TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>
