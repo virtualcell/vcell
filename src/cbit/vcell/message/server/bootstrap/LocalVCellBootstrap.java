@@ -34,6 +34,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.LifeSignThread;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
@@ -209,6 +210,9 @@ public static void main(java.lang.String[] args) {
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
+		
+		int lifeSignMessageInterval_MS = 5*60000; //5 minutes -- possibly make into a property later
+		new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
