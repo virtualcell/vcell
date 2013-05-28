@@ -1925,6 +1925,21 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 	diff.setText(mangleExpression(param.getDiffusion()));
 	particleProperties.addContent(diff);
 
+	if (param.getDriftX()!=null){
+		Element driftX = new Element(XMLTags.ParticleDriftXTag);
+		driftX.setText(mangleExpression(param.getDriftX()));
+		particleProperties.addContent(driftX);
+	}
+	if (param.getDriftY()!=null){
+		Element driftY = new Element(XMLTags.ParticleDriftYTag);
+		driftY.setText(mangleExpression(param.getDriftY()));
+		particleProperties.addContent(driftY);
+	}
+	if (param.getDriftZ()!=null){
+		Element driftZ = new Element(XMLTags.ParticleDriftZTag);
+		driftZ.setText(mangleExpression(param.getDriftZ()));
+		particleProperties.addContent(driftZ);
+	}
 	return particleProperties;
 }
 

@@ -625,7 +625,20 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm.getGeometryClass()));
 
-			ParticleProperties particleProperties = new ParticleProperties(particleVariable, diffusion, particleInitialConditions);
+			Expression driftXExp = null;
+			if (scs.getVelocityXParameter()!=null){
+				driftXExp = scs.getVelocityXParameter().getExpression();
+			}
+			Expression driftYExp = null;
+			if (scs.getVelocityYParameter()!=null){
+				driftYExp = scs.getVelocityYParameter().getExpression();
+			}
+			Expression driftZExp = null;
+			if (scs.getVelocityZParameter()!=null){
+				driftZExp = scs.getVelocityZParameter().getExpression();
+			}
+
+			ParticleProperties particleProperties = new ParticleProperties(particleVariable, diffusion, driftXExp, driftYExp, driftZExp, particleInitialConditions);
 			SubDomain subDomain = mathDesc.getSubDomain(sm.getGeometryClass().getName());
 			subDomain.addParticleProperties(particleProperties);
 		}
