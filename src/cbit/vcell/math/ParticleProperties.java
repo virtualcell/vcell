@@ -196,12 +196,18 @@ public class ParticleProperties implements Serializable, Matchable {
 	
 	private Variable var = null;
 	private Expression diffExp = null;
+	private Expression driftXExp = null;
+	private Expression driftYExp = null;
+	private Expression driftZExp = null;
 	private ArrayList<ParticleInitialCondition> listOfParticleInitialConditions = new ArrayList<ParticleInitialCondition>();
 	
-	public ParticleProperties(Variable var, Expression diffExp, ArrayList<ParticleInitialCondition> initialConditions) {
+	public ParticleProperties(Variable var, Expression diffExp, Expression driftXExp, Expression driftYExp, Expression driftZExp, ArrayList<ParticleInitialCondition> initialConditions) {
 		super();
 		this.var = var;
 		this.diffExp = diffExp;
+		this.driftXExp = driftXExp;
+		this.driftYExp = driftYExp;
+		this.driftZExp = driftZExp;
 		this.listOfParticleInitialConditions = initialConditions;
 	}
 	
@@ -226,6 +232,12 @@ public class ParticleProperties implements Serializable, Matchable {
 			}
 			if (token.equals(VCML.ParticleDiffusion)) {
 				diffExp = new Expression(tokens.readToSemicolon());
+			} else if (token.equals(VCML.ParticleDriftX)) {
+				driftXExp = new Expression(tokens.readToSemicolon());
+			} else if (token.equals(VCML.ParticleDriftY)) {
+				driftYExp = new Expression(tokens.readToSemicolon());
+			} else if (token.equals(VCML.ParticleDriftZ)) {
+				driftZExp = new Expression(tokens.readToSemicolon());
 			} else if (token.equals(VCML.ParticleInitialCount) || token.equals(VCML.ParticleInitialCount_old)) {
 				ParticleInitialConditionCount pic = new ParticleInitialConditionCount(tokens);
 				listOfParticleInitialConditions.add(pic);
@@ -249,6 +261,15 @@ public class ParticleProperties implements Serializable, Matchable {
 			buffer.append("\t\t" + pic.getVCML(dimension)+"\n");
 		}
 		buffer.append("\t\t" + VCML.ParticleDiffusion + " " + (diffExp == null ?  "1.0" : diffExp.infix()) + ";\n");
+		if (driftXExp!=null){
+			buffer.append("\t\t" + VCML.ParticleDriftX + " " + driftXExp.infix() + ";\n");
+		}
+		if (driftYExp!=null){
+			buffer.append("\t\t" + VCML.ParticleDriftY + " " + driftYExp.infix() + ";\n");
+		}
+		if (driftZExp!=null){
+			buffer.append("\t\t" + VCML.ParticleDriftZ + " " + driftZExp.infix() + ";\n");
+		}
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();	
 	}
@@ -271,6 +292,15 @@ public class ParticleProperties implements Serializable, Matchable {
 			return false;
 		}
 		if(!Compare.isEqual(diffExp,pp.diffExp)) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(driftXExp,pp.driftXExp)) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(driftYExp,pp.driftYExp)) {
+			return false;
+		}
+		if(!Compare.isEqualOrNull(driftZExp,pp.driftZExp)) {
 			return false;
 		}
 		if (listOfParticleInitialConditions.size() != pp.listOfParticleInitialConditions.size()) {
@@ -297,5 +327,17 @@ public class ParticleProperties implements Serializable, Matchable {
 		for (ParticleInitialCondition pic : listOfParticleInitialConditions) {
 			pic.bind(symbolTable);
 		}
+	}
+
+	public Expression getDriftX() {
+		return driftXExp;
+	}
+
+	public Expression getDriftY() {
+		return driftYExp;
+	}
+
+	public Expression getDriftZ() {
+		return driftZExp;
 	}
 }

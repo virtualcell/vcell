@@ -160,6 +160,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 		max_species,
 		species,
 		difc,
+		drift,
 		
 		graphics,
 		opengl,
@@ -408,6 +409,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	}
 	writeSurfaces();
 	writeCompartments();	
+	writeDrifts(); // needs to be after dim=3 in input file (after geometry is written).
 	writeReactions();
 	writeMolecules();	
 	writeSimulationTimes();
@@ -1963,6 +1965,49 @@ private void writeDiffusions() throws ExpressionBindingException,
 		}
 	}
 	printWriter.println();
+}
+
+private void writeDrifts() throws ExpressionBindingException,
+ExpressionException, MathException {
+// writer diffusion properties
+printWriter.println("# drift properties");
+Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
+while (subDomainEnumeration.hasMoreElements()) {
+SubDomain subDomain = subDomainEnumeration.nextElement();
+List<ParticleProperties> particlePropertiesList = subDomain.getParticleProperties();
+for (ParticleProperties pp : particlePropertiesList) {
+	String variableName = null;
+	if(subDomain instanceof MembraneSubDomain)
+	{
+		variableName = getVariableName(pp.getVariable(), subDomain); 
+	}
+	else
+	{
+		variableName = getVariableName(pp.getVariable(), null);
+	}
+	try {
+		double driftX = 0.0;
+		if (pp.getDriftX()!=null){
+			driftX = subsituteFlattenToConstant(pp.getDriftX());
+		}
+		
+		double driftY = 0.0;
+		if (pp.getDriftY()!=null){
+			driftY = subsituteFlattenToConstant(pp.getDriftY());
+		}
+		
+		double driftZ = 0.0;
+		if (pp.getDriftZ()!=null){
+			driftZ = subsituteFlattenToConstant(pp.getDriftZ());
+		}
+		
+		printWriter.println(SmoldynKeyword.drift + " " + variableName + " " + driftX + " " + driftY + " " + driftZ);
+	} catch (NotAConstantException ex) {
+		throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
+	}
+}
+}
+printWriter.println();
 }
 
 private void writeSpecies() throws MathException {

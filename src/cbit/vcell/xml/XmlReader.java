@@ -2211,7 +2211,25 @@ private ParticleProperties getParticleProperties(Element param, MathDescription 
     	diffExp = unMangleExpression(temp);        	
     } 
 
-    return new ParticleProperties(varref, diffExp, initialConditions);
+	String driftXString = param.getChildText(XMLTags.ParticleDriftXTag, vcNamespace);
+    Expression driftXExp = null;
+    if (driftXString!=null && driftXString.length()>0) {
+    	driftXExp = unMangleExpression(driftXString);        	
+    } 
+
+	String driftYString = param.getChildText(XMLTags.ParticleDriftYTag, vcNamespace);
+    Expression driftYExp = null;
+    if (driftYString!=null && driftYString.length()>0) {
+    	driftYExp = unMangleExpression(driftYString);        	
+    } 
+
+	String driftZString = param.getChildText(XMLTags.ParticleDriftZTag, vcNamespace);
+    Expression driftZExp = null;
+    if (driftZString!=null && driftZString.length()>0) {
+    	driftZExp = unMangleExpression(driftZString);        	
+    } 
+
+    return new ParticleProperties(varref, diffExp, driftXExp, driftYExp, driftZExp, initialConditions);
 }
 
 private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescription md) throws XmlParseException 

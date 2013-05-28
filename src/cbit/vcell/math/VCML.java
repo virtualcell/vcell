@@ -186,6 +186,9 @@ public class VCML {
 	public final static String ParticleLocationY		= "ParticleLocationY"; // particle
 	public final static String ParticleLocationZ		= "ParticleLocationZ"; // particle
 	public final static String ParticleDiffusion		= "ParticleDiffusion"; // particle
+	public final static String ParticleDriftX			= "ParticleDriftX"; // particle
+	public final static String ParticleDriftY			= "ParticleDriftY"; // particle
+	public final static String ParticleDriftZ			= "ParticleDriftZ"; // particle
 	public final static String ParticleJumpProcess 		= "ParticleJumpProcess"; // particle
 	public final static String MacroscopicRateConstant	= "MacroscopicRateConstant"; // particle
 	public final static String InteractionRadius    	= "InteractionRadius"; // particle

@@ -543,6 +543,9 @@ public class XMLTags {
 	public final static String ParticleLocationYTag		= "ParticleLocationY"; // particle
 	public final static String ParticleLocationZTag		= "ParticleLocationZ"; // particle
 	public final static String ParticleDiffusionTag		= "ParticleDiffusion"; // particle
+	public final static String ParticleDriftXTag		= "ParticleDriftX"; // particle
+	public final static String ParticleDriftYTag		= "ParticleDriftY"; // particle
+	public final static String ParticleDriftZTag		= "ParticleDriftZ"; // particle
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";
