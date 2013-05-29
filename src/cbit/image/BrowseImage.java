@@ -35,11 +35,12 @@ public class BrowseImage {
 /**
  * BrowseImage constructor comment.
  */
-public BrowseImage() {
+private BrowseImage() {
 	super();
 }
 
 private static byte[] createGifFromImage(Image image) throws IOException{
+
 	image = new ImageIcon(image).getImage();
 	BufferedImage bi = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_RGB);
 	Graphics g = bi.createGraphics();
@@ -54,7 +55,7 @@ private static byte[] createGifFromImage(Image image) throws IOException{
  * @return java.lang.Integer
  * @param vci VCImage
  */
-public static byte[] gifFromVCImage(VCImage vci) throws ImageException, IOException {
+private static byte[] gifFromVCImage(VCImage vci) throws ImageException, IOException {
 	byte[] grey = new byte[256];
 	for (int c = 0; c < 256; c += 1){
 		grey[c] = (byte) c;
@@ -112,7 +113,7 @@ public static GIFImage makeBrowseGIFImage(cbit.image.VCImage vci) throws cbit.im
  * @return byte[]
  * @param vci VCImage
  */
-public static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.ImageException {
+private static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.ImageException {
 	if (vci == null){
 		throw new ImageException("ImageAttributes.makeBrowseImage: Bad parameters");
 	}
@@ -127,6 +128,14 @@ public static byte[] makeBrowseImage(cbit.image.VCImage vci) throws cbit.image.I
 			xw = 150;
 		}
 		java.awt.Image browseImage = imageTemp.getScaledInstance(xw, yw, java.awt.Image.SCALE_REPLICATE);
+
+		// Make sure width and height are a minimum of 1 pixel
+		if (browseImage.getWidth(null)==0){
+			browseImage = imageTemp.getScaledInstance(1, 150, java.awt.Image.SCALE_REPLICATE);
+		}
+		if (browseImage.getHeight(null)==0){
+			browseImage = imageTemp.getScaledInstance(150, 1, java.awt.Image.SCALE_REPLICATE);
+		}
 		return createGifFromImage(browseImage);
 	}catch (IOException e){
 		e.printStackTrace(System.out);
