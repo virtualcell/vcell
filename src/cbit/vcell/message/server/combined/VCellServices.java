@@ -34,6 +34,7 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.message.server.LifeSignThread;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
@@ -190,7 +191,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			initLog(serviceInstanceStatus, logdir);
 
 			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-
+            
+			int lifeSignMessageInterval_MS = 5*60000; //5 minutes -- possibly make into a property later
+			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
+     
 			KeyFactory keyFactory = new OracleKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
