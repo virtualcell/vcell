@@ -3,7 +3,7 @@
 <title>Biomodels</title>
 </head>
 <body>
-<center><h2>Biomodels <#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
+<center><h2>BioModels&nbsp;&nbsp;&nbsp;<a href="/simtask">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
 <form>
 
 <table><tbody>
@@ -18,7 +18,7 @@
 <br/><h3>query returned ${biomodels?size} results</h3>
 <table border='1'>
 <tr>
-<th>bioModel id</th>
+<th>bioModel id (branch&nbsp;id)</th>
 <th>bioModel name</th>
 <th>Owner</th>
 <th>Date Saved</th>
@@ -27,7 +27,7 @@
 </tr>
 <#list biomodels as biomodel>
 <tr>
-<td>${biomodel.bmKey!""}</td>
+<td>${biomodel.bmKey!""} (${biomodel.branchID!""})</td>
 <td>${biomodel.name!""}</td>
 <td>${biomodel.ownerName!""}</td>
 <td>${biomodel.savedDate?number_to_date!""}</td>

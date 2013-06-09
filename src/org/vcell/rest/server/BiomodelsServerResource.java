@@ -76,7 +76,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
         parameterInfos.add(new ParameterInfo(PARAM_TASK_ID,false,"string",ParameterStyle.QUERY,"VCell simulation task id (retry index)"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_LOW,false,"string",ParameterStyle.QUERY,"earliest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_HIGH,false,"string",ParameterStyle.QUERY,"latest saved timestamp (seconds since 1/1/1970)"));
-        parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 100)"));
+        parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 10)"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
@@ -109,7 +109,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		if (maxRowsParam!=null){
 			dataModel.put("maxRows", maxRowsParam);
 		}else{
-			dataModel.put("maxRows", 100);
+			dataModel.put("maxRows", 10);
 		}
 
 		dataModel.put("biomodels", Arrays.asList(biomodels));
@@ -159,7 +159,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		Long savedLow = getLongQueryValue(PARAM_SAVED_LOW);
 		Long savedHigh = getLongQueryValue(PARAM_SAVED_HIGH);
 		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
-		int maxRows = 100; // default
+		int maxRows = 10; // default
 		if (maxRowsParam!=null){
 			maxRows = maxRowsParam.intValue();
 		}

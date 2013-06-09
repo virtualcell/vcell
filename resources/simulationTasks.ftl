@@ -3,7 +3,7 @@
 <title>Simulation Tasks</title>
 </head>
 <body>
-<center><h2>Simulation Tasks <#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
+<center><h2><a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;Simulation Tasks&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
 <form>
 <table><tbody>
 <tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow!""}'/></td></tr>
