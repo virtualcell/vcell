@@ -14,6 +14,7 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
+import org.restlet.service.StatusService;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
@@ -56,6 +57,7 @@ public class VCellApiApplication extends WadlApplication {
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
         setAuthor("VCell Team");
+		setStatusService(new VCellStatusService());
 		this.adminDBTopLevel = adminDbTopLevel;
 		this.databaseServerImpl = databaseServerImpl;
 		this.userVerifier = userVerifier;
