@@ -4,19 +4,17 @@
 </head>
 <body>
 <center><h2>BioModels&nbsp;&nbsp;&nbsp;<a href="/simtask">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
-
 <form>
-	<table><tbody>
-	<tr><td>BioModel ID</td><td><input type='text' name='bmId' value='${bmId!""}'/></td></tr>
-	<tr><td>Begin Time</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
-	<tr><td>End Timestamp</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
-	<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
-	</tbody></table>
-	<input type='submit' value='Search' style='font-size:large'>
-</form>
 
-</center>
+<table><tbody>
+<tr><td>Begin Time</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
+<tr><td>End Timestamp</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
+<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
 
+</tbody></table>
+
+<input type='submit' value='Search' style='font-size:large'>
+</form></center>
 <br/><h3>query returned ${biomodels?size} results</h3>
 <table border='1'>
 <tr>

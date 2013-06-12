@@ -17,6 +17,7 @@ import org.restlet.security.ChallengeAuthenticator;
 import org.restlet.service.StatusService;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
+import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
 import org.vcell.util.document.KeyValue;
@@ -35,8 +36,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMTASKID = "simtaskid";
 	
 	
-	private AdminDBTopLevel adminDBTopLevel = null;
-	private DatabaseServerImpl databaseServerImpl = null;
+	private RestDatabaseService restDatabaseService = null;
 	private UserVerifier userVerifier = null;
 //	private ChallengeAuthenticator challengeAuthenticator = null;
 	private Configuration templateConfiguration = null;
@@ -52,14 +52,13 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, UserVerifier userVerifier, Configuration templateConfiguration) {
+	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, Configuration templateConfiguration) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
         setAuthor("VCell Team");
 		setStatusService(new VCellStatusService());
-		this.adminDBTopLevel = adminDbTopLevel;
-		this.databaseServerImpl = databaseServerImpl;
+		this.restDatabaseService = restDatabaseService;
 		this.userVerifier = userVerifier;
 		this.templateConfiguration = templateConfiguration;
 		getLogger().setLevel(Level.FINE);
@@ -116,12 +115,8 @@ public class VCellApiApplication extends WadlApplication {
         return true;
     }
 
-	public AdminDBTopLevel getAdminDBTopLevel() {
-		return this.adminDBTopLevel;
-	}
-
-	public DatabaseServerImpl getDatabaseServerImpl() {
-		return databaseServerImpl;
+	public RestDatabaseService getRestDatabaseService() {
+		return this.restDatabaseService;
 	}
 
 	public Configuration getTemplateConfiguration() {

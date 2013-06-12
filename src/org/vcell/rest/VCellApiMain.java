@@ -7,6 +7,7 @@ import org.restlet.data.Protocol;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
+import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -36,17 +37,22 @@ public class VCellApiMain {
 			String keystorePassword = args[1];
 			
 			System.out.println("connecting to database");
-			
-			AdminDBTopLevel adminDbTopLevel = null;
-			DatabaseServerImpl databaseServerImpl = null;
+
+			RestDatabaseService restDatabaseService = null;
+			UserVerifier userVerifier = null;
 			try {
 				PropertyLoader.loadProperties();
 				final SessionLog log = new StdoutSessionLog("VCellWebApi");
 				KeyFactory keyFactory = new OracleKeyFactory();
 				DbDriver.setKeyFactory(keyFactory);
 				ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-				databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-				adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+				AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+				
+				restDatabaseService = new RestDatabaseService(databaseServerImpl, adminDbTopLevel);
+				
+				userVerifier = new UserVerifier(adminDbTopLevel);
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -64,12 +70,11 @@ public class VCellApiMain {
 			parameters.add("keystoreType", "JKS");
 			parameters.add("keyPassword", keystorePassword);
 			
-			UserVerifier userVerifier = new UserVerifier(adminDbTopLevel);
 			
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
-			WadlApplication app = new VCellApiApplication(adminDbTopLevel,databaseServerImpl, userVerifier,templateConfiguration);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration);
 			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");

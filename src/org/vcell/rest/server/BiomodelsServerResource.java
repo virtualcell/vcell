@@ -3,7 +3,6 @@ package org.vcell.rest.server;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +24,9 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelsResource;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.BioModelTable;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 
 import com.google.gson.Gson;
 
@@ -39,13 +34,11 @@ import freemarker.template.Configuration;
 
 public class BiomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
 
-    private static final String PARAM_USER = "user";
-	private static final String PARAM_SIM_ID = "simId";
-	private static final String PARAM_JOB_ID = "jobId";
-	private static final String PARAM_TASK_ID = "taskId";
-	private static final String PARAM_SAVED_HIGH = "savedHigh";
-	private static final String PARAM_SAVED_LOW = "savedLow";
-	private static final String PARAM_MAX_ROWS = "maxRows";
+	public static final String PARAM_USER = "user";
+	public static final String PARAM_BM_ID = "bmId";
+	public static final String PARAM_SAVED_HIGH = "savedHigh";
+	public static final String PARAM_SAVED_LOW = "savedLow";
+	public static final String PARAM_MAX_ROWS = "maxRows";
 
 	@Override
 	protected void doInit() throws ResourceException {
@@ -71,9 +64,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
         parameterInfos.add(new ParameterInfo(PARAM_USER,false,"string",ParameterStyle.TEMPLATE,"VCell user id"));
-        parameterInfos.add(new ParameterInfo(PARAM_SIM_ID,false,"string",ParameterStyle.QUERY,"VCell simulation database id"));
-        parameterInfos.add(new ParameterInfo(PARAM_JOB_ID,false,"string",ParameterStyle.QUERY,"VCell simulation job id (parameter scan index)"));
-        parameterInfos.add(new ParameterInfo(PARAM_TASK_ID,false,"string",ParameterStyle.QUERY,"VCell simulation task id (retry index)"));
+        parameterInfos.add(new ParameterInfo(PARAM_BM_ID,false,"string",ParameterStyle.QUERY,"VCell biomodel database id"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_LOW,false,"string",ParameterStyle.QUERY,"earliest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_HIGH,false,"string",ParameterStyle.QUERY,"latest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 10)"));
@@ -100,9 +91,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
 		dataModel.put("userId", getAttribute(PARAM_USER));
-		dataModel.put("simId", getLongQueryValue(PARAM_SIM_ID));
-		dataModel.put("jobId",  getLongQueryValue(PARAM_JOB_ID));
-		dataModel.put("taskId",  getLongQueryValue(PARAM_TASK_ID));
+		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
 		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
 		dataModel.put("savedHigh", getLongQueryValue(PARAM_SAVED_HIGH));
 		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
@@ -136,9 +125,9 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 //			return new SimulationTaskRepresentation[0];
 //		}else{
 			ArrayList<BiomodelRepresentation> biomodelReps = new ArrayList<BiomodelRepresentation>();
-			DatabaseServerImpl databaseServerImpl = ((VCellApiApplication)getApplication()).getDatabaseServerImpl();
+			RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
 			try {
-				BioModelRep[] bioModelReps = query(databaseServerImpl, vcellUser);
+				BioModelRep[] bioModelReps = restDatabaseService.query(this,vcellUser);
 				for (BioModelRep bioModelRep : bioModelReps) {
 					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 					biomodelReps.add(biomodelRep);
@@ -153,35 +142,4 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 			return biomodelReps.toArray(new BiomodelRepresentation[0]);
 //		}
 	}
-
-    private BioModelRep[] query(DatabaseServerImpl databaseServerImpl, User vcellUser) throws SQLException, DataAccessException {	
-    	
-		Long savedLow = getLongQueryValue(PARAM_SAVED_LOW);
-		Long savedHigh = getLongQueryValue(PARAM_SAVED_HIGH);
-		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
-		int maxRows = 10; // default
-		if (maxRowsParam!=null){
-			maxRows = maxRowsParam.intValue();
-		}
-    	ArrayList<String> conditions = new ArrayList<String>();
-    	
-    	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-    	
-    	if (savedLow != null){
-    		conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(savedLow)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (savedHigh != null){
-    		conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(savedHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
- 
-    	StringBuffer conditionsBuffer = new StringBuffer();
-    	for (String condition : conditions) {
-    		if (conditionsBuffer.length() > 0) {
-    			conditionsBuffer.append(" AND ");
-    		}
-			conditionsBuffer.append(condition);
-		}
-   		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), maxRows);
-	   	return bioModelReps;
-    }
  }
