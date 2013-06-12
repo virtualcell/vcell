@@ -23,25 +23,26 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
  * @author: Fei Gao
  */
 public class JobTableModel extends VCellSortTableModel<ComparableObject> {
-	public final static int columnIndex_UserID = 0;
-	public final static int columnIndex_SimID = 1;
-	private final static int columnIndex_JobIndex = 2;
-	private final static int columnIndex_SolverType = 3;
-	private final static int columnIndex_Status = 4;
-	private final static int columnIndex_ComputeHost = 5;
-	private final static int columnIndex_ServerID = 6;
-	private final static int columnIndex_TaskID = 7;
-	private final static int columnIndex_SubmitDate = 8;
-	private final static int columnIndex_StartDate = 9;
-	private final static int columnIndex_EndDate = 10;
-	private final static int columnIndex_ElapsedTime = 11;
-	private final static int columnIndex_MeshSize = 12;
+	public final static int columnIndex_ModelName = 0;
+	public final static int columnIndex_UserID = 1;
+	public final static int columnIndex_SimID = 2;
+	private final static int columnIndex_JobIndex = 3;
+	private final static int columnIndex_SolverType = 4;
+	private final static int columnIndex_Status = 5;
+	private final static int columnIndex_ComputeHost = 6;
+	private final static int columnIndex_ServerID = 7;
+	private final static int columnIndex_TaskID = 8;
+	private final static int columnIndex_SubmitDate = 9;
+	private final static int columnIndex_StartDate = 10;
+	private final static int columnIndex_EndDate = 11;
+	private final static int columnIndex_ElapsedTime = 12;
+	private final static int columnIndex_MeshSize = 13;
 
 /**
  * JobTableModel constructor comment.
  */
 public JobTableModel() {
-	super(new String[]{"User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)", "Mesh Size"});
+	super(new String[]{"Model Name", "User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)", "Mesh Size"});
 }
 
 

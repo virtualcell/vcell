@@ -33,13 +33,93 @@ public class SimpleJobStatus implements ComparableObject {
 	private Integer meshSpecX = null;
 	private Integer meshSpecY= null;
 	private Integer meshSpecZ = null;
-	private KeyValue maxBioModelID = null;
-	private KeyValue maxMathModelID = null;
+	private BioModelLink bioModelLink = null;
+	private MathModelLink mathModelLink = null;
+	
+	public static class BioModelLink {
+		public final static String bmid = "bioModelKey";
+		public final static String bmbranch = "bioModelBranchId";
+		public final static String bmname = "bioModelName";
+		public final static String scid = "simContextKey";
+		public final static String scbranch = "simContextBranchId";
+		public final static String scname = "simContextName";
+		
+		public final String bioModelKey;
+		public final String bioModelBranchId;
+		public final String bioModelName;
+		public final String simContextKey;
+		public final String simContextBranchId;
+		public final String simContextName;
+		
+		public BioModelLink(String bioModelKey, String bioModelBranchId, String bioModelName, String simContextKey, String simContextBranchId, String simContextName) {
+			this.bioModelKey = bioModelKey;
+			this.bioModelBranchId = bioModelBranchId;
+			this.bioModelName = bioModelName;
+			this.simContextKey = simContextKey;
+			this.simContextBranchId = simContextBranchId;
+			this.simContextName = simContextName;
+		}
+
+		public String getBioModelKey() {
+			return bioModelKey;
+		}
+
+		public String getBioModelBranchId() {
+			return bioModelBranchId;
+		}
+
+		public String getBioModelName() {
+			return bioModelName;
+		}
+
+		public String getSimContextKey() {
+			return simContextKey;
+		}
+
+		public String getSimContextBranchId() {
+			return simContextBranchId;
+		}
+
+		public String getSimContextName() {
+			return simContextName;
+		}
+		
+	}
+
+	public static class MathModelLink {
+		public final static String mmid = "mathModelKey";
+		public final static String mmbranch = "mathModelBranchId";
+		public final static String mmname = "mathModelName";
+		
+		public final String mathModelKey;
+		public final String mathModelBranchId;
+		public final String mathModelName;
+		
+		public MathModelLink(String mathModelKey, String mathModelBranchId, String mathModelName) {
+			this.mathModelKey = mathModelKey;
+			this.mathModelBranchId = mathModelBranchId;
+			this.mathModelName = mathModelName;
+		}
+
+		public String getMathModelKey() {
+			return mathModelKey;
+		}
+
+		public String getMathModelBranchId() {
+			return mathModelBranchId;
+		}
+
+		public String getMathModelName() {
+			return mathModelName;
+		}
+		
+		
+	}
 
 /**
  * SimpleJobStatus constructor comment.
  */
-public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ, KeyValue maxBioModelID, KeyValue maxMathModelID) {	
+public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ, BioModelLink bioModelLink, MathModelLink mathModelLink) {	
 	super();
 	this.simname = simname;
 	this.userID = user;
@@ -56,8 +136,8 @@ public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobS
 	this.meshSpecX = meshSpecX;
 	this.meshSpecY = meshSpecY;
 	this.meshSpecZ = meshSpecZ;
-	this.maxBioModelID = maxBioModelID;
-	this.maxMathModelID = maxMathModelID;
+	this.bioModelLink = bioModelLink;
+	this.mathModelLink = mathModelLink;
 }
 
 
@@ -85,12 +165,12 @@ public String getSimName(){
 	return this.simname;
 }
 
-public KeyValue getMaxBioModelID(){
-	return this.maxBioModelID;
+public BioModelLink getBioModelLink(){
+	return this.bioModelLink;
 }
 
-public KeyValue getMaxMathModelID(){
-	return this.maxMathModelID;
+public MathModelLink getMathModelLink(){
+	return this.mathModelLink;
 }
 
 /**
@@ -276,7 +356,7 @@ public boolean isRunning() {
  * @return java.lang.String[]
  */
 public Object[] toObjects() {	
-	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
+	return new Object[] {(bioModelLink!=null)?("BM \""+bioModelLink.bioModelName+"\", APP \""+bioModelLink.simContextName+"\", SIM \""+simname+"\""):((mathModelLink!=null)?("MM \""+mathModelLink.mathModelName+"\", SIM \""+simname+"\""):("")), userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
 		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
 		elapsedTime, new Long(getMeshSize())};
