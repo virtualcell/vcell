@@ -187,46 +187,52 @@ public String getPreparedStatement_BioModelReps(String conditions, int numRows){
 	GroupTable groupTable = GroupTable.table;
 	UserTable userTable = UserTable.table;
 	
+	String subquery = 			
+		"select " +
+		    bmTable.id.getQualifiedColName()+", "+
+		    bmTable.name.getQualifiedColName()+", "+
+		    bmTable.privacy.getQualifiedColName()+", "+
+		    bmTable.versionDate.getQualifiedColName()+", "+
+		    bmTable.versionAnnot.getQualifiedColName()+", "+
+		    bmTable.versionBranchID.getQualifiedColName()+", "+
+		    bmTable.modelRef.getQualifiedColName()+", "+
+		    bmTable.ownerRef.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+", "+
+		
+		   "(select '['||wm_concat("+"SQ1_"+bmsimTable.simRef.getQualifiedColName()+")||']' "+
+		   "   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+" "+
+		   "   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+bmTable.id.getQualifiedColName()+") simKeys,  "+
+		
+		   "(select '['||wm_concat("+"SQ2_"+bmscTable.simContextRef.getQualifiedColName()+")||']' "+
+		   "   from "+bmscTable.getTableName()+"  SQ2_"+bmscTable.getTableName()+" "+
+		   "   where SQ2_"+bmscTable.bioModelRef.getQualifiedColName()+ " = " + bmTable.id.getQualifiedColName()+") simContextKeys,  "+
+		
+		   "(select '['||wm_concat(SQ3_"+groupTable.userRef.getQualifiedColName()+"||':'||SQ3_"+userTable.userid.getQualifiedColName()+")||']'  "+
+	   	   "   from "+groupTable.getTableName()+" SQ3_"+groupTable.getTableName()+", "+
+		   "        "+userTable.getTableName()+"  SQ3_"+userTable.getTableName()+" "+
+		   "   where SQ3_"+groupTable.groupid.getQualifiedColName()+" = "+bmTable.privacy.getQualifiedColName()+" "+
+		   "   and   SQ3_"+userTable.id.getQualifiedColName()+" = "+groupTable.userRef.getQualifiedColName()+" "+
+		   "   and   "+bmTable.privacy.getQualifiedColName()+" > 1) groupMembers "+
+		
+		"from "+bmTable.getTableName()+", "+userTable.getTableName()+", "+groupTable.getTableName()+" "+
+		"where "+bmTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
+		"and   "+bmTable.privacy.getQualifiedColName()+" = "+groupTable.groupid.getQualifiedColName()+" "+
+		"and   (("+bmTable.ownerRef.getQualifiedColName()+" =?) or ("+bmTable.privacy.getQualifiedColName()+" = 0) or ("+groupTable.userRef+" =? ))";
+	
+	String additionalConditionsClause = "";
+	if (conditions!=null && conditions.length()>0){
+		additionalConditionsClause = " and ("+conditions+")";
+	}
+	
+	String orderByClause = "order by "+bmTable.versionDate.getQualifiedColName()+" DESC";
+
 	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql =  
 		"select * from "+
-			"(select " +
-			    bmTable.id.getQualifiedColName()+", "+
-			    bmTable.name.getQualifiedColName()+", "+
-			    bmTable.privacy.getQualifiedColName()+", "+
-			    bmTable.versionDate.getQualifiedColName()+", "+
-			    bmTable.versionAnnot.getQualifiedColName()+", "+
-			    bmTable.versionBranchID.getQualifiedColName()+", "+
-			    bmTable.modelRef.getQualifiedColName()+", "+
-			    bmTable.ownerRef.getQualifiedColName()+", "+
-			    UserTable.table.userid.getQualifiedColName()+", "+
-			
-			   "(select '['||wm_concat("+"SQ1_"+bmsimTable.simRef.getQualifiedColName()+")||']' "+
-			   "   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+" "+
-			   "   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+bmTable.id.getQualifiedColName()+") simKeys,  "+
-			
-			   "(select '['||wm_concat("+"SQ2_"+bmscTable.simContextRef.getQualifiedColName()+")||']' "+
-			   "   from "+bmscTable.getTableName()+"  SQ2_"+bmscTable.getTableName()+" "+
-			   "   where SQ2_"+bmscTable.bioModelRef.getQualifiedColName()+ " = " + bmTable.id.getQualifiedColName()+") simContextKeys,  "+
-			
-			   "(select '['||wm_concat(SQ3_"+groupTable.userRef.getQualifiedColName()+"||':'||SQ3_"+userTable.userid.getQualifiedColName()+")||']'  "+
-		   	   "   from "+groupTable.getTableName()+" SQ3_"+groupTable.getTableName()+", "+
-			   "        "+userTable.getTableName()+"  SQ3_"+userTable.getTableName()+" "+
-			   "   where SQ3_"+groupTable.groupid.getQualifiedColName()+" = "+bmTable.privacy.getQualifiedColName()+" "+
-			   "   and   SQ3_"+userTable.id.getQualifiedColName()+" = "+groupTable.userRef.getQualifiedColName()+" "+
-			   "   and   "+bmTable.privacy.getQualifiedColName()+" > 1) groupMembers "+
-			
-			"from "+bmTable.getTableName()+", "+userTable.getTableName()+", "+groupTable.getTableName()+" "+
-			"where "+bmTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
-			"and   "+bmTable.privacy.getQualifiedColName()+" = "+groupTable.groupid.getQualifiedColName()+" "+
-			"and   (("+bmTable.ownerRef.getQualifiedColName()+" =?) or ("+bmTable.privacy.getQualifiedColName()+" = 0) or ("+groupTable.userRef+" =? ))" +
-			"order by "+bmTable.versionDate.getQualifiedColName()+" DESC) "+
+		"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
 		"where rownum <= ?";
 	
-	if (conditions!=null && conditions.length()>0){
-		sql += " and ("+conditions+")";
-	}
-	
+	System.out.println(sql);
 	return sql;
 }
 
