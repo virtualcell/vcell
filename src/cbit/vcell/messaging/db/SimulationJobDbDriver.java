@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.messaging.db;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,18 +18,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.axis.components.script.BSF;
+import org.bson.BSON;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
+import com.google.gson.Gson;
+import com.mongodb.util.JSON;
+
+import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
+import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
-import cbit.vcell.modeldb.SimContextTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 
@@ -343,23 +347,94 @@ public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValu
  * Creation date: (9/3/2003 8:59:46 AM)
  * @return java.util.List of SimpleJobStatus for managementGUI
  * @param conditions java.lang.String
+ * 
+ * for the subqueries, here is a prototype query which returns the 
+ * 
+ * select
+vc_simulation_1.id as simid,
+(select max('{"bmid":"' || lpad(vc_biomodel.id,14,0) || '","scid":"' || lpad(vc_simcontext.id,14,0) || '","bmbranch":"' || lpad(vc_biomodel.versionbranchid,14,0) || '","scbranch":"' || lpad(vc_simcontext.versionbranchid,14,0) || '","bmname":"' || vc_biomodel.name || '","scname":"' || vc_simcontext.name || '"}')
+from vc_biomodel, vc_biomodelsimcontext, VC_BIOMODELSIM, vc_simcontext
+where vc_simulation_1.mathref = vc_simcontext.mathref
+and VC_BIOMODELSIMCONTEXT.SIMCONTEXTREF = VC_SIMCONTEXT.id
+and VC_BIOMODELSIMCONTEXT.BIOMODELREF = vc_biomodel.id
+and VC_BIOMODELSIM.SIMREF = VC_SIMULATION_1.id
+and VC_BIOMODELSIM.BIOMODELREF = vc_biomodel.id
+) as bmLink,
+(select max('{"mmid":"' || lpad(vc_mathmodel.id,14,0) || '","mmbranch":"' || lpad(vc_mathmodel.versionbranchid,14,0) || '","mmname":"' || vc_mathmodel.name || '"}')
+from vc_mathmodel, VC_MATHMODELSIM
+where vc_simulation_1.id = vc_mathmodelsim.SIMREF
+and vc_mathmodelsim.MATHMODELREF = vc_mathmodel.id
+) as mmLink
+from vc_simulation vc_simulation_1
+where rownum <= 10;
+
+which returns the biomodel link (bmlink) and the math model link (mmlink) as JSON strings to be interpreted as needed.
+
+simid		bmlink																																								mmlink
+2,006,065	<null>																																								{"mmid":"00000002001619","mmbranch":"00000001008286","mmname":"Terasaki1"}
+2,006,075	<null>																																								{"mmid":"00000002001626","mmbranch":"00000001008286","mmname":"Terasaki1"}
+2,006,085	<null>																																								{"mmid":"00000002001636","mmbranch":"00000001008286","mmname":"Terasaki1"}
+2,637,970	{"bmid":"00000002669821","scid":"00000002637934","bmbranch":"00000002622407","scbranch":"00000002637935","bmname":"aggregation","scname":"diagonal gradient"}		<null>
+2,006,427	<null>																																								{"mmid":"00000002002108","mmbranch":"00000001002871","mmname":"DiffusionfromChannel"}
+2,006,437	<null>																																								{"mmid":"00000002002110","mmbranch":"00000001002871","mmname":"DiffusionfromChannel"}
+2,006,646	<null>																																								{"mmid":"00000002002254","mmbranch":"00000001118506","mmname":"AliciaProblem1"}
+10,067,537	{"bmid":"00000010067543","scid":"00000010067469","bmbranch":"00000010033822","scbranch":"00000010067470","bmname":"BMTest_biphasicStatModule1","scname":"figure5"}	<null>
+10,369,972	{"bmid":"00000010369990","scid":"00000010369900","bmbranch":"00000010009521","scbranch":"00000010369901","bmname":"MemBinding_1","scname":"comp"}					<null>
+2,007,278	<null>																																								{"mmid":"00000002001884","mmbranch":"00000001036088","mmname":"Wave_no_nucl5"}
+
+
  */
 public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int maxNumRows) throws java.sql.SQLException {	
 	
 	BioModelSimulationLinkTable bioSimLinkTable = BioModelSimulationLinkTable.table;
 	MathModelSimulationLinkTable mathSimLinkTable = MathModelSimulationLinkTable.table;
+	
+	final String BMLINK = "bmlink";
+	final String MMLINK = "mmlink";
 
 	StringBuffer sql = new StringBuffer();
-	sql.append("SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
-			+ "," + simTable.ownerRef.getQualifiedColName() + "," + simTable.name.getQualifiedColName() + "," + simTable.taskDescription.getQualifiedColName()
-		+ "," + simTable.meshSpecX.getQualifiedColName() + "," + simTable.meshSpecY.getQualifiedColName() + "," + simTable.meshSpecZ.getQualifiedColName()
-		+ "," + bioSimLinkTable.bioModelRef.getUnqualifiedColName() + "," + mathSimLinkTable.mathModelRef.getUnqualifiedColName() 
-		+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName() 
-		           + "," + bioSimLinkTable.getTableName() + "," + mathSimLinkTable.getTableName()
-		+ " WHERE " + simTable.id.getQualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
-		+ " AND " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
-		+ " AND " + bioSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + simTable.id.getQualifiedColName()
-		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + simTable.id.getQualifiedColName()
+	sql.append("SELECT " +
+		"sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME
+		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
+		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.name.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.taskDescription.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.meshSpecX.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.meshSpecY.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.meshSpecZ.getUnqualifiedColName()
+		+ "," + "(SELECT max('{\""+BioModelLink.bmid+"\":\"' || lpad(vc_biomodel.id,14,0)" +
+							" || '\",\""+BioModelLink.scid+"\":\"' || lpad(vc_simcontext.id,14,0)" +
+							" || '\",\""+BioModelLink.bmbranch+"\":\"' || lpad(vc_biomodel.versionbranchid,14,0)" +
+							" || '\",\""+BioModelLink.scbranch+"\":\"' || lpad(vc_simcontext.versionbranchid,14,0)" +
+							" || '\",\""+BioModelLink.bmname+"\":\"' || vc_biomodel.name" +
+							" || '\",\""+BioModelLink.scname+"\":\"' || vc_simcontext.name || '\"}')" +
+				" FROM vc_biomodel" +
+				", vc_biomodelsimcontext" +
+				", VC_BIOMODELSIM" +
+				", vc_simcontext" +
+				" WHERE vc_sim_1.mathref = vc_simcontext.mathref" +
+				" AND VC_BIOMODELSIMCONTEXT.SIMCONTEXTREF = VC_SIMCONTEXT.id" +
+				" AND VC_BIOMODELSIMCONTEXT.BIOMODELREF = vc_biomodel.id" +
+				" AND VC_BIOMODELSIM.SIMREF = vc_sim_1.id" +
+				" AND VC_BIOMODELSIM.BIOMODELREF = vc_biomodel.id" +
+				") as " + BMLINK
+		+ "," + "(SELECT max('{\""+MathModelLink.mmid+"\":\"' || lpad(vc_mathmodel.id,14,0)" +
+							" || '\",\""+MathModelLink.mmbranch+"\":\"' || lpad(vc_mathmodel.versionbranchid,14,0)" +
+							" || '\",\""+MathModelLink.mmname+"\":\"' || vc_mathmodel.name || '\"}')" +
+				" FROM vc_mathmodel" +
+				", vc_mathmodelsim" +
+				" WHERE vc_sim_1.id = vc_mathmodelsim.SIMREF" +
+				" AND vc_mathmodelsim.MATHMODELREF = vc_mathmodel.id" +
+				") as " + MMLINK
+		+ " FROM " + jobTable.getTableName()
+					+ "," + simTable.getTableName() + " vc_sim_1"
+					+ "," + userTable.getTableName() 
+					+ "," + bioSimLinkTable.getTableName()
+					+ "," + mathSimLinkTable.getTableName()
+		+ " WHERE " + "vc_sim_1." + simTable.id.getUnqualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
+		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName()
+		+ " AND " + bioSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
+		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
 		);
 	if (conditions.length() > 0) {
 		sql.append(" AND " + conditions);
@@ -411,21 +486,21 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 			}
 			String simname = rset.getString(SimulationTable.table.name.getUnqualifiedColName());
 			
-			KeyValue maxParsedBioModelKey = null;
-			String columnName = bioSimLinkTable.bioModelRef.getUnqualifiedColName();
-			BigDecimal maxParsedBioModelKeyString = rset.getBigDecimal(columnName);
-			if (!rset.wasNull() && maxParsedBioModelKeyString!=null){
-				maxParsedBioModelKey = new KeyValue(maxParsedBioModelKeyString);
+			String latestBioModelLinkJSON = rset.getString(BMLINK);
+			BioModelLink bioModelLink = null;
+			if (latestBioModelLinkJSON!=null){
+				Gson gson = new Gson();
+				bioModelLink = gson.fromJson(latestBioModelLinkJSON, BioModelLink.class);
 			}
 			
-			KeyValue maxParsedMathModelKey = null;
-			columnName = mathSimLinkTable.mathModelRef.getUnqualifiedColName();
-			BigDecimal maxParsedMathModelKeyString = rset.getBigDecimal(columnName);
-			if (!rset.wasNull()  && maxParsedMathModelKeyString!=null){
-				maxParsedBioModelKey = new KeyValue(maxParsedMathModelKeyString);
+			String latestMathModelLinkJSON = rset.getString(MMLINK);
+			MathModelLink mathModelLink = null;
+			if (latestMathModelLinkJSON!=null){
+				Gson gson = new Gson();
+				mathModelLink = gson.fromJson(latestMathModelLinkJSON, MathModelLink.class);
 			}
 			
-			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, maxParsedBioModelKey, maxParsedMathModelKey));
+			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, bioModelLink, mathModelLink));
 		} 
 	} finally {
 		stmt.close();		
