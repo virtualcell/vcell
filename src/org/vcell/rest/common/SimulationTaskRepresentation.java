@@ -1,14 +1,13 @@
 package org.vcell.rest.common;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
+import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 
 public class SimulationTaskRepresentation {
 	
-	public static final String MODELTYPE_MATH = "MathModel";
-	public static final String MODELTYPE_BIO  = "BioModel";
-
 	public String simKey;
 	
 	public String simName;
@@ -37,9 +36,9 @@ public class SimulationTaskRepresentation {
 	
 	public boolean hasData;
 	
-	public String modelID;
+	public MathModelLink mathModelLink;
 	
-	public String modelType;
+	public BioModelLink bioModelLink;
 	
 	public SimulationTaskRepresentation(){
 		
@@ -131,14 +130,14 @@ public class SimulationTaskRepresentation {
 
 
 
-	public String getModelID() {
-		return modelID;
+	public MathModelLink getMathModelLink(){
+		return mathModelLink;
 	}
 
 
 
-	public String getModelType() {
-		return modelType;
+	public BioModelLink getBioModelLink() {
+		return bioModelLink;
 	}
 
 
@@ -192,13 +191,8 @@ public class SimulationTaskRepresentation {
 		}
 		this.hasData = simJobStatus.hasData();
 		this.simName = simJobStatus.getSimName();
-		if (simJobStatus.getMaxMathModelID()!=null){
-			this.modelID = simJobStatus.getMaxMathModelID().toString();
-			this.modelType = MODELTYPE_MATH;
-		}else if (simJobStatus.getMaxBioModelID()!=null){
-			this.modelID = simJobStatus.getMaxBioModelID().toString();
-			this.modelType = MODELTYPE_BIO;
-		}
+		this.bioModelLink = simJobStatus.getBioModelLink();
+		this.mathModelLink = simJobStatus.getMathModelLink();
 	}
 	
 }

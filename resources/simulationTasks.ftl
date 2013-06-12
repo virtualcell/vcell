@@ -33,9 +33,10 @@
 <br/><h3>query returned ${simTasks?size} results</h3>
 <table border='1'>
 <tr>
-<th>Model&nbsp;type Model&nbsp;ID</th>
-<th>Sim Key</th>
-<th>Sim Name</th>
+<th>BioModel</th>
+<th>BioModel App</th>
+<th>MathModel</th>
+<th>Simulation</th>
 <th>User Name</th>
 <th>User Key</th>
 <th>Job Index</th>
@@ -50,9 +51,10 @@
 </tr>
 <#list simTasks as simTask>
 <tr>
-<td><#if simTask.modelType?? && simTask.modelID??>${simTask.modelType!""} ${simTask.modelID!""}<#else>unknown</#if></td>
-<td>${simTask.simKey!""}</td>
-<td>${simTask.simName!""}</td>
+<td><#if simTask.bioModelLink??>"${simTask.bioModelLink.bioModelName!""}" (id=${simTask.bioModelLink.bioModelKey}) (branch=${simTask.bioModelLink.bioModelBranchId})<#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??>"${simTask.bioModelLink.simContextName!""}" (id=${simTask.bioModelLink.simContextKey}) (branch=${simTask.bioModelLink.simContextBranchId})<#else>unknown</#if></td>
+<td><#if simTask.mathModelLink??>"${simTask.mathModelLink.mathModelName!""}" (id=${simTask.mathModelLink.mathModelKey}) (branch=${simTask.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
+<td>"${simTask.simName!""}" (id=${simTask.simKey!""})</td>
 <td>${simTask.userName!""}</td>
 <td>${simTask.userKey!""}</td>
 <td>${simTask.jobIndex!""}</td>
