@@ -11,7 +11,9 @@
 package cbit.vcell.modeldb;
 
 import java.beans.PropertyVetoException;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -285,4 +287,63 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 	buffer.append(")");
 	return buffer.toString();
 }
+
+
+
+
+public String getPreparedStatement_SimulationReps(){
+
+	SimulationTable simTable = SimulationTable.table;
+	UserTable userTable = UserTable.table;
+	
+	String subquery = 			
+		"select " +
+		    simTable.id.getQualifiedColName()+", "+
+		    simTable.name.getQualifiedColName()+", "+
+		    simTable.versionBranchID.getQualifiedColName()+", "+
+		    simTable.ownerRef.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+", "+
+		    simTable.mathRef.getQualifiedColName()+" "+
+		
+		"from "+simTable.getTableName()+", "+userTable.getTableName()+" "+
+		"where "+simTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
+		"and "+simTable.id.getQualifiedColName() + " > ?";
+
+	String orderByClause = "order by "+simTable.versionDate.getQualifiedColName()+" ASC";
+
+	// query guarantees authorized access to biomodels based on the supplied User authentication.
+	String sql =  
+		"select * from "+
+		"(" + subquery + " " + orderByClause + ") "+
+		"where rownum <= ?";
+	
+	System.out.println(sql);
+	return sql;
+}
+
+
+public void setPreparedStatement_SimulationReps(PreparedStatement stmt, KeyValue minSimKeyValue, int numRows) throws SQLException{
+	BigDecimal minSimKey = new BigDecimal(0);
+	if (minSimKeyValue!=null){
+		minSimKey = new BigDecimal(minSimKeyValue.toString());
+	}
+	stmt.setBigDecimal(1, minSimKey);
+	stmt.setInt(2, numRows);
+}
+
+
+
+public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentException, SQLException {
+	KeyValue scKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
+	String name = rset.getString(table.name.toString());
+	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
+	KeyValue ownerRef = new KeyValue(rset.getBigDecimal(table.ownerRef.toString()));
+	String ownerName = rset.getString(UserTable.table.userid.toString());
+	User owner = new User(ownerName,ownerRef);
+	KeyValue mathKey = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
+	
+	return new SimulationRep(scKey,branchID,name,owner,mathKey);
+}
+
+
 }

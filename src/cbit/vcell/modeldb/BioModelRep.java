@@ -1,6 +1,7 @@
 package cbit.vcell.modeldb;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.vcell.util.document.KeyValue;
@@ -18,6 +19,8 @@ public class BioModelRep {
 	private final User owner;
 	private final KeyValue[] simKeyList;
 	private final KeyValue[] simContextKeyList;
+	private ArrayList<SimContextRep> simContextRepList = new ArrayList<SimContextRep>();
+	private ArrayList<SimulationRep> simulationRepList = new ArrayList<SimulationRep>();
 	
 	public BioModelRep(KeyValue bmKey, String name, int privacy, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef,
 			User owner, KeyValue[] simKeyList, KeyValue[] simContextKeyList) {
@@ -77,6 +80,26 @@ public class BioModelRep {
 
 	public KeyValue[] getSimContextKeyList() {
 		return simContextKeyList;
+	}
+
+	public void addSimContextRep(SimContextRep scRep) {
+		if (!simContextRepList.contains(scRep)){
+			simContextRepList.add(scRep);
+		}
+	}
+	
+	public SimContextRep[] getSimContextRepList() {
+		return simContextRepList.toArray(new SimContextRep[simContextRepList.size()]);
+	}
+	
+	public void addSimulationRep(SimulationRep simRep) {
+		if (!simulationRepList.contains(simRep)){
+			simulationRepList.add(simRep);
+		}
+	}
+	
+	public SimulationRep[] getSimulationRepList() {
+		return simulationRepList.toArray(new SimulationRep[simulationRepList.size()]);
 	}
 	
 	
