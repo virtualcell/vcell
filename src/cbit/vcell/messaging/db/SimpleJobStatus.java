@@ -44,11 +44,11 @@ public class SimpleJobStatus implements ComparableObject {
 		public final static String scbranch = "simContextBranchId";
 		public final static String scname = "simContextName";
 		
-		public final String bioModelKey;
-		public final String bioModelBranchId;
+		public String bioModelKey;
+		public String bioModelBranchId;
 		public final String bioModelName;
-		public final String simContextKey;
-		public final String simContextBranchId;
+		public String simContextKey;
+		public String simContextBranchId;
 		public final String simContextName;
 		
 		public BioModelLink(String bioModelKey, String bioModelBranchId, String bioModelName, String simContextKey, String simContextBranchId, String simContextName) {
@@ -84,6 +84,21 @@ public class SimpleJobStatus implements ComparableObject {
 			return simContextName;
 		}
 		
+		public void clearZeroPadding(){
+			while (bioModelKey.startsWith("0") && bioModelKey.length()>1){
+				bioModelKey = bioModelKey.substring(1);
+			}
+			while (bioModelBranchId.startsWith("0") && bioModelBranchId.length()>1){
+				bioModelBranchId = bioModelBranchId.substring(1);
+			}
+			while (simContextKey.startsWith("0") && simContextKey.length()>1){
+				simContextKey = simContextKey.substring(1);
+			}
+			while (simContextBranchId.startsWith("0") && simContextBranchId.length()>1){
+				simContextBranchId = simContextBranchId.substring(1);
+			}
+		}
+		
 	}
 
 	public static class MathModelLink {
@@ -91,8 +106,8 @@ public class SimpleJobStatus implements ComparableObject {
 		public final static String mmbranch = "mathModelBranchId";
 		public final static String mmname = "mathModelName";
 		
-		public final String mathModelKey;
-		public final String mathModelBranchId;
+		public String mathModelKey;
+		public String mathModelBranchId;
 		public final String mathModelName;
 		
 		public MathModelLink(String mathModelKey, String mathModelBranchId, String mathModelName) {
@@ -113,6 +128,14 @@ public class SimpleJobStatus implements ComparableObject {
 			return mathModelName;
 		}
 		
+		public void clearZeroPadding(){
+			while (mathModelKey.startsWith("0") && mathModelKey.length()>1){
+				mathModelKey = mathModelKey.substring(1);
+			}
+			while (mathModelBranchId.startsWith("0") && mathModelBranchId.length()>1){
+				mathModelBranchId = mathModelBranchId.substring(1);
+			}
+		}
 		
 	}
 
