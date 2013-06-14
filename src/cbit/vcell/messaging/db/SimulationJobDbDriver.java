@@ -491,6 +491,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 			if (latestBioModelLinkJSON!=null){
 				Gson gson = new Gson();
 				bioModelLink = gson.fromJson(latestBioModelLinkJSON, BioModelLink.class);
+				bioModelLink.clearZeroPadding();
 			}
 			
 			String latestMathModelLinkJSON = rset.getString(MMLINK);
@@ -498,6 +499,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 			if (latestMathModelLinkJSON!=null){
 				Gson gson = new Gson();
 				mathModelLink = gson.fromJson(latestMathModelLinkJSON, MathModelLink.class);
+				mathModelLink.clearZeroPadding();
 			}
 			
 			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, bioModelLink, mathModelLink));
