@@ -6,6 +6,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.modeldb.SimContextRep;
+import cbit.vcell.modeldb.SimulationRep;
 
 public class BiomodelRepresentation {
 	
@@ -29,9 +31,9 @@ public class BiomodelRepresentation {
 	
 	public String ownerKey;
 	
-	public String[] simKeys;
+	public SimulationRepresentation[] simulations;
 	
-	public String[] simContextKeys;
+	public ApplicationRepresentation[] applications;
 
 	public BiomodelRepresentation(){
 		
@@ -99,14 +101,14 @@ public class BiomodelRepresentation {
 
 
 
-	public String[] getSimKeys() {
-		return simKeys;
+	public SimulationRepresentation[] getSimulations() {
+		return simulations;
 	}
 
 
 
-	public String[] getSimContextKeys() {
-		return simContextKeys;
+	public ApplicationRepresentation[] getApplications() {
+		return applications;
 	}
 
 
@@ -130,16 +132,16 @@ public class BiomodelRepresentation {
 		this.ownerName = bioModelRep.getOwner().getName();
 		this.ownerKey = bioModelRep.getOwner().getID().toString();
 
-		ArrayList<String> simKeyList = new ArrayList<String>();
-		for (KeyValue simKey : bioModelRep.getSimKeyList()){
-			simKeyList.add(simKey.toString());
+		ArrayList<SimulationRepresentation> simulationList = new ArrayList<SimulationRepresentation>();
+		for (SimulationRep simRep : bioModelRep.getSimulationRepList()){
+			simulationList.add(new SimulationRepresentation(simRep));
 		}
-		this.simKeys = simKeyList.toArray(new String[simKeyList.size()]);
+		this.simulations = simulationList.toArray(new SimulationRepresentation[simulationList.size()]);
 
-		ArrayList<String> simContextKeyList = new ArrayList<String>();
-		for (KeyValue simContextKey : bioModelRep.getSimContextKeyList()){
-			simContextKeyList.add(simContextKey.toString());
+		ArrayList<ApplicationRepresentation> applicationList = new ArrayList<ApplicationRepresentation>();
+		for (SimContextRep simContextRep : bioModelRep.getSimContextRepList()){
+			applicationList.add(new ApplicationRepresentation(simContextRep));
 		}
-		this.simContextKeys = simContextKeyList.toArray(new String[simContextKeyList.size()]);
+		this.applications = applicationList.toArray(new ApplicationRepresentation[applicationList.size()]);
 	}
 }

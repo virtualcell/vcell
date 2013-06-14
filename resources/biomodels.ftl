@@ -33,8 +33,8 @@
 <td>${biomodel.name!""}</td>
 <td>${biomodel.ownerName!""}</td>
 <td>${biomodel.savedDate?number_to_date!""}</td>
-<td><#if biomodel.simKeys??><#list biomodel.simKeys as simKey><a href='./simulation/${simKey}'>${simKey}</a> </#list><#else>--</#if></td>
-<td><#if biomodel.simContextKeys??><#list biomodel.simContextKeys as simContextKey><a href='./application/${simContextKey}'>${simContextKey}</a> </#list><#else>--</#if></td>
+<td><#if biomodel.simulations??><#list biomodel.simulations as simulation><a href='./simulation/${simulation.key}'>${simulation.name}</a>&nbsp;&nbsp; </#list><#else>--</#if></td>
+<td><#if biomodel.applications??><#list biomodel.applications as application><a href='./application/${application.key}'>${application.name}</a>&nbsp;&nbsp; </#list><#else>--</#if></td>
 </tr>
 </#list>
 </table>

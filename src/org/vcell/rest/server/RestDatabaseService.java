@@ -4,23 +4,31 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.SimContextRep;
+import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
 
 public class RestDatabaseService {
 	
 	private DatabaseServerImpl databaseServerImpl = null;
 	private AdminDBTopLevel adminDbTopLevel = null;
+	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
+	KeyValue mostRecentSimContextKey = new KeyValue("0");
+	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
+	KeyValue mostRecentSimulationKey = new KeyValue("0");
 
 	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, AdminDBTopLevel adminDbTopLevel) {
 		this.databaseServerImpl = databaseServerImpl;
@@ -59,7 +67,77 @@ public class RestDatabaseService {
 			conditionsBuffer.append(condition);
 		}
 		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), maxRows);
+		for (BioModelRep bioModelRep : bioModelReps) {
+			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+			for (KeyValue scKey : simContextKeys) {
+				SimContextRep scRep = getSimContextRep(scKey);
+				if (scRep != null){
+					bioModelRep.addSimContextRep(scRep);
+				}
+			}
+			KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+			for (KeyValue simKey : simulationKeys) {
+				SimulationRep simulationRep = getSimulationRep(simKey);
+				if (simulationRep != null){
+					bioModelRep.addSimulationRep(simulationRep);
+				}
+			}
+			
+		}
 	   	return bioModelReps;
+	}
+	
+	public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{
+		SimContextRep simContextRep = scMap.get(key);
+		if (simContextRep!=null){
+			return simContextRep;
+		}else if (key.compareTo(mostRecentSimContextKey)>0){
+			int maxRows = 100000;
+			while (true){
+				SimContextRep[] simContextReps = databaseServerImpl.getSimContextReps(mostRecentSimContextKey, maxRows);
+				for (SimContextRep simContextRep2 : simContextReps) {
+					if (mostRecentSimContextKey==null || mostRecentSimContextKey.compareTo(simContextRep2.getScKey())<0){
+						mostRecentSimContextKey = simContextRep2.getScKey();
+					}
+					scMap.put(simContextRep2.getScKey(), simContextRep2);
+				}
+				if (simContextReps.length<maxRows){
+					break;
+				}
+			}
+			
+			return scMap.get(key);
+		}else{
+			System.out.println("couldn't find application key = " + key + " number of cached applications is " + scMap.size());
+			return null;
+		}
+	}
+	
+	
+	public SimulationRep getSimulationRep(KeyValue key) throws DataAccessException, SQLException{
+		SimulationRep simulationRep = simMap.get(key);
+		if (simulationRep!=null){
+			return simulationRep;
+		}else if (key.compareTo(mostRecentSimulationKey)>0){
+			int maxRows = 100000;
+			while (true){
+				SimulationRep[] simulationReps = databaseServerImpl.getSimulationReps(mostRecentSimulationKey, maxRows);
+				for (SimulationRep simulationRep2 : simulationReps) {
+					if (mostRecentSimulationKey==null || mostRecentSimulationKey.compareTo(simulationRep2.getKey())<0){
+						mostRecentSimulationKey = simulationRep2.getKey();
+					}
+					simMap.put(simulationRep2.getKey(), simulationRep2);
+				}
+				if (simulationReps.length<maxRows){
+					break;
+				}
+			}
+			
+			return simMap.get(key);
+		}else{
+			System.out.println("couldn't find simulation key = " + key + " number of cached simulations is " + simMap.size() + " max simKey is " + mostRecentSimulationKey);
+			return null;
+		}
 	}
 
     public List<SimpleJobStatus> query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	

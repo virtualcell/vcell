@@ -51,8 +51,8 @@
 </tr>
 <#list simTasks as simTask>
 <tr>
-<td><#if simTask.bioModelLink??>"${simTask.bioModelLink.bioModelName!""}" (id=${simTask.bioModelLink.bioModelKey}) (branch=${simTask.bioModelLink.bioModelBranchId})<#else>unknown</#if></td>
-<td><#if simTask.bioModelLink??>"${simTask.bioModelLink.simContextName!""}" (id=${simTask.bioModelLink.simContextKey}) (branch=${simTask.bioModelLink.simContextBranchId})<#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??><a href='./biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??><a href='./application/${simTask.bioModelLink.simContextKey!""}'>${simTask.bioModelLink.simContextName!""}</a><#else>unknown</#if></td>
 <td><#if simTask.mathModelLink??>"${simTask.mathModelLink.mathModelName!""}" (id=${simTask.mathModelLink.mathModelKey}) (branch=${simTask.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
 <td>"${simTask.simName!""}" (id=${simTask.simKey!""})</td>
 <td>${simTask.userName!""}</td>
