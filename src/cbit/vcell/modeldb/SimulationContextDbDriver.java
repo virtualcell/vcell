@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -1122,4 +1123,32 @@ public KeyValue updateVersionable(InsertHashtable hash,Connection con,User user,
     }
     return newVersion.getVersionKey();
 }
+
+
+public SimContextRep[] getSimContextReps(Connection con, KeyValue startingSimContextKey, int numRows)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	String sql = simContextTable.getPreparedStatement_SimContextReps();
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+
+//	System.out.println(sql);
+	simContextTable.setPreparedStatement_SimContextReps(stmt, startingSimContextKey, numRows);
+
+	ArrayList<SimContextRep> simContextReps = new ArrayList<SimContextRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			SimContextRep simContextRep = simContextTable.getSimContextRep(rset);
+			simContextReps.add(simContextRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	return simContextReps.toArray(new SimContextRep[simContextReps.size()]);
+}
+
+
 }

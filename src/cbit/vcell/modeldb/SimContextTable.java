@@ -12,9 +12,12 @@ package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Date;
 
 import org.jdom.Element;
 import org.vcell.util.DataAccessException;
@@ -340,5 +343,61 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 		throw new DataAccessException("Error retrieving bioevents : " + e.getMessage());
 	}
 }
+
+
+public String getPreparedStatement_SimContextReps(){
+
+	SimContextTable scTable = SimContextTable.table;
+	UserTable userTable = UserTable.table;
+	
+	String subquery = 			
+		"select " +
+		    scTable.id.getQualifiedColName()+", "+
+		    scTable.name.getQualifiedColName()+", "+
+		    scTable.versionBranchID.getQualifiedColName()+", "+
+		    scTable.ownerRef.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+", "+
+		    scTable.mathRef.getQualifiedColName()+" "+
+		
+		"from "+scTable.getTableName()+", "+userTable.getTableName()+" "+
+		"where "+scTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
+		"and "+scTable.id.getQualifiedColName() + " > ?";
+
+	String orderByClause = "order by "+scTable.versionDate.getQualifiedColName()+" ASC";
+
+	// query guarantees authorized access to biomodels based on the supplied User authentication.
+	String sql =  
+		"select * from "+
+		"(" + subquery + " " + orderByClause + ") "+
+		"where rownum <= ?";
+	
+	System.out.println(sql);
+	return sql;
+}
+
+
+public void setPreparedStatement_SimContextReps(PreparedStatement stmt, KeyValue minSimContextKeyValue, int numRows) throws SQLException{
+	BigDecimal minSimContextKey = new BigDecimal(0);
+	if (minSimContextKeyValue!=null){
+		minSimContextKey = new BigDecimal(minSimContextKeyValue.toString());
+	}
+	stmt.setBigDecimal(1, minSimContextKey);
+	stmt.setInt(2, numRows);
+}
+
+
+
+public SimContextRep getSimContextRep(ResultSet rset) throws IllegalArgumentException, SQLException {
+	KeyValue scKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
+	String name = rset.getString(table.name.toString());
+	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
+	KeyValue ownerRef = new KeyValue(rset.getBigDecimal(table.ownerRef.toString()));
+	String ownerName = rset.getString(UserTable.table.userid.toString());
+	User owner = new User(ownerName,ownerRef);
+	KeyValue mathKey = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
+	
+	return new SimContextRep(scKey,branchID,name,owner,mathKey);
+}
+
 
 }

@@ -342,6 +342,14 @@ public BioModelRep[] getBioModelReps(User user, String conditions, int numRows) 
 	return dbTop.getBioModelReps(user, conditions, numRows, true);
 }
 
+public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows) throws DataAccessException, SQLException {
+	return dbTop.getSimContextReps(startingSimContextKey, numRows, true);
+}
+
+public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows) throws DataAccessException, SQLException {
+	return dbTop.getSimulationReps(startingSimKey, numRows, true);
+}
+
 
 /**
  * This method was created in VisualAge.

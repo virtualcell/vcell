@@ -1968,4 +1968,57 @@ public BioModelRep[] getBioModelReps(User user, String conditions, int numRows, 
 		conFactory.release(con,lock);
 	}
 }
+
+
+public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimContextRep[] simContextReps = simContextDB.getSimContextReps(con,startingSimContextKey, numRows);
+		return simContextReps;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimContextReps(startingSimContextKey, numRows, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimulationRep[] simulationReps = simulationDB.getSimulationReps(con,startingSimKey, numRows);
+		return simulationReps;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationReps(startingSimKey, numRows, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
 }

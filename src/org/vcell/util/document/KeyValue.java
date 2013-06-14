@@ -85,4 +85,8 @@ public int hashCode() {
 public String toString() {
 	return value.toString();
 }
+
+public int compareTo(KeyValue other) {
+	return value.compareTo(other.value);
+}
 }

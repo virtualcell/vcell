@@ -11,9 +11,11 @@
 package cbit.vcell.modeldb;
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -672,4 +674,33 @@ protected SimulationVersion updateVersionableInit(InsertHashtable hash, Connecti
 								newVersion.getAnnot(),
 								parentSimRef);
 }
+
+
+public SimulationRep[] getSimulationReps(Connection con, KeyValue startingSimKey, int numRows)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	String sql = simTable.getPreparedStatement_SimulationReps();
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+
+//	System.out.println(sql);
+	simTable.setPreparedStatement_SimulationReps(stmt, startingSimKey, numRows);
+
+	ArrayList<SimulationRep> simulationReps = new ArrayList<SimulationRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			SimulationRep simulationRep = simTable.getSimulationRep(rset);
+			simulationReps.add(simulationRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	return simulationReps.toArray(new SimulationRep[simulationReps.size()]);
+}
+
+
+
 }
