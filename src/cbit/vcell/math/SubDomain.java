@@ -496,6 +496,25 @@ public void removeVarIniCondition(String varName)
 
 
 /**
+ * Remove a variable initial condition from list by it's name in the list.
+ * Creation date: (6/27/2006 10:06:44 AM)
+ * @param varName java.lang.String
+ */
+public void removeEquation(Variable var)
+{
+	Equation equationToDelete = null;
+	for (Equation equ : equationList){
+		if(equ.getVariable() == var){
+			equationToDelete = equ;
+		}
+	}
+	if (equationToDelete!=null){
+		equationList.remove(equationToDelete);
+	}
+}
+
+
+/**
  * empty the variable initial condition list
  * Creation date: (11/14/2006 6:40:22 PM)
  */

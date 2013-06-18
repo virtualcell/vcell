@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +20,7 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
+import ucar.units.RationalNumber;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
@@ -28,6 +30,7 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
@@ -75,7 +78,7 @@ import cbit.vcell.util.VCellErrorMessages;
  * to get an updated MathDescription.
  */
 public class ParticleMathMapping extends MathMapping {
-
+	
 /**
  * This method was created in VisualAge.
  * @param model cbit.vcell.model.Model
@@ -549,10 +552,10 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 					Feature outfeature = model.getStructureTopology().getOutsideFeature(m);
 					FeatureMapping insm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(infeature);
 					FeatureMapping outsm = (FeatureMapping)getSimulationContext().getGeometryContext().getStructureMapping(outfeature);
-					if (insm.getGeometryClass() instanceof SubVolume) {
+					if (insm!=null && insm.getGeometryClass() instanceof SubVolume) {
 						innerSubVolume = (SubVolume)insm.getGeometryClass();
 					}
-					if (outsm.getGeometryClass() instanceof SubVolume) {
+					if (outsm!=null && outsm.getGeometryClass() instanceof SubVolume) {
 						outerSubVolume = (SubVolume)outsm.getGeometryClass();
 					}
 				}
@@ -940,7 +943,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 		}
 	}
-
+	
 
 	if (!mathDesc.isValid()){
 		System.out.println(mathDesc.getVCML_database());
@@ -1056,7 +1059,6 @@ protected void refreshVariables() throws MappingException {
 
 }
 
-
 @Override
 protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 	VCellThreadChecker.checkCpuIntensiveInvocation();
@@ -1068,6 +1070,204 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 	refreshVariables();
 	refreshLocalNameCount();
 	refreshMathDescription();
+	combineHybrid();
+}
+
+protected void combineHybrid() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
+	ArrayList<SpeciesContext> continuousSpecies = new ArrayList<SpeciesContext>();
+	ArrayList<ParticleVariable> continuousSpeciesParticleVars = new ArrayList<ParticleVariable>();
+	ArrayList<SpeciesContext> stochSpecies = new ArrayList<SpeciesContext>();
+
+	//
+	// categorize speciesContexts as continuous and stochastic
+	//
+	SpeciesContextSpec[] scsArray = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+	continuousSpecies = new ArrayList<SpeciesContext>();
+	stochSpecies = new ArrayList<SpeciesContext>();
+	for (SpeciesContextSpec speciesContextSpec : scsArray) {
+		if (!getSimulationContext().isStoch() || speciesContextSpec.isForceContinuous()){
+			
+			continuousSpecies.add(speciesContextSpec.getSpeciesContext());
+			
+			Variable variable = getMathSymbolMapping().getVariable(speciesContextSpec.getSpeciesContext());
+			if (variable instanceof ParticleVariable){
+				continuousSpeciesParticleVars.add((ParticleVariable)variable);
+			}
+		}else{
+			stochSpecies.add(speciesContextSpec.getSpeciesContext());
+		}
+	}
+	if (continuousSpecies.isEmpty()){
+		return;
+	}
+		
+	//
+	// create continuous mathDescription ... add stochastic variables and processes to the continuous Math and use this.
+	//
+	MathMapping mathMapping = new MathMapping(getSimulationContext());
+	mathMapping.refresh();
+	MathDescription contMathDesc = mathMapping.getMathDescription();
+	
+	//
+	// get list of all continuous variables
+	//
+	HashMap<String,Variable> allContinuousVars = new HashMap<String,Variable>();
+	Enumeration<Variable> enumVar = contMathDesc.getVariables();
+	while (enumVar.hasMoreElements()){
+		Variable var = enumVar.nextElement();
+		allContinuousVars.put(var.getName(),var);
+	}
+	
+	//
+	// replace those continuous variables and equations for stochastic speciesContexts 
+	// with the particleVariables and particleProperties 
+	// (ParticleJumpProcesses removed later)
+	//
+	ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
+	for (SpeciesContext stochSpeciesContext : stochSpecies){
+		
+		Variable contVar = mathMapping.getMathSymbolMapping().getVariable(stochSpeciesContext);
+		Variable stochVar = getMathSymbolMapping().getVariable(stochSpeciesContext);
+		allContinuousVars.put(stochVar.getName(),stochVar);
+		
+		//
+		// replace continuous "concentration" VolVariable/MemVariable for this particle with a Function for concentration
+		//
+		allContinuousVars.remove(contVar);
+		VCUnitDefinition sizeUnit = unitSystem.getLengthUnit().raiseTo(new RationalNumber(stochSpeciesContext.getStructure().getDimension()));
+		VCUnitDefinition stochasticDensityUnit = unitSystem.getStochasticSubstanceUnit().divideBy(sizeUnit);
+		VCUnitDefinition continuousDensityUnit = unitSystem.getConcentrationUnit(stochSpeciesContext.getStructure());
+		if (stochasticDensityUnit.isEquivalent(continuousDensityUnit)){
+			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),new Expression(stochVar,getNameScope()),contVar.getDomain()));
+		}else{
+			Expression conversionFactorExp = getUnitFactor(continuousDensityUnit.divideBy(stochasticDensityUnit));
+			allContinuousVars.put(contVar.getName(),new Function(contVar.getName(),Expression.mult(new Expression(stochVar,getNameScope()),conversionFactorExp),contVar.getDomain()));
+		}
+		
+		//
+		// remove continuous equation
+		//
+		Enumeration<SubDomain> contSubDomains = contMathDesc.getSubDomains();
+		while (contSubDomains.hasMoreElements()){
+			SubDomain contSubDomain = contSubDomains.nextElement();
+			contSubDomain.removeEquation(contVar);
+			if (contSubDomain instanceof MembraneSubDomain){
+				((MembraneSubDomain)contSubDomain).removeJumpCondition(contVar);
+			}
+		}
+		
+		//
+		// remove all continuous variables for speciesContextSpec parameters (e.g. initial conditions, diffusion rates, boundary conditions, velocities)
+		//
+		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(stochSpeciesContext);
+		Parameter[] scsParameters = scs.getParameters();
+		for (Parameter parameter : scsParameters) {
+			Variable continuousScsParmVariable = mathMapping.getMathSymbolMapping().getVariable(parameter);
+			allContinuousVars.remove(continuousScsParmVariable);
+		}
+		
+		//
+		// copy ParticleJumpProcess and ParticleProperties to the continuous math
+		//
+		SubDomain contSubDomain = contMathDesc.getSubDomain(contVar.getDomain().getName());
+		SubDomain stochSubDomain = mathDesc.getSubDomain(stochVar.getDomain().getName());
+		ParticleProperties particleProperties = stochSubDomain.getParticleProperties(stochVar);
+		contSubDomain.addParticleProperties(particleProperties);
+	}
+		
+
+	//
+	// add all ParticleJumpProcesses to the continuous model
+	//
+	Enumeration<SubDomain> enumStochSubdomains = mathDesc.getSubDomains();
+	while (enumStochSubdomains.hasMoreElements()){
+		SubDomain stochSubdomain = enumStochSubdomains.nextElement();
+		SubDomain contSubdomain = contMathDesc.getSubDomain(stochSubdomain.getName());
+		for (ParticleJumpProcess particleJumpProcess : stochSubdomain.getParticleJumpProcesses()){
+			//
+			// modify "selection list" (particleVariables), probability rate, and actions if referenced particleVariable is to be "forced continuous"
+			//
+			ParticleVariable[] selectedParticles = particleJumpProcess.getParticleVariables();
+			for (ParticleVariable particleVariable : selectedParticles) {
+				if (continuousSpeciesParticleVars.contains(particleVariable)){
+					particleJumpProcess.remove(particleVariable);
+
+					JumpProcessRateDefinition jumpProcessRateDefinition = particleJumpProcess.getParticleRateDefinition();
+					if (jumpProcessRateDefinition instanceof MacroscopicRateConstant){
+						MacroscopicRateConstant macroscopicRateConstant = (MacroscopicRateConstant)jumpProcessRateDefinition;
+						macroscopicRateConstant.setExpression(Expression.mult(macroscopicRateConstant.getExpression(),new Expression(particleVariable,null)));
+					}else if (jumpProcessRateDefinition instanceof InteractionRadius){
+						throw new MappingException("cannot adjust interaction radius for reaction process "+particleJumpProcess.getName()+", particle "+particleVariable.getName()+" is continuous");
+					}else{
+						throw new MappingException("rate definition type "+jumpProcessRateDefinition.getClass().getSimpleName()+" not yet implemented for hybrid PDE/Particle math generation");
+					}
+				}
+				Iterator<Action> iterAction = particleJumpProcess.getActions().iterator();
+				while (iterAction.hasNext()){
+					Action action = iterAction.next();
+					if (continuousSpeciesParticleVars.contains(action.getVar())){
+						iterAction.remove();
+					}
+				}
+			}
+			if (!particleJumpProcess.getActions().isEmpty()){
+				contSubdomain.addParticleJumpProcess(particleJumpProcess);
+			}
+		}
+	}
+	
+	//
+	// add unit conversion factors from the particle math mapping that aren't already present in the continuous math
+	//
+	for (MathMappingParameter mathMappingParameter : fieldMathMappingParameters) {
+		if (mathMappingParameter instanceof UnitFactorParameter){
+			String name = mathMappingParameter.getName();
+			if (!allContinuousVars.containsKey(name)){
+				allContinuousVars.put(name,newFunctionOrConstant(name, mathMappingParameter.getExpression(),null));
+			}
+		}
+	}
+	
+	//
+	// add constants and functions from the particle math that aren't already defined in the continuous math
+	//
+	Enumeration<Variable> enumVars = mathDesc.getVariables();
+	while (enumVars.hasMoreElements()){
+		Variable var = enumVars.nextElement();
+		if (var instanceof Constant || var instanceof Function){
+			String name = var.getName();
+			if (!allContinuousVars.containsKey(name)){
+				allContinuousVars.put(name,var);
+			}
+		}
+	}
+	
+	contMathDesc.setAllVariables(allContinuousVars.values().toArray(new Variable[0]));
+	
+	mathDesc = contMathDesc;	
+	
+	//
+	// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
+	//
+	for (int i = 0; i < fieldMathMappingParameters.length; i++){
+		if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+			GeometryClass geometryClass = fieldMathMappingParameters[i].getGeometryClass();
+			Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+			if (mathDesc.getVariable(variable.getName())==null){
+				mathDesc.addVariable(variable);
+			}
+		}
+	}
+
+	if (!mathDesc.isValid()){
+		System.out.println(mathDesc.getVCML_database());
+		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
+	}
+
+	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+	System.out.println(mathDesc.getVCML());
+	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+
 }
 
 }

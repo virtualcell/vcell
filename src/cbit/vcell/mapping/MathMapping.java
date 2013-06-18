@@ -159,6 +159,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
 
+	
 	protected MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -1054,41 +1055,49 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 	}
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
+		SpeciesContext speciesContext = ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext();
+		SpeciesContextMapping scm = getSpeciesContextMapping(speciesContext);
+		String speciesContextVarName = null;
+		if (scm.getVariable()!=null){
+			speciesContextVarName = scm.getVariable().getName();
+		}else{
+			speciesContextVarName = speciesContext.getName();
+		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scsParm.getUnitDefinition().getSymbol());
+			return speciesContextVarName+ MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scsParm.getUnitDefinition().getSymbol());
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialCount){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
+			return speciesContextVarName+ MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_DIFFUSION_RATE_SUFFIX;
+			return speciesContextVarName+PARAMETER_DIFFUSION_RATE_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_XM_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_XM_SUFFIX;
 	}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueXp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_XP_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_XP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_YM_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_YM_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueYp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_YP_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_YP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZm){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_ZM_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_ZM_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_BoundaryValueZp){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_BOUNDARY_ZP_SUFFIX;
+			return speciesContextVarName+PARAMETER_BOUNDARY_ZP_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityX){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_X_SUFFIX;
+			return speciesContextVarName+PARAMETER_VELOCITY_X_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityY){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_Y_SUFFIX;
+			return speciesContextVarName+PARAMETER_VELOCITY_Y_SUFFIX;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_VelocityZ){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+PARAMETER_VELOCITY_Z_SUFFIX;
+			return speciesContextVarName+PARAMETER_VELOCITY_Z_SUFFIX;
 		}
 	}
 	if (ste instanceof ElectricalDevice.ElectricalDeviceParameter){
@@ -1200,8 +1209,9 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 								+ "To save or run simulations, set the diffusion rate to a non-zero " +
 										"value in Initial Conditions or disable those reactions in Specifications->Reactions.");
 					}
-				}else{
-					return scm.getSpeciesContext().getName();
+				}
+				if (scm.getVariable()!=null){
+					return scm.getVariable().getName();
 				}
 			} else {
 				throw new MappingException("species '"+sc.getName()+"' interacts with surface '"+geometryClass.getName()+"', but is not mapped spatially adjacent");
@@ -1887,16 +1897,54 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-		if (initParm!=null){
-			Expression initExpr = new Expression(initParm.getExpression());
-			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
-			String[] symbols = initExpr.getSymbols();
+		// add initial count if present (!= null)
+		SpeciesContextSpecParameter initCountParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+		SpeciesContext speciesContext = speciesContextSpecs[i].getSpeciesContext();
+		if (initCountParm!=null && initCountParm.getExpression()!=null){
+			Expression initCountExpr = new Expression(initCountParm.getExpression());
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+			String[] symbols = initCountExpr.getSymbols();
 			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
 			for (int j = 0; symbols != null && j < symbols.length; j++) {
 				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
 				SpeciesContext spC = null;
-				SymbolTableEntry ste = initExpr.getSymbolBinding(symbols[j]);
+				SymbolTableEntry ste = initCountExpr.getSymbolBinding(symbols[j]);
+				if (ste instanceof SpeciesContextSpecProxyParameter) {
+					SpeciesContextSpecProxyParameter spspp = (SpeciesContextSpecProxyParameter)ste;
+					if (spspp.getTarget() instanceof SpeciesContext) {
+						spC = (SpeciesContext)spspp.getTarget();
+						SpeciesContextSpec spcspec = simContext.getReactionContext().getSpeciesContextSpec(spC);
+						SpeciesContextSpecParameter spCInitParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
+						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
+						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
+//						scsInitExpr.bindExpression(this);
+						initCountExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+					}
+				}
+			}
+			// now create the appropriate function for the current speciesContextSpec.
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initCountParm,sm.getGeometryClass()),getIdentifierSubstitutions(initCountExpr,initCountParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		}
+		// add initial concentration (may be derived from initial count if necessary)
+		SpeciesContextSpecParameter initConcParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+		if (initConcParm!=null){
+			Expression initConcExpr = null;
+			if (initConcParm.getExpression()!=null){
+				initConcExpr = new Expression(initConcParm.getExpression());
+			}else if (initCountParm!=null && initCountParm.getExpression()!=null){
+				Expression structureSizeExpr = new Expression(speciesContext.getStructure().getStructureSize(),getNameScope());
+				VCUnitDefinition concUnit = initConcParm.getUnitDefinition();
+				VCUnitDefinition countDensityUnit = initCountParm.getUnitDefinition().divideBy(speciesContext.getStructure().getStructureSize().getUnitDefinition());
+				Expression unitFactor = getUnitFactor(concUnit.divideBy(countDensityUnit));
+				initConcExpr = Expression.mult(Expression.div(new Expression(initCountParm,getNameScope()),structureSizeExpr),unitFactor);
+			}
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContext.getStructure());
+			String[] symbols = initConcExpr.getSymbols();
+			// Check if 'initExpr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
+			for (int j = 0; symbols != null && j < symbols.length; j++) {
+				// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
+				SpeciesContext spC = null;
+				SymbolTableEntry ste = initConcExpr.getSymbolBinding(symbols[j]);
 				if (ste instanceof SpeciesContextSpecProxyParameter) {
 					SpeciesContextSpecProxyParameter spspp = (SpeciesContextSpecProxyParameter)ste;
 					if (spspp.getTarget() instanceof SpeciesContext) {
@@ -1910,12 +1958,12 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 						// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
 						Expression scsInitExpr = new Expression(spCInitParm, getNameScope());
 //						scsInitExpr.bindExpression(this);
-						initExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
+						initConcExpr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
 					}
 				}
 			}
 			// now create the appropriate function for the current speciesContextSpec.
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParm,sm.getGeometryClass()),getIdentifierSubstitutions(initExpr,initParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(initConcParm,sm.getGeometryClass()),getIdentifierSubstitutions(initConcExpr,initConcParm.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
 		}
 	}
 	
@@ -2952,12 +3000,16 @@ protected void refreshVariables() throws MappingException {
 				if (sm.getGeometryClass() instanceof SurfaceClass){
 					if (scs.isWellMixed()){
 						scm.setVariable(new MembraneRegionVariable(scm.getSpeciesContext().getName(),domain));
+					}else if (getSimulationContext().isStoch() && getSimulationContext().getGeometry().getDimension()>0 && !scs.isForceContinuous()){
+						scm.setVariable(new MemVariable(scm.getSpeciesContext().getName()+"_conc",domain));
 					}else{
 						scm.setVariable(new MemVariable(scm.getSpeciesContext().getName(),domain));
 					}
 				}else{
 					if (scs.isWellMixed()){
 						scm.setVariable(new VolumeRegionVariable(scm.getSpeciesContext().getName(),domain));
+					}else if (getSimulationContext().isStoch() && getSimulationContext().getGeometry().getDimension()>0 && !scs.isForceContinuous()){
+						scm.setVariable(new VolVariable(scm.getSpeciesContext().getName()+"_conc",domain));
 					}else{
 						scm.setVariable(new VolVariable(scm.getSpeciesContext().getName(),domain));
 					}
@@ -2970,6 +3022,7 @@ protected void refreshVariables() throws MappingException {
 	}
 
 }
+
 
 
 /**
