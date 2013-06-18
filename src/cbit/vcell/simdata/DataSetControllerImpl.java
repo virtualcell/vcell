@@ -71,6 +71,7 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.GradientFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -81,8 +82,10 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -831,7 +834,8 @@ private SimDataBlock evaluateFunction(
 	//
 	//Gradient Info for special processing
 	//
-	boolean isGrad = exp.hasGradient();
+	boolean isGrad = hasGradient(exp);
+	
 	if(isGrad && !variableType.equals(VariableType.VOLUME)){
 		throw new DataAccessException("Gradient function is not implemented for datatype "+variableType.getTypeName());
 	}
@@ -953,6 +957,22 @@ private SimDataBlock evaluateFunction(
 
 	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(), vcdID.getID(), function.getName(), time, lastModified);
 	return new SimDataBlock(pdeDataInfo, data, variableType);
+}
+
+
+private boolean hasGradient(Expression exp) {
+	FunctionFilter filter = new FunctionFilter() {
+		@Override
+		public boolean accept(String functionName) {
+			if (functionName.equals(GradientFunctionDefinition.FUNCTION_name)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+	};
+	FunctionInvocation[] gradFunctionDefinitions = exp.getFunctionInvocations(filter);
+	return gradFunctionDefinitions.length > 0;
 }
 
 
@@ -2494,7 +2514,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 			AnnotatedFunction functionFromVarName = getFunction(outputContext,vcdID,variableNames[i]);
 			if(functionFromVarName != null){
 				FieldFunctionArguments[] fieldFunctionArgumentsArr = FieldUtilities.getFieldFunctionArguments(functionFromVarName.getExpression());
-				if(functionFromVarName.getExpression().hasGradient() ||
+				if(hasGradient(functionFromVarName.getExpression()) ||
 					(fieldFunctionArgumentsArr != null && fieldFunctionArgumentsArr.length > 0)){
 					bIsSpecial = true;
 					break;
@@ -3079,7 +3099,7 @@ private void adjustMembraneAdjacentVolumeValues(
 				FieldFunctionArguments[] outsideExpFieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(outsideExp);
 				bIsSpecial =
 					!isAllowOptimizedTimeDataRetrieval() || 
-					insideExp.hasGradient() || outsideExp.hasGradient() ||
+					hasGradient(insideExp) || hasGradient(outsideExp) ||
 					(insideExpFieldFunctionArgs != null && insideExpFieldFunctionArgs.length > 0) ||
 					(outsideExpFieldFunctionArgs != null && outsideExpFieldFunctionArgs.length > 0);
 				if(bIsSpecial && fullDataValueSource == null){
