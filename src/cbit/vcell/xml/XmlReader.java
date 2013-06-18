@@ -2172,7 +2172,7 @@ private ParticleProperties getParticleProperties(Element param, MathDescription 
 		}	
 		initialConditions.add(new ParticleInitialConditionConcentration(distExp));
 	}
-	
+
 	String temp = param.getChildText(XMLTags.ParticleDiffusionTag, vcNamespace);
     Expression diffExp = null;
     if (temp!=null && temp.length()>0) {
@@ -5100,6 +5100,12 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 			bWellMixed = Boolean.valueOf(bWellMixedStr);
 		}
 		
+		String bForceContinuousStr = scsElement.getAttributeValue(XMLTags.ForceContinuousAttrTag);
+		Boolean bForceContinuous = null;
+		if (bForceContinuousStr!=null){
+			bForceContinuous = Boolean.valueOf(bForceContinuousStr);
+		}
+		
 		//Retrieve reference
 		SpeciesContext specref = model.getSpeciesContext(speccontname);
 		if (specref == null) {
@@ -5121,6 +5127,9 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 		}
 		if (bWellMixed!=null){
 			specspec.setWellMixed(bWellMixed);
+		}
+		if (bForceContinuous!=null){
+			specspec.setForceContinuous(bForceContinuous);
 		}
 		//set expressions
 		//Initial
