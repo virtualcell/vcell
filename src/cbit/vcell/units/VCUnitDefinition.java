@@ -140,4 +140,50 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	public boolean isEquivalent(VCUnitDefinition otherUnit) {
 		return this.fieldUnitDefinition.compareEqual(otherUnit.fieldUnitDefinition);
 	}
+	
+	public RationalNumber getDimensionlessScale() {
+		// System.err.println("VCUnitDefinition.getDimensionlessScale(): this unit = "+getSymbol());
+				VCUnitDefinition dimensionless = fieldVCUnitSystem.getInstance_DIMENSIONLESS();
+				if (isEquivalent(dimensionless)){
+					RationalNumber rationalConversionScale = new RationalNumber(1);
+		// System.err.println("VCUnitDefinition.getDimensionlessScale(): conversion scale = "+rationalConversionScale.toString());
+					return rationalConversionScale;
+				}
+				if (isCompatible(dimensionless)){
+					double conversionScale = dimensionless.convertTo(1.0, this);
+					RationalNumber rationalConversionScale =  RationalNumber.getApproximateFraction(conversionScale);
+		// System.err.println("VCUnitDefinition.getDimensionlessScale(): conversion scale = "+rationalConversionScale.toString());
+					return rationalConversionScale;
+				}
+		// System.err.println("VCUnitDefinition.getDimensionlessScale(): not compatable with dimensionless");
+				//
+				// this is not strictly a dimensionless since we do not automatically convert between molecules and moles)
+				// so have to explicitly look for such cases.
+				//
+				final VCUnitDefinition molecules_per_uM_um3 = fieldVCUnitSystem.getInstance("molecules.uM-1.um-3");
+				final RationalNumber value_molecules_per_uM_um3 = new RationalNumber(602);
+				
+				RationalNumber tempValue = value_molecules_per_uM_um3;
+				VCUnitDefinition tempUnit = molecules_per_uM_um3;
+				for (int i=0;i<10;i++){
+//					System.err.println("VCUnitDefinition.getDimensionlessScale(): mult unit = "+this.multiplyBy(tempUnit).getSymbol());
+					if (this.multiplyBy(tempUnit).isCompatible(dimensionless)){
+						double conversionScale = dimensionless.convertTo(1.0, this.multiplyBy(tempUnit));
+						RationalNumber rationalConversionScale = RationalNumber.getApproximateFraction(conversionScale).div(tempValue);
+//						System.err.println("VCUnitDefinition.getDimensionlessScale(): mult unit = "+this.multiplyBy(tempUnit).getSymbol()+" worked, conversion scale = "+rationalConversionScale.toString());
+						return rationalConversionScale;
+					}
+//					System.err.println("VCUnitDefinition.getDimensionlessScale(): div unit = "+this.divideBy(tempUnit).getSymbol());
+					if (this.divideBy(tempUnit).isCompatible(dimensionless)){
+						double conversionScale = dimensionless.convertTo(1.0, this.divideBy(tempUnit));
+						RationalNumber rationalConversionScale = RationalNumber.getApproximateFraction(conversionScale).mult(tempValue);
+//						System.err.println("VCUnitDefinition.getDimensionlessScale(): div unit = "+this.divideBy(tempUnit).getSymbol()+" worked, conversion scale = "+rationalConversionScale.toString());
+						return rationalConversionScale;
+					}
+					tempValue = tempValue.mult(value_molecules_per_uM_um3);
+					tempUnit = tempUnit.multiplyBy(molecules_per_uM_um3);
+				}
+				throw new RuntimeException("unit "+getSymbol()+" is not dimensionless, cannot be a unit conversion factor");
+			}
+
 }

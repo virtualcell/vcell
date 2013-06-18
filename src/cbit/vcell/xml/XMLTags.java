@@ -426,6 +426,7 @@ public class XMLTags {
     // public final static String EnableDiffusionAttrTag = "EnableDiffusion";
     public final static String SpatialAttrTag = "Spatial";
     public final static String WellMixedAttrTag = "WellMixed";
+    public final static String ForceContinuousAttrTag = "ForceContinuous";
     public final static String ForceIndependentAttrTag = "ForceIndependent";
     public final static String ReactionSpecTag = "ReactionSpec";
     public final static String ReactionStepRefAttrTag = "ReactionStepRef";

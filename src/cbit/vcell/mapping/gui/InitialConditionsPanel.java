@@ -437,10 +437,10 @@ private void initialize() {
 				} else if (value instanceof ScopedExpression) {
 					SpeciesContextSpec scSpec = tableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
-					if (column == SpeciesContextSpecsTableModel.COLUMN_INITIAL) {
+					if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_INITIAL.label)) {
 						SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 						unit = initialConditionParameter.getUnitDefinition();
-					} else if (column == SpeciesContextSpecsTableModel.COLUMN_DIFFUSION) {
+					} else if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_DIFFUSION.label)) {
 						SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 						unit = diffusionParameter.getUnitDefinition();
 					}

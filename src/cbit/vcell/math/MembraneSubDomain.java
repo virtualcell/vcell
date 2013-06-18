@@ -69,6 +69,12 @@ public void addJumpCondition(JumpCondition jumpCondition) throws MathException {
 	jumpConditionList.addElement(jumpCondition);	
 }
 
+public void removeJumpCondition(Variable variable){
+	JumpCondition jumpCondition = getJumpCondition(variable);
+	if (jumpCondition!=null){
+		jumpConditionList.removeElement(jumpCondition);
+	}
+}
 
 /**
  * This method was created in VisualAge.

@@ -2759,7 +2759,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			//we want to check when there is stochastic application if the rate laws set in model can be automatically transformed.
 			for(int i=0; i<simulations.length; i++)
 			{
-				if(simulations[i].getMathDescription().isNonSpatialStoch() || simulations[i].getMathDescription().isSpatialStoch())
+				if(simulations[i].getMathDescription().isNonSpatialStoch() || simulations[i].getMathDescription().isSpatialStoch() || simulations[i].getMathDescription().isSpatialHybrid())
 				{
 					if (stochChkMsg == null) {
 						stochChkMsg = ((BioModel)vcd).getModel().isValidForStochApp();
