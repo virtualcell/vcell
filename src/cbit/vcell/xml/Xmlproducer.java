@@ -1679,6 +1679,9 @@ private Element getXML(SpeciesContextSpec param) {
 	if (param.isWellMixed()!=null){
 		speciesContextSpecElement.setAttribute(XMLTags.WellMixedAttrTag, String.valueOf(param.isWellMixed()));
 	}
+	if (param.isForceContinuous()!=null){
+		speciesContextSpecElement.setAttribute(XMLTags.ForceContinuousAttrTag, String.valueOf(param.isForceContinuous()));
+	}
 
 	//Add initial
 	Expression initCon = param.getInitialConcentrationParameter().getExpression();
