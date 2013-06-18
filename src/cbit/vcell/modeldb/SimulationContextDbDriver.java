@@ -259,6 +259,11 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 				wellMixedString = null;
 			}
 
+			String forceContinuousString = rset.getString(speciesContextSpecTable.bForceContinuous.toString());
+			if (rset.wasNull()){
+				forceContinuousString = null;
+			}
+
 			//
 			SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 			for (int i=0;i<speciesContextSpecs.length;i++){
@@ -327,6 +332,14 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 							}
 							boolean bWellMixed = (value==1)?true:false;
 							scs.setWellMixed(bWellMixed);
+						}
+						if (forceContinuousString!=null){
+							int value = Integer.parseInt(forceContinuousString);
+							if (value!=0 && value!=1){
+								throw new DataAccessException("unexpected value for bForceContinuous column in SimulationCOntextDbDriver: \""+forceContinuousString+"\", expecting 0 or 1");
+							}
+							boolean bForceContinuous = (value==1)?true:false;
+							scs.setForceContinuous(bForceContinuous);
 						}
 					} catch (Exception e) {
 						throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:"+simContext.getVersion().getName()+" id="+simContextKey);

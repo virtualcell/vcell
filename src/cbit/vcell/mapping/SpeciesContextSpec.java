@@ -53,6 +53,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
+	private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
 
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
@@ -329,9 +330,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private static final boolean DEFAULT_CONSTANT = false;
 //	private static final boolean DEFAULT_ENABLE_DIFFUSING = true;
 	private static final Boolean DEFAULT_WELL_MIXED = false;
+	private static final Boolean DEFAULT_FORCECONTINUOUS = false;
 	private boolean        bConstant = DEFAULT_CONSTANT;
 //	private boolean        bEnableDiffusing = DEFAULT_ENABLE_DIFFUSING;
 	private Boolean        bWellMixed = DEFAULT_WELL_MIXED;
+	private Boolean        bForceContinuous = DEFAULT_FORCECONTINUOUS;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -414,6 +417,7 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 	this.bConstant = speciesContextSpec.bConstant;
 //	this.bEnableDiffusing = speciesContextSpec.bEnableDiffusing;
 	this.bWellMixed = speciesContextSpec.bWellMixed;
+	this.bForceContinuous = speciesContextSpec.bForceContinuous;
 	this.simulationContext = argSimulationContext;
 	fieldParameters = new SpeciesContextSpecParameter[speciesContextSpec.fieldParameters.length];
 	for (int i = 0; i < speciesContextSpec.fieldParameters.length; i++){
@@ -601,6 +605,14 @@ public boolean compareEqual(Matchable object) {
 			return false;
 		}
 	}else if (bWellMixed!=null || scs.bWellMixed!=null){
+		return false; // one is specified and one isn't ... 
+	}
+	
+	if (bForceContinuous!=null && scs.bForceContinuous!=null){
+		if (!bForceContinuous.equals(scs.bForceContinuous)){
+			return false;
+		}
+	}else if (bForceContinuous!=null || scs.bForceContinuous!=null){
 		return false; // one is specified and one isn't ... 
 	}
 
@@ -1087,6 +1099,10 @@ public final Boolean isWellMixed(){
 	return bWellMixed;
 }
 
+public final Boolean isForceContinuous(){
+	return bForceContinuous;
+}
+
 /**
  * This method was created in VisualAge.
  * @return boolean
@@ -1209,6 +1225,7 @@ private void resetDefaults() {
 //		bEnableDiffusing = false;
 //	}
 	bWellMixed = DEFAULT_WELL_MIXED;
+	bForceContinuous = DEFAULT_FORCECONTINUOUS;
 }
 
 
@@ -1240,6 +1257,12 @@ public void setWellMixed(boolean bWellMixed) {
 	Boolean oldValue = this.bWellMixed;
 	this.bWellMixed = bWellMixed;
 	firePropertyChange(PROPERTY_NAME_WELL_MIXED,oldValue, bWellMixed);
+}
+
+public void setForceContinuous(boolean bForceContinuous) {
+	Boolean oldValue = this.bForceContinuous;
+	this.bForceContinuous = bForceContinuous;
+	firePropertyChange(PROPERTY_NAME_FORCECONTINUOUS,oldValue, bForceContinuous);
 }
 
 

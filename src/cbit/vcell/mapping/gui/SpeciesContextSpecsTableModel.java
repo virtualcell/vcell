@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -38,13 +39,22 @@ import cbit.vcell.parser.ExpressionException;
  */
 @SuppressWarnings("serial")
 public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesContextSpec> implements java.beans.PropertyChangeListener {
-	public static final int COLUMN_SPECIESCONTEXT = 0;
-	public static final int COLUMN_STRUCTURE = 1;
-	public static final int COLUMN_CLAMPED = 2;
-	public static final int COLUMN_INITIAL = 3;
-	public static final int COLUMN_WELLMIXED = 4;
-	public static final int COLUMN_DIFFUSION = 5;
-	private static String columnNames[] = { "Species", "Structure", "Clamped", "Initial Condition", "Well Mixed", "Diffusion Constant"};
+	public enum ColumnType {
+		COLUMN_SPECIESCONTEXT("Species"),
+		COLUMN_STRUCTURE("Structure"),
+		COLUMN_CLAMPED("Clamped"),
+		COLUMN_INITIAL("Initial Condition"),
+		COLUMN_WELLMIXED("Well Mixed"),
+		COLUMN_DIFFUSION("Diffusion Constant"),
+		COLUMN_FORCECONTINUOUS("Force Continuous");
+		
+		public final String label;
+		private ColumnType(String label){
+			this.label = label;
+		}
+	}
+	
+	ArrayList<ColumnType> columns = new ArrayList<ColumnType>();
 	
 	private SimulationContext fieldSimulationContext = null;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
@@ -53,7 +63,8 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
  * ReactionSpecsTableModel constructor comment.
  */
 public SpeciesContextSpecsTableModel(ScrollTable table) {
-	super(table, columnNames);
+	super(table);
+	refreshColumns();
 }
 
 /**
@@ -63,7 +74,8 @@ public SpeciesContextSpecsTableModel(ScrollTable table) {
  * @param column int
  */
 public Class<?> getColumnClass(int column) {
-	switch (column){
+	ColumnType columnType = columns.get(column);
+	switch (columnType){
 		case COLUMN_SPECIESCONTEXT:{
 			return SpeciesContext.class;
 		}
@@ -71,7 +83,8 @@ public Class<?> getColumnClass(int column) {
 			return Structure.class;
 		}
 		case COLUMN_CLAMPED:
-		case COLUMN_WELLMIXED:{
+		case COLUMN_WELLMIXED:
+		case COLUMN_FORCECONTINUOUS:{
 			return Boolean.class;
 		}
 		case COLUMN_INITIAL:
@@ -84,17 +97,28 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
+@Override
+public String getColumnName(int columnIndex){
+	return columns.get(columnIndex).label;
+}
 
+private void refreshColumns(){
+	columns.clear();
+	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
+	if (getSimulationContext() == null || !getSimulationContext().isStoch()){
+		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
+	}
+	if (getSimulationContext() == null || getSimulationContext().getGeometry().getDimension() == 0){
+		columns.remove(ColumnType.COLUMN_WELLMIXED);
+		columns.remove(ColumnType.COLUMN_DIFFUSION);
+	}
+}
 /**
  * getColumnCount method comment.
  */
 @Override
 public int getColumnCount() {
-	if (getSimulationContext() != null && getSimulationContext().getGeometry().getDimension() > 0) {
-		return super.getColumnCount();
-	} else {
-		return super.getColumnCount() - 2;
-	}
+	return columns.size();
 }
 
 /**
@@ -122,7 +146,8 @@ private void refreshData() {
 public Object getValueAt(int row, int col) {
 	try {	
 		SpeciesContextSpec scSpec = getValueAt(row);
-		switch (col){
+		ColumnType columnType = columns.get(col);
+		switch (columnType){
 			case COLUMN_SPECIESCONTEXT:{
 				return scSpec.getSpeciesContext();
 			}
@@ -152,6 +177,9 @@ public Object getValueAt(int row, int col) {
 					return null;
 				}
 			}
+			case COLUMN_FORCECONTINUOUS:{
+				return new Boolean(scSpec.isForceContinuous());
+			}
 			default:{
 				return null;
 			}
@@ -171,7 +199,8 @@ public Object getValueAt(int row, int col) {
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
 	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
-	switch (columnIndex){
+	ColumnType columnType = columns.get(columnIndex);
+	switch (columnType){
 		case COLUMN_SPECIESCONTEXT:{
 			return false;
 		}
@@ -183,6 +212,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		}
 		case COLUMN_WELLMIXED:{
 			return !speciesContextSpec.isConstant() && !getSimulationContext().isStoch();
+		}
+		case COLUMN_FORCECONTINUOUS:{
+			return !speciesContextSpec.isConstant() && getSimulationContext().isStoch();
 		}
 		case COLUMN_INITIAL:{
 			return true;
@@ -221,6 +253,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 	if (evt.getSource() instanceof GeometryContext) {
+		refreshColumns();
 		fireTableStructureChanged();
 	}
 }
@@ -239,6 +272,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		updateListenersReactionContext(oldValue.getReactionContext(),true);
 	}
 	fieldSimulationContext = simulationContext;
+	refreshColumns();
 	int newColumnCount = getColumnCount();
 	if (oldColumnCount != newColumnCount) {
 		fireTableStructureChanged();
@@ -256,7 +290,8 @@ public void setSimulationContext(SimulationContext simulationContext) {
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	SpeciesContextSpec scSpec = getValueAt(rowIndex);
-	switch (columnIndex){
+	ColumnType columnType = columns.get(columnIndex);
+	switch (columnType){
 		case COLUMN_CLAMPED:{
 			boolean bFixed = ((Boolean)aValue).booleanValue();
 			if (bFixed){
@@ -270,6 +305,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		case COLUMN_WELLMIXED:{
 			boolean bWellMixed = ((Boolean)aValue).booleanValue();
 			scSpec.setWellMixed(bWellMixed);
+			fireTableRowsUpdated(rowIndex,rowIndex);
+			break;
+		}
+		case COLUMN_FORCECONTINUOUS:{
+			boolean bForceContinuous = ((Boolean)aValue).booleanValue();
+			scSpec.setForceContinuous(bForceContinuous);
 			fireTableRowsUpdated(rowIndex,rowIndex);
 			break;
 		}
@@ -374,7 +415,8 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 			
 			SpeciesContext speciesContext1 = speciesContextSpec1.getSpeciesContext();
 			SpeciesContext speciesContext2 = speciesContextSpec2.getSpeciesContext();			
-			switch (col){
+			ColumnType columnType = columns.get(col);
+			switch (columnType){
 				case COLUMN_SPECIESCONTEXT:{
 					String name1 = speciesContext1.getName();
 					String name2 = speciesContext2.getName();
@@ -400,6 +442,15 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 						return bClamped1.compareTo(bClamped2);
 					}else{
 						return bClamped2.compareTo(bClamped1);
+					}
+				}
+				case COLUMN_FORCECONTINUOUS : {
+					Boolean bForceContinuous1 = new Boolean(speciesContextSpec1.isForceContinuous());
+					Boolean bForceContinuous2 = new Boolean(speciesContextSpec2.isForceContinuous());
+					if (ascending){
+						return bForceContinuous1.compareTo(bForceContinuous2);
+					}else{
+						return bForceContinuous2.compareTo(bForceContinuous1);
 					}
 				}
 				case COLUMN_WELLMIXED : {

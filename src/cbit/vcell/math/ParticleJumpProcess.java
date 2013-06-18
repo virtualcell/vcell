@@ -48,6 +48,15 @@ public ParticleVariable [] getParticleVariables() {
 	return this.particles.toArray(new ParticleVariable [this.particles.size()]);
 }
 
+
+
+public void remove(ParticleVariable particleVariable) {
+	if (particles.contains(particleVariable)){
+		particles.remove(particleVariable);
+	}
+	
+}
+
 /**
  * Compare two Jump processes.
  * @return boolean
@@ -114,7 +123,7 @@ public Action getAction(String varName) //again the problem here, do we allow sa
  * @return java.util.Vector
  */
 public List<Action> getActions() {
-	return Collections.unmodifiableList(actions);
+	return actions;
 }
 
 
@@ -262,4 +271,5 @@ public void bind(MathDescription mathDescription) throws ExpressionBindingExcept
 		exp.bindExpression(mathDescription);
 	}
 }
+
 }

@@ -158,7 +158,7 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User u
 		mathDesc  = (MathDescription)mathDB.getVersionable(dbc, con,user, VersionableType.MathDescription,mathKey);
 	}
 	
-	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, mathDesc.isNonSpatialStoch() || mathDesc.isSpatialStoch());
+	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, mathDesc.isNonSpatialStoch() || mathDesc.isSpatialStoch() || mathDesc.isSpatialHybrid());
 	if (characteristicSize!=null){
 		simContext.setCharacteristicSize(characteristicSize);
 	}

@@ -46,5 +46,9 @@ public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 		}
 		return false;
 	}
+
+	public void setExpression(Expression expression) {
+		this.expression = expression;
+	}
 	
 }
