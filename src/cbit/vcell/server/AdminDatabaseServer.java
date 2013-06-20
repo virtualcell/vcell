@@ -42,7 +42,7 @@ SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex)
 SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException;
 
 
-java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int maxNumRows) throws DataAccessException;
+java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int startRow, int maxNumRows) throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:33:54 PM)

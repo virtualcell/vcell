@@ -2315,7 +2315,7 @@ private void query() {
 	}
 	
 	try {
-		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), -1, true);
+		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), 1, -1, true);
 		getNumResultsLabel().setText("" + resultList.size());
 		getNumSelectedLabel().setText("0");
 		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);

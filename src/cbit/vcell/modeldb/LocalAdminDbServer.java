@@ -89,9 +89,9 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
 /**
  * getSimulationJobStatus method comment.
  */
-public List<SimpleJobStatus> getSimulationJobStatus(java.lang.String conditions, int maxNumRows) throws DataAccessException {
+public List<SimpleJobStatus> getSimulationJobStatus(java.lang.String conditions, int startRow, int maxNumRows) throws DataAccessException {
 	try {
-		return adminDbTop.getSimulationJobStatus(conditions, maxNumRows, true);
+		return adminDbTop.getSimulationJobStatus(conditions, startRow, maxNumRows, true);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure getting SimulationJobStatus");
