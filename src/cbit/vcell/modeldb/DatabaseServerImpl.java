@@ -338,8 +338,8 @@ public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAcces
 }
 
 
-public BioModelRep[] getBioModelReps(User user, String conditions, int numRows) throws DataAccessException, SQLException {
-	return dbTop.getBioModelReps(user, conditions, numRows, true);
+public BioModelRep[] getBioModelReps(User user, String conditions, int startRow, int numRows) throws DataAccessException, SQLException {
+	return dbTop.getBioModelReps(user, conditions, startRow, numRows, true);
 }
 
 public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows) throws DataAccessException, SQLException {
