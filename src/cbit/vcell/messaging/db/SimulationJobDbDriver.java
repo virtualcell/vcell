@@ -384,7 +384,7 @@ simid		bmlink																																								mmlink
 
 
  */
-public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int maxNumRows) throws java.sql.SQLException {	
+public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException {	
 	
 	BioModelSimulationLinkTable bioSimLinkTable = BioModelSimulationLinkTable.table;
 	MathModelSimulationLinkTable mathSimLinkTable = MathModelSimulationLinkTable.table;
@@ -392,8 +392,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 	final String BMLINK = "bmlink";
 	final String MMLINK = "mmlink";
 
-	StringBuffer sql = new StringBuffer();
-	sql.append("SELECT " +
+	String subquery = "SELECT " +
 		"sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME
 		+ "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
 		+ "," + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName()
@@ -434,24 +433,36 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 		+ " WHERE " + "vc_sim_1." + simTable.id.getUnqualifiedColName() + "=" + jobTable.simRef.getQualifiedColName()
 		+ " AND " + "vc_sim_1." + simTable.ownerRef.getUnqualifiedColName() + "=" + userTable.id.getQualifiedColName()
 		+ " AND " + bioSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
-		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName()
-		);
-	if (conditions.length() > 0) {
-		sql.append(" AND " + conditions);
+		+ " AND " + mathSimLinkTable.simRef.getQualifiedColName()+" (+) " + "=" + "vc_sim_1." + simTable.id.getUnqualifiedColName();
+
+	String additionalConditionsClause = "";
+	if (conditions!=null && conditions.length() > 0) {
+		additionalConditionsClause = " AND (" + conditions + ")";
 	}
-	sql.append(" order by " + jobTable.submitDate.getQualifiedColName() + " DESC ");  // most recent records first
+	
+	String orderByClause = " order by " + jobTable.submitDate.getQualifiedColName() + " DESC ";  // most recent records first
+	
+	String sql = null;
 	
 	if (maxNumRows>0){
-		//
-		// limit number of rows (have to put the sort in a subquery). 
-		// If in one query rownum will limit the unsorted records first and THEN apply the sort)
-		// - in MySQL there is a LIMIT operator that does what we want, but not ORACLE.
-		//
-		sql.insert(0, "SELECT a.* from (");
-		sql.append(") a WHERE rownum <= "+maxNumRows);
+		if (startRow <= 1){
+			// simpler query, only limit rows, not starting row
+			sql = "select * from "+
+					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
+					"where rownum <= "+maxNumRows;
+		}else{
+			// full query, limit start and limit
+			sql = "select * from "+
+						"(select a.*, ROWNUM rnum from "+
+							"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a "+
+						" where rownum <= " + (startRow + maxNumRows - 1) + ") "+
+				  "where rnum >= "+startRow;
+		}
+	}else{
+		sql = subquery + " " + additionalConditionsClause + " " + orderByClause;
 	}
 	
-	//System.out.println(sql);
+	System.out.println(sql);
 	
 	List<SimpleJobStatus> resultList = new ArrayList<SimpleJobStatus>();
 	Statement stmt = con.createStatement();	

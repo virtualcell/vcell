@@ -572,18 +572,18 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-public BioModelRep[] getBioModelReps(Connection con, User user, String conditions, int numRows)
+public BioModelRep[] getBioModelReps(Connection con, User user, String conditions, int startRow, int numRows)
 		throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
 	}
 	log.print("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
 	
-	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, numRows);
+	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, startRow, numRows);
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 //	System.out.println(sql);
-	bioModelTable.setPreparedStatement_BioModelReps(stmt, user, numRows);
+	bioModelTable.setPreparedStatement_BioModelReps(stmt, user, startRow, numRows);
 
 	ArrayList<BioModelRep> bioModelReps = new ArrayList<BioModelRep>();
 	try {

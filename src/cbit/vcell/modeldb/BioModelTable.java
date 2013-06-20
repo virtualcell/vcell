@@ -179,7 +179,7 @@ public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBM
 	return buffer.toString();
 }
 
-public String getPreparedStatement_BioModelReps(String conditions, int numRows){
+public String getPreparedStatement_BioModelReps(String conditions, int startRow, int numRows){
 
 	BioModelTable bmTable = BioModelTable.table;
 	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
@@ -227,23 +227,39 @@ public String getPreparedStatement_BioModelReps(String conditions, int numRows){
 	String orderByClause = "order by "+bmTable.versionDate.getQualifiedColName()+" DESC";
 
 	// query guarantees authorized access to biomodels based on the supplied User authentication.
-	String sql =  
-		"select * from "+
-		"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
-		"where rownum <= ?";
+	String sql = null;
 	
+	if (startRow <= 1){
+		// simpler query, only limit rows, not starting row
+		sql = "select * from "+
+				"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") "+
+				"where rownum <= ?";
+	}else{
+		// full query, limit start and limit
+		sql = "select * from "+
+					"(select a.*, ROWNUM rnum from "+
+						"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") a "+
+					" where rownum <= ? ) "+
+			  "where rnum >= ?";
+	}
+
 	System.out.println(sql);
 	return sql;
 }
 
-public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user, int numRows) throws SQLException{
+public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user, int startRow, int numRows) throws SQLException{
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelRepsSQL");
 	}
 	BigDecimal userKey = new BigDecimal(user.getID().toString());
 	stmt.setBigDecimal(1, userKey);
 	stmt.setBigDecimal(2, userKey);
-	stmt.setInt(3, numRows);
+	if (startRow <= 1){
+		stmt.setInt(3, numRows);
+	}else{
+		stmt.setInt(3, startRow + numRows - 1);
+		stmt.setInt(4, startRow);
+	}
 }
 
 public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException {
