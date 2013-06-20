@@ -38,6 +38,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	public static final String PARAM_BM_ID = "bmId";
 	public static final String PARAM_SAVED_HIGH = "savedHigh";
 	public static final String PARAM_SAVED_LOW = "savedLow";
+	public static final String PARAM_START_ROW = "startRow";
 	public static final String PARAM_MAX_ROWS = "maxRows";
 
 	@Override
@@ -67,6 +68,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
         parameterInfos.add(new ParameterInfo(PARAM_BM_ID,false,"string",ParameterStyle.QUERY,"VCell biomodel database id"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_LOW,false,"string",ParameterStyle.QUERY,"earliest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_HIGH,false,"string",ParameterStyle.QUERY,"latest saved timestamp (seconds since 1/1/1970)"));
+        parameterInfos.add(new ParameterInfo(PARAM_START_ROW,false,"string",ParameterStyle.QUERY,"index of first record returned (default is 1)"));
         parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 10)"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
@@ -94,6 +96,12 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
 		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
 		dataModel.put("savedHigh", getLongQueryValue(PARAM_SAVED_HIGH));
+		Long startRowParam = getLongQueryValue(PARAM_START_ROW);
+		if (startRowParam!=null){
+			dataModel.put("startRow", startRowParam);
+		}else{
+			dataModel.put("startRow", 1);
+		}
 		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
 		if (maxRowsParam!=null){
 			dataModel.put("maxRows", maxRowsParam);

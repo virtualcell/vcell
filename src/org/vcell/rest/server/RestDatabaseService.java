@@ -40,7 +40,12 @@ public class RestDatabaseService {
 		Long bioModelID = resource.getLongQueryValue(BiomodelsServerResource.PARAM_BM_ID);
 		Long savedLow = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_LOW);
 		Long savedHigh = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
+		Long startRowParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_START_ROW);
 		Long maxRowsParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_MAX_ROWS);
+		int startRow = 1; // default
+		if (startRowParam!=null){
+			startRow = startRowParam.intValue();
+		}
 		int maxRows = 10; // default
 		if (maxRowsParam!=null){
 			maxRows = maxRowsParam.intValue();
@@ -66,7 +71,7 @@ public class RestDatabaseService {
 			}
 			conditionsBuffer.append(condition);
 		}
-		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), maxRows);
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
 		for (BioModelRep bioModelRep : bioModelReps) {
 			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
 			for (KeyValue scKey : simContextKeys) {
@@ -162,6 +167,11 @@ public class RestDatabaseService {
 		Long startHigh = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_HIGH);
 		Long endLow = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_LOW);
 		Long endHigh = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_HIGH);
+		Long startRowParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_ROW);
+		int startRow = 1; // default
+		if (startRowParam!=null){
+			startRow = startRowParam.intValue();
+		}
 		Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
 		int maxRows = 10; // default
 		if (maxRowsParam!=null){
@@ -281,7 +291,7 @@ public class RestDatabaseService {
     		// no status conditions wanted ... nothing to query
     		return new ArrayList<SimpleJobStatus>();
     	}else{
-	   		List<SimpleJobStatus> resultList = adminDbTopLevel.getSimulationJobStatus(conditionsBuffer.toString(), maxRows, true);
+	   		List<SimpleJobStatus> resultList = adminDbTopLevel.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows, true);
 	   		return resultList;
     	}
     }

@@ -55,6 +55,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	public static final String PARAM_SUBMIT_LOW = "submitLow";
 	public static final String PARAM_HAS_DATA = "hasData";
 	public static final String PARAM_MAX_ROWS = "maxRows";
+	public static final String PARAM_START_ROW = "startRow";
 
 	@Override
 	protected void doInit() throws ResourceException {
@@ -99,6 +100,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
         parameterInfos.add(new ParameterInfo(PARAM_START_HIGH,false,"string",ParameterStyle.QUERY,"latest start timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_END_LOW,false,"string",ParameterStyle.QUERY,"earliest end timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_END_HIGH,false,"string",ParameterStyle.QUERY,"latest end timestamp (seconds since 1/1/1970)"));
+        parameterInfos.add(new ParameterInfo(PARAM_START_ROW,false,"string",ParameterStyle.QUERY,"starting row of records returned (default is 1)"));
         parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 10)"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
@@ -142,6 +144,12 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		dataModel.put("startHigh", getLongQueryValue(PARAM_START_HIGH));
 		dataModel.put("endLow", getLongQueryValue(PARAM_END_LOW));
 		dataModel.put("endHigh", getLongQueryValue(PARAM_END_HIGH));
+		Long startRowParam = getLongQueryValue(PARAM_START_ROW);
+		if (startRowParam!=null){
+			dataModel.put("startRow", startRowParam);
+		}else{
+			dataModel.put("startRow", 1);
+		}
 		Long maxRowsParam = getLongQueryValue(PARAM_MAX_ROWS);
 		if (maxRowsParam!=null){
 			dataModel.put("maxRows", maxRowsParam);

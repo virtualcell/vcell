@@ -8,6 +8,7 @@
 <table><tbody>
 <tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow!""}'/></td></tr>
 <tr><td>End Timestamp</td><td><input type='text' name='submitHigh' value='${submitHigh!""}'/></td></tr>
+<tr><td>start row</td><td><input type='text' name='startRow' value='${startRow}'/></td></tr>
 <tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
 <tr><td>ServerID</td><td><input type='text' name='serverId' value='${serverId!""}'/></td></tr>
 <tr><td>Compute Host</td><td><input type='text' name='computeHost value='${computeHost!""}'/></td></tr>
