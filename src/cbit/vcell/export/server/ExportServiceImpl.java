@@ -377,7 +377,8 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 				if (exportOutputs[i].isValid()) {
 					ZipEntry zipEntry = new ZipEntry(exportOutputs[i].getSimID() + exportOutputs[i].getDataID() + exportOutputs[i].getDataType());
 					zipOut.putNextEntry(zipEntry);
-					zipOut.write(exportOutputs[i].getData());
+					exportOutputs[i].writeDataToOutputStream(zipOut);
+					//zipOut.write(exportOutputs[i].getData());
 				} else {
 					exportValid = false;
 					break;
@@ -410,7 +411,8 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		File file = new File(exportBaseDir + newExportJob.getJobID() + extStr);
 		FileOutputStream fileOut = new FileOutputStream(file);
 		BufferedOutputStream out= new BufferedOutputStream(fileOut);
-		out.write(exportOutputs[0].getData());
+		exportOutputs[0].writeDataToOutputStream(out);
+		//out.write(exportOutputs[0].getData());
 		out.close();
 		fileNames = fileNames + file.getName();
 		//if there are more export outputs, loops through the second till the last.
@@ -421,7 +423,8 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 				File moreFile = new File(exportBaseDir + newExportJob.getJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);
 				ObjectOutputStream moreOut= new ObjectOutputStream(moreFileOut);
-				moreOut.writeObject(exportOutputs[i].getData());
+				exportOutputs[i].writeDataToOutputStream(moreOut);
+				//moreOut.writeObject(exportOutputs[i].getData());
 				moreOut.close();
 				fileNames = "\t"+fileNames + moreFile.getName();
 			} else {
