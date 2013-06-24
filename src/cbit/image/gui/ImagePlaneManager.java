@@ -142,7 +142,10 @@ public SourceDataInfo getSourceDataInfo() {
 }
 
 public boolean isChombo(){
-	return getSourceDataInfo().isChombo();
+	if(getSourceDataInfo() != null){
+		return getSourceDataInfo().isChombo();
+	}
+	return false;
 }
 /**
  * Insert the method's description here.
