@@ -61,7 +61,7 @@
 <td>${simTask.jobIndex!""}</td>
 <td>${simTask.taskId!""}</td>
 <td>${simTask.htcJobId!"unknown"}</td>
-<td><#if simTask.hasData><a href='./simdata/${simTask.simKey}'>true</a><#else>false</#if></td>
+<td><#if simTask.hasData><a href='./simdata/${simTask.simKey}'>metadata</a> <a href='./simdata/${simTask.simKey}/jobindex/${simTask.jobIndex}'>values</a><#else>false</#if></td>
 <td>${simTask.status!""}</td>
 <td>${simTask.startdate?number_to_date!""}</td>
 <td>${simTask.message!""}</td>
