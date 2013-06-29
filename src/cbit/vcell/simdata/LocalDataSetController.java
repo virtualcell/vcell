@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.simdata;
+import java.rmi.RemoteException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobSpec;
@@ -192,5 +194,17 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}*/
+}
+
+
+@Override
+public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+	return dataServerImpl.getDataSetMetadata(user, vcdataID);
+}
+
+
+@Override
+public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+	return dataServerImpl.getDataSetTimeSeries(user, vcdataID, variableNames);
 }
 }

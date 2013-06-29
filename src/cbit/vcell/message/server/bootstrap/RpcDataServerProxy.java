@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
+import java.rmi.RemoteException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -21,6 +23,8 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataSetMetadata;
+import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solver.DataProcessingOutput;
@@ -200,6 +204,16 @@ public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbi
 	return null;
 }
 
+@Override
+public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException {
+	return (DataSetMetadata)rpc("getDataSetMetadata", new Object[]{userLoginInfo.getUser(), vcdataID});
+}
+
+
+@Override
+public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException {
+	return (DataSetTimeSeries)rpc("getDataSetTimeSeries", new Object[]{userLoginInfo.getUser(), vcdataID, variableNames});
+}
 
 
 /**
@@ -224,4 +238,5 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 		throw new RuntimeException(e.getMessage());
 	}
 }
+
 }

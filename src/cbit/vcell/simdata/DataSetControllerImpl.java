@@ -109,7 +109,6 @@ import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.solvers.MembraneElement;
@@ -3578,6 +3577,26 @@ public void writeFieldFunctionData(
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new DataAccessException(ex.getMessage());
+	}
+}
+
+
+public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws FileNotFoundException, DataAccessException, IOException {
+	DataSetTimeSeries dataSetTimeSeries = getDataSetTimeSeries(vcdataID, null);
+	DataSetMetadata dataSetMetadata = new DataSetMetadata(vcdataID,dataSetTimeSeries);
+	return dataSetMetadata;
+}
+
+
+
+public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws FileNotFoundException, DataAccessException, IOException {
+	try {
+		ODEDataBlock odeDatablock = getODEDataBlock(vcdataID);
+		return new DataSetTimeSeries(vcdataID, odeDatablock);
+	}catch (Exception e){
+		System.err.println(e.getMessage());
+		DataProcessingOutput dataProcessingOutput = getDataProcessingOutput(vcdataID);
+		return new DataSetTimeSeries(vcdataID, dataProcessingOutput);
 	}
 }
 

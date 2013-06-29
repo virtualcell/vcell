@@ -26,6 +26,8 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataSetMetadata;
+import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -283,6 +285,38 @@ public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) t
 	sessionLog.print("LocalDataSetControllerMessaging.getDataProcessingOutput(vcdataID=" + vcdataID + ")");
 	try {
 		return dataServerProxy.getDataProcessingOutput(vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+
+@Override
+public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
+	try {
+		return dataServerProxy.getDataSetMetadata(vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+
+@Override
+public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+	sessionLog.print("LocalDataSetControllerMessaging.getDataSetMetadata(vcdataID=" + vcdataID + ")");
+	try {
+		return dataServerProxy.getDataSetTimeSeries(vcdataID, variableNames);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;
