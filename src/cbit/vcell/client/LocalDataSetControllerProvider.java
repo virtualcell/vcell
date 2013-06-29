@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import java.rmi.RemoteException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobResults;
@@ -29,6 +31,8 @@ import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.DataSetMetadata;
+import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -100,6 +104,16 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 
 		public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException {
 			return dataServerImpl.makeRemoteFile(outputContext,user, exportSpecs);
+		}
+
+		@Override
+		public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+			return dataServerImpl.getDataSetMetadata(user, vcdataID);
+		}
+
+		@Override
+		public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+			return dataServerImpl.getDataSetTimeSeries(user, vcdataID, variableNames);
 		}
 	}
 	
