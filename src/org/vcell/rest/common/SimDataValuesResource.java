@@ -6,10 +6,10 @@ import org.restlet.resource.Get;
 /**
  * Collection resource containing user accounts.
  */
-public interface SimDataResource {
+public interface SimDataValuesResource {
 
     @Get("json")
-    public SimDataRepresentation get_json();
+    public SimDataValuesRepresentation get_json();
     
     @Get("html")
     public Representation get_html();

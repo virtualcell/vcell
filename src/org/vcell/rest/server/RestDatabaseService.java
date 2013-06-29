@@ -6,10 +6,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
@@ -20,6 +27,10 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.simdata.DataSetMetadata;
+import cbit.vcell.simdata.DataSetTimeSeries;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class RestDatabaseService {
 	
@@ -29,10 +40,60 @@ public class RestDatabaseService {
 	KeyValue mostRecentSimContextKey = new KeyValue("0");
 	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
 	KeyValue mostRecentSimulationKey = new KeyValue("0");
+	VCMessagingService vcMessagingService = null;
+	SessionLog log = null;
 
-	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, AdminDBTopLevel adminDbTopLevel) {
+	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, AdminDBTopLevel adminDbTopLevel, VCMessagingService vcMessagingService, SessionLog log) {
 		this.databaseServerImpl = databaseServerImpl;
 		this.adminDbTopLevel = adminDbTopLevel;
+		this.vcMessagingService = vcMessagingService;
+		this.log = log;
+	}
+	
+	public DataSetMetadata getDataSetMetadata(SimDataServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
+		KeyValue simKey = new KeyValue(simId);
+		SimulationRep simRep = getSimulationRep(simKey);
+		if (simRep == null){
+			throw new DataAccessException("Simulation with key "+simKey+" not found");
+		}
+		User owner = simRep.getOwner();
+		int jobIndex = 0;
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession, log);
+			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
+			DataSetMetadata dataSetMetadata = rpcDataServerProxy.getDataSetMetadata(vcdID);
+			return dataSetMetadata;
+		}finally{
+			rpcSession.close();
+		}
+	}
+
+	public DataSetTimeSeries getDataSetTimeSeries(SimDataValuesServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
+		String jobIndexString = resource.getAttribute(VCellApiApplication.JOBINDEX);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
+		KeyValue simKey = new KeyValue(simId);
+		SimulationRep simRep = getSimulationRep(simKey);
+		if (simRep == null){
+			throw new DataAccessException("Simulation with key "+simKey+" not found");
+		}
+		int jobIndex = Integer.parseInt(jobIndexString);
+		String variableNames[] = null; // TODO: pass in variables names from the query parameters.
+		User owner = simRep.getOwner();
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession, log);
+			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
+			DataSetTimeSeries dataSetTimeSeries = rpcDataServerProxy.getDataSetTimeSeries(vcdID, variableNames);
+			return dataSetTimeSeries;
+		}finally{
+			rpcSession.close();
+		}
 	}
 
 	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException {	

@@ -11,11 +11,17 @@ import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.message.VCDestination;
+import cbit.vcell.message.VCMessage;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
@@ -38,6 +44,7 @@ public class VCellApiMain {
 			
 			System.out.println("connecting to database");
 
+			VCMessagingService vcMessagingService = null;
 			RestDatabaseService restDatabaseService = null;
 			UserVerifier userVerifier = null;
 			try {
@@ -49,7 +56,41 @@ public class VCellApiMain {
 				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 				AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 				
-				restDatabaseService = new RestDatabaseService(databaseServerImpl, adminDbTopLevel);
+				vcMessagingService = VCMessagingService.createInstance(new VCMessagingDelegate() {
+					
+					@Override
+					public void onTraceEvent(String string) {
+						System.out.println("Trace: "+string);
+					}
+					
+					@Override
+					public void onRpcRequestSent(VCRpcRequest vcRpcRequest, UserLoginInfo userLoginInfo, VCMessage vcRpcRequestMessage) {
+						System.out.println("request sent:");
+					}
+					
+					@Override
+					public void onRpcRequestProcessed(VCRpcRequest vcRpcRequest, VCMessage rpcVCMessage) {
+						System.out.println("request processed:");
+					}
+					
+					@Override
+					public void onMessageSent(VCMessage message, VCDestination desintation) {
+						System.out.println("message sent:");
+					}
+					
+					@Override
+					public void onMessageReceived(VCMessage vcMessage, VCDestination vcDestination) {
+						System.out.println("message received");
+					}
+					
+					@Override
+					public void onException(Exception e) {
+						System.out.println("Exception: "+e.getMessage());
+						e.printStackTrace();
+					}
+				});
+								
+				restDatabaseService = new RestDatabaseService(databaseServerImpl, adminDbTopLevel, vcMessagingService, log);
 				
 				userVerifier = new UserVerifier(adminDbTopLevel);
 				

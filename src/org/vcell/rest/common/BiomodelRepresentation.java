@@ -2,7 +2,6 @@ package org.vcell.rest.common;
 
 import java.util.ArrayList;
 
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
