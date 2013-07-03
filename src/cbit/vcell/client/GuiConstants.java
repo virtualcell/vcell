@@ -34,6 +34,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION = "Non-Spatial Copy To Deterministic Application";
 	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION = "Non-Spatial Copy To Stochastic Application";
 	
+	public static final String MENU_TEXT_APP_NEWBIOMODEL = "New BioModel From App";
 	public static final String MENU_TEXT_APP_COPY = "Copy";
 	public static final String MENU_TEXT_APP_COPYAS = "Copy As";
 	public static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial";

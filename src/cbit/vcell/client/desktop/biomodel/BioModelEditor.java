@@ -18,8 +18,10 @@ import javax.swing.JComponent;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -61,6 +63,9 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
@@ -210,6 +215,11 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 			copyApplication(true, true);
 		}
 		break;
+	case app_new_biomodel:
+		if(actionCommand.equals(GuiConstants.MENU_TEXT_APP_NEWBIOMODEL)){
+			createNewBiomodelFromApp();
+		}
+		break;
 	case delete:
 		try {
 			if (selectedSimulationContext != null) {
@@ -241,6 +251,39 @@ private void copyApplication() {
 	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch());
 }
 
+private void createNewBiomodelFromApp(){
+	SimulationContext simulationContext = getSelectedSimulationContext();
+	if (simulationContext == null) {
+		PopupGenerator.showErrorDialog(this, "Please select an application.");
+		return;
+	}
+	//getBioModelWindowManager().getRequestManager().getDocumentManager().getSessionManager().getUserMetaDbServer().getBioModelXML(key);
+	//getBioModelWindowManager().getRequestManager().exportDocument(manager);
+//	bioModel.getVCMetaData().cleanupMetadata();
+	try {
+		String newBMXML = XmlHelper.bioModelToXML(bioModel);
+		BioModel newBioModel = XmlHelper.XMLToBioModel(new XMLSource(newBMXML));
+		newBioModel.clearVersion();
+		SimulationContext[] newBMSimcontexts = newBioModel.getSimulationContexts();
+		for (int i = 0; i < newBMSimcontexts.length; i++) {
+			if(!newBMSimcontexts[i].getName().equals(simulationContext.getName())){
+				//Remove sims before removing simcontext
+				Simulation[] newBMSims = newBMSimcontexts[i].getSimulations();
+				for (int j = 0; j < newBMSims.length; j++) {
+					newBMSimcontexts[i].removeSimulation(newBMSims[j]);
+				}
+				newBioModel.removeSimulationContext(newBMSimcontexts[i]);
+			}
+		}
+		VCDocument.DocumentCreationInfo newBMDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC,VCDocument.BIO_OPTION_DEFAULT);
+		newBMDocCreateInfo.setPreCreatedDocument(newBioModel);
+		AsynchClientTask[] newBMTasks = getBioModelWindowManager().newDocument(newBMDocCreateInfo);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), newBMTasks);
+	} catch (Exception e) {
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog(this, "Error creating new BioModel from Application '"+simulationContext.getName()+"'\n"+e.getMessage());
+	}
+}
 private void copyApplication(final boolean bSpatial, final boolean bStochastic) {		
 	final SimulationContext simulationContext = getSelectedSimulationContext();
 	if (simulationContext == null) {

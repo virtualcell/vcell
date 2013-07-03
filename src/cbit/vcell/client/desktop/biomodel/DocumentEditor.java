@@ -87,6 +87,7 @@ public abstract class DocumentEditor extends JPanel {
 		copy_app,
 		rename,
 		delete,
+		app_new_biomodel,
 	}
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
@@ -120,6 +121,7 @@ public abstract class DocumentEditor extends JPanel {
 	protected JLabel treeNodeDescriptionLabel;
 	protected IssuePanel issuePanel;
 	
+	private JMenuItem menuItemNewBiomodelFromApp = null;
 	private JMenuItem menuItemAppCopy = null;
 	private JMenu menuAppCopyAs = null;
 	private JMenuItem menuItemNonSpatialCopyStochastic = null;
@@ -175,6 +177,8 @@ public abstract class DocumentEditor extends JPanel {
 						|| e.getSource() == menuItemSpatialCopyAsSpatialDeterministic
 						|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());	
+			} else if (e.getSource() == menuItemNewBiomodelFromApp){
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.app_new_biomodel, e.getActionCommand());
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -517,6 +521,7 @@ private void construcutPopupMenu() {
 	boolean bAddNewApp = false;
 	boolean bCopyApp = false;
 	boolean bDelete = false;
+	boolean bNewBiomodel = false;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -544,6 +549,7 @@ private void construcutPopupMenu() {
 			bRename = true;
 			bCopyApp = true;
 			bDelete = true;
+			bNewBiomodel = true;
 		}
 	}
 	if (selectedPaths.length != 1) {
@@ -637,6 +643,11 @@ private void construcutPopupMenu() {
 		}
 		popupMenu.add(menuItemAppCopy);
 		popupMenu.add(menuAppCopyAs);
+	}
+	if(bNewBiomodel){
+		menuItemNewBiomodelFromApp = new JMenuItem(GuiConstants.MENU_TEXT_APP_NEWBIOMODEL);
+		menuItemNewBiomodelFromApp.addActionListener(eventHandler);
+		popupMenu.add(menuItemNewBiomodelFromApp);
 	}
 	if (bExpand) {
 		if (expandAllMenuItem == null) {
