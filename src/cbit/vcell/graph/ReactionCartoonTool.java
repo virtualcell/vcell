@@ -410,6 +410,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 				if (shape instanceof SpeciesContextShape) {
+					//remove all ReactionParticipants that have this speciesContext first
+					Shape[] objShapeArr = getReactionCartoon().getShapes().toArray(new Shape[0]);
+					for(Shape objShape : objShapeArr){
+						if(objShape instanceof ReactionParticipantShape){
+							ReactionParticipant objReactionParticipant = ((ReactionParticipantShape)objShape).getReactionParticipant();
+							if(objReactionParticipant.getSpeciesContext().equals(((SpeciesContextShape) shape).getSpeciesContext())){
+								ReactionStep reactionStep = objReactionParticipant.getReactionStep();
+								reactionStep.removeReactionParticipant(objReactionParticipant);
+							}
+						}
+					}
 					getModel().removeSpeciesContext(
 							((SpeciesContextShape) shape).getSpeciesContext());
 					if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
