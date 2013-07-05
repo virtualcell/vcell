@@ -10,7 +10,12 @@
 
 package cbit.vcell.parser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+
+import cbit.vcell.model.ProxyParameter;
 
 /**
  * Insert the type's description here.
@@ -401,4 +406,49 @@ public void getExternalEntries(Map<String, SymbolTableEntry> entryMap) {
 public String getPathDescription() {
 	return getName();
 }
+
+
+@Override
+public void findReferences(SymbolTableEntry symbolTableEntry, ArrayList<SymbolTableEntry> references, HashSet<NameScope> visited) {
+	//
+	// if already visited, don't process again
+	//
+	if (visited.contains(this)){
+		return;
+	}
+	visited.add(this);
+	
+	//
+	// find references in local symbol's expressions.
+	//
+	HashMap<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+	getScopedSymbolTable().getLocalEntries(entryMap);
+	for (SymbolTableEntry localSTE : entryMap.values()) {
+		if (localSTE.getExpression()!=null){
+			SymbolTableEntry boundSTE = localSTE.getExpression().getSymbolBinding(symbolTableEntry.getName());
+			//
+			// if bound to this symbol (or a proxy of this symbol), then add to the list
+			//
+			if (boundSTE == symbolTableEntry || ((boundSTE instanceof ProxyParameter) && ((ProxyParameter)boundSTE).getTarget() == symbolTableEntry)){
+				if (references.contains(localSTE)){
+					System.err.println("found duplicate referenced to "+localSTE.getClass().getName()+"("+localSTE.getName()+") when looking for references to ste "+symbolTableEntry.getName());
+					Thread.dumpStack();
+				}else{
+					references.add(localSTE);
+				}
+			}
+		}
+	}
+	
+	//
+	// propagate to children
+	//
+	NameScope[] children = getChildren();
+	if (children!=null){
+		for (NameScope child : children){
+			child.findReferences(symbolTableEntry, references, visited);
+		}
+	}
+}
+
 }

@@ -70,12 +70,7 @@ public abstract class ProxyParameter extends Parameter implements SymbolProxy {
 	}
 	
 	public final Expression getExpression() {
-		try {
-			return target.getExpression();
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
-		}
+		return target.getExpression();
 	}
 
 	public final String getName() {

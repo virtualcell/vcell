@@ -84,7 +84,7 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 			throw new ExpressionException("can't evaluate to constant");
 		}
 
-		public Expression getExpression() throws ExpressionException {
+		public Expression getExpression() {
 			return expression;
 		}
 
@@ -202,6 +202,11 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 
 		public String getPathDescription() {
 			return getName();
+		}
+		
+		@Override
+		public void findReferences(SymbolTableEntry symbolTableEntry, ArrayList<SymbolTableEntry> references, HashSet<NameScope> visited) {
+			throw new RuntimeException("not yet implementd");
 		}
 	};
 	

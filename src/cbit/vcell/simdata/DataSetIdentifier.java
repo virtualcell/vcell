@@ -87,7 +87,7 @@ public double getConstantValue() throws ExpressionException {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() throws ExpressionException {
+public Expression getExpression() {
 	return null;
 }
 

@@ -10,6 +10,8 @@
 
 package cbit.vcell.parser;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -99,5 +101,8 @@ boolean isAncestor(NameScope nameScope);
 boolean isPeer(NameScope nameScope);
 
 public void getExternalEntries(Map<String, SymbolTableEntry> entryMap);
+
 String getPathDescription();
+
+void findReferences(SymbolTableEntry symbolTableEntry, ArrayList<SymbolTableEntry> references, HashSet<NameScope> visited);
 }

@@ -81,7 +81,7 @@ public abstract class DataSymbol implements SymbolTableEntry,Matchable,Serializa
 	public final double getConstantValue() throws ExpressionException {
 		throw new ExpressionException("cannot get constant value from a data symbol");
 	}
-	public Expression getExpression() throws ExpressionException {
+	public Expression getExpression() {
 		return null;
 	}
 	public final int getIndex() {

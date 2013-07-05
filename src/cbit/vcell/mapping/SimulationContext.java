@@ -116,6 +116,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			for (int i = 0; i < fieldElectricalStimuli.length; i++){
 				nameScopes[index++] = fieldElectricalStimuli[i].getNameScope();
 			}
+			for (int i = 0; fieldBioEvents!=null && i < fieldBioEvents.length; i++){
+				nameScopes[index++] = fieldBioEvents[i].getNameScope();
+			}
 			return nameScopes;
 		}
 		public String getName() {
