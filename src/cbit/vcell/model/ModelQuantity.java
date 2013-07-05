@@ -118,7 +118,7 @@ public final double getConstantValue() throws cbit.vcell.parser.ExpressionExcept
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public final Expression getExpression() throws cbit.vcell.parser.ExpressionException {
+public final Expression getExpression() {
 	return null;
 }
 

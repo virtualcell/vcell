@@ -28,6 +28,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JViewport;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.SimpleTransferable;
@@ -47,9 +48,12 @@ import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.actions.GraphViewAction;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -71,6 +75,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureUtil;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
@@ -410,6 +415,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 				if (shape instanceof SpeciesContextShape) {
+					BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(getGraphPane(), BioModelEditor.class);
+					BioModel bioModel = bioModelEditor.getBioModelWindowManager().getVCDocument();
+					List<SymbolTableEntry> referencingSymbols = bioModel.findReferences(((SpeciesContextShape) shape).getSpeciesContext());
+					for (SymbolTableEntry referencingSTE : referencingSymbols) {
+						System.out.println("REFERENCE   "+referencingSTE.getClass().getName()+"("+referencingSTE.getName()+") nameScope "+referencingSTE.getNameScope().getClass().getName()+"("+referencingSTE.getNameScope().getName()+")");
+					}
 					//remove all ReactionParticipants that have this speciesContext first
 					Shape[] objShapeArr = getReactionCartoon().getShapes().toArray(new Shape[0]);
 					for(Shape objShape : objShapeArr){
