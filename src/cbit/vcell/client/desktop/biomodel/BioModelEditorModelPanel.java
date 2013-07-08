@@ -63,6 +63,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -86,6 +87,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
@@ -701,7 +703,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
-			
+			if(deleteList.get(0) instanceof SpeciesContext){
+				try{
+					ReactionCartoonTool.deleteSpeciesContext(reactionCartoonEditorPanel, false, deleteList.toArray(new SpeciesContext[0]));
+				}catch(UserCancelException uce){
+					return;
+				}
+				return;
+			}
 			String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
 			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 				return;

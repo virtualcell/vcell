@@ -11,6 +11,7 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -22,15 +23,19 @@ import java.awt.geom.AffineTransform;
 import java.beans.PropertyVetoException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JViewport;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils.TableListResult;
 import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
@@ -38,6 +43,7 @@ import org.vcell.util.gui.VCFileChooser;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
@@ -52,6 +58,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
@@ -61,6 +68,7 @@ import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralLumpedKinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.StructureTopology;
@@ -68,6 +76,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -415,27 +424,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 				if (shape instanceof SpeciesContextShape) {
-					BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(getGraphPane(), BioModelEditor.class);
-					BioModel bioModel = bioModelEditor.getBioModelWindowManager().getVCDocument();
-					List<SymbolTableEntry> referencingSymbols = bioModel.findReferences(((SpeciesContextShape) shape).getSpeciesContext());
-					for (SymbolTableEntry referencingSTE : referencingSymbols) {
-						System.out.println("REFERENCE   "+referencingSTE.getClass().getName()+"("+referencingSTE.getName()+") nameScope "+referencingSTE.getNameScope().getClass().getName()+"("+referencingSTE.getNameScope().getName()+")");
-					}
-					//remove all ReactionParticipants that have this speciesContext first
-					Shape[] objShapeArr = getReactionCartoon().getShapes().toArray(new Shape[0]);
-					for(Shape objShape : objShapeArr){
-						if(objShape instanceof ReactionParticipantShape){
-							ReactionParticipant objReactionParticipant = ((ReactionParticipantShape)objShape).getReactionParticipant();
-							if(objReactionParticipant.getSpeciesContext().equals(((SpeciesContextShape) shape).getSpeciesContext())){
-								ReactionStep reactionStep = objReactionParticipant.getReactionStep();
-								reactionStep.removeReactionParticipant(objReactionParticipant);
-							}
+					List<Shape> objSelectedShapes = getGraphModel().getSelectedShapes();
+					Vector<SpeciesContext> speciesContextV = new Vector<SpeciesContext>();
+					for(Shape objShape:objSelectedShapes){
+						if(objShape instanceof SpeciesContextShape){
+							speciesContextV.add(((SpeciesContextShape) objShape).getSpeciesContext());
 						}
 					}
-					getModel().removeSpeciesContext(
-							((SpeciesContextShape) shape).getSpeciesContext());
-					if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
-						VCellTransferable.sendToClipboard(((SpeciesContextShape) shape).getSpeciesContext().getSpecies());
+					try{
+						deleteSpeciesContext(getGraphPane(), menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION), speciesContextV.toArray(new SpeciesContext[0]));
+					}catch(UserCancelException uce){
+						return;
 					}
 				}
 			} catch (PropertyVetoException e) {
@@ -482,6 +481,92 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 		} else {
 			// default action is to ignore
+		}
+
+	}
+	
+	public static void deleteSpeciesContext(Component requester,boolean isCut,SpeciesContext[] speciesContexts) throws Exception,UserCancelException{
+		if(speciesContexts == null || speciesContexts.length > 1){
+			throw new IllegalArgumentException("Only 1 SpeciesContext can be deleted at one time.");
+		}
+		SpeciesContext speciesContext = speciesContexts[0];
+		ReactionCartoon rxCartoon = null;
+		if(requester instanceof GraphPane && ((GraphPane)requester).getGraphModel() instanceof ReactionCartoon){
+			rxCartoon = (ReactionCartoon)(((GraphPane)requester).getGraphModel());
+		}else if(requester instanceof ReactionCartoonEditorPanel){
+			rxCartoon = ((ReactionCartoonEditorPanel)requester).getReactionCartoon();
+		}else{
+			throw new IllegalArgumentException("ReactionCartoonTool.deleteSpeciesContext not implemented for type '"+requester.getClass().getName()+"'");
+		}
+		//Warn user that there may be some BioModel components that reference speciesContext to be removed
+		//Get ReactionParticipant list
+		Collection<Shape> rxPartColl = rxCartoon.getShapes();
+		Vector<ReactionParticipant> rxPartV = new Vector<ReactionParticipant>();
+		for (Shape objShape:rxPartColl) {
+			if(objShape instanceof ReactionParticipantShape){
+				ReactionParticipant objReactionParticipant = ((ReactionParticipantShape)objShape).getReactionParticipant();
+				if(objReactionParticipant.getSpeciesContext().equals(speciesContext)){
+					if(!rxPartV.contains(objReactionParticipant)){
+						rxPartV.add(objReactionParticipant);
+					}
+				}
+			}
+		}
+		//find bioModel and get SymbolTable references to SpeciesContext
+		BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
+		if(bioModelEditor == null){
+			DialogUtils.showErrorDialog(requester,"Error deleting Speciescontext, Can't find BiomodelEditor");
+			return;
+		}
+		BioModel bioModel = bioModelEditor.getBioModelWindowManager().getVCDocument();
+		List<SymbolTableEntry> referencingSymbols = bioModel.findReferences(speciesContext);
+		//Warn user about delete
+		
+		
+		if(rxPartV.size() == 0 && (referencingSymbols == null || referencingSymbols.size()==0)){
+			String confirm = DialogUtils.showOKCancelWarningDialog(requester, "Warning Delete", "Deleting '"+speciesContext.getName() + "',\n Continue?");
+			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+				return;
+			}
+		}else{
+			boolean bUnresolvable = false;
+			final String warnStr = "Warning";
+			final String errorStr = "Error";
+			String[][] rowData = new String[referencingSymbols.size()+rxPartV.size()][3];
+			for (int i = 0; i < rxPartV.size(); i++) {
+				rowData[i][0] = warnStr;
+				rowData[i][1] = "Reaction Diagram participant of '"+rxPartV.get(i).getReactionStep().getName()+"'";
+				rowData[i][2] = "";
+			}
+			for (int i = 0; i < referencingSymbols.size(); i++) {
+				boolean bKineticsParameter = referencingSymbols.get(i) instanceof KineticsParameter;
+				if(bKineticsParameter){
+					KineticsParameter kp = (KineticsParameter)referencingSymbols.get(i);
+					rowData[i+rxPartV.size()][0] = (kp.isRegenerated()?warnStr:errorStr);
+					bUnresolvable = bUnresolvable || !kp.isRegenerated();
+				}
+				boolean bReaction = referencingSymbols.get(i).getNameScope() instanceof ReactionNameScope;
+				rowData[i+rxPartV.size()][1] = (bReaction?"Reaction":referencingSymbols.get(i).getNameScope().getClass().getName())+"( "+referencingSymbols.get(i).getNameScope().getName()+" )";
+				rowData[i+rxPartV.size()][2] = (bKineticsParameter?"Parameter":referencingSymbols.get(i).getClass().getName())+"( "+referencingSymbols.get(i).getName()+" )";
+			}
+//			for (SymbolTableEntry referencingSTE : referencingSymbols) {
+//				System.out.println("REFERENCE   "+referencingSTE.getClass().getName()+"("+referencingSTE.getName()+") nameScope "+referencingSTE.getNameScope().getClass().getName()+"("+referencingSTE.getNameScope().getName()+")");
+//			}
+			final String delText = "Delete Species";
+			TableListResult tableListResult = DialogUtils.showComponentOptionsTableList(requester, "Warning: references to '"+speciesContext.getName()+"'."+(bUnresolvable?"  User must resolve '"+errorStr+"' Flags to delete.":""),
+				new String[] {"Flag","Reference","Detail"}, rowData, null ,null,(bUnresolvable?new String[] {"Cancel"}:new String[] {delText,"Cancel"}),delText,null);
+			if(!tableListResult.selectedOption.equals(delText)){
+				return;
+			}
+		}
+		//remove all ReactionParticipants ("lines" between reaction and species in "Reaction Diagram") that have this speciesContext before deleting SpeciesContext
+		for(ReactionParticipant objRxPart:rxPartV){
+			objRxPart.getReactionStep().removeReactionParticipant(objRxPart);
+		}					
+		//remove the SpeciesContext
+		bioModel.getModel().removeSpeciesContext(speciesContext);
+		if (isCut) {
+			VCellTransferable.sendToClipboard(speciesContext.getSpecies());
 		}
 
 	}
