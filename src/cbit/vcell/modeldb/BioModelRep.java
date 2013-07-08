@@ -101,6 +101,15 @@ public class BioModelRep {
 	public SimulationRep[] getSimulationRepList() {
 		return simulationRepList.toArray(new SimulationRep[simulationRepList.size()]);
 	}
+
+	public SimContextRep getSimContextRepFromMathKey(KeyValue mathKey) {
+		for (SimContextRep simContextRep : simContextRepList) {
+			if (simContextRep.getMathKey().compareEqual(mathKey)){
+				return simContextRep;
+			}
+		}
+		return null;
+	}
 	
 	
 }
