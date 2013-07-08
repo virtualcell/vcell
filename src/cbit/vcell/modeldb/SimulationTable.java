@@ -303,7 +303,8 @@ public String getPreparedStatement_SimulationReps(){
 		    simTable.versionBranchID.getQualifiedColName()+", "+
 		    simTable.ownerRef.getQualifiedColName()+", "+
 		    UserTable.table.userid.getQualifiedColName()+", "+
-		    simTable.mathRef.getQualifiedColName()+" "+
+		    simTable.mathRef.getQualifiedColName()+", "+
+		    simTable.taskDescription.getQualifiedColName()+" "+
 		
 		"from "+simTable.getTableName()+", "+userTable.getTableName()+" "+
 		"where "+simTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
@@ -341,8 +342,15 @@ public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentExce
 	String ownerName = rset.getString(UserTable.table.userid.toString());
 	User owner = new User(ownerName,ownerRef);
 	KeyValue mathKey = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
+	String taskDesc = rset.getString(table.taskDescription.toString());
+	SolverTaskDescription solverTaskDescription = null;
+	try {
+		solverTaskDescription = new SolverTaskDescription(new CommentStringTokenizer(taskDesc));
+	} catch (DataAccessException e) {
+		e.printStackTrace();
+	}
 	
-	return new SimulationRep(scKey,branchID,name,owner,mathKey);
+	return new SimulationRep(scKey,branchID,name,owner,mathKey,solverTaskDescription);
 }
 
 

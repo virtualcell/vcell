@@ -84,7 +84,7 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 
 
 /**
- * This constructor is for management console only.
+ * This constructor is for management console and VCell API only.
  */
 public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccessException {
 	super();
