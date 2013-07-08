@@ -39,7 +39,6 @@
 <th>MathModel</th>
 <th>Simulation</th>
 <th>User Name</th>
-<th>User Key</th>
 <th>Job Index</th>
 <th>Task ID</th>
 <th>HTC JobID</th>
@@ -52,12 +51,25 @@
 </tr>
 <#list simTasks as simTask>
 <tr>
-<td><#if simTask.bioModelLink??><a href='./biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
-<td><#if simTask.bioModelLink??><a href='./application/${simTask.bioModelLink.simContextKey!""}'>${simTask.bioModelLink.simContextName!""}</a><#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??><a href='/biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??>${simTask.bioModelLink.simContextName!""}<#else>unknown</#if></td>
 <td><#if simTask.mathModelLink??>"${simTask.mathModelLink.mathModelName!""}" (id=${simTask.mathModelLink.mathModelKey}) (branch=${simTask.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
-<td>"${simTask.simName!""}" (id=${simTask.simKey!""})</td>
+<td>
+	<#if simTask.simName??>
+		<#if simTask.bioModelLink??>
+			<a href="/biomodel/${simTask.bioModelLink.bioModelKey}/simulation/${simTask.simKey}">${simTask.simName}</a>
+		<#else>
+			<#if simTask.mathModelLink??>
+				<a href="/biomodel/${simTask.mathModelLink.mathModelKey}/simulation/${simTask.simKey}">${simTask.simName}</a>
+			<#else>
+				${simTask.simName}
+			</#if>
+		</#if>
+    <#else>
+    	unknown
+    </#if>
+</td>
 <td>${simTask.userName!""}</td>
-<td>${simTask.userKey!""}</td>
 <td>${simTask.jobIndex!""}</td>
 <td>${simTask.taskId!""}</td>
 <td>${simTask.htcJobId!"unknown"}</td>

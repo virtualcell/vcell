@@ -24,16 +24,19 @@ import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelResource;
+import org.vcell.rest.common.SimulationRepresentation;
+import org.vcell.rest.common.SimulationResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.modeldb.SimulationRep;
 
 import com.google.gson.Gson;
 
 import freemarker.template.Configuration;
 
-public class BiomodelServerResource extends AbstractServerResource implements BiomodelResource {
+public class BiomodelSimulationServerResource extends AbstractServerResource implements SimulationResource {
 
 	private String biomodelid;
 	
@@ -71,23 +74,24 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 		super.describeGet(info);
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
-        parameterInfos.add(new ParameterInfo("biomodelid",false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
+        parameterInfos.add(new ParameterInfo(VCellApiApplication.BIOMODELID,false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
+        parameterInfos.add(new ParameterInfo(VCellApiApplication.SIMULATIONID,false,"string",ParameterStyle.TEMPLATE,"VCell simulation id"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
 
 	@Override
-	public BiomodelRepresentation get_json() {
+	public SimulationRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
 		User vcellUser = application.getVCellUser(autheticatedUser);
 		
-        BiomodelRepresentation biomodelRep = getBiomodelRepresentation(vcellUser);
+        SimulationRepresentation simulationRep = getBiomodelSimulationRepresentation(vcellUser);
         
-        if (biomodelRep != null){
-        	return biomodelRep;
+        if (simulationRep != null){
+        	return simulationRep;
         }
-        throw new RuntimeException("biomodel not found");
+        throw new RuntimeException("simulation not found");
 	}
 
 	@Override
@@ -96,15 +100,13 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
 		User vcellUser = application.getVCellUser(autheticatedUser);
 		
-		BiomodelRepresentation biomodel = getBiomodelRepresentation(vcellUser);
-		if (biomodel==null){
-			throw new RuntimeException("biomodel not found");
+		SimulationRepresentation simulation = getBiomodelSimulationRepresentation(vcellUser);
+		if (simulation==null){
+			throw new RuntimeException("simulation not found");
 		}
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
-		dataModel.put("bmId", getQueryValue(VCellApiApplication.BIOMODELID));
-
-		dataModel.put("biomodel", biomodel);
+		dataModel.put("simulation", simulation);
 		
 		
 		if (vcellUser!=null){
@@ -112,25 +114,24 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 		}
 		
 		Gson gson = new Gson();
-		dataModel.put("jsonResponse",gson.toJson(biomodel));
+		dataModel.put("jsonResponse",gson.toJson(simulation));
 		
 		Configuration templateConfiguration = application.getTemplateConfiguration();
 
-		Representation formFtl = new ClientResource(LocalReference.createClapReference("/biomodel.ftl")).get();
+		Representation formFtl = new ClientResource(LocalReference.createClapReference("/simulation.ftl")).get();
 		TemplateRepresentation templateRepresentation = new TemplateRepresentation(formFtl, templateConfiguration, dataModel, MediaType.TEXT_HTML);
 		return templateRepresentation;
 	}
 	
-	private BiomodelRepresentation getBiomodelRepresentation(User vcellUser) {
+	private SimulationRepresentation getBiomodelSimulationRepresentation(User vcellUser) {
 //		if (!application.authenticate(getRequest(), getResponse())){
 //			// not authenticated
 //			return new SimulationTaskRepresentation[0];
 //		}else{
 			RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
 			try {
-				BioModelRep bioModelRep = restDatabaseService.query(this,vcellUser);
-				BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
-				return biomodelRep;
+				SimulationRepresentation simulationRepresentation = restDatabaseService.query(this,vcellUser);
+				return simulationRepresentation;
 			} catch (DataAccessException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());

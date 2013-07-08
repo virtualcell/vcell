@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -151,6 +152,98 @@ public class RestDatabaseService {
 			
 		}
 	   	return bioModelReps;
+	}
+	
+	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+		
+		ArrayList<String> conditions = new ArrayList<String>();
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		if (bioModelID != null){
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+		}else{
+			throw new RuntimeException("bioModelID not specified");
+		}
+	
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		int startRow = 1;
+		int maxRows = 1;
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
+		for (BioModelRep bioModelRep : bioModelReps) {
+			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+			for (KeyValue scKey : simContextKeys) {
+				SimContextRep scRep = getSimContextRep(scKey);
+				if (scRep != null){
+					bioModelRep.addSimContextRep(scRep);
+				}
+			}
+			KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+			for (KeyValue simKey : simulationKeys) {
+				SimulationRep simulationRep = getSimulationRep(simKey);
+				if (simulationRep != null){
+					bioModelRep.addSimulationRep(simulationRep);
+				}
+			}
+			
+		}
+		if (bioModelReps==null || bioModelReps.length!=1){
+			throw new RuntimeException("failed to get biomodel");
+		}
+		return bioModelReps[0];
+	}
+	
+	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+		
+		ArrayList<String> conditions = new ArrayList<String>();
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		if (bioModelID != null){
+			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+		}else{
+			throw new RuntimeException(VCellApiApplication.BIOMODELID+" not specified");
+		}
+	
+		StringBuffer conditionsBuffer = new StringBuffer();
+		for (String condition : conditions) {
+			if (conditionsBuffer.length() > 0) {
+				conditionsBuffer.append(" AND ");
+			}
+			conditionsBuffer.append(condition);
+		}
+		int startRow = 1;
+		int maxRows = 1;
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
+		for (BioModelRep bioModelRep : bioModelReps) {
+			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+			for (KeyValue scKey : simContextKeys) {
+				SimContextRep scRep = getSimContextRep(scKey);
+				if (scRep != null){
+					bioModelRep.addSimContextRep(scRep);
+				}
+			}
+			KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+			for (KeyValue simKey : simulationKeys) {
+				SimulationRep simulationRep = getSimulationRep(simKey);
+				if (simulationRep != null){
+					bioModelRep.addSimulationRep(simulationRep);
+				}
+			}
+			
+		}
+		if (bioModelReps==null || bioModelReps.length!=1){
+			throw new RuntimeException("failed to get biomodel");
+		}
+		
+		String simulationId = (String)resource.getRequestAttributes().get(VCellApiApplication.SIMULATIONID);
+		if (simulationId == null){
+			throw new RuntimeException(VCellApiApplication.SIMULATIONID+" not specified");
+		}
+		SimulationRep simRep = getSimulationRep(new KeyValue(simulationId));
+		return new SimulationRepresentation(simRep, bioModelReps[0]);
 	}
 	
 	public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{

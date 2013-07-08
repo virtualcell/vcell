@@ -133,7 +133,7 @@ public class BiomodelRepresentation {
 
 		ArrayList<SimulationRepresentation> simulationList = new ArrayList<SimulationRepresentation>();
 		for (SimulationRep simRep : bioModelRep.getSimulationRepList()){
-			simulationList.add(new SimulationRepresentation(simRep));
+			simulationList.add(new SimulationRepresentation(simRep,bioModelRep));
 		}
 		this.simulations = simulationList.toArray(new SimulationRepresentation[simulationList.size()]);
 

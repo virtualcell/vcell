@@ -15,6 +15,7 @@ import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
 import org.restlet.security.ChallengeAuthenticator;
 import org.vcell.rest.server.BiomodelServerResource;
+import org.vcell.rest.server.BiomodelSimulationServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.rest.server.SimDataServerResource;
@@ -33,6 +34,9 @@ public class VCellApiApplication extends WadlApplication {
 
 	public static final String SIMTASK = "simtask";
 	public static final String SIMTASKID = "simtaskid";
+	
+	public static final String SIMULATION = "simulation";
+	public static final String SIMULATIONID = "simulationid";
 	
 	public static final String SIMDATA = "simdata";
 	public static final String SIMDATAID = "simdataid";
@@ -102,6 +106,7 @@ public class VCellApiApplication extends WadlApplication {
 		Router rootRouter = new Router(getContext());
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
 		rootRouter.attach("/"+SIMTASK, SimulationTasksServerResource.class);  
 		rootRouter.attach("/"+SIMTASK+"/{"+SIMTASKID+"}", SimulationTaskServerResource.class);  
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  
