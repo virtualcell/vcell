@@ -242,6 +242,11 @@ public class SimulationDispatcher extends ServiceProvider {
 			}
 		}
 		
+		private long getSimJobStatusTimeout(){
+			
+			return PropertyLoader.getIntProperty(PropertyLoader.htcSimulationJobStatusTimeout, (int)MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS);
+		}
+		
 		private void killZombieProcesses() throws ExecutableException{
 			List<HtcJobID> runningSimulations = htcProxy.getRunningSimulationJobIDs();
 			Map<HtcJobID,HtcJobInfo> jobInfos = htcProxy.getJobInfos(runningSimulations);
@@ -266,7 +271,7 @@ public class SimulationDispatcher extends ServiceProvider {
 								killJob = true;
 							}else{
 								long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
-								if (elapsedTimeMS > MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS){
+								if (elapsedTimeMS > getSimJobStatusTimeout()){
 									killJob = true;
 								}
 							}
@@ -298,6 +303,9 @@ public class SimulationDispatcher extends ServiceProvider {
 			//  2) "unreferenced" (same VCellServerID)   ("Waiting" or "Queued" or "Dispatched" or "Running")   (not referenced by BioModel, MathModel, or Simulation parent reference)
 			//
 			//
+			
+			
+			
 			long currentTimeMS = System.currentTimeMillis();
 			SimulationJobStatus[] activeJobStatusArray = simulationDatabase.getActiveJobs();
 			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
@@ -305,7 +313,7 @@ public class SimulationDispatcher extends ServiceProvider {
 				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
 				long timeSinceLastUpdateMS = currentTimeMS - activeJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
 				
-				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
+				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (getSimJobStatusTimeout() + messageFlushTimeMS));
 
 				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(activeJobStatus.getVCSimulationIdentifier().getSimulationKey());
 				

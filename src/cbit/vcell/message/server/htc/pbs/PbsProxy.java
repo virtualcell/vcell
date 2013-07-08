@@ -150,6 +150,16 @@ public final class PbsProxy extends HtcProxy {
 //			sw.append("#PBS -k oe\n");
 			sw.append("#PBS -r n\n");
 			sw.append("#PBS -l nice=10\n");
+
+			String htcSubmissionScriptIncludeFileName = PropertyLoader.getProperty("htcSubScriptIncludeFile", null);
+			if (htcSubmissionScriptIncludeFileName!=null) {
+				File htcSubmissionScriptIncludeFile = new File(htcSubmissionScriptIncludeFileName);
+				if (htcSubmissionScriptIncludeFile.exists() && htcSubmissionScriptIncludeFile.canRead()) {
+					sw.append(FileUtils.readFileToString(htcSubmissionScriptIncludeFile));
+					sw.append("\n");
+				}
+			}
+			sw.append("echo\n");
 			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
 
 			String ldLibraryPathAppend = PropertyLoader.getProperty(PropertyLoader.ldLibraryPathProperty,"");
