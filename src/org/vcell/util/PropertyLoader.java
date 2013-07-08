@@ -32,6 +32,8 @@ public class PropertyLoader {
 	public static final String htcUser						= "vcell.htc.user";
 	public static final String htcPbsHome		 			= "vcell.htc.pbs.home";
 	public static final String htcSgeHome		 			= "vcell.htc.sge.home";
+	public static final String htcSimulationJobStatusTimeout	= "vcell.htc.htcSimulationJobStatusTimeout";
+	public static final String htcSubScriptIncludeFile		= "vcell.htc.htcSubmissionScriptIncludeFile";
 	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
@@ -138,6 +140,8 @@ public class PropertyLoader {
 		htcBatchSystemQueue,
 		htcLogDir,
 		htcUser,
+		htcSimulationJobStatusTimeout,
+		htcSubScriptIncludeFile,
 		
 		
 		compilerProperty,
