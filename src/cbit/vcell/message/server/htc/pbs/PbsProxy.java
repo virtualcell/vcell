@@ -151,7 +151,7 @@ public final class PbsProxy extends HtcProxy {
 			sw.append("#PBS -r n\n");
 			sw.append("#PBS -l nice=10\n");
 
-			String htcSubmissionScriptIncludeFileName = PropertyLoader.getProperty("htcSubScriptIncludeFile", null);
+			String htcSubmissionScriptIncludeFileName = PropertyLoader.getProperty(PropertyLoader.htcSubScriptIncludeFile, null);
 			if (htcSubmissionScriptIncludeFileName!=null) {
 				File htcSubmissionScriptIncludeFile = new File(htcSubmissionScriptIncludeFileName);
 				if (htcSubmissionScriptIncludeFile.exists() && htcSubmissionScriptIncludeFile.canRead()) {
