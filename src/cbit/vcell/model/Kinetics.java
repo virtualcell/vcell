@@ -242,6 +242,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			return true;
 		}
 
+		public boolean isRegenerated(){
+			return !isExpressionEditable();
+		}
 		public boolean isExpressionEditable(){
 			//
 			// don't allow direct editing of rates and currents if they are generated
