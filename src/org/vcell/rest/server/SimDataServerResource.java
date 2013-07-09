@@ -25,6 +25,7 @@ import org.vcell.rest.common.SimDataResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
+import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.simdata.DataSetMetadata;
 
 import com.google.gson.Gson;
@@ -128,7 +129,8 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 			RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
 			try {
 				DataSetMetadata dataSetMetadata = restDatabaseService.getDataSetMetadata(this,vcellUser);
-				SimDataRepresentation simDataRepresentation = new SimDataRepresentation(dataSetMetadata);
+				SimulationRep simRep = restDatabaseService.getSimulationRep(dataSetMetadata.getSimKey());
+				SimDataRepresentation simDataRepresentation = new SimDataRepresentation(dataSetMetadata,simRep.getScanCount());
 				return simDataRepresentation;
 			} catch (DataAccessException e) {
 				e.printStackTrace();

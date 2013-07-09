@@ -6,7 +6,13 @@
 <center><h2><a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="/simtask">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;Simulation Data&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
 
 </center>
-<h2><a href='./${simdata.simkey}/jobindex/0'>data values</a></h2>
+<#assign N=simdata.scanCount>
+<h3>Data Values</h3>
+<#list 1..N as i>
+	<a href='./${simdata.simkey}/jobindex/${i-1}'>jobIndex ${i - 1}</a>&nbsp;
+</#list>
+<br/>
+<br/>
 <table border='1'>
 <tr>
 <th>Variable</th>

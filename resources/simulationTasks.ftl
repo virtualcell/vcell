@@ -41,6 +41,7 @@
 <th>User Name</th>
 <th>Job Index</th>
 <th>Task ID</th>
+<th>num jobs</th>
 <th>HTC JobID</th>
 <th>has data</th>
 <th>Status</th>
@@ -72,6 +73,7 @@
 <td>${simTask.userName!""}</td>
 <td>${simTask.jobIndex!""}</td>
 <td>${simTask.taskId!""}</td>
+<td>${simTask.scanCount!""}</td>
 <td>${simTask.htcJobId!"unknown"}</td>
 <td><#if simTask.hasData><a href='./simdata/${simTask.simKey}'>metadata</a> <a href='./simdata/${simTask.simKey}/jobindex/${simTask.jobIndex}'>values</a><#else>false</#if></td>
 <td>${simTask.status!""}</td>

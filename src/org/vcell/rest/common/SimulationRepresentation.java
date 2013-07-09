@@ -18,6 +18,7 @@ public class SimulationRepresentation {
 	private final String ownerKey;
 	private final String mathKey;
 	private final String solverName;
+	private final int scanCount;
 	private final MathModelLink mathModelLink;
 	private final BioModelLink bioModelLink;
 	
@@ -30,6 +31,7 @@ public class SimulationRepresentation {
 		ownerName = simulationRep.getOwner().getName();
 		mathKey = simulationRep.getMathKey().toString();
 		solverName = simulationRep.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
+		scanCount = simulationRep.getScanCount();
 		this.mathModelLink = null;
 		SimContextRep simContextRep = bioModelRep.getSimContextRepFromMathKey(new KeyValue(mathKey));
 		this.bioModelLink = new BioModelLink(
@@ -67,6 +69,10 @@ public class SimulationRepresentation {
 	
 	public String getSolverName(){
 		return solverName;
+	}
+	
+	public int getScanCount(){
+		return scanCount;
 	}
 
 	public MathModelLink getMathModelLink(){

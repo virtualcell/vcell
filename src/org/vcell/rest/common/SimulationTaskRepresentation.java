@@ -36,6 +36,8 @@ public class SimulationTaskRepresentation {
 	
 	public boolean hasData;
 	
+	public int scanCount;
+	
 	public MathModelLink mathModelLink;
 	
 	public BioModelLink bioModelLink;
@@ -128,7 +130,9 @@ public class SimulationTaskRepresentation {
 		return hasData;
 	}
 
-
+	public int getScanCount(){
+		return scanCount;
+	}
 
 	public MathModelLink getMathModelLink(){
 		return mathModelLink;
@@ -142,7 +146,7 @@ public class SimulationTaskRepresentation {
 
 
 
-	public SimulationTaskRepresentation(SimulationJobStatus simJobStatus){
+	public SimulationTaskRepresentation(SimulationJobStatus simJobStatus, int scanCount){
 		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
 		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
 		this.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
@@ -190,6 +194,7 @@ public class SimulationTaskRepresentation {
 			this.computeHost = simJobStatus.getComputeHost();
 		}
 		this.hasData = simJobStatus.hasData();
+		this.scanCount = simJobStatus.getScanCount();
 		this.simName = simJobStatus.getSimName();
 		this.bioModelLink = simJobStatus.getBioModelLink();
 		this.mathModelLink = simJobStatus.getMathModelLink();

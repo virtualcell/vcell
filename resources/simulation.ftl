@@ -13,7 +13,9 @@
 <th>Simulation Name</th>
 <th>Solver Name</th>
 <th>User Name</th>
+<th>Num Jobs</th>
 <th>Jobs</th>
+<th>Data</th>
 </tr>
 <tr>
 <td><#if simulation.bioModelLink??><a href='/biomodel/${simulation.bioModelLink.bioModelKey}'>${simulation.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
@@ -36,7 +38,9 @@
 </td>
 <td>${simulation.solverName!""}</td>
 <td>${simulation.ownerName!""}</td>
+<td>${simulation.scanCount!""}</td>
 <td><a href="/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td>
+<td><a href="/simdata/${simulation.key}">metadata</a></td>
 </tr>
 </table>
 <br/>
