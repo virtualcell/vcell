@@ -31,6 +31,7 @@ import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
+import cbit.vcell.mongodb.VCMongoMessage;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
@@ -93,9 +94,15 @@ public class MessageProducerSessionJms implements VCMessageSession {
 					vcMessagingServiceJms.getDelegate().onRpcRequestSent(vcRpcRequest, userLoginInfo, vcRpcRequestMessage);
 System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for reply message with correlationID = "+rpcMessage.getJMSMessageID());
 					String filter = VCMessagingConstants.JMSCORRELATIONID_PROPERTY + "='" + rpcMessage.getJMSMessageID() + "'";
-					MessageConsumer replyConsumer = session.createConsumer(commonTemporaryQueue,filter);
-					Message replyMessage = replyConsumer.receive(timeoutMS);
-					replyConsumer.close();
+					MessageConsumer replyConsumer = null;
+					Message replyMessage = null;
+					try {
+					    replyConsumer = session.createConsumer(commonTemporaryQueue,filter);
+						replyMessage = replyConsumer.receive(timeoutMS);
+					}
+					finally {
+						replyConsumer.close();
+					}
 					if (replyMessage == null) {
 						System.out.println("Request timed out");
 					}
@@ -288,6 +295,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 		}
 
 		private void onException(JMSException e){
+			VCMongoMessage.sendException(e);
 			e.printStackTrace(System.out);
 		}
 
