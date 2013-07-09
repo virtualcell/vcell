@@ -2228,7 +2228,7 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 		
 		requester.createGeometry(
 				null, new AsynchClientTask[] {createSpatialMathModelTask,createNewDocumentTask},
-				"Choose geometry type to start MathModel creation","Create MathModel");
+				"Choose geometry type to start MathModel creation","Create MathModel",null);
 		return null;
 	}
 

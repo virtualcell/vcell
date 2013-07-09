@@ -82,7 +82,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	final Object source = e.getSource();
 
-	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY) || actionCommand.equals(GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY)){
 			AsynchClientTask geomRegionsTask = new AsynchClientTask("Update Geometric regions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -105,7 +105,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 
 		createGeometry(getMathModel().getMathDescription().getGeometry(),
 				new AsynchClientTask[] {/*editSelectTask,*/geomRegionsTask,applyGeomTask}
-		,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT);
+		,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT,
+		(actionCommand.equals(GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY)?new DocumentWindowManager.GeometrySelectionInfo():null));
 	}
 
 	if (source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CHANGE_GEOMETRY)) {

@@ -95,7 +95,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	String actionCommand = e.getActionCommand();
 	final Object source = e.getSource();
 	
-	if(source instanceof GeometryViewer && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY)){
+	if(source instanceof GeometryViewer && (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_GEOMETRY) || actionCommand.equals(GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY))){
 		final GeometryViewer geometryViewer = (GeometryViewer)source;
 		
 		AsynchClientTask precomputeAllTask = new AsynchClientTask("precomputeAll geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -133,7 +133,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		Geometry currentGeometry = geometryViewer.getGeometryOwner().getGeometry();
 		createGeometry(currentGeometry,
 				new AsynchClientTask[] {/*oldEditorTask,*/precomputeAllTask,setGeomOnSimContextTask}
-				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT);
+				,TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE,TopLevelWindowManager.APPLY_GEOMETRY_BUTTON_TEXT,
+				(actionCommand.equals(GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY)?new DocumentWindowManager.GeometrySelectionInfo():null));
 	}
 	
 	if (source instanceof MathematicsPanel && actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_MATH_MODEL)) {
