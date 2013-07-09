@@ -351,13 +351,13 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 public static final String B_SHOW_OLD_GEOM_EDITOR = "B_SHOW_OLD_GEOM_EDITOR";
 public static final String DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE = "Choose new geometry type to create";
 public static final String APPLY_GEOMETRY_BUTTON_TEXT = "Finish";
-void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks,String selectDialogTitle,final String applyGeometryButtonText){
+void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks,String selectDialogTitle,final String applyGeometryButtonText,DocumentWindowManager.GeometrySelectionInfo preSelect){
 	
 	try{
 		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		Vector<AsynchClientTask> createGeomTaskV = new Vector<AsynchClientTask>();
 		final DocumentWindowManager.GeometrySelectionInfo geometrySelectionInfo =
-			selectGeometry(currentGeometry != null && currentGeometry.getDimension() >0,selectDialogTitle);
+			(preSelect==null?selectGeometry(currentGeometry != null && currentGeometry.getDimension() >0,selectDialogTitle):preSelect);
 		hash.put(B_SHOW_OLD_GEOM_EDITOR, false);
 		if(geometrySelectionInfo.getDocumentCreationInfo() != null){
 			if(ClientRequestManager.isImportGeometryType(geometrySelectionInfo.getDocumentCreationInfo())){

@@ -13,6 +13,7 @@ import java.awt.AWTEventMulticaster;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
@@ -41,7 +42,6 @@ import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.image.gui.SourceDataInfo;
-import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -83,6 +83,7 @@ public class GeometryViewer extends DocumentEditorSubPanel implements ActionList
 	private JPopupMenu popupMenu = null;
 
 	public static final String REPLACE_GEOMETRY_SPATIAL_LABEL = "Replace Geometry";
+	public static final String EDIT_IMAGE_SPATIAL_LABEL = "Edit Image";
 	public static final String REPLACE_GEOMETRY_NONSPATIAL_LABEL = "Add Geometry";
 	private boolean bShowReplaceButton = true;
 	
@@ -109,7 +110,7 @@ public GeometryViewer(boolean bShowReplaceButton) {
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	if (e.getSource() == getJButtonChangeDomain()){
 		this.showSizeDialog();
-	}else if (e.getSource() == newGeometryMenuItem || e.getSource() == existingGeometryMenuItem) {
+	}else if (e.getSource() == newGeometryMenuItem || e.getSource() == existingGeometryMenuItem || e.getSource() == getIvjButtonEditImage()) {
 		refireActionPerformed(e);
 	} else if (e.getSource() == getJButtonReplace()) {
 		getPopupMenu().show(getJButtonReplace(), getJButtonReplace().getWidth()/2, getJButtonReplace().getHeight());
@@ -417,6 +418,7 @@ private void initConnections() throws java.lang.Exception {
 	getResampleButton().addActionListener(this);
 	getJButtonReplace().addActionListener(this);
 	getJButtonExport().addActionListener(this);
+	getIvjButtonEditImage().addActionListener(this);
 }
 
 /**
@@ -442,7 +444,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 		constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
 		constraintsJLabel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabel1.insets = new java.awt.Insets(0, 2, 0, 0);
+		constraintsJLabel1.insets = new Insets(0, 2, 0, 5);
 		JLabel label = new javax.swing.JLabel("Domain:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		topHeader.add(label, constraintsJLabel1);
@@ -450,7 +452,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsSizeLabel = new java.awt.GridBagConstraints();
 		constraintsSizeLabel.anchor = GridBagConstraints.WEST;
 		constraintsSizeLabel.gridx = 1; constraintsSizeLabel.gridy = 0;
-		constraintsSizeLabel.insets = new java.awt.Insets(0, 2, 0, 2);
+		constraintsSizeLabel.insets = new Insets(0, 2, 0, 5);
 		topHeader.add(getSizeLabel(), constraintsSizeLabel);
 
 		
@@ -458,17 +460,22 @@ private void initialize() {
 		constraintsJButtonExport.weightx = 1.0;
 		constraintsJButtonExport.anchor = GridBagConstraints.WEST;
 		constraintsJButtonExport.gridx = 2; constraintsJButtonExport.gridy = 0;
-		constraintsJButtonExport.insets = new java.awt.Insets(0, 2, 0, 2);
+		constraintsJButtonExport.insets = new Insets(0, 2, 0, 5);
 		topHeader.add(getJButtonChangeDomain(), constraintsJButtonExport);
 		
 		java.awt.GridBagConstraints constraintsJButtonChangeDomain = new java.awt.GridBagConstraints();
 		constraintsJButtonChangeDomain.gridx = 3; constraintsJButtonChangeDomain.gridy = 0;
 		constraintsJButtonChangeDomain.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJButtonChangeDomain.insets = new java.awt.Insets(0, 2, 0, 2);
+		constraintsJButtonChangeDomain.insets = new Insets(0, 2, 0, 5);
 		topHeader.add(getJButtonExport(), constraintsJButtonChangeDomain);
+		GridBagConstraints gbc_ivjButtonEditImage = new GridBagConstraints();
+		gbc_ivjButtonEditImage.insets = new Insets(0, 0, 0, 5);
+		gbc_ivjButtonEditImage.gridx = 4;
+		gbc_ivjButtonEditImage.gridy = 0;
+		topHeader.add(getIvjButtonEditImage(), gbc_ivjButtonEditImage);
 		
 		java.awt.GridBagConstraints gbcr = new java.awt.GridBagConstraints();
-		gbcr.gridx = 4; gbcr.gridy = 0;
+		gbcr.gridx = 5; gbcr.gridy = 0;
 		gbcr.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbcr.insets = new java.awt.Insets(0, 0, 0, 2);
 		topHeader.add(getJButtonReplace(), gbcr);
@@ -629,10 +636,12 @@ public void setGeometry(Geometry newValue) {
 					tabbedPane.setVisible(false);
 					getJButtonReplace().setText(REPLACE_GEOMETRY_NONSPATIAL_LABEL);
 					getJButtonExport().setEnabled(false);
+					getIvjButtonEditImage().setEnabled(false);//compartmental
 				} else {
 					getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 					getJButtonChangeDomain().setEnabled(true);
 					getJButtonExport().setEnabled(true);
+					getIvjButtonEditImage().setEnabled(ivjGeometry.getGeometrySpec().hasImage());//check if analytic
 					tabbedPane.setVisible(true);
 				}
 				updateSurfaceView();
@@ -778,6 +787,7 @@ public synchronized void removeActionListener(ActionListener l) {
 }
 
 private DocumentWindowManager documentWindowManager;
+private JButton ivjButtonEditImage;
 public void setGeometryOwner(GeometryOwner newValue,DocumentWindowManager documentWindowManager) {
 	this.documentWindowManager = documentWindowManager;
 	if (geometryOwner == newValue) {
@@ -821,4 +831,11 @@ public void setSelectionManager(SelectionManager selectionManager) {
 	super.setSelectionManager(selectionManager);
 	ivjGeometrySubVolumePanel.setSelectionManager(selectionManager);
 }
+	private JButton getIvjButtonEditImage() {
+		if (ivjButtonEditImage == null) {
+			ivjButtonEditImage = new JButton(EDIT_IMAGE_SPATIAL_LABEL);
+			ivjButtonEditImage.setActionCommand(GuiConstants.ACTIONCMD_EDITCURRENTSPATIAL_GEOMETRY);
+		}
+		return ivjButtonEditImage;
+	}
 }
