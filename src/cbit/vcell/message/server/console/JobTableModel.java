@@ -27,22 +27,23 @@ public class JobTableModel extends VCellSortTableModel<ComparableObject> {
 	public final static int columnIndex_UserID = 1;
 	public final static int columnIndex_SimID = 2;
 	private final static int columnIndex_JobIndex = 3;
-	private final static int columnIndex_SolverType = 4;
-	private final static int columnIndex_Status = 5;
-	private final static int columnIndex_ComputeHost = 6;
-	private final static int columnIndex_ServerID = 7;
-	private final static int columnIndex_TaskID = 8;
-	private final static int columnIndex_SubmitDate = 9;
-	private final static int columnIndex_StartDate = 10;
-	private final static int columnIndex_EndDate = 11;
-	private final static int columnIndex_ElapsedTime = 12;
-	private final static int columnIndex_MeshSize = 13;
+	private final static int columnIndex_ScanCount = 4;
+	private final static int columnIndex_SolverType = 5;
+	private final static int columnIndex_Status = 6;
+	private final static int columnIndex_ComputeHost = 7;
+	private final static int columnIndex_ServerID = 8;
+	private final static int columnIndex_TaskID = 9;
+	private final static int columnIndex_SubmitDate = 10;
+	private final static int columnIndex_StartDate = 11;
+	private final static int columnIndex_EndDate = 12;
+	private final static int columnIndex_ElapsedTime = 13;
+	private final static int columnIndex_MeshSize = 14;
 
 /**
  * JobTableModel constructor comment.
  */
 public JobTableModel() {
-	super(new String[]{"Model Name", "User ID", "Sim ID", "Job Index", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)", "Mesh Size"});
+	super(new String[]{"Model Name", "User ID", "Sim ID", "Job Index", "Scan Count", "Solver Type", "Status", "Compute Host", "Server ID", "Task ID", "Submit Date", "Start Date", "End Date", "Elapsed (h:m:s)", "Mesh Size"});
 }
 
 
@@ -53,7 +54,7 @@ public JobTableModel() {
  * @param columnIndex int
  */
 public Class getColumnClass(int columnIndex) {
-	if (columnIndex == columnIndex_SimID || columnIndex == columnIndex_TaskID || columnIndex == columnIndex_JobIndex) {
+	if (columnIndex == columnIndex_SimID || columnIndex == columnIndex_TaskID || columnIndex == columnIndex_JobIndex || columnIndex == columnIndex_ScanCount) {
 		return Number.class;
 	} else if (columnIndex == columnIndex_SubmitDate || columnIndex == columnIndex_StartDate || columnIndex == columnIndex_EndDate) {
 		return Date.class;

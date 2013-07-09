@@ -33,6 +33,7 @@ public class SimpleJobStatus implements ComparableObject {
 	private Integer meshSpecX = null;
 	private Integer meshSpecY= null;
 	private Integer meshSpecZ = null;
+	private Integer scanCount = null;
 	private BioModelLink bioModelLink = null;
 	private MathModelLink mathModelLink = null;
 	
@@ -142,7 +143,7 @@ public class SimpleJobStatus implements ComparableObject {
 /**
  * SimpleJobStatus constructor comment.
  */
-public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ, BioModelLink bioModelLink, MathModelLink mathModelLink) {	
+public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobStatus, SolverTaskDescription arg_solverTaskDesc, Integer meshSpecX, Integer meshSpecY, Integer meshSpecZ, Integer scanCount, BioModelLink bioModelLink, MathModelLink mathModelLink) {	
 	super();
 	this.simname = simname;
 	this.userID = user;
@@ -159,6 +160,7 @@ public SimpleJobStatus(String simname, String user, SimulationJobStatus arg_jobS
 	this.meshSpecX = meshSpecX;
 	this.meshSpecY = meshSpecY;
 	this.meshSpecZ = meshSpecZ;
+	this.scanCount = scanCount;
 	this.bioModelLink = bioModelLink;
 	this.mathModelLink = mathModelLink;
 }
@@ -379,7 +381,7 @@ public boolean isRunning() {
  * @return java.lang.String[]
  */
 public Object[] toObjects() {	
-	return new Object[] {(bioModelLink!=null)?("BM \""+bioModelLink.bioModelName+"\", APP \""+bioModelLink.simContextName+"\", SIM \""+simname+"\""):((mathModelLink!=null)?("MM \""+mathModelLink.mathModelName+"\", SIM \""+simname+"\""):("")), userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
+	return new Object[] {(bioModelLink!=null)?("BM \""+bioModelLink.bioModelName+"\", APP \""+bioModelLink.simContextName+"\", SIM \""+simname+"\""):((mathModelLink!=null)?("MM \""+mathModelLink.mathModelName+"\", SIM \""+simname+"\""):("")), userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(),getScanCount(),  
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
 		getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
 		elapsedTime, new Long(getMeshSize())};
@@ -388,6 +390,11 @@ public Object[] toObjects() {
 
 public HtcJobID getHtcJobID() {
 	return jobStatus.getSimulationExecutionStatus().getHtcJobID();
+}
+
+
+public Integer getScanCount() {
+	return scanCount;
 }
 
 }
