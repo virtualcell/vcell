@@ -15,6 +15,11 @@ import java.awt.FlowLayout;
 import javax.swing.JLabel;
 
 import org.vcell.util.Coordinate;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)
@@ -37,17 +42,10 @@ public class ImagePlanePanel extends javax.swing.JPanel {
 	private ImagePlaneManager ivjimagePlaneMananager1 = null;
 	private javax.swing.ButtonGroup ivjButtonGroup = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private JSlider slider;
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener,ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ImagePlanePanel.this.getSlicePlus10Button()) 
-				connEtoC2(e);
-			if (e.getSource() == ImagePlanePanel.this.getSlicePlus1Button()) 
-				connEtoC3(e);
-			if (e.getSource() == ImagePlanePanel.this.getSliceMinus10Button()) 
-				connEtoC4(e);
-			if (e.getSource() == ImagePlanePanel.this.getSliceMinus1Button()) 
-				connEtoC5(e);
 			if (e.getSource() == ImagePlanePanel.this.getZAxisCheckbox()) 
 				connEtoC6(e);
 			if (e.getSource() == ImagePlanePanel.this.getYAxisCheckbox()) 
@@ -64,6 +62,14 @@ public class ImagePlanePanel extends javax.swing.JPanel {
 				connEtoC9(evt);
 			if (evt.getSource() == ImagePlanePanel.this.getimagePlaneMananager1() && (evt.getPropertyName().equals("sourceDataInfo"))) 
 				connEtoC12(evt);
+		}
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			if(e.getSource() == getSlider()){
+				if(!getSlider().getValueIsAdjusting() && getImagePlaneMananager() != null){
+					getImagePlaneMananager().setSlice(getSlider().getValue());
+				}
+			}			
 		};
 	};
 /**
@@ -136,7 +142,8 @@ private void connEtoC12(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.updateSliceLabel();
+		initView();
+		//this.updateSliceLabel();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -413,10 +420,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1.setName("JPanel1");
 			FlowLayout fl = new FlowLayout(FlowLayout.CENTER,0,0);
 			ivjJPanel1.setLayout(fl);
-			ivjJPanel1.add(getSliceMinus10Button());
-			ivjJPanel1.add(getSliceMinus1Button());
-			ivjJPanel1.add(getSlicePlus1Button());
-			ivjJPanel1.add(getSlicePlus10Button());
+			ivjJPanel1.add(getSlider());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -464,74 +468,6 @@ private javax.swing.JLabel getSliceLabel() {
 		}
 	}
 	return ivjSliceLabel;
-}
-/**
- * Return the Button4 property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getSliceMinus10Button() {
-	if (ivjSliceMinus10Button == null) {
-		try {
-			ivjSliceMinus10Button = new javax.swing.JButton("-10");
-			ivjSliceMinus10Button.setName("SliceMinus10Button");
-			ivjSliceMinus10Button.putClientProperty("JButton.buttonType", "roundRect");
-			ivjSliceMinus10Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSliceMinus10Button;
-}
-/**
- * Return the Button2 property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getSliceMinus1Button() {
-	if (ivjSliceMinus1Button == null) {
-		try {
-			ivjSliceMinus1Button = new javax.swing.JButton("-1");
-			ivjSliceMinus1Button.setName("SliceMinus1Button");
-			ivjSliceMinus1Button.putClientProperty("JButton.buttonType", "roundRect");
-			ivjSliceMinus1Button.setMargin(new java.awt.Insets(2, 5, 2, 5));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSliceMinus1Button;
-}
-/**
- * Return the Button3 property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getSlicePlus10Button() {
-	if (ivjSlicePlus10Button == null) {
-		try {
-			ivjSlicePlus10Button = new javax.swing.JButton("+10");
-			ivjSlicePlus10Button.setName("SlicePlus10Button");
-			ivjSlicePlus10Button.putClientProperty("JButton.buttonType", "roundRect");
-			ivjSlicePlus10Button.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSlicePlus10Button;
-}
-/**
- * Return the Button1 property value.
- * @return javax.swing.JButton
- */
-private javax.swing.JButton getSlicePlus1Button() {
-	if (ivjSlicePlus1Button == null) {
-		try {
-			ivjSlicePlus1Button = new javax.swing.JButton("+1");
-			ivjSlicePlus1Button.setName("SlicePlus1Button");
-			ivjSlicePlus1Button.putClientProperty("JButton.buttonType", "roundRect");
-			ivjSlicePlus1Button.setMargin(new java.awt.Insets(2, 5, 2, 5));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSlicePlus1Button;
 }
 /**
  * Return the XAxisCheckbox property value.
@@ -629,13 +565,10 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	getSlicePlus10Button().addActionListener(ivjEventHandler);
-	getSlicePlus1Button().addActionListener(ivjEventHandler);
-	getSliceMinus10Button().addActionListener(ivjEventHandler);
-	getSliceMinus1Button().addActionListener(ivjEventHandler);
 	getZAxisCheckbox().addActionListener(ivjEventHandler);
 	getYAxisCheckbox().addActionListener(ivjEventHandler);
 	getXAxisCheckbox().addActionListener(ivjEventHandler);
+	getSlider().addChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 }
 /**
@@ -729,23 +662,35 @@ private void normalAxis(int axis) {
  */
 private void normalAxisChanged() {
     if (getImagePlaneMananager() != null) {
+    	int max = 0;
         switch (getImagePlaneMananager().getNormalAxis()) {
             case Coordinate.X_AXIS :
+            	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getXSize()-1:0);
                 if (!getXAxisCheckbox().isSelected()) {
                     getXAxisCheckbox().setSelected(true);
                 }
                 break;
             case Coordinate.Y_AXIS :
+            	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getYSize()-1:0);
                 if (!getYAxisCheckbox().isSelected()) {
                     getYAxisCheckbox().setSelected(true);
                 }
                 break;
             case Coordinate.Z_AXIS :
+            	max = (getImagePlaneMananager().getSourceDataInfo()!=null?getImagePlaneMananager().getSourceDataInfo().getZSize()-1:0);
                 if (!getZAxisCheckbox().isSelected()) {
                     getZAxisCheckbox().setSelected(true);
                 }
                 break;
         }
+        
+        if(getSlider().getValue() > max){
+        	getSlider().setValue(0);
+        }
+        if(getSlider().getMaximum() != max){
+        	getSlider().setMaximum(max);
+        }
+
     }
 }
 /**
@@ -830,6 +775,7 @@ private void updateSliceLabel() {
 	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.X_AXIS){
         	currSliceText = "X";
 	    }
+	    
 	    getSliceLabel().setText(currSliceText+" ["+getImagePlaneMananager().getSlice()+"] = "+org.vcell.util.NumberUtils.formatNumber(sliceWorld));
         javax.swing.border.Border border = getBorder();
         if(border != null && border instanceof javax.swing.border.TitledBorder){
@@ -857,4 +803,11 @@ private void yAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEven
 private void zAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
     normalAxis(Coordinate.Z_AXIS);
 }
+	private JSlider getSlider() {
+		if (slider == null) {
+			slider = new JSlider();
+			slider.setValue(0);
+		}
+		return slider;
+	}
 }
