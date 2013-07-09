@@ -18,16 +18,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.axis.components.script.BSF;
-import org.bson.BSON;
+import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
-
-import com.google.gson.Gson;
-import com.mongodb.util.JSON;
 
 import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
 import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
@@ -37,6 +33,9 @@ import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.solver.MathOverrides;
+
+import com.google.gson.Gson;
 
 /**
  * Insert the type's description here.
@@ -384,7 +383,7 @@ simid		bmlink																																								mmlink
 
 
  */
-public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException {	
+public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException, DataAccessException {	
 	
 	BioModelSimulationLinkTable bioSimLinkTable = BioModelSimulationLinkTable.table;
 	MathModelSimulationLinkTable mathSimLinkTable = MathModelSimulationLinkTable.table;
@@ -401,6 +400,8 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 		+ "," + "vc_sim_1." + simTable.meshSpecX.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.meshSpecY.getUnqualifiedColName()
 		+ "," + "vc_sim_1." + simTable.meshSpecZ.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.mathOverridesLarge.getUnqualifiedColName()+" as "+simTable.mathOverridesLarge.getUnqualifiedColName()
+		+ "," + "vc_sim_1." + simTable.mathOverridesSmall.getUnqualifiedColName()+" as "+simTable.mathOverridesSmall.getUnqualifiedColName()
 		+ "," + "(SELECT max('{\""+BioModelLink.bmid+"\":\"' || lpad(vc_biomodel.id,14,0)" +
 							" || '\",\""+BioModelLink.scid+"\":\"' || lpad(vc_simcontext.id,14,0)" +
 							" || '\",\""+BioModelLink.bmbranch+"\":\"' || lpad(vc_biomodel.versionbranchid,14,0)" +
@@ -512,8 +513,15 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 				mathModelLink = gson.fromJson(latestMathModelLinkJSON, MathModelLink.class);
 				mathModelLink.clearZeroPadding();
 			}
-			
-			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, bioModelLink, mathModelLink));
+			CommentStringTokenizer mathOverridesTokens = SimulationTable.getMathOverridesTokenizer(rset);
+			List<MathOverrides.Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokens);
+			int scanCount = 1;
+			for (MathOverrides.Element element : mathOverrideElements) {
+				if (element.getSpec()!=null){
+					scanCount *= element.getSpec().getNumValues();
+				}
+			}
+			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, scanCount, bioModelLink, mathModelLink));
 		} 
 	} finally {
 		stmt.close();		

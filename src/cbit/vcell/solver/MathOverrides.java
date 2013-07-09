@@ -9,9 +9,11 @@
  */
 
 package cbit.vcell.solver;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -45,7 +47,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 	private java.util.Hashtable<String, Element> overridesHash = new java.util.Hashtable<String, Element>();
 	protected transient cbit.vcell.solver.MathOverridesListener aMathOverridesListener = null;
 	
-	class Element implements java.io.Serializable, Matchable {
+	public static class Element implements java.io.Serializable, Matchable {
 		private Expression actualValue;
 		private String name;
 		private ConstantArraySpec spec;
@@ -77,6 +79,16 @@ public class MathOverrides implements Matchable, java.io.Serializable {
 			}
 			return false;
 		}
+		public Expression getActualValue() {
+			return actualValue;
+		}
+		public String getName() {
+			return name;
+		}
+		public ConstantArraySpec getSpec() {
+			return spec;
+		}
+		
 	}
 
 /**
@@ -599,8 +611,32 @@ private void putConstantArraySpec(ConstantArraySpec spec, boolean bFireEvent) th
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-private void readVCML(CommentStringTokenizer tokens)
-	throws DataAccessException {
+private void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
+
+	List<MathOverrides.Element> parsedElements = parseOverrideElementsFromVCML(tokens);
+	for (Element element : parsedElements) {
+		if (element.actualValue!=null){
+			Expression act = element.actualValue;
+			Expression def = getDefaultExpression(element.name);
+			//
+			// ignore override if not present in math or if it is the same
+			//
+			if (def!=null && !act.compareEqual(def)){
+				getOverridesHash().put(element.name, element);
+			}
+		}else{
+			getOverridesHash().put(element.name, element);
+		}
+	}
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param tokens java.util.StringTokenizer
+ * @exception java.lang.Exception The exception description.
+ */
+public static List<Element> parseOverrideElementsFromVCML(CommentStringTokenizer tokens) throws DataAccessException {
 
 
 	//  Read format as follows:
@@ -610,6 +646,7 @@ private void readVCML(CommentStringTokenizer tokens)
 	//       Constant K2 400;
 	//       Constant K3 494.0;
 	//   }
+	ArrayList<Element> elements = new ArrayList<Element>();
 	try {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.MathOverrides)) {
@@ -627,13 +664,7 @@ private void readVCML(CommentStringTokenizer tokens)
 			if (token.equalsIgnoreCase(VCML.Constant)) {
 				String name = tokens.nextToken();
 				Expression act = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-				Expression def = getDefaultExpression(name);
-				//
-				// ignore override if not present in math or if it is the same
-				//
-				if (def!=null && !act.compareEqual(def)){
-					getOverridesHash().put(name, new MathOverrides.Element(name, act));
-				}
+				elements.add(new MathOverrides.Element(name, act));
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.ConstantArraySpec)) {
@@ -652,11 +683,12 @@ private void readVCML(CommentStringTokenizer tokens)
 						description += t + " ";
 					}
 				}
-				getOverridesHash().put(name, new MathOverrides.Element(name, ConstantArraySpec.createFromString(name, description.trim(), type)));
+				elements.add(new MathOverrides.Element(name, ConstantArraySpec.createFromString(name, description.trim(), type)));
 				continue;
 			}
 			throw new DataAccessException("unexpected identifier " + token);
 		}
+		return elements;
 	} catch (Throwable e) {
 		throw new DataAccessException(
 			"line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage()); 

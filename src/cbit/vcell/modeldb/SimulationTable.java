@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -36,6 +37,8 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.Table;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.DataProcessingInstructions;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverrides.Element;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -191,19 +194,7 @@ public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog l
 	String mathOverridesString = new String(mathOverridesData);
 	*/
 	//
-	String mathOverridesString =
-		DbDriver.varchar2_CLOB_get(rset,SimulationTable.table.mathOverridesSmall,SimulationTable.table.mathOverridesLarge);
-	if(mathOverridesString == null || mathOverridesString.length() == 0){
-		throw new DataAccessException("no data stored for MathOverrides");
-	}
-	//
-	//	System.out.println("mathOverridesString '"+mathOverridesString+"'");
-	if (mathOverridesString.endsWith(";}\n")){
-		StringBuffer buffer = new StringBuffer(mathOverridesString.substring(0,mathOverridesString.length()-2));
-		buffer.append("\n}\n");
-		mathOverridesString = buffer.toString();
-	}
-	CommentStringTokenizer mathOverrideTokens = new CommentStringTokenizer(mathOverridesString);
+	CommentStringTokenizer mathOverrideTokens = getMathOverridesTokenizer(rset);
 
 	String dataProcessingInstructionString = rset.getString(dataProcInstr.getUnqualifiedColName());
 	DataProcessingInstructions dpi = null;
@@ -246,6 +237,22 @@ public Simulation getSimulation(QueryHashtable dbc, ResultSet rset, SessionLog l
 	//simulation.setMathDescription(mathDesc);
 
 	return simulation;
+}
+public static CommentStringTokenizer getMathOverridesTokenizer(ResultSet rset) throws SQLException, DataAccessException {
+	String mathOverridesString =
+		DbDriver.varchar2_CLOB_get(rset,SimulationTable.table.mathOverridesSmall,SimulationTable.table.mathOverridesLarge);
+	if(mathOverridesString == null || mathOverridesString.length() == 0){
+		throw new DataAccessException("no data stored for MathOverrides");
+	}
+	//
+	//	System.out.println("mathOverridesString '"+mathOverridesString+"'");
+	if (mathOverridesString.endsWith(";}\n")){
+		StringBuffer buffer = new StringBuffer(mathOverridesString.substring(0,mathOverridesString.length()-2));
+		buffer.append("\n}\n");
+		mathOverridesString = buffer.toString();
+	}
+	CommentStringTokenizer mathOverrideTokens = new CommentStringTokenizer(mathOverridesString);
+	return mathOverrideTokens;
 }
 /**
  * This method was created in VisualAge.
@@ -304,7 +311,9 @@ public String getPreparedStatement_SimulationReps(){
 		    simTable.ownerRef.getQualifiedColName()+", "+
 		    UserTable.table.userid.getQualifiedColName()+", "+
 		    simTable.mathRef.getQualifiedColName()+", "+
-		    simTable.taskDescription.getQualifiedColName()+" "+
+		    simTable.taskDescription.getQualifiedColName()+", "+
+		    simTable.mathOverridesLarge.getUnqualifiedColName()+", "+
+		    simTable.mathOverridesSmall.getUnqualifiedColName()+" "+
 		
 		"from "+simTable.getTableName()+", "+userTable.getTableName()+" "+
 		"where "+simTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
@@ -334,7 +343,7 @@ public void setPreparedStatement_SimulationReps(PreparedStatement stmt, KeyValue
 
 
 
-public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentException, SQLException {
+public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentException, SQLException, DataAccessException {
 	KeyValue scKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String name = rset.getString(table.name.toString());
 	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
@@ -349,8 +358,11 @@ public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentExce
 	} catch (DataAccessException e) {
 		e.printStackTrace();
 	}
-	
-	return new SimulationRep(scKey,branchID,name,owner,mathKey,solverTaskDescription);
+
+	CommentStringTokenizer mathOverridesTokenizer = getMathOverridesTokenizer(rset);
+	List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
+
+	return new SimulationRep(scKey,branchID,name,owner,mathKey,solverTaskDescription,mathOverrideElements.toArray(new MathOverrides.Element[0]));
 }
 
 

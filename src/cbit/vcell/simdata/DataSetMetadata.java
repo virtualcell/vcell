@@ -3,6 +3,7 @@ package cbit.vcell.simdata;
 import java.io.Serializable;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 
 public class DataSetMetadata implements Serializable {
@@ -17,6 +18,10 @@ public class DataSetMetadata implements Serializable {
 
 	public String[] getVarNames() {
 		return varNames;
+	}
+	
+	public KeyValue getSimKey(){
+		return new KeyValue(vcDataIdentifier.getID().split("_")[1]);
 	}
 	
 }
