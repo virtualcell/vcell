@@ -611,7 +611,7 @@ private void refreshButtons() {
 	boolean bHasGeomSpec = (bHasGeometry?getGeometry().getGeometrySpec()!= null:false);
 	boolean bImageBased = (bHasGeomSpec?getGeometry().getGeometrySpec().getImage() != null:false);
 
-	addShapeButton.setEnabled(true);
+	addShapeButton.setEnabled(!bImageBased);
 	SubVolume selectedSubVolume = getSelectedSubVolume();
 	if (!bHasGeomSpec  || getGeometry().getDimension()==0){
 		getFrontButton().setEnabled(false);
