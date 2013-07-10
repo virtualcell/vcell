@@ -1,6 +1,7 @@
 package org.vcell.util;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -73,4 +74,17 @@ public class VCellClientClasspathUtils {
 			}
 		}
 	}
+	
+	public static boolean anyBioFormatsLocalDownloadsExists() throws Exception{
+		if(VCellClientClasspathUtils.getPluginFolder() != null){
+			File[] bioformatsPluginFiles = VCellClientClasspathUtils.getPluginFolder().listFiles(new FileFilter() {
+				public boolean accept(File pathname) {
+					return pathname.isFile() && pathname.getName().startsWith("bioformats_") && pathname.getName().endsWith(".jar");
+				}
+			});
+			return bioformatsPluginFiles != null && bioformatsPluginFiles.length > 0;
+		}
+		return false;
+	}
+
 }
