@@ -300,20 +300,13 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int MESH_FILE = 5;
 	final int FROM_SCRATCH = 6;
 	final int CSGEOMETRY_3D = 7;
-	final int FROM_CURRENT_GEOM = 8;
 	
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
 			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
-			{"From scratch"}, {"Constructed Solid Geometry (3D)"}};
-	if(bShowCurrentGeomChoice){
-		Vector<String[]> choiceV = new Vector<String[]>();
-		choiceV.addAll(Arrays.asList(choices));
-		choiceV.add(new String[] {"Edit Current Geometry"});
-		choices = choiceV.toArray(new String[0][]);
-	}
+			{"New Blank Image Canvas"}, {"Constructed Solid Geometry (3D)"}};
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(), 
 			dialogText,
@@ -333,9 +326,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == FROM_SCRATCH){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
-	}else if(geomType[0] == FROM_CURRENT_GEOM){
-		return new DocumentWindowManager.GeometrySelectionInfo();
-	} else if(geomType[0] == CSGEOMETRY_3D){
+	}else if(geomType[0] == CSGEOMETRY_3D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);

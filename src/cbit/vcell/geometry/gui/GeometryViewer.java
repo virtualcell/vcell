@@ -641,7 +641,7 @@ public void setGeometry(Geometry newValue) {
 					getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 					getJButtonChangeDomain().setEnabled(true);
 					getJButtonExport().setEnabled(true);
-					getIvjButtonEditImage().setEnabled(ivjGeometry.getGeometrySpec().hasImage());//check if analytic
+					getIvjButtonEditImage().setEnabled(ivjGeometry.getGeometrySpec().hasImage() && ivjGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0);
 					tabbedPane.setVisible(true);
 				}
 				updateSurfaceView();
