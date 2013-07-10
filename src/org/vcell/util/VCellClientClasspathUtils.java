@@ -1,6 +1,7 @@
 package org.vcell.util;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,7 +44,33 @@ public class VCellClientClasspathUtils {
 				throw new RuntimeException("not able to create plugin directory: "+getPluginFolder().getAbsolutePath());
 			}
 		}
+		cleanupOldBioFormatsJarfiles();
 		File jarFile = new File(getPluginFolder(),PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName));
 		FileUtils.saveUrlToFile(jarFile.getAbsolutePath(), getBioformatsJarDownloadURLString());
+	}
+	
+	private static void cleanupOldBioFormatsJarfiles(){
+		//cleanup client side BioFormats .jar files that have old naming scheme or
+		//have a SITENAME that matches the newer version we will download
+		final String[] bioformatsJarSplit = PropertyLoader.getProperty(PropertyLoader.bioformatsJarFileName, "").split("_");
+		//Assume naming format "bioformats_SITENAME_Major_Minor_Build.jar" as defined in vcell/branches/DeployVCell project in DeployVCell.DeploymentProperties.getBioformatsJarName();
+		final String vcellSiteName = (bioformatsJarSplit != null && bioformatsJarSplit.length == 5?bioformatsJarSplit[1]:null);
+		File[] legacyBioFormatsJarFileNames = getPluginFolder().listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				if(name.equals("bioformats.jar") || (name.startsWith("bioformats_omexml_locicommon") && name.endsWith(".jar")) ){
+					return true;
+				}
+				if(vcellSiteName != null && name.startsWith("bioformats"+"_"+vcellSiteName+"_") && name.endsWith(".jar")){
+					return true;
+				}
+				return false;
+			}
+		});
+		for (int i = 0; legacyBioFormatsJarFileNames != null && i < legacyBioFormatsJarFileNames.length; i++) {
+			if(legacyBioFormatsJarFileNames[i].isFile()){
+				System.out.println("Removing file '"+legacyBioFormatsJarFileNames[i].getAbsolutePath()+"' success="+legacyBioFormatsJarFileNames[i].delete());
+			}
+		}
 	}
 }
