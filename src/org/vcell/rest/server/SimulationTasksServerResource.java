@@ -125,7 +125,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
 		dataModel.put("userId", getAttribute(PARAM_USER));
-		dataModel.put("simId", getLongQueryValue(PARAM_SIM_ID));
+		dataModel.put("simId", getQueryValue(PARAM_SIM_ID));
 		dataModel.put("jobId",  getLongQueryValue(PARAM_JOB_ID));
 		dataModel.put("taskId",  getLongQueryValue(PARAM_TASK_ID));
 		dataModel.put("computeHost", getQueryValue(PARAM_COMPUTE_HOST));

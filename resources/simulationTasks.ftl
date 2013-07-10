@@ -49,22 +49,27 @@
 <th>Message</th>
 <th>Site</th>
 <th>Compute Host</th>
+<th>operations</th>
 </tr>
 <#list simTasks as simTask>
+
+<#if simTask.bioModelLink??>
+	<#assign simlink="/biomodel/${simTask.bioModelLink.bioModelKey}/simulation/${simTask.simKey}"/>
+</#if>
+<#if simTask.mathModelLink??>
+	<#assign simlink="/biomodel/${simTask.mathModelLink.mathModelKey}/simulation/${simTask.simKey}"/>
+</#if>
+
 <tr>
 <td><#if simTask.bioModelLink??><a href='/biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
 <td><#if simTask.bioModelLink??>${simTask.bioModelLink.simContextName!""}<#else>unknown</#if></td>
 <td><#if simTask.mathModelLink??>"${simTask.mathModelLink.mathModelName!""}" (id=${simTask.mathModelLink.mathModelKey}) (branch=${simTask.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
 <td>
 	<#if simTask.simName??>
-		<#if simTask.bioModelLink??>
-			<a href="/biomodel/${simTask.bioModelLink.bioModelKey}/simulation/${simTask.simKey}">${simTask.simName}</a>
+		<#if simlink??>
+			<a href="${simlink}">${simTask.simName}</a>
 		<#else>
-			<#if simTask.mathModelLink??>
-				<a href="/biomodel/${simTask.mathModelLink.mathModelKey}/simulation/${simTask.simKey}">${simTask.simName}</a>
-			<#else>
-				${simTask.simName}
-			</#if>
+			${simTask.simName}
 		</#if>
     <#else>
     	unknown
@@ -81,6 +86,10 @@
 <td>${simTask.message!""}</td>
 <td>${simTask.site!""}</td>
 <td><#if simTask.computeHost??>${simTask.computeHost!""}<#else>unknown</#if></td>
+<td>
+<form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
+<form name="stop" action="${simlink}/stopSimulation" method="post"><input type='submit' value='Stop'/></form>
+</td>
 </tr>
 </#list>
 </table>

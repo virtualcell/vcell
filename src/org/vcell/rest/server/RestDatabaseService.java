@@ -18,6 +18,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
+import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
@@ -51,6 +52,64 @@ public class RestDatabaseService {
 		this.log = log;
 	}
 	
+	public SimulationRep startSimulation(BiomodelSimulationStartServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
+		KeyValue simKey = new KeyValue(simId);
+		SimulationRep simRep = getSimulationRep(simKey);
+		if (simRep == null){
+			throw new DataAccessException("Simulation with key "+simKey+" not found");
+		}
+		User owner = simRep.getOwner();
+		if (!owner.compareEqual(vcellUser)){
+			throw new DataAccessException("not authorized to start simulation");
+		}
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			try {
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new DataAccessException(e.getMessage());
+			}
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+			rpcSimServerProxy.startSimulation(vcSimID, simRep.getScanCount());
+			return simRep;
+		}finally{
+			rpcSession.close();
+		}
+	}
+
+	public SimulationRep stopSimulation(BiomodelSimulationStopServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
+		KeyValue simKey = new KeyValue(simId);
+		SimulationRep simRep = getSimulationRep(simKey);
+		if (simRep == null){
+			throw new DataAccessException("Simulation with key "+simKey+" not found");
+		}
+		User owner = simRep.getOwner();
+		if (!owner.compareEqual(vcellUser)){
+			throw new DataAccessException("not authorized to stop simulation");
+		}
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			try {
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new DataAccessException(e.getMessage());
+			}
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+			rpcSimServerProxy.stopSimulation(vcSimID);
+			return simRep;
+		}finally{
+			rpcSession.close();
+		}
+	}
+
 	public DataSetMetadata getDataSetMetadata(SimDataServerResource resource, User vcellUser) throws DataAccessException, SQLException{
 		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
