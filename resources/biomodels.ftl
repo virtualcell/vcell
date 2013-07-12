@@ -3,7 +3,8 @@
 <title>Biomodels</title>
 </head>
 <body>
-<center><h2>BioModels&nbsp;&nbsp;&nbsp;<a href="/simtask">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
+<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on">
+<center><h2>BioModels&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid})<#else>(not logged in)</#if></h2></center><br/><center>
 
 <form>
 	<table><tbody>
@@ -21,10 +22,10 @@
 <br/><h3>query returned ${biomodels?size} results</h3>
 <table border='1'>
 <tr>
-<th>bioModel id</th>
-<th>bioModel name</th>
+<th>bioModel&nbsp;ids</th>
+<th>bioModel&nbsp;name</th>
 <th>Owner</th>
-<th>Date Saved</th>
+<th>Date&nbsp;Saved</th>
 <!-- <th>Simulations</th> -->
 <th>&quot;Applications&quot; - Simulations</th>
 </tr>
