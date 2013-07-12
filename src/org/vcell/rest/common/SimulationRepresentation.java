@@ -34,13 +34,16 @@ public class SimulationRepresentation {
 		scanCount = simulationRep.getScanCount();
 		this.mathModelLink = null;
 		SimContextRep simContextRep = bioModelRep.getSimContextRepFromMathKey(new KeyValue(mathKey));
+		if (simContextRep==null){
+			System.out.println("coundn't find simContext for MathKey = "+mathKey.toString());
+		}
 		this.bioModelLink = new BioModelLink(
 				bioModelRep.getBmKey().toString(), 
 				bioModelRep.getBranchID().toString(), 
 				bioModelRep.getName(),  
-				simContextRep.getScKey().toString(), 
-				simContextRep.getBranchID().toString(), 
-				simContextRep.getName());
+				(simContextRep!=null)?(simContextRep.getScKey().toString()):null, 
+				(simContextRep!=null)?(simContextRep.getBranchID().toString()):null,
+				(simContextRep!=null)?(simContextRep.getName()):null);
 	}
 
 	public String getKey() {
