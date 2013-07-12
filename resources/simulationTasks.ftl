@@ -87,8 +87,12 @@
 <td>${simTask.site!""}</td>
 <td><#if simTask.computeHost??>${simTask.computeHost!""}<#else>unknown</#if></td>
 <td>
-<form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
-<form name="stop" action="${simlink}/stopSimulation" method="post"><input type='submit' value='Stop'/></form>
+<#if simTask.status="completed" || simTask.status="stopped" || simTask.status="failed">
+	<form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
+</#if>
+<#if simTask.status="waiting" || simTask.status="queued" || simTask.status="dispatched" || simTask.status="running">
+	<form name="stop" action="${simlink}/stopSimulation" method="post"><input type='submit' value='Stop'/></form>
+</#if>
 </td>
 </tr>
 </#list>
