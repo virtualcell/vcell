@@ -22,7 +22,6 @@ import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.chombo.ChomboBox;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementLevel;
 import org.vcell.pathway.PathwayModel;
@@ -4323,18 +4322,18 @@ private Reactant getReactant(Element param, ReactionStep reaction, Model model) 
  * @return cbit.vcell.mapping.ReactionSpec
  * @param param org.jdom.Element
  */
-private ReactionSpec getReactionSpec(Element param, Model model) throws XmlParseException{
+private ReactionSpec getReactionSpec(Element param, SimulationContext simulationContext) throws XmlParseException{
 	ReactionSpec reactionspec = null;
 
 	//retrieve the reactionstep reference
 	String reactionstepname = unMangle( param.getAttributeValue(XMLTags.ReactionStepRefAttrTag) );
-	ReactionStep reactionstepref = (ReactionStep)model.getReactionStep(reactionstepname);
+	ReactionStep reactionstepref = (ReactionStep)simulationContext.getModel().getReactionStep(reactionstepname);
 	
 	if (reactionstepref ==null) {
 		throw new XmlParseException("The reference to the ReactionStep " + reactionstepname + ", could not be resolved!");
 	}
 	//Create the new SpeciesContextSpec
-	reactionspec = new ReactionSpec(reactionstepref);
+	reactionspec = new ReactionSpec(reactionstepref, simulationContext);
 
 	//set the reactionMapping value
 	String temp = param.getAttributeValue(XMLTags.ReactionMappingAttrTag);
@@ -4719,7 +4718,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		ReactionSpec reactionSpecs[] = new ReactionSpec[children.size()];
 		int rSpecCounter = 0;
 		for (Element rsElement : children){
-			reactionSpecs[rSpecCounter] = getReactionSpec(rsElement, biomodel.getModel());
+			reactionSpecs[rSpecCounter] = getReactionSpec(rsElement, newsimcontext);
 			rSpecCounter ++;
 		}
 		try {
