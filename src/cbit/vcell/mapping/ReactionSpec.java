@@ -195,15 +195,17 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		}
 	}
 
-public ReactionSpec(ReactionSpec argReactionSpec) {
+public ReactionSpec(ReactionSpec argReactionSpec, SimulationContext simulationContext) {
 	setReactionStep(argReactionSpec.reactionStep);
 	this.fieldReactionMapping = argReactionSpec.fieldReactionMapping;
+	this.fieldSimulationContext = simulationContext;
 	refreshDependencies();
 }            
 
 
-public ReactionSpec(ReactionStep argReactionStep) {
+public ReactionSpec(ReactionStep argReactionStep, SimulationContext simulationContext) {
 	setReactionStep(argReactionStep) ;
+	this.fieldSimulationContext = simulationContext;
 	refreshDependencies();
 }            
 
@@ -370,14 +372,6 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier)  {
 	SymbolTableEntry ste = getReactionSpecParameterFromName(identifier);
 	if (ste!=null){
 		return ste;
-	}
-
-	//
-	// from within ReactionSpec, SimulationContext locally scoped parameters appear without Scoped notation (no '.')
-	//	
-	SymbolTableEntry simContextSTE = fieldSimulationContext.getLocalEntry(identifier);
-	if (simContextSTE != null){
-		return simContextSTE;
 	}
 
 	return null;
@@ -772,7 +766,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 		
-		fieldSimulationContext.getLocalEntries(entryMap);
 		for (SymbolTableEntry ste : fieldReactionSpecParameters) {
 			entryMap.put(ste.getName(), ste);
 		}

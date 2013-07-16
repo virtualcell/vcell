@@ -13,6 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -23,7 +24,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Parameter;
@@ -57,8 +57,7 @@ ReactionContext(ReactionContext reactionContext, SimulationContext argSimulation
 	this.simContext = argSimulationContext;
 	fieldReactionSpecs = new ReactionSpec[reactionContext.fieldReactionSpecs.length];
 	for (int i = 0; i < reactionContext.fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i));
-		fieldReactionSpecs[i].setSimulationContext(simContext);
+		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i),argSimulationContext);
 	}
 	fieldSpeciesContextSpecs = new SpeciesContextSpec[reactionContext.fieldSpeciesContextSpecs.length];
 	for (int i = 0; i < reactionContext.fieldSpeciesContextSpecs.length; i++){
@@ -456,11 +455,11 @@ private void refreshReactionSpecs() throws java.beans.PropertyVetoException {
 	// if any reactionStep deleted, remove reactionSpec (reaction mapping)
 	//
 	boolean bChanged = false;
-	Vector reactionSpecList = null;
+	ArrayList<ReactionSpec> reactionSpecList = null;
 	if (fieldReactionSpecs!=null){
-		reactionSpecList = new Vector(Arrays.asList(fieldReactionSpecs));
+		reactionSpecList = new ArrayList<ReactionSpec>(Arrays.asList(fieldReactionSpecs));
 	}else{
-		reactionSpecList = new Vector();
+		reactionSpecList = new ArrayList<ReactionSpec>();
 	}
 	for (int i=0;fieldReactionSpecs!=null && i<fieldReactionSpecs.length;i++){
 		ReactionSpec reactionSpec = fieldReactionSpecs[i];
@@ -469,7 +468,7 @@ private void refreshReactionSpecs() throws java.beans.PropertyVetoException {
 		// No longer in database or name changed. Discard reaction mapping
 		//
 		if (reactionStep == null) {
-			reactionSpecList.removeElement(reactionSpec);
+			reactionSpecList.remove(reactionSpec);
 			bChanged = true;
 			continue;
 		}
@@ -491,15 +490,14 @@ private void refreshReactionSpecs() throws java.beans.PropertyVetoException {
 	for (int i=0;i<reactionSteps.length;i++){
 		ReactionStep reactionStep = reactionSteps[i];
 		if (getReactionSpec(reactionStep) == null) {
-			ReactionSpec rSpec = new ReactionSpec(reactionStep);
-			reactionSpecList.addElement(rSpec);
+			ReactionSpec rSpec = new ReactionSpec(reactionStep, getSimulationContext());
+			reactionSpecList.add(rSpec);
 			bChanged = true;
 		}
 	}
 
 	if (bChanged){
-		ReactionSpec[] newReactionSpecs = new ReactionSpec[reactionSpecList.size()];
-		reactionSpecList.copyInto(newReactionSpecs);
+		ReactionSpec[] newReactionSpecs = reactionSpecList.toArray(new ReactionSpec[reactionSpecList.size()]);
 		setReactionSpecs(newReactionSpecs);
 	}
 }
