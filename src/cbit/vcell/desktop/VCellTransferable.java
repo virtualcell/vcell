@@ -15,7 +15,9 @@ import java.awt.datatransfer.DataFlavor;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.SimpleTransferable;
 
-import cbit.vcell.model.Species;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -25,10 +27,8 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 public class VCellTransferable extends SimpleTransferable {
 
-	public static final DataFlavor SPECIES_FLAVOR =
-		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+cbit.vcell.model.Species.class.getName(),"Species");
-	public static final DataFlavor REACTIONSTEP_ARRAY_FLAVOR =
-		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class=\"[Lcbit.vcell.model.ReactionStep;\"","ReactionStepArray");
+	public static final DataFlavor REACTION_SPECIES_ARRAY_FLAVOR = 
+			new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ReactionSpeciesCopy.class.getName(),"ReactionSpeciesArray");
 	public static final DataFlavor RESOLVED_VALUES_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+ResolvedValuesSelection.class.getName(),"ResolvedValues");
 	public static class ResolvedValuesSelection{
@@ -71,6 +71,45 @@ public class VCellTransferable extends SimpleTransferable {
 		}
 	}
 
+	public static class ReactionSpeciesCopy{
+		private SpeciesContext[] speciesContextArr;
+		private ReactionStep[] reactStepArr;
+		public ReactionSpeciesCopy(SpeciesContext[] speciesContextArr,ReactionStep[] reactStepArr) {
+			this.speciesContextArr = (speciesContextArr==null || speciesContextArr.length==0?null:speciesContextArr);
+			this.reactStepArr = (reactStepArr==null || reactStepArr.length==0?null:reactStepArr);
+			if(this.speciesContextArr == null && this.reactStepArr == null){
+				throw new IllegalArgumentException(ReactionSpeciesCopy.class.getName()+" all parameters null.");
+			}
+		}
+		public SpeciesContext[] getSpeciesContextArr() {
+			return speciesContextArr;
+		}
+		public ReactionStep[] getReactStepArr() {
+			return reactStepArr;
+		}
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			if(reactStepArr != null){
+//				sb.append("-----Reactions-----\n");
+				for (int i = 0; i < reactStepArr.length; i++) {
+					sb.append(reactStepArr[i].getName()+"\n");
+				}
+			}
+			if(reactStepArr != null && speciesContextArr != null){
+				sb.append("\n");
+			}
+			if(speciesContextArr != null){
+//				sb.append("-----SpeciesContexts-----\n");
+				for (int i = 0; i < speciesContextArr.length; i++) {
+					sb.append(speciesContextArr[i].getName()+"\n");
+				}
+			}
+			return sb.toString();
+		}
+		
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/8/2003 2:48:54 PM)
@@ -90,12 +129,8 @@ public java.awt.datatransfer.DataFlavor[] getTransferDataFlavors() {
 	DataFlavor flavors[] = super.getTransferDataFlavors();
 	
 	// add custom flavors if availlable
-	if (getDataObjectClass().equals(Species.class)){
-		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,SPECIES_FLAVOR);
-	}
-	
-	if (getDataObjectClass().equals(cbit.vcell.model.ReactionStep[].class)){
-		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,REACTIONSTEP_ARRAY_FLAVOR);
+	if(getDataObjectClass().equals(VCellTransferable.ReactionSpeciesCopy.class)){
+		flavors = (DataFlavor[]) BeanUtils.addElement(flavors,REACTION_SPECIES_ARRAY_FLAVOR);
 	}
 
 	if (getDataObjectClass().equals(VCellTransferable.ResolvedValuesSelection.class)){
@@ -119,12 +154,8 @@ protected boolean isSupportedObjectFlavor(DataFlavor dataFlavor) {
 		return true;
 	}
 	
-	if(dataFlavor.equals(SPECIES_FLAVOR)){
-		return true;		
-	}
-
-	if(dataFlavor.equals(REACTIONSTEP_ARRAY_FLAVOR)){
-		return true;		
+	if(dataFlavor.equals(REACTION_SPECIES_ARRAY_FLAVOR)){
+		return true;
 	}
 
 	if(dataFlavor.equals(RESOLVED_VALUES_FLAVOR)){

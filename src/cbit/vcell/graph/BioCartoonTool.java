@@ -581,7 +581,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		Structure preferredToStructure = (userPreferredToTarget != null?userPreferredToTarget.keySet().iterator().next():pasteToStruct0);
 
 		if(!pasteToModel.contains(preferredToStructure)){
-			throw new IllegalArgumentException("CartoonTool.pasteSpecies model "+pasteToModel.getName()+" does not contain structure "+preferredToStructure.getName());
+			throw new IllegalArgumentException("CartoonTool.pasteSpecies model '"+pasteToModel.getName()+"' does not contain structure "+(preferredToStructure==null?null:"'"+preferredToStructure.getName()+"'"));
 		}
 
 		Species newSpecies = null;

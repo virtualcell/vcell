@@ -703,20 +703,23 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
-			if(deleteList.get(0) instanceof SpeciesContext){
+			if(deleteList.get(0) instanceof SpeciesContext || deleteList.get(0) instanceof ReactionStep){
 				try{
-					ReactionCartoonTool.deleteSpeciesContext(reactionCartoonEditorPanel, false, deleteList.toArray(new SpeciesContext[0]));
+					SpeciesContext[] speciesContextArr = (deleteList.get(0) instanceof SpeciesContext?deleteList.toArray(new SpeciesContext[0]):null);
+					ReactionStep[] reactionStepArr = (deleteList.get(0) instanceof ReactionStep?deleteList.toArray(new ReactionStep[0]):null);
+					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArr,speciesContextArr,false);
 				}catch(UserCancelException uce){
 					return;
 				}
 				return;
-			}
-			String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
-			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
-				return;
-			}
-			for (Object object : deleteList) {
-				bioModel.getModel().removeObject(object);
+			}else{
+				String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (Object object : deleteList) {
+					bioModel.getModel().removeObject(object);
+				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
