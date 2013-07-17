@@ -163,6 +163,7 @@ public class RestDatabaseService {
 		Long savedHigh = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
 		Long startRowParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_START_ROW);
 		Long maxRowsParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_MAX_ROWS);
+		String owner = resource.getQueryValue(BiomodelsServerResource.PARAM_BM_OWNER); // it is ok if the ownerName is null;
 		int startRow = 1; // default
 		if (startRowParam!=null){
 			startRow = startRowParam.intValue();
@@ -183,6 +184,9 @@ public class RestDatabaseService {
 		}
 		if (bioModelID != null){
 			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
+		}
+		if (owner != null && owner.length()>0){
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + owner + "')");
 		}
 	
 		StringBuffer conditionsBuffer = new StringBuffer();

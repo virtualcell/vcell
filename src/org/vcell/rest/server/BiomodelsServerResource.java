@@ -40,6 +40,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	public static final String PARAM_SAVED_LOW = "savedLow";
 	public static final String PARAM_START_ROW = "startRow";
 	public static final String PARAM_MAX_ROWS = "maxRows";
+	public static final String PARAM_BM_OWNER = "owner";
 
 	@Override
 	protected void doInit() throws ResourceException {
@@ -96,6 +97,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
 		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
 		dataModel.put("savedHigh", getLongQueryValue(PARAM_SAVED_HIGH));
+		dataModel.put("ownerName", getQueryValue(PARAM_BM_OWNER));
 		Long startRowParam = getLongQueryValue(PARAM_START_ROW);
 		if (startRowParam!=null){
 			dataModel.put("startRow", startRowParam);

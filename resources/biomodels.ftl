@@ -9,6 +9,7 @@
 <form>
 	<table><tbody>
 	<tr><td>BioModel ID</td><td><input type='text' name='bmId' value='${bmId!""}'/></td></tr>
+	<tr><td>Owner</td><td><input type='text' name='owner' value='${ownerName!""}'/></td></tr>
 	<tr><td>Begin Time</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
 	<tr><td>End Timestamp</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
 	<tr><td>start row</td><td><input type='text' name='startRow' value='${startRow}'/></td></tr>
