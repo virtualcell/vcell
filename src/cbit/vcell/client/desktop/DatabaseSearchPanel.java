@@ -19,7 +19,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -31,9 +30,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelChildSummary;
@@ -42,7 +44,10 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.message.server.console.DatePanel;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.FormalSpeciesType;
 
 @SuppressWarnings("serial")
 public class DatabaseSearchPanel extends CollapsiblePanel {
@@ -111,6 +116,37 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		}
 	}
 	
+	static class SearchBySpeciesName implements SearchCriterion {
+		private String speciesNamePattern;
+		private ArrayList<VCDocumentInfo> matchedVCDocumentInfos;
+		public SearchBySpeciesName(String speciesNamePattern){
+			if(speciesNamePattern == null || speciesNamePattern.length() == 0){
+				throw new IllegalArgumentException("SearchBySpeciesName search string cannot be empty.");	
+			}
+			this.speciesNamePattern = speciesNamePattern;
+		}
+		public boolean meetCriterion(VCDocumentInfo docInfo) {
+			if(matchedVCDocumentInfos != null && matchedVCDocumentInfos.contains(docInfo)){
+				return true;
+			}
+			return false;
+		}
+		public void initializeSearch(DocumentManager documentManager) throws DataAccessException{
+			FormalSpeciesType.MatchSearchFormalSpeciesType matchSearchFormalSpeciesType = FormalSpeciesType.speciesMatchSearch;
+			StringTokenizer st = new StringTokenizer(speciesNamePattern, " ");
+			ArrayList<String> matchCriterias = new ArrayList<String>();
+			while(st.hasMoreTokens()){
+				String namePattern = st.nextToken();
+				matchCriterias.add(BeanUtils.convertToSQLSearchString(namePattern));
+			}
+			matchSearchFormalSpeciesType.setSQLMatchCriteria(matchCriterias.toArray(new String[0]));
+			DBFormalSpecies[] matchedVCDocumentsFromSearchs =
+				documentManager.getDatabaseSpecies(null,false/*bound not used*/,matchSearchFormalSpeciesType, 0/*restrict not used*/, -1, true);
+			if(matchedVCDocumentsFromSearchs != null && matchedVCDocumentsFromSearchs.length > 0){
+				matchedVCDocumentInfos = ((DBFormalSpecies.MatchedVCDocumentsFromSearch)matchedVCDocumentsFromSearchs[0]).getMatchedVCDocumentInfos();
+			}
+		}
+	}
 	public static final String SEARCH_SHOW_ALL_COMMAND = "showall";
 	public static final String SEARCH_Command = "search";
 	public static final String Search_Doc_Type[] = {"BioModel", "MathModel", "Geometri"};
@@ -126,7 +162,10 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	private DatePanel startDatePanel = null;
 	private DatePanel endDatePanel = null;
 	private ArrayList<JComponent> advancedOptions = new ArrayList<JComponent>();
-	
+	private JTextField textFieldSpeciesName;
+	private JLabel lblSpeciesName;
+	private boolean bEnableSpeciesSearch = false;
+
 	class SearchEventHandler extends MouseAdapter implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {	
 			if (e.getSource() == searchButton || e.getSource() == nameSearchTextField) {		
@@ -168,12 +207,16 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 	
 	private void setAdvancedOptionsVisible(boolean bVisible) {
 		for (JComponent comp : advancedOptions) {
-			comp.setVisible(bVisible);
+			if(comp == lblSpeciesName || comp == textFieldSpeciesName){
+				comp.setVisible(bVisible && bEnableSpeciesSearch);
+			}else{
+				comp.setVisible(bVisible);
+			}
 		}
 		revalidate();
 	}
 	
-	public ArrayList<SearchCriterion> getSearchCriterionList() {
+	public ArrayList<SearchCriterion> getSearchCriterionList(DocumentManager documentManager) throws DataAccessException{
 		ArrayList<SearchCriterion> searchCriterionList = null;
 		if (isVisible()) {
 			searchCriterionList = new ArrayList<SearchCriterion>();
@@ -192,10 +235,18 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 				SearchByDate dateScn = new SearchByDate(startDate, endDate);
 				searchCriterionList.add(dateScn);
 			}
+			if(hasRemoteDatabaseSearchDefined()){
+				SearchBySpeciesName searchBySpeciesName = new SearchBySpeciesName(textFieldSpeciesName.getText().trim());
+				searchBySpeciesName.initializeSearch(documentManager);
+				searchCriterionList.add(searchBySpeciesName);
+			}
 		}
 		return searchCriterionList;
 	}
 	
+	public boolean hasRemoteDatabaseSearchDefined(){
+		return textFieldSpeciesName.isVisible() && textFieldSpeciesName.getText() != null && textFieldSpeciesName.getText().trim().length()>0;
+	}
 	private void initialize() {
 //		JLabel nameLabel = new JLabel("Search ");
 		nameSearchTextField = new TextFieldAutoCompletion();
@@ -212,9 +263,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedOptions.add(dateLabel1);
 		advancedOptions.add(dateLabel2);
 		startDatePanel = new DatePanel();
-		Calendar cal = new GregorianCalendar();
-		cal.roll(Calendar.DAY_OF_MONTH, false);
-		startDatePanel.setCalendar(cal);
+//		Calendar cal = new GregorianCalendar();
+//		cal.roll(Calendar.DAY_OF_MONTH, false);
+		startDatePanel.setCalendar(new GregorianCalendar(1995,0,1));
 		advancedOptions.add(startDatePanel);
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
@@ -225,7 +276,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		cancelButton.setActionCommand(SEARCH_SHOW_ALL_COMMAND);
 		 
 		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new GridBagLayout());
+		GridBagLayout gbl_mainPanel = new GridBagLayout();
+		gbl_mainPanel.columnWeights = new double[]{0.0, 1.0};
+		mainPanel.setLayout(gbl_mainPanel);
 
 		// 0
 		int gridy = 0;
@@ -236,7 +289,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(2, 5, 0, 5);
+		gbc.insets = new Insets(2, 5, 5, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(nameSearchTextField, gbc);
@@ -246,7 +299,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;
-		gbc.insets = new Insets(0, 5, 0, 0);
+		gbc.insets = new Insets(0, 5, 5, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(advancedButton, gbc);
 
@@ -254,7 +307,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(2, 5, 0, 5);
+		gbc.insets = new Insets(2, 5, 5, 5);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		mainPanel.add(dateLabel1, gbc);
 
@@ -262,7 +315,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(2, 0, 0, 5);
+		gbc.insets = new Insets(2, 0, 5, 0);
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(startDatePanel, gbc);
@@ -271,7 +324,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(2, 5, 0, 5);
+		gbc.insets = new Insets(2, 5, 5, 5);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		mainPanel.add(dateLabel2, gbc);
 		
@@ -279,21 +332,42 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(2, 0, 0, 5);
+		gbc.insets = new Insets(2, 0, 5, 0);
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		mainPanel.add(endDatePanel, gbc);			
 		
 		gridy ++;
+		
+		lblSpeciesName = new JLabel("Species Names:");
+		GridBagConstraints gbc_lblSpeciesName = new GridBagConstraints();
+		gbc_lblSpeciesName.anchor = GridBagConstraints.EAST;
+		gbc_lblSpeciesName.insets = new Insets(0, 0, 5, 5);
+		gbc_lblSpeciesName.gridx = 0;
+		gbc_lblSpeciesName.gridy = 4;
+		mainPanel.add(lblSpeciesName, gbc_lblSpeciesName);
+		advancedOptions.add(lblSpeciesName);
+		lblSpeciesName.setVisible(bEnableSpeciesSearch);
+		
+		textFieldSpeciesName = new JTextField();
+		GridBagConstraints gbc_textFieldSpeciesName = new GridBagConstraints();
+		gbc_textFieldSpeciesName.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldSpeciesName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldSpeciesName.gridx = 1;
+		gbc_textFieldSpeciesName.gridy = 4;
+		mainPanel.add(textFieldSpeciesName, gbc_textFieldSpeciesName);
+		textFieldSpeciesName.setColumns(10);
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(10, 5, 0, 0);
+		gbc.gridy = 5;
+		gbc.insets = new Insets(10, 5, 0, 5);
 		mainPanel.add(searchButton, gbc);
-
+		advancedOptions.add(textFieldSpeciesName);
+		textFieldSpeciesName.setVisible(bEnableSpeciesSearch);
+		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = gridy;
+		gbc.gridy = 5;
 		gbc.insets = new Insets(10, 5, 0, 0);
 		gbc.anchor = GridBagConstraints.LINE_START;
 		mainPanel.add(cancelButton, gbc);
@@ -343,4 +417,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
             }          
         }
     }
+   public void enableSpeciesSearch(){
+	   bEnableSpeciesSearch = true;
+   }
 }

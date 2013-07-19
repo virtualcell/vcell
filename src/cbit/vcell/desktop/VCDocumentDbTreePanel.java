@@ -17,6 +17,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.EventObject;
+import java.util.Hashtable;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -30,6 +32,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 
@@ -37,6 +41,8 @@ import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -353,17 +359,82 @@ protected abstract void treeSelection();
 private DatabaseSearchPanel getDatabaseSearchPanel() {
 	if (dbSearchPanel == null) {
 		dbSearchPanel = new DatabaseSearchPanel();
+		if(this instanceof BioModelDbTreePanel){
+			dbSearchPanel.enableSpeciesSearch();
+		}
 	}
 	return dbSearchPanel;
 }
 
-public void search(boolean bShowAll) {
-	try {
-		ArrayList<SearchCriterion> searchCriterionList = bShowAll ? null : getDatabaseSearchPanel().getSearchCriterionList();
-		refresh(searchCriterionList);
-	} catch (DataAccessException e) {
-		e.printStackTrace();
-		DialogUtils.showErrorDialog(this, "Search failed : " + e.getMessage());
+
+
+public void search(final boolean bShowAll) {
+	final Object[] status = new Object[]{null};
+	class SearchCancel implements ProgressDialogListener{
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			status[0] = UserCancelException.CANCEL_GENERIC;
+		}
+	}
+	final SearchCancel searchCancel = new SearchCancel();
+	
+	final ArrayList<SearchCriterion> searchCriterionListFinal = new ArrayList<DatabaseSearchPanel.SearchCriterion>();
+	AsynchClientTask searchCriteriaTask = new AsynchClientTask("Creating search criteria...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(bShowAll){
+				return;
+			}
+			new Thread(new Runnable() {
+				public void run() {
+					try{
+						ArrayList<SearchCriterion> searchCriterionList = getDatabaseSearchPanel().getSearchCriterionList(getDocumentManager());
+						if(searchCriterionList != null && searchCriterionList.size() > 0){
+							searchCriterionListFinal.addAll(searchCriterionList);
+						}
+						status[0] = "OK";
+					}catch(Exception e){
+						status[0] = e;
+					}
+				}
+			}).start();
+			
+			long startTime = System.currentTimeMillis();
+			while((System.currentTimeMillis()-startTime) < 60000){
+				if(status[0] != null){
+					if(status[0] instanceof Exception){
+						throw (Exception)status[0];
+					}
+					return;
+				}
+				try{
+					Thread.sleep(100);
+				}catch(InterruptedException ie){
+					//ignore
+				}
+			}
+			throw new Exception("getSearchCriterionList timed out");
+		}
+	};
+	AsynchClientTask refreshTask = new AsynchClientTask("Refreshing tree...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(searchCriterionListFinal.size() > 0){
+				refresh(searchCriterionListFinal);
+			}else{
+				refresh(null);
+			}
+		}
+	};
+
+	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
+	if(!bShowAll && getDatabaseSearchPanel().hasRemoteDatabaseSearchDefined()){
+		ClientTaskDispatcher.dispatch(this,hashTable, new AsynchClientTask[] {searchCriteriaTask,refreshTask},true, false, true, searchCancel, true);
+	}else{
+		try {
+			searchCriteriaTask.run(hashTable);
+			refreshTask.run(hashTable);
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
+		}
 	}
 }
 

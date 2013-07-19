@@ -9,17 +9,23 @@
  */
 
 package cbit.vcell.modeldb;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.dictionary.CompoundAliasTable;
@@ -38,6 +44,7 @@ import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.dictionary.ProteinTable;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBFormalSpecies.MatchedVCDocumentsFromSearch;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
 import cbit.vcell.model.ReactionStepInfo;
@@ -270,6 +277,52 @@ public FormalCompound getCompoundFromKeggID(Connection con, String keggID) throw
  */
 public DBFormalSpecies[] getDatabaseSpecies(Connection con, User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
 
+	if(speciesType != null && speciesType.equals(FormalSpeciesType.speciesMatchSearch)){
+		FormalSpeciesType.MatchSearchFormalSpeciesType matchSearchFormalSpeciesType = (FormalSpeciesType.MatchSearchFormalSpeciesType)speciesType;
+		if(matchSearchFormalSpeciesType.getMatchCriterias() == null || matchSearchFormalSpeciesType.getMatchCriterias().length == 0){
+			return null;
+		}
+		ArrayList<VCDocumentInfo> matchedVCDocumentInfos = new ArrayList<VCDocumentInfo>();
+		Statement stmt = null;
+		// OR condition
+//		String sql =
+//			"SELECT UNIQUE "  +BioModelTable.table.id.getQualifiedColName() +
+//			" FROM "  + BioModelTable.table.getTableName() + "," + SpeciesContextModelTable.table.getTableName() +
+//			" WHERE " + BioModelTable.table.modelRef.getQualifiedColName() + " = "+ SpeciesContextModelTable.table.modelRef.getQualifiedColName() +
+//			" AND (";
+//		for (int i = 0; i < matchSearchFormalSpeciesType.getMatchCriterias().length; i++) {
+//			sql+=
+//			(i>0?" OR ":"") +
+//			" LOWER("+SpeciesContextModelTable.table.name.getQualifiedColName()+") LIKE " + "'" + matchSearchFormalSpeciesType.getMatchCriterias()[i] + "'" + " ESCAPE '"+BeanUtils.SQL_ESCAPE_CHARACTER+"'";
+//		}
+//		sql+=")";
+		
+		// AND condition
+		String sql = "";
+		for (int i = 0; i < matchSearchFormalSpeciesType.getMatchCriterias().length; i++) {
+			sql+= (i>0?" INTERSECT ":"") +
+			"SELECT UNIQUE " + BioModelTable.table.id.getQualifiedColName() +
+			" FROM "  + BioModelTable.table.getTableName() + "," + SpeciesContextModelTable.table.getTableName() +
+			" WHERE " + BioModelTable.table.modelRef.getQualifiedColName() + " = "+ SpeciesContextModelTable.table.modelRef.getQualifiedColName() +
+			" AND " + " LOWER("+SpeciesContextModelTable.table.name.getQualifiedColName()+") LIKE " + "'" + matchSearchFormalSpeciesType.getMatchCriterias()[i] + "'" + " ESCAPE '"+BeanUtils.SQL_ESCAPE_CHARACTER+"'";
+		}
+		try{
+			stmt = con.createStatement();
+			ResultSet rset = stmt.executeQuery(sql);
+			while(rset.next()){
+				BigDecimal versionKey = rset.getBigDecimal(1);
+				Version version = new Version(new KeyValue(versionKey), null, null, null, null, null, null, null, null);
+				matchedVCDocumentInfos.add(new BioModelInfo(version, null, (BioModelChildSummary)null, null));
+			}
+			
+		}finally{
+			if(stmt!=null){stmt.close();}
+		}
+		if(matchedVCDocumentInfos.size() == 0){
+			return null;
+		}
+		return new DBFormalSpecies[] {new MatchedVCDocumentsFromSearch(matchedVCDocumentInfos)};
+	}
 	
 	//isBound - 	if true find FormalSpecies(Dictionary) that have binding table entries, if false find any FormalSpecies(Dictionary)
 	//user - 		If not null find bound FormalSpecies owned by this user, if null do not check ownership

@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import javax.swing.ButtonModel;
 import javax.swing.JList;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.TitledBorderBean;
 
 import cbit.vcell.client.PopupGenerator;
@@ -1662,7 +1663,6 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-
 /**
  * Comment
  */
@@ -1674,24 +1674,7 @@ private void search() {
 	
 //	String activeTab = getSNBJTabbedPane().getTitleAt(getSNBJTabbedPane().getSelectedIndex());
 
-	String likeString = getFilterJTextField().getText();
-	
-	StringBuffer sb = new StringBuffer(likeString);
-	for(int i=0;i<sb.length();i+= 1){
-		if(sb.charAt(i) == '*'){
-			sb.replace(i,i+1,"%");
-		}
-	}
-
-	likeString = sb.toString();
-	
-	if(likeString.indexOf("%") == -1 && likeString.indexOf("_") == -1){
-		likeString = "%"+likeString+"%";
-	}
-	//The character "%" matches any string of zero or more characters except null.
-	//The character "_" matches any single character.
-	//A wildcard character is treated as a literal if preceded by the character designated as the escape character.
-	//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
+	String likeString = BeanUtils.convertToSQLSearchString(getFilterJTextField().getText());
 
 	
 	boolean bOnlyUser = getMyModelJRadioButton().isSelected();
