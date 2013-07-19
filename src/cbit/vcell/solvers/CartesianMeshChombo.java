@@ -1,11 +1,14 @@
 package cbit.vcell.solvers;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -27,15 +30,36 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
+import cbit.vcell.geometry.SampledCurve;
+
 @SuppressWarnings("serial")
 public class CartesianMeshChombo extends CartesianMesh {
 
-	public static class SurfaceEntry implements Serializable {
+	public static class SurfaceTriangleEntry3D implements Serializable {
 		public int memIndex;
 		public int faceIndex = 0;
 		public Coordinate p0;
 		public Coordinate p1;
 		public Coordinate p2;
+	}
+	
+	public static class Segment2D implements Serializable {
+		public int memIndex;
+		public int prevVertex;
+		public int nextVertex;
+		public int prevNeigbhor;
+		public int nextNeigbhor;
+		
+		public Segment2D(int memIndex, int prevVertex, int nextVertex,
+				int prevNeigbhor, int nextNeigbhor) {
+			super();
+			this.memIndex = memIndex;
+			this.prevVertex = prevVertex;
+			this.nextVertex = nextVertex;
+			this.prevNeigbhor = prevNeigbhor;
+			this.nextNeigbhor = nextNeigbhor;
+		}
+		
 	}
 	
 	public static class SliceViewEntry implements Serializable {
@@ -72,17 +96,26 @@ public class CartesianMeshChombo extends CartesianMesh {
 //	}
 		
 	private int dimension = 0;
-	private double[] dx;
+
+	private transient double[] dx;
 //	private transient List<ChomboBox> boxList = new ArrayList<ChomboBox>();
-	private transient Map<Integer, List<SurfaceEntry>> surfaceMap = new HashMap<Integer, List<SurfaceEntry>>();
+	
+	// 3D
+	private transient Map<Integer, List<SurfaceTriangleEntry3D>> surfaceTriangleMap = new HashMap<Integer, List<SurfaceTriangleEntry3D>>();
 //	private transient List<MeshMetricsEntry> metrics = new ArrayList<MeshMetricsEntry>();
 	private transient List<SliceViewEntry> sliceViewList = new ArrayList<SliceViewEntry>();
+	
+	// 2D
+	private transient Coordinate[] vertices = null;
+	private transient Segment2D[] segments = null;
 	
 //	private static final String ROOT_GROUP = "/";
 //	private static final String MESH_GROUP = "/mesh";
 	private static final String BOXES_DATASET = "boxes";
 	private static final String METRICS_DATASET = "metrics";
-	private static final String SURFACE_DATASET = "surface";
+	private static final String VERTICES_DATASET = "vertices";
+	private static final String SEGMENTS_DATASET = "segments";
+	private static final String SURFACE_DATASET = "surface triangles";
 	private static final String SLICE_VIEW_DATASET = "slice view";
 	private static final String MESH_ATTR_DIMENSION = "dimension";
 	private static final String MESH_ATTR_ORIGIN = "origin";
@@ -178,6 +211,41 @@ public class CartesianMeshChombo extends CartesianMesh {
 				{
 					// not needed right now
 				}
+				else if (name.equals(VERTICES_DATASET))
+				{
+					int c = -1;
+					double[] x = (double[]) vectValues.get(++ c);
+					double[] y = (double[]) vectValues.get(++ c);
+					double[] z = null;
+					if (chomboMesh.dimension == 3)
+					{
+						z = (double[]) vectValues.get(++ c);
+					}
+					chomboMesh.vertices = new Coordinate[x.length];
+					for (int i = 0; i < x.length; ++ i)
+					{
+						chomboMesh.vertices[i] = new Coordinate(x[i], y[i], z == null ? 0 : z[i]);
+					}
+				}
+				else if (name.equals(SEGMENTS_DATASET))
+				{
+					int c = -1;
+					int[] index = (int[]) vectValues.get(++ c);
+					int[] prevVertex = (int[]) vectValues.get(++ c);
+					int[] nextVertex = (int[]) vectValues.get(++ c);
+					int[] prevNeighbor = (int[]) vectValues.get(++ c);
+					int[] nextNeighbor = (int[]) vectValues.get(++ c);
+					double[] z = null;
+					if (chomboMesh.dimension == 3)
+					{
+						z = (double[]) vectValues.get(++ c);
+					}
+					chomboMesh.segments = new Segment2D[index.length];
+					for (int i = 0; i < index.length; ++ i)
+					{
+						chomboMesh.segments[i] = new Segment2D(index[i], prevVertex[i], nextVertex[i], prevNeighbor[i], nextNeighbor[i]);
+					}
+				}
 				else if (name.equals(METRICS_DATASET))
 				{
 					int c = -1;
@@ -205,25 +273,16 @@ public class CartesianMeshChombo extends CartesianMesh {
 					}
 					double[] volFrac = (double[])vectValues.get(++ c);
 					double[] areaFrac = (double[])vectValues.get(++ c);
+					double unitVol = chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
 					chomboMesh.membraneElements = new MembraneElement[index.length];
 					for (int n = 0; n < index.length; ++ n)
 					{
-//						MeshMetricsEntry entry = new MeshMetricsEntry(index[n], i[n], j[n], k == null ? 0 : k[n]
-////								, x[n], y[n], z == null ? 0 : z[n]
-////								, normalx[n], normaly[n], normalz == null ? 0 : normalz[n],
-////										volFrac[n], areaFrac[n]
-//							);
-//						chomboMesh.metrics.add(entry);
 						int insideIndex = (k == null ? 0 : k[n] * chomboMesh.size.getY() * chomboMesh.size.getX())
 								+ j[n] * chomboMesh.size.getX() + i[n];
 						int outsideIndex = insideIndex;
-						int neighbor1 = -1;
-						int neighbor2 = -1;
-						int neighbor3 = -1;
-						int neighbor4 = -1;
-						double area = areaFrac[n] * chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
+						double area = areaFrac[n] * unitVol;
 						chomboMesh.membraneElements[n] = new MembraneElement(index[n], insideIndex, outsideIndex,
-								neighbor1, neighbor2, neighbor3, neighbor4,
+								-1, -1, -1, -1,
 								(float)area,
 								(float)normalx[n],
 								(float)normaly[n],
@@ -237,11 +296,8 @@ public class CartesianMeshChombo extends CartesianMesh {
 				{
 					int c = 0;
 					int[] index = (int[]) vectValues.get(c);
-					int[] faceIndex = null;
-					if (chomboMesh.dimension == 3)
-					{
-						faceIndex = (int[]) vectValues.get(++ c);
-					}
+					int[] faceIndex = (int[]) vectValues.get(++ c);
+					int[] neighbor = (int[])vectValues.get(++ c);
 					double[] x0 = (double[])vectValues.get(++ c);
 					double[] y0 = (double[])vectValues.get(++ c);
 					double[] z0 = null;
@@ -265,18 +321,16 @@ public class CartesianMeshChombo extends CartesianMesh {
 					}
 					for (int n = 0; n < index.length; ++ n)
 					{
-						List<SurfaceEntry> edgeList = chomboMesh.surfaceMap.get(index[n]);
+						int memIndex = index[n];
+						List<SurfaceTriangleEntry3D> edgeList = chomboMesh.surfaceTriangleMap.get(memIndex);
 						if (edgeList == null)
 						{
-							edgeList = new ArrayList<SurfaceEntry>();
-							chomboMesh.surfaceMap.put(index[n], edgeList);
+							edgeList = new ArrayList<SurfaceTriangleEntry3D>();
+							chomboMesh.surfaceTriangleMap.put(index[n], edgeList);
 						}
-						SurfaceEntry mp = new SurfaceEntry();
+						SurfaceTriangleEntry3D mp = new SurfaceTriangleEntry3D();
 						mp.memIndex = index[n];
-						if (chomboMesh.dimension == 3)
-						{
-							mp.faceIndex = faceIndex[n];
-						}
+						mp.faceIndex = faceIndex[n];
 						mp.p0 = new Coordinate(x0[n], y0[n], z0 == null ? 0 : z0[n]);
 						mp.p1 = new Coordinate(x1[n], y1[n], z1 == null ? 0 : z1[n]);
 						mp.p2 = new Coordinate(x2[n], y2[n], z2 == null ? 0 : z2[n]);
@@ -304,7 +358,20 @@ public class CartesianMeshChombo extends CartesianMesh {
 				}
 			}
 		}
+		// set neighbors to membrane elements
+		if (chomboMesh.dimension == 2)
+		{
+			for (int i = 0; i < chomboMesh.membraneElements.length; ++ i)
+			{
+				MembraneElement me = chomboMesh.membraneElements[i];
+				me.setConnectivity(chomboMesh.segments[i].prevNeigbhor, chomboMesh.segments[i].nextNeigbhor, -1, -1);
+			}
+		}
 		return chomboMesh;
+	}
+
+	public int getDimension() {
+		return dimension;
 	}
 
 	@Override
@@ -314,7 +381,15 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	@Override
 	protected Object[] getOutputFields() throws IOException {
-		return new Object[] {dimension, size, origin, extent, membraneElements, /*metrics, */surfaceMap, sliceViewList};
+		if (dimension == 2)
+		{
+			return new Object[] {dimension, size, origin, extent, membraneElements, vertices, surfaceTriangleMap, sliceViewList};
+		}
+		else if (dimension == 3)
+		{
+			return new Object[] {dimension, size, origin, extent, membraneElements, vertices, segments};
+		}
+		return null;
 	}
 
 	@Override
@@ -331,7 +406,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 			origin = (Origin)objArray[++ index];
 			extent = (Extent)objArray[++ index];
 			membraneElements = (MembraneElement[])objArray[++ index];
-			surfaceMap = (Map<Integer, List<SurfaceEntry>>)objArray[++ index];
+			surfaceTriangleMap = (Map<Integer, List<SurfaceTriangleEntry3D>>)objArray[++ index];
 			sliceViewList = (List<SliceViewEntry>)objArray[++ index];
 
 			compressedBytes = null;
@@ -342,10 +417,18 @@ public class CartesianMeshChombo extends CartesianMesh {
 		}
 	}
 	
-	public Map<Integer, List<SurfaceEntry>> getSurfaceMap() {
-		return surfaceMap;
+	public Map<Integer, List<SurfaceTriangleEntry3D>> getSurfaceMap() {
+		return surfaceTriangleMap;
+	}
+	
+	public Segment2D[] get2DSegments() {
+		return segments;
 	}
 
+	public Coordinate[] getVertices() {
+		return vertices;
+	}
+	
 //	public List<MeshMetricsEntry> getMetrics() {
 //		return metrics;
 //	}
@@ -376,7 +459,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 		return true;
 	}
 	
-	public int findMembraneIndexForVolumeIndex(CoordinateIndex ci)
+	public int findMembraneIndexFromVolumeIndex(CoordinateIndex ci)
 	{
 		int volIndex = getVolumeIndex(ci);
 		for (MembraneElement me : membraneElements)
@@ -387,5 +470,20 @@ public class CartesianMeshChombo extends CartesianMesh {
 			}
 		}
 		return -1;
+	}
+
+	public int findMembraneIndexFromVolumeCoordinate(Coordinate wc) 
+	{
+		if (dx == null)
+		{
+			dx = new double[3];
+			dx[0] = getExtent().getX()/getSizeX();
+			dx[1] = getExtent().getY()/getSizeY();
+			dx[2] = getExtent().getZ()/getSizeZ();
+		}
+		int i = (int)((wc.getX() - getOrigin().getX()) / dx[0]);
+		int j = (int)((wc.getY() - getOrigin().getY()) / dx[1]);
+		int k = dimension < 3 ? 0 : (int)((wc.getZ() - getOrigin().getZ()) / dx[2]);
+		return findMembraneIndexFromVolumeIndex(new CoordinateIndex(i, j, k));
 	}
 }

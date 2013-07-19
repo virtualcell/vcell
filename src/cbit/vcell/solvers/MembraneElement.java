@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.solvers;
-import cbit.vcell.math.*;
+import cbit.vcell.math.MathFormatException;
 /**
  * This type was created in VisualAge.
  */
@@ -191,7 +191,7 @@ public int getOutsideVolumeIndex() {
  * @param neighbor3 int
  * @param neighbor4 int
  */
-private void setConnectivity(int neighbor1, int neighbor2, int neighbor3, int neighbor4) throws cbit.vcell.math.MathFormatException {
+public void setConnectivity(int neighbor1, int neighbor2, int neighbor3, int neighbor4) throws cbit.vcell.math.MathFormatException {
 	this.membraneNeighbors = null;
 	int numNeighbors = 0;
 	if (neighbor1 != -1)

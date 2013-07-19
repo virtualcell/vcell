@@ -9,11 +9,10 @@
  */
 
 package cbit.vcell.simdata.gui;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
@@ -24,7 +23,8 @@ import cbit.vcell.geometry.Line;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.solvers.CartesianMeshChombo;
-import cbit.vcell.solvers.CartesianMeshChombo.SurfaceEntry;
+import cbit.vcell.solvers.CartesianMeshChombo.Segment2D;
+import cbit.vcell.solvers.CartesianMeshChombo.SurfaceTriangleEntry3D;
 import cbit.vcell.solvers.ContourElement;
 import cbit.vcell.solvers.MembraneElement;
 
@@ -359,7 +359,78 @@ public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageEx
 	return new MeshRegionSurfaces(surfaceCollection,surface_polygon_MembraneIndexes);	
 }
 
-
+public Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int slice)
+{
+	Hashtable<SampledCurve, int[]> curvesAndValues = null;
+	if (mesh.isChomboMesh())
+	{
+		CartesianMeshChombo chomboMesh = (CartesianMeshChombo)mesh;
+		curvesAndValues = new Hashtable<SampledCurve, int[]>();
+		if (chomboMesh.getDimension() == 2)
+		{
+			MembraneElement membraneElements[] = mesh.getMembraneElements();
+			List<MembraneElement> melist = new ArrayList<MembraneElement>();
+			for (MembraneElement me : membraneElements)
+			{
+				melist.add(me);
+			}
+			MembraneElement me = null;
+			Segment2D[] segments = chomboMesh.get2DSegments();
+			Coordinate[] vertices = chomboMesh.getVertices();
+			SampledCurve curve = null;
+			List<Integer> indexList = new ArrayList<Integer>();
+			int startingIndex = -1;
+			while (melist.size() > 0)
+			{
+				if (me == null)
+				{
+					me = melist.get(0);
+					startingIndex = me.getMembraneIndex();
+					curve = new SampledCurve();
+					indexList.clear();
+				}
+				melist.remove(me);
+				
+				Segment2D segment = segments[me.getMembraneIndex()];
+				Coordinate p1 = vertices[segment.prevVertex];
+				Coordinate p2 = vertices[segment.nextVertex];				
+				int pcnt = curve.getControlPointCount();
+				if (pcnt == 0)
+				{
+					curve.appendControlPoint(p1);
+				}
+				else
+				{
+					assert segment.prevNeigbhor == indexList.get(pcnt - 1);
+				}
+				curve.appendControlPoint(p2);
+				indexList.add(me.getMembraneIndex());
+				
+				int nextIndex = segment.nextNeigbhor;
+				if (nextIndex < 0 || nextIndex == startingIndex)
+				{
+					// start a new curve
+					me = null;
+					int[] rmi = new int[indexList.size()];
+					for(int i = 0; i < indexList.size(); ++ i)
+					{
+						rmi[i] = indexList.get(i);
+					}
+					curvesAndValues.put(curve, rmi);
+				}
+				else
+				{
+					me = membraneElements[nextIndex];
+				}
+			}
+		}
+		else
+		{
+			//
+		}
+	}
+	return curvesAndValues;
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/30/00 5:52:19 PM)
@@ -370,23 +441,7 @@ public Hashtable<SampledCurve, int[]> getCurvesAndMembraneIndexes(int normalAxis
 	Hashtable<SampledCurve, int[]> curvesAndValues = null;
 	if (mesh.isChomboMesh())
 	{
-		curvesAndValues = new Hashtable<SampledCurve, int[]>();
-//		MembraneElement membraneElements[] = mesh.getMembraneElements();
-		CartesianMeshChombo chomboMesh = (CartesianMeshChombo)mesh;
-		Map<Integer, List<SurfaceEntry>> surfaceMap = chomboMesh.getSurfaceMap();
-		Set<Entry<Integer, List<SurfaceEntry>>> entrySet = surfaceMap.entrySet();
-		for (Entry<Integer, List<SurfaceEntry>> entry : entrySet)
-		{
-			int memIndex = entry.getKey();
-			List<SurfaceEntry> edgeList = entry.getValue();
-			for (SurfaceEntry edge : edgeList)
-			{
-				int[] resolvedMembraneIndexes = new int[1];
-				resolvedMembraneIndexes[0] = memIndex;
-				Line line = new Line(edge.p1, edge.p2);
-				curvesAndValues.put(line, resolvedMembraneIndexes);
-			}
-		}
+		curvesAndValues = constructChomboCurves(normalAxis, slice);
 	}
 	else
 	{

@@ -1757,7 +1757,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println();
 }
 
-	private void assignPhases(SubVolume[] subVolumes, int startingIndex, int[] phases, int[] numAssigned) {
+	private void assignPhases(Geometry geometry, SubVolume[] subVolumes, int startingIndex, int[] phases, int[] numAssigned) {
 		if (phases[startingIndex] == -1) {
 			return;
 		}
@@ -1769,13 +1769,13 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				continue;
 			}
 			 
-			SurfaceClass sc = resampledGeometry.getGeometrySurfaceDescription().getSurfaceClass(subVolumes[startingIndex], subVolumes[j]);
+			SurfaceClass sc = geometry.getGeometrySurfaceDescription().getSurfaceClass(subVolumes[startingIndex], subVolumes[j]);
 			if (sc != null) {
 				if (phases[j] == -1) {
 					numAssigned[0] ++;
 					// membrane between i and j, different phase
 					phases[j] = phases[startingIndex] == 0 ? 1 : 0;
-					assignPhases(subVolumes, j, phases, numAssigned);		
+					assignPhases(geometry, subVolumes, j, phases, numAssigned);		
 				}
 			}
 		}
@@ -1892,7 +1892,39 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		Arrays.fill(phases, -1);
 		phases[numSubVolumes - 1] = 0;
 		int[] numAssigned = new int[1];
-		assignPhases(subVolumes, numSubVolumes - 1, phases, numAssigned);
+		assignPhases(resampledGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
+		// validate phase
+		boolean bPhaseBad = false;
+		for (int i = 0; i < phases.length; ++ i)
+		{
+			if (phases[i] == -1)
+			{
+				bPhaseBad = true;
+				break;
+			}
+		}
+		if (bPhaseBad)
+		{
+			Geometry finerGeometry = (Geometry) BeanUtils.cloneSerializable(resampledGeometry);
+			GeometrySurfaceDescription geoSurfaceDesc = finerGeometry.getGeometrySurfaceDescription();
+			ISize sampleSize = geoSurfaceDesc.getVolumeSampleSize();
+			ISize newSize = new ISize(sampleSize.getX() * 4,  sampleSize.getY() * 4, sampleSize.getZ()* 4);
+			geoSurfaceDesc.setVolumeSampleSize(newSize);
+			geoSurfaceDesc.updateAll();	
+			
+			subVolumes = finerGeometry.getGeometrySpec().getSubVolumes();
+			Arrays.fill(phases, -1);
+			phases[numSubVolumes - 1] = 0;
+			numAssigned[0] = 0;
+			assignPhases(finerGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
+			for (int i = 0; i < phases.length; ++ i)
+			{
+				if (phases[i] == -1)
+				{
+					throw new SolverException("Failed to assign a phase to subVolume '" + subVolumes[i].getName()  + "'. It might be caused by too coarsh a mesh.");
+				}
+			}
+		}
 		boolean bUseDistanceMap = false;
 		if (geometrySpec.hasImage() || bUseDistanceMap) {
 			Geometry geometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());

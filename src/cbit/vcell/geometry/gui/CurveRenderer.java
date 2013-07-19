@@ -684,9 +684,11 @@ private double getMinPickDistance(Curve curve){
 //	return getLineWidthMultiplier(curve)/2;
 	return
 		Math.max(3.0,
-		(cartesianMesh == null || getWorldDelta() == null?
-			getLineWidthMultiplier(curve)/2:
-			cartesianMesh.getExtent().getX()/cartesianMesh.getSizeX()/getWorldDelta().getX()/2));
+		(cartesianMesh == null || getWorldDelta() == null
+			? getLineWidthMultiplier(curve)/2
+			: cartesianMesh.getExtent().getX()/cartesianMesh.getSizeX()/getWorldDelta().getX()/2 * (cartesianMesh.isChomboMesh() ? Math.sqrt(2) : 1)
+		)
+	);
 
 }
 

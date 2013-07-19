@@ -997,26 +997,33 @@ public CurveSelectionInfo getInitalCurveSelection(int tool, Coordinate wc) {
 	CurveSelectionInfo newCurveSelection = null;
 	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
 	if(	variableType.equals(VariableType.MEMBRANE) || variableType.equals(VariableType.MEMBRANE_REGION)){
-		//
-		CurveSelectionInfo[] closeCSI = getImagePlaneManagerPanel().getCurveRenderer().getCloseCurveSelectionInfos(wc);
-		if(closeCSI != null){
-			for(int i =0;i < closeCSI.length;i+= 1){
-				if(membranesAndIndexes != null && membranesAndIndexes.containsKey(closeCSI[i].getCurve())){
-					if (tool == CurveEditorTool.TOOL_LINE) {
-						newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
-					}else if(tool == CurveEditorTool.TOOL_POINT) {
-						newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
-						double dist = closeCSI[i].getCurve().getDistanceTo(wc);
-						int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
-						Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
-						Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
-						newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
+		
+		if (getPdeDataContext().getCartesianMesh().isChomboMesh() && tool == CurveEditorTool.TOOL_POINT)
+		{
+			newCurveSelection = findChomboSinglePointSelectionInfoForPoint(wc);
+		}
+		else
+		{
+			CurveSelectionInfo[] closeCSI = getImagePlaneManagerPanel().getCurveRenderer().getCloseCurveSelectionInfos(wc);
+			if(closeCSI != null){
+				for(int i =0;i < closeCSI.length;i+= 1){
+					if(membranesAndIndexes != null && membranesAndIndexes.containsKey(closeCSI[i].getCurve())){
+						if (tool == CurveEditorTool.TOOL_LINE) {
+							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
+						}else if(tool == CurveEditorTool.TOOL_POINT) {
+							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
+							double dist = closeCSI[i].getCurve().getDistanceTo(wc);
+							int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
+							Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
+							Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+							newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
+						}
+						break;
 					}
-					break;
+				}
+					
 				}
 			}
-			
-		}
 	}
 	if(newCurveSelection != null){
 		if(membraneSamplerCurves == null){
@@ -1742,7 +1749,7 @@ public CurveSelectionInfo findChomboCurveSelectionInfoForPoint(CoordinateIndex c
 	if (getPdeDataContext().getCartesianMesh().isChomboMesh())
 	{
 		CartesianMeshChombo chomboMesh = (CartesianMeshChombo) getPdeDataContext().getCartesianMesh();
-		int memIndex = chomboMesh.findMembraneIndexForVolumeIndex(ci);
+		int memIndex = chomboMesh.findMembraneIndexFromVolumeIndex(ci);
 		if (memIndex >= 0)
 		{
 			for (Entry<SampledCurve, int[]> entry : membranesAndIndexes.entrySet())
@@ -1757,6 +1764,20 @@ public CurveSelectionInfo findChomboCurveSelectionInfoForPoint(CoordinateIndex c
 					}
 				}
 			}
+		}
+	}
+	return null;
+}
+
+public CurveSelectionInfo findChomboSinglePointSelectionInfoForPoint(Coordinate wc) {
+	if (getPdeDataContext().getCartesianMesh().isChomboMesh())
+	{
+		CartesianMeshChombo chomboMesh = (CartesianMeshChombo) getPdeDataContext().getCartesianMesh();
+		int memIndex = chomboMesh.findMembraneIndexFromVolumeCoordinate(wc);
+		if (memIndex >= 0)
+		{
+			Coordinate coord = chomboMesh.getMembraneElements()[memIndex].getCentroid();
+			return new CurveSelectionInfo(new SinglePoint(coord));
 		}
 	}
 	return null;
