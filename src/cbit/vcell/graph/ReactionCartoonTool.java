@@ -509,7 +509,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	private static final String RXSPECIES_CUT = "Cut";
 	private static final String RXSPECIES_ERROR = "Error";
 
-	private static TableListResult showDeleteDetails(Component requester,DeleteSpeciesInfo deleteSpeciesInfo,ReactionStep[] reactionStepArr,/*boolean bBack,*/boolean bCut){
+	private static TableListResult showDeleteDetails(Component requester,DeleteSpeciesInfo deleteSpeciesInfo,ReactionStep[] reactionStepArr,boolean bCut,boolean bShowErrorsOnly){
 		if(reactionStepArr != null && reactionStepArr.length == 0){
 			reactionStepArr = null;
 		}
@@ -526,32 +526,41 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 		final String OK_TO_DELETE = "ok to delete";
 		final String ERROR_IF_DELETE = "ERROR if deleted";
+		ArrayList<String[]> errorRows = new ArrayList<String[]>();
 		if(deleteSpeciesInfo != null && reactionStepArr != null){
 			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions/Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
 			columnNames = new String[] {"Type","Name","Flag","Reference"};
 			rowData = new String[deleteSpeciesInfo.getRowData().length+reactionStepArr.length][4];
+			final int STATUS_ROW = 2;
 			for (int i = 0; i < rowData.length; i++) {
 				if(i< reactionStepArr.length){
 					rowData[i][0] = "Reaction";
 					rowData[i][1] = reactionStepArr[i].getName();
-					rowData[i][2] = OK_TO_DELETE;
+					rowData[i][STATUS_ROW] = OK_TO_DELETE;
 					rowData[i][3] = "";
 				}else{
 					int index = i-reactionStepArr.length;
 					rowData[i][0] = "Species";
 					rowData[i][1] = deleteSpeciesInfo.getRowData()[index][0];
-					rowData[i][2] = (deleteSpeciesInfo.getRowData()[index][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
+					rowData[i][STATUS_ROW] = (deleteSpeciesInfo.getRowData()[index][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
 					rowData[i][3] = deleteSpeciesInfo.getRowData()[index][2]+" "+deleteSpeciesInfo.getRowData()[index][3];
+				}
+				if(rowData[i][STATUS_ROW].equals(ERROR_IF_DELETE)){
+					errorRows.add(rowData[i]);
 				}
 			}
 		}else if(deleteSpeciesInfo != null && reactionStepArr == null){
 			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
 			columnNames = new String[] {"Species","Flag","Reference"};
 			rowData = new String[deleteSpeciesInfo.getRowData().length][3];
+			final int STATUS_ROW = 1;
 			for (int i = 0; i < deleteSpeciesInfo.getRowData().length; i++) {
 				rowData[i][0] = deleteSpeciesInfo.getRowData()[i][0];
-				rowData[i][1] = (deleteSpeciesInfo.getRowData()[i][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
+				rowData[i][STATUS_ROW] = (deleteSpeciesInfo.getRowData()[i][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
 				rowData[i][2] = deleteSpeciesInfo.getRowData()[i][2]+" "+deleteSpeciesInfo.getRowData()[i][3];				
+				if(rowData[i][STATUS_ROW].equals(ERROR_IF_DELETE)){
+					errorRows.add(rowData[i]);
+				}
 			}
 		}else if(deleteSpeciesInfo == null && reactionStepArr != null){
 			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions.";
@@ -563,9 +572,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}else{
 			throw new IllegalArgumentException("Unknown parameter combo 'showDeleteDetails'.");
 		}
-		TableListResult tableListResult = DialogUtils.showComponentOptionsTableList(requester, title,columnNames, rowData, null ,null,
-				new String[] {RXSPECIES_BACK}/*(bBack?new String[] {RXSPECIES_BACK}:new String[] {(bCut?RXSPECIES_CUT:RXSPECIES_DELETE),RXSPECIES_CANCEL})*/,
-				RXSPECIES_BACK/*RXSPECIES_CANCEL*/,null);
+		if(bShowErrorsOnly && errorRows.size() > 0){
+			rowData = errorRows.toArray(new String[0][]);
+		}
+		TableListResult tableListResult = DialogUtils.showComponentOptionsTableList(requester, title,columnNames, rowData, null ,null,new String[] {RXSPECIES_BACK},RXSPECIES_BACK,null);
 		return tableListResult;
 	}
 	public static void deleteReactionsAndSpecies(Component requester,ReactionStep[] reactionStepArr,SpeciesContext[] speciesContextArr, boolean bCut) throws Exception,UserCancelException{
@@ -599,7 +609,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			deleteSpeciesInfo = (deleteSpeciesInfo==null?detailsDeleteSpecies(requester, speciesContextArr,reactionStepArr,rxCartoon):deleteSpeciesInfo);
 			if(response.equals(DETAILS)){
-				TableListResult tableListResult = showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,/*true,*/bCut);
+				TableListResult tableListResult = showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,false);
 //				if(!tableListResult.selectedOption.equals(RXSPECIES_BACK)){
 //				//if(!tableListResult.selectedOption.equals((bCut?RXSPECIES_CUT:RXSPECIES_DELETE))){
 //					throw UserCancelException.CANCEL_GENERIC;
@@ -617,7 +627,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						if(response == null || response.equals(RXSPECIES_CANCEL)){
 							throw UserCancelException.CANCEL_GENERIC;
 						}
-						showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,/*true,*/bCut);
+						showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,true);
 					}
 				}
 			}
