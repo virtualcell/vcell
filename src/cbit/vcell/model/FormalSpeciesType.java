@@ -10,6 +10,7 @@
 
 package cbit.vcell.model;
 
+
 /**
  * Insert the type's description here.
  * Creation date: (2/25/2003 3:22:05 PM)
@@ -22,15 +23,29 @@ public class FormalSpeciesType implements java.io.Serializable{
     private static final int SPECIES_TYPE_COMPOUND = 0;
     private static final int SPECIES_TYPE_ENZYME = 1;
     private static final int SPECIES_TYPE_PROTEIN = 2;
-    private static final int SPECIES_TYPE_UNKNOWN = 3;
-
+//    private static final int SPECIES_TYPE_UNKNOWN = 3;
+    private static final int SPECIES_TYPE_MATCHSEARCH = 4;
+    
     private static final String[] names = {"compound","enzyme","protein","unknown"};
     
     public static final FormalSpeciesType compound = new FormalSpeciesType(SPECIES_TYPE_COMPOUND);
     public static final FormalSpeciesType enzyme = new FormalSpeciesType(SPECIES_TYPE_ENZYME);
     public static final FormalSpeciesType protein = new FormalSpeciesType(SPECIES_TYPE_PROTEIN);
-    public static final FormalSpeciesType unknown = new FormalSpeciesType(SPECIES_TYPE_UNKNOWN);
-
+//    public static final FormalSpeciesType unknown = new FormalSpeciesType(SPECIES_TYPE_UNKNOWN);
+    public static final MatchSearchFormalSpeciesType speciesMatchSearch = new MatchSearchFormalSpeciesType();
+    
+    public static class MatchSearchFormalSpeciesType extends FormalSpeciesType{
+    	private String[] matchCriterias;
+    	public MatchSearchFormalSpeciesType(){
+    		super(SPECIES_TYPE_MATCHSEARCH);
+    	}
+    	public void setSQLMatchCriteria(String[] matchCriterias){
+    		this.matchCriterias = matchCriterias;
+    	}
+    	public String[] getMatchCriterias(){
+    		return matchCriterias;
+    	}
+    }
     //public static final int ANY_PROPERTY = 0xFFFFFFFF;
     
     public static final int COMPOUND_ALIAS = 		    0x01;

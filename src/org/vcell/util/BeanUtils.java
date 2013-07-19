@@ -38,7 +38,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -55,12 +54,9 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
-import javax.swing.SwingUtilities;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -1043,4 +1039,29 @@ public final class BeanUtils {
 		return jdomDocument;
 	}
 
+	public static final String SQL_ESCAPE_CHARACTER = "/";
+	public static String convertToSQLSearchString(String searchString){
+		if(searchString == null || searchString.length() == 0){return searchString;}
+		String convertedLikeString = "";
+		StringBuffer sb = new StringBuffer(searchString);
+		for(int i=0;i<sb.length();i+= 1){
+			if(sb.charAt(i) == '*'){
+				convertedLikeString+= "%";//sql wildcard
+			}else if(sb.charAt(i) == '%'){
+				convertedLikeString+= SQL_ESCAPE_CHARACTER+"%";// "%" special in sql 'like'
+			}else if(sb.charAt(i) == '_'){
+				convertedLikeString+= SQL_ESCAPE_CHARACTER+"_";// "_" special in sql 'like'
+			}else {
+				convertedLikeString+= sb.charAt(i);
+			}
+		}	
+		if(convertedLikeString.indexOf("%") == -1 && convertedLikeString.indexOf("_") == -1){
+			convertedLikeString = "%"+convertedLikeString+"%";
+		}
+		//The character "%" matches any string of zero or more characters except null.
+		//The character "_" matches any single character.
+		//A wildcard character is treated as a literal if preceded by the character designated as the escape character.
+		//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
+		return convertedLikeString;
+	}
 }
