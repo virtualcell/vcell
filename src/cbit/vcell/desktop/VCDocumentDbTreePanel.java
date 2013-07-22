@@ -387,10 +387,15 @@ public void search(final boolean bShowAll) {
 				public void run() {
 					try{
 						ArrayList<SearchCriterion> searchCriterionList = getDatabaseSearchPanel().getSearchCriterionList(getDocumentManager());
-						if(searchCriterionList != null && searchCriterionList.size() > 0){
-							searchCriterionListFinal.addAll(searchCriterionList);
+						if(status[0] == null){//update status only if no one else has
+							if(searchCriterionList != null && searchCriterionList.size() > 0){
+								searchCriterionListFinal.addAll(searchCriterionList);
+							}
+							status[0] = "OK";
+							return;
+						}else{
+							return;
 						}
-						status[0] = "OK";
 					}catch(Exception e){
 						status[0] = e;
 					}
@@ -401,9 +406,9 @@ public void search(final boolean bShowAll) {
 			while((System.currentTimeMillis()-startTime) < 60000){
 				if(status[0] != null){
 					if(status[0] instanceof Exception){
-						throw (Exception)status[0];
+						throw (Exception)status[0];//User cancelled or there was an exception in search criteria thread
 					}
-					return;
+					return;//search criteria thread completed with 'OK'
 				}
 				try{
 					Thread.sleep(100);
@@ -417,9 +422,9 @@ public void search(final boolean bShowAll) {
 	AsynchClientTask refreshTask = new AsynchClientTask("Refreshing tree...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if(searchCriterionListFinal.size() > 0){
-				refresh(searchCriterionListFinal);
+				refresh(searchCriterionListFinal);//show with search criteria
 			}else{
-				refresh(null);
+				refresh(null);//show all
 			}
 		}
 	};
