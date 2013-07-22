@@ -307,8 +307,12 @@ public org.vcell.util.Coordinate snapWorldCoordinate(org.vcell.util.Coordinate t
  * Insert the method's description here.
  * Creation date: (7/13/2004 4:27:15 PM)
  */
-public org.vcell.util.Coordinate snapWorldCoordinateFace(org.vcell.util.Coordinate targetC) {
+public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 	
+		if (getSourceDataInfo().isChombo())
+		{
+			return targetC;
+		}
 		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 

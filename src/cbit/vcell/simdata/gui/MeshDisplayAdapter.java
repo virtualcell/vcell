@@ -359,7 +359,7 @@ public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageEx
 	return new MeshRegionSurfaces(surfaceCollection,surface_polygon_MembraneIndexes);	
 }
 
-public Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int slice)
+private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int slice)
 {
 	Hashtable<SampledCurve, int[]> curvesAndValues = null;
 	if (mesh.isChomboMesh())
@@ -392,34 +392,39 @@ public Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int 
 				melist.remove(me);
 				
 				Segment2D segment = segments[me.getMembraneIndex()];
-				Coordinate p1 = vertices[segment.prevVertex];
-				Coordinate p2 = vertices[segment.nextVertex];				
-				int pcnt = curve.getControlPointCount();
-				if (pcnt == 0)
-				{
-					curve.appendControlPoint(p1);
-				}
-				else
-				{
-					assert segment.prevNeigbhor == indexList.get(pcnt - 1);
-				}
-				curve.appendControlPoint(p2);
 				indexList.add(me.getMembraneIndex());
-				
+
 				int nextIndex = segment.nextNeigbhor;
+				int pcnt = curve.getControlPointCount();
 				if (nextIndex < 0 || nextIndex == startingIndex)
 				{
-					// start a new curve
-					me = null;
+					if (nextIndex == startingIndex && pcnt > 1)
+					{
+						curve.setClosed(true);
+					}
 					int[] rmi = new int[indexList.size()];
 					for(int i = 0; i < indexList.size(); ++ i)
 					{
 						rmi[i] = indexList.get(i);
 					}
 					curvesAndValues.put(curve, rmi);
+					// start a new curve
+					me = null;
 				}
 				else
 				{
+					Coordinate p1 = vertices[segment.prevVertex];
+					Coordinate p2 = vertices[segment.nextVertex];				
+					if (pcnt == 0)
+					{
+						curve.appendControlPoint(p1);
+					}
+					else
+					{
+						assert segment.prevNeigbhor == indexList.get(pcnt - 1);
+					}
+					curve.appendControlPoint(p2);
+					// get next membrane element
 					me = membraneElements[nextIndex];
 				}
 			}
