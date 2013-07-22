@@ -66,9 +66,9 @@ import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
@@ -129,7 +129,6 @@ import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -3091,15 +3090,6 @@ public void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSy
 //}
 
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:20:48 AM)
- */
-public void showDatabaseWindow() {
-	getMdiManager().showWindow(ClientMDIManager.DATABASE_WINDOW_ID);
-}
-
 
 /**
  * Insert the method's description here.
