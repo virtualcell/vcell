@@ -16,10 +16,10 @@ import javax.swing.JPanel;
 
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.rmi.event.DataJobEvent;
@@ -422,15 +422,6 @@ private void setJPanel(javax.swing.JPanel newJPanel) {
 public void showBNGWindow() {
 	getRequestManager().showBNGWindow();
 }
-
-
-/**
- * Comment
- */
-public void showDatabaseWindow() {
-	getRequestManager().showDatabaseWindow();
-}
-
 
 /**
  * Insert the method's description here.

@@ -37,7 +37,6 @@ import org.vcell.util.gui.GlassPane;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.BNGWindow;
-import cbit.vcell.client.desktop.DatabaseWindow;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
@@ -247,22 +246,10 @@ void createRecyclableWindows() {
 	// we make'em only once, during application initialization sequence; happens before first connection attempt
 	/* database window */
 	if (! getWindowsHash().containsKey(DATABASE_WINDOW_ID)) {
-		// make the window
-		DatabaseWindow databaseWindow = new DatabaseWindow();
-		databaseWindow.setSize(JFRAME_SIZE);
-		databaseWindow.setIconImage(VCellIcons.getJFrameImageIcon());
-		BeanUtils.centerOnScreen(databaseWindow);
 		// make the manager
-		DatabaseWindowManager windowManager = new DatabaseWindowManager(databaseWindow.getDatabaseWindowPanel(), getRequestManager());
+		DatabaseWindowManager windowManager = new DatabaseWindowManager(null, getRequestManager());
 		// keep track of things
-		getWindowsHash().put(DATABASE_WINDOW_ID, databaseWindow);
 		getManagersHash().put(DATABASE_WINDOW_ID, windowManager);
-		// get window ready
-		setCanonicalTitle(DATABASE_WINDOW_ID);
-		databaseWindow.setDatabaseWindowManager(windowManager);
-		blockWindow(DATABASE_WINDOW_ID);
-		// listen for event when user clicks window close button
-		databaseWindow.addWindowListener(windowListener);
 	}
 	/* testing framework */
 	//...
@@ -586,12 +573,12 @@ public static void unBlockWindow(Component component) {
  */
 public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
-		unBlockWindow(DATABASE_WINDOW_ID);
+//		unBlockWindow(DATABASE_WINDOW_ID);
 		unBlockWindow(TESTING_FRAMEWORK_WINDOW_ID);
 //		unBlockWindow(BIONETGEN_WINDOW_ID);
 		unBlockWindow(FIELDDATA_WINDOW_ID);
 	} else {
-		blockWindow(DATABASE_WINDOW_ID);
+//		blockWindow(DATABASE_WINDOW_ID);
 		blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
 //		blockWindow(BIONETGEN_WINDOW_ID);
 		blockWindow(FIELDDATA_WINDOW_ID);

@@ -14,10 +14,10 @@ import java.awt.Component;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
@@ -294,13 +294,6 @@ MathModelInfo selectMathModelInfo(TopLevelWindowManager tfWindowManager);
 void showBNGWindow();
 
 void showFieldDataWindow(FieldDataWindowManager.DataSymbolCallBack dataSymbolCallBack);
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:18:53 AM)
- */
-void showDatabaseWindow();
-
 
 /**
  * Insert the method's description here.
