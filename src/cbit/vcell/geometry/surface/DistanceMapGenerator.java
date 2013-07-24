@@ -1019,6 +1019,22 @@ public class DistanceMapGenerator {
 		
 	}
 
-
-
+	public static SubvolumeSignedDistanceMap[] extractMiddleSlice(SubvolumeSignedDistanceMap[] distanceMaps3D) {
+		ArrayList<SubvolumeSignedDistanceMap> distanceMaps = new ArrayList<SubvolumeSignedDistanceMap>();
+		for(SubvolumeSignedDistanceMap ssdm : distanceMaps3D) {
+			SubVolume subVolume = ssdm.getSubVolume();
+			double[] samplesX = ssdm.getSamplesX();
+			double[] samplesY = ssdm.getSamplesY();
+			double[] samplesZ = new double[] { ssdm.getSamplesZ()[1] };
+			double[] sd = ssdm.getSignedDistances();
+			
+			double[] signedDistances = new double[samplesX.length*samplesY.length];
+			System.arraycopy(sd, samplesX.length*samplesY.length, signedDistances, 0, samplesX.length*samplesY.length);
+			
+			SubvolumeSignedDistanceMap subvolumeSignedDistanceMap = new SubvolumeSignedDistanceMap(subVolume, samplesX, samplesY, samplesZ, signedDistances);
+			distanceMaps.add(subvolumeSignedDistanceMap);
+		}
+		
+		return distanceMaps.toArray(new SubvolumeSignedDistanceMap[distanceMaps.size()]);
+	}
 }
