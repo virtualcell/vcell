@@ -35,9 +35,11 @@ import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.Version;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -1928,35 +1930,83 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		boolean bUseDistanceMap = false;
 		if (geometrySpec.hasImage() || bUseDistanceMap) {
 			Geometry geometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
-			if (geometry.getDimension() != 3) {
-				throw new SolverException("Distance map is only supported for 3D Chombo simulations.");
-			}		
-			ISize finestISize = chomboSolverSpec.getFinestSamplingSize(isize);
-			int Nx = finestISize.getX();
-			int Ny = finestISize.getY();
-			int Nz = finestISize.getZ();
-			//one more point in each direction
-			finestISize = new ISize(Nx+1, Ny+1, Nz+1);
-			boolean bCellCentered = false; 
-			double dx = geometry.getExtent().getX()/(Nx - 1);
-			double dy = geometry.getExtent().getY()/(Ny - 1);
-			double dz = geometry.getExtent().getZ()/(Nz - 1);
-			Vect3d deltaX = new Vect3d(dx, dy, dz);
-			GeometrySpec gc = geometry.getGeometrySpec();
-			Extent simExtent = gc.getExtent();
-			Extent distanceMapExtent = new Extent(simExtent.getX() + dx, simExtent.getY() + dx, simExtent.getZ() + dx);
-			gc.setExtent(distanceMapExtent);
-			GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
-			geoSurfaceDesc.setVolumeSampleSize(finestISize);
-			geoSurfaceDesc.updateAll();
-			VCImage vcImage = RayCaster.sampleGeometry(geometry, finestISize, bCellCentered);
-			SubvolumeSignedDistanceMap[] distanceMaps = DistanceMapGenerator.computeDistanceMaps(geometry, vcImage, bCellCentered);
+			
+			if(geometry.getDimension() == 2) {
+				if(geometry.getGeometrySpec().hasImage()) {
+					// pad the 2D image with itself in order to obtain a 3D image used to compute the distance map
+					// because the distance map algorithm is 3D only (using distance to triangles)
+					VCImage img = geometry.getGeometrySpec().getImage();
+					byte[] oldPixels = img.getPixels();
+					byte[] newPixels = new byte[oldPixels.length*3];
+					System.arraycopy(oldPixels, 0, newPixels, 0, oldPixels.length);
+					System.arraycopy(oldPixels, 0, newPixels, oldPixels.length, oldPixels.length);
+					System.arraycopy(oldPixels, 0, newPixels, oldPixels.length*2, oldPixels.length);
+				
+					Extent newExtent = new Extent(geometry.getExtent().getX(), geometry.getExtent().getY(), 1);
+					VCImage newImage = new VCImageUncompressed(null, newPixels, newExtent, img.getNumX(), img.getNumY(), 3);
+					Geometry newGeometry = new Geometry((Version)null, newImage);
+
+					ISize finestISize = chomboSolverSpec.getFinestSamplingSize(isize);
+					int Nx = finestISize.getX();
+					int Ny = finestISize.getY();
+					int Nz = 3;
+					//one more point in each direction (except z)
+					finestISize = new ISize(Nx+1, Ny+1, Nz);
+					boolean bCellCentered = false; 
+					double dx = newGeometry.getExtent().getX()/(Nx - 1);
+					double dy = newGeometry.getExtent().getY()/(Ny - 1);
+					double dz = newGeometry.getExtent().getZ()/(Nz);
+					Vect3d deltaX = new Vect3d(dx, dy, 1);
+					GeometrySpec newGeometrySpec = newGeometry.getGeometrySpec();
+					Extent simExtent = newGeometrySpec.getExtent();
+					Extent distanceMapExtent = new Extent(simExtent.getX() + dx, simExtent.getY() + dy, simExtent.getZ() + dz);
+					newGeometrySpec.setExtent(distanceMapExtent);
+					GeometrySurfaceDescription geoSurfaceDesc = newGeometry.getGeometrySurfaceDescription();
+					geoSurfaceDesc.setVolumeSampleSize(finestISize);
+					geoSurfaceDesc.updateAll();
+					VCImage vcImage = RayCaster.sampleGeometry(newGeometry, finestISize, bCellCentered);
+					SubvolumeSignedDistanceMap[] distanceMaps3D = DistanceMapGenerator.computeDistanceMaps(newGeometry, vcImage, bCellCentered);
+					SubvolumeSignedDistanceMap[] distanceMaps = DistanceMapGenerator.extractMiddleSlice(distanceMaps3D);
+						
+					printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + newGeometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
+					for (int i = 0; i < numSubVolumes; i++) {
+						File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
+						writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
+						printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
+					}
+				} else {
+					throw new SolverException("Distance map is not supported for 2D analytical images for Chombo simulations.");
+				}
+			} else if(geometry.getDimension() == 3) {
+				ISize finestISize = chomboSolverSpec.getFinestSamplingSize(isize);
+				int Nx = finestISize.getX();
+				int Ny = finestISize.getY();
+				int Nz = finestISize.getZ();
+				//one more point in each direction
+				finestISize = new ISize(Nx+1, Ny+1, Nz+1);
+				boolean bCellCentered = false; 
+				double dx = geometry.getExtent().getX()/(Nx - 1);
+				double dy = geometry.getExtent().getY()/(Ny - 1);
+				double dz = geometry.getExtent().getZ()/(Nz - 1);
+				Vect3d deltaX = new Vect3d(dx, dy, dz);
+				GeometrySpec gc = geometry.getGeometrySpec();
+				Extent simExtent = gc.getExtent();
+				Extent distanceMapExtent = new Extent(simExtent.getX() + dx, simExtent.getY() + dy, simExtent.getZ() + dz);
+				gc.setExtent(distanceMapExtent);
+				GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
+				geoSurfaceDesc.setVolumeSampleSize(finestISize);
+				geoSurfaceDesc.updateAll();
+				VCImage vcImage = RayCaster.sampleGeometry(geometry, finestISize, bCellCentered);
+				SubvolumeSignedDistanceMap[] distanceMaps = DistanceMapGenerator.computeDistanceMaps(geometry, vcImage, bCellCentered);
 		
-			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
-			for (int i = 0; i < numSubVolumes; i++) {
-				File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
-				writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
-				printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
+				printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
+				for (int i = 0; i < numSubVolumes; i++) {
+					File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
+					writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
+					printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
+				}
+			} else {
+				throw new SolverException("Distance map is only supported for 2D/3D Chombo simulations.");
 			}
 		} else {
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
