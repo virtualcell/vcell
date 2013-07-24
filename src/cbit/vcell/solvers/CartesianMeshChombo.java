@@ -381,15 +381,16 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	@Override
 	protected Object[] getOutputFields() throws IOException {
+		Object[] objects = null;
 		if (dimension == 2)
 		{
-			return new Object[] {dimension, size, origin, extent, membraneElements, vertices, surfaceTriangleMap, sliceViewList};
+			objects = new Object[] {dimension, size, origin, extent, membraneElements, vertices, segments};
 		}
 		else if (dimension == 3)
 		{
-			return new Object[] {dimension, size, origin, extent, membraneElements, vertices, segments};
+			objects = new Object[] {dimension, size, origin, extent, membraneElements, vertices, surfaceTriangleMap, sliceViewList};
 		}
-		return null;
+		return objects;
 	}
 
 	@Override
@@ -406,8 +407,16 @@ public class CartesianMeshChombo extends CartesianMesh {
 			origin = (Origin)objArray[++ index];
 			extent = (Extent)objArray[++ index];
 			membraneElements = (MembraneElement[])objArray[++ index];
-			surfaceTriangleMap = (Map<Integer, List<SurfaceTriangleEntry3D>>)objArray[++ index];
-			sliceViewList = (List<SliceViewEntry>)objArray[++ index];
+			vertices = (Coordinate[])objArray[++ index];
+			if (dimension == 2)
+			{
+				segments = (Segment2D[])objArray[++ index];
+			}
+			else if (dimension == 3)
+			{
+				surfaceTriangleMap = (Map<Integer, List<SurfaceTriangleEntry3D>>)objArray[++ index];
+				sliceViewList = (List<SliceViewEntry>)objArray[++ index];
+			}
 
 			compressedBytes = null;
 			
