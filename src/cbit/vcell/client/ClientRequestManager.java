@@ -1997,12 +1997,6 @@ public void exportDocument(TopLevelWindowManager manager) {
  */
 public void exportMessage(ExportEvent event) {
 	if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
-		// update document manager
-		//try {
-			//((ClientDocumentManager)getRequestManager().getDocumentManager()).reloadExportLog(exportEvent.getVCDataIdentifier());
-		//}catch (Throwable e){
-			//e.printStackTrace(System.out);
-		//}
 		// try to download the thing
 		downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
 	}	

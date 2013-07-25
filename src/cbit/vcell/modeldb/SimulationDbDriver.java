@@ -59,38 +59,6 @@ public SimulationDbDriver(MathDescriptionDbDriver argMathDB,SessionLog sessionLo
 	this.mathDB = argMathDB;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-void deleteResultSetExport(Connection con, User user,KeyValue eleKey) throws SQLException {
-
-	String rsetExportsubQueryAlias = "rsetexportalias";
-	String sql;
-	sql =
-		"DELETE FROM " + ResultSetExportsTable.table.getTableName() + 
-		" WHERE " +
-		ResultSetExportsTable.table.id.getQualifiedColName() + " = " + eleKey.toString() +
-		" AND " +
-		ResultSetExportsTable.table.simulationRef.getQualifiedColName() + " = " +
-		"(" +
-		"SELECT " + SimulationTable.table.id.getQualifiedColName() +
-		" FROM " + SimulationTable.table.getTableName() + "," + ResultSetExportsTable.table.getTableName() + " " +rsetExportsubQueryAlias +
-		" WHERE " +
-			rsetExportsubQueryAlias+"."+ResultSetExportsTable.table.id.toString() + " = " + eleKey.toString() +
-			" AND " +
-			SimulationTable.table.id.getQualifiedColName() + " = " + 
-					rsetExportsubQueryAlias+"."+ResultSetExportsTable.table.simulationRef.toString() +
-			" AND " +
-			SimulationTable.table.ownerRef.getQualifiedColName() + " = " + user.getID().toString() +
-		")";
-	updateCleanSQL(con,sql);
-}
-
-
 /**
  * This method was created in VisualAge.
  * @param vcimage cbit.image.VCImage
@@ -202,46 +170,6 @@ private KeyValue getParentSimulation(Connection con,User user,KeyValue simKey) t
 	return parentSimKey;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2003 5:07:43 PM)
- */
-cbit.vcell.export.server.ExportLog getResultSetExport(Connection con,User user,KeyValue simKey) throws SQLException, DataAccessException {
-
-	cbit.vcell.export.server.ExportLog[] exportLogs = null;
-	String sql = ResultSetExportsTable.getSQLInfo(user,simKey);
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		exportLogs = ResultSetExportsTable.getExportLogs(rset,log);
-		rset.close();
-	} finally {
-		stmt.close();
-	}
-	
-	return (exportLogs != null?exportLogs[0]:null);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2003 5:09:17 PM)
- */
-cbit.vcell.export.server.ExportLog[] getResultSetExports(Connection con,User user, boolean bAll) throws SQLException, DataAccessException {
-
-	cbit.vcell.export.server.ExportLog[] exportLogs = null;
-	String sql = ResultSetExportsTable.getSQLInfo(user,bAll);
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		exportLogs = ResultSetExportsTable.getExportLogs(rset,log);
-		rset.close();
-	} finally {
-		stmt.close();
-	}
-	
-	return exportLogs;
-}
 
 /**
  * This method was created in VisualAge.
@@ -439,20 +367,6 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 		dbc.put(versionable.getVersion().getVersionKey(),versionable);
 	}
 	return versionable;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2003 12:30:16 PM)
- */
-public void insertResultSetExport(Connection con, User user,KeyValue simulationRef,String exportFormat,String exportURL) throws SQLException{
-
-	String sql =
-		"INSERT INTO " + ResultSetExportsTable.table.getTableName() +
-		" VALUES "+ResultSetExportsTable.getSQLValueList(simulationRef,exportFormat,exportURL);
-
-	updateCleanSQL(con,sql);
 }
 
 

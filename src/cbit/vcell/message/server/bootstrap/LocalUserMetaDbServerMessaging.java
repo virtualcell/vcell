@@ -20,7 +20,6 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
@@ -404,45 +403,6 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(Reacti
 		throw new DataAccessException(e.getMessage());
 	}
 }
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
-	try {
-		log.print("LocalUserMetaDbServerMessaging.getExportLog(simulationKey="+simulationKey+")");
-		ExportLog exportLog = dbServerProxy.getExportLog(simulationKey);
-		return exportLog;
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
-	try {
-		log.print("LocalUserMetaDbServerMessaging.getExportLogs()");
-		ExportLog exportLogs[] = dbServerProxy.getExportLogs(bAll);
-		return exportLogs;
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
 
 /**
  * This method was created in VisualAge.

@@ -38,34 +38,6 @@ public ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) thro
 }
 
 
-void deleteResultSetExport(User user,KeyValue eleKey,boolean bEnableRetry) throws SQLException, DataAccessException {
-			
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {
-		simDB.deleteResultSetExport(con, user,eleKey);
-		con.commit();
-		return;
-	} catch (Throwable e) {
-		log.exception(e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			deleteResultSetExport(user,eleKey,false);
-		}else{
-			handle_DataAccessException_SQLException(e);
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.Versionable
@@ -99,66 +71,6 @@ void deleteResultSetInfoSQL(User user, KeyValue simKey, boolean bEnableRetry) th
 			handle_DataAccessException_SQLException(e);
 		}
 	}finally{
-		conFactory.release(con,lock);
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
-cbit.vcell.export.server.ExportLog getResultSetExport(User user, KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {
-		return simDB.getResultSetExport(con, user, simKey);
-	} catch (Throwable e) {
-		log.exception(e);
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return getResultSetExport(user, simKey, false);
-		}else{
-			handle_SQLException(e);
-			return null; // never gets here
-		}
-	} finally {
-		conFactory.release(con,lock);
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
- */
-cbit.vcell.export.server.ExportLog[] getResultSetExports(User user, boolean bAll, boolean bEnableRetry) throws SQLException, DataAccessException {
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {
-		return simDB.getResultSetExports(con,user, bAll);
-	} catch (Throwable e) {
-		log.exception(e);
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			return getResultSetExports(user, bAll, false);
-		}else{
-			handle_DataAccessException_SQLException(e);
-			return null; // never gets here
-		}
-	} finally {
 		conFactory.release(con,lock);
 	}
 }
@@ -253,37 +165,6 @@ SolverResultSetInfo[] getResultSetInfos(User user, boolean bAll, boolean bEnable
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2003 12:57:20 PM)
- */
-public void insertResultSetExport(User user,KeyValue simulationRef,String exportFormat,String exportURL,boolean bEnableRetry) throws SQLException, DataAccessException{
-	
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	try {
-		simDB.insertResultSetExport(con,user,simulationRef,exportFormat,exportURL);
-		con.commit();
-		return;
-	} catch (Throwable e) {
-		log.exception(e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			log.exception(rbe);
-			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			insertResultSetExport(user,simulationRef,exportFormat,exportURL,false);
-		}else{
-			handle_DataAccessException_SQLException(e);
-		}
-	}finally{
-		conFactory.release(con,lock);
-	}
-}
 
 /**
  * This method was created in VisualAge.

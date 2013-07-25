@@ -79,13 +79,6 @@ void deleteMathModel(KeyValue mathModelKey) throws DataAccessException, ObjectNo
 
 /**
  * Insert the method's description here.
- * Creation date: (10/13/2003 5:37:35 PM)
- */
-public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
-
-
-/**
- * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)
  * @param bioModelKey cbit.sql.KeyValue
  * @exception java.rmi.RemoteException The exception description.
@@ -179,24 +172,6 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,Fo
 
 
 public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/4/01 5:19:25 PM)
- * @return cbit.vcell.export.server.ExportLog
- * @param simKey cbit.sql.KeyValue
- */
-cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException;
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/4/01 5:19:25 PM)
- * @return cbit.vcell.export.server.ExportLog[]
- * @param simKey cbit.sql.KeyValue
- */
-cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException, RemoteException;
 
 
 /**

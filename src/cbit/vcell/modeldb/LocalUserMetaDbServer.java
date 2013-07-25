@@ -31,7 +31,6 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.ReactionDescription;
-import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.GeometryInfo;
@@ -112,15 +111,6 @@ public void deleteGeometry(KeyValue key) throws DataAccessException, ObjectNotFo
 public void deleteMathModel(KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	dbServerImpl.deleteMathModel(user, key);
 }
-
-
-/**
- * delete method comment.
- */
-public void deleteResultSetExport(KeyValue eleKey) throws DataAccessException{
-	dbServerImpl.deleteResultSetExport(user, eleKey);
-}
-
 
 /**
  * delete method comment.
@@ -242,22 +232,6 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,Fo
  */
 public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	return dbServerImpl.getDictionaryReactions(user, reactionQuerySpec);
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
-	return dbServerImpl.getExportLog(user, simulationKey);
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
-	return dbServerImpl.getExportLogs(user, bAll);
 }
 
 /**
