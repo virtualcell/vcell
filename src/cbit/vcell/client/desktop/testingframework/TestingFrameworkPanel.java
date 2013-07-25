@@ -74,6 +74,8 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String COPY_TCRIT_SIMID = "Copy TestCrit SimID";
 	public static final String QUERY_TCRITVAR_CROSSREF = "Query TCrit Var Cross Ref";
 	public static final String REMOVE_TESTCASE = "Remove TestCase...";
+	public static final String REMOVE_TESTCRITERIA = "Remove TestCriteria...";
+	public static final String REMOVE_DIFF_TESTCRITERIA = "Remove Differential TestCriteria...";
 	public static final String ADD_TESTCASE = "Add TestCase...";
 	public static final String ADD_TESTSUITE = "Add TestSuite...";
 	public static final String DUPLICATE_TESTSUITE = "Duplicate TestSuite...";
@@ -224,6 +226,8 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 				connEtoC7(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRemoveMenuItem()) 
 				connEtoC8(e);
+			if (e.getSource() == TestingFrameworkPanel.this.getRemoveTestCritMenuItem()) 
+				removeTestCrit(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRunSimsMenuItem()) 
 				connEtoC9(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getGenerateTCReportMenuItem()) 
@@ -236,6 +240,8 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 				connEtoC15(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRefreshTestSuiteJMenuItem()) 
 				connEtoC2(e);
+			if (e.getSource() == TestingFrameworkPanel.this.getRemoveDiffTestCriteriaJMenuItem()) 
+				removeDiffTestCriteria(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRefreshTestCaseJMenuItem()) 
 				connEtoC2(e);
 			if (e.getSource() == TestingFrameworkPanel.this.getRefreshTestCriteriaJMenuItem()) 
@@ -547,6 +553,17 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 		}else if(getTreeSelection() instanceof TestingFrmwkTreeModel.TestCriteriaVarUserObj){
 			getTCritVarPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);				
 		}else if (getTreeSelection() instanceof TestSuiteInfoNew) {
+			getRemoveDiffTestCriteriaJMenuItem().setEnabled(false);
+			if(getJTree1().getSelectionCount() == 2){
+				TestSuiteInfoNew testSuiteInfoNew0 = (TestSuiteInfoNew)((BioModelNode)getSelectedTreePaths()[0].getLastPathComponent()).getUserObject();
+				TestSuiteInfoNew testSuiteInfoNew1 = (TestSuiteInfoNew)((BioModelNode)getSelectedTreePaths()[1].getLastPathComponent()).getUserObject();
+				if(testSuiteInfoNew0.getTSDate().compareTo(testSuiteInfoNew1.getTSDate()) < 0){
+					getRemoveDiffTestCriteriaJMenuItem().setEnabled(!testSuiteInfoNew1.isLocked());
+				}else{
+					getRemoveDiffTestCriteriaJMenuItem().setEnabled(!testSuiteInfoNew0.isLocked());
+				}
+			}
+			
 			boolean bMenuValid = getJTree1().getSelectionCount() == 1;
 			getRefreshTestSuiteJMenuItem().setEnabled(bMenuValid);
 			boolean isLocked = false;
@@ -613,6 +630,7 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 			}
 			getRunSimMenuItem().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
 			getEditTCrMenuItem().setEnabled(bMenuValid && !isLocked);
+			getRemoveTestCritMenuItem().setEnabled(!checkAnyLocked());
 			getGenerateTCRitReportMenuItem1().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
 			getGenerateTCRitReportUserDefinedReferenceMenuItem1().setEnabled(!checkAnyLocked()/* && checkAllSameType()*/);
 			
@@ -820,6 +838,15 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+private void removeDiffTestCriteria(ActionEvent arg1){
+	try {
+		tsRefreshListener.rememberSelectedNode();
+		this.refireActionPerformed(arg1);
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+}
 /**
  * connEtoC3:  (AddTestCaseMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> TestingFrameworkPanel.refireActionPerformed(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
@@ -926,6 +953,17 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
 		this.refireActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+private void removeTestCrit(java.awt.event.ActionEvent arg1){
+	try{
+		tsRefreshListener.rememberSelectedNode();
+		this.refireActionPerformed(arg1);
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -1753,6 +1791,24 @@ private javax.swing.JMenuItem getRemoveMenuItem() {
 	}
 	return ivjRemoveMenuItem;
 }
+
+private JMenuItem ivjRemoveTestCritMenuItem;
+private javax.swing.JMenuItem getRemoveTestCritMenuItem() {
+	if (ivjRemoveTestCritMenuItem == null) {
+		try {
+			ivjRemoveTestCritMenuItem = new javax.swing.JMenuItem();
+			ivjRemoveTestCritMenuItem.setName("RemoveTestCritMenuItem");
+			ivjRemoveTestCritMenuItem.setText(REMOVE_TESTCRITERIA);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjRemoveTestCritMenuItem;
+}
 /**
  * Return the RemoveTSMenuItem property value.
  * @return javax.swing.JMenuItem
@@ -1859,6 +1915,7 @@ private javax.swing.JPopupMenu getSimulationPopupMenu() {
 			ivjSimulationPopupMenu.add(getCompareMenuItem());
 			ivjSimulationPopupMenu.add(getCompareUserDefinedMenuItem());
 			ivjSimulationPopupMenu.add(getEditTCrMenuItem());
+			ivjSimulationPopupMenu.add(getRemoveTestCritMenuItem());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportMenuItem1());
 			ivjSimulationPopupMenu.add(getGenerateTCRitReportUserDefinedReferenceMenuItem1());
 			ivjSimulationPopupMenu.add(getQueryTCritCrossRefMenuItem1());
@@ -1975,6 +2032,7 @@ private javax.swing.JPopupMenu getTestSuitePopupMenu() {
 			ivjTestSuitePopupMenu.add(getEditAnnotationTestSuiteMenuItem());
 			ivjTestSuitePopupMenu.add(getLoadMenuItem());
 			ivjTestSuitePopupMenu.add(getLockTestSuiteMenuItem());
+			ivjTestSuitePopupMenu.add(getRemoveDiffTestCriteriaJMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1984,6 +2042,20 @@ private javax.swing.JPopupMenu getTestSuitePopupMenu() {
 		}
 	}
 	return ivjTestSuitePopupMenu;
+}
+
+private JMenuItem ivjRemoveDiffTestCriteriaJMenuItem;
+private JMenuItem getRemoveDiffTestCriteriaJMenuItem(){
+	if(ivjRemoveDiffTestCriteriaJMenuItem == null){
+		try{
+			ivjRemoveDiffTestCriteriaJMenuItem = new javax.swing.JMenuItem();
+			ivjRemoveDiffTestCriteriaJMenuItem.setName("RemoveDiffTestCriteriaJMenuItem");
+			ivjRemoveDiffTestCriteriaJMenuItem.setText(REMOVE_DIFF_TESTCRITERIA);
+		}catch(Throwable ivjExc){
+			handleException(ivjExc);;
+		}
+	}
+	return ivjRemoveDiffTestCriteriaJMenuItem;
 }
 /**
  * Comment
@@ -2041,6 +2113,7 @@ private void initConnections() throws java.lang.Exception {
 	getGenTSReportMenuItem().addActionListener(ivjEventHandler);
 	getLoadMenuItem().addActionListener(ivjEventHandler);
 	getRemoveMenuItem().addActionListener(ivjEventHandler);
+	getRemoveTestCritMenuItem().addActionListener(ivjEventHandler);
 	getRunSimsMenuItem().addActionListener(ivjEventHandler);
 	getGenerateTCReportMenuItem().addActionListener(ivjEventHandler);
 	getRunSimMenuItem().addActionListener(ivjEventHandler);
@@ -2050,6 +2123,7 @@ private void initConnections() throws java.lang.Exception {
 	getJTree1().addPropertyChangeListener(ivjEventHandler);
 	getRemoveTSMenuItem().addActionListener(ivjEventHandler);
 	getRefreshTestSuiteJMenuItem().addActionListener(ivjEventHandler);
+	getRemoveDiffTestCriteriaJMenuItem().addActionListener(ivjEventHandler);
 	getRefreshTestCaseJMenuItem().addActionListener(ivjEventHandler);
 	getRefreshTestCriteriaJMenuItem().addActionListener(ivjEventHandler);
 	getGenerateTCRitReportMenuItem1().addActionListener(ivjEventHandler);

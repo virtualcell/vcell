@@ -13,9 +13,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -24,8 +29,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
+
+import junit.framework.TestSuite;
 
 import org.vcell.util.Compare;
 import org.vcell.util.UserCancelException;
@@ -34,6 +42,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
+import org.vcell.util.gui.DialogUtils.TableListResult;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TestingFrameworkWindowManager;
@@ -48,6 +57,7 @@ import cbit.vcell.client.task.TFDuplicateTestSuite;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFRemove;
+import cbit.vcell.client.task.TFRemoveTestCriteria;
 import cbit.vcell.client.task.TFRunSims;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.client.task.TFUpdateTestCriteria;
@@ -56,6 +66,7 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.RemoveTestCriteriaOP;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
@@ -63,6 +74,7 @@ import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
+import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -1112,8 +1124,136 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),(tsinV.size() == 1?tsinV.elementAt(0):null));
 			tasksV.add(tfRefreshTreeTask);
 		}
+		else if (e.getActionCommand().equals(TestingFrameworkPanel.REMOVE_DIFF_TESTCRITERIA)) {
+			final int OLDER = 0;
+			final int NEWER = 1;
+			final TestSuiteInfoNew[] testSuiteInfoHolder = new TestSuiteInfoNew[2];
 
-		else if (e.getActionCommand().equals(TestingFrameworkPanel.EDIT_TESTCRITERIA)) {
+			if(selectedTreePaths.length == 2 &&
+				((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject() instanceof TestSuiteInfoNew &&
+				((BioModelNode)selectedTreePaths[1].getLastPathComponent()).getUserObject() instanceof TestSuiteInfoNew){
+				//do outside task because its quick
+				TestSuiteInfoNew testSuiteInfoOlder = (TestSuiteInfoNew)((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject();
+				TestSuiteInfoNew testSuiteInfoNewer = (TestSuiteInfoNew)((BioModelNode)selectedTreePaths[1].getLastPathComponent()).getUserObject();
+				if(testSuiteInfoOlder.getTSDate().compareTo(testSuiteInfoNewer.getTSDate()) > 0){
+					TestSuiteInfoNew temp = testSuiteInfoOlder;
+					testSuiteInfoOlder = testSuiteInfoNewer;
+					testSuiteInfoNewer = temp;
+				}
+				testSuiteInfoHolder[OLDER] = testSuiteInfoOlder;
+				testSuiteInfoHolder[NEWER] = testSuiteInfoNewer;
+				
+				AsynchClientTask showDiffTask = new AsynchClientTask("Show Differential TestCriteria...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						ArrayList<TestSuiteNew> bothTestSuites = new ArrayList<TestSuiteNew>();
+						if(getClientTaskStatusSupport() != null){getClientTaskStatusSupport().setProgress(25);getClientTaskStatusSupport().setMessage("Getting TestSuiteInfo '"+testSuiteInfoHolder[OLDER].getTSID()+"'");}
+						bothTestSuites.add(getDocumentManager().getTestSuite(testSuiteInfoHolder[OLDER].getTSKey()));
+						if(getClientTaskStatusSupport() != null){getClientTaskStatusSupport().setProgress(50);getClientTaskStatusSupport().setMessage("Getting TestSuiteInfo '"+testSuiteInfoHolder[NEWER].getTSID()+"'");}
+						bothTestSuites.add(getDocumentManager().getTestSuite(testSuiteInfoHolder[NEWER].getTSKey()));
+						HashMap<String, TestCriteriaNew> olderTestCritHashMap = new HashMap<String, TestCriteriaNew>();
+						ArrayList<String> olderTestCaseBaseNames = new ArrayList<String>();
+						TreeMap<String, TestCriteriaNew> newDiffTestCriteria = new TreeMap<String, TestCriteriaNew>();
+						int excludedCount = 0;
+						for(TestSuiteNew currentTestSuite:bothTestSuites){
+							BigDecimal currentTestSuiteKey = currentTestSuite.getTSInfoNew().getTSKey();
+							for(TestCaseNew tcn:currentTestSuite.getTestCases()){
+								String prefixInfo = "TS='"+currentTestSuite.getTSInfoNew().getTSID()+"' Type='"+tcn.getType()+"' ";
+								String baseName =
+									(tcn instanceof TestCaseNewBioModel?
+										"BioModel='"+((TestCaseNewBioModel)tcn).getBioModelInfo().getVersion().getName()+"' App='"+((TestCaseNewBioModel)tcn).getSimContextName()+"'":
+										"MathModel='"+((TestCaseNewMathModel)tcn).getMathModelInfo().getVersion().getName())+"'";
+								if(currentTestSuite.getTSInfoNew().getTSKey().equals(testSuiteInfoHolder[OLDER].getTSKey())){
+									if(!olderTestCaseBaseNames.contains(baseName)){
+										olderTestCaseBaseNames.add(baseName);
+									}else{
+										throw new Exception("Old testcase names duplicated.");
+									}
+								}
+								for(TestCriteriaNew tcrit:tcn.getTestCriterias()){
+									String name = baseName+" Sim='"+tcrit.getSimInfo().getName()+"'";
+									if(olderTestCritHashMap.containsKey(name)){
+										if(currentTestSuiteKey.equals(testSuiteInfoHolder[OLDER].getTSKey())){throw new Exception("---Problem--- Older names not unique");}
+										continue;
+									}else if(currentTestSuiteKey.equals(testSuiteInfoHolder[NEWER].getTSKey())){
+										if(!olderTestCaseBaseNames.contains(baseName)){
+											excludedCount+= 1;//this happens when new TestSuite has added TestCase after duplication
+										}else if(newDiffTestCriteria.put(prefixInfo+name,tcrit) != null){
+											throw new Exception("---Problem--- Newer added names not unique");
+										}
+										continue;
+									}
+									olderTestCritHashMap.put(name,tcrit);
+								}
+
+							}
+						}
+						if(newDiffTestCriteria.size() > 0){
+							if(getClientTaskStatusSupport() != null){getClientTaskStatusSupport().setMessage("Showing Differential list...");}
+							String[][] rowData = new String[newDiffTestCriteria.size()][1];
+							String[] addedNamesArr = newDiffTestCriteria.keySet().toArray(new String[0]);
+							for (int i = 0; i < addedNamesArr.length; i++) {
+								rowData[i][0] = addedNamesArr[i];
+							}
+							final String DELETE = "Delete";
+							TableListResult result = 
+								DialogUtils.showComponentOptionsTableList(
+									gettestingFrameworkPanel(),
+									"Remove TestCriteria in TS='"+testSuiteInfoHolder[NEWER].getTSID()+"' that were not in TS='"+testSuiteInfoHolder[OLDER].getTSID()+"' (count="+rowData.length+" of "+olderTestCritHashMap.size()+", excluded="+excludedCount+")",
+									new String[] {"Diff TestCriteria"},
+									rowData,
+									ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,
+									null,
+									new String[] {DELETE,"Cancel"},
+									DELETE,
+									null);
+							if(result != null && result.selectedOption != null && result.selectedOption.equals(DELETE) && result.selectedTableRows != null && result.selectedTableRows.length > 0){
+								TestCriteriaNew[] allNewDiffTeestCritArr = newDiffTestCriteria.values().toArray(new TestCriteriaNew[0]);
+								TestCriteriaNew[] selTestCritsArr = new TestCriteriaNew[result.selectedTableRows.length];
+								for (int i = 0; i < result.selectedTableRows.length; i++) {
+									selTestCritsArr[i] = allNewDiffTeestCritArr[result.selectedTableRows[i]];
+//									System.out.println("Selected= "+rowData[result.selectedTableRows[i]][0]+"  --  SimName="+selTestCritsArrHolder[0][i].getSimInfo().getVersion().getName());
+								}
+								hashTable.put(TFRemoveTestCriteria.REMOVE_THESE_TESTCRITERIAS, selTestCritsArr);
+							}else{
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+						}else{
+							throw new Exception("No differential TestCriteria found");
+						}
+					}
+				};
+				AsynchClientTask shouldRefreshTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {//Prevent annoying refresh if cancel
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						new TFRefresh(getTestingFrameworkWindowManager(),testSuiteInfoHolder[NEWER]).run(hashTable);
+					}
+				};
+				tasksV.add(showDiffTask);
+				tasksV.add(new TFRemoveTestCriteria(getTestingFrameworkWindowManager()));
+				tasksV.add(shouldRefreshTask);
+//				tasksV.add(new TFRefresh(getTestingFrameworkWindowManager(),testSuiteInfoHolder[NEWER]));
+			}
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.REMOVE_TESTCRITERIA)) {
+			if (selectedObj instanceof TestCriteriaNew) {
+				ArrayList<TestCriteriaNew> selTestCritsArr = new ArrayList<TestCriteriaNew>();
+				for(int i=0;selectedTreePaths != null &&  i<selectedTreePaths.length;i+= 1){
+					Object selTreeNode = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
+					if (selTreeNode instanceof TestCriteriaNew) {
+						selTestCritsArr.add(((TestCriteriaNew) selTreeNode));
+					}
+				}
+				final String DELETE = "Delete";
+				String response = DialogUtils.showWarningDialog(gettestingFrameworkPanel(), "Delete "+selTestCritsArr.size()+" TestCriterias?",new String[] {DELETE,"Cancel"},DELETE);
+				if(response != null && response.equals(DELETE)){
+					tasksV.add(new TFRemoveTestCriteria(getTestingFrameworkWindowManager(), selTestCritsArr.toArray(new TestCriteriaNew[0])));
+					TestSuiteInfoNew tsInfo = gettestingFrameworkPanel().getTestSuiteInfoOfSelectedTestCriteria();
+					tasksV.add(new TFRefresh(getTestingFrameworkWindowManager(),tsInfo));					
+				}else{
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+			} else {
+				throw new Exception("Selected Object is not a TestCriteria! Cannot remove test criteria.");
+			}
+		}else if (e.getActionCommand().equals(TestingFrameworkPanel.EDIT_TESTCRITERIA)) {
 			if (selectedObj instanceof TestCriteriaNew) {
 				TestCriteriaNew tCriteria = (TestCriteriaNew)selectedObj;
 				TestCaseNew testCase = gettestingFrameworkPanel().getTestCaseOfSelectedCriteria();
