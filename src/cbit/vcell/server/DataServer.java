@@ -54,15 +54,6 @@ public DataIdentifier[] getDataIdentifiers(User user, SimulationInfo simInfo) th
 public double[] getDataSetTimes(User user, SimulationInfo simInfo) throws DataAccessException;
 /**
  * Insert the method's description here.
- * Creation date: (10/19/2001 4:45:30 PM)
- * @return cbit.vcell.export.server.ExportLog
- * @param simInfo cbit.vcell.solver.SimulationInfo
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-ExportLog getExportLog(User user, SimulationInfo simInfo) throws DataAccessException;
-/**
- * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function
  * @exception org.vcell.util.DataAccessException The exception description.

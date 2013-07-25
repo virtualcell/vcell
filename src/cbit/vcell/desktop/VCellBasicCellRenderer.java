@@ -565,21 +565,6 @@ protected void setComponentProperties(JLabel component, cbit.vcell.desktop.Annot
  * @return javax.swing.Icon
  * @param nodeUserObject java.lang.Object
  */
-protected void setComponentProperties(JLabel component, cbit.vcell.export.server.ExportLogEntry exportLogEntry) {
-
-	//component.setIcon(fieldResultsIcon);
-	
-	component.setToolTipText("Exported Data from Simulation Results");
-	component.setText("exported as \""+exportLogEntry.getFormat()+"\" to \""+exportLogEntry.getLocation()+"\"");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/8/01 8:35:45 AM)
- * @return javax.swing.Icon
- * @param nodeUserObject java.lang.Object
- */
 protected void setComponentProperties(JLabel component, Geometry geometry) {
 
 	component.setIcon(fieldGeometryIcon);

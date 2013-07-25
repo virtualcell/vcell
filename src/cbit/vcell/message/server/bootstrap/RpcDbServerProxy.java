@@ -247,28 +247,6 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(Reacti
 
 
 /**
- * Insert the method's description here.
- * Creation date: (12/5/2001 12:00:10 PM)
- * @return cbit.vcell.export.server.ExportLog
- * @param simKey cbit.sql.KeyValue
- */
-public cbit.vcell.export.server.ExportLog getExportLog(org.vcell.util.document.KeyValue simulationKey) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
-	return (cbit.vcell.export.server.ExportLog)rpc("getExportLog",new Object[]{userLoginInfo.getUser(), simulationKey});
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/5/2001 12:00:10 PM)
- * @return cbit.vcell.export.server.ExportLog[]
- * @param simKey cbit.sql.KeyValue
- */
-public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws org.vcell.util.DataAccessException {
-	return (cbit.vcell.export.server.ExportLog[])rpc("getExportLogs",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-
-/**
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue

@@ -36,7 +36,6 @@ import cbit.sql.KeyFactory;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.ReactionDescription;
-import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
@@ -220,20 +219,6 @@ public void deleteGeometry(User user, KeyValue key) throws DataAccessException, 
  */
 public void deleteMathModel(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.MathModelMetaData, key);
-}
-
-
-/**
- * delete method comment.
- */
-public void deleteResultSetExport(User user, KeyValue eleKey) throws DataAccessException{
-	try {
-		log.print("DatabaseServerImpl.deleteResultSetExport(Key="+eleKey+")");
-		rsetDbTop.deleteResultSetExport(user, eleKey, true);
-	}catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
 }
 
 
@@ -483,37 +468,6 @@ public ReactionDescription[] getDictionaryReactions(User user, ReactionQuerySpec
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
 }
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog getExportLog(User user, KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
-	try {
-		log.print("DatabaseServerImpl.getExportLog(simulationKey="+simulationKey+")");
-		return rsetDbTop.getResultSetExport(user, simulationKey,true);
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public ExportLog[] getExportLogs(User user, boolean bAll) throws DataAccessException {
-	try {
-		log.print("DatabaseServerImpl.getExportLogs()");
-		return rsetDbTop.getResultSetExports(user,bAll,true);
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
 
 /**
  * This method was created in VisualAge.

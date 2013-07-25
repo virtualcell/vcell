@@ -92,33 +92,6 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 				if (simAnnot[j]!=null && simAnnot[j].trim().length()>0){
 					simNode.add(new BioModelNode(new Annotation(simAnnot[j]),false));
 				}
-				////
-				//// add resultSet (optional) to simulation
-				////
-				//Enumeration rsEnum = bioModelMetaData.getResultSetInfos();
-				//while (rsEnum.hasMoreElements()){
-					//SolverResultSetInfo rsInfo = (SolverResultSetInfo)rsEnum.nextElement();
-					//if (rsInfo.getSimulationInfo().getVersion().getVersionKey().equals(simInfo.getVersion().getVersionKey()) ||
-						//rsInfo.getSimulationInfo().getVersion().getVersionKey().equals(simInfo.getParentSimulationReference())){
-							
-						//BioModelNode rsNode = new BioModelNode(rsInfo,true);
-						//simNode.add(rsNode);
-						////
-						//// add Export (optional) to simulation
-						////
-						//Enumeration elEnum = bioModelMetaData.getExportLogs();
-						//while (elEnum.hasMoreElements()){
-							//cbit.vcell.export.server.ExportLog exportLog = (cbit.vcell.export.server.ExportLog)elEnum.nextElement();
-							//if (exportLog.getSimulationIdentifier().equals(rsInfo.getSimulationInfo().getSimulationIdentifier())){
-								//cbit.vcell.export.server.ExportLogEntry exportLogEntries[] = exportLog.getExportLogEntries();
-								//for (int i = 0; i < exportLogEntries.length; i++){
-									//BioModelNode eleNode = new BioModelNode(exportLogEntries[i],false);
-									//rsNode.add(eleNode);
-								//}
-							//}
-						//}
-					//}
-				//}
 			}
 		}
 	}
