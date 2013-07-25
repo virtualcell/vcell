@@ -3518,8 +3518,8 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 		}else if(tsop instanceof RemoveTestCriteriaOP){
 			RemoveTestCriteriaOP removetcrit_tsop = (RemoveTestCriteriaOP)tsop;
 			StringBuffer sb = new StringBuffer();
-			for(int i=0;i< removetcrit_tsop.getTestCriteriaKeys().length;i+= 1){
-				if(i != 0){sb.append(",");}sb.append(removetcrit_tsop.getTestCriteriaKeys()[i].toString());
+			for(int i=0;i< removetcrit_tsop.getTestCriterias().length;i+= 1){
+				if(i != 0){sb.append(",");}sb.append(removetcrit_tsop.getTestCriterias()[i].getTCritKey().toString());
 			}
 
 			ResultSet rset = stmt.executeQuery(
@@ -3537,9 +3537,9 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 				"DELETE FROM " + TFTestCriteriaTable.table.getTableName() +
 				" WHERE " + TFTestCriteriaTable.table.id.getUnqualifiedColName() + " IN ("+sb.toString() + ")"
 				);
-			if(numRowsUpdated != removetcrit_tsop.getTestCriteriaKeys().length){
+			if(numRowsUpdated != removetcrit_tsop.getTestCriterias().length){
 				throw new DataAccessException("Remove TestCriteria keys="+sb.toString()+
-					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriteriaKeys().length);
+					" removed row count="+numRowsUpdated+" expected "+removetcrit_tsop.getTestCriterias().length);
 			}
 		}else if(tsop instanceof RemoveTestSuiteOP){
 			RemoveTestSuiteOP removets_tsop = (RemoveTestSuiteOP)tsop;

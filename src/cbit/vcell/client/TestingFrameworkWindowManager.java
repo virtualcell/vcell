@@ -73,6 +73,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
+import cbit.vcell.client.task.TFRemoveTestCriteria;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -111,6 +112,7 @@ import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
 import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.RemoveTestCriteriaOP;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
@@ -3016,6 +3018,10 @@ private void updateTCritStatus(TestCriteriaNew tcrit, String status, String stat
 	
 }
 
+public void removeTestCriteria(TestCriteriaNew[] tcritArr) throws DataAccessException{
+//	new RemoveTestCriteriaOP(selTestCritKeysArr.toArray(new BigDecimal[0]))
+	getRequestManager().getDocumentManager().doTestSuiteOP(new RemoveTestCriteriaOP(tcritArr));
+}
 
 /**
  * Insert the method's description here.

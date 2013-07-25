@@ -10,7 +10,6 @@
 
 package cbit.vcell.numericstest;
 
-import java.math.BigDecimal;
 /**
  * Insert the type's description here.
  * Creation date: (10/19/2004 6:21:59 AM)
@@ -18,23 +17,23 @@ import java.math.BigDecimal;
  */
 public class RemoveTestCriteriaOP extends TestSuiteOP {
 
-	private BigDecimal[] testCriteriaKeys;
+	private TestCriteriaNew[] testCriterias;
 /**
  * EditTestCriteria constructor comment.
  * @param tsin cbit.vcell.numericstest.TestSuiteInfoNew
  */
-public RemoveTestCriteriaOP(BigDecimal[] argTestCriteriaKeys) {
+public RemoveTestCriteriaOP(TestCriteriaNew[] argTestCriterias) {
 	
 	super(null);
 
-	testCriteriaKeys = argTestCriteriaKeys;
+	testCriterias = argTestCriterias;
 }
 /**
  * Insert the method's description here.
  * Creation date: (10/20/2004 6:39:52 AM)
  * @return java.math.BigDecimal[]
  */
-public java.math.BigDecimal[] getTestCriteriaKeys() {
-	return testCriteriaKeys;
+public TestCriteriaNew[] getTestCriterias() {
+	return testCriterias;
 }
 }
