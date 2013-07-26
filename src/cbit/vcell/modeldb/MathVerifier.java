@@ -59,7 +59,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -519,16 +519,6 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 	// get all Simulations for this model
 	//
 	Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
-	SolverResultSetInfo rsetInfos[] = new SolverResultSetInfo[modelSimsFromDB.length];
-	for (int k = 0; k < modelSimsFromDB.length; k++){
-		try {
-			rsetInfos[k] = dbServerImpl.getResultSetInfo(user, modelSimsFromDB[k].getVersion().getVersionKey(),0);
-		}catch (Throwable e){
-			userLog.exception(e);
-			userLog.alert("failure reading ResultSetInfo for Simulation("+modelSimsFromDB[k]+") of BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"'  "+bioModelFromDB.getVersion().getDate());
-		}
-	}
-
 	
 	//
 	// for each application, recompute mathDescription, and verify it is equivalent
@@ -549,8 +539,9 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 			// find out if any simulation belonging to this Application has data
 			//
 			boolean bApplicationHasData = false;
-			for (int l = 0; l < rsetInfos.length; l++){
-				if (rsetInfos[l]!=null){
+			for (int l = 0; l < modelSimsFromDB.length; l++){
+				SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+				if (simulationStatus != null && simulationStatus.getHasData()){
 					bApplicationHasData = true;
 				}
 			}
@@ -816,15 +807,6 @@ public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws S
     // get all Simulations for this model
     //
     Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
-    SolverResultSetInfo rsetInfos[] = new SolverResultSetInfo[modelSimsFromDB.length];
-    for (int k = 0; k < modelSimsFromDB.length; k++) {
-        try {
-            rsetInfos[k] = dbServerImpl.getResultSetInfo(owner, modelSimsFromDB[k].getVersion().getVersionKey(),0);
-        } catch (Throwable e) {
-            userLog.exception(e);
-            userLog.alert("failure reading ResultSetInfo for Simulation("+modelSimsFromDB[k]+") of BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"'  "+bioModelFromDB.getVersion().getDate());
-        }
-    }
 
     //
     // ---> only for the SimContext we started with...
@@ -1182,16 +1164,6 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 			// get all Simulations for this model
 			//
 			Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
-			SolverResultSetInfo rsetInfos[] = new SolverResultSetInfo[modelSimsFromDB.length];
-			for (int k = 0; k < modelSimsFromDB.length; k++){
-				try {
-					rsetInfos[k] = dbServerImpl.getResultSetInfo(user, modelSimsFromDB[k].getVersion().getVersionKey(),0);
-				}catch (Throwable e){
-					userLog.exception(e);
-					userLog.alert("failure reading ResultSetInfo for Simulation("+modelSimsFromDB[k]+") of BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"'  "+bioModelFromDB.getVersion().getDate());
-				}
-			}
-
 			
 			//
 			// for each application, recompute mathDescription, and verify it is equivalent
@@ -1211,8 +1183,9 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					// find out if any simulation belonging to this Application has data
 					//
 					boolean bApplicationHasData = false;
-					for (int l = 0; l < rsetInfos.length; l++){
-						if (rsetInfos[l]!=null){
+					for (int l = 0; l < modelSimsFromDB.length; l++){
+						SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+						if (simulationStatus != null && simulationStatus.getHasData()){
 							bApplicationHasData = true;
 						}
 					}
@@ -1453,15 +1426,6 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
             // get all Simulations for this model
             //
             Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
-            SolverResultSetInfo rsetInfos[] = new SolverResultSetInfo[modelSimsFromDB.length];
-            for (int k = 0; k < modelSimsFromDB.length; k++) {
-                try {
-                    rsetInfos[k] = dbServerImpl.getResultSetInfo(user, modelSimsFromDB[k].getVersion().getVersionKey(),0);
-                } catch (Throwable e) {
-                    userLog.exception(e);
-                    userLog.alert("failure reading ResultSetInfo for Simulation("+modelSimsFromDB[k]+") of BioModel("+bioModelFromDB.getVersion().getVersionKey()+") '"+bioModelFromDB.getName()+"'  "+bioModelFromDB.getVersion().getDate());
-                }
-            }
 
             //
             // ---> only for the SimContext we started with...
@@ -1491,12 +1455,13 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     //
                     // find out if any simulation belonging to this Application has data
                     //
-                    boolean bApplicationHasData = false;
-                    for (int l = 0; l < rsetInfos.length; l++) {
-                        if (rsetInfos[l] != null) {
-                            bApplicationHasData = true;
-                        }
-                    }
+        			boolean bApplicationHasData = false;
+        			for (int l = 0; l < modelSimsFromDB.length; l++){
+        				SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+        				if (simulationStatus != null && simulationStatus.getHasData()){
+        					bApplicationHasData = true;
+        				}
+        			}
                     //
                     // bug compatability mode off
                     //

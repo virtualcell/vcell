@@ -42,10 +42,7 @@ import cbit.vcell.solver.MathOverrides.Element;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * This type was created in VisualAge.
  */
@@ -113,52 +110,6 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 		condition += " AND "+extraConditions;
 	}
 
-	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special);
-	return sql;
-}
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.geometry.GeometryInfo
- * @param rset java.sql.ResultSet
- * @param log cbit.vcell.server.SessionLog
- */
-public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,DataAccessException {
-	
-	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	SimulationVersion simulationVersion = (SimulationVersion)getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
-	
-	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulationVersion.getVersionKey(),simulationVersion.getOwner());
-	VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, rset.getInt(ResultSetMetaDataTable.table.jobIndex.toString()));
-	String parsedPath = rset.getString(ResultSetMetaDataTable.table.dataFilePath.toString());
-	java.util.Date parsedEndingDate = getDate(rset,ResultSetMetaDataTable.table.endDate.toString());
-	java.util.Date parsedStartingDate = getDate(rset,ResultSetMetaDataTable.table.startDate.toString());
-	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID,parsedPath,parsedStartingDate,parsedEndingDate);
-	return rsetInfo;
-}
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String getResultSetInfoSQL(User user,String extraConditions,String special) {
-	
-	UserTable userTable = UserTable.table;
-	SimulationTable vTable = SimulationTable.table;
-	ResultSetMetaDataTable rsetTable = ResultSetMetaDataTable.table;
-	String sql;
-	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),
-		         //rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate};
-	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])BeanUtils.addElement(f,vTable.mathRef);
-	f = (Field[])BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
-	
-	Table[] t = {vTable,userTable,rsetTable};
-	
-	String condition =	vTable.ownerRef.getQualifiedColName() + " = " + userTable.id.getQualifiedColName() +		// links in the userTable
-						" AND " + rsetTable.simRef.getQualifiedColName() + " = " + vTable.id.getQualifiedColName();	// links in the resultSetTable
-	if (extraConditions != null && extraConditions.trim().length()>0){
-		condition += " AND "+extraConditions;
-	}
 	sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,special);
 	return sql;
 }

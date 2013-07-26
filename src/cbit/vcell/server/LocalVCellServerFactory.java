@@ -25,7 +25,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 /**
  * This type was created in VisualAge.
  */
@@ -48,9 +47,8 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 			}
 		}
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, sessionLog);
-		ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, sessionLog);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, sessionLog);
-		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, sessionLog);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, sessionLog);
 		vcServer = new LocalVCellServer(hostName, vcMessagingService, adminDbServer, simulationDatabase, 0);
 	} catch (java.rmi.RemoteException e){
 		sessionLog.exception(e);

@@ -32,7 +32,6 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -307,11 +306,6 @@ public class SimulationStateMachine {
 
 		} else if (workerEvent.isNewDataEvent()) {
 			if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
-				SolverResultSetInfo solverResultSetInfo = simulationDatabase.getSolverResultSetInfo(oldSimulationJobStatus.getVCSimulationIdentifier().getOwner(), simKey, queuePriority);
-				if (solverResultSetInfo == null){
-					SolverResultSetInfo newSolverResultSetInfo = SimulationDatabaseDirect.createNewSolverResultSetInfo(vcSimDataID);
-					simulationDatabase.updateSolverResultSetInfo(newSolverResultSetInfo);
-				}
 				
 				if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL || hasData==false){
 					
@@ -371,12 +365,6 @@ public class SimulationStateMachine {
 				endDate = new Date();
 				hasData = true;
 
-				SolverResultSetInfo solverResultSetInfo = simulationDatabase.getSolverResultSetInfo(oldSimulationJobStatus.getVCSimulationIdentifier().getOwner(), simKey, queuePriority);
-				if (solverResultSetInfo == null){
-					SolverResultSetInfo newSolverResultSetInfo = SimulationDatabaseDirect.createNewSolverResultSetInfo(vcSimDataID);
-					simulationDatabase.updateSolverResultSetInfo(newSolverResultSetInfo);
-				}
-				
 				SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
 				newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.COMPLETED,

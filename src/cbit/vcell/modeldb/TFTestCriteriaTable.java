@@ -25,7 +25,7 @@ public class TFTestCriteriaTable extends cbit.sql.Table {
     			
 	public final Field testCaseRef = 		new Field("testCaseRef",		"INTEGER",		"NOT NULL "+TFTestCaseTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field simulationRef = 		new Field("simulationRef",		"INTEGER",		"UNIQUE NOT NULL "+SimulationTable.REF_TYPE);
-	public final Field simDataRef = 		new Field("simDataRef",			"INTEGER",		"UNIQUE "+ResultSetMetaDataTable.REF_TYPE);
+	private final Field simDataRef = 		new Field("simDataRef",			"INTEGER",		"UNIQUE "+ResultSetMetaDataTable.REF_TYPE);  // no longer used.
 	public final Field regressionMMSimRef = new Field("regressionSimRef",	"INTEGER",		""+MathModelSimulationLinkTable.REF_TYPE);
 	public final Field maxRelError = 		new Field("maxRelError",		"NUMBER",		"");
 	public final Field maxAbsError = 		new Field("maxAbsError",		"NUMBER",		"");
@@ -34,7 +34,7 @@ public class TFTestCriteriaTable extends cbit.sql.Table {
 	public final Field reportStatus = 		new Field("reportStatus",		"VARCHAR2(32)",	"");
 	public final Field reportMessage= 		new Field("reportMessage",		"VARCHAR2("+MAX_MESSAGE_SIZE+")","");
 	
-	private final Field fields[] = {testCaseRef,simulationRef,simDataRef,regressionMMSimRef,
+	private final Field fields[] = {testCaseRef,simulationRef, simDataRef, regressionMMSimRef,
 									maxRelError,maxAbsError,regressionBMAPPRef,regressionBMSimRef,reportStatus,reportMessage};
 	
 	public static final TFTestCriteriaTable table = new TFTestCriteriaTable();

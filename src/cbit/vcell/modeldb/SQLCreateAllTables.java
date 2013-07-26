@@ -265,7 +265,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.SimContextStatTable.table,
 		cbit.vcell.modeldb.SimContextStat2Table.table,
 		cbit.vcell.dictionary.DBSpeciesTable.table,
-//		cbit.vcell.modeldb.ResultSetExportsTable.table,
+		cbit.vcell.modeldb.ResultSetExportsTable.table,
 		cbit.vcell.messaging.db.SimulationJobTable.table,
 		cbit.vcell.modeldb.BioModelXMLTable.table,
 		cbit.vcell.modeldb.MathModelXMLTable.table,

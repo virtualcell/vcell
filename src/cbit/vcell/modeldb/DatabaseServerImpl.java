@@ -55,7 +55,6 @@ import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -64,7 +63,6 @@ import cbit.vcell.xml.XmlParseException;
  */
 public class DatabaseServerImpl {
 	private DBTopLevel dbTop = null;
-	private ResultSetDBTopLevel rsetDbTop = null;
 	private DictionaryDBTopLevel dictionaryTop = null;
 	private AdminDBTopLevel adminDbTop = null;
 	private SessionLog log = null;
@@ -86,15 +84,6 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, S
 	} catch (Throwable e) {
 		log.exception(e);
 		throw new DataAccessException("Error creating DBTopLevel " + e.getMessage());
-	}		
-	try {
-		rsetDbTop = new ResultSetDBTopLevel(conFactory,log);
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException("Error creating ResultSetDBTopLevel " + e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException("Error creating ResultSetDBTopLevel " + e.getMessage());
 	}		
 	try {
 		dictionaryTop = new DictionaryDBTopLevel(conFactory,log);
@@ -345,6 +334,10 @@ public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows) t
  */
 public SimulationInfo getSimulationInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	return ((SimulationInfo[])getVersionInfos(user, key, VersionableType.Simulation, true, true))[0];
+}
+
+public SimulationInfo[] getSimulationInfos(User user, boolean bAll) throws DataAccessException {
+	return (SimulationInfo[])getVersionInfos(user, null, VersionableType.Simulation, bAll, true);
 }
 
 
@@ -640,50 +633,6 @@ public ReactionStepInfo[] getReactionStepInfos(User user, KeyValue reactionStepK
 		log.exception(e);
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public SolverResultSetInfo getResultSetInfo(User user, KeyValue simulationKey, int jobIndex) throws DataAccessException, ObjectNotFoundException {
-	try {
-		log.print("DatabaseServerImpl.getResultSetInfo(simulationKey="+simulationKey+",jobIndex="+jobIndex+")");
-		SolverResultSetInfo rsInfo = rsetDbTop.getResultSetInfo(user,simulationKey,jobIndex,true);
-		return rsInfo;
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	} catch (ObjectNotFoundException e) {
-		log.exception(e);
-		throw new ObjectNotFoundException(e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public SolverResultSetInfo[] getResultSetInfos(User user, boolean bAll) throws DataAccessException {
-	try {
-		log.print("DatabaseServerImpl.getResultSetInfos(bAll="+bAll+")");
-		SolverResultSetInfo rsInfos[] = rsetDbTop.getResultSetInfos(user,bAll,true);
-		return rsInfos;
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	} catch (ObjectNotFoundException e) {
-		log.exception(e);
-		throw new ObjectNotFoundException(e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
 }
 
 

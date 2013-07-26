@@ -32,7 +32,6 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	static class VCDocumentInfoNode {
@@ -149,47 +148,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		// Check if node is a SolverResultSetInfo
 		//
 		Object userObject = node.getUserObject();
-		if (userObject instanceof SolverResultSetInfo) {
-			setComponentProperties(component, (SolverResultSetInfo)userObject);
-			if (leaf){
-				setIcon(fieldFolderClosedIcon);
-			}
-			int maxErrorLevel = getMaxErrorLevel(node);
-			if (maxErrorLevel==BioModelNode.ERROR_POSSIBLE){
-				if (!leaf && expanded) {
-					setIcon(fieldFolderOpenWarningIcon);
-				}else if (leaf || (!leaf && !expanded)) {
-					setIcon(fieldFolderClosedWarningIcon);
-				}
-				component.setToolTipText("Simulation Results may be invalid, re-run");
-				component.setText("<<<possibly invalid sim results>>> "+component.getText());
-				component.setForeground(java.awt.Color.red);
-			}else if (maxErrorLevel==BioModelNode.ERROR_CONFIRMED){
-				if (!leaf && expanded) {
-					setIcon(fieldFolderOpenErrorIcon);
-				}else if (leaf || (!leaf && !expanded)) {
-					setIcon(fieldFolderClosedErrorIcon);
-				}
-				component.setToolTipText("Simulation Results are invalid, re-run");
-				component.setText("<<<INVALID SIM RESULTS>>> "+component.getText());
-				component.setForeground(java.awt.Color.red);
-			}
-			
-		//}else if (node.getUserObject() instanceof SimulationContextInfo) {
-			////
-			//// Check if node is a SimulationContextInfo
-			////
-			//setComponentProperties(component, (SimulationContextInfo)node.getUserObject());
-			//int maxErrorLevel = getMaxErrorLevel(node);
-			//if (maxErrorLevel==BioModelNode.ERROR_POSSIBLE){
-				//setIcon(fieldSimulationContextWarningIcon);
-				//component.setToolTipText("Application contains possibly invalid simulation results");
-			//}else if (maxErrorLevel==BioModelNode.ERROR_CONFIRMED){
-				//setIcon(fieldSimulationContextErrorIcon);
-				//component.setToolTipText("Application contains invalid simulation results");
-			//}
-			
-		}else if (userObject instanceof SimulationInfo) {
+		if (userObject instanceof SimulationInfo) {
 			//
 			// Check if node is a SimulationInfo
 			//
@@ -709,21 +668,6 @@ protected void setComponentProperties(JLabel component, SimulationInfo simInfo) 
 	
 	component.setToolTipText("Simulation");
 	component.setText(simInfo.getVersion().getName());
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/8/01 8:35:45 AM)
- * @return javax.swing.Icon
- * @param nodeUserObject java.lang.Object
- */
-protected void setComponentProperties(JLabel component, SolverResultSetInfo rsInfo) {
-
-	//component.setIcon(fieldResultsIcon);
-	
-	component.setToolTipText("Simulation Results");
-	component.setText("Results in \""+rsInfo.getDataFilePath()+"\"");
 }
 
 

@@ -59,7 +59,6 @@ import cbit.vcell.message.server.sim.HtcSimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.simdata.Cachetable;
@@ -202,8 +201,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl,log);
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 

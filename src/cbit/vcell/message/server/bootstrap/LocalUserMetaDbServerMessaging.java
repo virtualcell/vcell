@@ -31,7 +31,6 @@ import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 
@@ -617,25 +616,6 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.d
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
-	try {
-		log.print("LocalUserMetaDbServerMessaging.getResultSetInfos(bAll="+bAll+")");
-		SolverResultSetInfo rsInfos[] = dbServerProxy.getResultSetInfos(bAll);
-		return rsInfos;
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
 }
 
 

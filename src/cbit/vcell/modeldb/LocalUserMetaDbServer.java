@@ -47,7 +47,6 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
@@ -352,14 +351,6 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
  */
 public ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException {
 	return dbServerImpl.getReactionStepInfos(user, reactionStepKeys);
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
-	return dbServerImpl.getResultSetInfos(user, bAll);
 }
 
 
