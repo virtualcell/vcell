@@ -79,8 +79,10 @@ public class RayCasterBitSet {
 		long t1 = System.currentTimeMillis();
 
 		if (surfaceCollection.getSurfaceCount()>32){
-			throw new RuntimeException("current mask-based approach cannot handle more than 32 masks");
-		}
+			throw new RuntimeException("Number of masks exceeds max allowed. The image contains too many distinct geometric objects. " +
+					"Alternately, sampling resolution is too coarse and results in a single object becoming separated in multiple fragments. " +
+					"Try using a finer mesh.");
+			}
 		setSurfaceMasks(surfaceCollection);
 		
 		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ);
