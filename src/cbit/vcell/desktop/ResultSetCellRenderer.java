@@ -9,13 +9,8 @@
  */
 
 package cbit.vcell.desktop;
-import cbit.vcell.solver.*;
-/**
- * Insert the type's description here.
- * Creation date: (7/27/2000 6:30:41 PM)
- * @author: 
- */
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JTree;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -139,17 +134,4 @@ protected void setComponentProperties(JLabel component, MathModelInfo mathModelI
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/8/01 8:35:45 AM)
- * @return javax.swing.Icon
- * @param nodeUserObject java.lang.Object
- */
-protected void setComponentProperties(JLabel component, SolverResultSetInfo rsInfo) {
-	super.setComponentProperties(component,rsInfo);
-
-	//component.setIcon(fieldSimulationIcon);
-	//component.setToolTipText("Simulation Results");
-	component.setText("ResultSet ("+rsInfo.getStartingDate()+")");
-}
 }

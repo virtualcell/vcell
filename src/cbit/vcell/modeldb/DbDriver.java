@@ -3361,18 +3361,18 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			//
 			//Get simDataRef from simKey
 			BigDecimal simDataRef = null;
-			sql =
-				"SELECT "+ResultSetMetaDataTable.table.id.getQualifiedColName()+
-				" FROM " +ResultSetMetaDataTable.table.getTableName()+
-				" WHERE "+
-					ResultSetMetaDataTable.table.simRef.getQualifiedColName()+"="+simKey.toString();
-			rset = stmt.executeQuery(sql);
-			if(rset.next()){
-				simDataRef = rset.getBigDecimal(MathModelSimulationLinkTable.table.id.getUnqualifiedColName());
-				if(rset.next()){
-					throw new DataAccessException("Too many ResultSetMetaData found for simKey="+simKey);
-				}
-			}
+//			sql =
+//				"SELECT "+ResultSetMetaDataTable.table.id.getQualifiedColName()+
+//				" FROM " +ResultSetMetaDataTable.table.getTableName()+
+//				" WHERE "+
+//					ResultSetMetaDataTable.table.simRef.getQualifiedColName()+"="+simKey.toString();
+//			rset = stmt.executeQuery(sql);
+//			if(rset.next()){
+//				simDataRef = rset.getBigDecimal(MathModelSimulationLinkTable.table.id.getUnqualifiedColName());
+//				if(rset.next()){
+//					throw new DataAccessException("Too many ResultSetMetaData found for simKey="+simKey);
+//				}
+//			}
 			//else{
 				//throw new DataAccessException("No ResultSetMetaData found for simKey="+simKey);
 			//}
@@ -3460,18 +3460,18 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 			//
 			//Get simDataRef from simKey
 			BigDecimal simDataRef = null;
-			sql =
-				"SELECT "+ResultSetMetaDataTable.table.id.getQualifiedColName()+
-				" FROM " +ResultSetMetaDataTable.table.getTableName()+
-				" WHERE "+
-					ResultSetMetaDataTable.table.simRef.getQualifiedColName()+"="+simKey.toString();
-			rset = stmt.executeQuery(sql);
-			if(rset.next()){
-				simDataRef = rset.getBigDecimal(BioModelSimulationLinkTable.table.id.getUnqualifiedColName());
-				if(rset.next()){
-					throw new DataAccessException("Too many ResultSetMetaData found for simKey="+simKey);
-				}
-			}
+//			sql =
+//				"SELECT "+ResultSetMetaDataTable.table.id.getQualifiedColName()+
+//				" FROM " +ResultSetMetaDataTable.table.getTableName()+
+//				" WHERE "+
+//					ResultSetMetaDataTable.table.simRef.getQualifiedColName()+"="+simKey.toString();
+//			rset = stmt.executeQuery(sql);
+//			if(rset.next()){
+//				simDataRef = rset.getBigDecimal(BioModelSimulationLinkTable.table.id.getUnqualifiedColName());
+//				if(rset.next()){
+//					throw new DataAccessException("Too many ResultSetMetaData found for simKey="+simKey);
+//				}
+//			}
 			//else{
 				//throw new DataAccessException("No ResultSetMetaData found for simKey="+simKey);
 			//}

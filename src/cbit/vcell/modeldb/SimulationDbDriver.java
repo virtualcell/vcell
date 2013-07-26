@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -27,7 +26,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
-import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
 
@@ -37,8 +35,6 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -46,7 +42,6 @@ public class SimulationDbDriver extends DbDriver {
 	public static final UserTable userTable = UserTable.table;
 	public static final MathDescTable mathDescTable = MathDescTable.table;
 	public static final SimulationTable simTable = SimulationTable.table;
-	public static final ResultSetMetaDataTable rsetInfoTable = ResultSetMetaDataTable.table;
 	private MathDescriptionDbDriver mathDB = null;
 
 /**
@@ -58,36 +53,6 @@ public SimulationDbDriver(MathDescriptionDbDriver argMathDB,SessionLog sessionLo
 	super(sessionLog);
 	this.mathDB = argMathDB;
 }
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-void deleteResultSetInfoSQL(Connection con, User user, KeyValue simKey) throws SQLException, DataAccessException, PermissionException, ObjectNotFoundException {
-
-	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
-	if(versionInfoVector.size() == 0){
-		throw new ObjectNotFoundException("SimulationDbDriver:deleteResultSetInfo() key="+simKey+" not found for user="+user);
-	}
-	else if (versionInfoVector.size() > 1){
-		throw new DataAccessException("SimulationDbDriver:deleteResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-	VersionInfo versionInfo = versionInfoVector.firstElement();
-	//
-	// if not owner then getVersionableInfo failed (returned record)
-	//
-	if(!versionInfo.getVersion().getOwner().compareEqual(user)){
-		throw new PermissionException("DbDriver:deleteResultSetInfo() getVersionableInfo(bAll=false) returned VersionInfo "+user+" doesn't own.  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-	
-	String sql;
-	sql = "DELETE FROM " + rsetInfoTable.getTableName() + " WHERE " + rsetInfoTable.simRef + " = " + simKey;
-//System.out.println(sql);
-	updateCleanSQL(con,sql);
-}
-
 
 /**
  * removeModel method comment.
@@ -170,141 +135,6 @@ private KeyValue getParentSimulation(Connection con,User user,KeyValue simKey) t
 	return parentSimKey;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-SolverResultSetInfo getResultSetInfo(Connection con, User user, KeyValue simKey, int jobIndex)
-				throws ObjectNotFoundException, SQLException, DataAccessException {
-					
-	Vector<VersionInfo> simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
-	if (simInfoList.size()==0){
-		throw new ObjectNotFoundException("simulation("+simKey+") not found for user '"+user+"'");
-	}
-	SimulationInfo simInfo = (SimulationInfo)simInfoList.elementAt(0);
-
-	String sql = "SELECT " + " * " + 
-				 " FROM "+rsetInfoTable.getTableName() +
-				 " WHERE "+ rsetInfoTable.simRef+" = "+simKey+
-				 " AND "+rsetInfoTable.jobIndex+" = "+jobIndex;
-
-	SolverResultSetInfo rsetInfo = null;
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-
-		if (rset.next()) {
-			rsetInfo = rsetInfoTable.getSolverResultSetInfo(rset,log,simInfo);
-		}
-		
-	} finally {
-		stmt.close(); // Release resources include resultset
-	}
-	
-	return rsetInfo;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.Object
- * @param user cbit.vcell.server.User
- * @param vType int
- */
-SolverResultSetInfo[] getResultSetInfos(Connection con, SessionLog log, User user, boolean bAll, KeyValue versionKey) 
-							throws ObjectNotFoundException, SQLException, DataAccessException {
-								
-	if (user == null) {
-		throw new IllegalArgumentException("Improper parameters for getVersionables");
-	}
-	//log.print("SimulationDbDriver.getResultSetInfos(all=" + bAll + ",user=" + user + ")");
-	SimulationTable vTable = SimulationTable.table;
-	String sql;
-	StringBuffer conditions = new StringBuffer();
-	String special = null;
-	boolean bFirstClause = true;
-	if (!bAll) {
-		conditions.append(vTable.ownerRef.getQualifiedColName() + " = " + user.getID());
-		bFirstClause = false;
-	}
-	if(versionKey != null){
-		if (!bFirstClause){
-			conditions.append(" AND ");
-		}
-		conditions.append(vTable.id.getQualifiedColName() + " = " + versionKey);
-	}
-	special = " ORDER BY " + vTable.name.getQualifiedColName() + "," + vTable.versionBranchID.getQualifiedColName() + "," + vTable.versionDate.getQualifiedColName();
-	sql = vTable.getResultSetInfoSQL(user,conditions.toString(),special);
-	StringBuffer optimizedSQL = new StringBuffer(sql);
-	optimizedSQL.insert(7, Table.SQL_GLOBAL_HINT);
-	sql = optimizedSQL.toString();
-	
-	//System.out.println(sql);
-	SolverResultSetInfo rsInfo;
-	java.util.Vector<SolverResultSetInfo> rsInfoList = new java.util.Vector<SolverResultSetInfo>();
-	//Connection con = conFact.getConnection();
-	Statement stmt = con.createStatement();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-		while (rset.next()) {
-			rsInfo = vTable.getResultSetInfo(rset,con,log);
-			//
-			// only add resultsetInfo record to list if not a duplicate,
-			// this occurs because the DatabasePolicySQL.enforceOwnershipSelect() can get the same record several ways.
-			//
-			SolverResultSetInfo previousRSInfo = (rsInfoList.size()>0)?(SolverResultSetInfo)rsInfoList.lastElement():null;
-			if (previousRSInfo==null || !previousRSInfo.getVCSimulationDataIdentifier().getID().equals(rsInfo.getVCSimulationDataIdentifier().getID())){
-				rsInfoList.addElement(rsInfo);
-			}
-			//rsInfoList.addElement(rsInfo);
-		}
-	} finally {
-		stmt.close();
-	}
-	SolverResultSetInfo rsInfoArray[] = new SolverResultSetInfo[rsInfoList.size()];
-	rsInfoList.copyInto(rsInfoArray);
-	return rsInfoArray;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param user cbit.vcell.server.User
- * @param versionable cbit.sql.Versionable
- */
-SolverResultSetInfo[] getResultSetInfos(Connection con, User user, KeyValue simKey)
-				throws ObjectNotFoundException, SQLException, DataAccessException {
-					
-	Vector<VersionInfo> simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
-	if (simInfoList.size()==0){
-		throw new ObjectNotFoundException("simulation("+simKey+") not found for user '"+user+"'");
-	}
-	SimulationInfo simInfo = (SimulationInfo)simInfoList.elementAt(0);
-
-	String sql = "SELECT " + " * " + 
-				 " FROM "+rsetInfoTable.getTableName() +
-				 " WHERE "+ rsetInfoTable.simRef+" = "+simKey;
-
-	Statement stmt = con.createStatement();
-	Vector<SolverResultSetInfo> rsetInfos = new Vector<SolverResultSetInfo>();
-	try {
-		ResultSet rset = stmt.executeQuery(sql);
-
-		while (rset.next()) {
-			rsetInfos.add(rsetInfoTable.getSolverResultSetInfo(rset,log,simInfo));			
-		}
-	} finally {
-		stmt.close(); // Release resources include resultset
-	}
-	
-	return (SolverResultSetInfo[])org.vcell.util.BeanUtils.getArray(rsetInfos, SolverResultSetInfo.class);
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.math.MathDescription
@@ -368,39 +198,6 @@ public Versionable getVersionable(QueryHashtable dbc, Connection con, User user,
 	}
 	return versionable;
 }
-
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-void insertResultSetInfoSQL(Connection con, User user, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
-	KeyValue simKey = rsetInfo.getVCSimulationDataIdentifier().getSimulationKey();
-	int jobIndex = rsetInfo.getVCSimulationDataIdentifier().getJobIndex();
-	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
-	if(versionInfoVector.size() == 0){
-		throw new ObjectNotFoundException("SimulationDbDriver:insertResultSetInfo() key="+simKey+", jobIndex="+jobIndex+" not found for user="+user);
-	}
-	else if (versionInfoVector.size() > 1){
-		throw new DataAccessException("SimulationDbDriver:insertResultSetInfo() key="+simKey+", jobIndex="+jobIndex+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-	VersionInfo versionInfo = versionInfoVector.firstElement();
-	//
-	// if not owner then getVersionableInfo failed (returned record)
-	//
-	if(!versionInfo.getVersion().getOwner().compareEqual(user)){
-		throw new PermissionException("DbDriver:insertResultSetInfo() getVersionableInfo(bAll=false) returned VersionInfo "+user+" doesn't own.  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-
-	String sql;
-	sql = "INSERT INTO " + rsetInfoTable.getTableName() + " " + rsetInfoTable.getSQLColumnList() + " VALUES " + 
-		rsetInfoTable.getSQLValueList(getNewKey(con), rsetInfo);
-//System.out.println(sql);
-	updateCleanSQL(con,sql);
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -489,43 +286,6 @@ protected SimulationVersion insertVersionableInit(InsertHashtable hash, Connecti
 								newVersion.getFlag(),
 								newVersion.getAnnot(),
 								parentSimRef);
-}
-
-
-/**
- * This method was created in VisualAge.
- * @param vcimage cbit.image.VCImage
- * @param userid java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-void updateResultSetInfoSQL(Connection con, User user, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
-	int jobIndex = rsetInfo.getVCSimulationDataIdentifier().getJobIndex();
-	KeyValue simKey = rsetInfo.getVCSimulationDataIdentifier().getSimulationKey();
-	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
-	if(versionInfoVector.size() == 0){
-		throw new ObjectNotFoundException("SimulationDbDriver:updateResultSetInfo() key="+simKey+" not found for user="+user);
-	}
-	else if (versionInfoVector.size() > 1){
-		throw new DataAccessException("SimulationDbDriver:updateResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-	VersionInfo versionInfo = versionInfoVector.firstElement();
-	//
-	// if not owner then getVersionableInfo failed (returned record)
-	//
-	if(!versionInfo.getVersion().getOwner().compareEqual(user)){
-		throw new PermissionException("DbDriver:updateResultSetInfo() getVersionableInfo(bAll=false) returned VersionInfo "+user+" doesn't own.  DB ERROR,BAD!!!!!MUST CHECK");
-	}
-
-	StringBuffer sb = new StringBuffer();
-	sb.append("UPDATE " + rsetInfoTable.getTableName());
-	sb.append(" SET " + rsetInfoTable.getSQLUpdateList(simKey,rsetInfo));
-	sb.append(" WHERE " + rsetInfoTable.simRef + " = " + simKey);
-	sb.append(" AND " + rsetInfoTable.jobIndex + " = " + jobIndex);
-//System.out.println(sb.toString());
-	int numRecordsChanged = updateCleanSQL(con,sb.toString());
-	if (numRecordsChanged!=1){
-		throw new ObjectNotFoundException("SolverResultSetInfo(simRef="+simKey+")");
-	}
 }
 
 

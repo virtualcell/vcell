@@ -26,7 +26,6 @@ import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
@@ -367,17 +366,6 @@ public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.Key
  */
 public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws org.vcell.util.DataAccessException {
 	return (cbit.vcell.model.ReactionStepInfo[])rpc("getReactionStepInfos",new Object[]{userLoginInfo.getUser(), reactionStepKeys});
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/5/2001 12:00:10 PM)
- * @return cbit.vcell.solver.SolverResultSetInfo
- * @param simKey cbit.sql.KeyValue
- */
-public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws org.vcell.util.DataAccessException {
-	return (SolverResultSetInfo[])rpc("getResultSetInfos",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
 }
 
 

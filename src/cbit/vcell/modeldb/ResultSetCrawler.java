@@ -31,7 +31,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.sql.ConnectionFactory;
-import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.solver.SimulationInfo;
 
 
 /**
@@ -100,7 +100,7 @@ public class ResultSetCrawler {
 			cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
-			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log);
+			DatabaseServerImpl dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 			
 			//
 			// determine the list of users to scan
@@ -135,11 +135,11 @@ public class ResultSetCrawler {
 					User user = usersToScan.get(userDir.getName());
 					
 					// find all the user simulations and external data sets (field data)
-					SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
+					SimulationInfo[] simulationInfos = dbServerImpl.getSimulationInfos(user, false);
 					ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 					
 					// scan this user directory
-					scanUserDirectory(userDir, extDataIDArr, resultSetInfos, outputDir, log, SCAN_ONLY);
+					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, log, SCAN_ONLY);
 				} catch (Exception ex) {
 					log.exception(ex);
 				}
@@ -218,7 +218,7 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SolverResultSetInfo[] resultSetInfos, File outputDir, final SessionLog log, final boolean bScanOnly) throws Exception {
+private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final SessionLog log, final boolean bScanOnly) throws Exception {
 	File outputFile = null;
 	java.io.PrintWriter writer = null;
 	try {
@@ -237,8 +237,8 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 		for (ExternalDataIdentifier extDataId : extDataIDArr) {
 			referencedKeys.add(extDataId.getKey());
 		}
-		for (SolverResultSetInfo solverResultSetInfo : resultSetInfos){
-			referencedKeys.add(solverResultSetInfo.getVCSimulationDataIdentifier().getSimulationKey());
+		for (SimulationInfo simulationInfo : simulationInfos){
+			referencedKeys.add(simulationInfo.getSimulationVersion().getVersionKey());
 		}
 		
 		final HashMap<KeyValue,Integer> deletedKeyMap = new HashMap<KeyValue,Integer>();

@@ -31,27 +31,20 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class SimulationDatabaseDirect implements SimulationDatabase {
 
 	private AdminDBTopLevel adminDbTopLevel = null;
-	private ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;
 	private SessionLog log = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
 	private Map<String, User> userMap = Collections.synchronizedMap(new HashMap<String, User>());
-	private Map<VCSimulationDataIdentifier,SolverResultSetInfo> resultSetMap = Collections.synchronizedMap(new HashMap<VCSimulationDataIdentifier,SolverResultSetInfo>());
 
-	public SimulationDatabaseDirect(ResultSetDBTopLevel resultSetDbTopLevel, AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, SessionLog log){
-		this.resultSetDbTopLevel = resultSetDbTopLevel;
+	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, SessionLog log){
 		this.databaseServerImpl = databaseServerImpl;
 		this.adminDbTopLevel = adminDbTopLevel;
 		this.log = log;
@@ -199,31 +192,4 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		return simInfo;
 	}
 	
-	public static SolverResultSetInfo createNewSolverResultSetInfo(VCSimulationDataIdentifier vcSimDataID){
-		User user = vcSimDataID.getOwner();
-		File dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
-		File userDir = new File(dataRootDir, user.getName());
-		File logFile = new File(userDir,vcSimDataID.getID() + ".log");
-		SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID,logFile.getAbsolutePath(),new java.util.Date(),null);
-		return rsetInfo;
-	}
-
-	@Override
-	public void updateSolverResultSetInfo(SolverResultSetInfo solverResultSetInfo) throws PermissionException, SQLException, DataAccessException {
-		resultSetDbTopLevel.updateResultSetInfo(solverResultSetInfo.getVCSimulationDataIdentifier().getOwner(), solverResultSetInfo, true);
-		resultSetMap.put(solverResultSetInfo.getVCSimulationDataIdentifier(), solverResultSetInfo);
-	}
-	
-	@Override
-	public SolverResultSetInfo getSolverResultSetInfo(User user, KeyValue simKey, int jobIndex) throws SQLException, DataAccessException{
-		VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(new VCSimulationIdentifier(simKey, user), jobIndex);
-		SolverResultSetInfo storedSolverResultSetInfo = resultSetMap.get(vcSimDataID);
-		if (storedSolverResultSetInfo!=null){
-			return storedSolverResultSetInfo;
-		}
-		storedSolverResultSetInfo = resultSetDbTopLevel.getResultSetInfo(user, simKey, jobIndex, true);
-		resultSetMap.put(vcSimDataID, storedSolverResultSetInfo);
-		return storedSolverResultSetInfo;
-	}
-
 }

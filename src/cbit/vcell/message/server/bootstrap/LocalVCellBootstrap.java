@@ -49,7 +49,6 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -225,8 +224,7 @@ public static void main(java.lang.String[] args) {
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-		ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl, log);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, log);
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
 
 		//

@@ -17,7 +17,6 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
 
 public interface SimulationDatabase {
 
@@ -41,7 +40,4 @@ public interface SimulationDatabase {
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException;
 
-	public void updateSolverResultSetInfo(SolverResultSetInfo vcSimDataID) throws PermissionException, SQLException, DataAccessException;
-
-	public SolverResultSetInfo getSolverResultSetInfo(User user, KeyValue simKey, int jobIndex) throws SQLException, DataAccessException;
 }

@@ -73,7 +73,6 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.Simulation;
@@ -532,8 +531,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			ResultSetDBTopLevel resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(resultSetDbTopLevel, adminDbTopLevel, databaseServerImpl,log);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl,log);
 
 			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 
