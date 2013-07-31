@@ -57,9 +57,9 @@
 		<item>
 		<para><bold>Database panel (Panel D)</bold></para>
 		<para>
-		This is the bottom left panel in the figure above. This panel allows the viewer to view/select models from different databsae sources. This panel has the following 3 tabs.
+		This is the bottom left panel in the figure above. This panel allows the viewer to view/select models from different database sources. This panel has the following 3 tabs.
 		The <bold>VCell Database</bold> tab shows the models stored in the VCell database. This selection shows another set of 3 tabs (<bold>BioModels</bold>, <bold>MathModels</bold>, <bold>Geometries</bold>), 
-		which display models of the different VCell document types stored in the VCell database. Refer to the section on <link target="ManageDatabase">File -> Manage Database</link> for further information.
+		which display models of the different VCell document types stored in the VCell database. Refer to the section on <link target="VCellDatabase">VCell Database</link> for further information.
 		The <bold>Biomodels.net</bold> tab shows models from the <link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels database</link>, which is a database of annotated published models in SBML that can be imported into the Virtual Cell.
 		The <bold>Pathway Commons</bold> tab shows the list of pathways that can be mined from the <bold>Pathway Commons</bold> database. 
 		Please refer to sections <link target="PathwayCommonsPanel">Pathway Commons Database</link> and <link target="PathwayOverview">Biological Pathways</link>.

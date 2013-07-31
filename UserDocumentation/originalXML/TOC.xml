@@ -13,12 +13,6 @@
     			<tocitem target="Permissions" text="File->Permissions Menu"/>
     			<tocitem target="ModelAnnotation" text="File->Model Annotation Menu"/>
     			<tocitem target="EditAnnotation" text="File->Edit Annotation Menu"/>
-    			<tocitem target="ManageDatabase" text="File->Manage Database Menu">
-    				<tocitem target="ManageDBFile" text="Manage Database->File Menu"/>
-    				<tocitem target="ManageDBEdit" text="Manage Database->Edit"/>
-	    			<tocitem target="ManageDBCompareWith" text="Manage Database->Compare With Menu"/>
-    				<tocitem target="ManageDBView" text="Manage Database->View"/>
-    			</tocitem>
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu"/>
     			<tocitem target="Export" text="File->Export Menu"/>

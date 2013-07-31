@@ -14,9 +14,7 @@
 	
 	<operations>
 	<para>
-	The <bold>Changing Permissions</bold> dialog can be accessed by clicking on the <bold>File -> Permissions...</bold> menu sequence in an open VCell document (BioModel, MahtModel, Geometry).
-	Alternately, it can be accessed via the <bold>Database Manager</bold>. Select the model to be shared in the Database Manager and right-click to bring up the pop-up menu and choose <bold>Permissions</bold> 
-	or click on the <bold>Edit -> Permissions</bold> menu sequence from the Database Manager main menu. 
+	The <bold>Changing Permissions</bold> dialog can be accessed by clicking on the <bold>File -> Permissions...</bold> menu sequence in an open VCell document (BioModel, MahtModel, Geometry). 
 	</para>
 	<para>
 	There are 3 options to share models : <bold>Public</bold>, <bold>Private</bold> or <bold>Grant Access to Specific Users</bold>. 
