@@ -48,7 +48,7 @@
 	  <item>
 	    <para>
 		<bold>Compare With Saved</bold> -  compares the currently open document with its latest saved version in the database and displays the result in a separate window. 
-		Refer to the section on <link target = "ManageDBCompareWith">Manage Database -> Compare With</link> for further information. 
+		Refer to the section on <link target = "ManageDBCompareWith">Compare With</link> for further information. 
 	    </para>		
 	  </item>
 	  <item>
@@ -59,9 +59,6 @@
 	  </item>
 	  <item>		
 		<link target = "EditAnnotation">Edit Annotation...</link>,
-	  </item>
-	  <item>		
-		<link target = "ManageDatabase">Manage Database...</link>,
 	  </item>
 	  <item>
 		<link target = "FieldData">Field Data...</link>,
