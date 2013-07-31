@@ -8,9 +8,11 @@
 common_site=GENERATED
 common_batchSystemType=GENERATED
 
-common_logdir=/share/apps/vcell/logs/${common_site}
+common_vcellInstallDir=/share/apps/vcell2
 
-common_siteRootDir=/share/apps/vcell/deployed/${common_site}
+common_logdir=${common_vcellInstallDir}/logs/${common_site}
+
+common_siteRootDir=${common_vcellInstallDir}/deployed/${common_site}
 common_siteResDir=${common_siteRootDir}/resources
 
 common_siteCfgDir=${common_siteRootDir}/configs
