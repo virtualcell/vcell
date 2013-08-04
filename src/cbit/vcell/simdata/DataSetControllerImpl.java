@@ -2397,7 +2397,19 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
 				throw new DataAccessException("Error getLineScan adjustingMembraneValues\n"+e.getMessage(),e);
 			}
 
-			return new PlotData(ssvHelper.getWorldCoordinateLengths(),ssvHelper.getSampledValues());
+			double[] values = ssvHelper.getSampledValues();
+			if (mesh.isChomboMesh())
+			{
+				// convert NaN to 0
+				for (int i = 0; i < values.length; i ++)
+				{
+					if (Double.isNaN(values[i]))
+					{
+						values[i] = 0;
+					}
+				}
+			}
+			return new PlotData(ssvHelper.getWorldCoordinateLengths(), values);
 			
 		}else if (spatialSelection instanceof SpatialSelectionContour){
 			//
