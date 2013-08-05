@@ -88,6 +88,7 @@ public abstract class DocumentEditor extends JPanel {
 		rename,
 		delete,
 		app_new_biomodel,
+		deleteChoose,
 	}
 	protected static final String DATABASE_PROPERTIES_TAB_TITLE = "Database File Info";
 	protected IvjEventHandler eventHandler = new IvjEventHandler();
@@ -99,6 +100,7 @@ public abstract class DocumentEditor extends JPanel {
 	protected JPanel emptyPanel = new JPanel();
 	private JPopupMenu popupMenu = null;
 	private JMenu addNewAppMenu = null;
+	private JMenuItem removeAppsMenu = null;
 	private JMenuItem addNewAppDeterministicMenuItem = null;
 	private JMenuItem addNewAppStochasticMenuItem = null;
 	private JMenuItem expandAllMenuItem = null;
@@ -161,6 +163,8 @@ public abstract class DocumentEditor extends JPanel {
 				}
 			} else if (e.getSource() == addNewMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new, e.getActionCommand());
+			} else if (e.getSource() == removeAppsMenu) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.deleteChoose, e.getActionCommand());
 			} else if (e.getSource() == renameMenuItem) {
 				documentEditorTree.startEditingAtPath(documentEditorTree.getSelectionPath());
 			} else if (e.getSource() == deleteMenuItem) {
@@ -522,6 +526,7 @@ private void construcutPopupMenu() {
 	boolean bCopyApp = false;
 	boolean bDelete = false;
 	boolean bNewBiomodel = false;
+	boolean bRemoveApps = false;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -537,6 +542,9 @@ private void construcutPopupMenu() {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 			if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bAddNewApp = true;
+				if(selectedNode.getChildCount() > 0){
+					bRemoveApps = true;
+				}
 			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
@@ -566,6 +574,13 @@ private void construcutPopupMenu() {
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 		}
 		popupMenu.add(addNewAppMenu);
+	}
+	if(bRemoveApps){
+		if (removeAppsMenu == null) {
+			removeAppsMenu = new JMenuItem("Remove Apps...");
+			removeAppsMenu.addActionListener(eventHandler);
+		}
+		popupMenu.add(removeAppsMenu);		
 	}
 	if (bAddNew) {
 		if (addNewMenuItem == null) {
