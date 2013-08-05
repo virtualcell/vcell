@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 import cbit.vcell.solver.SolverDescription;
 
@@ -40,21 +38,21 @@ public class ResourceUtil {
 	private static String lastUserLocalDir = null;
 	
 
-	private final static String osname;
+	private final static String osname_prefix;
 	static {
 		if (bWindows) {
-			osname = "windows";
+			osname_prefix = "win";
 		} else if (bMac) {
-			osname = "mac";
+			osname_prefix = "mac";
 		} else if (bLinux) {
-			osname = "linux";
+			osname_prefix = "linux";
 		} else {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
 	}
 	public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
 	public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
-	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
+	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname_prefix + (b64bit ? "64" : "32");
 	
 	private static File userHome = null;
 	private static File vcellHome = null;
