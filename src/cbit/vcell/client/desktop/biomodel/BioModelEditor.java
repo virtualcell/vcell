@@ -11,17 +11,22 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
+import javax.swing.ListSelectionModel;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils.TableListResult;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -65,7 +70,6 @@ import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 2:55:18 PM)
@@ -227,13 +231,38 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 					return;
 				}
-				Simulation[] simulations = selectedSimulationContext.getSimulations();
-				if(simulations != null && simulations.length != 0){
-					for (Simulation simulation : simulations) {
-						bioModel.removeSimulation(simulation);
-					}
+				deleteSimulationcontexts(new SimulationContext[] {selectedSimulationContext});
+			}
+		} catch (Exception ex) {
+			DialogUtils.showErrorDialog(this, ex.getMessage());
+		}
+		break;
+	case deleteChoose:
+		try {
+			SimulationContext[] allSimContexts =
+				Arrays.copyOf(getBioModelWindowManager().getVCDocument().getSimulationContexts(), getBioModelWindowManager().getVCDocument().getSimulationContexts().length);
+			Arrays.sort(allSimContexts, new Comparator<SimulationContext>() {
+				@Override
+				public int compare(SimulationContext o1, SimulationContext o2) {
+					return o1.getName().compareToIgnoreCase(o2.getName());
 				}
-				bioModel.removeSimulationContext(selectedSimulationContext);
+			});
+			String[][] rowDataOrig = new String[allSimContexts.length][2];
+			for (int i = 0; i < allSimContexts.length; i++) {
+				rowDataOrig[i][0] = allSimContexts[i].getName();
+				rowDataOrig[i][1] = allSimContexts[i].getSimulations().length+"";
+			}
+			final String DELETE = "Delete";
+			final String CANCEL = "Cancel";
+			TableListResult result =
+				DialogUtils.showComponentOptionsTableList(this, "Select Applications (and associated Simulations) to delete.",
+				new String[] {"Application","# of Sims"}, rowDataOrig,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION, null, new String[] {DELETE,CANCEL}, CANCEL, null);
+			if(result != null && result.selectedOption != null && result.selectedOption.equals(DELETE) && result.selectedTableRows != null && result.selectedTableRows.length > 0){
+				ArrayList<SimulationContext> deleteTheseSimcontexts = new ArrayList<SimulationContext>();
+				for (int i = 0; i < result.selectedTableRows.length; i++) {
+					deleteTheseSimcontexts.add(allSimContexts[result.selectedTableRows[i]]);
+				}
+				deleteSimulationcontexts(deleteTheseSimcontexts.toArray(new SimulationContext[0]));					
 			}
 		} catch (Exception ex) {
 			DialogUtils.showErrorDialog(this, ex.getMessage());
@@ -242,6 +271,17 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 	}
 }
 
+private void deleteSimulationcontexts(SimulationContext[] deleteTheseSimcontexts) throws PropertyVetoException{
+	for (int i = 0; i < deleteTheseSimcontexts.length; i++) {
+		Simulation[] simulations = deleteTheseSimcontexts[i].getSimulations();
+		if(simulations != null && simulations.length != 0){
+			for (Simulation simulation : simulations) {
+				bioModel.removeSimulation(simulation);
+			}
+		}
+		bioModel.removeSimulationContext(deleteTheseSimcontexts[i]);
+	}
+}
 private void copyApplication() {
 	SimulationContext simulationContext = getSelectedSimulationContext();
 	if (simulationContext == null) {
