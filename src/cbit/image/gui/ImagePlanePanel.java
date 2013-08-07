@@ -20,6 +20,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import java.awt.BorderLayout;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)
@@ -33,10 +34,6 @@ public class ImagePlanePanel extends javax.swing.JPanel {
 	private javax.swing.JRadioButton ivjXAxisCheckbox = null;
 	private javax.swing.JRadioButton ivjYAxisCheckbox = null;
 	private javax.swing.JRadioButton ivjZAxisCheckbox = null;
-	private javax.swing.JButton ivjSliceMinus10Button = null;
-	private javax.swing.JButton ivjSliceMinus1Button = null;
-	private javax.swing.JButton ivjSlicePlus10Button = null;
-	private javax.swing.JButton ivjSlicePlus1Button = null;
 	private ImagePlaneManager fieldImagePlaneMananager = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ImagePlaneManager ivjimagePlaneMananager1 = null;
@@ -68,6 +65,8 @@ public class ImagePlanePanel extends javax.swing.JPanel {
 			if(e.getSource() == getSlider()){
 				if(!getSlider().getValueIsAdjusting() && getImagePlaneMananager() != null){
 					getImagePlaneMananager().setSlice(getSlider().getValue());
+				}else{
+					getSliceLabel().setText("Slice["+getSlider().getValue()+"]");
 				}
 			}			
 		};
@@ -418,8 +417,7 @@ private javax.swing.JPanel getJPanel1() {
 		try {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
-			FlowLayout fl = new FlowLayout(FlowLayout.CENTER,0,0);
-			ivjJPanel1.setLayout(fl);
+			ivjJPanel1.setLayout(new BorderLayout(0, 0));
 			ivjJPanel1.add(getSlider());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -806,6 +804,7 @@ private void zAxisCheckbox_ActionPerformed(java.awt.event.ActionEvent actionEven
 	private JSlider getSlider() {
 		if (slider == null) {
 			slider = new JSlider();
+			slider.setBorder(new LineBorder(new Color(0, 0, 0)));
 			slider.setValue(0);
 		}
 		return slider;
