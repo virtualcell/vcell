@@ -380,6 +380,7 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 			SampledCurve curve = null;
 			List<Integer> indexList = new ArrayList<Integer>();
 			int startingIndex = -1;
+			boolean bReverse = false;
 			while (melist.size() > 0)
 			{
 				if (me == null)
@@ -392,16 +393,62 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 				melist.remove(me);
 				
 				Segment2D segment = segments[me.getMembraneIndex()];
-				indexList.add(me.getMembraneIndex());
-
-				int nextIndex = segment.nextNeigbhor;
-				int pcnt = curve.getControlPointCount();
-				if (nextIndex < 0 || nextIndex == startingIndex)
+				if (bReverse)
 				{
-					if (nextIndex == startingIndex && pcnt > 1)
+					indexList.add(0, me.getMembraneIndex());
+				}
+				else
+				{
+					indexList.add(me.getMembraneIndex());
+				}
+				int prevNeighbor = segment.prevNeigbhor;
+				int nextNeighbor = segment.nextNeigbhor;
+				int pcnt = curve.getControlPointCount();
+				Coordinate p1 = vertices[segment.prevVertex];
+				Coordinate p2 = vertices[segment.nextVertex];				
+				if (pcnt == 0)
+				{
+					curve.appendControlPoint(p1);
+				}
+				
+				boolean bCurveComplete = false;
+				int nextIndex = bReverse ?  prevNeighbor : nextNeighbor;
+				if (nextIndex == startingIndex)
+				{
+					// closed curve, start and end meet
+					bCurveComplete = true;
+					if (pcnt > 1)
 					{
 						curve.setClosed(true);
 					}
+				}
+				else if (nextIndex < 0)
+				{
+					if (bReverse)
+					{
+						bCurveComplete = true;  // other side is traversed too, curve is complete
+					}
+					else
+					{					
+							bReverse = true;
+							curve.appendControlPoint(p2); // add the point then traverse from the other side
+							nextIndex = segments[startingIndex].prevNeigbhor;
+					}
+				}
+				else
+				{
+					// if reverse, prepend the point, otherwise append
+					if (bReverse)
+					{
+						curve.prependControlPoint(p1);
+					}
+					else
+					{
+						curve.appendControlPoint(p2);
+					}
+				}
+				if (bCurveComplete)
+				{
 					int[] rmi = new int[indexList.size()];
 					for(int i = 0; i < indexList.size(); ++ i)
 					{
@@ -409,33 +456,23 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 					}
 					curvesAndValues.put(curve, rmi);
 					// start a new curve
+					bReverse = false;
 					me = null;
 				}
 				else
 				{
-					Coordinate p1 = vertices[segment.prevVertex];
-					Coordinate p2 = vertices[segment.nextVertex];				
-					if (pcnt == 0)
-					{
-						curve.appendControlPoint(p1);
-					}
-					else
-					{
-						assert segment.prevNeigbhor == indexList.get(pcnt - 1);
-					}
-					curve.appendControlPoint(p2);
-					// get next membrane element
 					me = membraneElements[nextIndex];
 				}
 			}
 		}
 		else
 		{
-			//
+			// 3D
 		}
 	}
 	return curvesAndValues;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (8/30/00 5:52:19 PM)
