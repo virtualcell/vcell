@@ -14,8 +14,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
+import oracle.ucp.admin.UniversalConnectionPoolManager;
+import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 
@@ -29,15 +34,15 @@ import org.vcell.util.StdoutSessionLog;
  */
 public final class OraclePoolingConnectionFactory implements ConnectionFactory  {
 
-//	private UniversalConnectionPoolManager connectionPoolManaager = null;
+	private UniversalConnectionPoolManager connectionPoolManaager = null;
 	private String connectionCacheName = null;
 	private PoolDataSource poolDataSource = null;
 	private SessionLog log = null;
-//	private TimerTask refreshConnectionTask = new TimerTask() {
-//		public void run() {
-//			refreshConnections();
-//		}
-//	};
+	private TimerTask refreshConnectionTask = new TimerTask() {
+		public void run() {
+			refreshConnections();
+		}
+	};
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
@@ -50,8 +55,8 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	this.log = sessionLog;
 	connectionCacheName = "UCP_ManagedPool_" + System.nanoTime();
 
-//	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
-//	connectionPoolManaager.setJmxEnabled(true);
+	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
+	connectionPoolManaager.setJmxEnabled(false);
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 	poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
 	poolDataSource.setConnectionPoolName(connectionCacheName);
@@ -59,18 +64,16 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	poolDataSource.setURL(argConnectURL);
 	poolDataSource.setUser(argUserid);
 	poolDataSource.setPassword(argPassword);
-
-//	connectionPoolManaager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);
-
+	connectionPoolManaager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);
 	// set cache properties    
 	poolDataSource.setMinPoolSize(2);
 	poolDataSource.setMaxPoolSize(5);
-//	poolDataSource.setInitialPoolSize(2);
+	poolDataSource.setInitialPoolSize(2);
 	
 	testConnection();
 	
-//	Timer timer = new Timer();
-//	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
+	Timer timer = new Timer();
+	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
 }
 
 public synchronized void closeAll() throws java.sql.SQLException {
@@ -83,20 +86,20 @@ public void failed(Connection con, Object lock) throws SQLException {
 	log.print("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
 	// Get singleton ConnectionCacheManager instance
-//	try {
-//		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-//	} catch (UniversalConnectionPoolException e) {
-//		log.exception(e);
-//	}
+	try {
+		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+	} catch (UniversalConnectionPoolException e) {
+		log.exception(e);
+	}
 }
 
-//private synchronized void refreshConnections() {
-//	try {
-//		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-//	} catch (UniversalConnectionPoolException e) {
-//		log.exception(e);
-//	}
-//}
+private synchronized void refreshConnections() {
+	try {
+		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+	} catch (UniversalConnectionPoolException e) {
+		log.exception(e);
+	}
+}
 
 public synchronized Connection getConnection(Object lock) throws SQLException {
 	Connection conn = null;
@@ -106,11 +109,11 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 		// might be invalid or stale connection
 		log.exception(ex);
 		// refresh cache
-//		try {
-//			connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-//		} catch (UniversalConnectionPoolException e) {
-//			log.exception(e);
-//		}
+		try {
+			connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+		} catch (UniversalConnectionPoolException e) {
+			log.exception(e);
+		}
 		// get connection again.
 		conn = poolDataSource.getConnection();
 	}
