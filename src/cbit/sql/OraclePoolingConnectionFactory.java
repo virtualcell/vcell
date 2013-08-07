@@ -65,7 +65,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	// set cache properties    
 	poolDataSource.setMinPoolSize(2);
 	poolDataSource.setMaxPoolSize(5);
-	poolDataSource.setInitialPoolSize(2);
+//	poolDataSource.setInitialPoolSize(2);
 	
 	testConnection();
 	
