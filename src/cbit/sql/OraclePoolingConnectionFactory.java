@@ -11,17 +11,11 @@
 package cbit.sql;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
-import oracle.ucp.admin.UniversalConnectionPoolManager;
-import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 
@@ -29,24 +23,21 @@ import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
-import org.vcell.util.document.UserInfo;
-
-import cbit.vcell.modeldb.UserTable;
 
 /**
  * This type was created in VisualAge.y
  */
 public final class OraclePoolingConnectionFactory implements ConnectionFactory  {
 
-	private UniversalConnectionPoolManager connectionPoolManaager = null;
+//	private UniversalConnectionPoolManager connectionPoolManaager = null;
 	private String connectionCacheName = null;
 	private PoolDataSource poolDataSource = null;
 	private SessionLog log = null;
-	private TimerTask refreshConnectionTask = new TimerTask() {
-		public void run() {
-			refreshConnections();
-		}
-	};
+//	private TimerTask refreshConnectionTask = new TimerTask() {
+//		public void run() {
+//			refreshConnections();
+//		}
+//	};
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
@@ -59,8 +50,8 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	this.log = sessionLog;
 	connectionCacheName = "UCP_ManagedPool_" + System.nanoTime();
 
-	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
-	connectionPoolManaager.setJmxEnabled(true);
+//	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
+//	connectionPoolManaager.setJmxEnabled(true);
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 	poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
 	poolDataSource.setConnectionPoolName(connectionCacheName);
@@ -68,30 +59,18 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	poolDataSource.setURL(argConnectURL);
 	poolDataSource.setUser(argUserid);
 	poolDataSource.setPassword(argPassword);
-	connectionPoolManaager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);
+
+//	connectionPoolManaager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);
+
 	// set cache properties    
 	poolDataSource.setMinPoolSize(2);
 	poolDataSource.setMaxPoolSize(5);
 	poolDataSource.setInitialPoolSize(2);
-//	java.util.Properties prop = new java.util.Properties();
-//	prop.setProperty("MinLimit", "1");
-//	prop.setProperty("MaxLimit", "20");
-////	prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
-////	prop.setProperty("InactivityTimeout", "300");    //  seconds
-////	prop.setProperty("TimeToLiveTimeout", "300");    //  seconds
-////	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
-////	prop.setProperty("ValidateConnection", "true");
-//	oracleDataSource.setConnectionCacheProperties (prop);
 	
-	// when vcell runs in local model, every time reconnnect, it will create a new 
-	// OraclePoolingConnectionFactory which causes same cache error. So add current time 
-	// to cache name.
+	testConnection();
 	
-//	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
-//	connectionPoolManaager.startConnectionPool(connectionCacheName);
-	
-	Timer timer = new Timer();
-	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
+//	Timer timer = new Timer();
+//	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
 }
 
 public synchronized void closeAll() throws java.sql.SQLException {
@@ -104,20 +83,20 @@ public void failed(Connection con, Object lock) throws SQLException {
 	log.print("OraclePoolingConnectionFactory.failed("+con+")");
 	release(con, lock);
 	// Get singleton ConnectionCacheManager instance
-	try {
-		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-	} catch (UniversalConnectionPoolException e) {
-		log.exception(e);
-	}
+//	try {
+//		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+//	} catch (UniversalConnectionPoolException e) {
+//		log.exception(e);
+//	}
 }
 
-private synchronized void refreshConnections() {
-	try {
-		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-	} catch (UniversalConnectionPoolException e) {
-		log.exception(e);
-	}
-}
+//private synchronized void refreshConnections() {
+//	try {
+//		connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+//	} catch (UniversalConnectionPoolException e) {
+//		log.exception(e);
+//	}
+//}
 
 public synchronized Connection getConnection(Object lock) throws SQLException {
 	Connection conn = null;
@@ -127,11 +106,11 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 		// might be invalid or stale connection
 		log.exception(ex);
 		// refresh cache
-		try {
-			connectionPoolManaager.refreshConnectionPool(connectionCacheName);
-		} catch (UniversalConnectionPoolException e) {
-			log.exception(e);
-		}
+//		try {
+//			connectionPoolManaager.refreshConnectionPool(connectionCacheName);
+//		} catch (UniversalConnectionPoolException e) {
+//			log.exception(e);
+//		}
 		// get connection again.
 		conn = poolDataSource.getConnection();
 	}
@@ -153,42 +132,29 @@ public void release(Connection con, Object lock) throws SQLException {
 	}
 }
 
-private static boolean validate(Connection conn) {
+public void testConnection() throws SQLException{
+	Object lock = new Object();
+	Connection con = null;
 	try {
-		DatabaseMetaData dmd = conn.getMetaData();
-	} catch (Exception e) {
-		System.out.println("testing metadata...failed");
-		e.printStackTrace(System.out);
-		return false;
-	}			
-	try {
-		conn.getAutoCommit();
-	} catch (Exception e) {
-		System.out.println("testing autocommit...failed");
-		e.printStackTrace(System.out);
-		return false;
-	}			
-		
-	try {
-		String sql = "SELECT * from " + UserTable.table.getTableName() + 
-				" WHERE " + UserTable.table.id + "=0";
-
-		Statement stmt = conn.createStatement();
+		con = getConnection(lock);
+		String sql = " SELECT DUMMY FROM DUAL";
+		Statement stmt = con.createStatement();
 		try {
 			ResultSet rset = stmt.executeQuery(sql);
-			if (rset.next()){
-				UserInfo userInfo = UserTable.table.getUserInfo(rset);
+			if (rset.next()) {
+				String value = rset.getString(1);
+			} else {
+				throw new RuntimeException("Could not get new Key value");
 			}
 		} finally {
-			stmt.close();
+			stmt.close(); // Release resources include resultset
 		}
-				
-	} catch (Exception e) {
-		System.out.println("query user table...failed");
-		e.printStackTrace(System.out);
-		return false;
+	}finally{
+		if (con!=null){
+			release(con, lock);
+		}
+		
 	}
-	return true;
 }
 
 public static void main(String[] args) {
@@ -197,26 +163,7 @@ public static void main(String[] args) {
 	
 		StdoutSessionLog sessionLog = new StdoutSessionLog("aa");
 		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(sessionLog);
-		Object lock = new Object();
-		Connection conn1 = null, conn2 = null;
-		conn1 = fac.getConnection(lock);
-		sessionLog.print("got conn1 " + validate(conn1));
-		Thread.sleep(60*60*1000);
-		conn2 = fac.getConnection(lock);
-		sessionLog.print("got conn2 " + validate(conn2));
-//		int i = 0;
-//		while (i<2000) {
-//			i ++;
-//			try {
-//				conn1 = fac.getConnection(lock);
-//				System.out.println(conn1);
-//				conn2 = fac.getConnection(lock);
-//				System.out.println(conn2);
-//			} finally {
-//				fac.release(conn1, lock);
-//				fac.release(conn2, lock);
-//			}
-//		}
+		System.out.println("test worked");
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
