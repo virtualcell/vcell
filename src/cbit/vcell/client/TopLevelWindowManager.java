@@ -295,18 +295,21 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int ANALYTIC_1D = 0;
 	final int ANALYTIC_2D = 1;
 	final int ANALYTIC_3D = 2;
-	final int IMAGE_DB = 3;
-	final int IMAGE_FILE = 4;
-	final int MESH_FILE = 5;
-	final int FROM_SCRATCH = 6;
-	final int CSGEOMETRY_3D = 7;
+	final int IMAGE_FILE = 3;
+	final int MESH_FILE = 3;
+	final int FROM_SCRATCH = 5;
+	final int CSGEOMETRY_3D = 6;
 	
 	int[] geomType = null;
 
-	String[][] choices = new String[][] {{"Analytic Equations (1D)"},{"Analytic Equations (2D)"},{"Analytic Equations (3D)"},
-			{"Image based (legacy from database)"},{"Image based (import from file, zip or directory)"},
+	String[][] choices = new String[][] {
+			{"Analytic Equations (1D)"},
+			{"Analytic Equations (2D)"},
+			{"Analytic Equations (3D)"},
+			{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
-			{"New Blank Image Canvas"}, {"Constructed Solid Geometry (3D)"}};
+			{"New Blank Image Canvas"},
+			{"Constructed Solid Geometry (3D)"}};
 	geomType = DialogUtils.showComponentOKCancelTableList(
 			getComponent(), 
 			dialogText,
@@ -320,8 +323,6 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D);
 	}else if(geomType[0] == ANALYTIC_3D){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D);
-	}else if(geomType[0] == IMAGE_DB){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE);
 	}else if(geomType[0] == IMAGE_FILE || geomType[0] == MESH_FILE){
 		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == FROM_SCRATCH){
@@ -366,39 +367,22 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 			}
 			hash.put("guiParent", (Component)getComponent());
 			hash.put("requestManager", getRequestManager());
-		}else{//Copy from existing BioModel,MathModel,Geometry
+		}else{//Copy from WorkSpace
 			createGeomTaskV.add(new AsynchClientTask("loading Geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Geometry copiedGeom = null;
-					if(geometrySelectionInfo.bFromCurrentGeom()){
-						copiedGeom = XmlHelper.XMLToGeometry(new XMLSource(XmlHelper.geometryToXML(currentGeometry)));
-					}else{
-						copiedGeom =
-							((ClientRequestManager)getRequestManager()).getGeometryFromDocumentSelection(
-								getComponent(),geometrySelectionInfo.getVCDocumentInfo(),true);
-					}
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
-					if(copiedGeom.getGeometrySpec().getImage() != null &&
-						copiedGeom.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
-						runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(TopLevelWindowManager.this,
-								new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE),
-								afterTasks,
-								applyGeometryButtonText)));
-						hashTable.put("guiParent", (Component)getComponent());
-						hashTable.put("requestManager", getRequestManager());
-						hashTable.put(ClientRequestManager.IMAGE_FROM_DB, copiedGeom.getGeometrySpec().getImage());
-					}else{
-						if(currentGeometry == null){
-							throw new Exception("Unexpected current geometry == null in createGeometry");
-						}
-						DialogUtils.showWarningDialog(getComponent(), "Current geometry contains analytic or CSG domains and can be edited directly within the 'Geometry Definition' tab view (no need to replace).");
-					}
+					runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(TopLevelWindowManager.this,
+							new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_WORKSPACE),
+							afterTasks,
+							applyGeometryButtonText)));
+					hashTable.put("guiParent", (Component)getComponent());
+					hashTable.put("requestManager", getRequestManager());
+					hashTable.put(ClientRequestManager.GEOM_FROM_WORKSPACE, currentGeometry);
 					new Thread(
 						new Runnable() {
 							public void run() {
-								ClientTaskDispatcher.dispatch(getComponent(),
-										hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true);
+								ClientTaskDispatcher.dispatch(getComponent(),hash,runtimeTasksV.toArray(new AsynchClientTask[0]), false,false,null,true);
 							}
 						}
 					).start();
