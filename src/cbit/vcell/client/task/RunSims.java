@@ -219,20 +219,20 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 								}
 							}
 						} 
-					}
 					
-					if (mathGeometry.getGeometrySpec().hasImage()) { // if it's an image.
-						if (defaultSize.getX() + 1 < newSize.getX() 
-								|| defaultSize.getY() + 1 < newSize.getY()
-								|| defaultSize.getZ() + 1 < newSize.getZ()) { // finer
-							String defaultSizeString = (defaultSize.getX() + 1) + (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") + (dimension > 2 ? " x " + (defaultSize.getZ() + 1): "");
-							String warningMessage =   VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_5,
-									newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), sim.getName(), 
-									defaultSizeString, defaultSizeString);
-							String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
-									new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
-							if (result == null || !result.equals(UserMessage.OPTION_OK)) {
-								continue;
+						if (mathGeometry.getGeometrySpec().hasImage()) { // if it's an image.
+							if (defaultSize.getX() + 1 < newSize.getX() 
+									|| defaultSize.getY() + 1 < newSize.getY()
+									|| defaultSize.getZ() + 1 < newSize.getZ()) { // finer
+								String defaultSizeString = (defaultSize.getX() + 1) + (dimension > 1 ? " x " + (defaultSize.getY() + 1) : "") + (dimension > 2 ? " x " + (defaultSize.getZ() + 1): "");
+								String warningMessage =   VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_5,
+										newSize.getX() + (dimension > 1 ? " x " + newSize.getY() : "") + (dimension > 2 ? " x " + newSize.getZ() : ""), sim.getName(), 
+										defaultSizeString, defaultSizeString);
+								String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
+										new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+								if (result == null || !result.equals(UserMessage.OPTION_OK)) {
+									continue;
+								}
 							}
 						}
 					}
