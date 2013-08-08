@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -1016,9 +1017,11 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			return null;
 		}
 		ISize checkThisVCImageISize = new ISize(checkThisVCImage.getNumX(), checkThisVCImage.getNumY(), checkThisVCImage.getNumZ());
+		boolean bxy = borderInfo.bXYTouch;
+		boolean bz = borderInfo.bZTouch;
 		ROIMultiPaintManager.PaddedInfo paddedInfo = copyToPadded(
 				checkThisVCImage.getPixels(),checkThisVCImageISize,null,checkThisVCImage.getExtent(),
-				borderInfo.bXYTouch, borderInfo.bZTouch);
+				new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)),new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)));
 		
 		VCImage newVCImage = new VCImageUncompressed(
 				null,
@@ -1571,21 +1574,50 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 	}
 	private void padROIDataAsk(){
-		final String padXYZ = "Add to XYZ";
-		final String padXY = "Add to XY Only";
-		final String padZ = "Add to Z Only";
-		final String cancel = "Cancel";
-		
-		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-				"Add background pixels to outside borders.  "+
-				"This operation will increase the number of pixels by 2 in each selected dimension",
-				new String[] {padXYZ,padXY,padZ,cancel}, padXYZ);
-		if(result.equals(cancel)){
-			throw UserCancelException.CANCEL_GENERIC;
+		try{
+			int xm = 0;
+			int ym = 0;
+			int zm = 0;
+			int xp = 0;
+			int yp = 0;
+			int zp = 0;
+			do{
+				String result = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter border padding as the number of pixels to add at each border: (xlow,ylow,zlow,xhigh,yhigh,zhigh)", xm+","+ym+","+zm+","+xp+","+yp+","+zp);
+				try{
+					if(result != null){
+						StringTokenizer st = new StringTokenizer(result, ",");
+						xm = Integer.parseInt(st.nextToken());
+						ym = Integer.parseInt(st.nextToken());
+						zm = Integer.parseInt(st.nextToken());
+						xp = Integer.parseInt(st.nextToken());
+						yp = Integer.parseInt(st.nextToken());
+						zp = Integer.parseInt(st.nextToken());
+						break;
+					}
+				}catch(Exception e){
+					DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error parsing pad input: "+e.getMessage());
+				}
+			}while(true);
+			padROIData(new ISize(xm, ym, zm), new ISize(xp, yp, zp));
+		}catch(UtilCancelException e){
+			return;
 		}
-		boolean bPadXY = result.equals(padXY) || result.equals(padXYZ);
-		boolean bPadZ = result.equals(padZ) || result.equals(padXYZ);
-		padROIData(bPadXY,bPadZ);
+		
+//		final String padXYZ = "Add to XYZ";
+//		final String padXY = "Add to XY Only";
+//		final String padZ = "Add to Z Only";
+//		final String cancel = "Cancel";
+//		
+//		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
+//				"Add background pixels to outside borders.  "+
+//				"This operation will increase the number of pixels by 2 in each selected dimension",
+//				new String[] {padXYZ,padXY,padZ,cancel}, padXYZ);
+//		if(result.equals(cancel)){
+//			throw UserCancelException.CANCEL_GENERIC;
+//		}
+//		boolean bxy = result.equals(padXY) || result.equals(padXYZ);
+//		boolean bz = result.equals(padZ) || result.equals(padXYZ);
+//		padROIData(new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)),new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)));
 	}
 	private void fillFromPoint(Point fillPoint){
 		ROI.fillAtPoint(fillPoint.x,fillPoint.y,
@@ -1961,42 +1993,31 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 	}
 	public static PaddedInfo copyToPadded(
 			Object origArr,ISize origISize,Origin origOrigin,Extent origExtent,
-			boolean bXYChanged,boolean bZChanged){
+			ISize padMinus,ISize padPlus){
 		
-		int newSizeX = origISize.getX();;
-		int newSizeY = origISize.getY();
-		if(bXYChanged){
-			newSizeX = (origISize.getX()+2);
-			newSizeY = (origISize.getY()>1?origISize.getY()+2:origISize.getY());
-		}
-		int newSizeZ =  origISize.getZ();
-		if(bZChanged){
-			newSizeZ =  (origISize.getZ()>1?origISize.getZ()+2:origISize.getZ());
-		}
+		int newSizeX = origISize.getX()+(padMinus.getX()+padPlus.getX());
+		int newSizeY = (origISize.getY()>1?origISize.getY()+(padMinus.getY()+padPlus.getY()):origISize.getY());
+		int newSizeZ =  (origISize.getZ()>1?origISize.getZ()+(padMinus.getZ()+padPlus.getZ()):origISize.getZ());
 
 		Object newArr = Array.newInstance(origArr.getClass().getComponentType(), newSizeX*newSizeY*newSizeZ);
-		//pad shortData
 		Object allZSections = origArr;
 		int origXYSize =  origISize.getX()*origISize.getY();
 		Object currZSection = Array.newInstance(origArr.getClass().getComponentType(),origXYSize);
-		for (int z = 0; z < origISize.getZ(); z++) {
-			System.arraycopy(allZSections, origXYSize*z, currZSection, 0, origXYSize);
+		for (int z0 = 0; z0 < newSizeZ; z0++) {
 			Object paddedCurrZSection = null;
-			if(bXYChanged){
+			if(!(z0 < (padMinus.getZ()) || z0 >= (padMinus.getZ()+origISize.getZ()))){
+				int z = z0-padMinus.getZ();
+				System.arraycopy(allZSections, origXYSize*z, currZSection, 0, origXYSize);
 				if(origArr instanceof short[]){
-					paddedCurrZSection = padXYUShort((short[])currZSection,origISize.getX(),origISize.getY());
+					paddedCurrZSection = padXYUShort((short[])currZSection,origISize.getX(),origISize.getY(),padMinus.getX(),padPlus.getX(),padMinus.getY(),padPlus.getY());
 				}else if(origArr instanceof byte[]){
-					paddedCurrZSection = padXYByte((byte[])currZSection,origISize.getX(),origISize.getY());
+					paddedCurrZSection = padXYByte((byte[])currZSection,origISize.getX(),origISize.getY(),padMinus.getX(),padPlus.getX(),padMinus.getY(),padPlus.getY());
 				}else{
 					throw new IllegalArgumentException(origArr.getClass().getName() +"not implement for 'copyToPadded'");
 				}
-			}else{
-				paddedCurrZSection = currZSection;
 			}
-			if(bZChanged){
-				System.arraycopy(paddedCurrZSection, 0, newArr, (z+1)*newSizeX*newSizeY, newSizeX*newSizeY);
-			}else{
-				System.arraycopy(paddedCurrZSection, 0, newArr, (z)*newSizeX*newSizeY, newSizeX*newSizeY);
+			if(paddedCurrZSection != null){
+				System.arraycopy(paddedCurrZSection, 0, newArr, z0*newSizeX*newSizeY, newSizeX*newSizeY);
 			}
 		}
 		
@@ -2005,18 +2026,18 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		paddedInfo.paddedISize = new ISize(newSizeX, newSizeY, newSizeZ);
 		return paddedInfo;
 	}
-	public static byte[] padXYByte(byte[] byteArr,int numX,int numY){
+	public static byte[] padXYByte(byte[] byteArr,int numX,int numY,int left,int right,int top,int bottom){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_BYTE_GRAY);
 		byte[] byteData = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
 		System.arraycopy(byteArr, 0, byteData, 0, byteArr.length);
-		PlanarImage planarImage = BorderDescriptor.create(bufferedImage, 1, 1, 1, 1,null, null).getRendering();
+		PlanarImage planarImage = BorderDescriptor.create(bufferedImage,left,right,top,bottom,null, null).getRendering();
 		return ((DataBufferByte)planarImage.getData().getDataBuffer()).getData();
 	}
-	public static short[] padXYUShort(short[] shortArr,int numX,int numY){
+	public static short[] padXYUShort(short[] shortArr,int numX,int numY,int left,int right,int top,int bottom){
 		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_USHORT_GRAY);
 		short[] shortData = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
 		System.arraycopy(shortArr, 0, shortData, 0, shortArr.length);
-		PlanarImage planarImage = BorderDescriptor.create(bufferedImage, 1, 1, 1, 1,null, null).getRendering();
+		PlanarImage planarImage = BorderDescriptor.create(bufferedImage,left,right,top,bottom,null, null).getRendering();
 		return ((DataBufferUShort)planarImage.getData().getDataBuffer()).getData();
 	}
 
@@ -2117,7 +2138,9 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	
-	private void padROIData(final boolean bPadXY,final boolean bPadZ){
+	private void padROIData(final ISize padMinus,final ISize padPlus){
+		final boolean bPadXY = padMinus.getX()!=0 || padMinus.getY()!=0 || padPlus.getX()!=0 || padPlus.getY()!=0;
+		final boolean bPadZ = padMinus.getZ()!=0 || padPlus.getZ()!=0;
 		final AsynchClientTask padTask = new AsynchClientTask("Padding...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2126,6 +2149,8 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//Pad 2D
 				//
 				if(bPadXY){
+					ISize padMinus0 = new ISize(padMinus.getX(), padMinus.getY(),0);
+					ISize padPlus0 = new ISize(padPlus.getX(), padPlus.getY(),0);
 					//pad underlying image
 					ISize origSliceSize =
 						new ISize(origSize.getX(), origSize.getY(), 1);
@@ -2134,7 +2159,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 						for (int i = 0; i < newUnderLayImageArr[c].length; i++) {
 							ROIMultiPaintManager.PaddedInfo paddedInfo = 
 								copyToPadded(initImageDataSetChannels[c].getAllImages()[i].getPixels(),
-										origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, true, false);
+										origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, padMinus0, padPlus0);
 							newUnderLayImageArr[c][i] =
 								new UShortImage((short[])paddedInfo.paddedArray, DEFAULT_ORIGIN, DEFAULT_EXTENT,
 									paddedInfo.paddedISize.getX(),paddedInfo.paddedISize.getY(),1);
@@ -2147,7 +2172,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					for (int i = 0; i < roiComposite.length; i++) {
 						ROIMultiPaintManager.PaddedInfo paddedInfo = 
 							copyToPadded(((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(),
-									origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, true, false);
+									origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, padMinus0, padPlus0);
 						roiComposite[i] =
 							new BufferedImage(paddedInfo.paddedISize.getX(),paddedInfo.paddedISize.getY(),
 									BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
@@ -2159,12 +2184,12 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				//Pad 3D
 				//
 				if(bPadZ){
-					int newZSize = origSize.getZ()+2;
+					int newZSize = origSize.getZ()+(padMinus.getZ()+padPlus.getZ());
 					UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][newZSize];
 					BufferedImage[] newROICompositeArr =  new BufferedImage[newZSize];
 					int index = 0;
 					for (int i = 0; i < newZSize; i++) {
-						if(i >= 1 && i < (newZSize-1)){
+						if(i >= padMinus.getZ() && i < (newZSize-padPlus.getZ())){
 							for (int c = 0; c < initImageDataSetChannels.length; c++) {
 								newUnderLayImageArr[c][i] = initImageDataSetChannels[c].getAllImages()[index];
 							}
