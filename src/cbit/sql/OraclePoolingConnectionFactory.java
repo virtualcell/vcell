@@ -11,6 +11,7 @@
 package cbit.sql;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,6 +29,9 @@ import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.UserInfo;
+
+import cbit.vcell.modeldb.UserTable;
 
 /**
  * This type was created in VisualAge.y
@@ -56,7 +60,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	connectionCacheName = "UCP_ManagedPool_" + System.nanoTime();
 
 	connectionPoolManaager = UniversalConnectionPoolManagerImpl.getUniversalConnectionPoolManager();
-	connectionPoolManaager.setJmxEnabled(false);
+	connectionPoolManaager.setJmxEnabled(true);
 	poolDataSource = PoolDataSourceFactory.getPoolDataSource();
 	poolDataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
 	poolDataSource.setConnectionPoolName(connectionCacheName);
@@ -69,8 +73,22 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	poolDataSource.setMinPoolSize(2);
 	poolDataSource.setMaxPoolSize(5);
 	poolDataSource.setInitialPoolSize(2);
+//	java.util.Properties prop = new java.util.Properties();
+//	prop.setProperty("MinLimit", "1");
+//	prop.setProperty("MaxLimit", "20");
+////	prop.setProperty("InitialLimit", "3"); // create 3 connections at startup
+////	prop.setProperty("InactivityTimeout", "300");    //  seconds
+////	prop.setProperty("TimeToLiveTimeout", "300");    //  seconds
+////	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
+////	prop.setProperty("ValidateConnection", "true");
+//	oracleDataSource.setConnectionCacheProperties (prop);
 	
-	testConnection();
+	// when vcell runs in local model, every time reconnnect, it will create a new 
+	// OraclePoolingConnectionFactory which causes same cache error. So add current time 
+	// to cache name.
+	
+//	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
+//	connectionPoolManaager.startConnectionPool(connectionCacheName);
 	
 	Timer timer = new Timer();
 	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
@@ -135,29 +153,42 @@ public void release(Connection con, Object lock) throws SQLException {
 	}
 }
 
-public void testConnection() throws SQLException{
-	Object lock = new Object();
-	Connection con = null;
+private static boolean validate(Connection conn) {
 	try {
-		con = getConnection(lock);
-		String sql = " SELECT DUMMY FROM DUAL";
-		Statement stmt = con.createStatement();
+		DatabaseMetaData dmd = conn.getMetaData();
+	} catch (Exception e) {
+		System.out.println("testing metadata...failed");
+		e.printStackTrace(System.out);
+		return false;
+	}			
+	try {
+		conn.getAutoCommit();
+	} catch (Exception e) {
+		System.out.println("testing autocommit...failed");
+		e.printStackTrace(System.out);
+		return false;
+	}			
+		
+	try {
+		String sql = "SELECT * from " + UserTable.table.getTableName() + 
+				" WHERE " + UserTable.table.id + "=0";
+
+		Statement stmt = conn.createStatement();
 		try {
 			ResultSet rset = stmt.executeQuery(sql);
-			if (rset.next()) {
-				String value = rset.getString(1);
-			} else {
-				throw new RuntimeException("Could not get new Key value");
+			if (rset.next()){
+				UserInfo userInfo = UserTable.table.getUserInfo(rset);
 			}
 		} finally {
-			stmt.close(); // Release resources include resultset
+			stmt.close();
 		}
-	}finally{
-		if (con!=null){
-			release(con, lock);
-		}
-		
+				
+	} catch (Exception e) {
+		System.out.println("query user table...failed");
+		e.printStackTrace(System.out);
+		return false;
 	}
+	return true;
 }
 
 public static void main(String[] args) {
@@ -166,7 +197,26 @@ public static void main(String[] args) {
 	
 		StdoutSessionLog sessionLog = new StdoutSessionLog("aa");
 		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(sessionLog);
-		System.out.println("test worked");
+		Object lock = new Object();
+		Connection conn1 = null, conn2 = null;
+		conn1 = fac.getConnection(lock);
+		sessionLog.print("got conn1 " + validate(conn1));
+		Thread.sleep(60*60*1000);
+		conn2 = fac.getConnection(lock);
+		sessionLog.print("got conn2 " + validate(conn2));
+//		int i = 0;
+//		while (i<2000) {
+//			i ++;
+//			try {
+//				conn1 = fac.getConnection(lock);
+//				System.out.println(conn1);
+//				conn2 = fac.getConnection(lock);
+//				System.out.println(conn2);
+//			} finally {
+//				fac.release(conn1, lock);
+//				fac.release(conn2, lock);
+//			}
+//		}
 	} catch (Exception e) {
 		e.printStackTrace();
 	}
