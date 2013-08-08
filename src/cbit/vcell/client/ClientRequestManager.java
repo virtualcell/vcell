@@ -971,7 +971,9 @@ public static boolean isImportGeometryType(DocumentCreationInfo documentCreation
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE ||
 	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH ||
-	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE;
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC ||
+	documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE
+	;
 }
 
 private static void throwImportWholeDirectoryException(File invalidFile,String extraInfo) throws Exception{
@@ -1167,11 +1169,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 //					if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
 //						throw new Exception("Total pixels (x*y*z) cannot be >"+SCRATCH_SIZE_LIMIT+".");
 //					}
-				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE){
+				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC){
 					if(hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null){
-						Geometry workspaceGeom = (Geometry)hashTable.remove(ClientRequestManager.GEOM_FROM_WORKSPACE);
-						if(workspaceGeom.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && workspaceGeom.getGeometrySpec().getImage() == null){
-							String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(),
+						Geometry workspaceGeom = (Geometry)hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
+						String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(),
 								"Warning: Analytic expressions will be removed. ",
 								"Converting analytic expression geometry into an image based geometry will remove analytic expressions after new image is created.");
 							if(result == null || !result.equals(SimpleUserMessage.OPTION_OK)){
@@ -1193,16 +1194,18 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							hashTable.put(VCPIXELCLASSES,vcPixelClassArrList.toArray(new VCPixelClass[0]));
 							fdfos = createFDOSFromVCImage(img);
-						}else if(workspaceGeom.getGeometrySpec().getImage() != null && workspaceGeom.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
-							hashTable.put(IMPORT_SOURCE_NAME,"Workspace Image");
-							fdfos = createFDOSFromVCImage(workspaceGeom.getGeometrySpec().getImage());
-							if(workspaceGeom.getGeometrySpec().getImage().getDescription() != null){
-								hashTable.put(INITIAL_ANNOTATION, workspaceGeom.getGeometrySpec().getImage().getDescription());
-							}
-							hashTable.put(VCPIXELCLASSES,workspaceGeom.getGeometrySpec().getImage().getPixelClasses());
-						}else{
-							throw new Exception("Unexpected image configureation for GEOM_OPTION_FROM_WORKSPACE");
+					}else{
+						throw new Exception("Expecting image source for GEOM_OPTION_FROM_WORKSPACE_ANALYTIC");
+					}
+				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
+					if(hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null){
+						Geometry workspaceGeom = (Geometry)hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
+						hashTable.put(IMPORT_SOURCE_NAME,"Workspace Image");
+						fdfos = createFDOSFromVCImage(workspaceGeom.getGeometrySpec().getImage());
+						if(workspaceGeom.getGeometrySpec().getImage().getDescription() != null){
+							hashTable.put(INITIAL_ANNOTATION, workspaceGeom.getGeometrySpec().getImage().getDescription());
 						}
+						hashTable.put(VCPIXELCLASSES,workspaceGeom.getGeometrySpec().getImage().getPixelClasses());
 					}else{
 						throw new Exception("Expecting image source for GEOM_OPTION_FROM_WORKSPACE");
 					}
@@ -1244,6 +1247,12 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				hashTable.put(IMPORT_SOURCE_NAME,
 						"FieldData: "+docInfo.getExternalDataID().getName()+" varName="+
 						docInfo.getVarName()+" timeIndex="+newImagesiSizeInfo.getTimePoints()[newImagesiSizeInfo.getSelectedTimeIndex()]);
+			}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
+				Geometry workspaceGeom = (Geometry)hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
+				ISize origISize = new ISize(workspaceGeom.getGeometrySpec().getImage().getNumX(), workspaceGeom.getGeometrySpec().getImage().getNumY(), workspaceGeom.getGeometrySpec().getImage().getNumZ());
+				ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(importSourceName,origISize,1,new double[] {0},null);
+				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo);
+				hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
 			}
 		}
 	};
@@ -1320,7 +1329,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	AsynchClientTask resizeImageTask = new AsynchClientTask("Resizing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
+			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA ||
+				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
 				ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
 				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
 				if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.iSize)){
@@ -1382,8 +1392,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	Vector<AsynchClientTask> tasksV = new Vector<AsynchClientTask>();
 	if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
-	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE){
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
+	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask,resizeImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
@@ -1457,7 +1469,7 @@ private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,i
 			int numChannels = fdfos.shortSpecData[0].length;//this normally contains different variables but is used for channels here
 			//resize each z section to xsize,ysize
 		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
-		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, AffineTransformOp.TYPE_BILINEAR); 
+		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform,(imageType== VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE?AffineTransformOp.TYPE_NEAREST_NEIGHBOR:AffineTransformOp.TYPE_BILINEAR)); 
 			short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ()*xsize*ysize];
 			for (int c = 0; c < numChannels; c++) {
 				BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
