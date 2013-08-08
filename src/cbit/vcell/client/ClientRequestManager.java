@@ -80,6 +80,7 @@ import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExtensionFilter;
 import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -1156,7 +1157,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					fdfos.shortSpecData = new short[][][] {{dataToSegment}};
 
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH){
-					ISize isize = getISizeFromUser(guiParent, null);
+					ISize isize = getISizeFromUser(guiParent,new ISize(256,256,8),"Enter # of pixels for  x,y,z (e.g. 3D{256,256,8}, 2D{256,256,1}, 1D{256,1,1})");
 					fdfos = new FieldDataFileOperationSpec();
 					fdfos.origin = new Origin(0, 0, 0);
 					fdfos.extent = new Extent(1, 1, 1);
@@ -1170,7 +1171,15 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					if(hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null){
 						Geometry workspaceGeom = (Geometry)hashTable.remove(ClientRequestManager.GEOM_FROM_WORKSPACE);
 						if(workspaceGeom.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && workspaceGeom.getGeometrySpec().getImage() == null){
-							ISize isize = getISizeFromUser(guiParent, workspaceGeom.getGeometrySpec().getDefaultSampledImageSize());
+							String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(),
+								"Warning: Analytic expressions will be removed. ",
+								"Converting analytic expression geometry into an image based geometry will remove analytic expressions after new image is created.");
+							if(result == null || !result.equals(SimpleUserMessage.OPTION_OK)){
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+							ISize defaultISize = workspaceGeom.getGeometrySpec().getDefaultSampledImageSize();
+							ISize isize = getISizeFromUser(guiParent,defaultISize,
+								"Enter size for new geometry image (e.g. "+defaultISize.getX()+","+defaultISize.getY()+","+defaultISize.getZ()+")");
 							hashTable.put(IMPORT_SOURCE_NAME,"Workspace from Analytic Geometry");
 							VCImage img = workspaceGeom.getGeometrySpec().createSampledImage(isize);
 							Enumeration<SubVolume> enumSubvolume = workspaceGeom.getGeometrySpec().getAnalyticOrCSGSubVolumes();
@@ -1383,7 +1392,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	return tasksV.toArray(new AsynchClientTask[0]);
 }
 
-private static ISize getISizeFromUser(Component guiParent,ISize initISize) throws UserCancelException{
+private static ISize getISizeFromUser(Component guiParent,ISize initISize,String textMessage) throws UserCancelException{
 	Integer imageDimension = (initISize==null?null:(initISize.getX()!=1?1:0)+(initISize.getY()!=1?1:0)+(initISize.getZ()!=1?1:0));
 	if(imageDimension != null && (imageDimension < 1 || imageDimension > 3)){
 		throw new IllegalArgumentException("Dimension must be 1, 2 or 3.");
@@ -1394,9 +1403,7 @@ private static ISize getISizeFromUser(Component guiParent,ISize initISize) throw
 		int zsize = (imageDimension==null?-1:initISize.getZ());
 		do{
 			String result = (imageDimension==null?"256,256,8":xsize+","+ysize+","+zsize);
-			String example = (imageDimension==null?"3D{256,256,8}, 2D{256,256,1}, 1D{256,1,1}":result);
-			result = DialogUtils.showInputDialog0(guiParent,
-					"Enter number of pixels for x, y and z. (e.g. "+example+")", result);
+			result = DialogUtils.showInputDialog0(guiParent,textMessage, result);
 			String tempResult = result;
 			try{
 				if(result == null || result.length() == 0){
