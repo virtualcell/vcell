@@ -11,6 +11,7 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,6 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -389,6 +391,7 @@ private void addAnalyticSubVolume() {
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
 			final JDialog d = new JDialog(JOptionPane.getFrameForComponent(GeometrySubVolumePanel.this));
+			BeanUtils.centerOnComponent(d, GeometrySubVolumePanel.this);
 			d.setTitle("Define New Subdomain Shape");
 			
 			JPanel main = new JPanel();
@@ -430,6 +433,7 @@ private void addAnalyticSubVolume() {
 			d.setModal(true);
 			d.getContentPane().add(main);
 			d.pack();
+			d.setSize(new Dimension(400, 400));
 			DialogUtils.showModalJDialogOnTop(d, GeometrySubVolumePanel.this);
 
 			if(acceptFlag[0]){
