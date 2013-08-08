@@ -37,7 +37,8 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		public static final int GEOM_OPTION_FIELDDATA = 6;
 		public static final int GEOM_OPTION_FROM_SCRATCH = 7;
 		public static final int GEOM_OPTION_CSGEOMETRY_3D = 8;
-		public static final int GEOM_OPTION_FROM_WORKSPACE = 9;
+		public static final int GEOM_OPTION_FROM_WORKSPACE_IMAGE = 9;
+		public static final int GEOM_OPTION_FROM_WORKSPACE_ANALYTIC = 10;
 	public static final int XML_DOC = 3;
 	//Document Creation Info
 	public static class DocumentCreationInfo {

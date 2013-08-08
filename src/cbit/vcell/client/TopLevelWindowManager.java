@@ -372,8 +372,16 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
+					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
+					if(currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && currentGeometry.getGeometrySpec().getImage() == null){
+						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC);
+					}else if(currentGeometry.getGeometrySpec().getImage() != null && currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
+						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE);
+					}else{
+						throw new Exception("Unexpected image configuration for workspace geometry.");
+					}
 					runtimeTasksV.addAll(Arrays.asList(((ClientRequestManager)getRequestManager()).createNewGeometryTasks(TopLevelWindowManager.this,
-							new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_WORKSPACE),
+							workspaceDocCreateInfo,
 							afterTasks,
 							applyGeometryButtonText)));
 					hashTable.put("guiParent", (Component)getComponent());
