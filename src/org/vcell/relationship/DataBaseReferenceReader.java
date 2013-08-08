@@ -149,7 +149,13 @@ public class DataBaseReferenceReader {
 		//get entry
 		Element entryElement = uniprotRoot.getChild(UniProt_EntryTag, uniprotNameSpace);
 		//get name
+		if(entryElement == null) {
+			return null;	// not a big deal if we cannot get the uniprot name
+		}
 		Element nameElement = entryElement.getChild(Uniprot_NameTag, uniprotNameSpace);
+		if(nameElement == null) {
+			return null;
+		}
 		referenceName = nameElement.getText();
 		
 		return referenceName;
@@ -167,7 +173,13 @@ public class DataBaseReferenceReader {
 		//get entry
 		Element entryElement = root.getChild(Interpro_EntryTag, nameSpace);
 		//get name
+		if(entryElement == null) {
+			return null;	// not a big deal if we cannot get the interpro name
+		}
 		Element nameElement = entryElement.getChild(Interpro_NameTag, nameSpace);
+		if(nameElement == null) {
+			return null;
+		}
 		referenceName = nameElement.getText();
 		
 		return referenceName;
