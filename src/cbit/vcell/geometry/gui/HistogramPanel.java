@@ -25,6 +25,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -38,6 +39,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.Range;
 
 import cbit.vcell.client.PopupGenerator;
@@ -578,18 +581,18 @@ public class HistogramPanel extends JPanel {
 			if(originalTreeMap != null){
 				SortedMap<Integer, Integer> subsetTreeMap = getTreeMapView();
 				Integer[] histoPixelVals = subsetTreeMap.keySet().toArray(new Integer[0]);
-				
+				Integer[] histoPixelCounts = subsetTreeMap.values().toArray(new Integer[0]);
 				int y0 = this.getHeight()-VERT_EDGE_OFFSET;
 				for (int xPoint = HORZ_EDGE_OFFSET; xPoint < this.getWidth()-HORZ_EDGE_OFFSET/*-1*/; xPoint++) {
 					boolean bMaxEnd = xPoint == (this.getWidth()-HORZ_EDGE_OFFSET-1);
-					int index0 = getHorizontalIndex(xPoint,subsetTreeMap.size());
-					int index1 = getHorizontalIndex(xPoint+1,subsetTreeMap.size());
+					int index0 = getHorizontalIndex(xPoint,histoPixelVals.length);
+					int index1 = getHorizontalIndex(xPoint+1,histoPixelVals.length);
 					int pixCount = 0;
 					boolean bInSelection = false;
 					for (int pixValIndex = index0; pixValIndex < (index1==index0?index0+1:index1+(bMaxEnd?1:0)); pixValIndex++) {
-						int pixelVal = histoPixelVals[pixValIndex];
-						bInSelection|= (subsetTreeMap.get(pixelVal) != 0 && pixelListSelectionModel.isSelectedIndex(pixelVal));
-						pixCount+= subsetTreeMap.get(pixelVal);					
+						int pixelVal = histoPixelVals[pixValIndex].intValue();
+						bInSelection|= (histoPixelCounts[pixelVal].intValue() != 0 && pixelListSelectionModel.isSelectedIndex(pixelVal));
+						pixCount+= histoPixelCounts[pixelVal].intValue();					
 					}
 					if(bInSelection){
 						g.setColor(Color.cyan);
@@ -607,7 +610,7 @@ public class HistogramPanel extends JPanel {
 						for (int i = 0; i <= ((xPoint == HORZ_EDGE_OFFSET) || bMaxEnd ?MIN_MAX_BARWIDTH_COMPENSATION:0); i++) {
 							int offset = (xPoint == HORZ_EDGE_OFFSET?-i:i);
 							g.drawLine(xPoint+offset,y0,xPoint+offset,y1);
-							if(getSpecialValue() != null && getSpecialValue() >= histoPixelVals[index0] && getSpecialValue() <= histoPixelVals[index1]){
+							if(getSpecialValue() != null && getSpecialValue().intValue() >= histoPixelVals[index0].intValue() && getSpecialValue().intValue() <= histoPixelVals[index1].intValue()){
 								g.setColor(Color.red);
 								g.drawLine(xPoint+offset,y0,xPoint+offset,(int)(y0-((this.getHeight()-2*VERT_EDGE_OFFSET))));
 							}							
@@ -681,6 +684,9 @@ public class HistogramPanel extends JPanel {
 	}
 
 	public void setSpecialValue(Integer specialValue) {
+		if(Compare.isEqualOrNull(this.specialValue, specialValue)){
+			return;
+		}
 		this.specialValue = specialValue;
 		repaint();
 	}
