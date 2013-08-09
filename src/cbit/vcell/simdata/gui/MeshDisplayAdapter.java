@@ -426,6 +426,7 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 				{
 					if (bReverse)
 					{
+						curve.prependControlPoint(p1);
 						bCurveComplete = true;  // other side is traversed too, curve is complete
 					}
 					else
