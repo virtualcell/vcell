@@ -581,18 +581,22 @@ public class HistogramPanel extends JPanel {
 			if(originalTreeMap != null){
 				SortedMap<Integer, Integer> subsetTreeMap = getTreeMapView();
 				Integer[] histoPixelVals = subsetTreeMap.keySet().toArray(new Integer[0]);
-				Integer[] histoPixelCounts = subsetTreeMap.values().toArray(new Integer[0]);
 				int y0 = this.getHeight()-VERT_EDGE_OFFSET;
+				int pixelVal = 0;
+				int countVal = 0;
+				int index0 = 0;
+				int index1 = 0;
 				for (int xPoint = HORZ_EDGE_OFFSET; xPoint < this.getWidth()-HORZ_EDGE_OFFSET/*-1*/; xPoint++) {
 					boolean bMaxEnd = xPoint == (this.getWidth()-HORZ_EDGE_OFFSET-1);
-					int index0 = getHorizontalIndex(xPoint,histoPixelVals.length);
-					int index1 = getHorizontalIndex(xPoint+1,histoPixelVals.length);
+					index0 = getHorizontalIndex(xPoint,histoPixelVals.length);
+					index1 = getHorizontalIndex(xPoint+1,histoPixelVals.length);
 					int pixCount = 0;
 					boolean bInSelection = false;
 					for (int pixValIndex = index0; pixValIndex < (index1==index0?index0+1:index1+(bMaxEnd?1:0)); pixValIndex++) {
-						int pixelVal = histoPixelVals[pixValIndex].intValue();
-						bInSelection|= (histoPixelCounts[pixelVal].intValue() != 0 && pixelListSelectionModel.isSelectedIndex(pixelVal));
-						pixCount+= histoPixelCounts[pixelVal].intValue();					
+						pixelVal = histoPixelVals[pixValIndex].intValue();
+						countVal = subsetTreeMap.get(pixelVal).intValue();
+						bInSelection|= (countVal != 0 && pixelListSelectionModel.isSelectedIndex(pixelVal));
+						pixCount+= countVal;					
 					}
 					if(bInSelection){
 						g.setColor(Color.cyan);
