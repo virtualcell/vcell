@@ -32,7 +32,7 @@ jvmprop="-Xmx${vcellservice_memoryMB}M -Dvcell.propertyfile=${common_propertyfil
 
 arguments="$*"
 
-vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources:${vcellapi_src}"
+vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources"
 
 vcellapi_mainclass="org.vcell.rest.VCellApiMain"
 
