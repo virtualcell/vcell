@@ -66,18 +66,18 @@ public class VCellApiMain {
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
 			
-		    userManager = new SampleUserManager();
-		    userManager.addUser("alice").setPassword("abcdef".toCharArray());
-		    userManager.addUser("bob").setPassword("123456".toCharArray());
-
-		    clientManager = new MemoryClientManager();
-		    org.restlet.ext.oauth.internal.Client client = clientManager.createClient(ClientType.CONFIDENTIAL, new String[] { "http://localhost:8080/sample/popup" }, null);
-		    System.out.println("SampleClient: client_id=" + client.getClientId() + ", client_secret=" + String.copyValueOf(client.getClientSecret()));
-
-		    ExternalApplication.clientID = client.getClientId();
-		    ExternalApplication.clientSecret = String.valueOf(client.getClientSecret());
-
-		    tokenManager = new MemoryTokenManager();
+//		    userManager = new SampleUserManager();
+//		    userManager.addUser("alice").setPassword("abcdef".toCharArray());
+//		    userManager.addUser("bob").setPassword("123456".toCharArray());
+//
+//		    clientManager = new MemoryClientManager();
+//		    org.restlet.ext.oauth.internal.Client client = clientManager.createClient(ClientType.CONFIDENTIAL, new String[] { "http://localhost:8080/sample/popup" }, null);
+//		    System.out.println("SampleClient: client_id=" + client.getClientId() + ", client_secret=" + String.copyValueOf(client.getClientSecret()));
+//
+//		    ExternalApplication.clientID = client.getClientId();
+//		    ExternalApplication.clientSecret = String.valueOf(client.getClientSecret());
+//
+//		    tokenManager = new MemoryTokenManager();
 
 		    System.out.println("connecting to database");
 
@@ -155,11 +155,11 @@ public class VCellApiMain {
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration);
 			component.getDefaultHost().attach("/vcell",app);  
 
-		    component.getDefaultHost().attach("/sample", new ExternalApplication());
-			
-		    OAuth2ServerApplication oauthApp = new OAuth2ServerApplication();
-		    component.getDefaultHost().attach("/oauth", oauthApp);
-		    component.getInternalRouter().attach("/oauth", oauthApp);
+//		    component.getDefaultHost().attach("/sample", new ExternalApplication());
+//			
+//		    OAuth2ServerApplication oauthApp = new OAuth2ServerApplication();
+//		    component.getDefaultHost().attach("/oauth", oauthApp);
+//		    component.getInternalRouter().attach("/oauth", oauthApp);
 
 			System.out.println("component start()");
 			component.start();
