@@ -13,34 +13,8 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #
 shopt -s -o nounset
 
-
-#
-#if [ ! -e ${vcellapi_root}/bin ]
-#then
-#        mkdir ${vcellapi_root}/bin
-#fi
-#if [ ! -e ${vcellapi_root}/bin/META-INF ]
-#then
-#        mkdir ${vcellapi_root}/bin/META-INF
-#fi
-#if [ ! -e ${vcellapi_root}/bin/META-INF/services ]
-#then
-#        mkdir ${vcellapi_root}/bin/META-INF/services
-#fi
-#
-#source_dirs=$(echo $vcellapi_src | tr ":" "\n")
-#for word in $source_dirs
-#do
-#        if [ -e $word/META-INF/services ]
-#        then
-#                echo "cp $word/META-INF/services/* ${vcellapi_root}/bin/META-INF/services"
-#                cp $word/META-INF/services/* ${vcellapi_root}/bin/META-INF/services
-#        fi
-#done
-#
-
 classpath="${vcellapi_jars}:${common_jvm_jars}"
 
-javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${vcellapi_src} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
+javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${vcellapi_root}/src ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
 
 
