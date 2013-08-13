@@ -16,6 +16,7 @@ vcellapi_root="${common_siteRootDir}/vcellapi/VCell_Rest"
 vcellapi_jars="${vcellapi_root}/lib/*"
 classpath="${vcellapi_jars}:${common_jvm_jars}"
 src_path="${vcellapi_root}/src"
+src_path="${src_path}:${vcellapi_root}/modules/org.restlet/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.wadl/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.gson/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.oauth/src"
@@ -29,7 +30,7 @@ src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.jackson/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.html/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.xstream/src"
 
-echo javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${src_path} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
+javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${src_path} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
 
 
 
