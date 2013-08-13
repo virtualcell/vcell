@@ -4,6 +4,7 @@ import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
+import org.restlet.engine.Engine;
 import org.restlet.example.ext.oauth.server.external.ExternalApplication;
 import org.restlet.example.ext.oauth.server.oauth.OAuth2ServerApplication;
 import org.restlet.example.ext.oauth.server.oauth.SampleUserManager;
@@ -137,9 +138,13 @@ public class VCellApiMain {
 
 			System.out.println("setting up server configuration");
 
+			Engine.register(true);
+
 			WadlComponent component = new WadlComponent();
 			//Server httpServer = component.getServers().add(Protocol.HTTP, 8182);
 			//Server httpsServer = component.getServers().add(Protocol.HTTPS, 443);
+			
+			
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
