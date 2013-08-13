@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/sample/resources/bootstrap.min.css">
+</head>
+<body>
+<button onClick="window.close();">
+  Close this Popup
+</button>
+<script>
+  if (window.opener) {
+    window.opener.location.reload();
+    window.close();
+  }
+</script>
+</body>
+</html>

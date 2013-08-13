@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/sample/resources/bootstrap.min.css">
+</head>
+<body>
+  <button onClick="login();">
+    Login to OAuth Server
+  </button>
+  
+  <button class="authentication-check">
+    Check Authentication
+  </button>
+  <div>
+    Authenticated: <span class="auth-message"></span>
+  </div>
+  
+  <script src="jquery.js"></script>
+  <script type="text/javascript" src="/sample/resources/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/sample/resources/jquery.cookie.js"></script>
+  <script>
+    var login = function() {
+      window.open("${ url }", "_blank", "height=400,width=600");
+    };
+    
+    $('.authentication-check').click(function() {
+      console.log($.cookie('access_token'));
+      $.ajax({
+        dataType: "json",
+        url: "/sample/restricted-resource",
+        data: {
+          'access_token': $.cookie('access_token'),
+          'token_type': $.cookie('token_type')
+        },
+        success: function() {
+          console.log(arguments);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

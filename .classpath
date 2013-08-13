@@ -1,38 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/serializer.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jetty.jar"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.jetty/src"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.ajp.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.continuation.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.http.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.io.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.server.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.util.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.ssl/src"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.freemarker.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet.ext.freemarker"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.freemarker/src"/>
 	<classpathentry kind="lib" path="lib/org.freemarker.jar"/>
 	<classpathentry kind="lib" path="lib/scribe-1.3.0.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet"/>
-	<classpathentry kind="lib" path="lib/json-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar"/>
+	<classpathentry kind="src" path="modules/org.restlet/src"/>
+	<classpathentry kind="lib" path="lib/org.json.jar"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.jackson/src"/>
 	<classpathentry kind="lib" path="lib/jackson-all-1.9.11.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar"/>
-	<classpathentry kind="lib" path="lib/json-20090211.jar"/>
-	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="lib/gson-2.2.2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-2.13.0.jar"/>
-	<classpathentry kind="lib" path="lib/json-smart-2.0-RC2.jar" sourcepath="lib/json-smart-2.0-RC2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/asm-1.0-RC1.jar" sourcepath="lib/asm-1.0-RC1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.7.jar" sourcepath="lib/commons-codec-1.7-sources.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.wadl.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/restlet-jse-2.1.2/src/org.restlet.ext.wadl"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar" sourcepath="/Users/schaff/Downloads/restlet-jse-2.1.2/src/org.restlet.ext.xml"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.html/src"/>
+	<classpathentry kind="lib" path="lib/org.joda.time.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.gson.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.e4.core.contexts.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.e4.core.di.jar"/>
+	<classpathentry kind="lib" path="lib/org.osgi.compendium.jar"/>
+	<classpathentry kind="lib" path="lib/org.osgi.core.jar"/>
+	<classpathentry kind="lib" path="lib/org.jsslutils.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.annotations.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.core.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.csv.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.databind.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.jaxb.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.smile.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.xml.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.yaml.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.codec.jar"/>
+	<classpathentry kind="lib" path="lib/com.thoughtworks.xstream.jar"/>
+	<classpathentry kind="lib" path="lib/org.codehaus.jettison.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.dbcp.jar"/>
+	<classpathentry kind="lib" path="lib/net.oauth.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.pool.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.gwt.dev.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.gwt.user.jar"/>
+	<classpathentry kind="lib" path="lib/net.jcip.annotations.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.instrumentation.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.nativequery.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.optional.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.ta.jar"/>
+	<classpathentry kind="lib" path="lib/com.db4o.tools.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.collections.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.gdata.client.jar"/>
+	<classpathentry kind="lib" path="lib/com.google.gdata.jar"/>
+	<classpathentry kind="lib" path="lib/com.sun.jaxb.jar"/>
+	<classpathentry kind="lib" path="lib/com.sun.rowset.jar"/>
+	<classpathentry kind="lib" path="lib/edu.purdue.cs.bloat.jar"/>
+	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
+	<classpathentry kind="lib" path="lib/javax.ws.rs.jar"/>
+	<classpathentry kind="lib" path="lib/net.sf.cglib.jar"/>
+	<classpathentry kind="lib" path="lib/net.sourceforge.nekohtml.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.cli.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.fileupload.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.io.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.lang.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.logging.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.httpclient.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.httpcore.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.httpmime.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.james.mime4j.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.log4j.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.lucene.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.solr.common.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.solr.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.tika.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.tika.parsers.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.velocity.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.common.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore.xmi.jar"/>
+	<classpathentry kind="lib" path="lib/org.hamcrest.jar"/>
+	<classpathentry kind="lib" path="lib/org.jdom.jar"/>
+	<classpathentry kind="lib" path="lib/org.jibx.runtime.jar"/>
+	<classpathentry kind="lib" path="lib/org.junit.jar"/>
+	<classpathentry kind="lib" path="lib/org.mongodb.jar"/>
+	<classpathentry kind="lib" path="lib/org.openid4java.jar"/>
+	<classpathentry kind="lib" path="lib/org.simpleframework.jar"/>
+	<classpathentry kind="lib" path="lib/org.slf4j.jar"/>
+	<classpathentry kind="lib" path="lib/org.testng.jar"/>
+	<classpathentry kind="lib" path="lib/org.yaml.snakeyaml.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/VCell_5.3"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.wadl/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.gson/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.oauth/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.json/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.xml/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.e4/src"/>
+	<classpathentry kind="src" path="modules/org.restlet.ext.xstream/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
