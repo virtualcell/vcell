@@ -15,23 +15,7 @@ shopt -s -o nounset
 
 classpath="${vcellapi_jars}:${common_jvm_jars}"
 
-src_path="${vcellapi_root}/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.wadl/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.gson/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.oauth/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.json/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.xml/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.e4/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.net/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.jetty/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.ssl/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.freemarker/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.jackson/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.html/src"
-src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.xstream/src"
-
-javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${src_path} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
+javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${vcellapi_src} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
 
 
 
