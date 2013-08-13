@@ -6,15 +6,15 @@
 DIR=${0%/*}
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . $DIR/vcell.include
+. $DIR/vcellapi.include
 
 #
 # make sure no variables are left unset
 #
 shopt -s -o nounset
 
-vcellapi_root="${common_siteRootDir}/vcellapi/VCell_Rest"
-vcellapi_jars="${vcellapi_root}/lib/*"
 classpath="${vcellapi_jars}:${common_jvm_jars}"
+
 src_path="${vcellapi_root}/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet/src"
 src_path="${src_path}:${vcellapi_root}/modules/org.restlet.ext.wadl/src"
