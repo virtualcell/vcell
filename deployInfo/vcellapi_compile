@@ -15,16 +15,16 @@ shopt -s -o nounset
 vcellapi_root="${common_siteRootDir}/vcellapi/VCell_Rest"
 vcellapi_jars="${vcellapi_root}/lib/*"
 classpath="${vcellapi_jars}:${common_jvm_jars}"
-src_path=${vcellapi_root}/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.wadl/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.gson/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.oauth/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.json/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.xml/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.e4/src
-src_path=${src_path};${vcellapi_root}/modules/org.restlet.ext.xstream/src
+src_path="${vcellapi_root}/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.wadl/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.gson/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.oauth/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.json/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.xml/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.e4/src"
+src_path="${src_path};${vcellapi_root}/modules/org.restlet.ext.xstream/src"
 
-javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath  ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
+javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${src_path} ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
 
 
 
