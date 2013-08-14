@@ -44,8 +44,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.media.jai.InterpolationNearest;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.BorderDescriptor;
+import javax.media.jai.operator.ScaleDescriptor;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -55,6 +57,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.sbpax.schemas.util.UOMEUtil.ScalingExpression;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
@@ -74,7 +77,9 @@ import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.ClientRequestManager.ImageSizeInfo;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -598,7 +603,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //		}
 //	}
 
-	private Extent createCroppedExtent(Extent prevExtent,ISize prevISize,ISize cropISize){
+	private Extent createResizeExtent(Extent prevExtent,ISize prevISize,ISize cropISize){
 		return new Extent((prevExtent.getX()/prevISize.getX())*cropISize.getX(),
 				(prevExtent.getY()/prevISize.getY())*cropISize.getY(),
 				(prevExtent.getZ()/prevISize.getZ())*cropISize.getZ());
@@ -610,7 +615,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		final CopyOfImageAttributePanel copyOfImageAttributePanel =
 			new CopyOfImageAttributePanel();
 		if(currentGeometryAttributes == null){
-			copyOfImageAttributePanel.init(originalOrigin, createCroppedExtent(originalExtent,originalISize,getImageDataSetChannel().getISize()),
+			copyOfImageAttributePanel.init(originalOrigin, createResizeExtent(originalExtent,originalISize,getImageDataSetChannel().getISize()),
 					getImageDataSetChannel().getISize(), originalAnnotation);			
 		}else{
 			copyOfImageAttributePanel.init(currentGeometryAttributes.origin, currentGeometryAttributes.extent,
@@ -1082,7 +1087,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				Rectangle rect2D = (Rectangle)evt.getNewValue();
 				ROIMultiPaintManager.Crop3D crop3D = new ROIMultiPaintManager.Crop3D();
 				crop3D.setBounds(rect2D.x, rect2D.y, 0, rect2D.width, rect2D.height, roiComposite.length);
-				cropROIData(crop3D,true);
+				cropROIData(crop3D/*,true*/);
 			}catch(UserCancelException e){
 				updateUndoAfter(null);
 			}
@@ -1573,51 +1578,261 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 	}
-	private void padROIDataAsk(){
-		try{
-			int xm = 0;
-			int ym = 0;
-			int zm = 0;
-			int xp = 0;
-			int yp = 0;
-			int zp = 0;
-			do{
-				String result = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter border padding as the number of pixels to add at each border: (xlow,ylow,zlow,xhigh,yhigh,zhigh)", xm+","+ym+","+zm+","+xp+","+yp+","+zp);
-				try{
-					if(result != null){
-						StringTokenizer st = new StringTokenizer(result, ",");
-						xm = Integer.parseInt(st.nextToken());
-						ym = Integer.parseInt(st.nextToken());
-						zm = Integer.parseInt(st.nextToken());
-						xp = Integer.parseInt(st.nextToken());
-						yp = Integer.parseInt(st.nextToken());
-						zp = Integer.parseInt(st.nextToken());
-						break;
+	
+	public static double getProperScale(int newSize,int oldSize){
+		double fac = (double)newSize/(double)oldSize;
+		int newSize2 = ((int)((double)oldSize*fac));
+		if(newSize2 != newSize){
+			fac = Math.nextAfter(fac,fac+Math.signum(newSize-newSize2));
+			newSize2 = ((int)((double)oldSize*fac));
+			if(newSize2 != newSize){
+				throw new RuntimeException("Unexpected scaling error");
+			}
+		}
+		return fac;
+	}
+	public static class ResizeInfo{
+		public short[][][] underlayC;
+		public BufferedImage[] roiComposite;
+		
+		private ISize origISize;
+		private ISize newISize;
+		private CoordinateIndex lowPadCrop;
+		private CoordinateIndex highPadCrop;
+		private ResizeInfo(ISize origISize, ISize newISize, CoordinateIndex lowPadCrop,CoordinateIndex highPadCrop) {
+			if((newISize == null && (lowPadCrop==null || highPadCrop==null)) ||
+				(newISize != null && (lowPadCrop!=null || highPadCrop!=null)) ||
+				(lowPadCrop==null && highPadCrop!= null) || (lowPadCrop!= null && highPadCrop==null)){
+				throw new IllegalArgumentException("Unexpected args for "+ResizeInfo.class.getName());
+			}
+			this.origISize = origISize;
+			this.newISize = newISize;
+			this.lowPadCrop = lowPadCrop;
+			this.highPadCrop = highPadCrop;
+			
+			check();
+		}
+		private void check(){
+			//check
+			ISize isize = getNewSize();
+			if(isize.getX() == 0 || isize.getY() == 0 || isize.getZ() == 0){
+				throw new IllegalArgumentException("New ISize cannot have 0");
+			}
+			if(isPadCrop() == isScaling()){
+				throw new IllegalArgumentException("padcrop and scaling flags can't be the same");
+			}
+
+		}
+		public static ResizeInfo createScaleResizeInfo(ISize origISize, ISize newISize){
+			return new ResizeInfo(origISize, newISize, null,null);
+		}
+		public static ResizeInfo createPadCropResizeInfo(ISize origISize,CoordinateIndex lowPadCrop,CoordinateIndex highPadCrop){
+			return new ResizeInfo(origISize, null, lowPadCrop,highPadCrop);
+		}
+		public boolean isScaling(){
+			return newISize != null;
+		}
+		public boolean isPadCrop(){
+			return lowPadCrop!=null && highPadCrop!=null;
+		}
+		public ISize getOriginalSize(){
+			return origISize;
+		}
+		public ISize getNewSize(){
+			if(isScaling()){
+				return newISize;
+			}
+			return new ISize(origISize.getX()+lowPadCrop.x+highPadCrop.x,origISize.getY()+lowPadCrop.y+highPadCrop.y,origISize.getZ()+lowPadCrop.z+highPadCrop.z);
+		}
+		public CoordinateIndex getLowPadCrop(){
+			return lowPadCrop;
+		}
+		public CoordinateIndex getHighPadCrop(){
+			return highPadCrop;
+		}
+		public void setResizedData(short[][][] underlayC,BufferedImage[] roiComposite){
+			this.underlayC = underlayC;
+			this.roiComposite = roiComposite;
+		}
+	}
+	
+	public static void resizeImpl0(ResizeInfo resizeInfo,ImageDataset[] originalData,BufferedImage[] roiComposite){
+		ISize newISize = resizeInfo.getNewSize();
+		ISize oldISize = resizeInfo.getOriginalSize();
+		if(originalData != null && !originalData[0].getISize().compareEqual(oldISize)){
+			throw new IllegalArgumentException("Original size not match original data");
+		}
+		if(roiComposite.length != oldISize.getZ() || roiComposite[0].getWidth() != oldISize.getX() || roiComposite[0].getHeight() != oldISize.getY()){
+			throw new IllegalArgumentException("Original size not match roiComposite");
+		}
+		short[][][] newUnderlayZ = (originalData!=null?new short[originalData.length][newISize.getZ()][newISize.getX()*newISize.getY()]:null);;
+		BufferedImage[] newROIZ = new BufferedImage[newISize.getZ()];
+		if(resizeInfo.isScaling()){
+			int oldXY = oldISize.getX()*oldISize.getY();
+			double oldIncrX = getProperScale(oldISize.getX(),newISize.getX());
+			double oldIncrY = getProperScale(oldISize.getY(),newISize.getY());
+			double oldIncrZ = getProperScale(oldISize.getZ(),newISize.getZ());
+			for (int z = 0; z < newISize.getZ(); z++) {
+				int oldIndexZ = (int)(z*oldIncrZ);
+				newROIZ[z] = new BufferedImage(newISize.getX(), newISize.getY(), BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+				byte[] newROIZArr = ((DataBufferByte)newROIZ[z].getRaster().getDataBuffer()).getData();
+				byte[] oldROIZArr = ((DataBufferByte)roiComposite[oldIndexZ].getData().getDataBuffer()).getData();
+				int newXYIndex = 0;
+				for (int y = 0; y < newISize.getY(); y++) {
+					int oldXYIndex = (((int)(oldIncrY*y))*oldISize.getX());
+					for (int x = 0; x < newISize.getX(); x++) {
+						int oldXIndex = oldXYIndex + (int)(x*oldIncrX);
+						if(originalData != null){
+							for (int c = 0; c < originalData.length; c++) {
+								short[] oldUnderlayZ = originalData[c].getAllImages()[oldIndexZ].getPixels();
+//								if(true){//smoothing
+//									int cnt = (x>0?1:0)+(x<(newISize.getX()-1)?1:0)+(y>0?1:0)+(y<(newISize.getY()-1)?1:0)+(z>0?1:0)+(x<(newISize.getZ()-1)?1:0);
+//									int zm = (int)((z-1)*oldIncrZ);
+//									int zp = (int)((z+1)*oldIncrZ);
+//									int ym = (((int)(oldIncrY*(y-1)))*oldISize.getX())+(int)(x*oldIncrX);
+//									int yp = (((int)(oldIncrY*(y+1)))*oldISize.getX())+(int)(x*oldIncrX);
+//									int xm = oldXYIndex + (int)((x-1)*oldIncrX);
+//									int xp = oldXYIndex + (int)((x+1)*oldIncrX);
+////									System.out.println("cnt="+cnt+" newXYIndex="+newXYIndex+"   base "+x+" "+y+" "+z+"   m "+xm+" "+ym+" "+zm+"   p "+xp+" "+yp+" "+zp);
+//									int sum = oldUnderlayZ[oldXIndex]+
+//											(x>0?oldUnderlayZ[xm]:0)+
+//											(x<(newISize.getX()-1)?oldUnderlayZ[xp]:0)+
+//											(y>0?oldUnderlayZ[ym]:0)+
+//											(y<(newISize.getY()-1)?oldUnderlayZ[yp]:0)+
+//											(z>0?originalData[c].getAllImages()[zm].getPixels()[oldXIndex]:0)+
+//											(z<(newISize.getZ()-1)?originalData[c].getAllImages()[zp].getPixels()[oldXIndex]:0);
+//									newUnderlayZ[c][z][newXYIndex] = (short)((double)sum/(double)(cnt+1));
+//								}else{//nearest neighbor
+//									newUnderlayZ[c][z][newXYIndex] = oldUnderlayZ[oldXIndex];
+//								}
+								newUnderlayZ[c][z][newXYIndex] = oldUnderlayZ[oldXIndex];
+							}
+						}
+						newROIZArr[newXYIndex] = oldROIZArr[oldXIndex];
+						newXYIndex++;
 					}
-				}catch(Exception e){
-					DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error parsing pad input: "+e.getMessage());
 				}
-			}while(true);
-			padROIData(new ISize(xm, ym, zm), new ISize(xp, yp, zp));
-		}catch(UtilCancelException e){
+			}
+		}else if(resizeInfo.isPadCrop()){
+			CoordinateIndex low = resizeInfo.getLowPadCrop();
+			CoordinateIndex high = resizeInfo.getHighPadCrop();
+			for (int z = 0; z < newISize.getZ(); z++) {
+				newROIZ[z] = new BufferedImage(newISize.getX(), newISize.getY(), BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+				byte[] newROIZArr = ((DataBufferByte)newROIZ[z].getRaster().getDataBuffer()).getData();
+				int oldZIndex = z-low.z;
+				byte[] oldROIZArr = (oldZIndex<0 || (z+high.z)>=newISize.getZ()?null:((DataBufferByte)roiComposite[oldZIndex].getData().getDataBuffer()).getData());
+				if(oldROIZArr == null){
+					continue;
+				}
+				for (int y = 0; y < newISize.getY(); y++) {
+					int oldYIndex = y-low.y;
+					if(oldYIndex<0 || (y+high.y)>=newISize.getY()){
+						continue;
+					}
+					int oldXYIndex = (((int)oldYIndex)*oldISize.getX());
+					int newXYIndex = y*newISize.getX();
+					for (int x = 0; x < newISize.getX(); x++) {
+						int oldXIndex = x-low.x;
+						if(oldXIndex<0 || (x+high.x)>=newISize.getX()){
+							continue;
+						}
+						int oldFinalIndex = oldXYIndex+oldXIndex;
+						int newfinalIndex = newXYIndex+x;
+						if(originalData != null){
+							for (int c = 0; c < originalData.length; c++) {
+								short[] oldUnderlayZ = originalData[c].getAllImages()[(int)oldZIndex].getPixels();
+								newUnderlayZ[c][z][newfinalIndex] = oldUnderlayZ[oldFinalIndex];
+							}
+						}
+						newROIZArr[newfinalIndex] = oldROIZArr[oldFinalIndex];
+//						System.out.println(oldXIndex+" "+oldYIndex+" "+oldZIndex+" -- "+x+" "+y+" "+z+" newIndx="+newXYIndex+" oldIndex="+oldFinalIndex);
+					}
+				}
+			}
+		}else{
+			throw new RuntimeException("Unexpected "+ResizeInfo.class.getName()+" state.");
+		}
+		
+		resizeInfo.setResizedData(newUnderlayZ,newROIZ);
+
+	}
+	private void resizeImpl(ResizeInfo resizeInfo,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{		
+		resizeImpl0(resizeInfo, (bHasOriginalData?initImageDataSetChannels:null), roiComposite);
+		ISize newISize = resizeInfo.getNewSize();
+		ISize oldISize = resizeInfo.getOriginalSize();
+		Extent resizeExtent = createResizeExtent(originalExtent, oldISize, newISize);
+
+		if(bHasOriginalData){
+			for (int c = 0; c < initImageDataSetChannels.length; c++) {
+				UShortImage[] zImageSet = new UShortImage[newISize.getZ()];
+				for (int z = 0; z < zImageSet.length; z++) {
+					zImageSet[z] = new UShortImage(resizeInfo.underlayC[c][z],originalOrigin,resizeExtent,newISize.getX(),newISize.getY(),1);
+				}
+				initImageDataSetChannels[c] = new ImageDataset(zImageSet, new double[] { 0.0 },newISize.getZ());
+			}
+		}
+		
+		roiComposite = resizeInfo.roiComposite;
+
+		updateAuxiliaryInfo(originalISize,clientTaskStatusSupport);
+
+	}
+	private void resizeDataset(){				
+		final ISize currentISize = new ISize(roiComposite[0].getWidth(), roiComposite[0].getHeight(), roiComposite.length);
+		ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(null, currentISize, 0, new double[] {0}, 0);
+		ImageSizeInfo newImageSizeInfo = null;
+		
+		try{
+			newImageSizeInfo = ClientRequestManager.queryImageResize(overlayEditorPanelJAI, origImageSizeInfo, false);
+		}catch(UserCancelException e){
 			return;
 		}
 		
-//		final String padXYZ = "Add to XYZ";
-//		final String padXY = "Add to XY Only";
-//		final String padZ = "Add to Z Only";
-//		final String cancel = "Cancel";
-//		
-//		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI,
-//				"Add background pixels to outside borders.  "+
-//				"This operation will increase the number of pixels by 2 in each selected dimension",
-//				new String[] {padXYZ,padXY,padZ,cancel}, padXYZ);
-//		if(result.equals(cancel)){
-//			throw UserCancelException.CANCEL_GENERIC;
+		final ISize newImageSize = newImageSizeInfo.getiSize();
+		AsynchClientTask resizeTask = new AsynchClientTask("Resizing...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				resizeImpl(ResizeInfo.createScaleResizeInfo(currentISize, newImageSize),getClientTaskStatusSupport());
+			}
+		};
+		final AsynchClientTask updatePanelTask = getUpdateDisplayAfterCropTask();
+		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,new Hashtable<String, Object>(),
+				new AsynchClientTask[] {resizeTask,updatePanelTask},false,false,null,true);
+
+	}
+	
+//	private void scaleZ(ISize currentISize,float scale){
+//		if(scale == 1.0f){
+//			return;
 //		}
-//		boolean bxy = result.equals(padXY) || result.equals(padXYZ);
-//		boolean bz = result.equals(padZ) || result.equals(padXYZ);
-//		padROIData(new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)),new ISize((bxy?1:0), (bxy?1:0), (bz?1:0)));
+//		int newZSize = (int)(currentISize.getZ()*scale);
+//		if(bHasOriginalData){
+//			for (int c = 0; c < initImageDataSetChannels.length; c++) {
+//				UShortImage[] zImageSet = new UShortImage[newZSize];
+//				//extract plane along y axis
+//				short[] xzPlane = new short[currentISize.getX()*currentISize.getZ()];
+//				for (int y = 0; y < currentISize.getY(); y++) {
+//					for (int z = 0; z < initImageDataSetChannels[0].getAllImages().length; z++) {
+//						short[] zslice = initImageDataSetChannels[0].getAllImages()[z].getPixels();
+//						System.arraycopy(zslice, y*currentISize.getX(), xzPlane, z*currentISize.getX(), currentISize.getX());
+//					}
+//					PlanarImage planarImage = resizeXYUShort(xzPlane, currentISize.getX(), currentISize.getZ(), 1.0f, scale);
+//				}
+//			}
+//		}
+//	}
+	private void padROIDataAsk(){
+		final String CANCEL = "Cancel";
+		final String RESIZE = "Resize...";
+		final String BORDERS = "Borders...";
+		String result = DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Add/Crop borders or Resize whole dataset?", new String[] {RESIZE,BORDERS,CANCEL}, RESIZE);
+		if(result != null && result.equals(RESIZE)){
+			resizeDataset();
+		}else if(result != null && result.equals(BORDERS)){
+			padCropDataset();
+		}else{
+			return;
+		}
 	}
 	private void fillFromPoint(Point fillPoint){
 		ROI.fillAtPoint(fillPoint.x,fillPoint.y,
@@ -1977,7 +2192,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 					nonZeroBoundingBox3D.width = getImageDataSetChannel().getISize().getX();
 					nonZeroBoundingBox3D.height = getImageDataSetChannel().getISize().getY();
 				}
-				cropROIData(nonZeroBoundingBox3D,true);
+				cropROIData(nonZeroBoundingBox3D/*,true*/);
 			}else{
 				DialogUtils.showWarningDialog(overlayEditorPanelJAI, "No non-zero bounding border in the "+(bUseROI?"user Domain Regions":"underlay image")+" was found to auto-crop.  Use manual crop tool.");
 				return;
@@ -1998,7 +2213,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		int newSizeX = origISize.getX()+(padMinus.getX()+padPlus.getX());
 		int newSizeY = (origISize.getY()>1?origISize.getY()+(padMinus.getY()+padPlus.getY()):origISize.getY());
 		int newSizeZ =  (origISize.getZ()>1?origISize.getZ()+(padMinus.getZ()+padPlus.getZ()):origISize.getZ());
-
+		
 		Object newArr = Array.newInstance(origArr.getClass().getComponentType(), newSizeX*newSizeY*newSizeZ);
 		Object allZSections = origArr;
 		int origXYSize =  origISize.getX()*origISize.getY();
@@ -2039,6 +2254,29 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		System.arraycopy(shortArr, 0, shortData, 0, shortArr.length);
 		PlanarImage planarImage = BorderDescriptor.create(bufferedImage,left,right,top,bottom,null, null).getRendering();
 		return ((DataBufferUShort)planarImage.getData().getDataBuffer()).getData();
+	}
+	
+	public static PlanarImage resizeXYByte(byte[] byteArr,int numX,int numY,Float scaleX,Float scaleY){
+		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
+		byte[] byteData = ((DataBufferByte)bufferedImage.getRaster().getDataBuffer()).getData();
+		System.arraycopy(byteArr, 0, byteData, 0, byteArr.length);
+		PlanarImage planarImage = ScaleDescriptor.create(bufferedImage, scaleX, scaleY, 0f, 0f, new InterpolationNearest(), null);
+		return planarImage;
+//		PaddedInfo paddedInfo = new PaddedInfo();
+//		paddedInfo.paddedArray = ((DataBufferByte)planarImage.getData().getDataBuffer()).getData();
+//		paddedInfo.paddedISize = new ISize(planarImage.getWidth(), planarImage.getHeight(), 1);
+//		return paddedInfo;
+	}
+	public static PlanarImage resizeXYUShort(short[] shortArr,int numX,int numY,Float scaleX,Float scaleY){
+		BufferedImage bufferedImage = new BufferedImage(numX, numY, BufferedImage.TYPE_USHORT_GRAY);
+		short[] shortData = ((DataBufferUShort)bufferedImage.getRaster().getDataBuffer()).getData();
+		System.arraycopy(shortArr, 0, shortData, 0, shortArr.length);
+		PlanarImage planarImage = ScaleDescriptor.create(bufferedImage, scaleX, scaleY, 0f, 0f, new InterpolationNearest(), null);
+		return planarImage;
+//		PaddedInfo paddedInfo = new PaddedInfo();
+//		paddedInfo.paddedArray = ((DataBufferUShort)planarImage.getData().getDataBuffer()).getData();
+//		paddedInfo.paddedISize = new ISize(planarImage.getWidth(), planarImage.getHeight(), 1);
+//		return paddedInfo;
 	}
 
 	public static class Crop3D {
@@ -2129,7 +2367,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 				if(!(enhanceImageAmount == ROIMultiPaintManager.ENHANCE_NONE)){
 					getClientTaskStatusSupport().setMessage("smoothing...");
 				}
-				updateAuxiliaryInfo(origSize);
+				updateAuxiliaryInfo(origSize,getClientTaskStatusSupport());
 			}
 		};
 		final AsynchClientTask updatePanelTask = getUpdateDisplayAfterCropTask();
@@ -2138,176 +2376,96 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 
 	}
 	
-	private void padROIData(final ISize padMinus,final ISize padPlus){
-		final boolean bPadXY = padMinus.getX()!=0 || padMinus.getY()!=0 || padPlus.getX()!=0 || padPlus.getY()!=0;
-		final boolean bPadZ = padMinus.getZ()!=0 || padPlus.getZ()!=0;
-		final AsynchClientTask padTask = new AsynchClientTask("Padding...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	private void padCropDataset(){
+		int xm = 0;
+		int ym = 0;
+		int zm = 0;
+		int xp = 0;
+		int yp = 0;
+		int zp = 0;
+		String result = null;
+		do{
+			try{
+				result = DialogUtils.showInputDialog0(overlayEditorPanelJAI, "Enter the number of pixels to add or crop (negative number) at each border: (xlow,ylow,zlow,xhigh,yhigh,zhigh)", xm+","+ym+","+zm+","+xp+","+yp+","+zp);
+				if(result != null){
+					final String SEP = ",";
+					result = result.trim();
+					StringTokenizer st = new StringTokenizer(result,SEP);
+					xm = Integer.parseInt(st.nextToken());
+					ym = Integer.parseInt(st.nextToken());
+					zm = Integer.parseInt(st.nextToken());
+					xp = Integer.parseInt(st.nextToken());
+					yp = Integer.parseInt(st.nextToken());
+					zp = Integer.parseInt(st.nextToken());
+					if(st.hasMoreElements() || result.endsWith(SEP)){
+						throw new Exception("Some input was not parsed, check input.");
+					}
+					break;
+				}
+			}catch(UtilCancelException e){
+				throw UserCancelException.CANCEL_GENERIC;
+			}catch(Exception e){
+				DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Error parsing '"+result+"' Resetting to valid values.  Enter 6 comma separated integers.");
+			}
+		}while(true);
+
+		final CoordinateIndex low = new CoordinateIndex(xm,ym,zm);
+		final CoordinateIndex high = new CoordinateIndex(xp,yp,zp);
+		
+		final AsynchClientTask padTask = new AsynchClientTask("Changeing borders...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ISize origSize = getImageDataSetChannel().getISize();
-				//
-				//Pad 2D
-				//
-				if(bPadXY){
-					ISize padMinus0 = new ISize(padMinus.getX(), padMinus.getY(),0);
-					ISize padPlus0 = new ISize(padPlus.getX(), padPlus.getY(),0);
-					//pad underlying image
-					ISize origSliceSize =
-						new ISize(origSize.getX(), origSize.getY(), 1);
-					UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][initImageDataSetChannels[0].getAllImages().length];
-					for (int c = 0; c < initImageDataSetChannels.length; c++) {
-						for (int i = 0; i < newUnderLayImageArr[c].length; i++) {
-							ROIMultiPaintManager.PaddedInfo paddedInfo = 
-								copyToPadded(initImageDataSetChannels[c].getAllImages()[i].getPixels(),
-										origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, padMinus0, padPlus0);
-							newUnderLayImageArr[c][i] =
-								new UShortImage((short[])paddedInfo.paddedArray, DEFAULT_ORIGIN, DEFAULT_EXTENT,
-									paddedInfo.paddedISize.getX(),paddedInfo.paddedISize.getY(),1);
-						}
-					}
-					for (int c = 0; c < initImageDataSetChannels.length; c++) {
-						initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr[c], null, initImageDataSetChannels[c].getAllImages().length);
-					}
-					//Pad Composite ROI zsections
-					for (int i = 0; i < roiComposite.length; i++) {
-						ROIMultiPaintManager.PaddedInfo paddedInfo = 
-							copyToPadded(((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(),
-									origSliceSize, DEFAULT_ORIGIN, DEFAULT_EXTENT, padMinus0, padPlus0);
-						roiComposite[i] =
-							new BufferedImage(paddedInfo.paddedISize.getX(),paddedInfo.paddedISize.getY(),
-									BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
-						System.arraycopy((byte[])paddedInfo.paddedArray, 0,
-							(byte[])((DataBufferByte)roiComposite[i].getRaster().getDataBuffer()).getData(), 0, paddedInfo.paddedISize.getXYZ());
-					}
-				}
-				//
-				//Pad 3D
-				//
-				if(bPadZ){
-					int newZSize = origSize.getZ()+(padMinus.getZ()+padPlus.getZ());
-					UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][newZSize];
-					BufferedImage[] newROICompositeArr =  new BufferedImage[newZSize];
-					int index = 0;
-					for (int i = 0; i < newZSize; i++) {
-						if(i >= padMinus.getZ() && i < (newZSize-padPlus.getZ())){
-							for (int c = 0; c < initImageDataSetChannels.length; c++) {
-								newUnderLayImageArr[c][i] = initImageDataSetChannels[c].getAllImages()[index];
-							}
-							newROICompositeArr[i] = roiComposite[index];
-							index++;
-						}else{
-							for (int c = 0; c < initImageDataSetChannels.length; c++) {
-								newUnderLayImageArr[c][i] =
-									new UShortImage(
-											new short[initImageDataSetChannels[c].getAllImages()[0].getPixels().length],
-											DEFAULT_ORIGIN, DEFAULT_EXTENT,
-											initImageDataSetChannels[c].getAllImages()[0].getNumX(),
-											initImageDataSetChannels[c].getAllImages()[0].getNumY(),1);
-							}
-							newROICompositeArr[i] =
-								new BufferedImage(roiComposite[0].getWidth(),roiComposite[0].getHeight(),
-										BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
-						}
-					}
-					for (int c = 0; c < initImageDataSetChannels.length; c++) {
-						initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr[c], null, newZSize);
-					}
-					roiComposite = newROICompositeArr;
-				}
-				if(!(enhanceImageAmount == ROIMultiPaintManager.ENHANCE_NONE)){
-					getClientTaskStatusSupport().setMessage("smoothing...");
-				}
-				updateAuxiliaryInfo(origSize);
+			public void run(Hashtable<String, Object> hashTable) throws Exception {				
+				resizeImpl(ResizeInfo.createPadCropResizeInfo(getImageDataSetChannel().getISize(),low,high),getClientTaskStatusSupport());
 			}
 		};
 		final AsynchClientTask updatePanelTask = getUpdateDisplayAfterCropTask();
 		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,new Hashtable<String, Object>(),
 				new AsynchClientTask[] {padTask,updatePanelTask},false,false,null,true);
 	}
-	private void cropROIData(final Crop3D cropRectangle3D,boolean bThread){
+	private void cropROIData(final Crop3D cropRectangle3D/*,boolean bThread*/){
 		final AsynchClientTask cropTask = new AsynchClientTask("Cropping...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ISize origSize = getImageDataSetChannel().getISize();
-				//
-				//Crop 2D
-				//
-					if(cropRectangle3D.bXYSmaller(origSize.getX(), origSize.getY())){
-						Rectangle cropRectangle =
-							new Rectangle(cropRectangle3D.low.x,cropRectangle3D.low.y,cropRectangle3D.width,cropRectangle3D.height);
-						//crop underlying image
-						for (int c = 0; c < initImageDataSetChannels.length; c++) {	
-							initImageDataSetChannels[c] = initImageDataSetChannels[c].crop(cropRectangle);
-						}
-						//Crop Composite ROI zsections
-						for (int i = 0; i < roiComposite.length; i++) {
-							Image croppedROI = 
-								Toolkit.getDefaultToolkit().createImage(
-									new FilteredImageSource(roiComposite[i].getSource(),
-										new CropImageFilter(cropRectangle.x, cropRectangle.y, cropRectangle.width, cropRectangle.height))
-								);
-							roiComposite[i] =
-								new BufferedImage(cropRectangle.width, cropRectangle.height,
-										BufferedImage.TYPE_BYTE_INDEXED, getContrastIndexColorModel());
-							roiComposite[i].getGraphics().drawImage(croppedROI, 0, 0, null);
-						}
-					}
-					//
-					//Crop3D
-					//
-					if(cropRectangle3D.bZSmaller(origSize.getZ())){
-						UShortImage[][] newUnderLayImageArr = new UShortImage[initImageDataSetChannels.length][cropRectangle3D.depth];
-						BufferedImage[] newROICompositeArr =  new BufferedImage[cropRectangle3D.depth];
-						int index = 0;
-						for (int i = 0; i < origSize.getZ(); i++) {
-							if(i >= cropRectangle3D.low.z && i < (cropRectangle3D.low.z + cropRectangle3D.depth)){
-								for (int c = 0; c < initImageDataSetChannels.length; c++) {
-									newUnderLayImageArr[c][index] = initImageDataSetChannels[c].getAllImages()[i];
-								}
-								newROICompositeArr[index] = roiComposite[i];
-								index+=1;
-							}
-						}
-						for (int c = 0; c < initImageDataSetChannels.length; c++) {
-							initImageDataSetChannels[c] = new ImageDataset(newUnderLayImageArr[c], null, cropRectangle3D.depth);
-						}
-						roiComposite = newROICompositeArr;
-	
-					}
-				if(!(enhanceImageAmount == ROIMultiPaintManager.ENHANCE_NONE)){
-					getClientTaskStatusSupport().setMessage("smoothing...");
-				}
-				updateAuxiliaryInfo(origSize);
+				ISize origISize = getImageDataSetChannel().getISize();
+				CoordinateIndex cropLow = new CoordinateIndex(-cropRectangle3D.low.x,-cropRectangle3D.low.y,-cropRectangle3D.low.z);
+				CoordinateIndex cropHigh =
+					new CoordinateIndex(cropRectangle3D.low.x+cropRectangle3D.width-origISize.getX(),
+						cropRectangle3D.low.y+cropRectangle3D.height-origISize.getY(),
+						cropRectangle3D.low.z+cropRectangle3D.depth-origISize.getZ());
+				resizeImpl(ResizeInfo.createPadCropResizeInfo(origISize, cropLow, cropHigh), getClientTaskStatusSupport());
+				updateAuxiliaryInfo(origISize,getClientTaskStatusSupport());
 			}
 		};
 		final AsynchClientTask updatePanelTask = getUpdateDisplayAfterCropTask();
 		final Hashtable<String, Object> taskHash = new Hashtable<String, Object>();
-		if(bThread){
-			ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,taskHash,
-				new AsynchClientTask[] {cropTask,updatePanelTask},false,false,null,true);
-		}else{
-			new Thread(new Runnable() {
-				public void run(){
-					try{
-						cropTask.run(taskHash);
-						SwingUtilities.invokeAndWait(new Runnable() {
-							public void run() {
-								try {
-									updatePanelTask.run(taskHash);
-								} catch (Exception e) {
-									e.printStackTrace();
-									throw new RuntimeException(e);
-								}
-							}
-						});
-					}catch(Exception e){
-						e.printStackTrace();
-						DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Crop failed:\n"+e.getMessage()+
-								(e.getCause()!= null?"\n"+e.getCause().getMessage():""), e);
-					}
-				}
-			}).run();
-		}
+		ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,taskHash,new AsynchClientTask[] {cropTask,updatePanelTask},false,false,null,true);
+
+//		if(bThread){
+//			ClientTaskDispatcher.dispatch(overlayEditorPanelJAI,taskHash,
+//				new AsynchClientTask[] {cropTask,updatePanelTask},false,false,null,true);
+//		}else{
+//			new Thread(new Runnable() {
+//				public void run(){
+//					try{
+//						cropTask.run(taskHash);
+//						SwingUtilities.invokeAndWait(new Runnable() {
+//							public void run() {
+//								try {
+//									updatePanelTask.run(taskHash);
+//								} catch (Exception e) {
+//									e.printStackTrace();
+//									throw new RuntimeException(e);
+//								}
+//							}
+//						});
+//					}catch(Exception e){
+//						e.printStackTrace();
+//						DialogUtils.showErrorDialog(overlayEditorPanelJAI, "Crop failed:\n"+e.getMessage()+
+//								(e.getCause()!= null?"\n"+e.getCause().getMessage():""), e);
+//					}
+//				}
+//			}).run();
+//		}
 			
 	}
 	private AsynchClientTask getUpdateDisplayAfterCropTask(){
@@ -2328,17 +2486,19 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		};
 
 	}
-	private void updateAuxiliaryInfo(ISize origSize) throws Exception{
+	private void updateAuxiliaryInfo(ISize origSize,ClientTaskStatusSupport clientTaskStatusSupport) throws Exception{
+		if(clientTaskStatusSupport != null){clientTaskStatusSupport.setMessage("Smothing...");}
 		enhancedImageDatasetChannels = smoothImageDataset(initImageDataSetChannels, enhanceImageAmount,null);
+		if(clientTaskStatusSupport != null){clientTaskStatusSupport.setMessage("Calculating histogram...");}
 		condensedBinsMapChannels = calculateCondensedBinsChannels0(getImageDataset());
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 		if(editedGeometryAttributes == null){
 			editedGeometryAttributes = new GeometryAttributes();
 			editedGeometryAttributes.origin = originalOrigin;
-			editedGeometryAttributes.extent = createCroppedExtent(originalExtent, originalISize,getImageDataSetChannel().getISize());
+			editedGeometryAttributes.extent = createResizeExtent(originalExtent, originalISize,getImageDataSetChannel().getISize());
 		}else{
 			editedGeometryAttributes.extent =
-				createCroppedExtent(editedGeometryAttributes.extent, origSize,getImageDataSetChannel().getISize());
+					createResizeExtent(editedGeometryAttributes.extent, origSize,getImageDataSetChannel().getISize());
 		}
 
 	}

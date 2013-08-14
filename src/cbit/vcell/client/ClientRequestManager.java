@@ -1172,28 +1172,26 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC){
 					if(hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE) != null){
 						Geometry workspaceGeom = (Geometry)hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
-						String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(),
-								"Warning: Analytic expressions will be removed. ",
-								"Converting analytic expression geometry into an image based geometry will remove analytic expressions after new image is created.");
+						ISize defaultISize = workspaceGeom.getGeometrySpec().getDefaultSampledImageSize();
+						ISize isize = getISizeFromUser(guiParent,defaultISize,
+							"Warning: converting analytic expression geometry into an image based geometry\nwill remove analytic expressions after new image is created.\n\n"+
+							"Enter size (x,y,z) for new geometry image (e.g. "+defaultISize.getX()+","+defaultISize.getY()+","+defaultISize.getZ()+")");
+						hashTable.put(IMPORT_SOURCE_NAME,"Workspace from Analytic Geometry");
+						VCImage img = workspaceGeom.getGeometrySpec().createSampledImage(isize);
+						Enumeration<SubVolume> enumSubvolume = workspaceGeom.getGeometrySpec().getAnalyticOrCSGSubVolumes();
+						ArrayList<VCPixelClass> vcPixelClassArrList = new ArrayList<VCPixelClass>();
+						while(enumSubvolume.hasMoreElements()){
+							SubVolume subVolume = enumSubvolume.nextElement();
+							vcPixelClassArrList.add(new VCPixelClass(null, subVolume.getName(), subVolume.getHandle()));
+						}
+						if(vcPixelClassArrList.size() > img.getPixelClasses().length){
+							String result = DialogUtils.showOKCancelWarningDialog(requester.getComponent(), null, "Warning: sampling size is too small to include all subvolumes.");
 							if(result == null || !result.equals(SimpleUserMessage.OPTION_OK)){
 								throw UserCancelException.CANCEL_GENERIC;
 							}
-							ISize defaultISize = workspaceGeom.getGeometrySpec().getDefaultSampledImageSize();
-							ISize isize = getISizeFromUser(guiParent,defaultISize,
-								"Enter size for new geometry image (e.g. "+defaultISize.getX()+","+defaultISize.getY()+","+defaultISize.getZ()+")");
-							hashTable.put(IMPORT_SOURCE_NAME,"Workspace from Analytic Geometry");
-							VCImage img = workspaceGeom.getGeometrySpec().createSampledImage(isize);
-							Enumeration<SubVolume> enumSubvolume = workspaceGeom.getGeometrySpec().getAnalyticOrCSGSubVolumes();
-							ArrayList<VCPixelClass> vcPixelClassArrList = new ArrayList<VCPixelClass>();
-							while(enumSubvolume.hasMoreElements()){
-								SubVolume subVolume = enumSubvolume.nextElement();
-								vcPixelClassArrList.add(new VCPixelClass(null, subVolume.getName(), subVolume.getHandle()));
-							}
-							if(vcPixelClassArrList.size() != img.getPixelClasses().length){
-								throw new Exception("PixelClass array length not match");
-							}
-							hashTable.put(VCPIXELCLASSES,vcPixelClassArrList.toArray(new VCPixelClass[0]));
-							fdfos = createFDOSFromVCImage(img);
+						}
+						hashTable.put(VCPIXELCLASSES,vcPixelClassArrList.toArray(new VCPixelClass[0]));
+						fdfos = createFDOSFromVCImage(img);
 					}else{
 						throw new Exception("Expecting image source for GEOM_OPTION_FROM_WORKSPACE_ANALYTIC");
 					}
@@ -1234,7 +1232,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			String importSourceName = (String)hashTable.get(IMPORT_SOURCE_NAME);
 			if((ImageSizeInfo)hashTable.get(ORIG_IMAGE_SIZE_INFO) != null){//from file
-				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), (ImageSizeInfo)hashTable.get(ORIG_IMAGE_SIZE_INFO));
+				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), (ImageSizeInfo)hashTable.get(ORIG_IMAGE_SIZE_INFO),true);
 				hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
 			}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){//from fielddata
 				VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
@@ -1242,17 +1240,11 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				hashTable.remove(FD_TIMEPOINTS);
 				ISize fieldDataISize = (ISize)hashTable.get(FD_MESHISIZE);
 				ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(importSourceName,fieldDataISize,1,fieldDataTimes,null);
-				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo);
+				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo,true);
 				hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
 				hashTable.put(IMPORT_SOURCE_NAME,
 						"FieldData: "+docInfo.getExternalDataID().getName()+" varName="+
 						docInfo.getVarName()+" timeIndex="+newImagesiSizeInfo.getTimePoints()[newImagesiSizeInfo.getSelectedTimeIndex()]);
-			}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
-				Geometry workspaceGeom = (Geometry)hashTable.get(ClientRequestManager.GEOM_FROM_WORKSPACE);
-				ISize origISize = new ISize(workspaceGeom.getGeometrySpec().getImage().getNumX(), workspaceGeom.getGeometrySpec().getImage().getNumY(), workspaceGeom.getGeometrySpec().getImage().getNumZ());
-				ImageSizeInfo origImageSizeInfo = new ImageSizeInfo(importSourceName,origISize,1,new double[] {0},null);
-				ImageSizeInfo newImagesiSizeInfo = queryImageResize(requester.getComponent(), origImageSizeInfo);
-				hashTable.put(NEW_IMAGE_SIZE_INFO, newImagesiSizeInfo);
 			}
 		}
 	};
@@ -1329,13 +1321,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	AsynchClientTask resizeImageTask = new AsynchClientTask("Resizing Image...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA ||
-				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
-				ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
-				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
-				if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.iSize)){
-					resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.iSize,documentCreationInfo.getOption());
-				}
+			ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
+			FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
+			if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.iSize)){
+				resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.iSize,documentCreationInfo.getOption());
 			}
 		}
 	};
@@ -1395,16 +1384,16 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE){
-		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {parseImageTask,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE){
-		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask,resizeImageTask,finishTask}));
+		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {selectImageFileTask,parseImageTask,queryImageResizeTask,importFileImageTask/*resizes*/,finishTask}));
 	}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 		tasksV.addAll(Arrays.asList(new AsynchClientTask[] {getFieldDataImageParams,queryImageResizeTask,parseImageTask,resizeImageTask,finishTask}));
 	}
 	return tasksV.toArray(new AsynchClientTask[0]);
 }
 
-private static ISize getISizeFromUser(Component guiParent,ISize initISize,String textMessage) throws UserCancelException{
+public static ISize getISizeFromUser(Component guiParent,ISize initISize,String textMessage) throws UserCancelException{
 	Integer imageDimension = (initISize==null?null:(initISize.getX()!=1?1:0)+(initISize.getY()!=1?1:0)+(initISize.getZ()!=1?1:0));
 	if(imageDimension != null && (imageDimension < 1 || imageDimension > 3)){
 		throw new IllegalArgumentException("Dimension must be 1, 2 or 3.");
@@ -1449,17 +1438,25 @@ private static ISize getISizeFromUser(Component guiParent,ISize initISize,String
 
 }
 
-private ImageSizeInfo queryImageResize(final Component requester,final ImageSizeInfo origImageSizeInfo){
+public static ImageSizeInfo queryImageResize(final Component requester,final ImageSizeInfo origImageSizeInfo,boolean bFullMode){
 	ImageResizePanel imageResizePanel = new ImageResizePanel();
-	imageResizePanel.init(origImageSizeInfo);
+	imageResizePanel.init(origImageSizeInfo,bFullMode);
 	imageResizePanel.setPreferredSize(new Dimension(400, 200));
-	int flag = DialogUtils.showComponentOKCancelDialog(requester, imageResizePanel, "Optionally convert imported images.");
-	if(flag != JOptionPane.OK_OPTION){
-		throw UserCancelException.CANCEL_GENERIC;
+	while(true){
+		int flag = DialogUtils.showComponentOKCancelDialog(requester, imageResizePanel, "Optionally convert imported images.");
+		if(flag != JOptionPane.OK_OPTION){
+			throw UserCancelException.CANCEL_GENERIC;
+		}
+		try{
+			ImageSizeInfo imagesizeInfo = imageResizePanel.getNewImageSizeInfo();
+			return imagesizeInfo;
+		}catch(Exception e){
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(requester, "Error getting x,y,z: "+e.getMessage());
+		}
 	}
-	return imageResizePanel.getNewImageSizeInfo();
 }
-private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,int imageType) throws Exception{
+private static void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,int imageType) throws Exception{
 	final int ORIG_XYSIZE = fdfos.isize.getX()*fdfos.isize.getY();
 	try {
 		int xsize = newImagesISize.getX();
@@ -1469,7 +1466,7 @@ private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,i
 			int numChannels = fdfos.shortSpecData[0].length;//this normally contains different variables but is used for channels here
 			//resize each z section to xsize,ysize
 		    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
-		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform,(imageType== VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE?AffineTransformOp.TYPE_NEAREST_NEIGHBOR:AffineTransformOp.TYPE_BILINEAR)); 
+		    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform,AffineTransformOp.TYPE_NEAREST_NEIGHBOR); 
 			short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ()*xsize*ysize];
 			for (int c = 0; c < numChannels; c++) {
 				BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(), BufferedImage.TYPE_USHORT_GRAY);
@@ -1477,7 +1474,7 @@ private void resizeImage(FieldDataFileOperationSpec fdfos,ISize newImagesISize,i
 				for (int z = 0; z < fdfos.isize.getZ(); z++) {
 					short[] originalImageBuffer = ((DataBufferUShort)(originalImage.getRaster().getDataBuffer())).getData();
 					System.arraycopy(fdfos.shortSpecData[0][c], z*ORIG_XYSIZE, originalImageBuffer, 0, ORIG_XYSIZE);
-					scaleAffineTransformOp.filter( originalImage, scaledImage);
+					scaleAffineTransformOp.filter( originalImage,scaledImage);
 				    short[] scaledImageBuffer = ((DataBufferUShort)(scaledImage.getRaster().getDataBuffer())).getData();
 				    System.arraycopy(scaledImageBuffer, 0, resizeData[0][c], z*xsize*ysize, xsize*ysize);
 				}

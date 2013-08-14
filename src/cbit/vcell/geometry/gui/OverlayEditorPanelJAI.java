@@ -1874,7 +1874,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			gbc_selectButton.gridx = 1;
 			gbc_selectButton.gridy = 0;
 			toolButtonPanel.add(selectButton, gbc_selectButton);
-			borderToolButton.setToolTipText("Add background borders");
+			borderToolButton.setToolTipText("Add/Crop borders or Resize dataset");
 			borderToolButton.setMinimumSize(new Dimension(32, 32));
 			borderToolButton.setMaximumSize(new Dimension(32, 32));
 			borderToolButton.setPreferredSize(new Dimension(32, 32));
