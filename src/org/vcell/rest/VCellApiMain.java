@@ -5,14 +5,6 @@ import org.restlet.Server;
 import org.restlet.data.Parameter;
 import org.restlet.data.Protocol;
 import org.restlet.engine.Engine;
-import org.restlet.example.ext.oauth.server.external.ExternalApplication;
-import org.restlet.example.ext.oauth.server.oauth.OAuth2ServerApplication;
-import org.restlet.example.ext.oauth.server.oauth.SampleUserManager;
-import org.restlet.ext.oauth.internal.Client.ClientType;
-import org.restlet.ext.oauth.internal.ClientManager;
-import org.restlet.ext.oauth.internal.TokenManager;
-import org.restlet.ext.oauth.internal.memory.MemoryClientManager;
-import org.restlet.ext.oauth.internal.memory.MemoryTokenManager;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
@@ -39,22 +31,6 @@ import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
 
-	  private static SampleUserManager userManager;
-	  private static ClientManager clientManager;
-	  private static TokenManager tokenManager;
-
-	  public static SampleUserManager getSampleUserManager() {
-	    return userManager;
-	  }
-
-	  public static ClientManager getClientManager() {
-	    return clientManager;
-	  }
-
-	  public static TokenManager getTokenManager() {
-	    return tokenManager;
-	  }
-
 	  /**
 	 * @param args
 	 */
@@ -67,19 +43,6 @@ public class VCellApiMain {
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
 			
-//		    userManager = new SampleUserManager();
-//		    userManager.addUser("alice").setPassword("abcdef".toCharArray());
-//		    userManager.addUser("bob").setPassword("123456".toCharArray());
-//
-//		    clientManager = new MemoryClientManager();
-//		    org.restlet.ext.oauth.internal.Client client = clientManager.createClient(ClientType.CONFIDENTIAL, new String[] { "http://localhost:8080/sample/popup" }, null);
-//		    System.out.println("SampleClient: client_id=" + client.getClientId() + ", client_secret=" + String.copyValueOf(client.getClientSecret()));
-//
-//		    ExternalApplication.clientID = client.getClientId();
-//		    ExternalApplication.clientSecret = String.valueOf(client.getClientSecret());
-//
-//		    tokenManager = new MemoryTokenManager();
-
 		    System.out.println("connecting to database");
 
 			VCMessagingService vcMessagingService = null;
@@ -141,10 +104,12 @@ public class VCellApiMain {
 			Engine.register(true);
 
 			WadlComponent component = new WadlComponent();
-			//Server httpServer = component.getServers().add(Protocol.HTTP, 8182);
+			//Server httpServer = component.getServers().add(Protocol.HTTP, 80);
 			//Server httpsServer = component.getServers().add(Protocol.HTTPS, 443);
 			
 			
+//			Client httpsClient = component.getClients().add(Protocol.HTTPS);
+//			Client httpClient = component.getClients().add(Protocol.HTTP);
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
@@ -158,13 +123,7 @@ public class VCellApiMain {
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
 			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration);
-			component.getDefaultHost().attach("/vcell",app);  
-
-//		    component.getDefaultHost().attach("/sample", new ExternalApplication());
-//			
-//		    OAuth2ServerApplication oauthApp = new OAuth2ServerApplication();
-//		    component.getDefaultHost().attach("/oauth", oauthApp);
-//		    component.getInternalRouter().attach("/oauth", oauthApp);
+			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");
 			component.start();

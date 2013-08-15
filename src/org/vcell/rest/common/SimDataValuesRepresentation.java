@@ -4,10 +4,6 @@ import java.util.ArrayList;
 
 import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.DataSetTimeSeries.VarData;
-import cbit.vcell.simdata.ODEDataBlock;
-import cbit.vcell.solver.DataProcessingOutput;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.util.ColumnDescription;
 
 
 public class SimDataValuesRepresentation {

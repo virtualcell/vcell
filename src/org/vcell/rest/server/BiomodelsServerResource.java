@@ -78,8 +78,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	@Override
     public BiomodelRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
         return getBiomodelRepresentations(vcellUser);
     }
@@ -87,8 +86,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
 		BiomodelRepresentation[] biomodels = getBiomodelRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();

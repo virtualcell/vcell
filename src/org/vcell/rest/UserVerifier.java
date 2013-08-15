@@ -1,20 +1,27 @@
 package org.vcell.rest;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 
-import org.restlet.security.SecretVerifier;
+import org.restlet.Request;
+import org.restlet.Response;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.security.Verifier;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiClient;
 
 
-public class UserVerifier extends SecretVerifier {
-	public static class AuthenticationInfo {
+public class UserVerifier implements Verifier {
+	private static class AuthenticationInfo {
 		final User user;
 		final DigestedPassword digestedPassword;
 		AuthenticationInfo(User user, DigestedPassword digestedPassword){
@@ -22,7 +29,9 @@ public class UserVerifier extends SecretVerifier {
 			this.digestedPassword = digestedPassword;
 		}
 	}
-	private HashMap<String,AuthenticationInfo> userMap = new HashMap<String,AuthenticationInfo>();
+	private HashMap<String,AuthenticationInfo> useridMap = new HashMap<String,AuthenticationInfo>();
+	private HashMap<String,ApiAccessToken> accessTokenMap = new HashMap<String,ApiAccessToken>();
+	private HashMap<String,ApiClient> clientidMap = new HashMap<String,ApiClient>();
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private long lastQueryTimestampMS = 0;
 	private final static long MIN_QUERY_TIME_MS = 1000*5; // 5 seconds
@@ -31,9 +40,9 @@ public class UserVerifier extends SecretVerifier {
 		this.adminDbTopLevel = adminDbTopLevel;
 	}
 
-	public User authenticate(String userid, char[] secret){
-		DigestedPassword digestedPassword = new UserLoginInfo.DigestedPassword(new String(secret));
-		AuthenticationInfo authInfo = userMap.get(userid);
+	public User authenticateUser(String userid, char[] secret){
+		DigestedPassword digestedPassword = UserLoginInfo.DigestedPassword.createAlreadyDigested(new String(secret));
+		AuthenticationInfo authInfo = useridMap.get(userid);
 		if (authInfo!=null){
 			if (authInfo.digestedPassword.equals(digestedPassword)){
 				return authInfo.user;
@@ -53,7 +62,7 @@ public class UserVerifier extends SecretVerifier {
 				}
 				// refresh stored list of user infos (for authentication)
 				if (user!=null){
-					userMap.put(userid,new AuthenticationInfo(user,digestedPassword));
+					useridMap.put(userid,new AuthenticationInfo(user,digestedPassword));
 				}
 				lastQueryTimestampMS = System.currentTimeMillis();
 				return user;
@@ -62,23 +71,60 @@ public class UserVerifier extends SecretVerifier {
 			return null;
 		}
 	}
+	
+	public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate) throws ObjectNotFoundException, DataAccessException, SQLException{
+		return adminDbTopLevel.generateApiAccessToken(apiClientKey, user, expirationDate, true);
+	}
 
-	@Override
-	public int verify(String identifier, char[] secret) {
-		User user = authenticate(identifier, secret);
-		if (user!=null){
-			return RESULT_VALID;
-		}else{
-			return RESULT_INVALID;
+	public ApiAccessToken getApiAccessToken(String accessToken) throws SQLException, DataAccessException{
+		ApiAccessToken apiAccessToken = this.accessTokenMap.get(accessToken);
+		if (apiAccessToken==null){
+			apiAccessToken = adminDbTopLevel.getApiAccessToken(accessToken, true);
+			if (apiAccessToken!=null){
+				accessTokenMap.put(accessToken, apiAccessToken);
+			}
 		}
+		if (apiAccessToken!=null){
+			if (apiAccessToken.isValid()){
+				return apiAccessToken;
+			}
+		}
+		throw new RuntimeException("invalid access token");
 	}
 	
-	public User getVCellUser(org.restlet.security.User restletUser){
-		AuthenticationInfo authInfo = this.userMap.get(restletUser.getIdentifier());
-		if (authInfo!=null){
-			return authInfo.user;
+	public ApiClient getApiClient(String clientId) throws SQLException, DataAccessException{
+		ApiClient apiClient = this.clientidMap.get(clientId);
+		if (apiClient==null){
+			apiClient = adminDbTopLevel.getApiClient(clientId, true);
+			if (apiClient!=null){
+				clientidMap.put(clientId, apiClient);
+			}
+		}
+		if (apiClient!=null){
+			if (apiClient.isValid()){
+				return apiClient;
+			}
+		}
+		throw new RuntimeException("invalid client");
+	}
+
+	@Override
+	public int verify(Request request, Response response) {
+		ChallengeResponse challengeResponse = request.getChallengeResponse();
+		if (challengeResponse != null && challengeResponse.getIdentifier().equals("access_token") && challengeResponse.getSecret()!=null){
+			try {
+				ApiAccessToken accessToken = getApiAccessToken(new String(challengeResponse.getSecret()));
+				if (accessToken != null){
+					return RESULT_VALID;
+				}else{
+					return RESULT_INVALID;
+				}
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				return RESULT_INVALID;
+			}
 		}else{
-			return null;
+			return RESULT_MISSING;
 		}
 	}
 }

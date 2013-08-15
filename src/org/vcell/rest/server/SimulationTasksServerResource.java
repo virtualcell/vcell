@@ -109,8 +109,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
     public SimulationTaskRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+			User vcellUser = application.getVCellUser(getChallengeResponse());
 		
         return getSimulationTaskRepresentations(vcellUser);
     }
@@ -118,8 +117,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
 		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();

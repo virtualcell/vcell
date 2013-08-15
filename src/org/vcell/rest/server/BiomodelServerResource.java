@@ -2,7 +2,6 @@ package org.vcell.rest.server;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +14,7 @@ import org.restlet.ext.wadl.ParameterInfo;
 import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
-import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
@@ -79,8 +76,7 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 	@Override
 	public BiomodelRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
         BiomodelRepresentation biomodelRep = getBiomodelRepresentation(vcellUser);
         
@@ -93,8 +89,7 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
 		BiomodelRepresentation biomodel = getBiomodelRepresentation(vcellUser);
 		if (biomodel==null){

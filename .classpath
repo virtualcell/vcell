@@ -87,20 +87,20 @@
 	<classpathentry exported="true" kind="lib" path="lib/org.yaml.snakeyaml.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.codehaus.woodstox.core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/org.codehaus.woodstox.stax2api.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.wadl.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.freemarker.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.e4.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.gson.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.jetty.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.net.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.oauth.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar"/>
-	<classpathentry kind="lib" path="lib/org.restlet.ext.xstream.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.jar" sourcepath="modules/org.restlet/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.wadl.jar" sourcepath="modules/org.restlet.ext.wadl/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.freemarker.jar" sourcepath="modules/org.restlet.ext.freemarker/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.e4.jar" sourcepath="modules/org.restlet.ext.e4/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.gson.jar" sourcepath="modules/org.restlet.ext.gson/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.html.jar" sourcepath="modules/org.restlet.ext.html/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.jackson.jar" sourcepath="modules/org.restlet.ext.jackson/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.jetty.jar" sourcepath="modules/org.restlet.ext.jetty/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.json.jar" sourcepath="modules/org.restlet.ext.json/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.net.jar" sourcepath="modules/org.restlet.ext.net/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.oauth.jar" sourcepath="modules/org.restlet.ext.oauth/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar" sourcepath="modules/org.restlet.ext.ssl/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar" sourcepath="modules/org.restlet.ext.xml/src"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.xstream.jar" sourcepath="modules/org.restlet.ext.xstream/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>

@@ -68,8 +68,7 @@ public class BiomodelSimulationStartServerResource extends AbstractServerResourc
 	@Override
 	public Representation start() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		RestDatabaseService restDatabaseService = application.getRestDatabaseService();
 		try {
 			SimulationRep simRep = restDatabaseService.startSimulation(this, vcellUser);

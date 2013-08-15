@@ -72,8 +72,7 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 	@Override
     public SimDataValuesRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
         return getSimDataValuesRepresentation(vcellUser);
     }
@@ -81,8 +80,7 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
 		SimDataValuesRepresentation simDataValues = getSimDataValuesRepresentation(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();

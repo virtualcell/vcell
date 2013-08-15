@@ -2,7 +2,6 @@ package org.vcell.rest.server;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,22 +14,15 @@ import org.restlet.ext.wadl.ParameterInfo;
 import org.restlet.ext.wadl.ParameterStyle;
 import org.restlet.ext.wadl.RepresentationInfo;
 import org.restlet.ext.wadl.RequestInfo;
-import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
-import org.vcell.rest.common.BiomodelRepresentation;
-import org.vcell.rest.common.BiomodelResource;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.rest.common.SimulationResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
-
-import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.SimulationRep;
 
 import com.google.gson.Gson;
 
@@ -83,8 +75,7 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 	@Override
 	public SimulationRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
         SimulationRepresentation simulationRep = getBiomodelSimulationRepresentation(vcellUser);
         
@@ -97,8 +88,7 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		org.restlet.security.User autheticatedUser = getClientInfo().getUser();
-		User vcellUser = application.getVCellUser(autheticatedUser);
+		User vcellUser = application.getVCellUser(getChallengeResponse());
 		
 		SimulationRepresentation simulation = getBiomodelSimulationRepresentation(vcellUser);
 		if (simulation==null){
