@@ -15,6 +15,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.UUID;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -367,6 +369,72 @@ public void updateUserStat(Connection con,UserLoginInfo userLoginInfo) throws SQ
 	}else{
 		DbDriver.updateCleanSQL(con, UserLoginInfoTable.getSQLUpdateLoginCount(user.getID(), userLoginInfo));
 	}
+}
+
+public ApiAccessToken generateApiAccessToken(Connection con, KeyValue apiClientKey, User user, Date expirationDate) throws SQLException {
+	String sql;
+	KeyValue key = DbDriver.getNewKey(con);
+	UUID idOne = UUID.randomUUID();
+	Date creationDate = new Date();
+	String token = idOne.toString();
+	sql =	"INSERT INTO " + ApiAccessTokenTable.table.getTableName() + " " +
+			ApiAccessTokenTable.table.getSQLColumnList() + " VALUES " +
+			ApiAccessTokenTable.table.getSQLValueList(key,token,apiClientKey,user,creationDate,expirationDate);
+	DbDriver.updateCleanSQL(con,  sql);
+	return new ApiAccessToken(key,token,apiClientKey,user,creationDate,expirationDate);
+}
+
+public ApiAccessToken getApiAccessToken(Connection con, String accessToken) throws SQLException, DataAccessException {
+	Statement stmt;
+	String sql;
+	ResultSet rset;
+	ApiAccessTokenTable tokenTable = ApiAccessTokenTable.table;
+
+	log.print("UserDbDriver.getApiAccessToken(token=" + accessToken + ")");
+	
+	sql = 	"SELECT " + userTable.userid.getUnqualifiedColName()+", "+tokenTable.getTableName()+".* " + 
+			" FROM " + userTable.getTableName() + ", " + tokenTable.getTableName() + 
+			" WHERE " + userTable.id.getQualifiedColName() + " = " + tokenTable.userref +
+			" AND " + tokenTable.accesstoken + " = '" + accessToken + "'";
+			
+	//System.out.println(sql);
+	stmt = con.createStatement();
+	ApiAccessToken apiAccessToken = null;
+	try {
+		rset = stmt.executeQuery(sql);
+		if (rset.next()) {
+			apiAccessToken = tokenTable.getApiAccessToken(rset, log);
+		}
+	} finally {
+		stmt.close();
+	}
+	return apiAccessToken;
+}
+
+public ApiClient getApiClient(Connection con, String clientId) throws SQLException, DataAccessException {
+	Statement stmt;
+	String sql;
+	ResultSet rset;
+	ApiClientTable clientTable = ApiClientTable.table;
+
+	log.print("UserDbDriver.getApiClient(clientId=" + clientId + ")");
+	
+	sql = 	"SELECT " + clientTable.getTableName()+".* " + 
+			" FROM " + clientTable.getTableName() + 
+			" WHERE " + clientTable.clientId + " = '" + clientId + "'";
+			
+	//System.out.println(sql);
+	stmt = con.createStatement();
+	ApiClient apiClient = null;
+	try {
+		rset = stmt.executeQuery(sql);
+		if (rset.next()) {
+			apiClient = clientTable.getApiClient(rset, log);
+		}
+	} finally {
+		stmt.close();
+	}
+	return apiClient;
 }
 
 }
