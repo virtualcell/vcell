@@ -1,7 +1,6 @@
 package org.vcell.rest.auth;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,7 +13,6 @@ import org.restlet.data.Reference;
 import org.restlet.engine.header.ChallengeWriter;
 import org.restlet.engine.header.Header;
 import org.restlet.engine.security.AuthenticatorHelper;
-import org.restlet.engine.util.Base64;
 import org.restlet.util.Series;
 
 public class CustomAuthHelper extends AuthenticatorHelper {

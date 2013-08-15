@@ -1,27 +1,16 @@
 package org.vcell.rest;
 
-import java.sql.SQLException;
-import java.util.StringTokenizer;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.restlet.Request;
-import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeResponse;
-import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
-import org.restlet.security.Authenticator;
-import org.restlet.security.ChallengeAuthenticator;
-import org.restlet.security.Enroler;
-import org.restlet.util.Series;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
@@ -33,7 +22,6 @@ import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.ApiAccessToken;
@@ -67,7 +55,6 @@ public class VCellApiApplication extends WadlApplication {
 	
 	private RestDatabaseService restDatabaseService = null;
 	private UserVerifier userVerifier = null;
-	private Authenticator authenticator = null;
 	private Configuration templateConfiguration = null;
 	
 	@Override
@@ -288,7 +275,7 @@ public class VCellApiApplication extends WadlApplication {
 	}
 
 	public User getVCellUser(ChallengeResponse response) {
-		if (response.getIdentifier()==null || !response.getIdentifier().equals("access_token") || response.getSecret()==null || response.getSecret().length==0){
+		if (response==null || response.getIdentifier()==null || !response.getIdentifier().equals("access_token") || response.getSecret()==null || response.getSecret().length==0){
 			throw new RuntimeException("missing authentication");
 		}
 		try {

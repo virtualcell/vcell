@@ -101,6 +101,7 @@
 	<classpathentry kind="lib" path="lib/org.restlet.ext.ssl.jar" sourcepath="modules/org.restlet.ext.ssl/src"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.xml.jar" sourcepath="modules/org.restlet.ext.xml/src"/>
 	<classpathentry kind="lib" path="lib/org.restlet.ext.xstream.jar" sourcepath="modules/org.restlet.ext.xstream/src"/>
+	<classpathentry kind="lib" path="lib/org.vcell.rest.auth.jar" sourcepath="modules/org.vcell.rest.auth/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/VCell"/>
