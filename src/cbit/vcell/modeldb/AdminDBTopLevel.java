@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -438,6 +439,79 @@ public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPasswo
 		conFactory.release(con,lock);
 	}
 }
+
+
+public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate, boolean bEnableRetry) 
+				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		ApiAccessToken apiAccessToken = userDB.generateApiAccessToken(con, apiClientKey, user, expirationDate);
+		con.commit();
+		return apiAccessToken;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return generateApiAccessToken(apiClientKey, user, expirationDate, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+public ApiAccessToken getApiAccessToken(String accessToken, boolean bEnableRetry) throws SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return userDB.getApiAccessToken(con, accessToken);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getApiAccessToken(accessToken, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+public ApiClient getApiClient(String clientId, boolean bEnableRetry) throws SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return userDB.getApiClient(con, clientId);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getApiClient(clientId, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
 
 
 /**
