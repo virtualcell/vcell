@@ -27,6 +27,7 @@
       <variable name="vcellResourceDirSourcePath" value="GENERATED" description="" category="" />
       <variable name="vcellSesameLibSourcePath" value="GENERATED" description="" category="" />
       <variable name="outputDir" value="GENERATED" description="" category="" />
+      <variable name="vcell5SplashScreenPngFilePath" value="GENERATED" description="" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="false" macPkcs12File="" windowsEnabled="false" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="" />
@@ -62,7 +63,7 @@
       <executable name="VCell-${compiler:Site}" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
-      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcellResourceDirSourcePath}/vcell5.png" java6SplashScreen="false">
+      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" java6SplashScreen="false">
         <text>
           <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
           <versionLine x="20" y="40" text="version ${compiler:sys.version}" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -96,15 +97,15 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles>
-        <file path="${compiler:vcellResourceDirSourcePath}/vcell5.png" />
-      </iconImageFiles>
+<!--      <iconImageFiles>
+        <file path="${compiler:vcell5SplashScreenPngFilePath}" />
+      </iconImageFiles>  -->
     </launcher>
     <launcher name="VCell-${compiler:Site}-Windows64" id="345" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="">
-      <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="${compiler:vcellResourceDirSourcePath}/vcell5.png" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
+      <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
-      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcellResourceDirSourcePath}/vcell5.png" java6SplashScreen="false">
+      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" java6SplashScreen="false">
         <text>
           <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
           <versionLine x="20" y="40" text="version ${compiler:sys.version}" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -136,15 +137,15 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles>
-        <file path="${compiler:vcellResourceDirSourcePath}/vcell5.png" />
-      </iconImageFiles>
+<!--      <iconImageFiles>
+        <file path="${compiler:vcell5SplashScreenPngFilePath}" />
+      </iconImageFiles>   -->
     </launcher>
     <launcher name="VCell-${compiler:Site}-Windows32" id="447" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
-      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcellResourceDirSourcePath}/vcell5.png" java6SplashScreen="false">
+      <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" java6SplashScreen="false">
         <text>
           <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
           <versionLine x="20" y="40" text="version ${compiler:sys.version}" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -176,15 +177,15 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles>
-        <file path="${compiler:vcellResourceDirSourcePath}/vcell5.png" />
-      </iconImageFiles>
+<!--       <iconImageFiles> -->
+<!--         <file path="${compiler:vcell5SplashScreenPngFilePath}" /> -->
+<!--       </iconImageFiles> -->
     </launcher>
     <launcher name="VCell-${compiler:Site}-Linux32" id="534" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
-      <splashScreen show="false" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcellResourceDirSourcePath}/vcell5.png" java6SplashScreen="false">
+      <splashScreen show="false" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" java6SplashScreen="false">
         <text>
           <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
           <versionLine x="20" y="40" text="version ${compiler:sys.version}" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -216,15 +217,15 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles>
-        <file path="${compiler:vcellResourceDirSourcePath}/vcell5.png" />
-      </iconImageFiles>
+<!--      <iconImageFiles>
+        <file path="${compiler:vcell5SplashScreenPngFilePath}" />
+      </iconImageFiles>   -->
     </launcher>
     <launcher name="VCell-${compiler:Site}-Linux64" id="627" customizedId="" external="false" excludeFromMenu="false" unixMode="755" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="">
       <executable name="VCell-${compiler:Site}" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="false" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
-      <splashScreen show="false" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcellResourceDirSourcePath}/vcell5.png" java6SplashScreen="false">
+      <splashScreen show="false" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" java6SplashScreen="false">
         <text>
           <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
           <versionLine x="20" y="40" text="version ${compiler:sys.version}" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
@@ -256,9 +257,9 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles>
-        <file path="${compiler:vcellResourceDirSourcePath}/vcell5.png" />
-      </iconImageFiles>
+<!--       <iconImageFiles> -->
+<!--         <file path="${compiler:vcell5SplashScreenPngFilePath}" /> -->
+<!--       </iconImageFiles> -->
     </launcher>
   </launchers>
   <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="true" autoUpdateDescriptorUrl="http://vcell.org/webstart/${compiler:Site}/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="http://vcell.org/webstart/${compiler:Site}/">
