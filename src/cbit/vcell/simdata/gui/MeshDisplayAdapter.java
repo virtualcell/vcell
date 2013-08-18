@@ -370,22 +370,37 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 		{
 			MembraneElement membraneElements[] = mesh.getMembraneElements();
 			List<MembraneElement> melist = new ArrayList<MembraneElement>();
+			Segment2D[] segments = chomboMesh.get2DSegments();
+			List<MembraneElement> openCurveStartingPointList = new ArrayList<MembraneElement>();
 			for (MembraneElement me : membraneElements)
 			{
 				melist.add(me);
+				Segment2D segment = segments[me.getMembraneIndex()];
+				if (segment.prevNeigbhor < 0)
+				{
+					openCurveStartingPointList.add(me);
+				}
 			}
 			MembraneElement me = null;
-			Segment2D[] segments = chomboMesh.get2DSegments();
 			Coordinate[] vertices = chomboMesh.getVertices();
 			SampledCurve curve = null;
 			List<Integer> indexList = new ArrayList<Integer>();
 			int startingIndex = -1;
-			boolean bReverse = false;
+			boolean bOpen = false;
 			while (melist.size() > 0)
 			{
 				if (me == null)
 				{
-					me = melist.get(0);
+					if (openCurveStartingPointList.size() > 0)
+					{
+						me = openCurveStartingPointList.remove(0);
+						bOpen = true;
+					}
+					else
+					{
+						me = melist.get(0);
+						bOpen = false;
+					}
 					startingIndex = me.getMembraneIndex();
 					curve = new SampledCurve();
 					indexList.clear();
@@ -393,71 +408,29 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 				melist.remove(me);
 				
 				Segment2D segment = segments[me.getMembraneIndex()];
-				if (bReverse)
-				{
-					indexList.add(0, me.getMembraneIndex());
-				}
-				else
-				{
-					indexList.add(me.getMembraneIndex());
-				}
-				int prevNeighbor = segment.prevNeigbhor;
-				int nextNeighbor = segment.nextNeigbhor;
+				indexList.add(me.getMembraneIndex());
+				
 				int pcnt = curve.getControlPointCount();
-				Coordinate p1 = vertices[segment.prevVertex];
 				Coordinate p2 = vertices[segment.nextVertex];				
-				if (pcnt == 0)
+				if (bOpen && pcnt == 0)
 				{
+					Coordinate p1 = vertices[segment.prevVertex];
 					curve.appendControlPoint(p1);
 				}
+				curve.appendControlPoint(p2);
 				
-				boolean bCurveComplete = false;
-				int nextIndex = bReverse ?  prevNeighbor : nextNeighbor;
-				if (nextIndex == startingIndex)
+				int nextIndex = segment.nextNeigbhor;
+				if (nextIndex == startingIndex || nextIndex < 0)
 				{
-					// closed curve, start and end meet
-					bCurveComplete = true;
-					if (pcnt > 1)
-					{
-						curve.setClosed(true);
-					}
-				}
-				else if (nextIndex < 0)
-				{
-					if (bReverse)
-					{
-						curve.prependControlPoint(p1);
-						bCurveComplete = true;  // other side is traversed too, curve is complete
-					}
-					else
-					{					
-							bReverse = true;
-							curve.appendControlPoint(p2); // add the point then traverse from the other side
-							nextIndex = segments[startingIndex].prevNeigbhor;
-					}
-				}
-				else
-				{
-					// if reverse, prepend the point, otherwise append
-					if (bReverse)
-					{
-						curve.prependControlPoint(p1);
-					}
-					else
-					{
-						curve.appendControlPoint(p2);
-					}
-				}
-				if (bCurveComplete)
-				{
+					// curve complete
 					int[] rmi = new int[indexList.size()];
 					for(int i = 0; i < indexList.size(); ++ i)
 					{
 						rmi[i] = indexList.get(i);
 					}
+					curve.setClosed(!bOpen);
 					curvesAndValues.put(curve, rmi);
 					// start a new curve
-					bReverse = false;
 					me = null;
 				}
 				else
