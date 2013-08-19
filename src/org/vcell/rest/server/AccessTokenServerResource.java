@@ -1,7 +1,6 @@
 package org.vcell.rest.server;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.restlet.data.CacheDirective;
@@ -72,16 +71,12 @@ public class AccessTokenServerResource extends AbstractServerResource implements
 			}
 			
 			User authenticatedUser = application.getUserVerifier().authenticateUser(userId, userPassword.toCharArray());
-			long oneHourMs = 1000*60*60;
-			long oneDayMs = oneHourMs * 24;
-			long tokenLifetimeMs = oneDayMs;
-			Date expireTime = new Date(System.currentTimeMillis() + tokenLifetimeMs);
 			
 			if (authenticatedUser == null){
 				throw new RuntimeException("unable to authenticate user");
 			}
 			
-			ApiAccessToken apiAccessToken = application.getUserVerifier().generateApiAccessToken(apiClient.getKey(), authenticatedUser, expireTime);
+			ApiAccessToken apiAccessToken = application.getUserVerifier().generateApiAccessToken(apiClient.getKey(), authenticatedUser);
 	
 			AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken);
 			

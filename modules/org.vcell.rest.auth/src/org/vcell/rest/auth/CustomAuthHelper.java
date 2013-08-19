@@ -17,6 +17,8 @@ import org.restlet.util.Series;
 
 public class CustomAuthHelper extends AuthenticatorHelper {
 
+	public static final String ACCESS_TOKEN = "access_token";
+
 	public CustomAuthHelper() {
 		super(new ChallengeScheme("HTTP_CUSTOM","vcell_custom"), true, false);
 	}
@@ -69,7 +71,7 @@ public class CustomAuthHelper extends AuthenticatorHelper {
 			// expecting "CUSTOM access_token=123445"
 			String[] tokens = challenge.getRawValue().split("=");
 			String accessToken = null;
-			if (tokens.length==2 && tokens[0].equals("access_token")){
+			if (tokens.length==2 && tokens[0].equals(ACCESS_TOKEN)){
 				accessToken = tokens[1];
 			}
         	
@@ -78,7 +80,7 @@ public class CustomAuthHelper extends AuthenticatorHelper {
                         .info("Cannot decode credentials: "
                                 + challenge.getRawValue());
             }
-            challenge.setIdentifier("access_token");
+            challenge.setIdentifier(ACCESS_TOKEN);
             challenge.setSecret(accessToken);
         } catch (Exception e) {
             getLogger().log(Level.INFO,

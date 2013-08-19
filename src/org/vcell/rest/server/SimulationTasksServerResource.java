@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -122,6 +123,11 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
+		dataModel.put("loginurl", "/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
+		dataModel.put("logouturl", "/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
+		if (vcellUser!=null){
+			dataModel.put("userid",vcellUser.getName());
+		}
 		dataModel.put("userId", getAttribute(PARAM_USER));
 		dataModel.put("simId", getQueryValue(PARAM_SIM_ID));
 		dataModel.put("jobId",  getLongQueryValue(PARAM_JOB_ID));
@@ -158,9 +164,6 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		dataModel.put("simTasks", Arrays.asList(simTasks));
 		
 		
-		if (vcellUser!=null){
-			dataModel.put("userid",vcellUser.getName());
-		}
 		
 		Gson gson = new Gson();
 		dataModel.put("jsonResponse",gson.toJson(simTasks));

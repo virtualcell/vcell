@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
+import org.restlet.data.Reference;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -91,6 +92,12 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		BiomodelRepresentation[] biomodels = getBiomodelRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();
 		
+		dataModel.put("loginurl", "/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
+		dataModel.put("logouturl", "/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
+		if (vcellUser!=null){
+			dataModel.put("userid",vcellUser.getName());
+		}
+		
 		dataModel.put("userId", getAttribute(PARAM_USER));
 		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
 		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
@@ -111,10 +118,6 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 
 		dataModel.put("biomodels", Arrays.asList(biomodels));
 		
-		
-		if (vcellUser!=null){
-			dataModel.put("userid",vcellUser.getName());
-		}
 		
 		Gson gson = new Gson();
 		dataModel.put("jsonResponse",gson.toJson(biomodels));

@@ -1,8 +1,10 @@
 package org.vcell.rest;
 
+import java.sql.SQLException;
 import java.util.logging.Level;
 
 import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.MediaType;
@@ -11,6 +13,7 @@ import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
 import org.restlet.routing.Router;
+import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
@@ -22,17 +25,31 @@ import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import freemarker.template.Configuration;
 
 public class VCellApiApplication extends WadlApplication {
 	
+	public static final String LOGIN = "login";
+	public static final String LOGINFORM = "loginform";
+	public static final String IDENTIFIER_FORMNAME = "user";
+	public static final String SECRET_FORMNAME = "password";
+	public static final String LOGOUT = "logout";
+	public static final String REDIRECTURL_FORMNAME = "redirecturl";
+	
+	public static final String BROWSER_CLIENTID = "dskeofihdslksoihe";
+	
 	public static final String PARAM_ACCESS_TOKEN = "token";
 	public static final String AUTHENTICATED_TOKEN_ATTR_NAME = "authenticatedToken";
 
-	public static final String ACCESSTOKEN = "access_token";
+	/** https://nrcamdev5.cam.uchc.edu:8080/access_token?user_id=schaff&user_password=056F4508E0DE1ED22D4D6F541E91460694A00E16&client_id=85133f8d-26f7-4247-8356-d175399fc2e6 */
+	public static final String ACCESSTOKENRESOURCE = "access_token";  // this is the authentication end point (resource) for the (GET) query parameter authentication (returns a JSON access token)
+	
 	public static final String VCELLAPI = "vcellapi";
 
 	public static final String BIOMODEL = "biomodel";
@@ -51,6 +68,7 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String STARTSIMULATION = "startSimulation";
 	public static final String STOPSIMULATION = "stopSimulation";
+	public static final User DUMMY_USER = new User("VOID_VCELL_USER", new KeyValue("11111111111111"));
 	
 	
 	private RestDatabaseService restDatabaseService = null;
@@ -80,116 +98,6 @@ public class VCellApiApplication extends WadlApplication {
 		getLogger().setLevel(Level.FINE);
 	}
 	
-//	private Authenticator createAuthenticator(){
-//		Authenticator guard = new Authenticator(getContext(),false) {
-//
-//			@Override
-//			protected int authenticated(Request request, Response response) {
-//				// TODO Auto-generated method stub
-//				return super.authenticated(request, response);
-//			}
-//
-//			@Override
-//			protected int beforeHandle(Request request, Response response) {
-//				// TODO Auto-generated method stub
-//				return super.beforeHandle(request, response);
-//			}
-//
-//			@Override
-//			public Enroler getEnroler() {
-//				// TODO Auto-generated method stub
-//				return super.getEnroler();
-//			}
-//
-//			@Override
-//			public boolean isMultiAuthenticating() {
-//				// TODO Auto-generated method stub
-//				return super.isMultiAuthenticating();
-//			}
-//
-//			@Override
-//			public boolean isOptional() {
-//				// TODO Auto-generated method stub
-//				return super.isOptional();
-//			}
-//
-//			@Override
-//			protected void afterHandle(Request request, Response response) {
-//				// TODO Auto-generated method stub
-//				super.afterHandle(request, response);
-//			}
-//
-//			@Override
-//			protected int doHandle(Request request, Response response) {
-//				// TODO Auto-generated method stub
-//				return super.doHandle(request, response);
-//			}
-//
-//			@Override
-//			public Restlet getNext() {
-//				// TODO Auto-generated method stub
-//				return super.getNext();
-//			}
-//
-//			@Override
-//			public boolean hasNext() {
-//				// TODO Auto-generated method stub
-//				return super.hasNext();
-//			}
-//
-//			@Override
-//			public synchronized void start() throws Exception {
-//				// TODO Auto-generated method stub
-//				super.start();
-//			}
-//
-//			@Override
-//			protected boolean authenticate(Request request, Response response) {
-//				boolean isAllowed = false;
-//				
-//				Series<Header> headers = (Series<Header>)request.getAttributes().get("org.restlet.http.headers");
-//				String authorizationString = headers.getFirstValue("Authorization");
-//				// expecting "CUSTOM access_token=123445"
-//				String[] tokens = authorizationString.split(" ");
-//				String accessToken = null;
-//				if (tokens.length==2 && tokens[0].equals("CUSTOM") && tokens[1].startsWith("access_token=")){
-//					accessToken = tokens[1].replace("access_token=","");
-//					accessToken.replace("\"","");
-//				}
-//				if (accessToken == null) {
-//					//
-//					// Notice that we can set standard HTTP/REST error codes
-//					// very easily
-//					// using the Restlet API. Whenever the response is sent to
-//					// the user, this
-//					// error code will be set to the unauthorized error code
-//					// (unless a filter
-//					// or restlet further down the chain changes it).
-//					//
-//					response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Missing access token.");
-//				} else {
-//					ApiAccessToken apiAccessToken = null;
-//					try {
-//						apiAccessToken = userVerifier.getApiAccessToken(accessToken);
-//					} catch (SQLException e){
-//						e.printStackTrace(System.out);
-//					} catch (DataAccessException e) {
-//						e.printStackTrace(System.out);
-//					}
-//					if (apiAccessToken != null) {
-//						isAllowed = true;
-//						request.getAttributes().put(AUTHENTICATED_TOKEN_ATTR_NAME, apiAccessToken);
-//					} else {
-//						response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED,
-//								String.format("%s is not an allowed in " + PARAM_ACCESS_TOKEN + ".", accessToken));
-//					}
-//				}
-//				return isAllowed;
-//			}
-//
-//		};
-//		return guard;
-//	}
 
 	@Override  
     public Restlet createInboundRoot() {  
@@ -232,21 +140,29 @@ public class VCellApiApplication extends WadlApplication {
 		 * :false,"scanCount":1,"mathModelLink":{"mathModelKey"
 		 * :"38442201","mathModelBranchId"
 		 * :"38442202","mathModelName":"tempMath77"}}]
-		 */
-		//	    System.out.println(UUID.randomUUID());
-//	    System.out.println(UUID.randomUUID());
-//	    
-//	    Router mainRouter = new Router(this.getContext());
-//	    mainRouter.attach("/"+ACCESSTOKEN, AccessTokenServerResource.class,Router.MODE_FIRST_MATCH);
-//
-//	    this.authenticator = createAuthenticator();
-//	    mainRouter.attach("/"+VCELLAPI, authenticator, Router.MODE_FIRST_MATCH);
+		 */	    
 	    
-	    
-		// Attach a guard to secure access to user parts of the api 
 	
+		// Attach a guard to secure access to user parts of the api 
+
+		boolean bCookieOptional = true;
+        
+        
+		final VCellCookieAuthenticator cookieAuthenticator = new VCellCookieAuthenticator(this, bCookieOptional, "My cookie realm", "MyExtraSecretKey".getBytes());
+
+        
+        cookieAuthenticator.setLoginPath("/"+LOGIN);
+        cookieAuthenticator.setLogoutPath("/"+LOGOUT);
+        cookieAuthenticator.setCookieName("org.vcell.auth");
+        cookieAuthenticator.setLoginFormPath("/"+LOGINFORM);
+        cookieAuthenticator.setIdentifierFormName(IDENTIFIER_FORMNAME);
+        cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
+        cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
+        cookieAuthenticator.setVerifier(userVerifier);
+
+	    
 		Router rootRouter = new Router(getContext());
-	    rootRouter.attach("/"+ACCESSTOKEN, AccessTokenServerResource.class);
+	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
@@ -257,12 +173,39 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}/jobindex/{"+JOBINDEX+"}", SimDataValuesServerResource.class);  
 		
-//	    authenticator.setNext(rootRouter);
+		rootRouter.attach("/"+LOGIN, new Restlet(getContext()){
+            @Override
+            public void handle(Request request, Response response) {
+		        String html = 
+		        	"<html>" +
+		        		"/login ... should have been redirected."+
+		        	"</html>";
+		        response.setEntity(html, MediaType.TEXT_HTML);
+            }
+		});
+		
+		rootRouter.attach("/"+LOGINFORM, new Restlet(getContext()){
+            @Override
+            public void handle(Request request, Response response) {
+            	org.restlet.data.Reference reference = request.getReferrerRef();
+               	String html = "<html>" +
+        					"<form name='login' action='"+"/"+LOGIN+ "' method='post'>" +
+        							"VCell userid <input type='text' name='"+IDENTIFIER_FORMNAME+"' value=''/><br/>" +
+        							"VCell password <input type='password' name='"+SECRET_FORMNAME+"' value=''/><br/>" +
+        							"<input type='hidden' name='"+REDIRECTURL_FORMNAME+"' value='"+reference+"'>" +
+        							"<input type='submit' value='sign in'/>" +
+        					"</form>" +
+          				  "</html>";
+                	response.setEntity(html, MediaType.TEXT_HTML);
+            }
+		});
+		
+        cookieAuthenticator.setNext(rootRouter);
      	    	 
-    	return rootRouter;  
+    	return cookieAuthenticator;  
     }  
 	
-	public RestDatabaseService getRestDatabaseService() {
+   public RestDatabaseService getRestDatabaseService() {
 		return this.restDatabaseService;
 	}
 
@@ -275,24 +218,45 @@ public class VCellApiApplication extends WadlApplication {
 	}
 
 	public User getVCellUser(ChallengeResponse response) {
-		if (response==null || response.getIdentifier()==null || !response.getIdentifier().equals("access_token") || response.getSecret()==null || response.getSecret().length==0){
-			throw new RuntimeException("missing authentication");
-		}
 		try {
-			ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getSecret()));
+			ApiAccessToken accessToken = getApiAccessToken(response);
 			if (accessToken!=null){
-				if (accessToken.isValid()){
-					return accessToken.getUser();
+				if (accessToken.isExpired()){
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken has expired ... returning user = null");
+					return null;			
+				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has been invalidated ... returning user = null");
+					return null;
 				}else{
-					throw new RuntimeException("invalid access token (expired?)");
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has expired ... returning user = null");
+					return accessToken.getUser();
 				}
 			}else{
-				throw new RuntimeException("missing authentication");
-			
+				getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not found ... returning user = null");
+				return null;
 			}
 		}catch (Exception e){
-			throw new RuntimeException("error authenticating token",e);
+			getLogger().log(Level.SEVERE,"VCellApiApplication.getVCellUse(response) - error authenticating user", e);
+			return null;
 		}
+	}
+	
+	ApiAccessToken getApiAccessToken(ChallengeResponse response) throws SQLException, DataAccessException{
+		if (response==null){
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response was null");
+			return null;
+		}else if (response.getIdentifier()==null){
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getIdentifier() was null");
+			return null;
+		}else if (!response.getIdentifier().equals(CustomAuthHelper.ACCESS_TOKEN)){
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getIdentifier() was '"+response.getIdentifier()+"', expecting '"+CustomAuthHelper.ACCESS_TOKEN+"'");
+			return null;
+		}else if (response.getSecret()==null){
+			getLogger().log(Level.INFO,"VCellApiApplication.getApiAccessToken(response) - response.getSecret() was null");
+			return null;
+		}
+		ApiAccessToken accessToken = userVerifier.getApiAccessToken(new String(response.getSecret()));
+		return accessToken;
 	}
 	
 	

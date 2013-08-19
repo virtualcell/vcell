@@ -111,6 +111,9 @@ public class RestDatabaseService {
 	}
 
 	public DataSetMetadata getDataSetMetadata(SimDataServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
@@ -133,6 +136,9 @@ public class RestDatabaseService {
 	}
 
 	public DataSetTimeSeries getDataSetTimeSeries(SimDataValuesServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		String jobIndexString = resource.getAttribute(VCellApiApplication.JOBINDEX);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
@@ -156,8 +162,10 @@ public class RestDatabaseService {
 		}
 	}
 
-	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
-		
+	public BioModelRep[] query(BiomodelsServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		Long bioModelID = resource.getLongQueryValue(BiomodelsServerResource.PARAM_BM_ID);
 		Long savedLow = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_LOW);
 		Long savedHigh = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
@@ -218,7 +226,9 @@ public class RestDatabaseService {
 	}
 	
 	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
-		
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
 		if (bioModelID != null){
@@ -261,7 +271,9 @@ public class RestDatabaseService {
 	}
 	
 	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
-		
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		ArrayList<String> conditions = new ArrayList<String>();
 		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
 		if (bioModelID != null){
@@ -363,7 +375,9 @@ public class RestDatabaseService {
 	}
 
     public List<SimpleJobStatus> query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
-    	
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
 		String userID = vcellUser.getName();
 		Long simid = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SIM_ID);
 		Long jobid = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_JOB_ID);

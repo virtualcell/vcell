@@ -3,11 +3,14 @@ package org.vcell.rest;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
 
+import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.security.Verifier;
+import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
@@ -17,6 +20,7 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.modeldb.ApiClient;
 
 
@@ -72,8 +76,8 @@ public class UserVerifier implements Verifier {
 		}
 	}
 	
-	public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate) throws ObjectNotFoundException, DataAccessException, SQLException{
-		return adminDbTopLevel.generateApiAccessToken(apiClientKey, user, expirationDate, true);
+	public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user) throws ObjectNotFoundException, DataAccessException, SQLException{
+		return adminDbTopLevel.generateApiAccessToken(apiClientKey, user, getNewExpireDate(), true);
 	}
 
 	public ApiAccessToken getApiAccessToken(String accessToken) throws SQLException, DataAccessException{
@@ -84,12 +88,16 @@ public class UserVerifier implements Verifier {
 				accessTokenMap.put(accessToken, apiAccessToken);
 			}
 		}
+		return apiAccessToken;
+	}
+	
+	public void invalidateApiAccessToken(String accessToken) throws SQLException, DataAccessException{
+		ApiAccessToken apiAccessToken = getApiAccessToken(accessToken);
+		
 		if (apiAccessToken!=null){
-			if (apiAccessToken.isValid()){
-				return apiAccessToken;
-			}
+			adminDbTopLevel.setApiAccessTokenStatus(apiAccessToken, AccessTokenStatus.invalidated, true);
+			accessTokenMap.remove(accessToken);
 		}
-		throw new RuntimeException("invalid access token");
 	}
 	
 	public ApiClient getApiClient(String clientId) throws SQLException, DataAccessException{
@@ -111,20 +119,41 @@ public class UserVerifier implements Verifier {
 	@Override
 	public int verify(Request request, Response response) {
 		ChallengeResponse challengeResponse = request.getChallengeResponse();
-		if (challengeResponse != null && challengeResponse.getIdentifier().equals("access_token") && challengeResponse.getSecret()!=null){
+		if (challengeResponse != null && challengeResponse.getIdentifier().equals(CustomAuthHelper.ACCESS_TOKEN) && challengeResponse.getSecret()!=null){
 			try {
 				ApiAccessToken accessToken = getApiAccessToken(new String(challengeResponse.getSecret()));
-				if (accessToken != null){
-					return RESULT_VALID;
-				}else{
+				if (accessToken==null){
+					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_MISSING -  "+CustomAuthHelper.ACCESS_TOKEN+" not found in database, request='"+request+"'");
+					return RESULT_MISSING;
+				}else if (accessToken.isExpired()){
+					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_STALE -  "+CustomAuthHelper.ACCESS_TOKEN+" EXPIRED, token='"+accessToken.getToken()+"', request='"+request+"'");
+					request.getCookies().removeAll("org.vcell.auth");
+					return RESULT_STALE;
+				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
+					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_INVALID -  "+CustomAuthHelper.ACCESS_TOKEN+" INVALIDATED, token='"+accessToken.getToken()+"', request='"+request+"'");
+					request.getCookies().removeAll("org.vcell.auth");
 					return RESULT_INVALID;
+				}else{
+					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_VALID -  verified supplied "+CustomAuthHelper.ACCESS_TOKEN+", token='"+accessToken.getToken()+"', request='"+request+"'");
+					return RESULT_VALID;
 				}
 			}catch (Exception e){
 				e.printStackTrace(System.out);
+				Context.getCurrent().getLogger().log(Level.SEVERE,"UserVerifier.verify(request,response) - returning RESULT_INVALID - exception, request='"+request+"'",e);
+				request.getCookies().removeAll("org.vcell.auth");
 				return RESULT_INVALID;
 			}
 		}else{
+			Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_MISSING - challengeResponse was null, request='"+request+"'");
 			return RESULT_MISSING;
 		}
+	}
+
+	private Date getNewExpireDate() {
+		long oneHourMs = 1000*60*60;
+		long oneDayMs = oneHourMs * 24;
+		long tokenLifetimeMs = oneDayMs;
+		Date expireTime = new Date(System.currentTimeMillis() + tokenLifetimeMs);
+		return expireTime;
 	}
 }
