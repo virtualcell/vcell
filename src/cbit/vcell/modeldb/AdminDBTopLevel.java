@@ -36,6 +36,7 @@ import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
@@ -464,6 +465,33 @@ public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, D
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+public void setApiAccessTokenStatus(ApiAccessToken accessToken, AccessTokenStatus newAccessTokenStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
+	
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		userDB.setApiAccessTokenStatus(con, accessToken.getKey(), newAccessTokenStatus);
+		con.commit();
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			setApiAccessTokenStatus(accessToken, newAccessTokenStatus, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
 		}
 	} finally {
 		conFactory.release(con,lock);
