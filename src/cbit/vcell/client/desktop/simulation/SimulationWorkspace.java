@@ -323,12 +323,13 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		}
 		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
-		if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
+		boolean bCellCentered = simulation.hasCellCenteredMesh();
+		if (meshSpecification != null && !meshSpecification.isAspectRatioOK(bCellCentered)) {
 			warningMessage =  (warningMessage == null? "" : warningMessage + "\n\n") 
 				+ "Non uniform spatial step is detected. This might affect the accuracy of the solution.\n\n"
-				+ "\u0394x=" + meshSpecification.getDx() + "\n" 
-				+ "\u0394y=" + meshSpecification.getDy()
-				+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz());
+				+ "\u0394x=" + meshSpecification.getDx(bCellCentered) + "\n" 
+				+ "\u0394y=" + meshSpecification.getDy(bCellCentered)
+				+ (meshSpecification.getGeometry().getDimension() < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz(bCellCentered));
 		}		
 		if (warningMessage != null)
 		{

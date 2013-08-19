@@ -252,7 +252,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 //		molecule.		
 		listmols,
 //		This is very similar to listmols but has a slightly different output format.
-//		Each line of text is preceded by the �time counter�, which is an integer
+//		Each line of text is preceded by the "time counter", which is an integer
 //		that starts at 1 and is incremented each time the routine is called. Also, the
 //		names and states of molecules are not printed, but instead the identity and
 //		state numbers are printed.
@@ -1003,9 +1003,10 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		int numX = sampleSize.getX();
 		int numY = dimension < 2 ? 1 : sampleSize.getY();
 		int numZ = dimension < 3 ? 1 : sampleSize.getZ();
-		double dx = meshSpecification.getDx();
-		double dy = meshSpecification.getDy();
-		double dz = meshSpecification.getDz();
+		boolean bCellCentered = simulation.hasCellCenteredMesh();
+		double dx = meshSpecification.getDx(bCellCentered);
+		double dy = meshSpecification.getDy(bCellCentered);
+		double dz = meshSpecification.getDz(bCellCentered);
 		Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
 		double ox = origin.getX();
 		double oy = origin.getY();
@@ -1534,9 +1535,10 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 	int numY = dimension < 2 ? 1 : sampleSize.getY();
 	int numZ = dimension < 3 ? 1 : sampleSize.getZ();
 	int numXY = numX * numY;
-	double dx = meshSpecification.getDx();
-	double dy = meshSpecification.getDy();
-	double dz = meshSpecification.getDz();
+	boolean bCellCentered = simulation.hasCellCenteredMesh();
+	double dx = meshSpecification.getDx(bCellCentered);
+	double dy = meshSpecification.getDy(bCellCentered);
+	double dz = meshSpecification.getDz(bCellCentered);
 	Origin origin = resampledGeometry.getGeometrySpec().getOrigin();
 
 	printWriter.println("# compartments");

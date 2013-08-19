@@ -364,12 +364,12 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws java.bea
 	}
 }
 
-public boolean isAspectRatioOK() {
+public boolean isAspectRatioOK(boolean bCellCentered) {
 	final int dimension = fieldGeometry.getDimension();
 	if (dimension > 1) {		
-		double dx = getDx();
-		double dy = getDy();
-		double dz = getDz();
+		double dx = getDx(bCellCentered);
+		double dy = getDy(bCellCentered);
+		double dz = getDz(bCellCentered);
 		
 		double min = Math.min(dx, dy);
 		double max = Math.max(dx, dy);
@@ -384,13 +384,42 @@ public boolean isAspectRatioOK() {
 	return true;
 }
 
-public double getDx() {
-	return fieldGeometry.getExtent().getX()/(fieldSamplingSize.getX() - 1);
+public double getDx(boolean bCellCentered) {
+	double d = 0.0;
+	if (bCellCentered)
+	{
+		d = fieldGeometry.getExtent().getX()/fieldSamplingSize.getX();
+	}
+	else
+	{
+		d = fieldGeometry.getExtent().getX()/(fieldSamplingSize.getX() - 1);
+	}
+	return d;
 }
-public double getDy() {
-	return fieldGeometry.getExtent().getY()/(fieldSamplingSize.getY() - 1);
+
+public double getDy(boolean bCellCentered) {
+	double d = 0.0;
+	if (bCellCentered)
+	{
+		d = fieldGeometry.getExtent().getY()/fieldSamplingSize.getY();
+	}
+	else
+	{
+		d = fieldGeometry.getExtent().getY()/(fieldSamplingSize.getY() - 1);
+	}
+	return d;
 }
-public double getDz() {
-	return fieldGeometry.getExtent().getZ()/(fieldSamplingSize.getZ() - 1);
+
+public double getDz(boolean bCellCentered) {
+	double d = 0.0;
+	if (bCellCentered)
+	{
+		d = fieldGeometry.getExtent().getZ()/fieldSamplingSize.getZ();
+	}
+	else
+	{
+		d = fieldGeometry.getExtent().getZ()/(fieldSamplingSize.getZ() - 1);
+	}
+	return d;
 }
 }

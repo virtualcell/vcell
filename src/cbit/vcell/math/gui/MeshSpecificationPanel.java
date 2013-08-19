@@ -758,7 +758,7 @@ private void updateDisplay() {
 	}
 	updateTotalSizeAndSpatialStep();
 	
-	if (getMeshSpecification().isAspectRatioOK()) {
+	if (getMeshSpecification().isAspectRatioOK(simulation.hasCellCenteredMesh())) {
 		getAutoMeshSizeCheckBox().setSelected(true);
 	}
 	bInProgress = false;
