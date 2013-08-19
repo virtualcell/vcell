@@ -28,6 +28,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+
 /**
  * This type was created in VisualAge.
  */
@@ -377,12 +379,29 @@ public ApiAccessToken generateApiAccessToken(Connection con, KeyValue apiClientK
 	UUID idOne = UUID.randomUUID();
 	Date creationDate = new Date();
 	String token = idOne.toString();
+	AccessTokenStatus accessTokenStatus = AccessTokenStatus.created;
+	
 	sql =	"INSERT INTO " + ApiAccessTokenTable.table.getTableName() + " " +
 			ApiAccessTokenTable.table.getSQLColumnList() + " VALUES " +
-			ApiAccessTokenTable.table.getSQLValueList(key,token,apiClientKey,user,creationDate,expirationDate);
+			ApiAccessTokenTable.table.getSQLValueList(key,token,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
 	DbDriver.updateCleanSQL(con,  sql);
-	return new ApiAccessToken(key,token,apiClientKey,user,creationDate,expirationDate);
+	
+	return new ApiAccessToken(key,token,apiClientKey,user,creationDate,expirationDate,accessTokenStatus);
 }
+
+public void setApiAccessTokenStatus(Connection con, KeyValue apiAccessTokenKey, AccessTokenStatus accessTokenStatus) throws SQLException, DataAccessException {
+	String sql;
+	
+	sql =	"UPDATE " + ApiAccessTokenTable.table.getTableName() + " " +
+			"SET " + ApiAccessTokenTable.table.status.getUnqualifiedColName() + " = " + "'" + accessTokenStatus.getDatabaseString() + "'" +
+			"WHERE " + ApiAccessTokenTable.table.id.getUnqualifiedColName() + " = " + apiAccessTokenKey.toString();
+	int numRecordsChanged = DbDriver.updateCleanSQL(con,  sql);
+	
+	if (numRecordsChanged!=1){
+		throw new DataAccessException("failed to update ApiAccessCode(key="+apiAccessTokenKey+")");
+	}
+}
+
 
 public ApiAccessToken getApiAccessToken(Connection con, String accessToken) throws SQLException, DataAccessException {
 	Statement stmt;

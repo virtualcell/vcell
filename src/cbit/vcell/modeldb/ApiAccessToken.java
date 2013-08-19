@@ -8,14 +8,43 @@ import org.vcell.util.document.User;
 
 public class ApiAccessToken implements Serializable {
 	
+	public enum AccessTokenStatus {
+		created("created"),
+		invalidated("invalidated");
+		
+		String databaseString = null;
+		
+		private AccessTokenStatus(String databaseString){
+			if (databaseString.length()>20){
+				throw new IllegalArgumentException("cannot have more than 20 characters is databaseString, current database table column size limit.");
+			}
+			this.databaseString = databaseString;
+		}
+		
+		public String getDatabaseString(){
+			return databaseString;
+		}
+		
+		public static AccessTokenStatus fromDatabaseString(String databaseString){
+			for (AccessTokenStatus status : values()){
+				if (status.getDatabaseString().equals(databaseString)){
+					return status;
+				}
+			}
+			return null;
+		}
+		
+	};
+	
 	private KeyValue key;
 	private String token;
 	private KeyValue apiClientKey;
 	private User user;
 	private Date creationDate;
 	private Date expiration;
+	private AccessTokenStatus status;
 	
-	public ApiAccessToken(KeyValue key, String token, KeyValue apiClientKey, User user, Date creationDate, Date expiration) {
+	public ApiAccessToken(KeyValue key, String token, KeyValue apiClientKey, User user, Date creationDate, Date expiration, AccessTokenStatus status) {
 		super();
 		this.key = key;
 		this.token = token;
@@ -23,6 +52,7 @@ public class ApiAccessToken implements Serializable {
 		this.user = user;
 		this.creationDate = creationDate;
 		this.expiration = expiration;
+		this.status = status;
 	}
 
 	public KeyValue getKey() {
@@ -49,8 +79,12 @@ public class ApiAccessToken implements Serializable {
 		return expiration;
 	}
 
-	public boolean isValid() {
-		return expiration.after(new Date());
+	public boolean isExpired() {
+		return expiration.before(new Date());
+	}
+
+	public AccessTokenStatus getStatus() {
+		return status;
 	}
 
 

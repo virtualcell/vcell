@@ -21,6 +21,7 @@ import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 /**
  * This type was created in VisualAge.
  */
@@ -33,8 +34,9 @@ public class ApiAccessTokenTable extends cbit.sql.Table {
 	public final Field userref			= new Field("userRef",		"integer",		"NOT NULL "+UserTable.REF_TYPE);
 	public final Field creationDate		= new Field("creationDate",	"date",			"NOT NULL");
 	public final Field expireDate		= new Field("expireDate",	"date",			"NOT NULL");
+	public final Field status			= new Field("status",		"varchar(20)",	"");  // does not cover the case of an expired token
 
-	private final Field fields[] = {accesstoken,clientRef,userref,creationDate,expireDate};
+	private final Field fields[] = {accesstoken,clientRef,userref,creationDate,expireDate,status};
 	
 	public static final ApiAccessTokenTable table = new ApiAccessTokenTable();
 /**
@@ -66,12 +68,17 @@ public ApiAccessToken getApiAccessToken(ResultSet rset, SessionLog log) throws S
 	if (expiration==null){
 		throw new DataAccessException("could not parse expiration date");
 	}
-	ApiAccessToken apiAccessToken = new ApiAccessToken(key,token,clientKey,user,creation,expiration);
+	String accessTokenDatabaseString = rset.getString(status.toString());
+	AccessTokenStatus accessTokenStatus = AccessTokenStatus.created; // default value if null
+	if (accessTokenDatabaseString!=null){
+		accessTokenStatus = AccessTokenStatus.fromDatabaseString(accessTokenDatabaseString);
+	}
+	ApiAccessToken apiAccessToken = new ApiAccessToken(key,token,clientKey,user,creation,expiration,accessTokenStatus);
 	
 	return apiAccessToken;
 }
 
-public String getSQLValueList(KeyValue key, String token, KeyValue apiClientKey, User user, Date creationDate, Date expirationDate) {
+public String getSQLValueList(KeyValue key, String token, KeyValue apiClientKey, User user, Date creationDate, Date expirationDate, AccessTokenStatus accessTokenStatus) {
 	
 	StringBuffer buffer = new StringBuffer();
 	
@@ -81,7 +88,8 @@ public String getSQLValueList(KeyValue key, String token, KeyValue apiClientKey,
 	buffer.append(apiClientKey +",");
 	buffer.append(user.getID()+",");
 	buffer.append(VersionTable.formatDateToOracle(creationDate)+",");
-	buffer.append(VersionTable.formatDateToOracle(expirationDate));
+	buffer.append(VersionTable.formatDateToOracle(expirationDate)+",");
+	buffer.append("'"+accessTokenStatus.getDatabaseString()+"'");
 	buffer.append(")");
 
 	return buffer.toString();
