@@ -102,7 +102,7 @@ public class RunSims extends AsynchClientTask {
 				}
 			}
 			
-			double s = sim.getMeshSpecification().getDx();
+			double s = sim.getMeshSpecification().getDx(sim.hasCellCenteredMesh());
 			double dt = sim.getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
 			if (dt >= s * s / (2 * Dmax)) {
 				smoldynTimestepVars = new SmoldynTimeStepVars(s, Dmax);
@@ -167,10 +167,11 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				}
 				if (dimension > 0) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
-					if (meshSpecification != null && !meshSpecification.isAspectRatioOK()) {
+					boolean bCellCentered = sim.hasCellCenteredMesh();
+					if (meshSpecification != null && !meshSpecification.isAspectRatioOK(bCellCentered)) {
 						String warningMessage =  VCellErrorMessages.getErrorMessage(VCellErrorMessages.RunSims_2, sim.getName(),
-								"\u0394x=" + meshSpecification.getDx() + "\n" + "\u0394y=" + meshSpecification.getDy()
-								+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz()));
+								"\u0394x=" + meshSpecification.getDx(bCellCentered) + "\n" + "\u0394y=" + meshSpecification.getDy(bCellCentered)
+								+ (dimension < 3 ? "" : "\n\u0394z=" + meshSpecification.getDz(bCellCentered)));
 						String result = DialogUtils.showWarningDialog(documentWindowManager.getComponent(), warningMessage, 
 								new String[] {UserMessage.OPTION_OK, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 						if (result == null || !result.equals(UserMessage.OPTION_OK)) {

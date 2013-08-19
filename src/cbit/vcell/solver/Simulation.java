@@ -924,4 +924,10 @@ public boolean isSerialParameterScan() {
 			setMeshSpecification(null);
 		}
 	}
+	
+	public boolean hasCellCenteredMesh()
+	{
+		return getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null
+				&& getSolverTaskDescription().getSolverDescription().isChomboSolver();
+	}
 }
