@@ -108,5 +108,5 @@ vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.ssl.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.xml.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.xstream.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.vcell.rest.auth.jar"
-
+vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.cyrpto.jar"
 
