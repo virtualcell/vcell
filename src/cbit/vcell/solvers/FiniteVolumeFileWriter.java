@@ -102,6 +102,7 @@ import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.RvachevFunctionUtils;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.render.Vect3d;
@@ -266,7 +267,18 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
 			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + newExp.infix() + " in it");
 		}
 	}
-	newExp = SolverUtilities.substituteSizeFunctions(newExp, variableDomain);
+	if (bChomboSolver)
+	{
+		Set<FunctionInvocation> sizeFunctions = SolverUtilities.getSizeFunctionInvocations(newExp);
+		if (sizeFunctions.size() > 0)
+		{
+			throw new ExpressionException("Size functions are not supported by " + simTask.getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel());
+		}
+	}
+	else
+	{
+		newExp = SolverUtilities.substituteSizeFunctions(newExp, variableDomain);
+	}
 	return newExp;
 }
 
