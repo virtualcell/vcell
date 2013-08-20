@@ -1022,6 +1022,7 @@ public Set<SolverFeature> getSupportedFeatures() {
 		featureSet.add(SolverFeature.Feature_Spatial);
 		featureSet.add(SolverFeature.Feature_Deterministic);
 		featureSet.add(SolverFeature.Feature_DirichletAtMembraneBoundary);
+		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
 		break;
 	}
 	return featureSet;
