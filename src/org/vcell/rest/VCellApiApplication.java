@@ -8,11 +8,14 @@ import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
+import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
+import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
@@ -35,6 +38,11 @@ import freemarker.template.Configuration;
 
 public class VCellApiApplication extends WadlApplication {
 	
+	public enum AuthenticationPolicy {
+		ignoreInvalidCredentials,
+		prohibitInvalidCredentials
+	}
+
 	public static final String LOGIN = "login";
 	public static final String LOGINFORM = "loginform";
 	public static final String IDENTIFIER_FORMNAME = "user";
@@ -217,27 +225,49 @@ public class VCellApiApplication extends WadlApplication {
 		return userVerifier;
 	}
 
-	public User getVCellUser(ChallengeResponse response) {
+	public User getVCellUser(ChallengeResponse response, AuthenticationPolicy authPolicy) {
 		try {
 			ApiAccessToken accessToken = getApiAccessToken(response);
 			if (accessToken!=null){
 				if (accessToken.isExpired()){
-					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken has expired ... returning user = null");
-					return null;			
+					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
+						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUser(response) - ApiAccessToken has expired ... returning user = null");
+						return null;
+					}else{
+						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token expired");
+					}
 				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
-					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has been invalidated ... returning user = null");
-					return null;
+					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
+						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has been invalidated ... returning user = null");
+						return null;
+					}else{
+						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
+					}
 				}else{
-					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken has expired ... returning user = null");
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken is valid ... returning user = "+accessToken.getUser().getName());
 					return accessToken.getUser();
 				}
-			}else{
-				getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not found ... returning user = null");
-				return null;
+			}else{ // accessToken is null
+				AuthenticationStatus authStatus = userVerifier.verify(response);
+				if (authStatus==AuthenticationStatus.missing){
+					getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not provided ... returning user = null");
+					return null;
+				}else{
+					if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
+						getLogger().log(Level.INFO,"VCellApiApplication.getVCellUse(response) - ApiAccessToken not found in database ... returning user = null");
+						return null;
+					}else{
+						throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "access_token invalid");
+					}
+				}
 			}
 		}catch (Exception e){
-			getLogger().log(Level.SEVERE,"VCellApiApplication.getVCellUse(response) - error authenticating user", e);
-			return null;
+			if (authPolicy == AuthenticationPolicy.ignoreInvalidCredentials){
+				getLogger().log(Level.SEVERE,"VCellApiApplication.getVCellUse(response) - error authenticating user", e);
+				return null;
+			}else{
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED,e.getMessage());
+			}
 		}
 	}
 	

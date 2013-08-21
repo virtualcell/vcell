@@ -15,6 +15,8 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.UserVerifier.AuthenticationStatus;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelSimulationStopResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
@@ -68,7 +70,7 @@ public class BiomodelSimulationStopServerResource extends AbstractServerResource
 	@Override
 	public Representation stop() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		RestDatabaseService restDatabaseService = application.getRestDatabaseService();
 		try {
 			SimulationRep simRep = restDatabaseService.stopSimulation(this, vcellUser);

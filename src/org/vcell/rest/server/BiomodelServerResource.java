@@ -20,6 +20,7 @@ import org.restlet.representation.Variant;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelResource;
 import org.vcell.util.DataAccessException;
@@ -77,7 +78,7 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 	@Override
 	public BiomodelRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		
         BiomodelRepresentation biomodelRep = getBiomodelRepresentation(vcellUser);
         
@@ -90,7 +91,7 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
 		BiomodelRepresentation biomodel = getBiomodelRepresentation(vcellUser);
 		if (biomodel==null){

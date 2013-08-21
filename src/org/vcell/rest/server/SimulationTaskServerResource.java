@@ -12,8 +12,10 @@ import org.restlet.ext.wadl.WadlServerResource;
 import org.restlet.representation.Variant;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTaskResource;
+import org.vcell.util.document.User;
 
 public class SimulationTaskServerResource extends WadlServerResource implements SimulationTaskResource {
 
@@ -60,15 +62,13 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
 
 	@Override
 	public SimulationTaskRepresentation get_json() {
+		VCellApiApplication application = ((VCellApiApplication)getApplication());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
+
 		SimulationTaskRepresentation sim = new SimulationTaskRepresentation();
 		sim.simKey="123";
 		return sim;
 	}
 
-	@Override
-	public void put_json(SimulationTaskRepresentation simulation) {
-		// TODO Auto-generated method stub
-
-	}
 
 }

@@ -21,6 +21,7 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimDataRepresentation;
 import org.vcell.rest.common.SimDataResource;
 import org.vcell.util.DataAccessException;
@@ -74,7 +75,7 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 	@Override
     public SimDataRepresentation get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		
         return getSimDataRepresentation(vcellUser);
     }
@@ -82,7 +83,7 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		SimDataRepresentation simData = null;
 		try {
 			simData = getSimDataRepresentation(vcellUser);

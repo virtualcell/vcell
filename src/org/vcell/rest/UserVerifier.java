@@ -33,6 +33,12 @@ public class UserVerifier implements Verifier {
 			this.digestedPassword = digestedPassword;
 		}
 	}
+	public enum AuthenticationStatus {
+		missing,
+		invalid,
+		stale,
+		valid
+	};
 	private HashMap<String,AuthenticationInfo> useridMap = new HashMap<String,AuthenticationInfo>();
 	private HashMap<String,ApiAccessToken> accessTokenMap = new HashMap<String,ApiAccessToken>();
 	private HashMap<String,ApiClient> clientidMap = new HashMap<String,ApiClient>();
@@ -119,33 +125,52 @@ public class UserVerifier implements Verifier {
 	@Override
 	public int verify(Request request, Response response) {
 		ChallengeResponse challengeResponse = request.getChallengeResponse();
+		AuthenticationStatus result = verify(challengeResponse);
+		
+		Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning "+result+", request='"+request+"'");
+		
+		switch (result){
+			case invalid:{
+				request.getCookies().removeAll("org.vcell.auth");
+				response.getCookieSettings().removeAll("org.vcell.auth");
+				return RESULT_INVALID;
+			}
+			case stale:{
+				request.getCookies().removeAll("org.vcell.auth");
+				response.getCookieSettings().removeAll("org.vcell.auth");
+				return RESULT_STALE;
+			}
+			case missing:{
+				return RESULT_MISSING;
+			}
+			case valid:{
+				return RESULT_VALID;
+			}
+			default: {
+				return RESULT_UNKNOWN;
+			}
+		}
+	}
+
+	public AuthenticationStatus verify(ChallengeResponse challengeResponse) {
 		if (challengeResponse != null && challengeResponse.getIdentifier().equals(CustomAuthHelper.ACCESS_TOKEN) && challengeResponse.getSecret()!=null){
 			try {
 				ApiAccessToken accessToken = getApiAccessToken(new String(challengeResponse.getSecret()));
 				if (accessToken==null){
-					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_MISSING -  "+CustomAuthHelper.ACCESS_TOKEN+" not found in database, request='"+request+"'");
-					return RESULT_MISSING;
+					return AuthenticationStatus.invalid;
 				}else if (accessToken.isExpired()){
-					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_STALE -  "+CustomAuthHelper.ACCESS_TOKEN+" EXPIRED, token='"+accessToken.getToken()+"', request='"+request+"'");
-					request.getCookies().removeAll("org.vcell.auth");
-					return RESULT_STALE;
+					return AuthenticationStatus.stale;
 				}else if (accessToken.getStatus()==AccessTokenStatus.invalidated){
-					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_INVALID -  "+CustomAuthHelper.ACCESS_TOKEN+" INVALIDATED, token='"+accessToken.getToken()+"', request='"+request+"'");
-					request.getCookies().removeAll("org.vcell.auth");
-					return RESULT_INVALID;
+					return AuthenticationStatus.invalid;
 				}else{
-					Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_VALID -  verified supplied "+CustomAuthHelper.ACCESS_TOKEN+", token='"+accessToken.getToken()+"', request='"+request+"'");
-					return RESULT_VALID;
+					return AuthenticationStatus.valid;
 				}
 			}catch (Exception e){
 				e.printStackTrace(System.out);
-				Context.getCurrent().getLogger().log(Level.SEVERE,"UserVerifier.verify(request,response) - returning RESULT_INVALID - exception, request='"+request+"'",e);
-				request.getCookies().removeAll("org.vcell.auth");
-				return RESULT_INVALID;
+				return AuthenticationStatus.invalid;
 			}
 		}else{
-			Context.getCurrent().getLogger().log(Level.INFO,"UserVerifier.verify(request,response) - returning RESULT_MISSING - challengeResponse was null, request='"+request+"'");
-			return RESULT_MISSING;
+			return AuthenticationStatus.missing;
 		}
 	}
 

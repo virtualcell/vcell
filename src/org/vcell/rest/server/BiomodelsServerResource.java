@@ -22,6 +22,7 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelsResource;
 import org.vcell.util.DataAccessException;
@@ -79,7 +80,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	@Override
     public BiomodelRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		
         return getBiomodelRepresentations(vcellUser);
     }
@@ -87,7 +88,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
 		BiomodelRepresentation[] biomodels = getBiomodelRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();

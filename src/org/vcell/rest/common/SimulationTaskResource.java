@@ -8,7 +8,4 @@ public interface SimulationTaskResource {
 	@Get("json")
 	public SimulationTaskRepresentation get_json();
 	
-	@Put("json")
-	public void put_json(SimulationTaskRepresentation simulation);
-	
 }

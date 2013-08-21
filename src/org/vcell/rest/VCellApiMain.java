@@ -26,6 +26,8 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -98,6 +100,9 @@ public class VCellApiMain {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+
+			VCMongoMessage.enabled=true;
+			VCMongoMessage.serviceStartup(ServiceName.unknown, new Integer(8080), args);
 
 			System.out.println("setting up server configuration");
 

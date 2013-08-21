@@ -22,6 +22,7 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
@@ -110,7 +111,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
     public SimulationTaskRepresentation[] get_json() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-			User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 		
         return getSimulationTaskRepresentations(vcellUser);
     }
@@ -118,7 +119,7 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 	@Override
 	public Representation get_html() {
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse());
+		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
 		
 		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();
