@@ -167,6 +167,7 @@ public class VCellApiApplication extends WadlApplication {
         cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
         cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
         cookieAuthenticator.setVerifier(userVerifier);
+        cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
 
 	    
 		Router rootRouter = new Router(getContext());
