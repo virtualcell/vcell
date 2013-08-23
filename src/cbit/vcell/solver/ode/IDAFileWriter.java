@@ -131,6 +131,7 @@ protected String writeEquations(HashMap<Discontinuity, String> discontinuityName
 			Expression fastInvariantExpression = fastInvariant.getFunction();
 			for (int col = 0; col < systemDim; col++) {
 				Expression coeff = fastInvariantExpression.differentiate(origVarColumnVector.get(col, 0).infixString()).flatten();
+				coeff = simSymbolTable.substituteFunctions(coeff);
 				fastInvarianceMatrix.set_elem(row, col, RationalExpUtils.getRationalExp(coeff));
 			}
 			row++;
