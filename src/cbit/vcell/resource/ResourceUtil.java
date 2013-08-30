@@ -12,8 +12,10 @@ package cbit.vcell.resource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,7 +102,7 @@ public class ResourceUtil {
 	}
 	
 	private static List<String> libList = null;
-
+	
 	public static JavaVersion getJavaVersion() {
 		if ((System.getProperty("java.version")).contains("1.5")) {
 			return JavaVersion.FIVE;
@@ -170,7 +172,7 @@ public class ResourceUtil {
 		return localSimDir; 
 	}
 
-	public static void writeFileFromResource(String resname, File file) throws IOException {
+	public static void writeResourceToFile(String resname, File file) throws IOException{
 		java.net.URL url = ResourceUtil.class.getResource(resname);
 		if (url == null) {
 			throw new RuntimeException("ResourceUtil::writeFileFromResource() : Can't get resource for " + resname);
@@ -191,27 +193,23 @@ public class ResourceUtil {
 				
 				bos.write(byteArray, 0, numRead);
 			}
-			if (!bWindows) {
-				System.out.println("Make " + file + " executable");
-				Process p = Runtime.getRuntime().exec("chmod 755 " + file);
-				try {
-					p.waitFor();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
 		} finally {
-			try {
-				if (bis != null) {
-					bis.close();
-				}
-				if (bos != null) {
-					bos.close();
-				}
-			} catch (IOException ex) {
-				ex.printStackTrace(System.out);
-			}
+			if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
+			if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
 		}			
+
+	}
+	public static void writeFileFromResource(String resname, File file) throws IOException {
+		writeResourceToFile(resname,file);
+		if (!bWindows) {
+			System.out.println("Make " + file + " executable");
+			Process p = Runtime.getRuntime().exec("chmod 755 " + file);
+			try {
+				p.waitFor();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public static void loadLibrary(String libname) {
