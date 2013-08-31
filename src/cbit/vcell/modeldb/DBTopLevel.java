@@ -47,6 +47,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
+import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOPResults;
@@ -1943,11 +1944,11 @@ KeyValue updateVersionable(User user, Simulation simulation, KeyValue updatedMat
 }
 
 
-public BioModelRep[] getBioModelReps(User user, String conditions, int startRow, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
+public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy orderBy, int startRow, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions, startRow, numRows);
+		BioModelRep[] biomodelreps = bioModelDB.getBioModelReps(con,user,conditions, orderBy, startRow, numRows);
 		return biomodelreps;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -1959,7 +1960,7 @@ public BioModelRep[] getBioModelReps(User user, String conditions, int startRow,
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getBioModelReps(user, conditions, startRow, numRows, false);
+			return getBioModelReps(user, conditions, orderBy, startRow, numRows, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

@@ -39,6 +39,7 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 /**
  * This type was created in VisualAge.
  */
@@ -572,14 +573,14 @@ public KeyValue updateVersionable(InsertHashtable hash, Connection con, User use
 }
 
 
-public BioModelRep[] getBioModelReps(Connection con, User user, String conditions, int startRow, int numRows)
+public BioModelRep[] getBioModelReps(Connection con, User user, String conditions, OrderBy orderBy, int startRow, int numRows)
 		throws SQLException, DataAccessException, ObjectNotFoundException {
 	if (user == null) {
 		throw new IllegalArgumentException("Improper parameters for getBioModelMetaDatas");
 	}
 	log.print("BioModelDbDriver.getBioModelReps(user=" + user + ", conditions=" + conditions + ")");
 	
-	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, startRow, numRows);
+	String sql = bioModelTable.getPreparedStatement_BioModelReps(conditions, orderBy, startRow, numRows);
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 //	System.out.println(sql);
