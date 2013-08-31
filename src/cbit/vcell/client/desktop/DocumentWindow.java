@@ -43,6 +43,7 @@ import javax.swing.UIManager;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -2733,7 +2734,7 @@ public void showTransMADialog()
 					    if(returnVal == JFileChooser.APPROVE_OPTION) {
 					       File outFile = saveLicenseJFC.getSelectedFile();
 					       try{
-					    	   ResourceUtil.writeResourceToFile("/thirdpartylicenses.txt", outFile);
+					    	   ResourceUtil.writeResourceToFile("/"+System.getProperty(PropertyLoader.vcellThirdPartyLicense), outFile);
 					       }catch(Exception e){
 					    	   e.printStackTrace();
 					    	   DialogUtils.showErrorDialog(DocumentWindow.this, "Error saving license info: "+e.getMessage());
