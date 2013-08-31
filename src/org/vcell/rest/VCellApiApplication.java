@@ -76,7 +76,23 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String STARTSIMULATION = "startSimulation";
 	public static final String STOPSIMULATION = "stopSimulation";
+
 	public static final User DUMMY_USER = new User("VOID_VCELL_USER", new KeyValue("11111111111111"));
+	
+	public static final String USERNAME_EDUCATION = "Education";
+	public static final String USERNAME_TUTORIAL = "tutorial";
+
+	public static final String PSEUDOOWNER_PUBLIC = "all_public";
+	public static final String PSEUDOOWNER_SHARED = "shared";
+	public static final String PSEUDOOWNER_EDUCATION = "Education";
+	public static final String PSEUDOOWNER_TUTORIAL = "tutorial";
+	
+	public static final String CATEGORY_PUBLIC = "public";
+	public static final String CATEGORY_SHARED = "shared";
+	public static final String CATEGORY_EDUCATION = "education";
+	public static final String CATEGORY_TUTORIAL = "tutorial";
+	public static final String CATEGORY_MINE = "mine";
+	public static final String CATEGORY_ALL = "all";
 	
 	
 	private RestDatabaseService restDatabaseService = null;

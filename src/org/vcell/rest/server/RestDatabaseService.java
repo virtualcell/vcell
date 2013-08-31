@@ -10,6 +10,8 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -26,6 +28,7 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
@@ -166,12 +169,15 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
+		String bioModelName = resource.getQueryValue(BiomodelsServerResource.PARAM_BM_NAME);
 		Long bioModelID = resource.getLongQueryValue(BiomodelsServerResource.PARAM_BM_ID);
 		Long savedLow = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_LOW);
 		Long savedHigh = resource.getLongQueryValue(BiomodelsServerResource.PARAM_SAVED_HIGH);
 		Long startRowParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_START_ROW);
 		Long maxRowsParam = resource.getLongQueryValue(BiomodelsServerResource.PARAM_MAX_ROWS);
-		String owner = resource.getQueryValue(BiomodelsServerResource.PARAM_BM_OWNER); // it is ok if the ownerName is null;
+		String categoryParam = resource.getQueryValue(BiomodelsServerResource.PARAM_CATEGORY); // it is ok if the category is null;
+		String ownerParam = resource.getQueryValue(BiomodelsServerResource.PARAM_BM_OWNER); // it is ok if the ownerName is null;
+		String orderByParam = resource.getQueryValue(BiomodelsServerResource.PARAM_ORDERBY); // it is ok if the orderBy is null;
 		int startRow = 1; // default
 		if (startRowParam!=null){
 			startRow = startRowParam.intValue();
@@ -190,11 +196,95 @@ public class RestDatabaseService {
 		if (savedHigh != null){
 			conditions.add("(" + BioModelTable.table.versionDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(savedHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
 		}
+		if (bioModelName != null && bioModelName.trim().length()>0){
+			String pattern = bioModelName.trim();
+			pattern = pattern.replace("  ", " ");
+			pattern = pattern.replace("(", " ");
+			pattern = pattern.replace(")", " ");
+			pattern = pattern.replace("'", " ");
+			pattern = pattern.replace("\"", " ");
+			pattern = pattern.replace("*","%");
+			pattern = "%"+pattern+"%";
+			pattern = pattern.replace("%%","%");
+			conditions.add("(" + "lower("+BioModelTable.table.name.getQualifiedColName()+")" + " like " + "lower('"+pattern+"')" + ")");		
+		}
 		if (bioModelID != null){
 			conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bioModelID + ")");		
 		}
-		if (owner != null && owner.length()>0){
-			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + owner + "')");
+		//
+		// if ownerParam and categoryParam are both not specified, then return all models that we have permission for.
+		//
+		if (categoryParam==null && ownerParam!=null){
+			if (ownerParam.equals(VCellApiApplication.PSEUDOOWNER_PUBLIC)){
+				categoryParam = VCellApiApplication.CATEGORY_PUBLIC;
+				ownerParam = null;
+			}else if (ownerParam.equals(VCellApiApplication.PSEUDOOWNER_EDUCATION)){
+				categoryParam = VCellApiApplication.CATEGORY_EDUCATION;
+				ownerParam = null;
+			}else if (ownerParam.equals(VCellApiApplication.PSEUDOOWNER_SHARED)){
+				categoryParam = VCellApiApplication.CATEGORY_SHARED;
+				ownerParam = null;
+			}else if (ownerParam.equals(VCellApiApplication.PSEUDOOWNER_TUTORIAL)){
+				categoryParam = VCellApiApplication.CATEGORY_TUTORIAL;
+				ownerParam = null;
+			}else{
+				categoryParam = VCellApiApplication.CATEGORY_ALL;
+			}
+		}else if (categoryParam==null && ownerParam==null){
+			categoryParam = VCellApiApplication.CATEGORY_ALL;
+		}
+
+		if (categoryParam.equals(VCellApiApplication.CATEGORY_MINE)){
+			//
+			// return all models owned by me (none if not authenticated).
+			//
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + vcellUser.getName() + "')");
+			
+		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_PUBLIC)){
+			//
+			// public models that aren't "Tutorial" or "Education"
+			//
+			// we will display all public models (even if owned by this user)
+			//
+			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " = " + GroupAccess.GROUPACCESS_ALL + ")");
+			if (ownerParam!=null && ownerParam.trim().length()>0){
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");		
+			}
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + VCellApiApplication.USERNAME_TUTORIAL + "')");
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + VCellApiApplication.USERNAME_EDUCATION + "')");
+		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_EDUCATION)){
+			//
+			// public models from "Education"
+			//
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + VCellApiApplication.USERNAME_EDUCATION + "')");
+			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " = " + GroupAccess.GROUPACCESS_ALL + ")");
+		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_TUTORIAL)){
+			//
+			// public models from "tutorial"
+			//
+			conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + VCellApiApplication.USERNAME_TUTORIAL + "')");
+			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " = " + GroupAccess.GROUPACCESS_ALL + ")");
+		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_SHARED)){
+			//
+			// only authenticated users can have shared models
+			//
+			// we will display all shared models (even if owned by this user)
+			//
+			if (!vcellUser.compareEqual(VCellApiApplication.DUMMY_USER)){
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " != '" + vcellUser.getName() + "')");
+			}
+			if (ownerParam!=null && ownerParam.trim().length()>0){
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");		
+			}
+			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " != " + GroupAccess.GROUPACCESS_ALL + ")");
+			conditions.add("(" + BioModelTable.table.privacy.getQualifiedColName() + " != " + GroupAccess.GROUPACCESS_NONE + ")");
+		}else if (categoryParam.equals(VCellApiApplication.CATEGORY_ALL)){
+			//
+			// not a pseudo-owner (like shared, public, education, tutorial) return all from this user that we have permission for
+			//
+			if (ownerParam!=null && ownerParam.length()>0){
+				conditions.add("(" + UserTable.table.userid.getQualifiedColName() + " = '" + ownerParam + "')");
+			}
 		}
 	
 		StringBuffer conditionsBuffer = new StringBuffer();
@@ -204,7 +294,19 @@ public class RestDatabaseService {
 			}
 			conditionsBuffer.append(condition);
 		}
-		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
+		OrderBy orderBy = OrderBy.date_asc; // default
+		if (orderByParam!=null){
+			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_ASC)){
+				orderBy = OrderBy.date_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_DESC)){
+				orderBy = OrderBy.date_desc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_ASC)){
+				orderBy = OrderBy.name_asc;
+			}else if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_NAME_DESC)){
+				orderBy = OrderBy.name_desc;
+			}
+		}
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), orderBy, startRow, maxRows);
 		for (BioModelRep bioModelRep : bioModelReps) {
 			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
 			for (KeyValue scKey : simContextKeys) {
@@ -246,7 +348,7 @@ public class RestDatabaseService {
 		}
 		int startRow = 1;
 		int maxRows = 1;
-		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
 		for (BioModelRep bioModelRep : bioModelReps) {
 			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
 			for (KeyValue scKey : simContextKeys) {
@@ -291,7 +393,7 @@ public class RestDatabaseService {
 		}
 		int startRow = 1;
 		int maxRows = 1;
-		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), startRow, maxRows);
+		BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
 		for (BioModelRep bioModelRep : bioModelReps) {
 			KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
 			for (KeyValue scKey : simContextKeys) {

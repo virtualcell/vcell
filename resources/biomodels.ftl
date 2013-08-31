@@ -8,16 +8,31 @@
 
 <form>
 	<table><tbody>
+	<tr><td>BioModel Name</td><td><input type='text' name='bmName' value='${bmName!""}'/></td></tr>
 	<tr><td>BioModel ID</td><td><input type='text' name='bmId' value='${bmId!""}'/></td></tr>
+	<tr><td>Category</td><td>
+						<input type='radio' name='category' value='all' <#if (!category??) || (category == "all")>checked=on</#if>>all</input>
+						<input type='radio' name='category' value='public' <#if category?? && category == "public">checked=on</#if>>public</input>
+						<input type='radio' name='category' value='shared' <#if category?? && category == "shared">checked=on</#if>>shared</input>
+						<input type='radio' name='category' value='mine' <#if category?? && category == "mine">checked=on</#if>>mine</input>
+						<input type='radio' name='category' value='tutorial' <#if category?? && category == "tutorial">checked=on</#if>>tutorials</input>
+						<input type='radio' name='category' value='education' <#if category?? && category == "education">checked=on</#if>>educational</input>
+						</td></tr>
 	<tr><td>Owner</td><td><input type='text' name='owner' value='${ownerName!""}'/></td></tr>
 	<tr><td>Begin Time</td><td><input type='text' name='savedLow' value='${savedLow!""}'/></td></tr>
 	<tr><td>End Timestamp</td><td><input type='text' name='savedHigh' value='${savedHigh!""}'/></td></tr>
 	<tr><td>start row</td><td><input type='text' name='startRow' value='${startRow}'/></td></tr>
 	<tr><td>max num rows</td><td><input type='text' name='maxRows' value='${maxRows}'/></td></tr>
+	<tr><td>Order By</td><td>
+						<input type='radio' name='orderBy' value='date_desc' <#if (!orderBy??) || (orderBy == "date_desc")>checked=on</#if>>Date (newest)</input>
+						<input type='radio' name='orderBy' value='date_asc' <#if orderBy?? && orderBy == "date_asc">checked=on</#if>>Date (oldest)</input>
+						<input type='radio' name='orderBy' value='name_asc' <#if orderBy?? && orderBy == "name_asc">checked=on</#if>>Name (A-Z)</input>
+						<input type='radio' name='orderBy' value='name_desc' <#if orderBy?? && orderBy == "name_desc">checked=on</#if>>Name (Z-A)</input>
+						</td></tr>
 	</tbody></table>
 	<input type='submit' value='Search' style='font-size:large'>
 </form>
-
+(Owner also accepts all_public, shared, Education, and tutorial)
 </center>
 
 <br/><h3>query returned ${biomodels?size} results</h3>

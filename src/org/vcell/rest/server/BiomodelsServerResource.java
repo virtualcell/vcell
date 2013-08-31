@@ -37,12 +37,25 @@ import freemarker.template.Configuration;
 public class BiomodelsServerResource extends AbstractServerResource implements BiomodelsResource {
 
 	public static final String PARAM_USER = "user";
+	public static final String PARAM_BM_NAME = "bmName";
 	public static final String PARAM_BM_ID = "bmId";
 	public static final String PARAM_SAVED_HIGH = "savedHigh";
 	public static final String PARAM_SAVED_LOW = "savedLow";
 	public static final String PARAM_START_ROW = "startRow";
 	public static final String PARAM_MAX_ROWS = "maxRows";
 	public static final String PARAM_BM_OWNER = "owner";
+	public static final String PARAM_ORDERBY = "orderBy";
+	public static final String PARAM_ORDERBY_DATE_ASC = "date_asc";
+	public static final String PARAM_ORDERBY_DATE_DESC = "date_desc";
+	public static final String PARAM_ORDERBY_NAME_ASC = "name_asc";
+	public static final String PARAM_ORDERBY_NAME_DESC = "name_desc";
+	public static final String PARAM_CATEGORY = "category";
+	public static final String PARAM_CATEGORY_ALL = "all";
+	public static final String PARAM_CATEGORY_PUBLIC = "public";
+	public static final String PARAM_CATEGORY_SHARED = "shared";
+	public static final String PARAM_CATEGORY_MINE = "mine";
+	public static final String PARAM_CATEGORY_TUTORIAL = "tutorial";
+	public static final String PARAM_CATEGORY_EDUCATION = "education";
 
 	@Override
 	protected void doInit() throws ResourceException {
@@ -68,11 +81,15 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
         parameterInfos.add(new ParameterInfo(PARAM_USER,false,"string",ParameterStyle.TEMPLATE,"VCell user id"));
+        parameterInfos.add(new ParameterInfo(PARAM_BM_NAME,false,"string",ParameterStyle.QUERY,"VCell biomodel name"));
         parameterInfos.add(new ParameterInfo(PARAM_BM_ID,false,"string",ParameterStyle.QUERY,"VCell biomodel database id"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_LOW,false,"string",ParameterStyle.QUERY,"earliest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_SAVED_HIGH,false,"string",ParameterStyle.QUERY,"latest saved timestamp (seconds since 1/1/1970)"));
         parameterInfos.add(new ParameterInfo(PARAM_START_ROW,false,"string",ParameterStyle.QUERY,"index of first record returned (default is 1)"));
         parameterInfos.add(new ParameterInfo(PARAM_MAX_ROWS,false,"string",ParameterStyle.QUERY,"max number of records returned (default is 10)"));
+        parameterInfos.add(new ParameterInfo(PARAM_BM_OWNER,false,"string",ParameterStyle.QUERY,"biomodel owner"));
+        parameterInfos.add(new ParameterInfo(PARAM_CATEGORY,false,"string",ParameterStyle.QUERY,"category (all,public,shared,mine,tutorial,education)"));
+        parameterInfos.add(new ParameterInfo(PARAM_ORDERBY,false,"string",ParameterStyle.QUERY,"order ( (default is 10)"));
  		requestInfo.setParameters(parameterInfos);
 		info.setRequest(requestInfo);
 	}
@@ -100,10 +117,13 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 		}
 		
 		dataModel.put("userId", getAttribute(PARAM_USER));
+		dataModel.put("bmName", getQueryValue(PARAM_BM_NAME));
 		dataModel.put("bmId", getQueryValue(PARAM_BM_ID));
 		dataModel.put("savedLow", getLongQueryValue(PARAM_SAVED_LOW));
 		dataModel.put("savedHigh", getLongQueryValue(PARAM_SAVED_HIGH));
 		dataModel.put("ownerName", getQueryValue(PARAM_BM_OWNER));
+		dataModel.put("category", getQueryValue(PARAM_CATEGORY));
+		dataModel.put("orderBy", getQueryValue(PARAM_ORDERBY));
 		Long startRowParam = getLongQueryValue(PARAM_START_ROW);
 		if (startRowParam!=null){
 			dataModel.put("startRow", startRowParam);
