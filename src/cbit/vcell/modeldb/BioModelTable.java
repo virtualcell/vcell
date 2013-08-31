@@ -29,6 +29,7 @@ import org.vcell.util.document.VersionInfo;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 
 /**
  * This type was created in VisualAge.
@@ -179,7 +180,7 @@ public String getSQLValueList(BioModelMetaData bioModelMetaData, String serialBM
 	return buffer.toString();
 }
 
-public String getPreparedStatement_BioModelReps(String conditions, int startRow, int numRows){
+public String getPreparedStatement_BioModelReps(String conditions, OrderBy orderBy, int startRow, int numRows){
 
 	BioModelTable bmTable = BioModelTable.table;
 	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
@@ -225,6 +226,26 @@ public String getPreparedStatement_BioModelReps(String conditions, int startRow,
 	}
 	
 	String orderByClause = "order by "+bmTable.versionDate.getQualifiedColName()+" DESC";
+	if (orderBy!=null){
+		switch (orderBy){
+		case date_asc:{
+			orderByClause = "order by "+bmTable.versionDate.getQualifiedColName()+" ASC";
+			break;
+		}
+		case date_desc:{
+			orderByClause = "order by "+bmTable.versionDate.getQualifiedColName()+" DESC";
+			break;
+		}
+		case name_asc:{
+			orderByClause = "order by "+bmTable.name.getQualifiedColName()+" ASC";
+			break;
+		}
+		case name_desc:{
+			orderByClause = "order by "+bmTable.name.getQualifiedColName()+" DESC";
+			break;
+		}
+		}
+	}
 
 	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql = null;

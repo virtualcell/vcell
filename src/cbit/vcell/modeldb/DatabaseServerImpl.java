@@ -68,6 +68,12 @@ public class DatabaseServerImpl {
 	private SessionLog log = null;
 	private ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this);
 
+	public enum OrderBy {
+		name_asc,
+		name_desc,
+		date_asc,
+		date_desc
+	};
 /**
  * This method was created in VisualAge.
  */
@@ -312,8 +318,8 @@ public BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws DataAcces
 }
 
 
-public BioModelRep[] getBioModelReps(User user, String conditions, int startRow, int numRows) throws DataAccessException, SQLException {
-	return dbTop.getBioModelReps(user, conditions, startRow, numRows, true);
+public BioModelRep[] getBioModelReps(User user, String conditions, OrderBy orderBy, int startRow, int numRows) throws DataAccessException, SQLException {
+	return dbTop.getBioModelReps(user, conditions, orderBy, startRow, numRows, true);
 }
 
 public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int numRows) throws DataAccessException, SQLException {
