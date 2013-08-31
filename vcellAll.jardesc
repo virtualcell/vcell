@@ -40,6 +40,7 @@
         <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_6"/>
         <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil"/>
         <file path="/VCell_Deployment/resources/bioModelsNetInfo.xml"/>
+        <file path="/VCell_Deployment/resources/thirdpartylicenses.txt"/>
         <javaElement handleIdentifier="=VCell_Deployment/resources&lt;sybil.images.edit"/>
         <javaElement handleIdentifier="=VCell_Deployment/src"/>
         <javaElement handleIdentifier="=VCell_Deployment/resources&lt;vcellDoc.topics.chapter_3.Protocols"/>
