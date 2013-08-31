@@ -47,6 +47,7 @@
         <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.uome"/>
         <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_6.PathwayDiagram"/>
         <file path="/VCell_5.3/resources/bioModelsNetInfo.xml"/>
+        <file path="/VCell_5.3/resources/thirdpartylicenses.txt"/>
         <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.sgmp"/>
         <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.JavaHelpSearch"/>
         <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.originalImages"/>
