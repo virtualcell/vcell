@@ -109,6 +109,7 @@ public class PropertyLoader {
 	public static final String limitJobMemoryMB		= "vcell.limit.jobMemoryMB";
 	
 	public static final String vcellSoftwareVersion = "vcell.softwareVersion";
+	public static final String vcellThirdPartyLicense = "vcell.thirdPartyLicense";
 
 	public static final String vcellServerHost = "vcell.serverHost";
 	
