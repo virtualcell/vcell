@@ -1,5 +1,6 @@
 package org.vcell.rest;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
@@ -13,6 +14,7 @@ import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
 import org.restlet.representation.Variant;
+import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Router;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
@@ -98,6 +100,7 @@ public class VCellApiApplication extends WadlApplication {
 	private RestDatabaseService restDatabaseService = null;
 	private UserVerifier userVerifier = null;
 	private Configuration templateConfiguration = null;
+	private File javascriptDir = null;
 	
 	@Override
 	protected Variant getPreferredWadlVariant(Request request) {
@@ -110,12 +113,13 @@ public class VCellApiApplication extends WadlApplication {
 		return super.createHtmlRepresentation(applicationInfo);
 	}
 
-	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, Configuration templateConfiguration) {
+	public VCellApiApplication(RestDatabaseService restDatabaseService, UserVerifier userVerifier, Configuration templateConfiguration, File javascriptDir) {
         setName("RESTful VCell API application");
         setDescription("Simulation management API");
         setOwner("VCell Project/UCHC");
         setAuthor("VCell Team");
 		setStatusService(new VCellStatusService());
+		this.javascriptDir = javascriptDir;
 		this.restDatabaseService = restDatabaseService;
 		this.userVerifier = userVerifier;
 		this.templateConfiguration = templateConfiguration;
@@ -185,8 +189,12 @@ public class VCellApiApplication extends WadlApplication {
         cookieAuthenticator.setVerifier(userVerifier);
         cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
 
-	    
+        String ROOT_URI = javascriptDir.toURI().toString();
+        System.out.println("using uri="+ROOT_URI+" for scripts directory");
+        String SCRIPTS = "scripts";
+        
 		Router rootRouter = new Router(getContext());
+		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  

@@ -1,5 +1,7 @@
 package org.vcell.rest;
 
+import java.io.File;
+
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -38,12 +40,16 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			if (args.length!=2){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword");
+			if (args.length!=3){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir");
 				System.exit(1);
 			}
 			String keystorePath = args[0];
 			String keystorePassword = args[1];
+			File javascriptDir = new File(args[2]);
+			if (!javascriptDir.isDirectory()){
+				throw new RuntimeException("expecting a directory");
+			}
 			
 		    System.out.println("connecting to database");
 
@@ -115,6 +121,7 @@ public class VCellApiMain {
 			
 //			Client httpsClient = component.getClients().add(Protocol.HTTPS);
 //			Client httpClient = component.getClients().add(Protocol.HTTP);
+			Client httpClient = component.getClients().add(Protocol.FILE);
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
@@ -127,7 +134,7 @@ public class VCellApiMain {
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 			
-			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration);
+			WadlApplication app = new VCellApiApplication(restDatabaseService, userVerifier,templateConfiguration,javascriptDir);
 			component.getDefaultHost().attach(app);  
 
 			System.out.println("component start()");

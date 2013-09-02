@@ -24,6 +24,7 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimDataValuesRepresentation;
 import org.vcell.rest.common.SimDataValuesResource;
+import org.vcell.rest.common.SimDataVariableValuesRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
@@ -110,6 +111,46 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 
 		dataModel.put("simdatavalues", simDataValues);
 		
+		int numVars = simDataValues.getVariables().length;
+		if (numVars>1){
+			StringBuffer buffer = new StringBuffer();
+			String firstRow = "\"";
+			for (int i=0; i<numVars; i++){
+				firstRow += simDataValues.getVariables()[i].getName();
+				if (i<numVars-1){
+					firstRow += ",";
+				}
+			}
+			firstRow += "\\n\" + \n";
+			buffer.append(firstRow);
+			
+			int numTimes = simDataValues.getVariables()[0].getValues().length;
+			
+			for (int t=0; t<numTimes; t++){
+				String row = "\"";
+				for (int v=0; v<numVars; v++){
+					row += simDataValues.getVariables()[v].getValues()[t];
+					if (v<numVars-1){
+						row += ",";
+					}
+				}
+				row += "\\n\"";
+				if (t<numTimes-1){
+					row += " + \n";
+				}
+				buffer.append(row);
+			}
+			String csvdata = buffer.toString();
+//			String csvdata = "\"t,x,y\\n\" + \n" +
+//					"\"0,0,0\\n\" + \n" +
+//					"\"1,1,1\\n\" + \n" +
+//					"\"2,2,4\\n\" + \n" +
+//					"\"3,3,9\\n\" + \n" +
+//					"\"4,4,16\\n\" + \n" +
+//					"\"5,5,25\\n\"";
+			
+			dataModel.put("csvdata",csvdata);
+		}
 		
 		Gson gson = new Gson();
 		dataModel.put("jsonResponse",gson.toJson(simDataValues));

@@ -1,5 +1,6 @@
 <html>
 <head>
+<script type="text/javascript" src="/scripts/dygraph-combined.js"></script>
 <title>Simulation Tasks</title>
 </head>
 <body>
@@ -8,6 +9,25 @@
 
 
 </center>
+<div id="graphdiv"></div>
+<script type="text/javascript">
+  g = new Dygraph(
+
+    // containing div
+    document.getElementById("graphdiv"),
+
+    // CSV or path to a CSV file.
+    //"Date,Temperature\n" +
+    //"2008-05-07,75\n" +
+    //"2008-05-08,70\n" +
+    //"2008-05-09,80\n"
+    <#if csvdata??>${csvdata}</#if>, {
+    xlabel: 'Time (s)'
+    <#if simName??>,title: 'Results for %{simName}'</#if>
+	}
+  );
+</script>
+
 <table border='1'>
 <tr>
 <th>Variable</th>
@@ -29,5 +49,5 @@ ${value},
 ${jsonResponse}
 <br/>
 </#if>
-
+</body>
 </html>
