@@ -54,6 +54,14 @@ public class DataSetTimeSeries implements Serializable {
 
 	private VarData[] getVarDatas(DataProcessingOutput dataProcessingOutput){
 		ArrayList<VarData> varValuesArray = new ArrayList<VarData>();
+		//
+		// add time as a variable
+		//
+		VarData timeValues = new VarData("t",dataProcessingOutput.getTimes());
+		varValuesArray.add(timeValues);
+		//
+		// add the variable data
+		//
 		String[] varNames = dataProcessingOutput.getVariableStatNames();
 		for (String varName : varNames) {
 			VarData values = new VarData(varName,dataProcessingOutput.getVariableStatValues(varName));
