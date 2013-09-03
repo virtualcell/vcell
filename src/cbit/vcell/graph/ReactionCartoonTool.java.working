@@ -11,7 +11,6 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -24,12 +23,7 @@ import java.beans.PropertyVetoException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -40,16 +34,13 @@ import javax.swing.JViewport;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.SimpleFilenameFilter;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.DialogUtils.TableListResult;
 import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.GraphPane;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
@@ -60,15 +51,9 @@ import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.actions.GraphViewAction;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -76,23 +61,19 @@ import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureUtil;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.publish.ITextWriter;
-import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
@@ -280,42 +261,18 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		return reactionCartoon;
 	}
 
-	private ReactionStep[] getSelectedReactionStepArray() {
-		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
-		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<ReactionStep> rxStepsArr = new ArrayList<ReactionStep>();
-			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
-				if (allSelectedShapes.get(i).getModelObject() instanceof ReactionStep){
-					rxStepsArr.add((ReactionStep) allSelectedShapes.get(i).getModelObject());
+	private ReactionStep[] getReactionStepArray(Shape shape, String menuAction) {
+		if (shape instanceof ReactionStepShape) {
+			List<Shape> shapes = getReactionCartoon().getSelectedShapes();
+			if (shapes != null && shapes.size() > 0) {
+				ArrayList<ReactionStep> reactionSteps = new ArrayList<ReactionStep>();
+				for (int i = 0; i < shapes.size(); i += 1) {
+					if (shapes.get(i).getModelObject() instanceof ReactionStep){
+						reactionSteps.add((ReactionStep)shapes.get(i).getModelObject());
+					}
 				}
+				return reactionSteps.toArray(new ReactionStep[0]);
 			}
-			return (rxStepsArr.size()==0?null:rxStepsArr.toArray(new ReactionStep[0]));
-		}
-		return null;
-	}
-	private SpeciesContext[] getSelectedSpeciesContextArray() {
-		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
-		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<SpeciesContext> speciesContextArr = new ArrayList<SpeciesContext>();
-			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
-				if (allSelectedShapes.get(i).getModelObject() instanceof SpeciesContext){
-					speciesContextArr.add((SpeciesContext) allSelectedShapes.get(i).getModelObject());
-				}
-			}
-			return (speciesContextArr.size()==0?null:speciesContextArr.toArray(new SpeciesContext[0]));
-		}
-		return null;
-	}
-	private ReactionParticipant[] getSelectedReactionParticipantArray() {
-		List<Shape> allSelectedShapes = getReactionCartoon().getSelectedShapes();
-		if (allSelectedShapes != null && allSelectedShapes.size() > 0) {
-			ArrayList<ReactionParticipant> reactionParticipantArr = new ArrayList<ReactionParticipant>();
-			for (int i = 0; i < allSelectedShapes.size(); i += 1) {
-				if (allSelectedShapes.get(i).getModelObject() instanceof ReactionParticipant){
-					reactionParticipantArr.add((ReactionParticipant) allSelectedShapes.get(i).getModelObject());
-				}
-			}
-			return (reactionParticipantArr.size()==0?null:reactionParticipantArr.toArray(new ReactionParticipant[0]));
 		}
 		return null;
 	}
@@ -388,38 +345,135 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				getGraphModel().select(speciesContext);
 			}
 		} else if (menuAction.equals(CartoonToolEditActions.Copy.MENU_ACTION)) {
-			if (shape instanceof SpeciesContextShape || shape instanceof ReactionStepShape) {
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = new VCellTransferable.ReactionSpeciesCopy(getSelectedSpeciesContextArray(), getSelectedReactionStepArray());
-				VCellTransferable.sendToClipboard(reactionSpeciesCopy);
+			if (shape instanceof SpeciesContextShape) {
+				Species species = ((SpeciesContextShape) shape)
+						.getSpeciesContext().getSpecies();
+				VCellTransferable.sendToClipboard(species);
+			} else if (shape instanceof ReactionStepShape) {
+				ReactionStep[] reactionStepArr = getReactionStepArray(shape,
+						menuAction);
+				if (reactionStepArr != null) {
+					VCellTransferable.sendToClipboard(reactionStepArr);
+				}
 			}
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
 				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
-				pasteReactionsAndSpecies(((ReactionContainerShape) shape).getStructure());
+				// See if Species
+				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				if (species != null) {
+					IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
+					SpeciesContext pastedSpeciesContext = pasteSpecies(getGraphPane(), species, getModel(), 
+							((ReactionContainerShape) shape).getStructure(), 
+							menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION),/* true, */
+					speciesHash, null);
+					getGraphModel().clearSelection();
+					getGraphModel().select(pastedSpeciesContext);
+				}
+				// See if ReactionStep[]
+				ReactionStep[] reactionStepArr = (ReactionStep[]) SimpleTransferable
+						.getFromClipboard(VCellTransferable.REACTIONSTEP_ARRAY_FLAVOR);
+				if (reactionStepArr != null) {
+					try {
+						pasteReactionSteps(
+								reactionStepArr, getModel(),
+								((ReactionContainerShape) shape).getStructure(),
+								menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION),
+								getGraphPane(), null);
+					} catch (Exception e) {
+						e.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(getGraphPane(),
+								"Error while pasting reaction:\n"
+										+ e.getMessage(), e);
+					}
+				}
 			}
 		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
 				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			try {
-				if (getSelectedReactionStepArray()!=null || getSelectedSpeciesContextArray()!=null) {
-					if(menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)){
-						new VCellTransferable.ReactionSpeciesCopy(getSelectedSpeciesContextArray(), getSelectedReactionStepArray());
+				if(shapes.length > 1){
+					GraphModel graphModel = getGraphModel();
+					if(graphModel instanceof ModelCartoon){
+						Model currentModel = ((ModelCartoon)graphModel).getModel();
+						Vector<Shape> shapesV = new Vector<Shape>();
+						shapesV.addAll(Arrays.asList(shapes));
+						for (int i = 0; i < shapes.length; i++) {
+							Shape currentShape = shapes[i];
+							if(currentShape instanceof ReactionStepShape){
+								ReactionStep currentReactstep = ((ReactionStepShape) currentShape).getReactionStep();
+//								System.out.println("----Reaction: "+currentReactstep.getName());
+								shapesV.remove(currentShape);
+								currentModel.removeReactionStep(currentReactstep);
+							}
+						}
+						Vector<SpeciesContext> vetoedSpeciesContextV = new Vector<SpeciesContext>();
+						for (int i = 0; i < shapes.length; i++) {
+							Shape currentShape = shapes[i];
+							if(currentShape instanceof SpeciesContextShape){
+								SpeciesContext currentSpeciesconContext = ((SpeciesContextShape) currentShape).getSpeciesContext();
+//								System.out.println("----SpeciesContext: "+currentSpeciesconContext.getName());
+								shapesV.remove(currentShape);
+								try{
+									currentModel.removeSpeciesContext(currentSpeciesconContext);
+								}catch(PropertyVetoException pve){
+//									System.out.println("--Delete Vetoed: "+currentSpeciesconContext.getName());
+									vetoedSpeciesContextV.add(currentSpeciesconContext);
+								}
+							}
+						}
+//						for (int i = 0; i < shapesV.size(); i++) {
+//							System.out.println("leftovers: "+shapesV.get(i).getClass().getCanonicalName()+" "+shapesV.get(i).toString());
+//						}
+						if(vetoedSpeciesContextV.size() > 0){
+							StringBuffer vetoMessage = new StringBuffer();
+							vetoMessage.append("The following Species were not deleted because of dependencies:");
+							for (int i = 0; i < vetoedSpeciesContextV.size(); i++) {
+								vetoMessage.append("\n"+vetoedSpeciesContextV.get(i).getName());
+							}
+							DialogUtils.showWarningDialog(getGraphPane(), vetoMessage.toString());
+						}
+						return;
 					}
-					deleteReactionsAndSpecies(getGraphPane(),getSelectedReactionStepArray(),getSelectedSpeciesContextArray(),menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION));
 				}
-				if (getSelectedReactionParticipantArray() != null && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
-					ReactionParticipant[] reactionParticipantArr = getSelectedReactionParticipantArray();
-					String response = DialogUtils.showWarningDialog(getGraphPane(),
-							"Delete "+reactionParticipantArr.length+" Reaction Stoichiometries",
-							new String[] {RXSPECIES_DELETE,RXSPECIES_CANCEL}, RXSPECIES_CANCEL);
-					if(response != null && response.equals(RXSPECIES_DELETE)){
-						for (int i = 0; i < reactionParticipantArr.length; i++) {
-							ReactionStep reactionStep = reactionParticipantArr[i].getReactionStep();
-							reactionStep.removeReactionParticipant(reactionParticipantArr[i]);						
+				if (shape instanceof ReactantShape
+						|| shape instanceof ProductShape
+						|| shape instanceof CatalystShape) {
+					ReactionParticipant reactionParticipant = ((ReactionParticipantShape) shape)
+							.getReactionParticipant();
+					ReactionStep reactionStep = reactionParticipant
+							.getReactionStep();
+					reactionStep.removeReactionParticipant(reactionParticipant);
+				}
+				if (shape instanceof ReactionStepShape) {
+					ReactionStep[] reactionStepArr = getReactionStepArray(
+							shape, menuAction);
+					if (reactionStepArr != null) {
+						if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
+							VCellTransferable.sendToClipboard(reactionStepArr);
 						}
 					}
+					for (int i = 0; i < reactionStepArr.length; i += 1) {
+						getModel().removeReactionStep(reactionStepArr[i]);
+					}
 				}
-			} catch(UserCancelException uce){
-				return;
+				if (shape instanceof SpeciesContextShape) {
+					//remove all ReactionParticipants that have this speciesContext first
+					Shape[] objShapeArr = getReactionCartoon().getShapes().toArray(new Shape[0]);
+					for(Shape objShape : objShapeArr){
+						if(objShape instanceof ReactionParticipantShape){
+							ReactionParticipant objReactionParticipant = ((ReactionParticipantShape)objShape).getReactionParticipant();
+							if(objReactionParticipant.getSpeciesContext().equals(((SpeciesContextShape) shape).getSpeciesContext())){
+								ReactionStep reactionStep = objReactionParticipant.getReactionStep();
+								reactionStep.removeReactionParticipant(objReactionParticipant);
+							}
+						}
+					}
+					getModel().removeSpeciesContext(
+							((SpeciesContextShape) shape).getSpeciesContext());
+					if (menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
+						VCellTransferable.sendToClipboard(((SpeciesContextShape) shape).getSpeciesContext().getSpecies());
+					}
+				}
 			} catch (PropertyVetoException e) {
 				DialogUtils.showErrorDialog(getGraphPane(), e.getMessage());
 			} catch (Exception e) {
@@ -465,383 +519,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		} else {
 			// default action is to ignore
 		}
-
-	}
-	
-	private void pasteReactionsAndSpecies(Structure structure){
-		final String RXSPECIES_PASTERX = "Reactions";
-		final String RXSPECIES_SPECIES = "Species";
-		VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
-		if(reactionSpeciesCopy != null){
-			String response = null;
-			if(reactionSpeciesCopy.getReactStepArr() != null &&  reactionSpeciesCopy.getSpeciesContextArr() != null){
-				response = DialogUtils.showWarningDialog(getGraphPane(),"Choose Species or Reactions to paste",
-						"There are "+reactionSpeciesCopy.getSpeciesContextArr().length+" Species and "+reactionSpeciesCopy.getReactStepArr().length+" Reactions on the clipboard, choose which set to paste.",
-						new String[] {RXSPECIES_SPECIES,RXSPECIES_PASTERX,RXSPECIES_CANCEL}, RXSPECIES_CANCEL);
-				if(response == null || response.equals(RXSPECIES_CANCEL)){
-					return;
-				}
-			}
-			if(reactionSpeciesCopy.getSpeciesContextArr() != null && (response==null || response.equals(RXSPECIES_SPECIES))){
-				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-				Vector<SpeciesContext> pastedSpeciesContextV = new Vector<SpeciesContext>();
-				for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
-					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), getModel(),structure,true,speciesHash, null));
-				}
-				getGraphModel().clearSelection();
-				for(SpeciesContext pastedSpeciesContext:pastedSpeciesContextV){
-					getGraphModel().select(pastedSpeciesContext);
-				}
-			}
-			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				try {
-					pasteReactionSteps(reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(getGraphPane(),"Error while pasting reaction:\n"+ e.getMessage(), e);
-				}						
-			}
-		}
-
-	}
-	private static final String RXSPECIES_BACK = "Back";
-	private static final String RXSPECIES_CANCEL = "Cancel";
-	private static final String RXSPECIES_DELETE = "Delete";
-	private static final String RXSPECIES_CUT = "Cut";
-	private static final String RXSPECIES_ERROR = "Error";
-
-	private static TableListResult showDeleteDetails(Component requester,DeleteSpeciesInfo deleteSpeciesInfo,ReactionStep[] reactionStepArr,boolean bCut,boolean bShowErrorsOnly){
-		if(reactionStepArr != null && reactionStepArr.length == 0){
-			reactionStepArr = null;
-		}
-		String[][] rowData = null;
-		String[] columnNames = null;
-		String title = null;
-		if(reactionStepArr != null){
-			Arrays.sort(reactionStepArr, new Comparator<ReactionStep>() {
-				@Override
-				public int compare(ReactionStep o1, ReactionStep o2) {
-					return o1.getName().compareToIgnoreCase(o2.getName());
-				}
-			});			
-		}
-		final String OK_TO_DELETE = "ok to delete";
-		final String ERROR_IF_DELETE = "ERROR if deleted";
-		ArrayList<String[]> errorRows = new ArrayList<String[]>();
-		if(deleteSpeciesInfo != null && reactionStepArr != null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions/Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
-			columnNames = new String[] {"Type","Name","Flag","Reference"};
-			rowData = new String[deleteSpeciesInfo.getRowData().length+reactionStepArr.length][4];
-			final int STATUS_ROW = 2;
-			for (int i = 0; i < rowData.length; i++) {
-				if(i< reactionStepArr.length){
-					rowData[i][0] = "Reaction";
-					rowData[i][1] = reactionStepArr[i].getName();
-					rowData[i][STATUS_ROW] = OK_TO_DELETE;
-					rowData[i][3] = "";
-				}else{
-					int index = i-reactionStepArr.length;
-					rowData[i][0] = "Species";
-					rowData[i][1] = deleteSpeciesInfo.getRowData()[index][0];
-					rowData[i][STATUS_ROW] = (deleteSpeciesInfo.getRowData()[index][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
-					rowData[i][3] = deleteSpeciesInfo.getRowData()[index][2]+" "+deleteSpeciesInfo.getRowData()[index][3];
-				}
-				if(rowData[i][STATUS_ROW].equals(ERROR_IF_DELETE)){
-					errorRows.add(rowData[i]);
-				}
-			}
-		}else if(deleteSpeciesInfo != null && reactionStepArr == null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Species."+(deleteSpeciesInfo.bAnyUnresolvable()?"  User must resolve 'error' Flags to "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".":"");
-			columnNames = new String[] {"Species","Flag","Reference"};
-			rowData = new String[deleteSpeciesInfo.getRowData().length][3];
-			final int STATUS_ROW = 1;
-			for (int i = 0; i < deleteSpeciesInfo.getRowData().length; i++) {
-				rowData[i][0] = deleteSpeciesInfo.getRowData()[i][0];
-				rowData[i][STATUS_ROW] = (deleteSpeciesInfo.getRowData()[i][1].equals(RXSPECIES_ERROR)?ERROR_IF_DELETE:OK_TO_DELETE);
-				rowData[i][2] = deleteSpeciesInfo.getRowData()[i][2]+" "+deleteSpeciesInfo.getRowData()[i][3];				
-				if(rowData[i][STATUS_ROW].equals(ERROR_IF_DELETE)){
-					errorRows.add(rowData[i]);
-				}
-			}
-		}else if(deleteSpeciesInfo == null && reactionStepArr != null){
-			title = (bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" Reactions.";
-			columnNames = new String[] {"Reactions"};
-			rowData = new String[reactionStepArr.length][1];
-			for (int i = 0; i < reactionStepArr.length; i++) {
-				rowData[i][0] = reactionStepArr[i].getName();
-			}
-		}else{
-			throw new IllegalArgumentException("Unknown parameter combo 'showDeleteDetails'.");
-		}
-		if(bShowErrorsOnly && errorRows.size() > 0){
-			rowData = errorRows.toArray(new String[0][]);
-		}
-		TableListResult tableListResult = DialogUtils.showComponentOptionsTableList(requester, title,columnNames, rowData, null ,null,new String[] {RXSPECIES_BACK},RXSPECIES_BACK,null);
-		return tableListResult;
-	}
-	public static void deleteReactionsAndSpecies(Component requester,ReactionStep[] reactionStepArr,SpeciesContext[] speciesContextArr, boolean bCut) throws Exception,UserCancelException{
-		if((speciesContextArr == null && reactionStepArr == null) || 
-				(reactionStepArr == null && speciesContextArr != null && speciesContextArr.length == 0) ||
-				(speciesContextArr == null && reactionStepArr != null && reactionStepArr.length == 0) ||
-				(speciesContextArr != null && speciesContextArr.length == 0 && reactionStepArr != null && reactionStepArr.length == 0)){
-				return;
-		}
-		int rxCount = (reactionStepArr!=null?reactionStepArr.length:0);
-		int speciesCount = (speciesContextArr!=null?speciesContextArr.length:0);
-		boolean bHasBoth = speciesCount > 0 && rxCount > 0;
-		
-		ReactionCartoon rxCartoon = null;
-		if(requester instanceof GraphPane && ((GraphPane)requester).getGraphModel() instanceof ReactionCartoon){
-			rxCartoon = (ReactionCartoon)(((GraphPane)requester).getGraphModel());
-		}else if(requester instanceof ReactionCartoonEditorPanel){
-			rxCartoon = ((ReactionCartoonEditorPanel)requester).getReactionCartoon();
-		}else{
-			throw new IllegalArgumentException("ReactionCartoonTool.deleteSpeciesContext not implemented for type '"+requester.getClass().getName()+"'");
-		}
-		DeleteSpeciesInfo deleteSpeciesInfo = null;
-		final String DETAILS = "Details...";
-		while(true){
-			String response = DialogUtils.showWarningDialog(requester,
-					(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" "+(bHasBoth?"Reactions and Species.":(rxCount > 0?"Reactions.":(speciesCount > 0?"Species.":""))),
-					(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+" "+(bHasBoth?rxCount+" Reactions and "+speciesCount+" Species.":(rxCount > 0?rxCount+" Reactions.":(speciesCount > 0?speciesCount+" Species.":""))),
-					new String[] {(bCut?RXSPECIES_CUT:RXSPECIES_DELETE),DETAILS,RXSPECIES_CANCEL},(bCut?RXSPECIES_CUT:RXSPECIES_DELETE));
-			if(response == null || response.equals(RXSPECIES_CANCEL)){
-				throw UserCancelException.CANCEL_GENERIC;
-			}
-			deleteSpeciesInfo = (deleteSpeciesInfo==null?detailsDeleteSpecies(requester, speciesContextArr,reactionStepArr,rxCartoon):deleteSpeciesInfo);
-			if(response.equals(DETAILS)){
-				TableListResult tableListResult = showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,false);
-//				if(!tableListResult.selectedOption.equals(RXSPECIES_BACK)){
-//				//if(!tableListResult.selectedOption.equals((bCut?RXSPECIES_CUT:RXSPECIES_DELETE))){
-//					throw UserCancelException.CANCEL_GENERIC;
-//				}
-			}else{
-				break;
-			}
-		}
-		if(deleteSpeciesInfo != null){
-			for(Boolean errors:deleteSpeciesInfo.getbUnresolvableHashMap().values()){
-				if(errors){
-					while(true){
-						String response = DialogUtils.showWarningDialog(requester, "Error warning.",
-							"Warning: 1 or more SpeciesContexts have Model references that could cause Model corruption if "+(bCut?RXSPECIES_CUT:RXSPECIES_DELETE)+".", new String[] {DETAILS,RXSPECIES_CANCEL},DETAILS);
-						if(response == null || response.equals(RXSPECIES_CANCEL)){
-							throw UserCancelException.CANCEL_GENERIC;
-						}
-						showDeleteDetails(requester,deleteSpeciesInfo,reactionStepArr,bCut,true);
-					}
-				}
-			}
-		}
-
-		if(reactionStepArr != null){
-			for (int i = 0; i < reactionStepArr.length; i += 1) {
-				rxCartoon.getModel().removeReactionStep(reactionStepArr[i]);
-			}
-		}
-		
-		if(deleteSpeciesInfo != null){
-			//remove all ReactionParticipants ("lines" between reaction and species in "Reaction Diagram") that have this speciesContext before deleting SpeciesContext
-			for (SpeciesContext objSpeciesContext:deleteSpeciesInfo.getRxPartHashMap().keySet()) {
-				if(deleteSpeciesInfo.getbUnresolvableHashMap().get(objSpeciesContext)){
-					continue;
-				}
-				Iterator<ReactionParticipant> iterRxPart = deleteSpeciesInfo.getRxPartHashMap().get(objSpeciesContext).iterator();
-				while(iterRxPart.hasNext()){
-					ReactionParticipant objRxPart = iterRxPart.next();
-					if(rxCartoon.getObjects().contains(objRxPart)){//Reaction delete may have already removed
-						objRxPart.getReactionStep().removeReactionParticipant(objRxPart);
-					}
-				}
-			}					
-			//remove the SpeciesContext
-			for (int i = 0; i < speciesContextArr.length; i++) {
-				if(deleteSpeciesInfo.getbUnresolvableHashMap().get(speciesContextArr[i])){
-					continue;
-				}
-				if(rxCartoon.getObjects().contains(speciesContextArr[i])){//Reaction delete may have already removed
-					rxCartoon.getModel().removeSpeciesContext(speciesContextArr[i]);
-				}
-			}
-		}
-	}
-	
-	private static class DeleteSpeciesInfo{
-		private HashMap<SpeciesContext,HashSet<ReactionParticipant>> rxPartHashMap;
-		private HashMap<SpeciesContext, Boolean> bUnresolvableHashMap;
-		private String[][] rowData;
-		public DeleteSpeciesInfo(
-				HashMap<SpeciesContext, HashSet<ReactionParticipant>> rxPartHashMap,
-				HashMap<SpeciesContext, Boolean> bUnresolvableHashMap,
-				String[][] rowData) {
-			this.rxPartHashMap = rxPartHashMap;
-			this.bUnresolvableHashMap = bUnresolvableHashMap;
-			this.rowData = rowData;
-		}
-		public HashMap<SpeciesContext, HashSet<ReactionParticipant>> getRxPartHashMap() {
-			return rxPartHashMap;
-		}
-		public HashMap<SpeciesContext, Boolean> getbUnresolvableHashMap() {
-			return bUnresolvableHashMap;
-		}
-		public String[][] getRowData(){
-			return rowData;
-		}
-		public boolean bAllUnresolvable(){
-			for(Boolean bUnresolvable:bUnresolvableHashMap.values()){
-				if(!bUnresolvable){
-					return false;
-				}
-			}
-			return true;
-		}
-		public boolean bAnyUnresolvable(){
-			for(Boolean bUnresolvable:bUnresolvableHashMap.values()){
-				if(bUnresolvable){
-					return true;
-				}
-			}
-			return false;
-		}
-		public boolean hasReactionParticipant(ReactionParticipant reactionParticipant){
-			for(HashSet<ReactionParticipant> rxPartHash:rxPartHashMap.values()){
-				if(rxPartHash.contains(reactionParticipant)){
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-	private static DeleteSpeciesInfo detailsDeleteSpecies(Component requester,SpeciesContext[] speciesContextArr,ReactionStep[] toBeDeletedReactStepArr,ReactionCartoon rxCartoon) throws Exception,UserCancelException{
-		if(speciesContextArr == null || speciesContextArr.length == 0){return null;}
-		//Warn user that there may be some BioModel components that reference speciesContext to be removed
-		//Get ReactionParticipant list
-		Collection<Shape> rxPartColl = rxCartoon.getShapes();
-		HashMap<SpeciesContext,HashSet<ReactionParticipant>> rxPartHashMap = new HashMap<SpeciesContext,HashSet<ReactionParticipant>>();
-		for (Shape objShape:rxPartColl) {
-			if(objShape instanceof ReactionParticipantShape){
-				ReactionParticipant objReactionParticipant = ((ReactionParticipantShape)objShape).getReactionParticipant();
-				if(Arrays.asList(speciesContextArr).contains(objReactionParticipant.getSpeciesContext())){
-					if(!rxPartHashMap.containsKey(objReactionParticipant.getSpeciesContext())){
-						rxPartHashMap.put(objReactionParticipant.getSpeciesContext(), new HashSet<ReactionParticipant>());
-					}
-					if(!rxPartHashMap.get(objReactionParticipant.getSpeciesContext()).contains(objReactionParticipant)){
-						rxPartHashMap.get(objReactionParticipant.getSpeciesContext()).add(objReactionParticipant);
-					}
-				}
-			}
-		}
-		int reactionParticipantCount = 0;
-		for(HashSet<ReactionParticipant> objReactPart:rxPartHashMap.values()){
-			reactionParticipantCount+= objReactPart.size();
-		}
-		//find bioModel and get SymbolTable references to SpeciesContext
-		BioModelEditor bioModelEditor = (BioModelEditor)BeanUtils.findTypeParentOfComponent(requester, BioModelEditor.class);
-		if(bioModelEditor == null){
-			throw new Exception("Error deleting Speciescontext, Can't find BiomodelEditor");
-		}
-		BioModel bioModel = bioModelEditor.getBioModelWindowManager().getVCDocument();
-		HashMap<SpeciesContext,HashSet<SymbolTableEntry>> referencingSymbolsHashMap = new HashMap<SpeciesContext,HashSet<SymbolTableEntry>>();
-		for (int i = 0; i < speciesContextArr.length; i++) {
-			List<SymbolTableEntry> referencingSymbolsList = bioModel.findReferences(speciesContextArr[i]);
-			if(referencingSymbolsList != null && referencingSymbolsList.size() > 0){
-				if(!referencingSymbolsHashMap.containsKey(speciesContextArr[i])){
-					referencingSymbolsHashMap.put(speciesContextArr[i], new HashSet<SymbolTableEntry>());
-				}
-				referencingSymbolsHashMap.get(speciesContextArr[i]).addAll(referencingSymbolsList);
-			}
-		}
-		int referencingSymbolsCount = 0;
-		for(HashSet<SymbolTableEntry> objSimTableEntry:referencingSymbolsHashMap.values()){
-			referencingSymbolsCount+= objSimTableEntry.size();
-		}
-		//Warn user about delete
-		
-		
-		HashMap<SpeciesContext, Boolean> bUnresolvableHashMap = new HashMap<SpeciesContext, Boolean>();
-		for (int i = 0; i < speciesContextArr.length; i++) {
-			bUnresolvableHashMap.put(speciesContextArr[i], Boolean.FALSE);
-		}
-		String[][] rowData = null;
-		if(rxPartHashMap.size() == 0 && referencingSymbolsHashMap.size() == 0){
-			rowData = new String[speciesContextArr.length][4];
-			for (int i = 0; i < speciesContextArr.length; i++) {
-				rowData[i][0] = speciesContextArr[i].getName();
-				rowData[i][1] = "";
-				rowData[i][2] = "";
-				rowData[i][3] = "";
-			}
-			Arrays.sort(rowData, new Comparator<String[]>() {
-				@Override
-				public int compare(String[] o1, String[] o2) {
-					return o1[0].compareToIgnoreCase(o2[0]);
-				}
-			});
-		}else{
-			//find SpeciesContext that had no reference warnings
-			Vector<SpeciesContext> speciesContextNoReferences = new Vector<SpeciesContext>();
-			for (int i = 0; i < speciesContextArr.length; i++) {
-				if(!rxPartHashMap.containsKey(speciesContextArr[i]) && !referencingSymbolsHashMap.containsKey(speciesContextArr[i])){
-					speciesContextNoReferences.add(speciesContextArr[i]);
-				}
-			}
-			rowData = new String[reactionParticipantCount+referencingSymbolsCount+speciesContextNoReferences.size()][4];
-			int count = 0;
-			for(SpeciesContext objSpeciesContext:speciesContextNoReferences){
-				rowData[count][0] = objSpeciesContext.getName();
-				rowData[count][1] = "";
-				rowData[count][2] = "";
-				rowData[count][3] = "";
-				count++;
-			}
-			for (SpeciesContext objSpeciesContext:rxPartHashMap.keySet()) {
-				Iterator<ReactionParticipant> iterRxPart = rxPartHashMap.get(objSpeciesContext).iterator();
-				while(iterRxPart.hasNext()){
-					rowData[count][0] = objSpeciesContext.getName();
-					rowData[count][1] = "";
-					rowData[count][2] = "Reaction Diagram stoichiometry '"+iterRxPart.next().getReactionStep().getName()+"'";
-					rowData[count][3] = "";
-					count++;
-				}
-			}
-			for (SpeciesContext objSpeciesContext:referencingSymbolsHashMap.keySet()) {
-				Iterator<SymbolTableEntry> iterSymbolTableEntry = referencingSymbolsHashMap.get(objSpeciesContext).iterator();
-				while(iterSymbolTableEntry.hasNext()){
-					rowData[count][0] = objSpeciesContext.getName();
-					SymbolTableEntry objSymbolTableEntry = iterSymbolTableEntry.next();
-					boolean bKineticsParameter = objSymbolTableEntry instanceof KineticsParameter;
-					if(bKineticsParameter){
-						KineticsParameter kp = (KineticsParameter)objSymbolTableEntry;
-						boolean isOK = kp.isRegenerated();
-						for (int i = 0; toBeDeletedReactStepArr != null && i < toBeDeletedReactStepArr.length; i++) {
-							if(toBeDeletedReactStepArr[i] == kp.getKinetics().getReactionStep()){
-								//OK to delete this Speciescontext if were deleting the reaction that contained the reference
-								isOK = true;
-							}
-						}
-						rowData[count][1] = (isOK?"":RXSPECIES_ERROR);
-						bUnresolvableHashMap.put(objSpeciesContext, bUnresolvableHashMap.get(objSpeciesContext) || !isOK);
-					}
-					boolean bReaction = objSymbolTableEntry.getNameScope() instanceof ReactionNameScope;
-					rowData[count][2] = (bReaction?"Reaction":objSymbolTableEntry.getNameScope().getClass().getName())+"( "+objSymbolTableEntry.getNameScope().getName()+" )";
-					rowData[count][3] = (bKineticsParameter?"Parameter":objSymbolTableEntry.getClass().getName())+"( "+objSymbolTableEntry.getName()+" )";
-					count++;
-				}
-			}
-//			for (SymbolTableEntry referencingSTE : referencingSymbols) {
-//				System.out.println("REFERENCE   "+referencingSTE.getClass().getName()+"("+referencingSTE.getName()+") nameScope "+referencingSTE.getNameScope().getClass().getName()+"("+referencingSTE.getNameScope().getName()+")");
-//			}
-			Arrays.sort(rowData, new Comparator<String[]>() {
-				@Override
-				public int compare(String[] o1, String[] o2) {
-					return o1[0].compareToIgnoreCase(o2[0]);
-				}
-			});
-		}
-		if(rowData == null || rowData.length == 0){
-			return null;
-		}
-		return new DeleteSpeciesInfo(rxPartHashMap, bUnresolvableHashMap,rowData);
 
 	}
 	
@@ -2130,21 +1807,31 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			return groupAction.isEnabledForShape(shape);
 		}
 		if (shape instanceof ReactionContainerShape) {
-			if (menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
-				VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy)VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
-				if(reactionSpeciesCopy != null){
+			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
+			if (bPasteNew) {
+				// Paste if there is a species on the system clipboard and it
+				// doesn't exist in structure
+				Species species = (Species) 
+					SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				if (species != null) {
+					return true;
+					
+				}
+				// Paste if there is a ReactionStepArr on the system clipboard
+				// and structure types match
+				ReactionStep[] reactionStepArr = (ReactionStep[]) SimpleTransferable
+						.getFromClipboard(VCellTransferable.REACTIONSTEP_ARRAY_FLAVOR);
+				if (reactionStepArr != null) {
 					Structure targetStructure = ((ReactionContainerShape) shape).getStructure();
-					if(reactionSpeciesCopy.getReactStepArr() != null){
-						for (int i = 0; i < reactionSpeciesCopy.getReactStepArr().length; i++) {
-							if (!reactionSpeciesCopy.getReactStepArr()[i].getStructure().getClass().equals(targetStructure.getClass())) {
-								return false;
-							}
+					for (int i = 0; i < reactionStepArr.length; i += 1) {
+						if (!reactionStepArr[i].getStructure().getClass().equals(
+							targetStructure.getClass())) {
+							return false;
 						}
 					}
 					return true;
-				}else{
-					return false;
 				}
+				return false;
 			}
 		}
 		return true;

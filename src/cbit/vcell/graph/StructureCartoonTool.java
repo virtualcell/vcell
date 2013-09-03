@@ -36,6 +36,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.desktop.VCellTransferable.ReactionSpeciesCopy;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
@@ -133,14 +134,18 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		} else if (/*menuAction.equals(CartoonToolEditActions.Paste.MENU_ACTION)
 				|| */menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION)) {
 			if (shape instanceof StructureShape) {
-				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
+				ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-				if (species != null) {
+				if (reactionSpeciesCopy != null && reactionSpeciesCopy.getSpeciesContextArr() != null & reactionSpeciesCopy.getSpeciesContextArr().length != 0) {
 					boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
-					SpeciesContext pastedSpeciesContext = pasteSpecies(getGraphPane(), species, getStructureCartoon().getModel(), 
-							((StructureShape) shape).getStructure(), bPasteNew, speciesHash, null);
+					SpeciesContext lastPastedSpeciesContext = null;
+					for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
+						lastPastedSpeciesContext = pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), getStructureCartoon().getModel(), 
+								((StructureShape) shape).getStructure(), bPasteNew, speciesHash, null);
+						
+					}
 					getGraphModel().clearSelection();
-					getGraphModel().select(pastedSpeciesContext);
+					getGraphModel().select(lastPastedSpeciesContext);
 				}
 			}
 		} else if (menuAction.equals(CartoonToolMiscActions.Properties.MENU_ACTION)) {
@@ -595,8 +600,8 @@ public class StructureCartoonTool extends BioCartoonTool implements PropertyChan
 		if (shape instanceof StructureShape) {
 			boolean bPasteNew = menuAction.equals(CartoonToolEditActions.PasteNew.MENU_ACTION);
 			if (bPasteNew) {
-				Species species = (Species) SimpleTransferable.getFromClipboard(VCellTransferable.SPECIES_FLAVOR);
-				return species != null;
+				ReactionSpeciesCopy reactionSpeciesCopy = (ReactionSpeciesCopy) SimpleTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
+				return reactionSpeciesCopy != null && reactionSpeciesCopy.getSpeciesContextArr() != null;
 			}
 		}
 		// Is Move valid
