@@ -16,7 +16,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -89,7 +88,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu ivjFileMenu = null;
 	private JMenu ivjHelpMenu = null;
 	private JMenuItem ivjLocalMenuItem = null;
-	private JMenuItem ivjManage_DatabaseMenuItem = null;
 	private JMenuItem ivjMinimize_AllMenuItem = null;
 	private JMenu ivjNewMenuItem = null;
 	private JMenu ivjOpenMenuItem = null;
@@ -187,8 +185,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC23(e);
 			if (e.getSource() == DocumentWindow.this.getMinimize_AllMenuItem()) 
 				connEtoC24(e);
-			if (e.getSource() == DocumentWindow.this.getManage_DatabaseMenuItem()) 
-				connEtoC27(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemServer()) 
 				connEtoC4(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOptions()) 
@@ -608,25 +604,6 @@ private void connEtoC26(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.showBNGWindow();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC27:  (Manage_DatabaseMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC27(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showDatabaseWindow();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1142,7 +1119,6 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getJMenuItemMIRIAM());
 			ivjFileMenu.add(getEdit_Annotation_JMenuItem());
 			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getManage_DatabaseMenuItem());
 			ivjFileMenu.add(getJMenuItemFieldData());
 			ivjFileMenu.add(getTestingFrameworkMenuItem());
 			ivjFileMenu.add(new JSeparator());
@@ -1617,31 +1593,6 @@ private javax.swing.JMenuItem getLocalMenuItem() {
 /**
  * Comment
  */
-
-
-/**
- * Return the Manage_DatabaseMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getManage_DatabaseMenuItem() {
-	if (ivjManage_DatabaseMenuItem == null) {
-		try {
-			ivjManage_DatabaseMenuItem = new javax.swing.JMenuItem();
-			ivjManage_DatabaseMenuItem.setName("Manage_DatabaseMenuItem");
-			ivjManage_DatabaseMenuItem.setText("Manage Database...");
-			ivjManage_DatabaseMenuItem.setVisible(true);
-			ivjManage_DatabaseMenuItem.setEnabled(true);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjManage_DatabaseMenuItem;
-}
 
 /**
  * Return the MathFromBioMenuItem property value.
@@ -2243,7 +2194,6 @@ private void initConnections() throws java.lang.Exception {
 	getTile_VerticallyMenuItem().addActionListener(ivjEventHandler);
 	getCascadeMenuItem().addActionListener(ivjEventHandler);
 	getMinimize_AllMenuItem().addActionListener(ivjEventHandler);
-	getManage_DatabaseMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemServer().addActionListener(ivjEventHandler);
 	getJMenuItemOptions().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
@@ -2468,15 +2418,6 @@ private void showAboutBox() {
 private void  showBNGWindow() {
 	getWindowManager().showBNGWindow();	
 }
-
-
-/**
- * Comment
- */
-private void showDatabaseWindow() {
-	getWindowManager().showDatabaseWindow();
-}
-
 
 /**
  * Comment
