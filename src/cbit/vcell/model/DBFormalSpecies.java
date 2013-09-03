@@ -10,6 +10,10 @@
 
 package cbit.vcell.model;
 
+import java.util.ArrayList;
+
+import org.vcell.util.document.VCDocumentInfo;
+
 
 /**
  * Insert the type's description here.
@@ -20,6 +24,19 @@ public abstract class DBFormalSpecies implements SpeciesDescription {
 
 	private org.vcell.util.document.KeyValue dbFormalSpeciesKey = null;
 	private FormalSpeciesInfo formalSpeciesInfo = null;
+	
+	public static class MatchedVCDocumentsFromSearch extends DBFormalSpecies{
+		private ArrayList<VCDocumentInfo> matchedVCDocumentInfos;
+		public MatchedVCDocumentsFromSearch(ArrayList<VCDocumentInfo> matchedVCDocumentInfos) {
+			this.matchedVCDocumentInfos = matchedVCDocumentInfos;
+		}
+		public ArrayList<VCDocumentInfo> getMatchedVCDocumentInfos(){
+			return matchedVCDocumentInfos;
+		}
+	}
+	
+	private DBFormalSpecies(){
+	}
 /**
  * DBFormalSpeciesInfo constructor comment.
  */
@@ -93,4 +110,5 @@ public String getPreferredName() {
 public String toString() {
 	return "FK="+getDBFormalSpeciesKey()+"-"+formalSpeciesInfo.toString();
 }
+
 }
