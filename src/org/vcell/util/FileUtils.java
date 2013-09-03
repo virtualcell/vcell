@@ -13,6 +13,10 @@ package org.vcell.util;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.*;
 
 /**
@@ -228,6 +232,55 @@ public static void deleteFile(String filePath) throws IOException {
 	if (!bSuccess) {
 		throw new IOException("File \""+filePath+"\" deletion attempt failed.");
 	}
+}
+
+public static void writeByteArrayToFile(byte[] byteArray, File outputFile) throws IOException {
+    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+    try {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+        byteBuffer.put(byteArray);
+        byteBuffer.flip();
+        FileChannel fileChannel = fileOutputStream.getChannel();
+        fileChannel.write(byteBuffer);
+    } finally {
+        fileOutputStream.close();
+    }
+}
+
+
+public static byte[] readByteArrayFromFile(File inputFile)throws IOException  {
+    byte [] inputFileByteArrayBuffer = new byte[(int) inputFile.length()];
+    InputStream inputStream = null;
+    try {
+        inputStream = new FileInputStream(inputFile);
+        if ( inputStream.read(inputFileByteArrayBuffer) == -1 ) {
+            throw new IOException("EOF character reached while trying to read the whole file:"+inputFile.getAbsolutePath());
+        }        
+    } finally { 
+         if ( inputStream != null ) {
+              inputStream.close();
+         }
+    }
+    return inputFileByteArrayBuffer;
+}
+
+public static void main(String[] args) {
+	try {
+		String inputString = "3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912\n";
+		System.out.println("We're feeding in: "+inputString);
+		byte[] data = inputString.getBytes("ISO-8859-1");
+		File file = File.createTempFile("TestTempFile", ".tmp");
+		System.out.println("Temp file location being created = "+file.getAbsolutePath());
+		writeByteArrayToFile(data, file);
+		System.out.println("Done writing.  Now will read it back.");
+		byte[] bytes = readByteArrayFromFile(file);
+		String readBackString = new String(bytes);
+		System.out.println("We got back: "+readBackString);
+		System.out.println("Comparing the input and output yields: "+inputString.equals(readBackString));
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	
 }
 
 }
