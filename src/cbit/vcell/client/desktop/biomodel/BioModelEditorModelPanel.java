@@ -63,6 +63,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -87,6 +88,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.CartoonEditorPanelFixed;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
@@ -659,13 +661,23 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
-			
-			String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
-			if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+			if(deleteList.get(0) instanceof SpeciesContext || deleteList.get(0) instanceof ReactionStep){
+				try{
+					SpeciesContext[] speciesContextArr = (deleteList.get(0) instanceof SpeciesContext?deleteList.toArray(new SpeciesContext[0]):null);
+					ReactionStep[] reactionStepArr = (deleteList.get(0) instanceof ReactionStep?deleteList.toArray(new ReactionStep[0]):null);
+					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArr,speciesContextArr,false);
+				}catch(UserCancelException uce){
+					return;
+				}
 				return;
-			}
-			for (Object object : deleteList) {
-				bioModel.getModel().removeObject(object);
+			}else{
+				String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following:\n\n" + deleteListText + "\n Continue?");
+				if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+					return;
+				}
+				for (Object object : deleteList) {
+					bioModel.getModel().removeObject(object);
+				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

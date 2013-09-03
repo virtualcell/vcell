@@ -14,6 +14,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +61,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
@@ -1212,5 +1214,18 @@ public SimulationContext getSimulationContext(String name) {
 			description = ((SimulationIssueSource) object).getSimulation().getName();
 		}
 		return description;
+	}
+	
+	public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
+		ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
+		HashSet<NameScope> visited = new HashSet<NameScope>();
+		
+		fieldModel.getNameScope().findReferences(symbolTableEntry, references, visited);
+		
+		for (SimulationContext simContext : fieldSimulationContexts){
+			simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
+		}
+		
+		return references;
 	}
 }
