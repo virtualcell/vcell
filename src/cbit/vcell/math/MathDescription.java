@@ -1916,14 +1916,18 @@ public boolean isSpatialStoch() {
 	if (getGeometry().getDimension() == 0) {
 		return false;
 	}
+	boolean hasParticle = false;
 	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()) {
 		Variable var = enum1.nextElement();
+		if(var instanceof ParticleVariable){
+			hasParticle = true;
+		}
 		if (!(var instanceof ParticleVariable || var instanceof Constant || var instanceof Function)) {
 			return false;
 		}
 	}
-	return true;	
+	return hasParticle;	
 }
 
 public boolean isValid() {
