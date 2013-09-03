@@ -52,6 +52,7 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.ZEnforcer;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
@@ -2933,27 +2934,31 @@ private JMenuItem getMntmLicenseInformation() {
 					e.printStackTrace();
 				}
 				final String OK = "OK";
-				final String SAVE_LICENSE = "Save...";
+				final String SAVE_LICENSE = "Save VCell license";
+				final String SAVE_THIRD_PARTY = "Save third party licenses";
 				String licenseStr = 
 						"The Virtual Cell is free software distributed under the following MIT licensing terms:\n\n"+
 						"Copyright (c) 1998-"+year+" University of Connecticut Health Center\n\n" +
 						"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
 						"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n"+
 						"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n";
-				String result = DialogUtils.showWarningDialog(DocumentWindow.this, licenseStr, new String[] {OK,SAVE_LICENSE}, OK);
-				if(result != null && result.equals(SAVE_LICENSE)){
+				String result = DialogUtils.showWarningDialog(DocumentWindow.this, "VCell Licensing Information", licenseStr, new String[] {OK,SAVE_THIRD_PARTY,SAVE_LICENSE,}, OK);
+				if(result != null && (result.equals(SAVE_THIRD_PARTY) || result.equals(SAVE_LICENSE))){
 					JFileChooser saveLicenseJFC = new JFileChooser();
-					saveLicenseJFC.setApproveButtonText("Save");
-					int returnVal = saveLicenseJFC.showOpenDialog(DocumentWindow.this);
+					int returnVal = saveLicenseJFC.showSaveDialog(DocumentWindow.this);
 				    if(returnVal == JFileChooser.APPROVE_OPTION) {
 				       File outFile = saveLicenseJFC.getSelectedFile();
 				       try{
-				    	   ResourceUtil.writeResourceToFile("/"+System.getProperty(PropertyLoader.vcellThirdPartyLicense), outFile);
-				       }catch(Exception e){
-				    	   e.printStackTrace();
-				    	   DialogUtils.showErrorDialog(DocumentWindow.this, "Error saving license info: "+e.getMessage());
-				       }
-				    }
+				    	   if(result.equals(SAVE_THIRD_PARTY)){
+				    		   ResourceUtil.writeResourceToFile("/"+System.getProperty(PropertyLoader.vcellThirdPartyLicense), outFile);
+				    	   }else if (result.equals(SAVE_LICENSE)){
+				    		   XmlUtil.writeXMLStringToFile(licenseStr, outFile.getAbsolutePath(), false);
+				    	   }
+			       }catch(Exception e){
+			    	   e.printStackTrace();
+			    	   DialogUtils.showErrorDialog(DocumentWindow.this, "Error saving license info: "+e.getMessage());
+			       }
+			    }
 				}
 			}
 		});
