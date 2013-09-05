@@ -2532,6 +2532,7 @@ private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpe
 		User usr = ResourceUtil.tempUser;
 		File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
 		System.setProperty(PropertyLoader.exportBaseDirProperty, usrDir.getAbsolutePath()+File.separator);
+		System.setProperty(PropertyLoader.exportBaseURLProperty, usrDir.toURI().toURL().toString());
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
 		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
 		DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
