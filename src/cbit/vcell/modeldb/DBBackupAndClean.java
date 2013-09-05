@@ -34,6 +34,7 @@ public class DBBackupAndClean {
 	 */
 	public static final String OP_BACKUP = "backup";
 	public static final String OP_CLEAN = "clean";
+	public static final String OP_CLEAN_AND_BACKUP = "cleanandbackup";
 	
 	
 	private static class StreamReader extends Thread {
@@ -66,20 +67,32 @@ public class DBBackupAndClean {
 	}
 
 	public static void main(String[] args){
-		String action = args[0];
-		String[] actionArgs = null;
-		if(args.length > 1){
-			actionArgs = new String[args.length-1];
-			System.arraycopy(args, 1, actionArgs, 0, actionArgs.length);
-			
+		if(args.length != 7){
+			usageExit();
 		}
+		String action = args[0];
+		String[] actionArgs = new String[args.length-1];
+		System.arraycopy(args, 1, actionArgs, 0, actionArgs.length);
+
 		if(action.equals(OP_BACKUP) && actionArgs != null){
 			backup(actionArgs);
 		}else if(action.equals(OP_CLEAN) && actionArgs != null){
 			clean(actionArgs);
+		}else if(action.equals(OP_CLEAN_AND_BACKUP) && actionArgs != null){
+			clean(actionArgs);
+			backup(actionArgs);
+		}else{
+			usageExit();
 		}
 	}
-
+	
+	private static void usageExit(){
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.exit(1);
+	}
+	
 	private static class ProcessInfo{
 		public StreamReader normalOutput;
 		public StreamReader errorOutput;
@@ -111,20 +124,16 @@ public class DBBackupAndClean {
 	private static String createExportCommand(String vcellSchema,String password,String dbHostName,String dbSrvcName,File backupFile){
 		return "exp "+"system"+"/"+(password==null?"xxxxx":password)+"@"+
 		"(description\\=(address\\=(protocol\\=tcp)(host\\="+dbHostName+")(port\\=1521))(connect_data\\=(service_name\\="+dbSrvcName+")))"+
-//		" TABLES=(vc_userinfo) "+
+//		" TABLES=("+vcellSchema+".vc_userinfo) "+
 		" FILE="+backupFile.getAbsolutePath()
-		+" OWNER="+vcellSchema+" CONSISTENT=Y";
+		+" OWNER="+vcellSchema+" CONSISTENT=Y"
+		;
 
 	}
 	private static void backup(String[] args){
 		if(args.length != 6){
-			System.out.println(OP_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
-			return;
+			usageExit();
 		}
-//		if(args.length != 6){
-//			System.out.println(OP_BACKUP+" user/password dbSIDName workingDir exportDir schemaToExport dbServerName");
-//			return;
-//		}
 		String dbHostName = args[0];
 		String vcellSchema = args[1];
 		String password = args[2];
@@ -144,33 +153,37 @@ public class DBBackupAndClean {
 			String datePart = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime());
 			baseFileName = dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
 			backupFile = new File(workingDir,baseFileName+".dmp");
+			baseFileName = "backup_"+baseFileName;
 //			String exportCommand =
 //				"exp "+credentials+"@"+dbName+" FILE="+backupFile.getAbsolutePath()+" OWNER="+userSchema+" CONSISTENT=Y";
 			String exportCommand = createExportCommand(vcellSchema, password, dbHostName, dbSrvcName, backupFile);
 //			System.out.println(exportCommand);
 			//Create export Process
-			ProcessInfo processInfo = spawnProcess(exportCommand);
+			ProcessInfo exportProcessInfo = spawnProcess(exportCommand);
 			//Deal with stream listener errors
-			String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
-			if(processInfo.normalOutput.getReaderException() != null || processInfo.errorOutput.getReaderException() != null){
-				throw new Exception("Error in script StreamRead:\r\n"+combinedOutput);
+			String combinedExportOutput = combineStreamStrings(exportProcessInfo.normalOutput, exportProcessInfo.errorOutput);
+			if(exportProcessInfo.normalOutput.getReaderException() != null || exportProcessInfo.errorOutput.getReaderException() != null){
+				throw new Exception("Error in script StreamRead:\r\n"+combinedExportOutput);
 			}
 			//Finish
 			String exportCommandWithoutPassword = createExportCommand(vcellSchema, null, dbHostName, dbSrvcName, backupFile);
-			if(processInfo.returnCode == 0){
-				spawnProcess("cmd /c MOVE /y "+backupFile+" "+exportDir);
-//				Process moveProcess = Runtime.getRuntime().exec("cmd /c MOVE /y "+backupFile+" "+exportDir);
-//				moveProcess.waitFor();
-//				String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
+			if(exportProcessInfo.returnCode == 0){
+				ProcessInfo moveProcessInfo = spawnProcess("cmd /c robocopy "+workingDir+" "+exportDir+" "+backupFile.getName()+" /mov");
+				String combinedCopyOutput = combineStreamStrings(moveProcessInfo.normalOutput, moveProcessInfo.errorOutput);
+				String combinedExportCopyOutput = "\r\n-----Export Info-----\r\n"+combinedExportOutput+"\r\n-----Copy Info-----\r\n"+combinedCopyOutput;
+//				spawnProcess("cmd /c MOVE /y "+backupFile+" "+exportDir);
+////				Process moveProcess = Runtime.getRuntime().exec("cmd /c MOVE /y "+backupFile+" "+exportDir);
+////				moveProcess.waitFor();
+////				String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
 				writeFile(workingDir, baseFileName,"Export output:\r\n"+
-						exportCommandWithoutPassword+"\r\n"+combinedOutput,false, exportDir);
+						exportCommandWithoutPassword+"\r\n"+combinedExportCopyOutput,false, exportDir);
 			}else{
 				String delBackupFailMessage = deleteBackup(backupFile);
 //				String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
 				writeFile(workingDir, baseFileName,
-						"Export Error: (return code="+processInfo.returnCode+")\r\n"+
+						"Export Error: (return code="+exportProcessInfo.returnCode+")\r\n"+
 						(delBackupFailMessage==null?"":delBackupFailMessage+"\r\n")+
-						exportCommandWithoutPassword+"\r\n"+combinedOutput,true, exportDir);
+						exportCommandWithoutPassword+"\r\n"+combinedExportOutput,true, exportDir);
 			}
 		}catch(Exception e){
 			String delBackupFailMessage = deleteBackup(backupFile);
@@ -180,6 +193,30 @@ public class DBBackupAndClean {
 		}
 
 	}
+	private static File findExecutableOnPath(String executableName)   
+    {   
+        String systemPath = System.getenv("PATH");
+        if(systemPath == null){
+        	systemPath = System.getenv("path");
+        }
+        if(systemPath == null){
+        	return null;
+        }
+        String[] pathDirs = systemPath.split(File.pathSeparator);   
+    
+        File fullyQualifiedExecutable = null;   
+        for (String pathDir : pathDirs)   
+        {   
+            File file = new File(pathDir, executableName);   
+            if (file.isFile())   
+            {   
+                fullyQualifiedExecutable = file;   
+                break;   
+            }   
+        }   
+        return fullyQualifiedExecutable;   
+    }   
+
 	private static String deleteBackup(File backupFile){
 		if(backupFile == null){
 			return null;
@@ -576,8 +613,7 @@ public class DBBackupAndClean {
 
 	private static void clean(String[] args) {
 		if(args.length != 6){
-			System.out.println(OP_CLEAN+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
-			return;
+			usageExit();
 		}
 		String dbHostName = args[0];
 		String vcellSchema = args[1];
@@ -598,7 +634,7 @@ public class DBBackupAndClean {
 		Connection con = null;
 		
 		String datePart = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime());
-		String baseFileName = dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
+		String baseFileName = "clean_"+dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
 
 		StringBuffer logStringBuffer = new StringBuffer();
 
@@ -612,14 +648,19 @@ public class DBBackupAndClean {
 			con = oracleDataSource.getConnection();
 			con.setAutoCommit(false);
 			
-			cleanRemoveUnreferencedSimulations(con, logStringBuffer);
 			cleanClearVersionBranchPointRef(con,SimulationTable.table, logStringBuffer);
-			cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
-			cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
-			cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
+			cleanRemoveUnreferencedSimulations(con, logStringBuffer);
+
 			cleanClearVersionBranchPointRef(con,MathDescTable.table, logStringBuffer);
+			cleanRemoveUnreferencedMathDescriptions(con, logStringBuffer);
+
 			cleanRemoveUnReferencedNonSpatialGeometries(con, logStringBuffer);
+
+			cleanClearVersionBranchPointRef(con,SimContextTable.table, logStringBuffer);
+			cleanRemoveUnReferencedSimulationContexts(con, logStringBuffer);
+
 			cleanRemoveUnReferencedModels(con, logStringBuffer);
+			
 			cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
 			
 			writeFile(workingDir, baseFileName, logStringBuffer.toString(), false, exportDir);
