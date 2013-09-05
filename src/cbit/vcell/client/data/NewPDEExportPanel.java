@@ -2512,51 +2512,57 @@ private void startExport() {
 		// for sims that ran on server, do as before.
 		getDataViewerManager().startExport(outputContext,exportSpecs);
 	} else {
-		
+		final String SOURCE_FILE_KEY = "SOURCE_FILE_KEY";
 		AsynchClientTask localExportTast = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-			@SuppressWarnings("unchecked")
+			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				startLocalExport(outputContext, exportSpecs);
-			}
-		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {localExportTast}, false, true, null);
-	}
-}
-
-private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpecs) throws Exception{
-	// for local sims, create dataSetControllerProvider and export locally
-	File sourceFile = null;
-	try {
-		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
-		File primaryDir = ResourceUtil.getLocalRootDir();
-		User usr = ResourceUtil.tempUser;
-		File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
-		System.setProperty(PropertyLoader.exportBaseDirProperty, usrDir.getAbsolutePath()+File.separator);
-		System.setProperty(PropertyLoader.exportBaseURLProperty, usrDir.toURI().toURL().toString());
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
-		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
-		DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
-		ExportEvent localExportEvent = dataServerImpl.makeRemoteFile(outputContext,usr, exportSpecs);
-		sourceFile = new File(usrDir,new File((new URL(localExportEvent.getLocation()).getPath())).getName());
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.setSelectedFile(new File(sourceFile.getName()));
-		if(jFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-			File destinationFile = jFileChooser.getSelectedFile();
-			if(destinationFile.exists()){
-				final String OVERWRITE = "Overwrite";
-				final String CANCEL = "Cancel";
-				String response = DialogUtils.showWarningDialog(this, "OK to Overwrite "+destinationFile.getAbsolutePath()+"?", new String[] {OVERWRITE,CANCEL},OVERWRITE);
-				if(response == null || !response.equals(OVERWRITE)){
-					return;
+				try {
+					StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
+					File primaryDir = ResourceUtil.getLocalRootDir();
+					User usr = ResourceUtil.tempUser;
+					File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
+					System.setProperty(PropertyLoader.exportBaseDirProperty, usrDir.getAbsolutePath()+File.separator);
+					System.setProperty(PropertyLoader.exportBaseURLProperty, usrDir.toURI().toURL().toString());
+					DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
+					ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
+					DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
+					ExportEvent localExportEvent = dataServerImpl.makeRemoteFile(outputContext,usr, exportSpecs);
+					File sourceFile = new File(usrDir,new File((new URL(localExportEvent.getLocation()).getPath())).getName());
+					hashTable.put(SOURCE_FILE_KEY, sourceFile);
+				} catch (Exception e) {
+					throw new Exception("Unable to export local sim results data : " + e.getMessage(),e);
 				}
 			}
-			copyFile(sourceFile, jFileChooser.getSelectedFile());
-		}
-	} catch (Exception e) {
-		e.printStackTrace();
-		throw new Exception("Unable to export local sim results data : " + e.getMessage());
-	}finally{
-		if(sourceFile != null && sourceFile.exists()){sourceFile.delete();}
+		};
+		
+		AsynchClientTask localSaveTask = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				File sourceFile = (File)hashTable.get(SOURCE_FILE_KEY);
+				JFileChooser jFileChooser = new JFileChooser();
+				jFileChooser.setSelectedFile(new File(sourceFile.getName()));
+				if(jFileChooser.showSaveDialog(NewPDEExportPanel.this) == JFileChooser.APPROVE_OPTION){
+					File destinationFile = jFileChooser.getSelectedFile();
+					if(destinationFile.exists()){
+						final String OVERWRITE = "Overwrite";
+						final String CANCEL = "Cancel";
+						String response = DialogUtils.showWarningDialog(NewPDEExportPanel.this, "OK to Overwrite "+destinationFile.getAbsolutePath()+"?", new String[] {OVERWRITE,CANCEL},OVERWRITE);
+						if(response == null || !response.equals(OVERWRITE)){
+							return;
+						}
+					}
+					copyFile(sourceFile, jFileChooser.getSelectedFile());
+				}
+			}
+		};
+		
+		AsynchClientTask localDeleteTempTask = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				File sourceFile = (File)hashTable.get(SOURCE_FILE_KEY);
+				if(sourceFile != null && sourceFile.exists()){sourceFile.delete();}}
+		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {localExportTast,localSaveTask,localDeleteTempTask}, false, true, null);
 	}
 }
 
