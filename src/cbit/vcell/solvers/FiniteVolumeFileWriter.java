@@ -1949,7 +1949,10 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				System.arraycopy(oldPixels, 0, newPixels, oldPixels.length, oldPixels.length);
 				System.arraycopy(oldPixels, 0, newPixels, oldPixels.length*2, oldPixels.length);
 			
-				Extent newExtent = new Extent(geometry.getExtent().getX(), geometry.getExtent().getY(), 1);
+				double distX = geometry.getExtent().getX()/img.getNumX();
+				double distY = geometry.getExtent().getY()/img.getNumY();
+				double distZ = Math.max(distX, distY);	// we set the distance on the z axis to something that makes sense
+				Extent newExtent = new Extent(geometry.getExtent().getX(), geometry.getExtent().getY(), distZ * 3);
 				VCImage newImage = new VCImageUncompressed(null, newPixels, newExtent, img.getNumX(), img.getNumY(), 3);
 				simGeometry = new Geometry((Version)null, newImage);
 
