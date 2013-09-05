@@ -15,7 +15,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
@@ -26,6 +31,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -35,12 +41,14 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
@@ -2515,26 +2523,60 @@ private void startExport() {
 	}
 }
 
-private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpecs) {
+private void startLocalExport(OutputContext outputContext, ExportSpecs exportSpecs) throws Exception{
 	// for local sims, create dataSetControllerProvider and export locally
+	File sourceFile = null;
 	try {
 		StdoutSessionLog sessionLog = new StdoutSessionLog("Local");
 		File primaryDir = ResourceUtil.getLocalRootDir();
 		User usr = ResourceUtil.tempUser;
+		File usrDir = new File(primaryDir.getAbsolutePath(),usr.getName());
+		System.setProperty(PropertyLoader.exportBaseDirProperty, usrDir.getAbsolutePath()+File.separator);
 		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,null,primaryDir,null);
 		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl(sessionLog);
 		DataServerImpl dataServerImpl = new DataServerImpl(sessionLog, dataSetControllerImpl, localExportServiceImpl);
 		ExportEvent localExportEvent = dataServerImpl.makeRemoteFile(outputContext,usr, exportSpecs);
-		ClientRequestManager.downloadExportedData(this, null, localExportEvent);
-	} catch (FileNotFoundException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to export local sim results data : " + e.getMessage());
-	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to export local sim results data : " + e.getMessage());
+		sourceFile = new File(usrDir,new File((new URL(localExportEvent.getLocation()).getPath())).getName());
+		JFileChooser jFileChooser = new JFileChooser();
+		jFileChooser.setSelectedFile(new File(sourceFile.getName()));
+		if(jFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+			File destinationFile = jFileChooser.getSelectedFile();
+			if(destinationFile.exists()){
+				final String OVERWRITE = "Overwrite";
+				final String CANCEL = "Cancel";
+				String response = DialogUtils.showWarningDialog(this, "OK to Overwrite "+destinationFile.getAbsolutePath()+"?", new String[] {OVERWRITE,CANCEL},OVERWRITE);
+				if(response == null || !response.equals(OVERWRITE)){
+					return;
+				}
+			}
+			copyFile(sourceFile, jFileChooser.getSelectedFile());
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		throw new Exception("Unable to export local sim results data : " + e.getMessage());
+	}finally{
+		if(sourceFile != null && sourceFile.exists()){sourceFile.delete();}
 	}
 }
 
+private static void copyFile(File sourceFile, File destFile) throws IOException {
+    if(!destFile.exists()) {
+        destFile.createNewFile();
+    }
+    FileChannel source = null;
+    FileChannel destination = null;
+    try {
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        // to avoid infinite loops, should be:
+        long count = 0;
+        long size = source.size();              
+        while((count += destination.transferFrom(source, count, size-count))<size);
+    }finally {
+        if(source != null) {try{source.close();}catch(Exception e){}}
+        if(destination != null) {try{destination.close();}catch(Exception e){}}
+    }
+}
 /**
  * Comment
  */
