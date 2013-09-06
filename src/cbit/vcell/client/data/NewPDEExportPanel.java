@@ -2510,6 +2510,7 @@ private void startExport() {
 		getDataViewerManager().startExport(outputContext,exportSpecs);
 	} else {
 		final String SOURCE_FILE_KEY = "SOURCE_FILE_KEY";
+		final String DESTINATION_FILE_KEY = "DEESTINATION_FILE_KEY";
 		AsynchClientTask localExportTast = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2548,7 +2549,7 @@ private void startExport() {
 							return;
 						}
 					}
-					copyFile(sourceFile, jFileChooser.getSelectedFile());
+					hashTable.put(DESTINATION_FILE_KEY,destinationFile);
 				}
 			}
 		};
@@ -2557,7 +2558,17 @@ private void startExport() {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				File sourceFile = (File)hashTable.get(SOURCE_FILE_KEY);
-				if(sourceFile != null && sourceFile.exists()){sourceFile.delete();}}
+				File destinationFile = (File)hashTable.get(DESTINATION_FILE_KEY);
+				if(sourceFile != null && sourceFile.exists()){
+					try{
+						if(destinationFile != null){
+							copyFile(sourceFile, destinationFile);
+						}
+					}finally{
+						sourceFile.delete();
+					}
+				}
+			}
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {localExportTast,localSaveTask,localDeleteTempTask}, false, true, null);
 	}
