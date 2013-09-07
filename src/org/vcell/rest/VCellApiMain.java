@@ -28,6 +28,7 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import freemarker.template.Configuration;
@@ -63,6 +64,7 @@ public class VCellApiMain {
 				DbDriver.setKeyFactory(keyFactory);
 				ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+				LocalAdminDbServer localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
 				AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 				
 				vcMessagingService = VCMessagingService.createInstance(new VCMessagingDelegate() {
@@ -99,7 +101,7 @@ public class VCellApiMain {
 					}
 				});
 								
-				restDatabaseService = new RestDatabaseService(databaseServerImpl, adminDbTopLevel, vcMessagingService, log);
+				restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
 				
 				userVerifier = new UserVerifier(adminDbTopLevel);
 				

@@ -12,7 +12,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.GroupAccess;
-import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -26,11 +25,11 @@ import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
+import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
@@ -42,7 +41,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public class RestDatabaseService {
 	
 	private DatabaseServerImpl databaseServerImpl = null;
-	private AdminDBTopLevel adminDbTopLevel = null;
+	private LocalAdminDbServer localAdminDbServer = null;
 	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
 	KeyValue mostRecentSimContextKey = new KeyValue("0");
 	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
@@ -50,9 +49,9 @@ public class RestDatabaseService {
 	VCMessagingService vcMessagingService = null;
 	SessionLog log = null;
 
-	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, AdminDBTopLevel adminDbTopLevel, VCMessagingService vcMessagingService, SessionLog log) {
+	public RestDatabaseService(DatabaseServerImpl databaseServerImpl, LocalAdminDbServer localAdminDbServer, VCMessagingService vcMessagingService, SessionLog log) {
 		this.databaseServerImpl = databaseServerImpl;
-		this.adminDbTopLevel = adminDbTopLevel;
+		this.localAdminDbServer = localAdminDbServer;
 		this.vcMessagingService = vcMessagingService;
 		this.log = log;
 	}
@@ -626,15 +625,13 @@ public class RestDatabaseService {
     		// no status conditions wanted ... nothing to query
     		return new ArrayList<SimpleJobStatus>();
     	}else{
-	   		List<SimpleJobStatus> resultList = adminDbTopLevel.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows, true);
+	   		List<SimpleJobStatus> resultList = localAdminDbServer.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows);
 	   		return resultList;
     	}
     }
 
 	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException {
-		KeyValue key = adminDbTopLevel.insertUserInfo(newUserInfo,true);
-		return adminDbTopLevel.getUserInfo(key,true);
-
+		return localAdminDbServer.insertUserInfo(newUserInfo);
 	}
 
 }
