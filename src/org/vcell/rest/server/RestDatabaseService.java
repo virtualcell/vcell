@@ -9,11 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -628,5 +630,11 @@ public class RestDatabaseService {
 	   		return resultList;
     	}
     }
+
+	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException {
+		KeyValue key = adminDbTopLevel.insertUserInfo(newUserInfo,true);
+		return adminDbTopLevel.getUserInfo(key,true);
+
+	}
 
 }

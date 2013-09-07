@@ -1,6 +1,7 @@
 package org.vcell.rest;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -11,6 +12,7 @@ import org.restlet.Response;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.security.Verifier;
 import org.vcell.rest.auth.CustomAuthHelper;
+import org.vcell.rest.users.UnverifiedUser;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
@@ -39,6 +41,7 @@ public class UserVerifier implements Verifier {
 		stale,
 		valid
 	};
+	private ArrayList<UnverifiedUser> unverifiedUsers = new ArrayList<UnverifiedUser>();
 	private HashMap<String,AuthenticationInfo> useridMap = new HashMap<String,AuthenticationInfo>();
 	private HashMap<String,ApiAccessToken> accessTokenMap = new HashMap<String,ApiAccessToken>();
 	private HashMap<String,ApiClient> clientidMap = new HashMap<String,ApiClient>();
@@ -173,6 +176,13 @@ public class UserVerifier implements Verifier {
 			return AuthenticationStatus.missing;
 		}
 	}
+	
+	public void addUnverifiedUser(UnverifiedUser unverifiedUser){
+		String userid = unverifiedUser.submittedUserInfo.userid;
+		
+		this.unverifiedUsers.add(unverifiedUser);
+		
+	}
 
 	private Date getNewExpireDate() {
 		long oneHourMs = 1000*60*60;
@@ -180,5 +190,14 @@ public class UserVerifier implements Verifier {
 		long tokenLifetimeMs = oneDayMs;
 		Date expireTime = new Date(System.currentTimeMillis() + tokenLifetimeMs);
 		return expireTime;
+	}
+
+	public UnverifiedUser getUnverifiedUser(String emailverify_token) {
+		for (UnverifiedUser unverifiedUser : unverifiedUsers) {
+			if (unverifiedUser.verificationToken.equals(emailverify_token)){
+				return unverifiedUser;
+			}
+		}
+		return null;
 	}
 }

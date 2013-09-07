@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import org.restlet.Request;
-import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.MediaType;
@@ -30,6 +29,11 @@ import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
+import org.vcell.rest.users.EmailTokenVerifyRestlet;
+import org.vcell.rest.users.LoginFormRestlet;
+import org.vcell.rest.users.LoginRestlet;
+import org.vcell.rest.users.NewUserRestlet;
+import org.vcell.rest.users.RegistrationFormRestlet;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -44,13 +48,32 @@ public class VCellApiApplication extends WadlApplication {
 		ignoreInvalidCredentials,
 		prohibitInvalidCredentials
 	}
+	
+	public final static String NEWUSERID_FORMNAME				= "newuserid";
+	public final static String NEWPASSWORD1_FORMNAME			= "newpassword1";
+	public final static String NEWPASSWORD2_FORMNAME			= "newpassword2";
+	public final static String NEWFIRSTNAME_FORMNAME			= "newfirstname";
+	public final static String NEWLASTNAME_FORMNAME				= "newlastname";
+	public final static String NEWEMAIL_FORMNAME				= "newemail";
+	public final static String NEWINSTITUTE_FORMNAME			= "newinstitute";
+	public final static String NEWCOUNTRY_FORMNAME				= "newcountry";
+	public final static String NEWNOTIFY_FORMNAME				= "newnotify";
+	public final static String NEWERRORMESSAGE_FORMNAME			= "newerrormsg";
+	public final static String NEWFORMPROCESSING_FORMNAME		= "newform";
+	
+	public final static String EMAILVERIFYTOKEN_FORMNAME	= "verifytoken";
 
-	public static final String LOGIN = "login";
-	public static final String LOGINFORM = "loginform";
 	public static final String IDENTIFIER_FORMNAME = "user";
 	public static final String SECRET_FORMNAME = "password";
-	public static final String LOGOUT = "logout";
 	public static final String REDIRECTURL_FORMNAME = "redirecturl";
+
+	public static final String LOGINFORM = "loginform";
+	public static final String LOGIN = "login";
+	public static final String LOGOUT = "logout";
+	
+	public static final String REGISTRATIONFORM = "registrationform";
+	public static final String NEWUSER = "newuser";
+	public static final String NEWUSER_VERIFY = "newuserverify";
 	
 	public static final String BROWSER_CLIENTID = "dskeofihdslksoihe";
 	
@@ -206,32 +229,15 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}/jobindex/{"+JOBINDEX+"}", SimDataValuesServerResource.class);  
 		
-		rootRouter.attach("/"+LOGIN, new Restlet(getContext()){
-            @Override
-            public void handle(Request request, Response response) {
-		        String html = 
-		        	"<html>" +
-		        		"/login ... should have been redirected."+
-		        	"</html>";
-		        response.setEntity(html, MediaType.TEXT_HTML);
-            }
-		});
+		rootRouter.attach("/"+LOGIN, new LoginRestlet(getContext()));
 		
-		rootRouter.attach("/"+LOGINFORM, new Restlet(getContext()){
-            @Override
-            public void handle(Request request, Response response) {
-            	org.restlet.data.Reference reference = request.getReferrerRef();
-               	String html = "<html>" +
-        					"<form name='login' action='"+"/"+LOGIN+ "' method='post'>" +
-        							"VCell userid <input type='text' name='"+IDENTIFIER_FORMNAME+"' value=''/><br/>" +
-        							"VCell password <input type='password' name='"+SECRET_FORMNAME+"' value=''/><br/>" +
-        							"<input type='hidden' name='"+REDIRECTURL_FORMNAME+"' value='"+reference+"'>" +
-        							"<input type='submit' value='sign in'/>" +
-        					"</form>" +
-          				  "</html>";
-                	response.setEntity(html, MediaType.TEXT_HTML);
-            }
-		});
+		rootRouter.attach("/"+LOGINFORM, new LoginFormRestlet(getContext()));
+		
+		rootRouter.attach("/"+REGISTRATIONFORM, new RegistrationFormRestlet(getContext()));
+		
+		rootRouter.attach("/"+NEWUSER, new NewUserRestlet(getContext()));
+		
+		rootRouter.attach("/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
 		
         cookieAuthenticator.setNext(rootRouter);
      	    	 
