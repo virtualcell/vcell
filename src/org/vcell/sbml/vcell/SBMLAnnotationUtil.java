@@ -279,7 +279,40 @@ public class SBMLAnnotationUtil {
 						}
 					} else {
 						// other (tool-specific, non-RDF, XML) annotations 
-						Element elementXML = xmlNodeToElement(annotationBranch);
+						Element elementXML = null;
+//						String xmlString = annotationBranch.toXMLString();
+//						Element annotationElement = null;
+						try {
+							XMLNode clonedAnnotRoot = annotationRoot.cloneObject();
+							clonedAnnotRoot.setNamespaces(sBase.getNamespaces());
+							clonedAnnotRoot.removeChildren();
+							clonedAnnotRoot.addChild(annotationBranch.cloneObject());
+							elementXML = (XmlUtil.stringToXML(clonedAnnotRoot.toXMLString(), null)).getRootElement();//(XmlUtil.stringToXML(xmlString, null)).getRootElement();
+						} catch (Exception e) {
+//							e.printStackTrace(System.out);
+							// don't do anything .... we want to continue reading in the model, we cannot fail import because annotation is not well-formed.
+							//try wrap in namespace element
+//							System.out.println(sBase.toSBML()+"\n\n"+annotationRoot.toXMLString());
+//							XMLNamespaces xmlNamespaces = sBase.getNamespaces();
+//							if(xmlNamespaces != null && !xmlNamespaces.isEmpty()){
+//								String xmlnsStr = "";
+//								for (int j = 0; j < xmlNamespaces.getNumNamespaces(); j++) {
+//									xmlnsStr+= "\nxmlns"+(xmlNamespaces.getPrefix(j).length()==0?"":":"+xmlNamespaces.getPrefix(j))+"=\""+xmlNamespaces.getURI(j)+"\"";
+//								}
+//								String wrap = "<annotation "+xmlnsStr+">\n"+annotationBranch.toXMLString()+"\n</annotation>";
+//								System.out.println(wrap);
+//								try{
+//									elementXML = (XmlUtil.stringToXML(wrap, null)).getRootElement();
+//									System.out.println("-----PROBLEM FIXED-----");
+//								}catch(Exception e2){
+//									e.printStackTrace();
+//								}
+//							}
+						}
+
+						
+						
+//						Element elementXML = xmlNodeToElement(annotationBranch);
 						Element[] xmlAnnotations = metaData.getXmlAnnotations(identifiable);
 						Vector<Element> xmlAnnotList = new Vector<Element>();
 						if (xmlAnnotations != null && xmlAnnotations.length > 0) {
