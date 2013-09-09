@@ -30,7 +30,15 @@ public class EntityImpl extends SBEntityImpl implements Entity, Identifiable {
 	private ArrayList<Xref> xRef = new ArrayList<Xref>();
 	private ArrayList<Provenance> dataSource = new ArrayList<Provenance>();
 	private ArrayList<Evidence> evidence = new ArrayList<Evidence>();
+	transient private ArrayList<String> formalNames = new ArrayList<String>();
 	
+	public void setFormalNames(ArrayList<String> formalNames){
+		this.formalNames = formalNames;
+	}
+	public ArrayList<String> getFormalNames(){
+		return formalNames;
+	}
+
 	public ArrayList<String> getName() {
 		return name;
 	}
