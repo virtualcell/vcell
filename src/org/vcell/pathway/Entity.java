@@ -17,7 +17,10 @@ import org.vcell.pathway.sbpax.SBEntity;
 public interface Entity extends SBEntity {
 	public ArrayList<String> getName();
 	public void setName(ArrayList<String> name);
-
+	
+	public void setFormalNames(ArrayList<String> formalNames);
+	public ArrayList<String> getFormalNames();
+	
 	public ArrayList<String> getAvailability();
 	public void setAvailability(ArrayList<String> availability);
 

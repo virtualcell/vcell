@@ -15,6 +15,7 @@ package org.vcell.sybil.models.miriam;
  */
 
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
@@ -47,6 +48,21 @@ public class MIRIAMRef extends KeyOfTwo<String, String> {
 	}
 	
 	public static MIRIAMRef createFromURN(String urn) throws URNParseFailureException {
+		if(urn.startsWith("http://")){
+			URL url = null;
+			try{
+				url = new URL(urn);
+			}catch(Exception e){
+				throw new URNParseFailureException(e.getMessage());
+			}
+			String[] pathParts = url.getPath().split("/");
+			if(pathParts.length == 3){
+				return new MIRIAMRef(pathParts[1],pathParts[2]);
+			}else{
+				throw new URNParseFailureException("couldn't interpret urn "+urn);
+			}
+		}
+		
 		String[] split = urn.split(":");
 		if(split.length != 4) { 
 			throw new URNParseFailureException(urn + ": Need four components, but got " + split.length); 
