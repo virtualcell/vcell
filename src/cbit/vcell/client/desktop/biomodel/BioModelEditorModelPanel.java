@@ -705,9 +705,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 			if(deleteList.get(0) instanceof SpeciesContext || deleteList.get(0) instanceof ReactionStep){
 				try{
-					SpeciesContext[] speciesContextArr = (deleteList.get(0) instanceof SpeciesContext?deleteList.toArray(new SpeciesContext[0]):null);
-					ReactionStep[] reactionStepArr = (deleteList.get(0) instanceof ReactionStep?deleteList.toArray(new ReactionStep[0]):null);
-					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArr,speciesContextArr,false);
+					ArrayList<SpeciesContext> speciesContextArrList = new ArrayList<SpeciesContext>();
+					ArrayList<ReactionStep> reactionStepArrList = new ArrayList<ReactionStep>();
+					for(Object obj:deleteList){
+						if(obj instanceof SpeciesContext){
+							speciesContextArrList.add((SpeciesContext)obj);
+						}else if(obj instanceof ReactionStep){
+							reactionStepArrList.add((ReactionStep)obj);
+						}else{
+							throw new Exception("Unexpected delete object "+obj.getClass().getName());
+						}
+					}
+					ReactionCartoonTool.deleteReactionsAndSpecies(reactionCartoonEditorPanel,reactionStepArrList.toArray(new ReactionStep[0]),speciesContextArrList.toArray(new SpeciesContext[0]),false);
 				}catch(UserCancelException uce){
 					return;
 				}
