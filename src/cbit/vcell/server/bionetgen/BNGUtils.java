@@ -50,23 +50,23 @@ public BNGUtils() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (7/11/2006 3:46:33 PM)
- * @return java.io.File
- * @param parentDir java.io.File
- */
-private static File createTempDirectory(String prefix, File parentDir) {
-	while (true) {
-		int  counter = new java.util.Random().nextInt() & 0xffff;
-		
-		File tempDir = new File(parentDir, prefix + Integer.toString(counter));
-		if (!tempDir.exists()) {
-			tempDir.mkdir();
-			return tempDir;
-		}
-	}
-}
+///**
+// * Insert the method's description here.
+// * Creation date: (7/11/2006 3:46:33 PM)
+// * @return java.io.File
+// * @param parentDir java.io.File
+// */
+//private static File createTempDirectory(String prefix, File parentDir) {
+//	while (true) {
+//		int  counter = new java.util.Random().nextInt() & 0xffff;
+//		
+//		File tempDir = new File(parentDir, prefix + Integer.toString(counter));
+//		if (!tempDir.exists()) {
+//			tempDir.mkdir();
+//			return tempDir;
+//		}
+//	}
+//}
 
 /**
  * Insert the method's description here.
@@ -104,6 +104,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
 		executable = new org.vcell.util.Executable(cmd);
+		executable.setWorkingDir(workingDir);
 		executable.start();
 		
 		String stdoutString = executable.getStdoutString();
@@ -118,9 +119,9 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		for (int i = 0; i < files.length; i ++) {
 			filenames[i] = files[i].getName();
 			filecontents[i] = FileUtils.readFileToString(files[i]);
-			files[i].delete();
+//			files[i].delete();
 		}		
-		workingDir.delete();
+//		workingDir.delete();
 		
 		bngOutput = new BNGOutput(stdoutString, filenames, filecontents);
 		System.out.println("--------------Finished BNG----------------------------");
@@ -137,7 +138,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 			for (int i = 0; i < files.length; i ++) {
 				files[i].delete();
 			}		
-			workingDir.delete();
+//			workingDir.delete();
 		}
 		
 		workingDir = null;
@@ -158,7 +159,7 @@ private static void initialize() throws Exception {
 		bngHome.mkdirs();
 	}
 	
-	workingDir = createTempDirectory(prefix, bngHome);	
+	workingDir = bngHome;//createTempDirectory(prefix, bngHome);	
 	System.out.println("BNG working directory is " + bngHome.getAbsolutePath());
 	
 	file_exe_bng = new java.io.File(bngHome, EXE_BNG);
