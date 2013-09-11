@@ -89,7 +89,7 @@ public class VCellLookAndFeel {
 	        UIManager.put("RadioButtonMenuItem.acceleratorFont", defaultFont);
 	        UIManager.put("TabbedPane.useSmallLayout", Boolean.TRUE);
 	        
-	        System.setProperty("apple.laf.useScreenMenuBar", "true");
+//	        System.setProperty("apple.laf.useScreenMenuBar", "true");
 	        System.getProperties().put("swing.component.sizevariant", "small");
 		}
 	}
