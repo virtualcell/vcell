@@ -82,7 +82,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    	} else if (userObj instanceof SimulationContext) {		// --- root: application name
 	    		font = boldFont;
 	    		icon = VCellIcons.applicationIcon;
-	    		labelText = "Application: " + ((SimulationContext)userObj).getName();
+	    		labelText = /*"Application: " + */((SimulationContext)userObj).getName();
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 	    		labelText = folder.getName();
