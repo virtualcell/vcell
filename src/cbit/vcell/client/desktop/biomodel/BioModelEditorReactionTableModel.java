@@ -17,6 +17,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -34,22 +37,25 @@ import cbit.vcell.parser.SymbolTable;
 @SuppressWarnings("serial")
 public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ReactionStep> {	
 	public final static int COLUMN_EQUATION = 0;
-	public final static int COLUMN_NAME = 1;
-	public final static int COLUMN_STRUCTURE = 2;
-	public final static int COLUMN_KINETICS = 3;
-	
+	public final static int COLUMN_LINK = 1;
+	public final static int COLUMN_NAME = 2;
+	public final static int COLUMN_STRUCTURE = 3;
+	public final static int COLUMN_KINETICS = 4;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Kinetics"};
+	private static String[] columnNames = new String[] {"Reaction", "Link", "Name", "Structure", "Kinetics"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
-		setColumns(columnNames);		
+		setColumns(columnNames);
 	}
 
 	public Class<?> getColumnClass(int column) {
 		switch (column){		
 			case COLUMN_NAME:{
 				return String.class;
+			}
+			case COLUMN_LINK:{
+				return BioPaxObject.class;
 			}
 			case COLUMN_EQUATION:{
 				return ReactionEquation.class;
@@ -71,7 +77,17 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();	
 				for (ReactionStep rs : getModel().getReactionSteps()){
-					if (rs.getName().toLowerCase().contains(lowerCaseSearchText)
+					boolean bMatchRelationshipObj = false;
+					HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(rs);
+					for(RelationshipObject relObj:relObjsHash){
+						if(relObj.getBioPaxObject() instanceof Entity){
+							if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
+								bMatchRelationshipObj = true;
+								break;
+							}
+						}
+					}
+					if (bMatchRelationshipObj || rs.getName().toLowerCase().contains(lowerCaseSearchText)
 						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)
 						|| rs.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
 						|| rs.getKinetics().getKineticsDescription().getDescription().toLowerCase().contains(lowerCaseSearchText)) {
@@ -93,6 +109,13 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				switch (column) {
 					case COLUMN_NAME: {
 						return reactionStep.getName();
+					} 
+					case COLUMN_LINK: {
+						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
+						if(relObjsHash != null && relObjsHash.size() > 0){
+							return relObjsHash.iterator().next().getBioPaxObject();
+						}
+						return null;
 					} 
 					case COLUMN_EQUATION: {
 						return new ReactionEquation(reactionStep, bioModel.getModel());

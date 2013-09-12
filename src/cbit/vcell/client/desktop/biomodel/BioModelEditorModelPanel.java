@@ -62,6 +62,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -214,9 +215,26 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		public void mouseClicked(MouseEvent e) {
 			if (e.getSource() == tabbedPane) {
 				showDiagramView();
-			} else if (e.getClickCount() == 2 && e.getSource() == reactionsTable) {
-				if (reactionsTable.getSelectedRow() == reactionsTable.getRowCount() - 1) { // last add new row.
-					addNewReaction();
+			} else if (e.getClickCount() == 2) {
+				if(e.getSource() == reactionsTable){
+					if (reactionsTable.getSelectedRow() == reactionsTable.getRowCount() - 1) { // last add new row.
+						addNewReaction();
+					}else{
+	//					System.out.println(reactionsTable.getSelectedRow()+" "+reactionsTable.getSelectedColumn());
+						Object reactionTableSelection = reactionsTable.getValueAt(reactionsTable.getSelectedRow(),reactionsTable.getSelectedColumn());
+						if(reactionTableSelection instanceof BioPaxObject){
+	//						System.out.println(reactionTableSelection);
+							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
+							selectionManager.setSelectedObjects(new Object[]{reactionTableSelection});
+						}
+					}
+				}else if(e.getSource() == speciesTable){
+					Object speciesTableSelection = speciesTable.getValueAt(speciesTable.getSelectedRow(),speciesTable.getSelectedColumn());
+					if(speciesTableSelection instanceof BioPaxObject){
+//						System.out.println(reactionTableSelection);
+						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
+						selectionManager.setSelectedObjects(new Object[]{speciesTableSelection});
+					}					
 				}
 			}
 		}
@@ -528,11 +546,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 			
 		};
-		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
-		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(tableCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);
+		speciesTable.addMouseListener(eventHandler);
 		speciesTable.addKeyListener(eventHandler);
 		structuresTable.addKeyListener(eventHandler);
 	}
