@@ -229,6 +229,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		DOMAIN_ORIGIN,
 		DISTANCE_MAP,
 		FILL_RATIO,
+		REFINEMENT_ROI,
 		MAX_BOX_SIZE,
 		SUBDOMAINS,
 		REFINEMENT_RATIOS,
@@ -2009,6 +2010,10 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		
 		printWriter.println(FVInputFileKeyword.MAX_BOX_SIZE + " " + chomboSolverSpec.getMaxBoxSize());
 		printWriter.println(FVInputFileKeyword.FILL_RATIO + " " + chomboSolverSpec.getFillRatio());
+		if (chomboSolverSpec.getRefinementRoiExpression() != null)
+		{
+			printWriter.println(FVInputFileKeyword.REFINEMENT_ROI + " " + chomboSolverSpec.getRefinementRoiExpression().infix() + ";");
+		}
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();
 		printWriter.print(FVInputFileKeyword.REFINEMENT_RATIOS + " " + (numLevels + 1));
 		RefinementLevel rfl  = null;

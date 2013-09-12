@@ -4184,6 +4184,13 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		fillRatio.setText(param.getFillRatio() + "");
 		chomboElement.addContent(fillRatio);
 		
+		if (param.getRefinementRoiExpression() != null)
+		{
+			Element refinementRoi = new Element(XMLTags.RefinementROITag);
+			refinementRoi.setText(param.getRefinementRoiExpression().infix() + ";");
+			chomboElement.addContent(refinementRoi);
+		}
+		
 		Element meshRefinement = new Element(XMLTags.MeshRefinementTag);
 		for (int i = 0; i < param.getNumRefinementLevels(); i ++) {
 			RefinementLevel rfl = param.getRefinementLevel(i);

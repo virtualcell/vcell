@@ -9,7 +9,6 @@ import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.apache.log4j.pattern.IntegerPatternConverter;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -17,6 +16,9 @@ import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.solver.SolverUtilities;
 
 
@@ -27,24 +29,32 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private int maxBoxSize = 32;
 	private double fillRatio = defaultFillRatio;
 	private ArrayList<RefinementLevel> refinementLevelList = new ArrayList<RefinementLevel>();
+	private Expression refinementRoiExpression = null;
 	public static String PROPERTY_NAME_MAX_BOX_SIZE = "maxBoxSize";
 	public static String PROPERTY_NAME_FILL_RATIO = "fillRatio";
 	private transient PropertyChangeSupport propertyChange;
 	private transient VetoableChangeSupport vetoChange;
 
 	public ChomboSolverSpec(int maxBoxSize) {
-		this(maxBoxSize, defaultFillRatio, new ArrayList<RefinementLevel>());
+		this.maxBoxSize = maxBoxSize;
 	}
 	
 	public ChomboSolverSpec(ChomboSolverSpec css) {
-		this(css.maxBoxSize, css.fillRatio, new ArrayList<RefinementLevel>(css.refinementLevelList));
+		this.maxBoxSize = css.maxBoxSize;
+		this.fillRatio = css.fillRatio;
+		if (css.refinementRoiExpression != null)
+		{
+			this.refinementRoiExpression = new Expression(css.refinementRoiExpression);
+		}
+		this.refinementLevelList = new ArrayList<RefinementLevel>(css.refinementLevelList);
 	}
 	
-	public ChomboSolverSpec(int maxBoxSize, double fillRatio, ArrayList<RefinementLevel> refineLevelList) {
+	public ChomboSolverSpec(int maxBoxSize, double fillRatio, String roi, ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
 		super();
 		this.maxBoxSize = maxBoxSize;
 		this.fillRatio = fillRatio;
 		refinementLevelList = refineLevelList;
+		setRefinementRoiExpression(roi);
 		addVetoableChangeListener(this);
 	}
 	
@@ -111,6 +121,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		{
 			return false;
 		}
+		if (!Compare.isEqualOrNull(refinementRoiExpression, chomboSolverSpec.refinementRoiExpression))
+		{
+			return false;
+		}
 		if (chomboSolverSpec.getNumRefinementLevels() != getNumRefinementLevels()) {
 			return false;
 		}
@@ -127,6 +141,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append(VCML.ChomboSolverSpec + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t" + VCML.MaxBoxSize + " " + maxBoxSize + "\n");
 		buffer.append("\t" + VCML.FillRatio + " " + fillRatio + "\n");
+		if (refinementRoiExpression != null)
+		{
+			buffer.append("\t" + VCML.RefinementROI + " " + refinementRoiExpression.infix() + ";\n");
+		}
 		buffer.append("\t" + VCML.MeshRefinement + " " + VCML.BeginBlock + "\n");
 		for (RefinementLevel level : refinementLevelList) {
 			buffer.append(level.getVCML());
@@ -162,6 +180,15 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				fillRatio = Double.parseDouble(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.RefinementROI))
+			{
+				token = tokens.readToSemicolon();
+				try {
+					setRefinementRoiExpression(token);
+				} catch (ExpressionException e) {
+					System.err.println("Invalid " + VCML.RefinementROI + ": " + token);
+				}
 			}
 			else if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
@@ -251,4 +278,18 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
 	}	
+	
+	public Expression getRefinementRoiExpression() {
+		return refinementRoiExpression;
+	}
+
+	public void setRefinementRoiExpression(String roiExp) throws ExpressionException {
+		Expression exp = null;
+		if (roiExp != null && roiExp.trim().length() > 0)
+		{
+			exp = new Expression(roiExp);
+			exp.bindExpression(new SimpleSymbolTable(new String[] { "x", "y", "z" } ));
+		}
+		this.refinementRoiExpression = exp;
+	}
 }
