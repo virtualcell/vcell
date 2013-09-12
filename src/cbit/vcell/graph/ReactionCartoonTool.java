@@ -808,6 +808,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				Iterator<SymbolTableEntry> iterSymbolTableEntry = referencingSymbolsHashMap.get(objSpeciesContext).iterator();
 				while(iterSymbolTableEntry.hasNext()){
 					rowData[count][0] = objSpeciesContext.getName();
+					rowData[count][1] = "";
 					SymbolTableEntry objSymbolTableEntry = iterSymbolTableEntry.next();
 					boolean bKineticsParameter = objSymbolTableEntry instanceof KineticsParameter;
 					if(bKineticsParameter){
