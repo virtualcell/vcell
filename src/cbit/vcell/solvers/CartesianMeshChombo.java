@@ -250,6 +250,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 				{
 					int c = -1;
 					int[] index = (int[]) vectValues.get(++ c);
+					int[] level = (int[]) vectValues.get(++ c);
 					int[] i = (int[]) vectValues.get(++ c);
 					int[] j = (int[]) vectValues.get(++ c);
 					int[] k = null;

@@ -224,6 +224,7 @@ public class VCML {
 	public final static String ChomboSolverSpec = "ChomboSolverSpec";
 	public final static String MaxBoxSize = "MaxBoxSize";
 	public final static String FillRatio = "FillRatio";
+	public final static String RefinementROI = "RefinementROI";
 	public final static String MeshRefinement = "MeshRefinement";
 	public final static String RefinementLevel = "RefinementLevel";
 	public final static String ChomboBox = "ChomboBox";
