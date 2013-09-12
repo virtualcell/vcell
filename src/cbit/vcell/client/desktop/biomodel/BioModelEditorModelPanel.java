@@ -63,6 +63,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
+import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -555,7 +556,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							if (!isSelected) {
 								setForeground(Color.blue);
 							}
-							setText("<html><u>" + bioModelEntityObject.getName() + "</u></html>");						
+							String finalName = null;
+							BioPaxObject bioPaxObject = relationshipSet.iterator().next().getBioPaxObject();
+							if(bioPaxObject instanceof EntityImpl && ((EntityImpl)bioPaxObject).getName() != null && ((EntityImpl)bioPaxObject).getName().size() > 0){
+								finalName = ((EntityImpl)bioPaxObject).getName().get(0);
+							}else{
+								finalName = bioModelEntityObject.getName();
+							}
+							final int LIMIT = 40;
+							final String DOTS = "...";
+							if(finalName != null && finalName.length() > LIMIT){
+								finalName = finalName.substring(0, LIMIT-DOTS.length()-1)+DOTS;
+							}
+							setText("<html><u>" + finalName + "</u></html>");						
 							setToolTipText(tooltip.toString());
 						}
 					}
