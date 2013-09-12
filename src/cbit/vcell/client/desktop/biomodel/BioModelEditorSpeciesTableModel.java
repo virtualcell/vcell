@@ -17,6 +17,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.vcell.pathway.BioPaxObject;
+import org.vcell.pathway.Entity;
+import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -31,8 +34,9 @@ import cbit.vcell.parser.SymbolTable;
 public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTableModel<SpeciesContext> {
 	
 	public final static int COLUMN_NAME = 0;
-	public final static int COLUMN_STRUCTURE = 1;	
-	private static String[] columnNames = new String[] {"Name", "Structure"};
+	public final static int COLUMN_LINK = 1;
+	public final static int COLUMN_STRUCTURE = 2;	
+	private static String[] columnNames = new String[] {"Name","Link","Structure"};
 
 	public BioModelEditorSpeciesTableModel(EditorScrollTable table) {
 		super(table);
@@ -44,6 +48,9 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		
 			case COLUMN_NAME:{
 				return String.class;
+			}
+			case COLUMN_LINK:{
+				return BioPaxObject.class;
 			}
 			case COLUMN_STRUCTURE:{
 				return Structure.class;
@@ -60,7 +67,17 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();
 					for (SpeciesContext s : getModel().getSpeciesContexts()){
-					if (s.getName().toLowerCase().contains(lowerCaseSearchText)		
+						boolean bMatchRelationshipObj = false;
+						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(s);
+						for(RelationshipObject relObj:relObjsHash){
+							if(relObj.getBioPaxObject() instanceof Entity){
+								if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
+									bMatchRelationshipObj = true;
+									break;
+								}
+							}
+						}
+					if (bMatchRelationshipObj || s.getName().toLowerCase().contains(lowerCaseSearchText)		
 						|| s.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
 						speciesContextList.add(s);
 					}
@@ -80,6 +97,13 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				switch (column) {
 					case COLUMN_NAME: {
 						return speciesContext.getName();
+					} 
+					case COLUMN_LINK: {
+						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(speciesContext);
+						if(relObjsHash != null && relObjsHash.size() > 0){
+							return relObjsHash.iterator().next().getBioPaxObject();
+						}
+						return null;
 					} 
 					case COLUMN_STRUCTURE: {
 						return speciesContext.getStructure();

@@ -254,9 +254,9 @@ private void lookupFormalName(final int tableRow){
 					for (int i = 0; i < ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getxRef().size(); i++) {
 						str+= (i>0?"\n":"")+entity.getxRef().get(i).getDb()+":"+entity.getxRef().get(i).getId();
 					}
-					throw new Exception("Formal name lookup not implemented using:\n"+str);
+					throw new Exception("Formal name lookup not yet implemented using:\n"+str);
 				}else{
-					throw new Exception("No cross-references available to lookup formal name");
+					throw new Exception("No cross-references available to lookup formal name for "+entity.getName().get(0));
 				}
 			}finally{
 				lookupRemove(entity);
