@@ -107,8 +107,8 @@ public String getSQLUpdateList(UserInfo userInfo) {
 	buffer.append(email+"='"+userInfo.email+"',");
 	buffer.append(dbWholeName+"='"+userInfo.wholeName+"',");
 	buffer.append(lastName+"=NULL"+",");
-	buffer.append(title+"='"+userInfo.title+"',");
-	buffer.append(companyName+"='"+userInfo.company+"',");
+	buffer.append(title+"="+(userInfo.title==null?"NULL":"'"+userInfo.title+"'")+",");
+	buffer.append(companyName+"="+(userInfo.company==null?"NULL":"'"+userInfo.company+"'")+",");
 	buffer.append(address1+"=NULL"+",");
 	buffer.append(address2+"=NULL"+",");
 	buffer.append(city+"=NULL"+",");
@@ -133,8 +133,8 @@ public String getSQLValueList(KeyValue key, UserInfo userInfo) {
 	buffer.append("'"+userInfo.email+"',");
 	buffer.append("'"+userInfo.wholeName+"',");
 	buffer.append("NULL,");
-	buffer.append("'"+userInfo.title+"',");
-	buffer.append("'"+userInfo.company+"',");
+	buffer.append((userInfo.title==null?"NULL":"'"+userInfo.title+"'")+",");
+	buffer.append((userInfo.company==null?"NULL":"'"+userInfo.company+"'")+",");
 	buffer.append("NULL,");
 	buffer.append("NULL,");
 	buffer.append("NULL,");
@@ -162,7 +162,9 @@ public UserInfo getUserInfo(ResultSet rset) throws SQLException {
 	userInfo.email =	rset.getString(email.toString());
 	userInfo.wholeName =rset.getString(dbWholeName.toString());
 	userInfo.title =	rset.getString(title.toString());
+	if(rset.wasNull()){userInfo.title = null;}
 	userInfo.company =	rset.getString(companyName.toString());
+	if(rset.wasNull()){userInfo.company = null;}
 	userInfo.country =	rset.getString(country.toString());
 	String notifyS =	rset.getString(notify.toString());
 	if(rset.wasNull()){

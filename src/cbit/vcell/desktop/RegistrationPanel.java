@@ -306,8 +306,8 @@ public class RegistrationPanel extends JPanel {
 		textFieldEMail.setText(userInfo.email);
 		textFieldFirstName.setText(userInfo.wholeName);
 //		textFieldLastName.setText(userInfo.lastName);
-		textFieldTitle.setText(userInfo.title);
-		textFieldOrganization.setText(userInfo.company);
+		textFieldTitle.setText((userInfo.title==null?"":userInfo.title));
+		textFieldOrganization.setText((userInfo.company==null?"":userInfo.company));
 //		textFieldAddress1.setText(userInfo.address1);
 //		textFieldAddress2.setText(userInfo.address2);
 		comboBoxCountry.setSelectedItem(userInfo.country);
