@@ -52,7 +52,10 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	        getLogger().log(Level.INFO,"MyCookieAuthenticator.login(request,response) - created new accessToken '"+accessToken.getToken()+"' and assignd to ChallengeResponse, redirectURL='"+redirectURL.getValue()+"'");
 
 	        response.redirectSeeOther(Reference.decode(redirectURL.getValue()));
-		} catch (SQLException | DataAccessException e) {
+		} catch (SQLException e) {
+			e.printStackTrace();
+			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.login(request,response) - exception",e);
+		} catch (DataAccessException e) {
 			e.printStackTrace();
 			getLogger().log(Level.SEVERE,"MyCookieAuthenticator.login(request,response) - exception",e);
 		}

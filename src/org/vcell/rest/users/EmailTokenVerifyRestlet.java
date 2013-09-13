@@ -34,7 +34,10 @@ public final class EmailTokenVerifyRestlet extends Restlet {
 					// 
 					try {
 						vcellApiApplication.getRestDatabaseService().addUser(unverifiedUser.submittedUserInfo);
-					} catch (SQLException | DataAccessException e1) {
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException(e1.getMessage(),e1);
+					} catch (DataAccessException e1) {
 						e1.printStackTrace();
 						throw new RuntimeException(e1.getMessage(),e1);
 					}

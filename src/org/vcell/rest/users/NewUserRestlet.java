@@ -88,20 +88,14 @@ public final class NewUserRestlet extends Restlet {
 			
 			// form new UnverifiedUserInfo
 			UserInfo newUserInfo = new UserInfo();
-			newUserInfo.address1 = " ";
-			newUserInfo.address2 = " ";
-			newUserInfo.city = " ";
 			newUserInfo.company = institute;
 			newUserInfo.country = country;
 			newUserInfo.digestedPassword0 = new DigestedPassword(password1);
 			newUserInfo.email = email;
-			newUserInfo.firstName = firstName;
-			newUserInfo.lastName = lastName;
+			newUserInfo.wholeName = firstName+" "+lastName;
 			newUserInfo.notify = notify.equals("on");
-			newUserInfo.state = " ";
 			newUserInfo.title = " ";
 			newUserInfo.userid = userid;
-			newUserInfo.zip = " ";
 			
 			Date submitDate = new Date();
 			long timeExpiresMS = 1000*60*60*1; // one hour
