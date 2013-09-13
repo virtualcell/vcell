@@ -20,16 +20,10 @@ public class UserInfo implements java.io.Serializable,java.lang.Cloneable {
 	public String userid = null;
 	public UserLoginInfo.DigestedPassword digestedPassword0;
 	public String email = null;
-	public String firstName = null;
-	public String lastName = null;
+	public String wholeName = null;
 	public String title = null;
 	public String company = null;
-	public String address1 = null;
-	public String address2 = null;
-	public String city = null;
-	public String state = null;
 	public String country = null;
-	public String zip = null;
 	public boolean notify = false;
 	public java.util.Date insertDate = null;
 
@@ -91,7 +85,6 @@ System.out.println("other="+userInfo.toString());
  * This method was created in VisualAge.
  */
 public String toString() {
-	return "["+id+","+userid+","+/*password+*/","+email+","+firstName+","+lastName+","+title+","+company+","+address1+","+address2+","+
-				city+","+state+","+country+","+zip+","+notify+","+insertDate+"]";
+	return "["+id+","+userid+","+/*password+*/","+email+","+wholeName+","+title+","+company+","+country+","+notify+","+insertDate+"]";
 }
 }

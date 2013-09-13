@@ -26,6 +26,8 @@ import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.Versionable;
@@ -242,10 +244,17 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
 			userKey = userRegistrationOP.getUserKey();
 			userDB.updateUserInfo(con, userRegistrationOP.getUserInfo());
 			con.commit();
+		}else if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_GETDIGESTEDUSERID)){
+			UserInfo[] userInfos = userDB.getUserInfos(con);
+			String[] digestedUserids = new String[userInfos.length];
+			for (int i = 0; i < userInfos.length; i++) {
+				digestedUserids[i] = new UserLoginInfo.DigestedPassword(userInfos[i].userid).getString();
+			}
+			return new UserRegistrationResults(null,digestedUserids);
 		}else{
 			throw new IllegalArgumentException(this.getClass().getName()+".userRegistrationOP Unknown operationType="+userRegistrationOP.getOperationType());
 		}
-		return new UserRegistrationResults(userDB.getUserInfo(con, userKey));
+		return new UserRegistrationResults(userDB.getUserInfo(con, userKey),null);
 	} catch (Throwable e) {
 		log.exception(e);
 		try {
