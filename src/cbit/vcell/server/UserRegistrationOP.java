@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 
+import java.awt.Component;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
@@ -27,8 +28,11 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.gui.DialogUtils;
+
+import com.sun.jmx.snmp.UserAcl;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -56,6 +60,7 @@ public class UserRegistrationOP implements Serializable{
 	public static final String USERREGOP_UPDATE = "USERREGOP_UPDATE";
 	public static final String USERREGOP_GETINFO = "USERREGOP_GETINFO";
 	public static final String USERREGOP_LOSTPASSWORD = "USERREGOP_LOSTPASSWORD";
+	public static final String USERREGOP_GETDIGESTEDUSERID = "USERREGOP_GETDIGESTEDUSERID";
 	
 	private UserInfo userInfo;
 	private String operationType;
@@ -65,14 +70,22 @@ public class UserRegistrationOP implements Serializable{
 	
 	private static RegistrationPanel registrationPanel = null;
 	
-	public static UserRegistrationOP createGetUserInfoOP(User user){
+	public static UserRegistrationOP createGetUserInfoOP(KeyValue keyValue){
 		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
 		userRegistrationOP.operationType = USERREGOP_GETINFO;
-		userRegistrationOP.userid  = user.getName();
-		userRegistrationOP.userKey = user.getID();
+//		userRegistrationOP.userid  = user.getName();
+		userRegistrationOP.userKey = keyValue;//user.getID();
 		return userRegistrationOP;
 	}
-	public static UserRegistrationOP createGetUserInfoOP(String userid){
+	public static UserRegistrationOP createGetDigestedUseridOP(){
+		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
+		userRegistrationOP.operationType = USERREGOP_GETDIGESTEDUSERID;
+//		userRegistrationOP.userid  = userid;//user.getName();
+//		userRegistrationOP.userKey = keyValue;//user.getID();
+		return userRegistrationOP;
+	}
+
+	public static UserRegistrationOP createLostPasswordOP(String userid){
 		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
 		userRegistrationOP.operationType = USERREGOP_LOSTPASSWORD;
 		userRegistrationOP.userid  = userid;
@@ -147,7 +160,23 @@ public class UserRegistrationOP implements Serializable{
 				}else{
 					return 
 						clientServerManager.getUserMetaDbServer().userRegistrationOP(
-							UserRegistrationOP.createGetUserInfoOP(clientServerManager.getUser())).getUserInfo();
+							UserRegistrationOP.createGetUserInfoOP(userKey)).getUserInfo();
+				}
+			}					
+			public String[] getDigestedUserids() throws DataAccessException,RemoteException{
+				if(localAdminDbServer != null){
+					UserInfo[] userInfos = localAdminDbServer.getUserInfos();
+					String[] digestedUserids = new String[userInfos.length];
+					for (int i = 0; i < userInfos.length; i++) {
+						digestedUserids[i] = new UserLoginInfo.DigestedPassword(userInfos[i].userid).getString();
+					}
+					return digestedUserids;
+				}else if(vcellBootstrap != null){
+					throw new DataAccessException("UserInfo not provided by VCellBootstrap");
+				}else{
+					return 
+						clientServerManager.getUserMetaDbServer().userRegistrationOP(
+							UserRegistrationOP.createGetDigestedUseridOP()).getDigestedUserids();
 				}
 			}					
 			public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
@@ -157,7 +186,7 @@ public class UserRegistrationOP implements Serializable{
 					vcellBootstrap.sendLostPassword(userid);
 				}else{
 					clientServerManager.getUserMetaDbServer().userRegistrationOP(
-						UserRegistrationOP.createGetUserInfoOP(clientServerManager.getUser())).getUserInfo();
+						UserRegistrationOP.createLostPasswordOP(userid));
 				}
 			}
 		}
@@ -207,6 +236,7 @@ public class UserRegistrationOP implements Serializable{
 		
 		final RegistrationProvider finalRegistrationProvider = registrationProvider;
 		final String ORIGINAL_USER_INFO_HOLDER = "originalUserInfoHolder";
+		final String DIGESTED_USERIDS_KEY = "DIGESTED_USERIDS_KEY";
 		AsynchClientTask gatherInfoTask = new AsynchClientTask("gathering user info for updating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
@@ -214,6 +244,14 @@ public class UserRegistrationOP implements Serializable{
 				if(userAction.equals(LoginManager.USERACTION_EDITINFO)){
 					UserInfo originalUserInfoHolder = finalRegistrationProvider.getUserInfo(clientServerManager.getUser().getID());
 					hashTable.put(ORIGINAL_USER_INFO_HOLDER, originalUserInfoHolder);
+				}else if(userAction.equals(LoginManager.USERACTION_REGISTER)){
+					try{
+						String[] digestedUserids = finalRegistrationProvider.getDigestedUserids();
+						hashTable.put(DIGESTED_USERIDS_KEY, digestedUserids);
+					}catch(Exception e){
+						e.printStackTrace();
+						//ignore, ok if something happens here, still let user register
+					}
 				}
 			}			
 		};
@@ -240,6 +278,7 @@ public class UserRegistrationOP implements Serializable{
 						throw UserCancelException.CANCEL_GENERIC;
 					}
 					NewPasswordUserInfo newUserInfo = registrationPanel.getUserInfo();
+					
 					if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
 						//User editing registration info but did not enter new clear text password in gui,
 						//set existing digestPassword
@@ -261,6 +300,26 @@ public class UserRegistrationOP implements Serializable{
 						PopupGenerator.showErrorDialog(currWindowManager, ex.getMessage());
 						continue;
 					}
+					
+					if(userAction.equals(LoginManager.USERACTION_REGISTER)){
+						//Check userid already exists
+						String[] digestedUserids = (String[])hashTable.get(DIGESTED_USERIDS_KEY);
+						if(digestedUserids != null){
+							String digestedNewUserid = new UserLoginInfo.DigestedPassword(newUserInfo.userid).getString();
+							boolean bUnique = true;
+							for (int i = 0; i < digestedUserids.length; i++) {
+								if(digestedNewUserid.equals(digestedUserids[i])){
+									bUnique = false;
+									break;
+								}
+							}
+							if(!bUnique){
+								PopupGenerator.showErrorDialog(currWindowManager, "UserID '"+newUserInfo.userid+"' cannot be used, choose a different one");
+								continue;
+							}
+						}
+					}
+
 					hashTable.put("newUserInfo", newUserInfo);
 					break;
 				} while (true);
@@ -312,6 +371,8 @@ public class UserRegistrationOP implements Serializable{
 		
 		ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask}, false);
 	}
+	
+	
 	public static boolean hasIllegalCharacters(String apo){
 		if((apo.indexOf('\'') != -1) || (apo.indexOf('<') != -1) || (apo.indexOf('>') != -1) || (apo.indexOf('&') != -1) || (apo.indexOf('\"') != -1)){
 			return true;
@@ -335,32 +396,23 @@ public class UserRegistrationOP implements Serializable{
 			}
 		}
 		if(newUserInfo.email == null || newUserInfo.email.length() == 0 || newUserInfo.email.indexOf("@") < 0){throw new Exception("please type in a valid email address.");}
-		if(newUserInfo.firstName == null || newUserInfo.firstName.length() == 0){throw new Exception("Registration Info: firstName" + emptyMessge);}
-		if(newUserInfo.lastName == null || newUserInfo.lastName.length() == 0){throw new Exception("Registration Info: lastName" + emptyMessge);}
-		if(newUserInfo.title == null || newUserInfo.title.length() == 0){throw new Exception("Registration Info: title" + emptyMessge);}
-		if(newUserInfo.company == null || newUserInfo.company.length() == 0){throw new Exception("Registration Info: organization" + emptyMessge);}
-		if(newUserInfo.address1 == null || newUserInfo.address1.length() == 0){throw new Exception("Registration Info: address1" + emptyMessge);}
-//		if(newUserInfo.address2 == null || newUserInfo.address2.length() == 0){throw new Exception("Registration Info: address2 length must be greater than 0");}
-		if(newUserInfo.city == null || newUserInfo.city.length() == 0){throw new Exception("Registration Info: city" + emptyMessge);}
-		if(newUserInfo.state == null || newUserInfo.state.length() == 0){throw new Exception("Registration Info: state" + emptyMessge);}
-		if(newUserInfo.country == null || newUserInfo.country.length() == 0){throw new Exception("Registration Info: country" + emptyMessge);}
-		if(newUserInfo.zip == null || newUserInfo.zip.length() == 0){throw new Exception("Registration Info: zip" + emptyMessge);}
+		if(newUserInfo.wholeName == null || newUserInfo.wholeName.length() == 0){throw new Exception("Registration Info: Name" + emptyMessge);}
 		
+		if(newUserInfo.title != null && newUserInfo.title.length() == 0){
+			newUserInfo.title = null;
+		}
+		if(newUserInfo.company != null && newUserInfo.company.length() == 0){
+			newUserInfo.company = null;
+		}
 		String hasIllegalMessage = " has illegal character '<>&\"";
 		//Check Illegal characters
 		if(hasIllegalCharacters(newUserInfo.userid)){throw new Exception("Registration Info: userid" + hasIllegalMessage);}
-//		if(hasIllegalCharacters(newUserInfo.password)){throw new Exception("Registration Info: password" + hasIllegalMessage);}
 		if(hasIllegalCharacters(newUserInfo.email)){throw new Exception("Registration Info: email" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.firstName)){throw new Exception("Registration Info: firstName" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.lastName)){throw new Exception("Registration Info: lastName" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.title)){throw new Exception("Registration Info: title" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.company)){throw new Exception("Registration Info: organization" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.address1)){throw new Exception("Registration Info: address1" + hasIllegalMessage);}
-		if(newUserInfo.address2 != null && hasIllegalCharacters(newUserInfo.address2)){throw new Exception("Registration Info: address2" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.city)){throw new Exception("Registration Info: city" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.state)){throw new Exception("Registration Info: state" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.country)){throw new Exception("Registration Info: country" + hasIllegalMessage);}
-		if(hasIllegalCharacters(newUserInfo.zip)){throw new Exception("Registration Info: zip" + hasIllegalMessage);}
+		if(hasIllegalCharacters(newUserInfo.wholeName)){throw new Exception("Registration Info: firstName" + hasIllegalMessage);}
+		
+		if(newUserInfo.title!=null && hasIllegalCharacters(newUserInfo.title)){throw new Exception("Registration Info: title" + hasIllegalMessage);}
+		if(newUserInfo.company!=null && hasIllegalCharacters(newUserInfo.company)){throw new Exception("Registration Info: organization" + hasIllegalMessage);}
+		if(newUserInfo.country!=null && hasIllegalCharacters(newUserInfo.country)){throw new Exception("Registration Info: country" + hasIllegalMessage);}
 
 		if(origUserInfo != null){
 			String[] columnNames = new String[] {"Field","Original","New Value"};
@@ -368,16 +420,11 @@ public class UserRegistrationOP implements Serializable{
 			if(!newUserInfo.userid.equals(origUserInfo.userid)){tableRow.add(new String[] {"userid",origUserInfo.userid,newUserInfo.userid});}
 			if(!newUserInfo.digestedPassword0.equals(origUserInfo.digestedPassword0)){tableRow.add(new String[] {"password","---","changed"});}
 			if(!newUserInfo.email.equals(origUserInfo.email)){tableRow.add(new String[] {"email",origUserInfo.email,newUserInfo.email});}
-			if(!newUserInfo.firstName.equals(origUserInfo.firstName)){tableRow.add(new String[] {"firstName",origUserInfo.firstName,newUserInfo.firstName});}
-			if(!newUserInfo.lastName.equals(origUserInfo.lastName)){tableRow.add(new String[] {"lastName",origUserInfo.lastName,newUserInfo.lastName});}
-			if(!newUserInfo.title.equals(origUserInfo.title)){tableRow.add(new String[] {"title",origUserInfo.title,newUserInfo.title});}
-			if(!newUserInfo.company.equals(origUserInfo.company)){tableRow.add(new String[] {"company",origUserInfo.company,newUserInfo.company});}
-			if(!newUserInfo.address1.equals(origUserInfo.address1)){tableRow.add(new String[] {"address1",origUserInfo.address1,newUserInfo.address1});}
-			if(!Compare.isEqualOrNull(newUserInfo.address2, origUserInfo.address2)){tableRow.add(new String[] {"address2",(origUserInfo.address2 == null?"":"'"+origUserInfo.address2+"'"),(newUserInfo.address2 == null?"":"'"+newUserInfo.address2+"'")});}
-			if(!newUserInfo.city.equals(origUserInfo.city)){tableRow.add(new String[] {"city",origUserInfo.city,newUserInfo.city});}
-			if(!newUserInfo.state.equals(origUserInfo.state)){tableRow.add(new String[] {"state",origUserInfo.state,newUserInfo.state});}
-			if(!newUserInfo.country.equals(origUserInfo.country)){tableRow.add(new String[] {"country",origUserInfo.country,newUserInfo.country});}
-			if(!newUserInfo.zip.equals(origUserInfo.zip)){tableRow.add(new String[] {"postal code",origUserInfo.zip,newUserInfo.zip});}
+			if(!newUserInfo.wholeName.equals(origUserInfo.wholeName)){tableRow.add(new String[] {"firstName",origUserInfo.wholeName,newUserInfo.wholeName});}
+			
+			if(!Compare.isEqualOrNull(newUserInfo.title, origUserInfo.title)){tableRow.add(new String[] {"title",origUserInfo.title,newUserInfo.title});}
+			if(!Compare.isEqualOrNull(newUserInfo.company, origUserInfo.company)){tableRow.add(new String[] {"organization",origUserInfo.company,newUserInfo.company});}
+			if(!Compare.isEqualOrNull(newUserInfo.country, origUserInfo.country)){tableRow.add(new String[] {"country",origUserInfo.country,newUserInfo.country});}
 			if(!(newUserInfo.notify == origUserInfo.notify)){tableRow.add(new String[] {"notify",origUserInfo.notify+"",newUserInfo.notify+""});}
 	
 			if(tableRow.size() > 0){

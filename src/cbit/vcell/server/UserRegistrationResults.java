@@ -17,10 +17,15 @@ import org.vcell.util.document.UserInfo;
 
 public class UserRegistrationResults implements Serializable{
 	private UserInfo userInfo;
-	public UserRegistrationResults(UserInfo userInfo){
+	private String[] digestedUserIDs;
+	public UserRegistrationResults(UserInfo userInfo,String[] digestedUserIDs){
 		this.userInfo = userInfo;
+		this.digestedUserIDs = digestedUserIDs;
 	}
 	public UserInfo getUserInfo(){
 		return userInfo;
+	}
+	public String[] getDigestedUserids(){
+		return digestedUserIDs;
 	}
 }
