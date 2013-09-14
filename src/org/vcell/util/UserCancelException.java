@@ -34,4 +34,7 @@ public class UserCancelException extends RuntimeException {
 private UserCancelException(String s) {
 	super(s);
 }
+public static UserCancelException createCustomUserCancelException(String message){
+	return new UserCancelException(message)	;
+}
 }
