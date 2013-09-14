@@ -60,7 +60,7 @@ public class UserRegistrationOP implements Serializable{
 	public static final String USERREGOP_UPDATE = "USERREGOP_UPDATE";
 	public static final String USERREGOP_GETINFO = "USERREGOP_GETINFO";
 	public static final String USERREGOP_LOSTPASSWORD = "USERREGOP_LOSTPASSWORD";
-	public static final String USERREGOP_GETDIGESTEDUSERID = "USERREGOP_GETDIGESTEDUSERID";
+	public static final String USERREGOP_ISUSERIDUNIQUE = "USERREGOP_ISUSERIDUNIQUE";
 	
 	private UserInfo userInfo;
 	private String operationType;
@@ -77,11 +77,10 @@ public class UserRegistrationOP implements Serializable{
 		userRegistrationOP.userKey = keyValue;//user.getID();
 		return userRegistrationOP;
 	}
-	public static UserRegistrationOP createGetDigestedUseridOP(){
+	public static UserRegistrationOP createIsUserIdUniqueOP(String userid){
 		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
-		userRegistrationOP.operationType = USERREGOP_GETDIGESTEDUSERID;
-//		userRegistrationOP.userid  = userid;//user.getName();
-//		userRegistrationOP.userKey = keyValue;//user.getID();
+		userRegistrationOP.operationType = USERREGOP_ISUSERIDUNIQUE;
+		userRegistrationOP.userid  = userid;
 		return userRegistrationOP;
 	}
 
@@ -163,20 +162,23 @@ public class UserRegistrationOP implements Serializable{
 							UserRegistrationOP.createGetUserInfoOP(userKey)).getUserInfo();
 				}
 			}					
-			public String[] getDigestedUserids() throws DataAccessException,RemoteException{
+			public boolean isUserIdUnique(String userid) throws DataAccessException,RemoteException{
 				if(localAdminDbServer != null){
 					UserInfo[] userInfos = localAdminDbServer.getUserInfos();
-					String[] digestedUserids = new String[userInfos.length];
+					boolean bUserIdUnique = true;
 					for (int i = 0; i < userInfos.length; i++) {
-						digestedUserids[i] = new UserLoginInfo.DigestedPassword(userInfos[i].userid).getString();
+						if(userInfos[i].userid.equals(userid)){
+							bUserIdUnique = false;
+							break;
+						}
 					}
-					return digestedUserids;
+					return bUserIdUnique;
 				}else if(vcellBootstrap != null){
 					throw new DataAccessException("UserInfo not provided by VCellBootstrap");
 				}else{
 					return 
 						clientServerManager.getUserMetaDbServer().userRegistrationOP(
-							UserRegistrationOP.createGetDigestedUseridOP()).getDigestedUserids();
+							UserRegistrationOP.createIsUserIdUniqueOP(userid)).isUserIdUnique();
 				}
 			}					
 			public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
@@ -244,18 +246,11 @@ public class UserRegistrationOP implements Serializable{
 				if(userAction.equals(LoginManager.USERACTION_EDITINFO)){
 					UserInfo originalUserInfoHolder = finalRegistrationProvider.getUserInfo(clientServerManager.getUser().getID());
 					hashTable.put(ORIGINAL_USER_INFO_HOLDER, originalUserInfoHolder);
-				}else if(userAction.equals(LoginManager.USERACTION_REGISTER)){
-					try{
-						String[] digestedUserids = finalRegistrationProvider.getDigestedUserids();
-						hashTable.put(DIGESTED_USERIDS_KEY, digestedUserids);
-					}catch(Exception e){
-						e.printStackTrace();
-						//ignore, ok if something happens here, still let user register
-					}
 				}
 			}			
 		};
 		
+		final String NEW_USER_INFO_KEY = "NEW_USER_INFO_KEY";
 		AsynchClientTask showPanelTask = new AsynchClientTask("please fill the user registration form", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 			@Override
@@ -296,41 +291,29 @@ public class UserRegistrationOP implements Serializable{
 							continue;
 						}
 					} catch (UserCancelException ex) {
+						continue;
 					} catch (Exception ex) {
 						PopupGenerator.showErrorDialog(currWindowManager, ex.getMessage());
 						continue;
 					}
-					
-					if(userAction.equals(LoginManager.USERACTION_REGISTER)){
-						//Check userid already exists
-						String[] digestedUserids = (String[])hashTable.get(DIGESTED_USERIDS_KEY);
-						if(digestedUserids != null){
-							String digestedNewUserid = new UserLoginInfo.DigestedPassword(newUserInfo.userid).getString();
-							boolean bUnique = true;
-							for (int i = 0; i < digestedUserids.length; i++) {
-								if(digestedNewUserid.equals(digestedUserids[i])){
-									bUnique = false;
-									break;
-								}
-							}
-							if(!bUnique){
-								PopupGenerator.showErrorDialog(currWindowManager, "UserID '"+newUserInfo.userid+"' cannot be used, choose a different one");
-								continue;
-							}
-						}
-					}
-
-					hashTable.put("newUserInfo", newUserInfo);
+					hashTable.put(NEW_USER_INFO_KEY, newUserInfo);
 					break;
 				} while (true);
 			}
 		};
 		
+		final String USERID_NOT_UNIQUE = "USERID_NOT_UNIQUE";
 		AsynchClientTask updateDbTask = new AsynchClientTask(userAction.equals(LoginManager.USERACTION_REGISTER)?"registering new user":"updating user info", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				UserInfo newUserInfo = (UserInfo)hashTable.get("newUserInfo");
+				UserInfo newUserInfo = (UserInfo)hashTable.get(NEW_USER_INFO_KEY);
+				if(userAction.equals(LoginManager.USERACTION_REGISTER)){
+					//Check userid already exists
+					if(!finalRegistrationProvider.isUserIdUnique(newUserInfo.userid)){
+						throw UserCancelException.createCustomUserCancelException(USERID_NOT_UNIQUE);
+					}
+				}
 				try {					
 					UserInfo registeredUserInfo = finalRegistrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginManager.USERACTION_EDITINFO)?true:false));
 					hashTable.put("registeredUserInfo", registeredUserInfo);
@@ -369,7 +352,33 @@ public class UserRegistrationOP implements Serializable{
 			}			
 		};
 		
-		ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask}, false);
+		AsynchClientTask useridErrorTask = new AsynchClientTask("re-enter userid...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,true,false) {
+			@Override
+			public void run(final Hashtable<String, Object> hashTable) throws Exception {
+				if(hashTable.containsKey(ClientTaskDispatcher.TASK_ABORTED_BY_USER)){
+					//retry if requested
+					if(hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER) instanceof UserCancelException &&
+						((UserCancelException)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER)).getMessage() != null &&
+						((UserCancelException)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER)).getMessage().equals(USERID_NOT_UNIQUE)){
+						UserInfo newUserInfo = (UserInfo)hashTable.get(NEW_USER_INFO_KEY);
+						PopupGenerator.showErrorDialog(currWindowManager, "Login ID '"+newUserInfo.userid+"' cannot be used, enter a different one.");
+						//Use thread to restart registration process again
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									registrationOperationGUI(requestManager, currWindowManager, currentClientServerInfo, userAction, clientServerManager);
+								} catch (Exception e) {
+									e.printStackTrace();
+									DialogUtils.showErrorDialog(currWindowManager.getComponent(), e.getMessage());
+								}	
+							}
+						}).start();
+					}									
+				}
+			}
+		};
+		ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {gatherInfoTask, showPanelTask, updateDbTask, connectTask,useridErrorTask}, false);
 	}
 	
 	

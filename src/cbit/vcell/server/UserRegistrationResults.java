@@ -17,15 +17,19 @@ import org.vcell.util.document.UserInfo;
 
 public class UserRegistrationResults implements Serializable{
 	private UserInfo userInfo;
-	private String[] digestedUserIDs;
-	public UserRegistrationResults(UserInfo userInfo,String[] digestedUserIDs){
+	private boolean bUserIdUnique;
+	public UserRegistrationResults(UserInfo userInfo){
 		this.userInfo = userInfo;
-		this.digestedUserIDs = digestedUserIDs;
+		this.bUserIdUnique = true;
+	}
+	public UserRegistrationResults(boolean bUserIdUnique){
+		this.userInfo = null;
+		this.bUserIdUnique = bUserIdUnique;
 	}
 	public UserInfo getUserInfo(){
 		return userInfo;
 	}
-	public String[] getDigestedUserids(){
-		return digestedUserIDs;
+	public boolean isUserIdUnique(){
+		return bUserIdUnique;
 	}
 }
