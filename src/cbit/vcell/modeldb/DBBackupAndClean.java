@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -18,13 +19,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.vcell.util.document.KeyValue;
-
 import oracle.jdbc.pool.OracleDataSource;
+
+import org.vcell.util.document.KeyValue;
 
 
 public class DBBackupAndClean {
@@ -35,6 +38,7 @@ public class DBBackupAndClean {
 	public static final String OP_BACKUP = "backup";
 	public static final String OP_CLEAN = "clean";
 	public static final String OP_CLEAN_AND_BACKUP = "cleanandbackup";
+	public static final String OP_IMPORT = "import";
 	
 	
 	private static class StreamReader extends Thread {
@@ -67,7 +71,7 @@ public class DBBackupAndClean {
 	}
 
 	public static void main(String[] args){
-		if(args.length != 7){
+		if(args.length <= 1){
 			usageExit();
 		}
 		String action = args[0];
@@ -81,6 +85,8 @@ public class DBBackupAndClean {
 		}else if(action.equals(OP_CLEAN_AND_BACKUP) && actionArgs != null){
 			clean(actionArgs);
 			backup(actionArgs);
+		}else if(action.equals(OP_IMPORT) && actionArgs != null){
+			importOp(actionArgs);
 		}else{
 			usageExit();
 		}
@@ -90,6 +96,7 @@ public class DBBackupAndClean {
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
 		System.exit(1);
 	}
 	
@@ -121,12 +128,207 @@ public class DBBackupAndClean {
 		return new ProcessInfo(exportProcess.exitValue(),normalOutput, errorOutput);
 
 	}
+	
+	private static String createBaseFileName(String dbHostName,String dbSrvcName,String vcellSchema){
+		String datePart = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime());
+		return dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
+		
+	}
+	private static void importOp(String[] args){
+		if(args.length != 7){
+			usageExit();
+		}
+		String importServerName = args[0];
+		final String dumpFileHostPrefix = args[1];
+		String vcellSchema = args[2];
+		String password = args[3];
+		String importDBSrvcName = args[4];
+		File workingDir = new File(args[5]);
+		File dumpFilesourceDir = new File(args[6]);
+
+		String baseFileName = OP_IMPORT+"_"+createBaseFileName(importServerName, importDBSrvcName, vcellSchema);;
+		File backupFile = null;
+
+//		File dumpCopy = null;
+		StringBuffer logStringBuffer = new StringBuffer();
+		OracleDataSource oracleDataSource  = null;
+		Connection con = null;
+		try{
+			if(dumpFileHostPrefix.indexOf('.') != -1){
+				throw new Exception("Not expecting .(dot) in 'dumpFileHostPrefix'");
+			}
+			
+			if(!workingDir.exists()){
+				throw new Exception("Working directory"+workingDir.getAbsolutePath()+" does not exist");
+			}
+			if(!dumpFilesourceDir.exists()){
+				throw new Exception("Export directory"+dumpFilesourceDir.getAbsolutePath()+" does not exist");
+			}
+//			Executable exec = new Executable(new String[] {"hostname"});
+//			exec.start();
+//			String localHostName = exec.getStdoutString().trim();
+			
+//			String inetLocalHost = InetAddress.getLocalHost().getHostName();
+//			InetAddress[] inet0 = InetAddress.getAllByName(inetLocalHost);
+//			InetAddress[] inet1 = InetAddress.getAllByName(dumpFileHostName);
+
+			File[] oracleDumpFiles = dumpFilesourceDir.listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+					return pathname.getName().startsWith(dumpFileHostPrefix+"_") && pathname.getName().endsWith(".dmp");
+				}
+			});
+			Arrays.sort(oracleDumpFiles, new Comparator<File>() {
+				@Override
+				public int compare(File o1, File o2) {
+					if(o1.lastModified() > o2.lastModified()){
+						return -1;
+					}else if(o1.lastModified() < o2.lastModified()){
+						return 1;
+					}
+					return 0;
+				}
+			});
+			
+			if(oracleDumpFiles == null || oracleDumpFiles.length == 0){
+				throw new Exception("No dump files found to import");
+			}
+			
+//			for (int i = 0; i < oracleDumpFiles.length; i++) {
+//				String datePart = new SimpleDateFormat("MM/dd/yyyy HH_mm_ss").format(oracleDumpFiles[i].lastModified());
+//				System.out.println(oracleDumpFiles[i].getName()+" "+oracleDumpFiles[i].lastModified()+" "+datePart);
+//			}
+			
+			File latestDump = oracleDumpFiles[0];
+			//sanity check
+//			long latestDumpDate = latestDump.lastModified();
+//			Calendar.getInstance().getTimeInMillis();
+			long timediff = Calendar.getInstance().getTimeInMillis()-latestDump.lastModified();
+			if(timediff <= 0){
+				throw new Exception("Expecting dump time to be earlier than current time");
+			}
+			if(timediff > (1000*60*60*48)){
+				throw new Exception("Not expecting very old dump");
+			}
+			
+			final String beginWith = dumpFileHostPrefix.toLowerCase()+"_";
+			if(!latestDump.getName().toLowerCase().startsWith(beginWith)){
+				throw new Exception("Expecting latestdump found name to begin with "+beginWith);
+			}
+//			dumpCopy = new File(workingDir,oracleDumpFiles[0].getName());
+//			if(dumpCopy.exists()){
+//				dumpCopy = null;
+//				throw new Exception("dumpCopy already exists");
+//			}
+			System.out.println(/*"localHost="+localHostName+*//*" inetLocalHost="+inetLocalHost+*/"importServerName="+importServerName+" importSrvcName="+importDBSrvcName+" dumpFileHostName="+dumpFileHostPrefix+" source="+latestDump.getAbsolutePath());
+			
+
+			//			BeanUtils.copyFileChannel(oracleDumpFiles[0], dumpCopy, true);
+			
+			oracleDataSource = new OracleDataSource();
+			//jdbc:oracle:<drivertype>:<username/password>@<database>
+			//<database> = <host>:<port>:<SID>
+			String url = "jdbc:oracle:thin:"+"system"+"/"+password+"@//"+importServerName+":1521/"+importDBSrvcName;
+			System.out.println(url);
+			oracleDataSource.setURL(url);
+
+			con = oracleDataSource.getConnection();
+			con.setAutoCommit(false);
+
+			boolean bHasVCellUser = false;
+			final String USERNAME = "username";
+			String sql = "select "+USERNAME+" from dba_users where "+USERNAME+"='VCELL'";
+			Statement stmt = null;
+			stmt = con.createStatement();
+			ResultSet rset = stmt.executeQuery(sql);
+			while(rset.next()){
+				if(rset.getString(USERNAME).equals("VCELL")){
+					bHasVCellUser = true;
+					break;
+				}
+			}
+			rset.close();
+			stmt.close();
+			
+			final String HOST_NAME = "host_name";
+			sql = "select "+HOST_NAME+" from v$instance";
+			stmt = con.createStatement();
+			rset = stmt.executeQuery(sql);
+			rset.next();
+			String host_name = rset.getString(HOST_NAME);
+			if(host_name.indexOf('.') != -1){
+				throw new Exception("Not expecting .(dot) in host_name");
+			}
+			if(host_name.toLowerCase().contains("dbs6")){
+				throw new Exception("Not expecting import host to be 'dbs6', hardcoded to disallow");
+			}
+			if(!importServerName.toLowerCase().equals(host_name.toLowerCase())){
+				throw new Exception("Expecting 'importServerName'="+importServerName+" to match instance 'host_name'="+host_name);
+			}
+			System.out.println("dumpFileHostPrefix="+dumpFileHostPrefix+" instance host_name="+host_name);
+			if(host_name.toLowerCase().equals(dumpFileHostPrefix.toLowerCase())){
+				throw new Exception("Not expecting import host and dumpFileHostPrefix to be same");
+			}
+			rset.close();
+			stmt.close();
+						
+			if(bHasVCellUser){
+				sql = "drop user VCELL cascade";
+				logStringBuffer.append(sql+"\n");
+				executeUpdate(con, sql, logStringBuffer);
+				
+				sql = "CREATE USER vcell PROFILE \"DEFAULT\" IDENTIFIED BY \"cbittech\" DEFAULT TABLESPACE \"USERS\" TEMPORARY TABLESPACE \"TEMP\" ACCOUNT UNLOCK";
+				executeUpdate(con, sql, logStringBuffer);
+				executeUpdate(con, "GRANT UNLIMITED TABLESPACE TO vcell",logStringBuffer);
+				executeUpdate(con, "GRANT \"CONNECT\" TO vcell",logStringBuffer);
+				executeUpdate(con, "GRANT \"RESOURCE\" TO vcell",logStringBuffer);
+				executeUpdate(con, "ALTER USER vcell DEFAULT ROLE  ALL",logStringBuffer);
+			}
+			
+			final String importCommandWithPassword = createImportcommand(vcellSchema, password, importServerName, importDBSrvcName, latestDump);
+			System.out.println(importCommandWithPassword);
+			ProcessInfo exportProcessInfo = spawnProcess(importCommandWithPassword);
+			String combinedExportOutput = combineStreamStrings(exportProcessInfo.normalOutput, exportProcessInfo.errorOutput);
+			if(exportProcessInfo.normalOutput.getReaderException() != null || exportProcessInfo.errorOutput.getReaderException() != null){
+				throw new Exception("Error in script StreamRead:\r\n"+combinedExportOutput);
+			}
+			final String exportCommandWithoutPassword = createImportcommand(vcellSchema, null, importServerName, importDBSrvcName, latestDump);
+			if(exportProcessInfo.returnCode != 0){
+				writeFile(workingDir, baseFileName,
+					"Export Error: (return code="+exportProcessInfo.returnCode+")\r\n"+
+					exportCommandWithoutPassword+"\r\n"+combinedExportOutput+"\r\nLogInfo\r\n"+logStringBuffer.toString(),true, null);
+			}else{
+				writeFile(workingDir, baseFileName,"Export output:\r\n"+
+					exportCommandWithoutPassword+"\r\n"+combinedExportOutput+"\r\nLogInfo\r\n"+logStringBuffer.toString(),false, null);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			writeFile(workingDir, baseFileName,"Script Error:\r\n"+e.getClass().getName()+" "+e.getMessage()+"\r\nLogInfo\r\n"+logStringBuffer.toString(),true, null);
+		}finally{
+			if(con != null){
+				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			}
+			if(oracleDataSource != null){
+				try{oracleDataSource.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}
+			}
+		}
+		
+	}
 	private static String createExportCommand(String vcellSchema,String password,String dbHostName,String dbSrvcName,File backupFile){
 		return "exp "+"system"+"/"+(password==null?"xxxxx":password)+"@"+
 		"(description\\=(address\\=(protocol\\=tcp)(host\\="+dbHostName+")(port\\=1521))(connect_data\\=(service_name\\="+dbSrvcName+")))"+
 //		" TABLES=("+vcellSchema+".vc_userinfo) "+
 		" FILE="+backupFile.getAbsolutePath()
 		+" OWNER="+vcellSchema+" CONSISTENT=Y"
+		;
+
+	}
+	private static String createImportcommand(String vcellSchema,String password,String importServerName,String importDBSrvcName,File latestDump){
+		return "imp "+"system"+"/"+(password==null?"xxxxx":password)+"@"+
+		"(description\\=(address\\=(protocol\\=tcp)(host\\="+importServerName+")(port\\=1521))(connect_data\\=(service_name\\="+importDBSrvcName+")))"+
+//		" TABLES=("+vcellSchema+".vc_userinfo) "+
+		" FILE="+latestDump.getAbsolutePath()
+		+" FROMUSER="+vcellSchema+" TOUSER="+vcellSchema
 		;
 
 	}
@@ -150,10 +352,9 @@ public class DBBackupAndClean {
 		String baseFileName = null;
 		File backupFile = null;
 		try{
-			String datePart = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime());
-			baseFileName = dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
+			baseFileName = createBaseFileName(dbHostName, dbSrvcName, vcellSchema);
 			backupFile = new File(workingDir,baseFileName+".dmp");
-			baseFileName = "backup_"+baseFileName;
+			baseFileName = OP_BACKUP+"_"+baseFileName;
 //			String exportCommand =
 //				"exp "+credentials+"@"+dbName+" FILE="+backupFile.getAbsolutePath()+" OWNER="+userSchema+" CONSISTENT=Y";
 			String exportCommand = createExportCommand(vcellSchema, password, dbHostName, dbSrvcName, backupFile);
@@ -278,9 +479,10 @@ public class DBBackupAndClean {
 //		}
 //	}
 	private static void writeFile(File workingDir,String baseFileName,String fileText,boolean isErrorFile,File exportDir) throws Error{
+		FileOutputStream fos = null;
 		try {
 			File outFile = new File(workingDir,baseFileName+(isErrorFile?"_error":"_info")+".txt");
-			FileOutputStream fos = new FileOutputStream(outFile);
+			fos = new FileOutputStream(outFile);
 			fos.write(fileText.getBytes());
 			fos.close();
 			if(exportDir != null){
@@ -297,6 +499,8 @@ public class DBBackupAndClean {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Error("Error writing Error File:\n:"+e.getMessage(), e);
+		}finally{
+			if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
 		}
 	}
 	
@@ -622,19 +826,11 @@ public class DBBackupAndClean {
 		File workingDir = new File(args[4]);
 		File exportDir = new File(args[5]);
 		
-//		ds = new oracle.jdbc.pool.OracleDataSource(); ds.setURL(myURL); conn = ds.getConnection(user, password); 
-//        String driverName = "oracle.jdbc.driver.OracleDriver";
-//        String host = args[1];
-//        String db = args[2];
-//        String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
-//        String dbSchemaUser = args[3];
-//        String dbPassword = args[4];
-
 		OracleDataSource oracleDataSource  = null;
 		Connection con = null;
 		
-		String datePart = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(Calendar.getInstance().getTime());
-		String baseFileName = "clean_"+dbHostName+"_"+dbSrvcName+"_"+vcellSchema+"_"+datePart;
+		String baseFileName = createBaseFileName(dbHostName, dbSrvcName, vcellSchema);
+		baseFileName = OP_CLEAN+"_"+baseFileName;
 
 		StringBuffer logStringBuffer = new StringBuffer();
 
