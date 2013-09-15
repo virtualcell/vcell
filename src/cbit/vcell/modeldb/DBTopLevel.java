@@ -245,15 +245,7 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
 			userDB.updateUserInfo(con, userRegistrationOP.getUserInfo());
 			con.commit();
 		}else if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_ISUSERIDUNIQUE)){
-			UserInfo[] userInfos = userDB.getUserInfos(con);
-			boolean bUserIdUnique = true;
-			for (int i = 0; i < userInfos.length; i++) {
-				if(userInfos[i].userid.equals(userRegistrationOP.getUserid())){
-					bUserIdUnique = false;
-					break;
-				}
-			}
-			return new UserRegistrationResults(bUserIdUnique);
+			return new UserRegistrationResults(userDB.getUserFromUserid(con, userRegistrationOP.getUserid()) == null);
 		}else{
 			throw new IllegalArgumentException(this.getClass().getName()+".userRegistrationOP Unknown operationType="+userRegistrationOP.getOperationType());
 		}
