@@ -17,6 +17,7 @@ import java.awt.Insets;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -93,15 +94,9 @@ public class RegistrationPanel extends JPanel {
 	private JPasswordField textFieldPassword2 = new JPasswordField();
 	private JTextField textFieldEMail = new JTextField();
 	private JTextField textFieldFirstName = new JTextField();
-	private JTextField textFieldLastName = new JTextField();
 	private JTextField textFieldTitle = new JTextField();
 	private JTextField textFieldOrganization = new JTextField();
-	private JTextField textFieldAddress1 = new JTextField();
-	private JTextField textFieldAddress2 = new JTextField();
 	final JComboBox comboBoxCountry = new JComboBox(COUNTRY_LIST);
-	private JTextField textFieldCity = new JTextField();
-	private JTextField textFieldState = new JTextField();
-	private JTextField textFieldZIP = new JTextField();
 	private JCheckBox checkBoxNoEmail = new JCheckBox();
 
 	public RegistrationPanel() {
@@ -187,12 +182,15 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_7.gridx = 3;
 		add(textFieldPassword2, gridBagConstraints_7);
 
-		final JTextArea pleaseEnterYourTextArea = new JTextArea();
+		final JEditorPane pleaseEnterYourTextArea = new JEditorPane("text/html",null);
 		pleaseEnterYourTextArea.setMargin(new Insets(4, 4, 4, 4));
 		pleaseEnterYourTextArea.setEditable(false);
-		pleaseEnterYourTextArea.setWrapStyleWord(true);
-		pleaseEnterYourTextArea.setLineWrap(true);
-		pleaseEnterYourTextArea.setText("Please enter your password twice. Also please note that if you request, your password can be sent (in plain text) over e-mail, so it is recommended that you don't use the same password that you use elsewhere. Passwords may only contain letters and numbers and are case sensitive. ");
+		//pleaseEnterYourTextArea.setWrapStyleWord(true);
+		//pleaseEnterYourTextArea.setLineWrap(true);
+		pleaseEnterYourTextArea.setText(
+			"<html>Passwords may only contain letters and numbers and are case sensitive.  "+
+			"The email address will only be used to send infrequent notifications of VCell improvements and maintenance issues.  "+
+			"For VCell support contact <i><b>vcell_support@uchc.edu</b></i>.  To join the VCell discussion group goto <i><b>groups.google.com/group/vcell-discuss</b></i>.</html>");
 		pleaseEnterYourTextArea.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.insets = new Insets(4, 4, 20, 4);
@@ -220,7 +218,7 @@ public class RegistrationPanel extends JPanel {
 		add(textFieldEMail, gridBagConstraints_10);
 
 		final JLabel firstNameLabel = new JLabel();
-		firstNameLabel.setText("First Name *");
+		firstNameLabel.setText("Name *");
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_11.insets = new Insets(4, 4, 4, 4);
@@ -236,25 +234,8 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_13.gridx = 1;
 		add(textFieldFirstName, gridBagConstraints_13);
 
-		final JLabel lastNameLabel = new JLabel();
-		lastNameLabel.setText("Last Name *");
-		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
-		gridBagConstraints_12.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_12.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_12.gridy = 7;
-		gridBagConstraints_12.gridx = 0;
-		add(lastNameLabel, gridBagConstraints_12);
-
-		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
-		gridBagConstraints_14.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_14.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_14.gridwidth = 3;
-		gridBagConstraints_14.gridy = 7;
-		gridBagConstraints_14.gridx = 1;
-		add(textFieldLastName, gridBagConstraints_14);
-
 		final JLabel titleLabel = new JLabel();
-		titleLabel.setText("Title *");
+		titleLabel.setText("Title");
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_15.anchor = GridBagConstraints.EAST;
@@ -271,7 +252,7 @@ public class RegistrationPanel extends JPanel {
 		add(textFieldTitle, gridBagConstraints_16);
 
 		final JLabel oranizationLabel = new JLabel();
-		oranizationLabel.setText("Organization *");
+		oranizationLabel.setText("Organization");
 		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
 		gridBagConstraints_17.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_17.insets = new Insets(4, 4, 4, 4);
@@ -287,74 +268,8 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_18.gridx = 1;
 		add(textFieldOrganization, gridBagConstraints_18);
 
-		final JLabel addressLine1Label = new JLabel();
-		addressLine1Label.setText("Address Line 1 *");
-		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
-		gridBagConstraints_19.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_19.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_19.gridy = 10;
-		gridBagConstraints_19.gridx = 0;
-		add(addressLine1Label, gridBagConstraints_19);
-
-		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
-		gridBagConstraints_21.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_21.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_21.gridwidth = 3;
-		gridBagConstraints_21.gridy = 10;
-		gridBagConstraints_21.gridx = 1;
-		add(textFieldAddress1, gridBagConstraints_21);
-
-		final JLabel addressLine2Label = new JLabel();
-		addressLine2Label.setText("Address Line 2  ");
-		final GridBagConstraints gridBagConstraints_20 = new GridBagConstraints();
-		gridBagConstraints_20.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_20.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_20.gridy = 11;
-		gridBagConstraints_20.gridx = 0;
-		add(addressLine2Label, gridBagConstraints_20);
-
-		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
-		gridBagConstraints_22.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_22.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_22.gridwidth = 3;
-		gridBagConstraints_22.gridy = 11;
-		gridBagConstraints_22.gridx = 1;
-		add(textFieldAddress2, gridBagConstraints_22);
-
-		final JLabel cityLabel = new JLabel();
-		cityLabel.setText("City *");
-		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
-		gridBagConstraints_23.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_23.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_23.gridy = 12;
-		gridBagConstraints_23.gridx = 0;
-		add(cityLabel, gridBagConstraints_23);
-
-		final GridBagConstraints gridBagConstraints_25 = new GridBagConstraints();
-		gridBagConstraints_25.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_25.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_25.gridy = 12;
-		gridBagConstraints_25.gridx = 1;
-		add(textFieldCity, gridBagConstraints_25);
-
-		final JLabel stateLabel = new JLabel();
-		stateLabel.setText("State *");
-		final GridBagConstraints gridBagConstraints_24 = new GridBagConstraints();
-		gridBagConstraints_24.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_24.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_24.gridy = 12;
-		gridBagConstraints_24.gridx = 2;
-		add(stateLabel, gridBagConstraints_24);
-
-		final GridBagConstraints gridBagConstraints_26 = new GridBagConstraints();
-		gridBagConstraints_26.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_26.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_26.gridy = 12;
-		gridBagConstraints_26.gridx = 3;
-		add(textFieldState, gridBagConstraints_26);
-
 		final JLabel countryLabel = new JLabel();
-		countryLabel.setText("Country *");
+		countryLabel.setText("Country");
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
 		gridBagConstraints_27.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_27.anchor = GridBagConstraints.EAST;
@@ -370,23 +285,6 @@ public class RegistrationPanel extends JPanel {
 		gridBagConstraints_28.gridy = 13;
 		gridBagConstraints_28.gridx = 1;
 		add(comboBoxCountry, gridBagConstraints_28);
-
-		final JLabel zippostalCodeLabel = new JLabel();
-		zippostalCodeLabel.setText("ZIP/Postal Code *");
-		final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
-		gridBagConstraints_29.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_29.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_29.gridy = 14;
-		gridBagConstraints_29.gridx = 0;
-		add(zippostalCodeLabel, gridBagConstraints_29);
-
-		final GridBagConstraints gridBagConstraints_30 = new GridBagConstraints();
-		gridBagConstraints_30.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_30.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_30.gridwidth = 3;
-		gridBagConstraints_30.gridy = 14;
-		gridBagConstraints_30.gridx = 1;
-		add(textFieldZIP, gridBagConstraints_30);
 
 		checkBoxNoEmail.setText("I DO NOT wish to be e-mailed periodically with VCell Software notifications.");
 		final GridBagConstraints gridBagConstraints_31 = new GridBagConstraints();
@@ -406,16 +304,16 @@ public class RegistrationPanel extends JPanel {
 		textFieldPassword1.setText("");
 		textFieldPassword2.setText("");
 		textFieldEMail.setText(userInfo.email);
-		textFieldFirstName.setText(userInfo.firstName);
-		textFieldLastName.setText(userInfo.lastName);
-		textFieldTitle.setText(userInfo.title);
-		textFieldOrganization.setText(userInfo.company);
-		textFieldAddress1.setText(userInfo.address1);
-		textFieldAddress2.setText(userInfo.address2);
+		textFieldFirstName.setText(userInfo.wholeName);
+//		textFieldLastName.setText(userInfo.lastName);
+		textFieldTitle.setText((userInfo.title==null?"":userInfo.title));
+		textFieldOrganization.setText((userInfo.company==null?"":userInfo.company));
+//		textFieldAddress1.setText(userInfo.address1);
+//		textFieldAddress2.setText(userInfo.address2);
 		comboBoxCountry.setSelectedItem(userInfo.country);
-		textFieldCity.setText(userInfo.city);
-		textFieldState.setText(userInfo.state);
-		textFieldZIP.setText(userInfo.zip);
+//		textFieldCity.setText(userInfo.city);
+//		textFieldState.setText(userInfo.state);
+//		textFieldZIP.setText(userInfo.zip);
 		checkBoxNoEmail.setSelected(!userInfo.notify);
 	}
 
@@ -427,16 +325,16 @@ public class RegistrationPanel extends JPanel {
 		char[] password2Char = textFieldPassword2.getPassword();
 		userInfo.otherDigestedPassword = (password2Char==null || password2Char.length==0?null:new UserLoginInfo.DigestedPassword(new String(password2Char)));
 		userInfo.email = textFieldEMail.getText();
-		userInfo.firstName = textFieldFirstName.getText();
-		userInfo.lastName = textFieldLastName.getText();
+		userInfo.wholeName = textFieldFirstName.getText();
+//		userInfo.lastName = textFieldLastName.getText();
 		userInfo.title = textFieldTitle.getText();
 		userInfo.company = textFieldOrganization.getText();
-		userInfo.address1 = textFieldAddress1.getText();
-		userInfo.address2 = (textFieldAddress2.getText() == null || textFieldAddress2.getText().length()==0?null:textFieldAddress2.getText());
+//		userInfo.address1 = textFieldAddress1.getText();
+//		userInfo.address2 = (textFieldAddress2.getText() == null || textFieldAddress2.getText().length()==0?null:textFieldAddress2.getText());
 		userInfo.country = (String)comboBoxCountry.getSelectedItem();
-		userInfo.city = textFieldCity.getText();
-		userInfo.state = textFieldState.getText();
-		userInfo.zip = textFieldZIP.getText();
+//		userInfo.city = textFieldCity.getText();
+//		userInfo.state = textFieldState.getText();
+//		userInfo.zip = textFieldZIP.getText();
 		userInfo.notify = !checkBoxNoEmail.isSelected();
 		return userInfo;
 	}
@@ -453,15 +351,15 @@ public class RegistrationPanel extends JPanel {
 		textFieldPassword2.setText("");
 		textFieldEMail.setText("");
 		textFieldFirstName.setText("");
-		textFieldLastName.setText("");
+//		textFieldLastName.setText("");
 		textFieldTitle.setText("");
 		textFieldOrganization.setText("");
-		textFieldAddress1.setText("");
-		textFieldAddress2.setText("");
+//		textFieldAddress1.setText("");
+//		textFieldAddress2.setText("");
 		comboBoxCountry.setSelectedItem("");
-		textFieldCity.setText("");
-		textFieldState.setText("");
-		textFieldZIP.setText("");
+//		textFieldCity.setText("");
+//		textFieldState.setText("");
+//		textFieldZIP.setText("");
 		checkBoxNoEmail.setSelected(false);
 	}
 }
