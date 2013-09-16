@@ -117,6 +117,9 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		String[] filecontents = new String[files.length];
 		
 		for (int i = 0; i < files.length; i ++) {
+			if(files[i].getName().equals(file_dll_cygwin.getName()) || files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
+				continue;
+			}
 			filenames[i] = files[i].getName();
 			filecontents[i] = FileUtils.readFileToString(files[i]);
 //			files[i].delete();
