@@ -32,6 +32,7 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.IndexColorModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -44,6 +45,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.media.jai.InterpolationNearest;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.BorderDescriptor;
@@ -51,6 +53,7 @@ import javax.media.jai.operator.ScaleDescriptor;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -813,8 +816,18 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 //				showDataValueSurfaceViewer(geomAttr);
 //			}
 //		});
+		
+		
+		JButton exportJButton = new JButton("Export...");
+		exportJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				export();
+			}
+		});
+		
 		okCancelJPanel.add(okJButton);
 		okCancelJPanel.add(attributesJButton);
+		okCancelJPanel.add(exportJButton);
 //		okCancelJPanel.add(surfaceButton);
 		okCancelJPanel.add(cancelJButton);
 		
@@ -828,6 +841,55 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return finalGeometryHolder[0];
 	}
+	
+	private void export(){
+		final String PNG_FILETYPE = "png";
+		try{
+			JFileChooser jfc = new JFileChooser();
+			jfc.setDialogTitle("Choose output directory and enter basename (z-slices will be numbered)");
+			while(true){
+				int result = jfc.showSaveDialog(overlayEditorPanelJAI);
+				if(result == JFileChooser.APPROVE_OPTION){
+					File destination = jfc.getSelectedFile();
+					if(destination.getName().contains(".")){
+						DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Export basename should contain only letters and numbers.");
+						continue;
+					}
+					if(destination.isDirectory()){
+						DialogUtils.showWarningDialog(overlayEditorPanelJAI, "select destination directory and enter basename for export.");
+						continue;
+					}
+					boolean bExists = false;
+					for (int i = 0; i < roiComposite.length; i++) {
+						String name = makeNumberedName(destination.getName(), i,PNG_FILETYPE);
+						File checkFile = new File(destination.getParent(),name);
+						if(checkFile.exists()){
+							DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Export slice file "+checkFile.getAbsolutePath()+" already exists, choose another basename.");
+							bExists = true;
+							break;					
+							
+						}
+					}
+					if(bExists){
+						continue;
+					}
+					for (int i = 0; i < roiComposite.length; i++) {
+						String name = makeNumberedName(destination.getName(), i,PNG_FILETYPE);
+						ImageIO.write(roiComposite[i], PNG_FILETYPE, new File(destination.getParent(),name));
+					}
+					break;
+				}else{
+					break;
+				}
+			}
+		}catch(Exception e){
+			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
+		}
+	}
+	private String makeNumberedName(String baseName,int indexNumber,String suffix){
+		return baseName+"_"+(indexNumber<10?"0":"")+(indexNumber<100?"0":"")+(indexNumber<1000?"0":"")+indexNumber+"."+suffix;
+	}
+	
 	private VCImage checkAll() throws Exception{
 		if(!overlayEditorPanelJAI.isHistogramSelectionEmpty()/*overlayEditorPanelJAI.getHighliteInfo() != null*/){
 			final String highlightDiscard = "discard, continue";
