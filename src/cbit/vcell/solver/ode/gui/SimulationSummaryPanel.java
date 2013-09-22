@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementLevel;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -67,6 +68,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JLabel labelMeshRefinementTitle;
 	private JLabel labelFinestMeshTitle;
 	private JLabel labelFinestMesh;
+	private JLabel labelRefinementRoiTitle;
+	private JLabel labelRefinementRoi;
 	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
@@ -141,76 +144,92 @@ private void displayMesh() {
     	boolean isSpatial = getSimulation().isSpatial();
     	getJLabel11().setVisible(isSpatial);
     	getJLabelMesh().setVisible(isSpatial);
-        if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
-            ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
-            String labelText = "";
-            switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
-                case 0 :
-                    {
-                        labelText = "error: no mesh expected";
-                        break;
-                    }
-                case 1 :
-                    {
-                        labelText = samplingSize.getX() + " elements";
-                        break;
-                    }
-                case 2 :
-                    {
-                        // 06/12/2002 JMW Replaced this line...
-                        //labelText = "("+samplingSize.getX()+","+samplingSize.getY()+") elements";
-                        labelText = samplingSize.getX() + "x" + samplingSize.getY() + " = " +
-							samplingSize.getX() * samplingSize.getY() + " elements";
-                        break;
-                    }
-                case 3 :
-                    {
-                        // 06/12/2002 JMW Replaced this line...
-                        //labelText = "("+samplingSize.getX()+","+samplingSize.getY()+","+samplingSize.getZ()+") elements";
-                        labelText = samplingSize.getX() + "x" + samplingSize.getY() + "x" + samplingSize.getZ() + " = " +
-							samplingSize.getX() * samplingSize.getY() * samplingSize.getZ() + " elements";
-                        break;
-                    }
-            }
-            getJLabelMesh().setText(labelText);
-            
-            ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
-			if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
-				int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
-				labelMeshRefinementTitle.setVisible(true);
-				getJLabelMeshRefinement().setVisible(true);
-				labelFinestMeshTitle.setVisible(true);
-				labelFinestMesh.setVisible(true);
-				
-				ISize finestISize = chomboSolverSpec.getFinestSamplingSize(getSimulation().getMeshSpecification().getSamplingSize());
-				int nx = finestISize.getX();
-				int ny = finestISize.getY();
-				int nz = finestISize.getZ();
-				String text = (getSimulation().getMeshSpecification().getGeometry().getDimension() == 2 
-						? nx + "x" + ny + " = " + nx * ny
-						: nx + "x" + ny + "x" + nz + " = " + nx * ny * nz) + " elements";
-				labelFinestMesh.setText(text);
-				boolean bHasRefinement = numRefinementLevels > 0;
-				if (bHasRefinement) {
-					String refinementText = numRefinementLevels + " level(s), Refinement ratio(s): ";
-					for (int i = 0; i < numRefinementLevels; i ++) {
-						if (i > 0) {
-							refinementText += ",";
-						}
-						refinementText += chomboSolverSpec.getRefinementLevel(i).getRefineRatio();
-						
+      if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
+				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
+				String labelText = "";
+				switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
+					case 0 :
+					{
+				    labelText = "error: no mesh expected";
+				    break;
 					}
-					getJLabelMeshRefinement().setText(refinementText);
-				} else {
-					getJLabelMeshRefinement().setText("None");
+					case 1 :
+					{
+				    labelText = samplingSize.getX() + " elements";
+				    break;
+					}
+					case 2 :
+					{
+					    // 06/12/2002 JMW Replaced this line...
+						//labelText = "("+samplingSize.getX()+","+samplingSize.getY()+") elements";
+						labelText = samplingSize.getX() + "x" + samplingSize.getY() + " = " +
+							samplingSize.getX() * samplingSize.getY() + " elements";
+					  break;
+					}
+					case 3 :
+					{
+					    // 06/12/2002 JMW Replaced this line...
+						//labelText = "("+samplingSize.getX()+","+samplingSize.getY()+","+samplingSize.getZ()+") elements";
+						labelText = samplingSize.getX() + "x" + samplingSize.getY() + "x" + samplingSize.getZ() + " = " +
+							samplingSize.getX() * samplingSize.getY() * samplingSize.getZ() + " elements";
+					  break;
+				  }
 				}
-            } else {
-            	labelMeshRefinementTitle.setVisible(false);
-            	getJLabelMeshRefinement().setVisible(false);
-            	labelFinestMesh.setVisible(false);
-            	labelFinestMeshTitle.setVisible(false);
-            }
+				getJLabelMesh().setText(labelText);
+
+        ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
+				if (getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
+					int numRefinementLevels = chomboSolverSpec.getNumRefinementLevels();				
+					labelMeshRefinementTitle.setVisible(true);
+					getJLabelMeshRefinement().setVisible(true);
+					labelFinestMeshTitle.setVisible(true);
+					labelFinestMesh.setVisible(true);
+					
+					ISize finestISize = chomboSolverSpec.getFinestSamplingSize(getSimulation().getMeshSpecification().getSamplingSize());
+					int nx = finestISize.getX();
+					int ny = finestISize.getY();
+					int nz = finestISize.getZ();
+					String text = (getSimulation().getMeshSpecification().getGeometry().getDimension() == 2 
+							? nx + "x" + ny + " = " + nx * ny
+							: nx + "x" + ny + "x" + nz + " = " + nx * ny * nz) + " elements";
+					labelFinestMesh.setText(text);
+					boolean bHasRefinement = numRefinementLevels > 0;
+					if (bHasRefinement) {
+						String refinementText = numRefinementLevels + " level(s), Refinement ratio(s): ";
+						for (int i = 0; i < numRefinementLevels; i ++) {
+							if (i > 0) {
+								refinementText += ",";
+							}
+							refinementText += chomboSolverSpec.getRefinementLevel(i).getRefineRatio();
+						}
+						getJLabelMeshRefinement().setText(refinementText);
+						labelRefinementRoiTitle.setVisible(true);
+						labelRefinementRoi.setVisible(true);
+						if (chomboSolverSpec.getRefinementRoiExpression() == null)
+						{
+							labelRefinementRoi.setText("All membrane elements");
+						}
+						else
+						{
+							labelRefinementRoi.setText(chomboSolverSpec.getRefinementRoiExpression().infix());
+						}
+					} else {
+						labelMeshRefinementTitle.setVisible(false);
+						meshRefinementLabel.setVisible(false);
+						labelFinestMeshTitle.setVisible(false);
+						labelFinestMesh.setVisible(false);
+						labelRefinementRoiTitle.setVisible(false);
+						labelRefinementRoi.setVisible(false);
+					}
+        } else {
+        	labelMeshRefinementTitle.setVisible(false);
+        	getJLabelMeshRefinement().setVisible(false);
+        	labelFinestMesh.setVisible(false);
+        	labelFinestMeshTitle.setVisible(false);
+					labelRefinementRoiTitle.setVisible(false);
+					labelRefinementRoi.setVisible(false);
         }
+      }
     } catch (Exception exc) {
         exc.printStackTrace(System.out);
         getJLabelMesh().setText("");
@@ -879,6 +898,21 @@ private void initialize() {
 		add(labelFinestMesh, constraints);
 		
 		gridy ++;
+		constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 0; constraints.gridy = gridy;
+		constraints.anchor = java.awt.GridBagConstraints.EAST;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		labelRefinementRoiTitle = new JLabel("Refinement ROI:");
+		add(labelRefinementRoiTitle, constraints);
+		
+		constraints = new java.awt.GridBagConstraints();
+		constraints.gridx = 1; constraintsJLabelMesh.gridy = gridy;
+		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraints.gridwidth = 2;
+		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getRefinementRoi(), constraints);
+
+		gridy ++;
 		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
 		constraintsMathOverridesPanel1.gridx = 0; 
 		constraintsMathOverridesPanel1.gridy = gridy;
@@ -1036,5 +1070,23 @@ private javax.swing.JLabel getJLabelMeshRefinement() {
 		}
 	}
 	return meshRefinementLabel;
+}
+
+private javax.swing.JLabel getRefinementRoi() {
+	if (labelRefinementRoi == null) {
+		try {
+			labelRefinementRoi = new javax.swing.JLabel();
+			labelRefinementRoi.setText(" ");
+			labelRefinementRoi.setForeground(java.awt.Color.blue);
+			labelRefinementRoi.setVisible(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return labelRefinementRoi;
 }
 }
