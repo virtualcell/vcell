@@ -51,6 +51,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.MeshRegionInfo.MembraneRegionMapVolumeRegion;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 /**
@@ -2258,7 +2259,7 @@ public static void test() {
 			CartesianMesh mesh = null;
 	
 			File meshFile = new File("users\\fgao\\SimID_28389873_0_.mesh");
-			File membraneMeshMetricsFile = new File("users\\fgao\\SimID_28389873_0_.meshmetrics");
+			File membraneMeshMetricsFile = new File("users\\fgao\\SimID_28389873_0_"+SimDataConstants.MESHMETRICSFILE_EXTENSION);
 			// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 			//
 			mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, null);

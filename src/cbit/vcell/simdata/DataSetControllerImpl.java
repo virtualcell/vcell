@@ -1269,7 +1269,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File funcFile_orig = new File(sourceDir,SimulationData.createCanonicalFunctionsFileName(origSimKey,simJobIndex,isOldStyle));
 			File subdomainFile_orig = new File(sourceDir,SimulationData.createCanonicalSubdomainFileName(origSimKey,simJobIndex,isOldStyle));
 			File fdLogFile_orig = new File(sourceDir,SimulationData.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
-			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle));
+			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle,false));
 			boolean bCopySubdomainFile = subdomainFile_orig.exists();
 			//Dont' check subdomainFile_orig
 			if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
@@ -1281,7 +1281,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false));
+			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false,false));
 			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
 				throw new RuntimeException("File names required for new Field Data already exist on server");
 			}
@@ -1328,12 +1328,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	        //
 	        int zipIndex = 0;
 	        while(true){//Loop because there might be more than 1 zip file for large datasets
-				zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,zipIndex,simJobIndex,isOldStyle));
+				zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,zipIndex,simJobIndex,isOldStyle,false));
 				if(!zipFile_orig.exists()){
 					//done
 					break;
 				}
-				zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false));
+				zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false,false));
 				if(zipFile_new.exists()){
 					throw new DataAccessException("new zipfile name "+zipFile_new.getAbsolutePath()+" already exists");
 				}
@@ -1493,7 +1493,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		File zipFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimZipFileName(
-							dataset.getKey(),0,0,false));
+							dataset.getKey(),0,0,false,false));
 		Vector<String> simFileNamesV = new Vector<String>();
 		try{
 			if(!fdLogFile.createNewFile()){
@@ -1754,7 +1754,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		while(true){
 			File fdZipFile =
 				new File(userDir,
-						SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(), index,0,false));
+						SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(), index,0,false,false));
 			if(index != 0 && !fdZipFile.exists()){
 				break;
 			}
