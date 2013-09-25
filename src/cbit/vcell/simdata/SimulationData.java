@@ -36,6 +36,7 @@ import java.util.zip.ZipFile;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -88,50 +89,45 @@ public class SimulationData extends VCData {
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
 		private boolean bAmplistor = false;
+		private KeyValue simulationKey;
+		private int jobIndex = 0;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws FileNotFoundException{
 			String logFileName = null;
 			String logFileNameOldStyle = null;
-			boolean bIsOldStyle = false;
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
-				logFileName = createCanonicalSimLogFileName(((VCSimulationDataIdentifier)argVCDataID).getSimulationKey(), ((VCSimulationDataIdentifier)argVCDataID).getJobIndex(), false);
-				logFileNameOldStyle = createCanonicalSimLogFileName(((VCSimulationDataIdentifier)argVCDataID).getSimulationKey(), 0, true);
+				simulationKey = ((VCSimulationDataIdentifier)argVCDataID).getSimulationKey();
+				jobIndex = ((VCSimulationDataIdentifier)argVCDataID).getJobIndex();
+				logFileName = createCanonicalSimLogFileName(simulationKey, jobIndex, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
 			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
-				bIsOldStyle = true;
-				logFileName = createCanonicalSimLogFileName(((VCSimulationDataIdentifierOldStyle)argVCDataID).getSimulationKey(), 0, false);
-				logFileNameOldStyle = createCanonicalSimLogFileName(((VCSimulationDataIdentifierOldStyle)argVCDataID).getSimulationKey(), 0, true);
+				simulationKey = ((VCSimulationDataIdentifierOldStyle)argVCDataID).getSimulationKey();
+				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
+			}else if(argVCDataID instanceof ExternalDataIdentifier){
+				simulationKey = ((ExternalDataIdentifier)argVCDataID).getKey();
+				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
+				logFileNameOldStyle = createCanonicalSimLogFileName(((ExternalDataIdentifier)argVCDataID).getKey(), 0, true);
 			}else{
-				throw new IllegalArgumentException("Unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
+				throw new IllegalArgumentException("AmplistorHelper unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
 			if(new File(primaryUserDir,logFileName).exists()){
 				this.userDirectory = primaryUserDir;
 				this.ahvcDataId = argVCDataID;
 			}else if(new File(primaryUserDir,logFileNameOldStyle).exists()){
 				this.userDirectory = primaryUserDir;
-				if(bIsOldStyle){
-					this.ahvcDataId = argVCDataID;
-				}else{
-					this.ahvcDataId = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
-				}
+				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileName).exists()){
 				this.userDirectory = secondaryUserDir;
 				this.ahvcDataId = argVCDataID;
 			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
 				this.userDirectory = secondaryUserDir;
-				if(bIsOldStyle){
-					this.ahvcDataId = argVCDataID;
-				}else{
-					this.ahvcDataId = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
-				}
+				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 			}else {
 				try{
 					if(amplistorFileExists(argVCDataID.getOwner().getName(), logFileName)){
 						this.ahvcDataId = argVCDataID;
 					}else if(amplistorFileExists(argVCDataID.getOwner().getName(), logFileNameOldStyle)){
-						if(bIsOldStyle){
-							this.ahvcDataId = argVCDataID;
-						}else{
-							this.ahvcDataId = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
-						}
+						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 					}else{
 						throw new Exception("Log file not found anywhere");
 					}
@@ -143,6 +139,15 @@ public class SimulationData extends VCData {
 				}
 				throw new FileNotFoundException(
 					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist int primary " + primaryUserDir + " or secondary " + secondaryUserDir+" or Amplistor");
+			}
+		}
+		private static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
+			if(argVCDataID instanceof VCSimulationDataIdentifier){
+				return VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
+			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
+				return argVCDataID;
+			}else{
+				throw new IllegalArgumentException("Convert unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
 		}
 		private static boolean amplistorFileExists(String userid,String fileName) throws Exception{
@@ -165,10 +170,10 @@ public class SimulationData extends VCData {
 			return ahvcDataId;
 		}
 		private int getJobIndex(){
-			return (isOldStyle()?0:((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getJobIndex());
+			return jobIndex;
 		}
 		private KeyValue getsimulationKey(){
-			return (isOldStyle()?((VCSimulationDataIdentifierOldStyle)getVCDataiDataIdentifier()).getSimulationKey():((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getSimulationKey());
+			return simulationKey;
 		}
 		public File getFunctionsFile(boolean bFirst){
 			return getFile(SimulationData.createCanonicalFunctionsFileName(getsimulationKey(),(bFirst?0:getJobIndex()), isOldStyle()));
