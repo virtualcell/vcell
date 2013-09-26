@@ -1167,7 +1167,7 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
 		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
-		if(cartesianMesh.isChomboMesh()){//Chombo Hack
+		if(cartesianMesh.getMembraneElements() == null || cartesianMesh.getMembraneElements().length == 0 || cartesianMesh.isChomboMesh()){//Chombo Hack
 			fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
 			return fieldDataValueSurfaceViewer;
 		}
