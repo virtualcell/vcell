@@ -253,12 +253,9 @@ public class FieldDataWindowManager
 	
 public void viewData(final ExternalDataIdentifier eDI){
 	
-	if(eDI != null && eDI.equals(currentlyViewedEDI)){
-		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
-		ChildWindow childWindow = childWindowManager.getChildWindowFromContext(eDI);
-		if (childWindow!=null){
-			childWindow.show();
-		}
+	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+	if(eDI != null && eDI.equals(currentlyViewedEDI) && childWindowManager != null && childWindowManager.getChildWindowFromContext(eDI) != null){
+		childWindowManager.getChildWindowFromContext(eDI).show();
 	} else {
 		if(currentlyViewedPDEDV != null){
 			if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
@@ -269,7 +266,6 @@ public void viewData(final ExternalDataIdentifier eDI){
 			}
 		}
 		if(currentlyViewedPDEDV != null){
-			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(eDI);
 			if (childWindow!=null){
 				childWindow.close();
