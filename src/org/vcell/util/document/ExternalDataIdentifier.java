@@ -13,13 +13,15 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.Matchable;
 
+import cbit.vcell.field.SimResampleInfoProvider;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier,Matchable{
+public class ExternalDataIdentifier implements SimResampleInfoProvider,java.io.Serializable,VCDataIdentifier,Matchable{
 	private org.vcell.util.document.KeyValue key;
 	private org.vcell.util.document.User owner;
 	private String name;
@@ -114,5 +116,17 @@ public boolean compareEqual(Matchable obj) {
 		}
 	}
 	return false;
+}
+@Override
+public int getJobIndex(){
+	return 0;
+}
+@Override
+public KeyValue getSimulationKey(){
+	return getKey();
+}
+@Override
+public boolean isParameterScanType() {
+	return true;//???check this
 }
 }

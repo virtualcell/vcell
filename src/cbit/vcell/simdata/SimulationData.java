@@ -128,6 +128,7 @@ public class SimulationData extends VCData {
 			}else{
 				throw new IllegalArgumentException("AmplistorHelper unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
+			boolean bNotFound = false;
 			if(new File(primaryUserDir,logFileName).exists()){
 				this.userDirectory = primaryUserDir;
 				this.ahvcDataId = argVCDataID;
@@ -147,16 +148,21 @@ public class SimulationData extends VCData {
 					}else if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
 						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 					}else{
-						throw new Exception("Log file not found anywhere");
+						bNotFound = true;
 					}
 					this.userDirectory = primaryUserDir;//use primary by default for amplistor
 					return;
 				}catch(Exception e){
+					bNotFound = true;
 					e.printStackTrace();
 				}
+			}else{
+				bNotFound = true;
 			}
-			throw new FileNotFoundException(
-				"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist int primary " + primaryUserDir + " or secondary " + secondaryUserDir+" or Amplistor.");
+			if(bNotFound){
+				throw new FileNotFoundException(
+					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist in primary " + primaryUserDir + " dir or secondary " + secondaryUserDir+" dir or Archive server.");
+			}
 
 		}
 		private static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
@@ -699,8 +705,8 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public File getLogFile() throws FileNotFoundException {
-	File logFile = amplistorHelper.getLogFile();
+public File getLogFilePrivate() throws FileNotFoundException {
+	File logFile = getLogFile();
 	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logile.exists()");
 	if (logFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file found");
@@ -710,7 +716,6 @@ public File getLogFile() throws FileNotFoundException {
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -734,8 +739,8 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-private synchronized File getSubdomainFile() throws FileNotFoundException {
-	File subdomainFile = amplistorHelper.getSubdomainFile();
+private synchronized File getSubdomainFilePrivate() throws FileNotFoundException {
+	File subdomainFile = getSubdomainFile();
 	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> calling subdomain.exists()");
 	if (subdomainFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> file found");
@@ -969,7 +974,7 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	// take a snapshot in time
 	//
 	if (bZipFormat1) {
-		File zipFile = amplistorHelper.getZipFile(false, null);//new File(userDirectory,vcDataId.getID()+".zip");
+		File zipFile = getZipFile(false, null);
 		if (zipFile.exists()) {
 			return zipFile;
 		} else {
@@ -1232,8 +1237,8 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	}catch (FileNotFoundException e){
 		e.printStackTrace(System.out);
 	}
-	File zipFile1 = amplistorHelper.getZipFile(bIsChombo, null);//new File(userDirectory,vcDataId.getID()+(bIsChombo?".hdf5.zip":".zip"));
-	File zipFile2 = amplistorHelper.getZipFile(bIsChombo, 0);//new File(userDirectory,vcDataId.getID()+(bIsChombo?"00.hdf5.zip":"00.zip"));
+	File zipFile1 = getZipFile(bIsChombo, null);
+	File zipFile2 = getZipFile(bIsChombo, 0);
 	bZipFormat1 = false;
 	bZipFormat2 = false;
 	if (zipFile1.exists()) {
@@ -1557,12 +1562,12 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	if(isChombo()){
 //		SimulationDataSpatialHdf5 simulationDataSpatialHdf5 = new SimulationDataSpatialHdf5(vcDataId,userDirectory,null);
 //		simulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers();
-		mesh = CartesianMeshChombo.readMeshFile(getMeshFile());
+		mesh = CartesianMeshChombo.readMeshFile(meshFile);
 		// test serialization
 		//byte[] byteArray = BeanUtils.toSerialized(mesh);
 		//mesh = (CartesianMeshChombo) BeanUtils.fromSerialized(byteArray);
 	}else{
-		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFile());
+		mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, getSubdomainFilePrivate());
 	}
 }
 
@@ -1579,7 +1584,7 @@ private synchronized void refreshLogFile() throws DataAccessException {
 	// (re)read the log file if necessary
 	//
 	try {
-		readLog(getLogFile());
+		readLog(getLogFilePrivate());
 	} catch (FileNotFoundException e) {
 	} catch (IOException e) {
 		e.printStackTrace(System.out);
@@ -1624,7 +1629,7 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 public synchronized void removeAllResults() throws DataAccessException {
 	File logFile = null;
 	try {
-		logFile = getLogFile();
+		logFile = getLogFilePrivate();
 	}catch (FileNotFoundException e){
 	}
 	File meshFile = null;
@@ -1635,7 +1640,6 @@ public synchronized void removeAllResults() throws DataAccessException {
 		
 	removeAllResults(logFile,meshFile);
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -1825,8 +1829,22 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 public File getDataProcessingOutputSourceFileHDF5(){
 	return amplistorHelper.getPostProcessFile();
 }
-
 public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments){
 	return amplistorHelper.getFieldDataFile(simResampleInfoProvider,fieldFunctionArguments);
+}
+public File getMeshFile(boolean bHDF5){
+	return amplistorHelper.getMeshFile(bHDF5);
+}
+public File getFunctionsFile(boolean bFirst){
+	return amplistorHelper.getFunctionsFile(bFirst);
+}
+public File getZipFile(boolean bHDF5,Integer zipIndex){
+	return amplistorHelper.getZipFile(bHDF5, zipIndex);
+}
+public File getSubdomainFile(){
+	return amplistorHelper.getSubdomainFile();
+}
+public File getLogFile(){
+	return amplistorHelper.getLogFile();
 }
 }
