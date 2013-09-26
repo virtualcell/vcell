@@ -104,10 +104,10 @@ public class SimulationData extends VCData {
 		private int jobIndex = 0;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUserRootPath) throws FileNotFoundException{
 			if(primaryUserDir == null || !primaryUserDir.exists() || !primaryUserDir.isDirectory()){
-				throw new IllegalArgumentException("PrimaryUserDir required and it must exist and be a directory");
+				throw new FileNotFoundException("PrimaryUserDir required and it must exist and be a directory");
 			}
 			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
-				throw new IllegalArgumentException("If secondaryUserDir defined it must exist and be a directory");
+				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
 			}
 			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
 			String logFileName = null;
@@ -144,14 +144,14 @@ public class SimulationData extends VCData {
 			}else if(amplistorVCellUserRootPath != null){
 				try{
 					if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileName)){
+						this.userDirectory = primaryUserDir;//use primary by default for amplistor
 						this.ahvcDataId = argVCDataID;
 					}else if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
+						this.userDirectory = primaryUserDir;//use primary by default for amplistor
 						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 					}else{
 						bNotFound = true;
 					}
-					this.userDirectory = primaryUserDir;//use primary by default for amplistor
-					return;
 				}catch(Exception e){
 					bNotFound = true;
 					e.printStackTrace();
