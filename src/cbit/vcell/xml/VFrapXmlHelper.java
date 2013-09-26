@@ -27,6 +27,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -213,7 +214,7 @@ public class VFrapXmlHelper {
 		// ------- recover simulation data for this user name, load the images in memory ------------
 		String userDirName = filename.substring(0,filename.indexOf(dataID)-1);	// ex  c:\\VirtualMicroscopy\\SimulationData
 		File userDir = new File(userDirName);
-		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, userDir);
+		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, null,PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
 
 		CartesianMesh incompleteMesh = simData.getMesh();	// build a valid mesh in 2 steps, what we have in simData is incomplete
 		Extent extent = incompleteMesh.getExtent();

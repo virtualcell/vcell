@@ -54,6 +54,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -612,19 +613,9 @@ private TimeSeriesJobResults calculateStatisticsFromWhole(
 public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException {
 
 	try {
-		User user = vcdID.getOwner();
-		File primaryUserDir = getPrimaryUserDir(user, false);
-		File secondaryUserDir = getSecondaryUserDir(user);
-		if ((primaryUserDir == null || !primaryUserDir.exists()) && (secondaryUserDir == null || !secondaryUserDir.exists())) {
-			throw new IOException("neither primary user dir nor secondary user dir exists");
-		}
-
 		DataProcessingOutput dataProcessingOutput = null;
-		File dataProcessingOutputFileDDF5 = new File(primaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-		if (!dataProcessingOutputFileDDF5.exists()){
-			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-		}
-		if (dataProcessingOutputFileDDF5.exists()) {
+		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(vcdID)).getDataProcessingOutputSourceFileHDF5();
+		if (dataProcessingOutputFileHDF5.exists()) {
 			dataProcessingOutput = new DataProcessingOutput();
 			// retrieve an instance of H5File
 			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
@@ -634,7 +625,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			// open the file with read-only access	
 			FileFormat testFile = null;
 			try{
-				testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+				testFile = fileFormat.open(dataProcessingOutputFileHDF5.getAbsolutePath(), FileFormat.READ);
 				if(getMesh(vcdID).getGeometryDimension() != 0){ //post data processing is for spatial model only
 					testFile.setMaxMembers(Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS);
 				}
@@ -651,7 +642,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			//uncomment it for Debug
 			//do_iterate(dataProcessingOutputFileDDF5);
 		}else{
-			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileDDF5.getName()+"' not found");
+			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getName()+"' not found");
 		}
 
 		return dataProcessingOutput;
@@ -3293,7 +3284,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
-			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){

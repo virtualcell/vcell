@@ -25,7 +25,9 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -34,12 +36,26 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import ncsa.hdf.object.Attribute;
+import ncsa.hdf.object.FileFormat;
+import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
+import ncsa.hdf.object.Metadata;
+import ncsa.hdf.object.h5.H5Group;
+import ncsa.hdf.object.h5.H5ScalarDS;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.Range;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -58,6 +74,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverUtilities;
@@ -72,12 +89,7 @@ import cbit.vcell.solvers.FunctionFileGenerator;
  */
 public class SimulationData extends VCData {
 	private static class AmplistorHelper{
-		private static final String AMPLISTOR_HTTP_SERVER = "obj1.cam.uchc.edu:8080";
-		private static final String AMPLISTOR_NAMESPACE = "namespace";
-		private static final String AMPLISTOR_REST_PATH_NAMESPACE = "http://"+AMPLISTOR_HTTP_SERVER+"/"+AMPLISTOR_NAMESPACE;
-		private static final String AMPLISTOR_VCELL = "service_vcell";
-		public static final String AMPLISTOR_REST_PATH_VCELL = AMPLISTOR_REST_PATH_NAMESPACE+"/"+AMPLISTOR_VCELL;
-
+		private String amplistorVCellUsersRootPath;
 		private static final String AMPLISTOR_CUSTOM_META_PREFIX = "X-Ampli-Custom-Meta-";
 
 		private static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
@@ -88,10 +100,16 @@ public class SimulationData extends VCData {
 		}
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
-		private boolean bAmplistor = false;
 		private KeyValue simulationKey;
 		private int jobIndex = 0;
-		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws FileNotFoundException{
+		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUserRootPath) throws FileNotFoundException{
+			if(primaryUserDir == null || !primaryUserDir.exists() || !primaryUserDir.isDirectory()){
+				throw new IllegalArgumentException("PrimaryUserDir required and it must exist and be a directory");
+			}
+			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
+				throw new IllegalArgumentException("If secondaryUserDir defined it must exist and be a directory");
+			}
+			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
 			String logFileName = null;
 			String logFileNameOldStyle = null;
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
@@ -122,24 +140,24 @@ public class SimulationData extends VCData {
 			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
 				this.userDirectory = secondaryUserDir;
 				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-			}else {
+			}else if(amplistorVCellUserRootPath != null){
 				try{
-					if(amplistorFileExists(argVCDataID.getOwner().getName(), logFileName)){
+					if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileName)){
 						this.ahvcDataId = argVCDataID;
-					}else if(amplistorFileExists(argVCDataID.getOwner().getName(), logFileNameOldStyle)){
+					}else if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
 						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 					}else{
 						throw new Exception("Log file not found anywhere");
 					}
-					bAmplistor = true;
 					this.userDirectory = primaryUserDir;//use primary by default for amplistor
 					return;
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				throw new FileNotFoundException(
-					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist int primary " + primaryUserDir + " or secondary " + secondaryUserDir+" or Amplistor");
 			}
+			throw new FileNotFoundException(
+				"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist int primary " + primaryUserDir + " or secondary " + secondaryUserDir+" or Amplistor.");
+
 		}
 		private static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
@@ -150,8 +168,9 @@ public class SimulationData extends VCData {
 				throw new IllegalArgumentException("Convert unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
 			}
 		}
-		private static boolean amplistorFileExists(String userid,String fileName) throws Exception{
-			String urlStr = AMPLISTOR_REST_PATH_VCELL+"/"+userid+"/"+fileName;
+
+		private static boolean amplistorFileExists(String amplistorUsersRootPath,String userid,String fileName) throws Exception{
+			String urlStr = amplistorUsersRootPath+"/"+userid+"/"+fileName;
 			HttpURLConnection urlCon = null;
 			try{
 				urlCon = createGETConnection(urlStr);
@@ -211,15 +230,21 @@ public class SimulationData extends VCData {
 //			xferAmplistor(file);
 //			return file;
 		}
+		public File getPostProcessFile(){
+			return getFile(SimulationData.createCanonicalPostProcessFileName(getVCDataiDataIdentifier()));
+		}
+		public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments){
+			return getFile(SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,fieldFunctionArguments));
+		}
 		public File getFile(String fileName){
 			File file = new File(userDirectory,fileName);
 			xferAmplistor(file);
 			return file;
 		}
 		private void xferAmplistor(File file){
-			if(bAmplistor && !file.exists()){//we may have already xferred it
+			if(amplistorVCellUsersRootPath != null && !file.exists()){//we may have already xferred it
 				try{
-					xferAmplistorData(AMPLISTOR_REST_PATH_VCELL+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(), file);
+					xferAmplistorData(amplistorVCellUsersRootPath+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(), file);
 				}catch(Exception e){
 					//ignore
 					e.printStackTrace();
@@ -301,9 +326,9 @@ public class SimulationData extends VCData {
 /**
  * SimResults constructor comment.
  */
-public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {
+public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUsersRootPath) throws IOException, DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
-	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir);
+	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,amplistorVCellUsersRootPath);
 	this.vcDataId = amplistorHelper.getVCDataiDataIdentifier();
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() getting var and function identifiers");
 	getVarAndFunctionDataIdentifiers(null);
@@ -1744,6 +1769,10 @@ public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int job
 	SimDataConstants.LOGFILE_EXTENSION;
 }
 
+public static String createCanonicalPostProcessFileName(VCDataIdentifier vcdID){
+	return vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5;
+}
+
 public static String createCanonicalMeshFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
 	return
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
@@ -1793,4 +1822,11 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	}
 }
 
+public File getDataProcessingOutputSourceFileHDF5(){
+	return amplistorHelper.getPostProcessFile();
+}
+
+public File getFieldDataFile(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFunctionArguments){
+	return amplistorHelper.getFieldDataFile(simResampleInfoProvider,fieldFunctionArguments);
+}
 }
