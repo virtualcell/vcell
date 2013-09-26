@@ -84,7 +84,7 @@ public class ResourceUtil {
 			if (bFirstTime || !exe.exists()) {
 				ResourceUtil.writeFileFromResource(res, exe);
 			}
-			if (this == Smoldyn) {
+			if (this == Smoldyn || this == FiniteVolume) {
 				if (bWindows) {
 					String DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
 					String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
