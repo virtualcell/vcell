@@ -130,6 +130,8 @@ public class PropertyLoader {
 	public static final String VCellChomboExecutable2D = "vcell.chombo.executable.2d";
 	public static final String VCellChomboExecutable3D = "vcell.chombo.executable.3d";
 	
+	public static final String amplistorVCellUsersRootPath = "vcell.amplistor.usersDir.root";
+	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -227,6 +229,8 @@ public class PropertyLoader {
 
 		VCellChomboExecutable2D,
 		VCellChomboExecutable3D,
+		
+		amplistorVCellUsersRootPath,
 	};
 
 

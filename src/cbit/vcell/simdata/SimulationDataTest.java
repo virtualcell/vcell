@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.simdata;
+
+import org.vcell.util.PropertyLoader;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/23/2004 1:39:55 PM)
@@ -35,7 +38,7 @@ public static void main(String[] args) {
 	int runs = 0;
 	while (true) {
 		try {
-			simData1 = new cbit.vcell.simdata.SimulationData(vcData1, userFile, null);
+			simData1 = new cbit.vcell.simdata.SimulationData(vcData1, userFile, null,PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
 			double a[] = simData1.getDataTimes();
 			if (a == null) {
 				continue;
