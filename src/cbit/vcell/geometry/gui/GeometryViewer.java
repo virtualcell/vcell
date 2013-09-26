@@ -587,7 +587,7 @@ private void refreshSize() {
 		if(text.length() > 50){
 			final int NUMDIGITS = 6;
 			labelText = PREFIX +
-				"  size=("+NumberUtils.formatNumber(sizeX, NUMDIGITS)+(dim > 1?","+NumberUtils.formatNumber(sizeY, NUMDIGITS):"")+(dim > 2?","+NumberUtils.formatNumber(sizeY, NUMDIGITS):"")+")"+
+				"  size=("+NumberUtils.formatNumber(sizeX, NUMDIGITS)+(dim > 1?","+NumberUtils.formatNumber(sizeY, NUMDIGITS):"")+(dim > 2?","+NumberUtils.formatNumber(sizeZ, NUMDIGITS):"")+")"+
 				", origin=("+NumberUtils.formatNumber(originX, NUMDIGITS)+(dim>1?","+NumberUtils.formatNumber(originY, NUMDIGITS):"")+(dim>2?","+NumberUtils.formatNumber(originZ, NUMDIGITS):"")+")";
 		}else{
 			labelText = text;
