@@ -1158,20 +1158,32 @@ public void dataJobMessage(final DataJobEvent dje) {
 	}
 }
 	
+private DataValueSurfaceViewer getDataValueSurfaceViewer() {
+	if(fieldDataValueSurfaceViewer == null){
+		fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
+	}
+	return fieldDataValueSurfaceViewer;
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2005 1:53:00 PM)
  */
-private DataValueSurfaceViewer getDataValueSurfaceViewer() {
+private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupport clientTaskStatusSupport) {
 	try{
-	if(fieldDataValueSurfaceViewer == null){
+//	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
 		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
 		if(cartesianMesh.getMembraneElements() == null || cartesianMesh.getMembraneElements().length == 0 || cartesianMesh.isChomboMesh()){//Chombo Hack
-			fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
-			return fieldDataValueSurfaceViewer;
+//			fieldDataValueSurfaceViewer = new DataValueSurfaceViewer();
+//			return fieldDataValueSurfaceViewer;
+			return getDataValueSurfaceViewer();
 		}
-		meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces();
+		try{
+			meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces(clientTaskStatusSupport);	
+		}catch(UserCancelException e){
+			//ignore, return empty surface viewer
+			return getDataValueSurfaceViewer();
+		}
 		SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
 
 		//SurfaceNames
@@ -1195,12 +1207,12 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 			surfaceAreas[i] = new Double(cartesianMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(meshRegionSurfaces.getMembraneIndexForPolygon(i,0)));
 		}
 
-		DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new DataValueSurfaceViewer();
+//		DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new DataValueSurfaceViewer();
 
 		TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
 		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(.3);
 		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
-		fieldDataValueSurfaceViewer0.init(
+		getDataValueSurfaceViewer().init(
 			meshRegionSurfaces.getSurfaceCollection(),
 			cartesianMesh.getOrigin(),
 			cartesianMesh.getExtent(),
@@ -1209,8 +1221,8 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
 			cartesianMesh.getGeometryDimension()
 		);
 
-		fieldDataValueSurfaceViewer = fieldDataValueSurfaceViewer0;
-	}
+		return getDataValueSurfaceViewer();
+//	}
 	}catch(Exception e){
 		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getMessage(), e);
 	}
@@ -2144,16 +2156,48 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 	
 }
 
-
+private void updateDataValueSurfaceViewer(){
+	AsynchClientTask createDataValueSurfaceViewerTask = new AsynchClientTask("Create surface viewer...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+				createDataValueSurfaceViewer(getClientTaskStatusSupport());
+			}
+		}
+	};
+	
+	AsynchClientTask updateDataValueSurfaceViewerTask = new AsynchClientTask("Update surface viewer...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			updateDataValueSurfaceViewer0();
+		}
+	};
+	
+	AsynchClientTask resetDataValueSurfaceViewerTask = new AsynchClientTask("Reset tab...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+				viewDataTabbedPane.setSelectedIndex(0);
+			}
+		}
+	};
+	
+	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {createDataValueSurfaceViewerTask,updateDataValueSurfaceViewerTask,resetDataValueSurfaceViewerTask},true,true,null);		
+	}else{
+		try{
+			updateDataValueSurfaceViewerTask.run(null);
+		}catch(Exception e){
+			DialogUtils.showErrorDialog(this, e.getMessage());
+		}
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2005 2:00:05 PM)
  */
-private void updateDataValueSurfaceViewer() {
+private void updateDataValueSurfaceViewer0() {
 
-	if(getDataValueSurfaceViewer() == null){
-		return;
-	}
 	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
 	//SurfaceColors and DataValues
 	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();

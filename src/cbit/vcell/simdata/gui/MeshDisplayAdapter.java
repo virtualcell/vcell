@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
+import org.vcell.util.UserCancelException;
 
 import cbit.image.ImageException;
 import cbit.vcell.geometry.Line;
@@ -307,8 +309,11 @@ public RegionImage generateRegionImage() throws ImageException{
  * Insert the method's description here.
  * Creation date: (9/18/2005 10:42:24 AM)
  */
-public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageException{
+public MeshRegionSurfaces generateMeshRegionSurfaces(ClientTaskStatusSupport clientTaskStatusSupport) throws cbit.image.ImageException,UserCancelException{
 
+	if(clientTaskStatusSupport != null){
+		clientTaskStatusSupport.setMessage("Generating region image...");
+	}
 	RegionImage meshRegionImage = generateRegionImage();
 
 	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionImage.getSurfacecollection();
@@ -317,11 +322,24 @@ public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageEx
 
 	int[][] surface_polygon_MembraneIndexes = new int[surfaceCollection.getSurfaceCount()][];
 
+	if(clientTaskStatusSupport != null){
+		clientTaskStatusSupport.setMessage("Generating surfaces...");
+	}
+	int totalPolygons = surfaceCollection.getTotalPolygonCount();
+	int counter = 0;
 	//Assign membraneIndexes to Polygons
 	for(int i=0;i<surfaceCollection.getSurfaceCount();i+= 1){
 		cbit.vcell.geometry.surface.Surface surface = surfaceCollection.getSurfaces(i);
 		surface_polygon_MembraneIndexes[i] = new int[surface.getPolygonCount()];
 		for(int j=0;j<surface.getPolygonCount();j+= 1){
+			if(clientTaskStatusSupport != null && (j % 1000 == 0)){
+				if(clientTaskStatusSupport.isInterrupted()){
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				clientTaskStatusSupport.setProgress(counter*100/totalPolygons);
+			}
+			counter++;
+			
 			cbit.vcell.geometry.surface.Quadrilateral quad = (cbit.vcell.geometry.surface.Quadrilateral)surface.getPolygons(j);
 			int membraneIndex = -1;
 			for(int k=0;k<membraneElements.length;k+= 1){
