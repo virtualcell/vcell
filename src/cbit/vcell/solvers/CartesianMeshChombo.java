@@ -434,6 +434,9 @@ public class CartesianMeshChombo extends CartesianMesh {
 			size = (ISize)objArray[++ index];
 			origin = (Origin)objArray[++ index];
 			extent = (Extent)objArray[++ index];
+			numLevels = (Integer)objArray[++ index];
+			viewLevel = (Integer)objArray[++ index];
+			refineRatios = (int[])objArray[++ index];
 			membraneElements = (MembraneElement[])objArray[++ index];
 			metrics = (MetricsEntry[])objArray[++ index];
 			vertices = (Coordinate[])objArray[++ index];
