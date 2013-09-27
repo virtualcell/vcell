@@ -286,7 +286,7 @@ private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxi
 	return paramHolder;
 }
 
-public RegionImage generateRegionImage() throws ImageException{
+public RegionImage generateRegionImage(ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException,UserCancelException{
 	int[] subVolumeIDField = new int[getMesh().getNumVolumeElements()];
 	for(int i=0;i< subVolumeIDField.length;i+= 1){
 		subVolumeIDField[i] = getMesh().getSubVolumeFromVolumeIndex(i);
@@ -300,9 +300,12 @@ public RegionImage generateRegionImage() throws ImageException{
 				getMesh().getExtent(),
 				getMesh().getSizeX(),getMesh().getSizeY(),getMesh().getSizeZ()
 			),
-			getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin(),RegionImage.NO_SMOOTHING
+			getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin(),RegionImage.NO_SMOOTHING,
+			clientTaskStatusSupport
 	);
-
+	if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+		throw UserCancelException.CANCEL_GENERIC;
+	}
 	return meshRegionImage;
 }
 /**
@@ -314,7 +317,7 @@ public MeshRegionSurfaces generateMeshRegionSurfaces(ClientTaskStatusSupport cli
 	if(clientTaskStatusSupport != null){
 		clientTaskStatusSupport.setMessage("Generating region image...");
 	}
-	RegionImage meshRegionImage = generateRegionImage();
+	RegionImage meshRegionImage = generateRegionImage(clientTaskStatusSupport);
 
 	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionImage.getSurfacecollection();
 	

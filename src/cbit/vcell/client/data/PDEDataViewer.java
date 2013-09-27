@@ -81,6 +81,7 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
 
+import cbit.image.ImageException;
 import cbit.image.gui.DisplayAdapterService;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -1168,8 +1169,8 @@ private DataValueSurfaceViewer getDataValueSurfaceViewer() {
  * Insert the method's description here.
  * Creation date: (9/25/2005 1:53:00 PM)
  */
-private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupport clientTaskStatusSupport) {
-	try{
+private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException,UserCancelException{
+//	try{
 //	if(fieldDataValueSurfaceViewer == null){
 		//Surfaces
 		CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
@@ -1178,12 +1179,7 @@ private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupp
 //			return fieldDataValueSurfaceViewer;
 			return getDataValueSurfaceViewer();
 		}
-		try{
-			meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces(clientTaskStatusSupport);	
-		}catch(UserCancelException e){
-			//ignore, return empty surface viewer
-			return getDataValueSurfaceViewer();
-		}
+		meshRegionSurfaces = new MeshDisplayAdapter(cartesianMesh).generateMeshRegionSurfaces(clientTaskStatusSupport);	
 		SurfaceCollection surfaceCollection = meshRegionSurfaces.getSurfaceCollection();
 
 		//SurfaceNames
@@ -1223,11 +1219,13 @@ private DataValueSurfaceViewer createDataValueSurfaceViewer(ClientTaskStatusSupp
 
 		return getDataValueSurfaceViewer();
 //	}
-	}catch(Exception e){
-		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getMessage(), e);
-	}
+//	}catch(UserCancelException e){
+//		throw e;
+//	}catch(Exception e){
+//		PopupGenerator.showErrorDialog(PDEDataViewer.this, e.getMessage(), e);
+//	}
 
-	return fieldDataValueSurfaceViewer;
+//	return fieldDataValueSurfaceViewer;
 }
 
 
@@ -2173,7 +2171,7 @@ private void updateDataValueSurfaceViewer(){
 		}
 	};
 	
-	AsynchClientTask resetDataValueSurfaceViewerTask = new AsynchClientTask("Reset tab...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false,false) {
+	AsynchClientTask resetDataValueSurfaceViewerTask = new AsynchClientTask("Reset tab...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
