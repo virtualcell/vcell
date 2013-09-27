@@ -1,14 +1,11 @@
 package cbit.vcell.solvers;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -29,8 +26,6 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-
-import cbit.vcell.geometry.SampledCurve;
 
 @SuppressWarnings("serial")
 public class CartesianMeshChombo extends CartesianMesh {
@@ -67,38 +62,42 @@ public class CartesianMeshChombo extends CartesianMesh {
 		public double[] crossPoints;
 	}
 	
-//	public static class MeshMetricsEntry implements Serializable
-//	{
-//		public int index,i,j,k;
-//		//public double x,y,z;
-//		//public double normalx, normaly, normalz;
-//		//double volFrac;
-//		//double areaFrac;
-//		public MeshMetricsEntry(int index, int i, int j, int k
-////				, double x, double y, double z, double normalx, double normaly,
-////				double normalz, double volFrac, double areaFrac
+	public static class MetricsEntry implements Serializable
+	{
+		public int index, level, i,j,k;
+//		public double x,y,z;
+//		public double normalx, normaly, normalz;
+//		double volFrac;
+//		double areaFrac;
+		public MetricsEntry(int index, int level, int i, int j, int k)
+//				, double x, double y, double z, double normalx, double normaly,
+//				double normalz, double volFrac, double areaFrac
 //				) 
-//		{
-//			super();
-//			this.index = index;
-//			this.i = i;
-//			this.j = j;
-//			this.k = k;
-////			this.x = x;
-////			this.y = y;
-////			this.z = z;
-////			this.normalx = normalx;
-////			this.normaly = normaly;
-////			this.normalz = normalz;
-////			this.volFrac = volFrac;
-////			this.areaFrac = areaFrac;
-//		}		
-//	}
+		{
+			super();
+			this.index = index;
+			this.level = level;
+			this.i = i;
+			this.j = j;
+			this.k = k;
+//			this.x = x;
+//			this.y = y;
+//			this.z = z;
+//			this.normalx = normalx;
+//			this.normaly = normaly;
+//			this.normalz = normalz;
+//			this.volFrac = volFrac;
+//			this.areaFrac = areaFrac;
+		}		
+	}
 		
 	private int dimension = 0;
+	private int viewLevel = 0;
+	private int numLevels = 0;
+	private int[] refineRatios;
 
 	private transient double[] dx;
-//	private transient List<ChomboBox> boxList = new ArrayList<ChomboBox>();
+	private transient MetricsEntry[] metrics = null;
 	
 	// 3D
 	private transient Map<Integer, List<SurfaceTriangleEntry3D>> surfaceTriangleMap = new HashMap<Integer, List<SurfaceTriangleEntry3D>>();
@@ -122,6 +121,9 @@ public class CartesianMeshChombo extends CartesianMesh {
 	private static final String MESH_ATTR_EXTENT = "extent";
 	private static final String MESH_ATTR_NX = "Nx";
 	private static final String MESH_ATTR_DX = "Dx";
+	private static final String MESH_ATTR_NUM_LEVELS = "numLevels";
+	private static final String MESH_ATTR_REFINE_RATIOS = "refineRatios";
+	private static final String MESH_ATTR_VIEW_LEVEL = "viewLevel";
 	
 	public static CartesianMeshChombo readMeshFile(File chomboMeshFile) throws Exception {
 		CartesianMeshChombo chomboMesh = new CartesianMeshChombo();
@@ -153,6 +155,18 @@ public class CartesianMeshChombo extends CartesianMesh {
 			if (attrName.equals(MESH_ATTR_DIMENSION))
 			{
 				chomboMesh.dimension = ((int[])value)[0];
+			}
+			else if (attrName.equals(MESH_ATTR_NUM_LEVELS))
+			{
+				chomboMesh.numLevels = ((int[])value)[0];
+			}
+			else if (attrName.equals(MESH_ATTR_VIEW_LEVEL))
+			{
+				chomboMesh.viewLevel = ((int[])value)[0];
+			}
+			else if (attrName.equals(MESH_ATTR_REFINE_RATIOS))
+			{
+				chomboMesh.refineRatios = (int[])value;
 			}
 			else
 			{
@@ -276,12 +290,14 @@ public class CartesianMeshChombo extends CartesianMesh {
 					double[] areaFrac = (double[])vectValues.get(++ c);
 					double unitVol = chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
 					chomboMesh.membraneElements = new MembraneElement[index.length];
+					chomboMesh.metrics = new MetricsEntry[index.length];
 					for (int n = 0; n < index.length; ++ n)
 					{
 						int insideIndex = (k == null ? 0 : k[n] * chomboMesh.size.getY() * chomboMesh.size.getX())
 								+ j[n] * chomboMesh.size.getX() + i[n];
 						int outsideIndex = insideIndex;
 						double area = areaFrac[n] * unitVol;
+						chomboMesh.metrics[n] = new MetricsEntry(index[n], level[n], i[n], j[n], k == null ? 0 : k[n]);
 						chomboMesh.membraneElements[n] = new MembraneElement(index[n], insideIndex, outsideIndex,
 								-1, -1, -1, -1,
 								(float)area,
@@ -382,16 +398,27 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	@Override
 	protected Object[] getOutputFields() throws IOException {
-		Object[] objects = null;
+		List<Object> objectList = new ArrayList<Object>();
+		objectList.add(dimension);
+		objectList.add(size);
+		objectList.add(origin);
+		objectList.add(extent);
+		objectList.add(numLevels);
+		objectList.add(viewLevel);
+		objectList.add(refineRatios);
+		objectList.add(membraneElements);
+		objectList.add(metrics);
+		objectList.add(vertices);
 		if (dimension == 2)
 		{
-			objects = new Object[] {dimension, size, origin, extent, membraneElements, vertices, segments};
+			objectList.add(segments);
 		}
 		else if (dimension == 3)
 		{
-			objects = new Object[] {dimension, size, origin, extent, membraneElements, vertices, surfaceTriangleMap, sliceViewList};
+			objectList.add(surfaceTriangleMap);
+			objectList.add(sliceViewList);
 		}
-		return objects;
+		return objectList.toArray(new Object[0]);
 	}
 
 	@Override
@@ -408,6 +435,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 			origin = (Origin)objArray[++ index];
 			extent = (Extent)objArray[++ index];
 			membraneElements = (MembraneElement[])objArray[++ index];
+			metrics = (MetricsEntry[])objArray[++ index];
 			vertices = (Coordinate[])objArray[++ index];
 			if (dimension == 2)
 			{
@@ -469,14 +497,34 @@ public class CartesianMeshChombo extends CartesianMesh {
 		return true;
 	}
 	
+	private CoordinateIndex convertDownToLevel(CoordinateIndex ci, int startLevel, int stopLevel)
+	{
+		int ratio = 1;
+		for (int i = startLevel; i < stopLevel; ++ i)
+		{
+			ratio *= refineRatios[i];
+		}
+		return new CoordinateIndex(ci.x / ratio, ci.y / ratio, ci.z / ratio);
+	}
+	
 	public int findMembraneIndexFromVolumeIndex(CoordinateIndex ci)
 	{
-		int volIndex = getVolumeIndex(ci);
-		for (MembraneElement me : membraneElements)
+		for (MetricsEntry me : metrics)
 		{
-			if (me.getInsideVolumeIndex() == volIndex)
+			CoordinateIndex ci0 = new CoordinateIndex(me.i, me.j, me.k);
+			CoordinateIndex ci1 = ci;
+			if (me.level < viewLevel)
 			{
-				return me.getMembraneIndex();
+				ci1 = convertDownToLevel(ci1, me.level, viewLevel);
+			}
+			else if (me.level > viewLevel)
+			{
+			  // in this case we need to convert the coordinates to the fine mesh to find the correct membrane element in me.level
+				throw new RuntimeException("View level can only be finest level for now");
+			}
+			if (ci0.x == ci1.x && ci0.y == ci1.y && (dimension == 2 || ci0.z == ci1.z))
+			{
+				return me.index;
 			}
 		}
 		return -1;
