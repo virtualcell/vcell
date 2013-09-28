@@ -3450,7 +3450,7 @@ public void writeFieldFunctionData(
 		CartesianMesh newMesh,
 		SimResampleInfoProvider simResampleInfoProvider,
 		int simResampleMembraneDataLength,
-		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException {
+		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException, IOException {
 	
 	if(	handleExistingResampleMode != FVSolver.HESM_KEEP_AND_CONTINUE &&
 		handleExistingResampleMode != FVSolver.HESM_OVERWRITE_AND_CONTINUE &&
@@ -3467,16 +3467,7 @@ public void writeFieldFunctionData(
 	HashMap<FieldDataIdentifierSpec, Boolean> bFieldDataResample = new HashMap<FieldDataIdentifierSpec, Boolean>();
 	for (int i = 0; i < argFieldDataIDSpecs.length; i ++) {
 		if (!uniqueFieldDataIDSpecAndFileH.containsKey(argFieldDataIDSpecs[i])){
-			File newResampledFieldDataFile = null;
-			try{
-				newResampledFieldDataFile = ((SimulationData)getVCData(argFieldDataIDSpecs[i].getExternalDataIdentifier())).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
-			}catch(Exception e){
-				e.printStackTrace();
-				//use the original way
-				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
-				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,
-						argFieldDataIDSpecs[i].getFieldFuncArgs()));
-			}
+			File newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
 			if (handleExistingResampleMode == FVSolver.HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
 				throw new RuntimeException("Resample Error: mode not allow overwrite or ignore of " +
 						"existing file\n" + newResampledFieldDataFile.getAbsolutePath());
