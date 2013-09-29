@@ -3467,7 +3467,15 @@ public void writeFieldFunctionData(
 	HashMap<FieldDataIdentifierSpec, Boolean> bFieldDataResample = new HashMap<FieldDataIdentifierSpec, Boolean>();
 	for (int i = 0; i < argFieldDataIDSpecs.length; i ++) {
 		if (!uniqueFieldDataIDSpecAndFileH.containsKey(argFieldDataIDSpecs[i])){
-			File newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
+			File newResampledFieldDataFile = null;
+			try{
+				newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
+			}catch(FileNotFoundException e){
+				e.printStackTrace();
+				//use the original way
+				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
+				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,argFieldDataIDSpecs[i].getFieldFuncArgs()));
+			}
 			if (handleExistingResampleMode == FVSolver.HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
 				throw new RuntimeException("Resample Error: mode not allow overwrite or ignore of " +
 						"existing file\n" + newResampledFieldDataFile.getAbsolutePath());
