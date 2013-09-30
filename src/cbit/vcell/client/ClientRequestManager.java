@@ -24,7 +24,10 @@ import java.awt.image.DataBufferUShort;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -38,6 +41,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
@@ -1081,6 +1085,50 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 					if(imageFile == null){
 						throw new Exception("No file selected");
 					}
+					if (ExtensionFilter.isMatchingExtension(imageFile, ".nrrd")){
+						DataInputStream dis = null;
+						try{
+							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile)) ;
+							dis = new DataInputStream(bis);
+							int x = 0;
+							int y = 0;
+							int z = 0;
+							//read header lines
+							while(true){
+								String line = dis.readLine();
+								if(line == null || line.length() == 0){
+									break;
+								}
+								StringTokenizer stringTokenizer = new StringTokenizer(line, ": ");
+								if(stringTokenizer.nextToken().equals("sizes")){
+									x = Integer.parseInt(stringTokenizer.nextToken());
+									y = Integer.parseInt(stringTokenizer.nextToken());
+									z = Integer.parseInt(stringTokenizer.nextToken());
+								}
+							}
+							double[] data = new double[x*y*z];
+							double minValue = Double.POSITIVE_INFINITY;
+							double maxValue = Double.NEGATIVE_INFINITY;
+							for (int i = 0; i < data.length; i++) {
+								data[i] = dis.readDouble();
+								minValue = Math.min(minValue,data[i]);
+								maxValue = Math.max(maxValue,data[i]);
+							}
+							dis.close();
+							short[] dataToSegment = new short[data.length];
+							double scaleShort = Math.pow(2, Short.SIZE)-1;
+							for (int i = 0; i < data.length; i++) {
+								dataToSegment[i]|= (int)((data[i]-minValue)/(maxValue-minValue)*scaleShort);
+							}
+							fdfos = new FieldDataFileOperationSpec();
+							fdfos.origin = new Origin(0, 0, 0);
+							fdfos.extent = new Extent(1, 1, 1);
+							fdfos.isize = new ISize(x, y, z);
+							fdfos.shortSpecData = new short[][][] {{dataToSegment}};
+						}finally{
+							if(dis != null){try{dis.close();}catch(Exception e){e.printStackTrace();}}
+						}
+					}else
 					//
 					// before trying images, try surface
 					//
