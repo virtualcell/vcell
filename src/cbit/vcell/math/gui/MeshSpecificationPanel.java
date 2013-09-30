@@ -476,7 +476,7 @@ private void initialize() {
 		// user code end
 		setName("MeshSpecificationPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(324, 173);
+		setSize(324, 310);
 		setEnabled(false);
 		
 		totalSizeTextField.setEditable(false);
@@ -970,7 +970,7 @@ private void updateTotalSizeAndSpatialStep() {
 		Coordinate h = computeDxDyDz(numX, numY, numZ);
 		ivjDxTextField.setText(h.getX() + "");
 		ivjDyTextField.setText(h.getY() + "");
-		ivjDzTextField.setText(h.getY() + "");
+		ivjDzTextField.setText(h.getZ() + "");
 	} catch (NumberFormatException ex) {
 		clearTotalSizeAndSpatialStep();
 	}
