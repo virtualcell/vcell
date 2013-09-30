@@ -177,15 +177,30 @@ public class VCMongoDbDriver implements Runnable {
     	}
     }
     
-    public void flush() {
-    	if (!processing){
-    		return;
-    	}
-    	if (this.messageProcessingThread!=null){
-    		this.messageProcessingThread.interrupt();
-    	}
-        sendMessages();
-    }
+	public void flush() {
+		if (!processing) {
+			return;
+		}
+		if (this.messageProcessingThread != null) {
+			this.messageProcessingThread.interrupt();
+		}
+		Thread flushThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				sendMessages();
+			}
+		});
+		flushThread.setDaemon(true);
+		flushThread.start();
+		//wait small amount of time because some callers of this method exit immediately
+		//and will kill the sendMessages thread.
+		try{
+			Thread.sleep(10*1000);
+		}catch(InterruptedException e){
+			e.printStackTrace();
+			//ignore
+		}
+	}
     
 	/**
 	 * @param args
