@@ -359,7 +359,7 @@ public class PDEDataViewer extends DataViewer {
 						// for local sim, get location of sim file and update log file location label
 						if (getPdeDataContext().getVCDataIdentifier() instanceof LocalVCSimulationDataIdentifier) {
 							LocalVCSimulationDataIdentifier localVCSimId = (LocalVCSimulationDataIdentifier)getPdeDataContext().getVCDataIdentifier();
-							String localSimLogFilePath = localVCSimId.getLocalDirectory().getAbsolutePath() + "\\" + localVCSimId.getVcSimID().getID() + "_" + localVCSimId.getJobIndex() + "_.log";
+							String localSimLogFilePath = localVCSimId.getLocalDirectory().getAbsolutePath() + File.separator + localVCSimId.getVcSimID().getID() + "_" + localVCSimId.getJobIndex() + "_.log";
 							// buttonsAndLabelsPanel should have 2 components (JPanelButtons and JPanelLocationLabels. If there are more than one component, 
 							// the labelsPanel is already added to it, so no need to add it twice.
 							if (!buttonsAndLabelsPanel.isAncestorOf(getJPanelLoctionLabels())) {
@@ -1485,6 +1485,7 @@ private javax.swing.JPanel getJPanelLoctionLabels() {
 			// location of sim data path
 			localSimLogFilePathTextField = new JTextField();
 			localSimLogFilePathTextField.setEditable(false);
+			localSimLogFilePathTextField.setEnabled(true);
 			localSimLogFilePathTextField.setHorizontalAlignment(SwingConstants.CENTER);
 			localSimLogFilePathTextField.setBorder(null);
 			localSimLogFilePathTextField.setFont(locationLabel.getFont().deriveFont(Font.BOLD));
