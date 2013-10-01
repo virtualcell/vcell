@@ -57,6 +57,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Origin;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.Range;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -615,19 +616,9 @@ private TimeSeriesJobResults calculateStatisticsFromWhole(
 public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID) throws DataAccessException {
 
 	try {
-		User user = vcdID.getOwner();
-		File primaryUserDir = getPrimaryUserDir(user, false);
-		File secondaryUserDir = getSecondaryUserDir(user);
-		if ((primaryUserDir == null || !primaryUserDir.exists()) && (secondaryUserDir == null || !secondaryUserDir.exists())) {
-			throw new IOException("neither primary user dir nor secondary user dir exists");
-		}
-
 		DataProcessingOutput dataProcessingOutput = null;
-		File dataProcessingOutputFileDDF5 = new File(primaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-		if (!dataProcessingOutputFileDDF5.exists()){
-			dataProcessingOutputFileDDF5 = new File(secondaryUserDir, vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-		}
-		if (dataProcessingOutputFileDDF5.exists()) {
+		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(vcdID)).getDataProcessingOutputSourceFileHDF5();
+		if (dataProcessingOutputFileHDF5.exists()) {
 			dataProcessingOutput = new DataProcessingOutput();
 			// retrieve an instance of H5File
 			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
@@ -637,7 +628,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			// open the file with read-only access	
 			FileFormat testFile = null;
 			try{
-				testFile = fileFormat.open(dataProcessingOutputFileDDF5.getAbsolutePath(), FileFormat.READ);
+				testFile = fileFormat.open(dataProcessingOutputFileHDF5.getAbsolutePath(), FileFormat.READ);
 				if(getMesh(vcdID).getGeometryDimension() != 0){ //post data processing is for spatial model only
 					testFile.setMaxMembers(Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS);
 				}
@@ -653,7 +644,7 @@ public DataProcessingOutput getDataProcessingOutput(final VCDataIdentifier vcdID
 			//uncomment it for Debug
 			//do_iterate(dataProcessingOutputFileDDF5);
 		}else{
-			throw new FileNotFoundException("file not found");
+			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getName()+"' not found");
 		}
 
 		return dataProcessingOutput;
@@ -1256,22 +1247,17 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 								fieldDataFileOperationSpec.sourceOwner),
 						simJobIndex);
 			
-			boolean isOldStyle =
-				(getVCData(sourceSimDataID).getResultsInfoObject() instanceof VCSimulationDataIdentifierOldStyle);
+			SimulationData simulationData = (SimulationData)getVCData(sourceSimDataID);
+			boolean isOldStyle = (simulationData.getResultsInfoObject() instanceof VCSimulationDataIdentifierOldStyle);
 			//
 			//log,mesh,zip,func
 			//
 			KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
-			File sourceDir = new File(primaryRootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());			
-			File meshFile_orig = new File(sourceDir,SimulationData.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
-			if (!meshFile_orig.exists() && secondaryRootDirectory != null) {
-				sourceDir = new File(secondaryRootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());
-				meshFile_orig = new File(sourceDir,SimulationData.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
-			}
-			File funcFile_orig = new File(sourceDir,SimulationData.createCanonicalFunctionsFileName(origSimKey,simJobIndex,isOldStyle));
-			File subdomainFile_orig = new File(sourceDir,SimulationData.createCanonicalSubdomainFileName(origSimKey,simJobIndex,isOldStyle));
-			File fdLogFile_orig = new File(sourceDir,SimulationData.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
-			File zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,0,simJobIndex,isOldStyle));
+			File meshFile_orig = simulationData.getMeshFile(false);
+			File funcFile_orig = simulationData.getFunctionsFile(false);
+			File subdomainFile_orig = simulationData.getSubdomainFile();
+			File fdLogFile_orig = simulationData.getLogFile();
+			File zipFile_orig = simulationData.getZipFile(false, 0);
 			boolean bCopySubdomainFile = subdomainFile_orig.exists();
 			//Dont' check subdomainFile_orig
 			if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
@@ -1283,7 +1269,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false));
+			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false,false));
 			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
 				throw new RuntimeException("File names required for new Field Data already exist on server");
 			}
@@ -1330,12 +1316,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	        //
 	        int zipIndex = 0;
 	        while(true){//Loop because there might be more than 1 zip file for large datasets
-				zipFile_orig = new File(sourceDir,SimulationData.createCanonicalSimZipFileName(origSimKey,zipIndex,simJobIndex,isOldStyle));
+				zipFile_orig = simulationData.getZipFile(false, zipIndex);
 				if(!zipFile_orig.exists()){
 					//done
 					break;
 				}
-				zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false));
+				zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false,false));
 				if(zipFile_new.exists()){
 					throw new DataAccessException("new zipfile name "+zipFile_new.getAbsolutePath()+" already exists");
 				}
@@ -1495,7 +1481,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		File zipFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimZipFileName(
-							dataset.getKey(),0,0,false));
+							dataset.getKey(),0,0,false,false));
 		Vector<String> simFileNamesV = new Vector<String>();
 		try{
 			if(!fdLogFile.createNewFile()){
@@ -1613,88 +1599,89 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		}
 		
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS){
-		//
-		//Check for references to FieldData from users User Defined Functions
-		//
-		HashMap<String, KeyValue> dbFuncFileNamesAndSimKeys = null;
-		try{
-			dbFuncFileNamesAndSimKeys =
-				FieldDataDBOperationDriver.getFunctionFileNamesAndSimKeys(
-					fieldDataFileOperationSpec.specEDI.getOwner());
-		}catch(Exception e){
-			e.printStackTrace();
-			throw new RuntimeException("couldn't get Function File names from Database\n"+e.getMessage());
-		}
-		//String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
-		String regex = "^.*?field\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*?$";
-		java.util.regex.Pattern pattern =
-			java.util.regex.Pattern.compile(regex);//,java.util.regex.Pattern.MULTILINE|java.util.regex.Pattern.DOTALL);
-		Matcher matcher = pattern.matcher("");
-		Set<Map.Entry<String,KeyValue>> funcAndSimsES = dbFuncFileNamesAndSimKeys.entrySet();
-		Vector<FieldDataFileOperationResults.FieldDataReferenceInfo> referencingFuncFileDescription = 
-			new Vector<FieldDataFileOperationResults.FieldDataReferenceInfo>();
-		boolean bSearchSecondary =
-			secondaryRootDirectory != null &&
-			!primaryRootDirectory.equals(secondaryRootDirectory);
-		TreeSet<String> searchedFuncFilesTS = new TreeSet<String>();
-		Iterator<Map.Entry<String,KeyValue>> iter = funcAndSimsES.iterator();
-		FunctionFileGenerator.FuncFileLineInfo funcfileInfo = null;
-		while(iter.hasNext()){
-			Map.Entry<String,KeyValue> currentEntry = iter.next();
-			File currentFile = null;
-			for (int i = 0; i < (bSearchSecondary?2:1); i++) {
-				if(searchedFuncFilesTS.contains(currentEntry.getKey())){
-					continue;
-				}
-				currentFile = new File(
-					getUserDirectoryName(
-						(i==0?primaryRootDirectory:secondaryRootDirectory),
-						fieldDataFileOperationSpec.specEDI.getOwner()),currentEntry.getKey());
-				if(!currentFile.exists()){
-					continue;
-				}
-				searchedFuncFilesTS.add(currentEntry.getKey());
-				LineNumberReader lineNumberReader = null;
-				Vector<String> referringFieldfunctionNamesV = new Vector<String>();
-				try{
-					lineNumberReader = new LineNumberReader(new FileReader(currentFile));
-					String funcFileLine = null;
-					while((funcFileLine = lineNumberReader.readLine()) != null){
-						funcfileInfo = FunctionFileGenerator.readFunctionLine(funcFileLine);
-						if(funcfileInfo != null && funcfileInfo.functionExpr != null){
-							matcher.reset(funcfileInfo.functionExpr);
-							if(matcher.matches()){
-								referringFieldfunctionNamesV.add(funcfileInfo.functionName);
-							}
-						}
-					}
-					lineNumberReader.close();
-					if(referringFieldfunctionNamesV.size() > 0){
-						FieldDataFileOperationResults.FieldDataReferenceInfo fieldDataReferenceInfo =
-							FieldDataDBOperationDriver.getModelDescriptionForSimulation(
-								fieldDataFileOperationSpec.specEDI.getOwner(), currentEntry.getValue());
-						fieldDataReferenceInfo.funcNames = referringFieldfunctionNamesV.toArray(new String[0]);
-						referencingFuncFileDescription.add(fieldDataReferenceInfo);
-//						for (int j = 0; j < referringFieldfunctionNamesV.size(); j++) {
-//							referencingFuncFileDescription.add(new String[][] {
-//								referringFieldfunctionNamesV.elementAt(j),modelDescription});							
+		throw new RuntimeException("This function is not currently used");
+//		//
+//		//Check for references to FieldData from users User Defined Functions
+//		//
+//		HashMap<String, KeyValue> dbFuncFileNamesAndSimKeys = null;
+//		try{
+//			dbFuncFileNamesAndSimKeys =
+//				FieldDataDBOperationDriver.getFunctionFileNamesAndSimKeys(
+//					fieldDataFileOperationSpec.specEDI.getOwner());
+//		}catch(Exception e){
+//			e.printStackTrace();
+//			throw new RuntimeException("couldn't get Function File names from Database\n"+e.getMessage());
+//		}
+//		//String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
+//		String regex = "^.*?field\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*?$";
+//		java.util.regex.Pattern pattern =
+//			java.util.regex.Pattern.compile(regex);//,java.util.regex.Pattern.MULTILINE|java.util.regex.Pattern.DOTALL);
+//		Matcher matcher = pattern.matcher("");
+//		Set<Map.Entry<String,KeyValue>> funcAndSimsES = dbFuncFileNamesAndSimKeys.entrySet();
+//		Vector<FieldDataFileOperationResults.FieldDataReferenceInfo> referencingFuncFileDescription = 
+//			new Vector<FieldDataFileOperationResults.FieldDataReferenceInfo>();
+//		boolean bSearchSecondary =
+//			secondaryRootDirectory != null &&
+//			!primaryRootDirectory.equals(secondaryRootDirectory);
+//		TreeSet<String> searchedFuncFilesTS = new TreeSet<String>();
+//		Iterator<Map.Entry<String,KeyValue>> iter = funcAndSimsES.iterator();
+//		FunctionFileGenerator.FuncFileLineInfo funcfileInfo = null;
+//		while(iter.hasNext()){
+//			Map.Entry<String,KeyValue> currentEntry = iter.next();
+//			File currentFile = null;
+//			for (int i = 0; i < (bSearchSecondary?2:1); i++) {
+//				if(searchedFuncFilesTS.contains(currentEntry.getKey())){
+//					continue;
+//				}
+//				currentFile = new File(
+//					getUserDirectoryName(
+//						(i==0?primaryRootDirectory:secondaryRootDirectory),
+//						fieldDataFileOperationSpec.specEDI.getOwner()),currentEntry.getKey());
+//				if(!currentFile.exists()){
+//					continue;
+//				}
+//				searchedFuncFilesTS.add(currentEntry.getKey());
+//				LineNumberReader lineNumberReader = null;
+//				Vector<String> referringFieldfunctionNamesV = new Vector<String>();
+//				try{
+//					lineNumberReader = new LineNumberReader(new FileReader(currentFile));
+//					String funcFileLine = null;
+//					while((funcFileLine = lineNumberReader.readLine()) != null){
+//						funcfileInfo = FunctionFileGenerator.readFunctionLine(funcFileLine);
+//						if(funcfileInfo != null && funcfileInfo.functionExpr != null){
+//							matcher.reset(funcfileInfo.functionExpr);
+//							if(matcher.matches()){
+//								referringFieldfunctionNamesV.add(funcfileInfo.functionName);
+//							}
 //						}
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage(),e);
-				}finally{
-					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){e.printStackTrace();}}
-				}
-			}
-		}
-		if(referencingFuncFileDescription.size() > 0){
-			FieldDataFileOperationResults fdfor = new FieldDataFileOperationResults();
-			fdfor.dependantFunctionInfo =
-				referencingFuncFileDescription.toArray(new FieldDataFileOperationResults.FieldDataReferenceInfo[0]);
-			return fdfor;
-		}
-		return null;
+//					}
+//					lineNumberReader.close();
+//					if(referringFieldfunctionNamesV.size() > 0){
+//						FieldDataFileOperationResults.FieldDataReferenceInfo fieldDataReferenceInfo =
+//							FieldDataDBOperationDriver.getModelDescriptionForSimulation(
+//								fieldDataFileOperationSpec.specEDI.getOwner(), currentEntry.getValue());
+//						fieldDataReferenceInfo.funcNames = referringFieldfunctionNamesV.toArray(new String[0]);
+//						referencingFuncFileDescription.add(fieldDataReferenceInfo);
+////						for (int j = 0; j < referringFieldfunctionNamesV.size(); j++) {
+////							referencingFuncFileDescription.add(new String[][] {
+////								referringFieldfunctionNamesV.elementAt(j),modelDescription});							
+////						}
+//					}
+//				}catch(Exception e){
+//					e.printStackTrace();
+//					throw new RuntimeException(e.getMessage(),e);
+//				}finally{
+//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){e.printStackTrace();}}
+//				}
+//			}
+//		}
+//		if(referencingFuncFileDescription.size() > 0){
+//			FieldDataFileOperationResults fdfor = new FieldDataFileOperationResults();
+//			fdfor.dependantFunctionInfo =
+//				referencingFuncFileDescription.toArray(new FieldDataFileOperationResults.FieldDataReferenceInfo[0]);
+//			return fdfor;
+//		}
+//		return null;
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
 //		if(fieldDataFileOperation(
 //			FieldDataFileOperationSpec.
@@ -1721,24 +1708,16 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			userExtDataIDH.remove(fieldDataFileOperationSpec.specEDI.getOwner());
 		}
 		
-		File userDir = null;
+		SimulationData simulationData = null;
 		try{
-			userDir = getPrimaryUserDir(fieldDataFileOperationSpec.specEDI.getOwner(), true);
-		}catch(FileNotFoundException e){
-			throw new RuntimeException("Couldn't create new user directory on server");
+			simulationData = (SimulationData)getVCData(fieldDataFileOperationSpec.specEDI);
+		}catch(Exception e){
+			throw new ObjectNotFoundException(e.getMessage(),e);
 		}
-		File fdLogFile =
-			new File(userDir,
-					SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File fdMeshFile =
-			new File(userDir,
-					SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File fdFunctionFile =
-			new File(userDir,
-					SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File fdSubdomainFile =
-			new File(userDir,
-					SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File fdLogFile = simulationData.getLogFile();
+		File fdMeshFile = simulationData.getMeshFile(false);
+		File fdFunctionFile = simulationData.getFunctionsFile(true);
+		File fdSubdomainFile = simulationData.getSubdomainFile();
 		if(!fdLogFile.delete()){
 			System.out.println("Couldn't delete log file "+fdLogFile.getAbsolutePath());
 		}
@@ -1754,9 +1733,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 
 		int index = 0;
 		while(true){
-			File fdZipFile =
-				new File(userDir,
-						SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(), index,0,false));
+			File fdZipFile = simulationData.getZipFile(false, index);
 			if(index != 0 && !fdZipFile.exists()){
 				break;
 			}
@@ -2014,24 +1991,7 @@ private Expression fieldFunctionSubstitution(OutputContext outputContext,final V
 	}else if(vcdID instanceof VCSimulationDataIdentifierOldStyle){
 		simResampleInfoProvider = ((VCSimulationDataIdentifierOldStyle)vcdID);
 	}else if(vcdID instanceof ExternalDataIdentifier){
-		simResampleInfoProvider =
-			new SimResampleInfoProvider() {
-				public int getJobIndex() {
-					return 0;
-				}
-				public KeyValue getSimulationKey() {
-					return ((ExternalDataIdentifier)vcdID).getKey();
-				}
-				public boolean isParameterScanType() {
-					return true;
-				}
-				public String getID() {
-					return ((ExternalDataIdentifier)vcdID).getID();
-				}
-				public User getOwner() {
-					return ((ExternalDataIdentifier)vcdID).getOwner();
-				}
-		};
+		simResampleInfoProvider = ((ExternalDataIdentifier)vcdID);
 	}else{
 		return origExpression;
 	}	
@@ -2102,11 +2062,11 @@ private Expression fieldFunctionSubstitution(OutputContext outputContext,final V
 //					vcsdID.getID()+
 //					FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldfuncArgumentsArr[i])
 //				);
-			File resampledFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
-				SimulationData.createCanonicalResampleFileName(
-					simResampleInfoProvider, fieldfuncArgumentsArr[i]));
-			resampledFieldDatas[i] = DataSet.fetchSimData(fieldfuncArgumentsArr[i].getVariableName(),
-					resampledFile);
+//			File resampledFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
+//				SimulationData.createCanonicalResampleFileName(
+//					simResampleInfoProvider, fieldfuncArgumentsArr[i]));
+			File resampledFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, fieldfuncArgumentsArr[i]);
+			resampledFieldDatas[i] = DataSet.fetchSimData(fieldfuncArgumentsArr[i].getVariableName(),resampledFile);
 		}
 //	}
 	
@@ -3276,7 +3236,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
-			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<END>>");
 		}
 		if(cacheTable0 != null){
@@ -3473,7 +3433,7 @@ public void writeFieldFunctionData(
 		CartesianMesh newMesh,
 		SimResampleInfoProvider simResampleInfoProvider,
 		int simResampleMembraneDataLength,
-		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException {
+		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException, IOException {
 	
 	if(	handleExistingResampleMode != FVSolver.HESM_KEEP_AND_CONTINUE &&
 		handleExistingResampleMode != FVSolver.HESM_OVERWRITE_AND_CONTINUE &&
@@ -3490,9 +3450,15 @@ public void writeFieldFunctionData(
 	HashMap<FieldDataIdentifierSpec, Boolean> bFieldDataResample = new HashMap<FieldDataIdentifierSpec, Boolean>();
 	for (int i = 0; i < argFieldDataIDSpecs.length; i ++) {
 		if (!uniqueFieldDataIDSpecAndFileH.containsKey(argFieldDataIDSpecs[i])){
-			File newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
-					SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,
-							argFieldDataIDSpecs[i].getFieldFuncArgs()));
+			File newResampledFieldDataFile = null;
+			try{
+				newResampledFieldDataFile = ((SimulationData)getVCData(simResampleInfoProvider)).getFieldDataFile(simResampleInfoProvider, argFieldDataIDSpecs[i].getFieldFuncArgs());
+			}catch(FileNotFoundException e){
+				e.printStackTrace();
+				//use the original way
+				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
+				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,argFieldDataIDSpecs[i].getFieldFuncArgs()));
+			}
 			if (handleExistingResampleMode == FVSolver.HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
 				throw new RuntimeException("Resample Error: mode not allow overwrite or ignore of " +
 						"existing file\n" + newResampledFieldDataFile.getAbsolutePath());
