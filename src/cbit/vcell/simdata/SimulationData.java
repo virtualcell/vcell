@@ -893,7 +893,7 @@ public synchronized boolean getParticleDataExists() throws DataAccessException {
  */
 private synchronized File getParticleDataFile(double time) throws DataAccessException {
 	File simFile = getPDEDataFile(time);
-	File particleFile = new File(simFile.getPath() + PARTICLE_DATA_EXTENSION);
+	File particleFile = amplistorHelper.getFile(new File(simFile.getPath() + PARTICLE_DATA_EXTENSION).getAbsolutePath());//new File(simFile.getPath() + PARTICLE_DATA_EXTENSION);
 	if (particleFile.exists()){
 		return particleFile;
 	}else{
