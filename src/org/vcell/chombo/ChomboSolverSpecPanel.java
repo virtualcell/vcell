@@ -128,6 +128,11 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		maxBoxSizeComboBox.addItem(new Integer(32));
 		maxBoxSizeComboBox.addItem(new Integer(64));
 		maxBoxSizeComboBox.addItem(new Integer(128));
+		maxBoxSizeComboBox.addItem(new Integer(256));
+		maxBoxSizeComboBox.addItem(new Integer(512));
+		maxBoxSizeComboBox.addItem(new Integer(1024));
+		maxBoxSizeComboBox.addItem(new Integer(2048));
+		maxBoxSizeComboBox.addItem(new Integer(4096));
 		
 		fillRatioTextField = new JTextField(10);
 		fillRatioTextField.addFocusListener(ivjEventHandler);
