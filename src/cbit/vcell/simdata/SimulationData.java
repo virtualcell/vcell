@@ -25,9 +25,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -38,13 +36,8 @@ import java.util.zip.ZipFile;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.Origin;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.Range;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
@@ -65,7 +58,6 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -200,6 +192,9 @@ public class SimulationData extends VCData {
 //			File file = new File(userDirectory,SimulationData.createCanonicalSimLogFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
 //			xferAmplistor(file);
 //			return file;
+		}
+		public File getSmoldynOutputFile(int timeIndex){
+			return getFile(SimulationData.createCanonicalSmoldynOutputFileName(((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getSimulationKey(), ((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getJobIndex(), timeIndex));
 		}
 		public File getMeshMetricsFile(){
 			return getFile(SimulationData.createCanonicalMeshMetricsFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
@@ -890,7 +885,6 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 		return null;
 	}
 }
-
 
 /**
  * This method was created by a SmartGuide.
@@ -1733,6 +1727,15 @@ public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int job
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
 	SimDataConstants.LOGFILE_EXTENSION;
 }
+public static String createCanonicalSmoldynOutputFileName(KeyValue fieldDataKey,int jobIndex,int timeIndex){
+	if(timeIndex == 0){
+		throw new IllegalArgumentException("smoldyn does not have a 0 time index");
+	}
+	return
+	createSimIDWithJobIndex(fieldDataKey,jobIndex,false)+
+	"_"+(timeIndex<10?"0":"")+(timeIndex<100?"0":"")+timeIndex+
+	SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION;
+}
 
 public static String createCanonicalPostProcessFileName(VCDataIdentifier vcdID){
 	return vcdID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION;
@@ -1807,5 +1810,8 @@ public File getSubdomainFile(){
 }
 public File getLogFile(){
 	return amplistorHelper.getLogFile();
+}
+public File getSmoldynOutputFile(int timeIndex){
+	return amplistorHelper.getSmoldynOutputFile(timeIndex);
 }
 }
