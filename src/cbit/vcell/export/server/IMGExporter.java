@@ -63,7 +63,7 @@ import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -194,17 +194,30 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 	final File visitSmoldynScriptTempDir =
 		new File(PropertyLoader.getRequiredProperty(
 				PropertyLoader.tempDirProperty));
-	File visitUserDataDir =
-		new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),user.getName());
-	if(!(new File(visitUserDataDir,vcdID.getID()+SimDataConstants.LOGFILE_EXTENSION)).exists()){
-		System.out.println("couldn't find primary data dir log file "+visitUserDataDir.getAbsolutePath());
-		visitUserDataDir =
-			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty),user.getName());
-		if(!(new File(visitUserDataDir,vcdID.getID()+SimDataConstants.LOGFILE_EXTENSION)).exists()){
-			throw new Exception("Couldn't find lsecondary data dir og file "+visitUserDataDir.getAbsolutePath());
-		}
+
+	//-----Get all data (from archive if necessary)
+	SimulationData simData = new SimulationData(vcdID,
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
+			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
+			PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
+		
+	File logFile = simData.getLogFile();
+	if(!logFile.exists()){
+		throw new Exception("ImgExport particle, Couldn't find Log file "+logFile.getAbsolutePath());
 	}
-	File visitDataPathFragment = new File(visitUserDataDir,vcdID.getID()+"_");
+	simData.getMesh();//gets mesh and meshmetrics files from archive if necessary
+	simData.getSubdomainFile();
+	simData.getFunctionsFile(false);
+	int timeIndex = 1;//smoldyn always begins at timeindex 1
+	while(true){
+		if(!simData.getSmoldynOutputFile(timeIndex).exists()){//get smoldynOutput files
+			break;
+		}
+		timeIndex++;
+	}
+	//-----
+	
+	File visitDataPathFragment = new File(logFile.getParent(),vcdID.getID()+"_");
 	System.out.println(visitExeLocation.getAbsolutePath());
 	System.out.println(visitSmoldynScriptLocation.getAbsolutePath());
 	System.out.println(visitSmoldynScriptTempDir.getAbsolutePath());
