@@ -1893,17 +1893,25 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		Arrays.fill(phases, -1);
 		phases[numSubVolumes - 1] = 0;
 		int[] numAssigned = new int[1];
-		assignPhases(resampledGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
-		// validate phase
-		boolean bPhaseBad = false;
-		for (int i = 0; i < phases.length; ++ i)
+		boolean bHasRefinement = chomboSolverSpec.getNumRefinementLevels() > 0;
+		// if there are mesh refinement, immediately use finer 
+	  // since usually the coarsest is bad.
+		boolean bPhaseBad = bHasRefinement;
+		if (!bHasRefinement)
 		{
-			if (phases[i] == -1)
+			assignPhases(resampledGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
+			
+			// validate phase
+			for (int i = 0; i < phases.length; ++ i)
 			{
-				bPhaseBad = true;
-				break;
+				if (phases[i] == -1)
+				{
+					bPhaseBad = true;
+					break;
+				}
 			}
 		}
+
 		if (bPhaseBad)
 		{
 			Geometry finerGeometry = (Geometry) BeanUtils.cloneSerializable(resampledGeometry);
