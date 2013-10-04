@@ -274,8 +274,12 @@ public class SimulationData extends VCData {
 				}catch(Exception e){
 					if(e instanceof FileNotFoundException){
 						amplistorNotfoundSet.add(file.getName());
+						if(getVCDataiDataIdentifier() != null && getVCDataiDataIdentifier().getOwner() != null){
+							System.out.println("FileNotFoundException: SimulationData.AmplistorHelper.xferAmplistor(...) "+(getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName())+".  This may not be an error.");
+						}
+					}else{
+						e.printStackTrace();
 					}
-					e.printStackTrace();
 				}
 			}			
 		}
