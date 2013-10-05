@@ -499,8 +499,8 @@ public class PDEDataViewer extends DataViewer {
 			return new MembraneDataInfo(membraneIndex,pdeDataContext.getCartesianMesh(),simulationModelInfo);
 		}
 		public boolean isDefined(int dataIndex){
-			double sol = pdeDataContext.getDataValues()[dataIndex];
 			if (pdeDataContext.getCartesianMesh().isChomboMesh()) { //Chombo Hack
+				double sol = pdeDataContext.getDataValues()[dataIndex];
 				return sol != SimDataConstants.BASEFAB_REAL_SETVAL && !Double.isNaN(sol);
 			}
 			return isDefined(pdeDataContext.getDataIdentifier(),dataIndex);
