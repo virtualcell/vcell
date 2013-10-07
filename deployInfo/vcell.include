@@ -56,19 +56,19 @@ vcellservice_jmxhost=GENERATED
 vcellservice_jmxport=GENERATED
 vcellservice_processLabel=${common_site}-master
 
-vcellservice_memoryMB=3000
+vcellservice_memoryMB=5000
 
 #--------------------------------------
 # solver preProcessor "JavaPreprocessor64"
 #--------------------------------------
 preprocessor_mainclass=GENERATED
-preprocessor_memoryMB=500
+preprocessor_memoryMB=5000
 
 #--------------------------------------
 # solver postProcessor "JavaPostprocessor64"
 #--------------------------------------
 postprocessor_mainclass=GENERATED
-postprocessor_memoryMB=500
+postprocessor_memoryMB=5000
 
 #--------------------------------------
 # Java Solver "JavaSimExe64"
