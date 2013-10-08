@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.sim;
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -29,6 +30,7 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverListener;
@@ -88,6 +90,7 @@ public class SolverPreprocessor  {
 			File simulationFile = new File(args[0]);
 			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
 			File userdir = new File(args[1]);
+			recoverLastSimulationData(simTask,userdir);
 			final String hostName = null;
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
@@ -189,5 +192,46 @@ daemonThread.start();
 		}
 	}
 
+	private static void recoverLastSimulationData(SimulationTask simTask,File userDir){
+		String amplistor_VCell_Users_RootPath = PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null);
+		if(amplistor_VCell_Users_RootPath != null){
+			try{
+				long startTime = System.currentTimeMillis();
+				if(SimulationData.AmplistorHelper.hasLogFileAnywhere(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser(),simTask.getSimulationJob().getJobIndex(), userDir)){
+					//Get back all data since we are "restarting" a simulation
+					ArrayList<String> amplistorList = SimulationData.AmplistorHelper.getAllMatchingSimData(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser());
+					if(amplistorList.size() > 0){
+//						Collections.sort(amplistorList, new Comparator<String> () {
+//						    public int compare(String a, String b) {
+//						        return a.compareToIgnoreCase(b);
+//						    }
+//						});
+//						//remove all sim zip file names except the last (latest) sim zip file
+//						while(true){
+//							boolean bDeleted = false;
+//							for (int i = 0; i < amplistorList.size(); i++) {
+//								if(amplistorList.get(i).endsWith(SimDataConstants.ZIPFILE_EXTENSION)){
+//									if(i < (amplistorList.size()-1) && amplistorList.get(i+1).endsWith(SimDataConstants.ZIPFILE_EXTENSION)){
+//										amplistorList.remove(i);
+//										bDeleted = true;
+//										break;
+//									}
+//								}
+//							}
+//							if(!bDeleted){
+//								break;
+//							}
+//						}
+						SimulationData.AmplistorHelper.downloadFiles(amplistor_VCell_Users_RootPath, amplistorList,simTask.getUser(), userDir);
+					}
+				}
+				System.out.println("amplistor preprocess data restore time="+((System.currentTimeMillis()-startTime)/1000)+" seconds");
+			}catch(Exception e){
+				//ignore, try to run sim
+				e.printStackTrace();
+			}
+		}
+
+	}
 
 }
