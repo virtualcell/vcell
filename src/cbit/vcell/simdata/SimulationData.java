@@ -21,13 +21,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -37,12 +37,16 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.jdom.Document;
+import org.jdom.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -73,7 +77,7 @@ import cbit.vcell.solvers.FunctionFileGenerator;
  * This type was created in VisualAge.
  */
 public class SimulationData extends VCData {
-	private static class AmplistorHelper{
+	public static class AmplistorHelper{
 		private String amplistorVCellUsersRootPath;
 		private static final String AMPLISTOR_CUSTOM_META_PREFIX = "X-Ampli-Custom-Meta-";
 
@@ -166,6 +170,108 @@ public class SimulationData extends VCData {
 			}
 
 		}
+		public static boolean hasLogFileAnywhere(String amplistorAllVCellUsersRootPath,KeyValue simKey,User user,int jobIndex,File destinationUserDir) throws Exception{
+			HttpURLConnection urlCon = null;
+			try{
+				String simLogFileName = SimulationData.createCanonicalSimLogFileName(simKey, jobIndex, false);
+				File logfile = new File(destinationUserDir,simLogFileName);
+				if(logfile.exists()){
+					return true;
+				}
+				String urlStr = amplistorAllVCellUsersRootPath+"/"+user.getName()+"/"+simLogFileName;
+				urlCon = createGETConnection(urlStr);
+				urlCon.setRequestProperty("Accept","application/xml");
+				int responseCode = urlCon.getResponseCode();
+				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
+					return false;
+				}
+//				if(responseCode == HttpURLConnection.HTTP_NO_CONTENT){
+//					return null;
+//				}
+				if(responseCode != HttpURLConnection.HTTP_OK){
+					throw new Exception("URL connection "+urlStr+" not OK, HTTP code="+responseCode);
+				}
+				return true;
+			}finally{
+				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
+			}
+		}
+		public static void downloadFiles(String amplistorAllVCellUsersRootPath,ArrayList<String> fileNames,User user,File destinationUserDir) throws Exception{
+			String amplistorUserPath = amplistorAllVCellUsersRootPath+"/"+user.getName();
+			for(String fileName:fileNames){
+				File desinationFile = new File(destinationUserDir,fileName);
+				if(!desinationFile.exists()){
+					xferAmplistorData(amplistorUserPath+"/"+fileName,desinationFile);
+				}
+
+			}
+		}
+		public static ArrayList<String> getAllMatchingSimData(String amplistorAllVCellUsersRootPath,KeyValue simKey,User user) throws FileNotFoundException,Exception{
+			//amplistor has limit on how many list entries from object with children it can return at 1 time
+			//this method gets max num at a time and saves name of last child then
+			//gets next batch starting from the last found child until there are no more
+			//(this function built into amplistor using "marker" parameter)
+			ArrayList<String> matchedFileNames = new ArrayList<String>();
+			String marker = null;
+			String match = Simulation.createSimulationID(simKey);
+			String amplistorUserPath = amplistorAllVCellUsersRootPath+"/"+user.getName();
+			boolean bFinished = false;
+			while(true){
+				Document responseDoc = getXMLDirList(amplistorUserPath+(marker!=null?"?marker="+marker+"&limit=1000":""));
+				if(responseDoc != null){
+					List<Element> dirEntryElements = responseDoc.getRootElement().getChildren();
+					for(Element dirEntry:dirEntryElements){
+						String fileName = dirEntry.getText();
+						if(fileName.equals(marker)){
+							if(dirEntryElements.size() == 1){
+								bFinished = true;
+								break;
+							}
+							continue;
+						}
+						marker = fileName;
+						if(fileName.startsWith(match)){
+							matchedFileNames.add(fileName);
+						}
+					}
+					if(bFinished){
+						break;
+					}
+				}else{
+					break;
+				}
+			}
+			return matchedFileNames;
+		}
+		private static Document getXMLDirList(String urlStr) throws Exception{
+			HttpURLConnection urlCon = null;
+			try{
+				urlCon = createGETConnection(urlStr);
+				urlCon.setRequestProperty("Accept","application/xml");
+				int responseCode = urlCon.getResponseCode();
+				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
+					throw new FileNotFoundException();
+				}
+				if(responseCode == HttpURLConnection.HTTP_NO_CONTENT){
+					return null;
+				}
+				if(responseCode != HttpURLConnection.HTTP_OK){
+					throw new Exception("URL connection "+urlStr+" not OK, HTTP code="+responseCode);
+				}
+				//Get xml of response
+				BufferedReader in = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
+				String inputLine;
+				StringBuffer response = new StringBuffer();
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+				return XmlUtil.stringToXML(response.toString(), null);
+			}finally{
+				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
+			}
+		}
+
 		public boolean isNonSpatial(){
 			return bNonSpatial;
 		}
