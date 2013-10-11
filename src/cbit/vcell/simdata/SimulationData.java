@@ -10,7 +10,6 @@
 
 package cbit.vcell.simdata;
 
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -79,7 +78,7 @@ public class SimulationData extends VCData {
 	public static class AmplistorHelper{
 		private String amplistorVCellUsersRootPath;
 		private static final String AMPLISTOR_CUSTOM_META_PREFIX = "X-Ampli-Custom-Meta-";
-
+		public static final String CUSTOM_FILE_MODIFICATION_DATE = AMPLISTOR_CUSTOM_META_PREFIX+"modification-date";
 		private static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
 		private static final String RFC1123_PATTERN = "EEE, dd MMM yyyyy HH:mm:ss z";
 		private static final DateFormat rfc1123Format = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
@@ -399,7 +398,6 @@ public class SimulationData extends VCData {
 			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
 			urlCon.setConnectTimeout(30*1000);
 			urlCon.setReadTimeout(30*1000);
-//			System.out.println(urlCon.getConnectTimeout()+" "+urlCon.getReadTimeout());
 			return urlCon;
 		}
 		private static void xferAmplistorData(String urlStr,File destinationFile) throws IOException,FileNotFoundException{
@@ -408,7 +406,6 @@ public class SimulationData extends VCData {
 			try{
 				urlCon = createGETConnection(urlStr);
 				int responseCode = urlCon.getResponseCode();
-				//HttpURLConnection.HTTP_NOT_FOUND
 				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
 					throw new FileNotFoundException();
 				}
@@ -416,7 +413,6 @@ public class SimulationData extends VCData {
 					return;
 				}
 				String xAmpliSize = urlCon.getHeaderField("X-Ampli-Size");
-//				System.out.println(xAmpliSize);
 				long contentLength = (xAmpliSize==null?131072:Long.parseLong(xAmpliSize));
 				BufferedInputStream bis = new BufferedInputStream(urlCon.getInputStream());
 				byte[] tempBuffer = new byte[(int)Math.min(contentLength, Math.pow(8, 7))];
@@ -429,6 +425,7 @@ public class SimulationData extends VCData {
 		        	bos.write(tempBuffer,0,numread);
 		        }
 		        bos.flush();
+		        restoreFileDates(urlCon.getHeaderFields(), destinationFile);
 			}finally{
 				if(bos!=null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
 				if(urlCon!=null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
@@ -437,7 +434,41 @@ public class SimulationData extends VCData {
 		private static String getRFC1123FormattedDate(){
 			return rfc1123Format.format(new Date());
 		}
-
+		private static void restoreFileDates(Map<String, List<String>> headerFields,File destinationFile){
+			try{
+				List<String> modificationMetaData = headerFields.get(CUSTOM_FILE_MODIFICATION_DATE);
+				if(modificationMetaData != null && modificationMetaData.size() == 1){
+					Date customModificationDate = AmplistorHelper.convertDateMetaData(modificationMetaData.get(0));
+					destinationFile.setLastModified(customModificationDate.getTime());
+				}
+			}catch(Exception e){
+				//ignore
+				e.printStackTrace();
+			}
+		}
+		private static Date convertDateMetaData(String dateLong) throws Exception{
+			if(dateLong.indexOf('"') != -1){//get rid of quotes
+				if(dateLong.charAt(0)=='"' && dateLong.charAt(dateLong.length()-1)=='"'){
+					dateLong = dateLong.substring(1, dateLong.length()-1);
+				}else{
+					throw new Exception("Unexpected quotes in date string '"+dateLong+"'");
+				}
+			}
+			int dotIndex = dateLong.indexOf('.');
+			Date date = null;
+			if(dotIndex != -1){
+				//parse fractional seconds and convert to milliseconds
+				String beforeDot = dateLong.substring(0,dotIndex);
+				String afterDot = dateLong.substring(dotIndex,dateLong.length());
+				double secFrac = (afterDot.equals(".")?0.0:Double.parseDouble(afterDot));
+				afterDot = ""+(int)(secFrac*1000);
+				afterDot = (afterDot.length()<2?"0":"")+(afterDot.length()<3?"0":"")+afterDot;
+				date = new Date(Long.parseLong(beforeDot+afterDot));
+			}else{
+				date = new Date(Long.parseLong(dateLong+"000"));//add 000 milisecs
+			}
+			return date;
+		}
 	}
 	
 	private final static long SizeInBytes = 2000;  // a guess
