@@ -229,10 +229,9 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		DOMAIN_ORIGIN,
 		DISTANCE_MAP,
 		FILL_RATIO,
-		REFINEMENT_ROI,
 		MAX_BOX_SIZE,
 		SUBDOMAINS,
-		REFINEMENT_RATIOS,
+		REFINEMENTS,
 		CHOMBO_SPEC_END,
 	}
 
@@ -2018,18 +2017,15 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		
 		printWriter.println(FVInputFileKeyword.MAX_BOX_SIZE + " " + chomboSolverSpec.getMaxBoxSize());
 		printWriter.println(FVInputFileKeyword.FILL_RATIO + " " + chomboSolverSpec.getFillRatio());
-		if (chomboSolverSpec.getRefinementRoiExpression() != null)
-		{
-			printWriter.println(FVInputFileKeyword.REFINEMENT_ROI + " " + chomboSolverSpec.getRefinementRoiExpression().infix() + ";");
-		}
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();
-		printWriter.print(FVInputFileKeyword.REFINEMENT_RATIOS + " " + (numLevels + 1));
+		printWriter.println(FVInputFileKeyword.REFINEMENTS + " " + (numLevels + 1));
 		RefinementLevel rfl  = null;
 		for (int i = 0; i < numLevels; i ++) {		
 			rfl = chomboSolverSpec.getRefinementLevel(i);
-			printWriter.print(" " + rfl.getRefineRatio());
+			printWriter.println(rfl.getRefineRatio() 
+					+ (rfl.getRoiExpression() == null ? "" : " " + rfl.getRoiExpression().infix()  +";"));
 		}
-		printWriter.println(" 2"); // write last refinement ratio, fake	
+		printWriter.println("2"); // write last refinement ratio, fake	
 		
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
 		printWriter.println();

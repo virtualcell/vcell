@@ -205,13 +205,13 @@ private void displayMesh() {
 						getJLabelMeshRefinement().setText(refinementText);
 						labelRefinementRoiTitle.setVisible(true);
 						labelRefinementRoi.setVisible(true);
-						if (chomboSolverSpec.getRefinementRoiExpression() == null)
+						if (chomboSolverSpec.hasRefinementRoi())
 						{
-							labelRefinementRoi.setText("All membrane elements");
+							labelRefinementRoi.setText(chomboSolverSpec.getRefinementRoiDisplayLable());
 						}
 						else
 						{
-							labelRefinementRoi.setText(chomboSolverSpec.getRefinementRoiExpression().infix());
+							labelRefinementRoi.setText("All membrane elements");
 						}
 					} else {
 						labelMeshRefinementTitle.setVisible(false);
@@ -902,13 +902,14 @@ private void initialize() {
 		constraints.gridx = 0; constraints.gridy = gridy;
 		constraints.anchor = java.awt.GridBagConstraints.EAST;
 		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
-		labelRefinementRoiTitle = new JLabel("Refinement ROI:");
+		labelRefinementRoiTitle = new JLabel("Refinement ROI(s):");
 		add(labelRefinementRoiTitle, constraints);
 		
 		constraints = new java.awt.GridBagConstraints();
-		constraints.gridx = 1; constraintsJLabelMesh.gridy = gridy;
+		constraints.gridx = 1; 
+		constraintsJLabelMesh.gridy = gridy;
 		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraints.gridwidth = 2;
+		constraints.gridwidth = 3;
 		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getRefinementRoi(), constraints);
 
