@@ -6230,24 +6230,25 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 		{
 			fillRatio = Double.parseDouble(fillRatioElement.getText());
 		}
-		Element refinementRoi = element.getChild(XMLTags.RefinementROITag, vcNamespace);
-		String roiExp = null;
-		if (refinementRoi != null)
-		{
-			roiExp = refinementRoi.getText();
-		}
-		ArrayList<RefinementLevel> refineLevelList = new ArrayList<RefinementLevel>();
-		Element meshRefineElement = element.getChild(XMLTags.MeshRefinementTag, vcNamespace);		
-		if (meshRefineElement != null) {
-			List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
-			for (Element levelElement : levelElementList) {
-				String ratio = levelElement.getAttributeValue(XMLTags.RefineRatioAttrTag);
-				RefinementLevel rfl = new RefinementLevel(Integer.parseInt(ratio));
-				refineLevelList.add(rfl);
-			}
-		}
+		
 		try {
-			return new ChomboSolverSpec(maxBoxSize, fillRatio, roiExp, refineLevelList);
+			ArrayList<RefinementLevel> refineLevelList = new ArrayList<RefinementLevel>();
+			Element meshRefineElement = element.getChild(XMLTags.MeshRefinementTag, vcNamespace);		
+			if (meshRefineElement != null) {
+				List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
+				for (Element levelElement : levelElementList) {
+					String ratio = levelElement.getAttributeValue(XMLTags.RefineRatioAttrTag);
+					Element roi = levelElement.getChild(XMLTags.ROIExpressionTag, vcNamespace);
+					String roiExp = null;
+					if (roi != null)
+					{
+						roiExp = roi.getText();
+					}
+					RefinementLevel rfl = new RefinementLevel(Integer.parseInt(ratio), roiExp);
+					refineLevelList.add(rfl);
+				}
+			}
+			return new ChomboSolverSpec(maxBoxSize, fillRatio, refineLevelList);
 		} catch (ExpressionException e) {
 			throw new XmlParseException(e);
 		}

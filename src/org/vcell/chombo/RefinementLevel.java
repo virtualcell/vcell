@@ -1,39 +1,39 @@
 package org.vcell.chombo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 
 public class RefinementLevel implements Serializable, Matchable {
 	private int refineRatio = 2;
-
-	private ArrayList<ChomboBox> boxList = new ArrayList<ChomboBox>();
+	private Expression roiExpression = null;
 	
 	public RefinementLevel() {
 	}
 	
-	public RefinementLevel(int ratio) {
+	public RefinementLevel(int ratio, String roi) throws ExpressionException {
 		refineRatio  = ratio;
+		setRoiExpression(roi);
 	}
 	
 	public RefinementLevel(CommentStringTokenizer tokens) throws DataAccessException {
 		readVCML(tokens);
 	}
-	
-	private void addBox(ChomboBox b) {
-		boxList.add(b);		
-	}
-	
-	private void deleteBox(int index) {
-		if (index >= boxList.size()) {
-			throw new ArrayIndexOutOfBoundsException("RefinementLevel::set(int, Box) : " + index + " " + boxList.size());
+
+	public RefinementLevel(RefinementLevel rl) {
+		refineRatio = rl.refineRatio;
+		if (rl.roiExpression != null)
+		{
+			roiExpression = new Expression(rl.roiExpression);
 		}
-		boxList.remove(index);
 	}
 
 	public int getRefineRatio() {
@@ -42,25 +42,6 @@ public class RefinementLevel implements Serializable, Matchable {
 	
 	public void setRefineRatio(int refineRatio) {
 		this.refineRatio = refineRatio;
-	}
-
-	private int getNumBoxes() {
-		return boxList.size();
-	}
-	
-	private ChomboBox getBox(int index) {
-		if (index >= boxList.size()) {
-			throw new ArrayIndexOutOfBoundsException("RefinementLevel::set(int, Box) : " + index + " " + boxList.size());
-		}
-		return boxList.get(index);
-	}
-	
-	private void set(int index, ChomboBox b) {
-		if (index >= boxList.size()) {
-			throw new ArrayIndexOutOfBoundsException("RefinementLevel::set(int, Box) : " + index + " " + boxList.size());
-		} 
-
-		boxList.set(index, b);
 	}
 	
 	public String getVCML() {
@@ -73,9 +54,9 @@ public class RefinementLevel implements Serializable, Matchable {
 
 		buffer.append(VCML.RefinementLevel + " " + VCML.BeginBlock + "\n");
 		buffer.append(VCML.RefineRatio + " " + refineRatio + "\n");
-		for (ChomboBox box : boxList) 
+		if (roiExpression != null)
 		{
-			buffer.append(box.getVCML());
+			buffer.append("\t" + VCML.ROIExpression + " " + roiExpression.infix() + ";\n");
 		}
 
 		buffer.append(VCML.EndBlock+"\n");
@@ -105,17 +86,23 @@ public class RefinementLevel implements Serializable, Matchable {
 				if (token.equalsIgnoreCase(VCML.EndBlock)) {
 					break;
 				}
-				if (token.equalsIgnoreCase(VCML.RefineRatio)) {
+				else if (token.equalsIgnoreCase(VCML.RefineRatio)) {
 					token = tokens.nextToken();
 					refineRatio = Integer.parseInt(token);
-					continue;
 				}
-				if (token.equalsIgnoreCase(VCML.ChomboBox)) {
-					ChomboBox cb = new ChomboBox(tokens);
-					boxList.add(cb);
-					continue;
+				else if (token.equalsIgnoreCase(VCML.ROIExpression))
+				{
+					token = tokens.readToSemicolon();
+					try {
+						setRoiExpression(token);
+					} catch (ExpressionException e) {
+						System.err.println("Invalid " + VCML.ROIExpression + ": " + token);
+					}
 				}
-				throw new DataAccessException("unexpected identifier " + token);
+				else
+				{
+					throw new DataAccessException("unexpected identifier " + token);
+				}
 			}
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);
@@ -134,14 +121,27 @@ public class RefinementLevel implements Serializable, Matchable {
 		if (rl.refineRatio != refineRatio) {
 			return false;
 		}
-		if (rl.getNumBoxes() != getNumBoxes()) {
+		if (!Compare.isEqualOrNull(roiExpression, rl.roiExpression))
+		{
 			return false;
-		}			
-		for (int boxIndex = 0; boxIndex < boxList.size(); boxIndex ++) {
-			if (!boxList.get(boxIndex).compareEqual(rl.boxList.get(boxIndex))) {
-				return false;
-			}
 		}
 		return true;
+	}
+	public Expression getRoiExpression() {
+		return roiExpression;
+	}
+
+	public void setRoiExpression(String roiExp) throws ExpressionException {
+		Expression exp = null;
+		if (roiExp != null)
+		{
+			roiExp = roiExp.trim();
+			if (roiExp.length() > 0)
+			{
+				exp = new Expression(roiExp);
+				exp.bindExpression(new SimpleSymbolTable(new String[] { "x", "y", "z" } ));
+			}
+		}
+		this.roiExpression = exp;
 	}
 }

@@ -268,6 +268,10 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		{
 			errorMessage = "Errors in Simulation: '" + simulation.getName() + "'!\n" + "Mesh sizes must be power of 2 for " + SolverDescription.Chombo.getDisplayLabel() + ".";
 		}
+		else
+		{
+			errorMessage = simulation.getSolverTaskDescription().getChomboSolverSpec().checkParamters();
+		}
 	} else {		
 		errorMessage = null;
 	}
