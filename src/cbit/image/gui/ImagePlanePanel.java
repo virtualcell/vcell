@@ -63,7 +63,7 @@ public class ImagePlanePanel extends javax.swing.JPanel {
 		@Override
 		public void stateChanged(ChangeEvent e) {
 			if(e.getSource() == getSlider()){
-				if(!getSlider().getValueIsAdjusting() && getImagePlaneMananager() != null){
+				if(/*!getSlider().getValueIsAdjusting() &&*/ getImagePlaneMananager() != null){
 					getImagePlaneMananager().setSlice(getSlider().getValue());
 				}else{
 					getSliceLabel().setText("Slice["+getSlider().getValue()+"]");
