@@ -296,7 +296,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int ANALYTIC_2D = 1;
 	final int ANALYTIC_3D = 2;
 	final int IMAGE_FILE = 3;
-	final int MESH_FILE = 3;
+	final int MESH_FILE = 4;
 	final int FROM_SCRATCH = 5;
 	final int CSGEOMETRY_3D = 6;
 	
