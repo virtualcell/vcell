@@ -11,6 +11,8 @@
 package cbit.vcell.client;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -18,9 +20,13 @@ import java.util.Vector;
 
 import javax.swing.ListSelectionModel;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.rmi.event.DataJobEvent;
@@ -36,12 +42,12 @@ import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:53:14 AM)
@@ -406,6 +412,143 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 		DialogUtils.showErrorDialog(getComponent(), e1.getMessage(), e1);
 	}
 
+}
+
+public static abstract class OpenModelInfoHolder{
+	public final SimulationInfo simInfo;
+	public final int jobIndex;
+	//public final boolean isTimeUniform;
+	public final boolean isCompartmental;
+	protected OpenModelInfoHolder(
+			SimulationInfo argSimInfo,
+			int argJobIndex,
+			//boolean argistu,
+			boolean argisc
+			){
+		simInfo = argSimInfo;
+		jobIndex = argJobIndex;
+		//isTimeUniform = argistu;
+		isCompartmental = argisc;
+		
+	}
+}
+public static class FDSimMathModelInfo extends OpenModelInfoHolder{
+	private Version version;
+	private MathDescription mathDescription;
+	public FDSimMathModelInfo(
+			Version version,
+			MathDescription mathDescription,
+			SimulationInfo argSI,
+			int jobIndex,
+			//boolean argistu,
+			boolean argisc
+			){
+		super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
+		this.version = version;
+		this.mathDescription = mathDescription;
+	}
+	public Version getMathModelVersion(){
+		return version;
+	}
+	public MathDescription getMathDescription(){
+		return mathDescription;
+	}
+}
+public static class FDSimBioModelInfo extends OpenModelInfoHolder{
+	private Version version;
+	private SimulationContext simulationContext;
+	public FDSimBioModelInfo(
+			Version version,
+			SimulationContext simulationContext,
+			SimulationInfo argSI,
+			int jobIndex,
+			//boolean argistu,
+			boolean argisc
+		){
+		super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
+		this.version = version;
+		this.simulationContext = simulationContext;
+	}
+	public Version getBioModelVersion(){
+		return version;
+	}
+	public SimulationContext getSimulationContext(){
+		return simulationContext;
+	}
+}
+
+public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requester,RequestManager requestManager,boolean bIncludeSimulations,String title,boolean bExcludeCompartmental) throws UserCancelException,DataAccessException{
+	try {
+		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		OpenModelInfoHolder[] simInfoHolders = requestManager.getOpenDesktopDocumentInfos(bIncludeSimulations);
+		if(simInfoHolders == null || simInfoHolders.length == 0){
+			return null;
+		}
+		String[] colNames = null;
+		if(bIncludeSimulations){
+			colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
+		}else{
+			colNames = new String[] {"Model","Type","Application","Owner","Date"};
+		}
+		Vector<String[]> rowsV = new Vector<String[]>();
+		Vector<OpenModelInfoHolder> simInfoHolderV = new Vector<OpenModelInfoHolder>();
+		for(int i=0;i<simInfoHolders.length;i+= 1){
+			if(bExcludeCompartmental && simInfoHolders[i].isCompartmental){
+				continue;
+			}
+			String[] rows = new String[colNames.length];
+			int colIndex = 0;
+			if(simInfoHolders[i] instanceof FDSimMathModelInfo){
+				MathModelInfo mmInfo = null;
+				if(((FDSimMathModelInfo)simInfoHolders[i]).getMathModelVersion() != null){
+					mmInfo = requestManager.getDocumentManager().getMathModelInfo(
+							((FDSimMathModelInfo)simInfoHolders[i]).getMathModelVersion().getVersionKey());
+				}
+				if(bIncludeSimulations){
+					rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+					rows[colIndex++] = simInfoHolders[i].jobIndex+"";
+				}
+				rows[colIndex++] = (mmInfo==null?"New Document":mmInfo.getVersion().getName());
+				rows[colIndex++] = "MathModel";
+				rows[colIndex++] = "";
+				rows[colIndex++] = (simInfoHolders[i].simInfo==null?"never saved":simInfoHolders[i].simInfo.getOwner().getName());
+				rows[colIndex++] = (mmInfo==null?"never saved":mmInfo.getVersion().getDate().toString());
+				
+			}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
+				BioModelInfo bmInfo = null;
+				if(((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion() != null){
+					bmInfo = requestManager.getDocumentManager().getBioModelInfo(
+							((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion().getVersionKey());
+				}
+				if(bIncludeSimulations){
+					rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+					rows[colIndex++] = simInfoHolders[i].jobIndex+"";
+				}
+				rows[colIndex++] = (bmInfo==null?"New Document":bmInfo.getVersion().getName());
+				rows[colIndex++] = "BioModel";
+				rows[colIndex++] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContext().getName();
+				rows[colIndex++] = (simInfoHolders[i].simInfo==null?"never saved":simInfoHolders[i].simInfo.getOwner().getName());
+				rows[colIndex++] = (bmInfo==null?"never saved":bmInfo.getVersion().getDate().toString());
+			}
+			rowsV.add(rows);
+			simInfoHolderV.add(simInfoHolders[i]);
+		}
+		if(rowsV.size() == 0){
+			return null;
+		}
+		String[][] rows = new String[rowsV.size()][];
+		rowsV.copyInto(rows);
+		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
+				requester, title,
+				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
+		if(selectionIndexArr != null && selectionIndexArr.length > 0){
+			return simInfoHolderV.elementAt(selectionIndexArr[0]);//simInfoHolders[selectionIndexArr[0]];
+		}
+		throw UserCancelException.CANCEL_GENERIC;
+	} finally {
+		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+	}
 }
 
 }

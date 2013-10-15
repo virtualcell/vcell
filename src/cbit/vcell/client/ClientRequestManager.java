@@ -105,7 +105,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;

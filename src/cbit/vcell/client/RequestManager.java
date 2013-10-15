@@ -20,7 +20,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
-import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;

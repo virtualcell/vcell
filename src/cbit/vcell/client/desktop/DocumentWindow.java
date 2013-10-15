@@ -894,7 +894,7 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 
 
 private void startVirtualFRAP(){
-	VirtualFrapLoader.loadVFRAP(null, false);
+	VirtualFrapLoader.loadVFRAP(null, false,getWindowManager());
 }
 /**
  * Return the tool menu.

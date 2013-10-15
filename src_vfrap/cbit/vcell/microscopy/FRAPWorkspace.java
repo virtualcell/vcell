@@ -19,6 +19,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.DataProcessingOutput;
 
 public abstract class FRAPWorkspace 
 {
@@ -63,7 +64,16 @@ public abstract class FRAPWorkspace
 		
 		return newFrapStudy;
 	}
-	
+	public static FRAPStudy loadFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput,String selectedVariableName, Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	{
+		FRAPStudy newFrapStudy = new FRAPStudy();
+		FRAPData newFrapData = null;
+		newFrapStudy.setXmlFilename(null);
+		newFrapData = FRAPData.importFRAPDataFromDataProcessingOutput(dataProcessingOutput, selectedVariableName,maxIntensity, clientTaskStatusSupport);
+		newFrapStudy.setFrapData(newFrapData);
+		return newFrapStudy;
+	}
+
 	public static FRAPStudy loadFRAPDataFromMultipleFiles(File[] inputFiles, ClientTaskStatusSupport clientTaskStatusSupport, boolean isTimeSeries, double timeInterval) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
