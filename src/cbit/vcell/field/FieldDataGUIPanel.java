@@ -57,11 +57,11 @@ import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
-import cbit.vcell.client.FieldDataWindowManager.FDSimBioModelInfo;
-import cbit.vcell.client.FieldDataWindowManager.FDSimMathModelInfo;
-import cbit.vcell.client.FieldDataWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.TopLevelWindowManager.FDSimBioModelInfo;
+import cbit.vcell.client.TopLevelWindowManager.FDSimMathModelInfo;
+import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -990,7 +990,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 	try{
 		final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
-		final FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = fieldDataWindowManager.selectOpenModelsFromDesktop(this,true,"Select Simulation for Field Data");
+		final FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = fieldDataWindowManager.selectOpenModelsFromDesktop(this,fieldDataWindowManager.getRequestManager(),true,"Select Simulation for Field Data",true);
 		if(simInfoHolder == null){
 			PopupGenerator.showErrorDialog(this, "Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
 			return;
@@ -1679,7 +1679,7 @@ private JButton getJButtonCreateGeom() {
 								((FieldDataMainList)ppLastPathComp.getUserObject()).externalDataIdentifier;
 							
 							final OpenModelInfoHolder openModelInfoHolder =
-								fieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this, false,"Select BioModel or MathModel to receive new geometry");
+								fieldDataWindowManager.selectOpenModelsFromDesktop(FieldDataGUIPanel.this,fieldDataWindowManager.getRequestManager(),false,"Select BioModel or MathModel to receive new geometry",false);
 							if(openModelInfoHolder == null){
 								DialogUtils.showErrorDialog(FieldDataGUIPanel.this,
 										"Before proceeding, please open a Biomodel application or Mathmodel you wish to apply a new Field Data Geometry to");

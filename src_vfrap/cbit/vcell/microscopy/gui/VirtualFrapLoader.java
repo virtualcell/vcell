@@ -19,12 +19,14 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.solver.DataProcessingOutput;
 
 public class VirtualFrapLoader {
 	
@@ -59,7 +61,7 @@ public class VirtualFrapLoader {
     //the only one instance of the main frame 
     public static VirtualFrapMainFrame mf; 
 	//the function is called when activate in VCell or as standalone.
-	public static void loadVFRAP(final String[] args, final boolean bStandalone)
+	public static void loadVFRAP(final String[] args, final boolean bStandalone,final DocumentWindowManager documentWindowManager)
 	{
 		try { 
 			File wd = null;
@@ -137,7 +139,7 @@ public class VirtualFrapLoader {
 	            
 			    if(mf == null)
 			    {
-			    	mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace, bStandalone);
+			    	mf = new VirtualFrapMainFrame(localWorkspace, frapWorkspace, batchRunWorkspace, bStandalone,documentWindowManager);
 			    }
 //				System.out.println(mf.getLocation().x + "---"+mf.getLocation().y);
 				mf.setMainFrameTitle("");
@@ -183,6 +185,6 @@ public class VirtualFrapLoader {
         
 		RepaintManager.setCurrentManager(new VCellClient.CheckThreadViolationRepaintManager()); 
 
-		loadVFRAP(args, true);
+		loadVFRAP(args, true,null);
 	}
 }

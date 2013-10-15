@@ -55,6 +55,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.DocumentWindow;
@@ -425,7 +426,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 
 
 	// constructor
-	public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone)
+	public VirtualFrapMainFrame(LocalWorkspace localWorkspace, FRAPSingleWorkspace frapWorkspace, FRAPBatchRunWorkspace batchRunWorkspace, boolean bStandalone,DocumentWindowManager documentWindowManager)
 	{
 		super();
 		childWindowManager = new ChildWindowManager(this);
@@ -442,7 +443,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 			setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
 		}
 		//initialize components
-		initiateComponents();
+		initiateComponents(documentWindowManager);
 		SetupMenus();
 		enableSave(false);
 		System.out.println("current directory is:"+ localWorkspace.getDefaultWorkspaceDirectory());
@@ -491,7 +492,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 	/**
 	 * Initiation of the UI components that is shown in the main window
 	 */
-	protected void initiateComponents()
+	protected void initiateComponents(DocumentWindowManager documentWindowManager)
 	{
 		toolBar = new ToolBar();
 		toolBar.setNewAndRunButtonVisible(false);
@@ -522,7 +523,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 
 		frapStudyPanel.setLocalWorkspace(localWorkspace);
 		frapStudyPanel.setFRAPWorkspace(frapWorkspace);
-
+		frapStudyPanel.setDocumentWindowManager(documentWindowManager);
 		//add components to the main frame
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(toolBar, BorderLayout.NORTH);

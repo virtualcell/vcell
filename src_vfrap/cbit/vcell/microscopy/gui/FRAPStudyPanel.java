@@ -70,6 +70,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.client.data.OutputContext;
@@ -115,6 +116,7 @@ import cbit.vcell.microscopy.gui.estparamwizard.EstParams_TwoDiffComponentDescri
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypeDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_FileTypePanel;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFileDescriptor;
+import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_PostProcessingDataDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
 import cbit.vcell.opt.Parameter;
@@ -563,7 +565,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		loadROICursors();
 		initialize();
 	}
-	
+	private DocumentWindowManager documentWindowManager;
+	public void setDocumentWindowManager(DocumentWindowManager documentWindowManager){
+		this.documentWindowManager = documentWindowManager;	
+	}
+	public DocumentWindowManager getDocumentWindowManager(){
+		return documentWindowManager;
+	}
 	public void addUndoableEditListener(UndoableEditListener undoableEditListener){
 		undoableEditSupport.addUndoableEditListener(undoableEditListener);
 		getFRAPDataPanel().getOverlayEditorPanelJAI().setUndoableEditSupport(undoableEditSupport);
@@ -1751,50 +1759,46 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	        //actionListener to single file input radio button
 	        //this radio button affects the wizard series. especially on the next of file type and the back of summary 
 	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getSingleFileButton().addActionListener(new ActionListener(){
-	        	public void actionPerformed(ActionEvent e) 
-	        	{
-	        		if(e.getSource() instanceof JRadioButton)
-	        		{
-	        			if(((JRadioButton)e.getSource()).isSelected())
-	        			{
-	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
-	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
-	        			}
-	        			else
-	        			{
-	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
-	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
-	        			}
+	        	public void actionPerformed(ActionEvent e) {
+	        		if(((JRadioButton)e.getSource()).isSelected()){
+	        			fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
+	        			fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
 	        		}
 				}
-	        	
 	        });
 	        //actionListener to multiple file input radio button
 	        //this radio button affects the wizard series. especially on the next of file type and the back of summary
 	        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getMultipleFileButton().addActionListener(new ActionListener(){
-	        	public void actionPerformed(ActionEvent e) 
-	        	{
-	        		if(e.getSource() instanceof JRadioButton)
-	        		{
-	        			if(((JRadioButton)e.getSource()).isSelected())
-	        			{
-	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
-	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
-	        			}
-	        			else
-	        			{
-	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
-	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_SingleFileDescriptor.IDENTIFIER);
-	        			}
-	        		}
+	        	public void actionPerformed(ActionEvent e){
+        			if(((JRadioButton)e.getSource()).isSelected()){
+        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_MultiFileDescriptor.IDENTIFIER);
+        			}
 				}
-	        	
 	        });
+	        
+	        if(getDocumentWindowManager() != null){
+	        	LoadFRAPData_PostProcessingDataDescriptor postProcessingDataDescriptor = new LoadFRAPData_PostProcessingDataDescriptor();
+		        loadFRAPDataWizard.registerWizardPanel(LoadFRAPData_PostProcessingDataDescriptor.IDENTIFIER, postProcessingDataDescriptor);
+		        postProcessingDataDescriptor.setFrapWorkspace(getFrapWorkspace());
+		        postProcessingDataDescriptor.setDocumentWindowManager(getDocumentWindowManager());
+	
+		        //actionListener to multiple file input radio button
+		        //this radio button affects the wizard series. especially on the next of file type and the back of summary
+		        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getPostProcessDataButton().setVisible(true);
+		        ((LoadFRAPData_FileTypePanel)fTypeDescriptor.getPanelComponent()).getPostProcessDataButton().addActionListener(new ActionListener(){
+		        	public void actionPerformed(ActionEvent e){
+	        			if(((JRadioButton)e.getSource()).isSelected()){
+	        				fileTypeDescriptor.setNextPanelDescriptorID(LoadFRAPData_PostProcessingDataDescriptor.IDENTIFIER);
+	        				fileSummaryDescriptor.setBackPanelDescriptorID(LoadFRAPData_PostProcessingDataDescriptor.IDENTIFIER);
+	        			}
+					}
+		        });
+	        }
 		}
 		loadFRAPDataWizard.setCurrentPanel(LoadFRAPData_FileTypeDescriptor.IDENTIFIER);//always start from the first page
         return loadFRAPDataWizard;
 	}
-	
 	public Wizard getDefineROIWizard()
 	{
 		if(defineROIWizard == null)

@@ -363,7 +363,11 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		if(progressListener != null)
 		{
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
-		}
+		}		
+		return createFrapData(dataProcessingOutput, SimDataConstants.FLUOR_DATA_NAME,maxIntensity,progressListener);
+	}
+
+	public static FRAPData createFrapData(DataProcessingOutput dataProcessingOutput,String selectedVariableName,Double maxIntensity,ClientTaskStatusSupport progressListener) throws ImageException{
 		// construct 
 		double[] time = dataProcessingOutput.getTimes(); 
 		HashMap<String, Vector<SourceDataInfo>> varMaps = dataProcessingOutput.getDataGenerators();
@@ -405,11 +409,12 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		
 		ImageDataset imageDataSet = new ImageDataset(dataImages,time,sdInfo.get(0).getZSize());
 		FRAPData frapData = new FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-		
 		return frapData;
 	}
-
-	
+	public static FRAPData importFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput, String selectedVariableName,Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception{
+		FRAPData frapData = createFrapData(dataProcessingOutput, selectedVariableName, maxIntensity, progressListener);
+		return frapData;
+	}
 	
 	/**
 	 * Constructor for FRAPData.
