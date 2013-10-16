@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import java.awt.Dimension;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -16,7 +18,7 @@ import javax.swing.JTabbedPane;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.math.gui.MeshSpecificationPanel;
+import cbit.vcell.math.gui.MeshTabPanel;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.gui.MathOverridesPanel;
@@ -33,9 +35,9 @@ public class SimulationEditor extends JPanel {
 	private static final String TAB_MESH_TITLE = "Mesh";
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private MathOverridesPanel ivjMathOverridesPanel1 = null;
-	private MeshSpecificationPanel ivjMeshSpecificationPanel1 = null;
 	private SolverTaskDescriptionAdvancedPanel ivjSolverTaskDescriptionAdvancedPanel1 = null;
 	private Simulation fieldClonedSimulation = null;
+	private MeshTabPanel meshTabPanel;
 
 public SimulationEditor() {
 	super();
@@ -81,7 +83,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1 = new javax.swing.JTabbedPane();
 			ivjJTabbedPane1.setName("JTabbedPane1");
 			ivjJTabbedPane1.addTab(TAB_PARAMETERS_TITLE, getMathOverridesPanel1());
-			ivjJTabbedPane1.addTab(TAB_MESH_TITLE, getMeshSpecificationPanel1());
+			ivjJTabbedPane1.addTab(TAB_MESH_TITLE, getMeshTabPanel());
 			ivjJTabbedPane1.addTab(TAB_ADVANCED_TITLE, getSolverTaskDescriptionAdvancedPanel1());
 			// user code begin {1}
 			// user code end
@@ -122,11 +124,11 @@ private cbit.vcell.solver.ode.gui.MathOverridesPanel getMathOverridesPanel1() {
  * @return cbit.vcell.math.gui.MeshSpecificationPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.math.gui.MeshSpecificationPanel getMeshSpecificationPanel1() {
-	if (ivjMeshSpecificationPanel1 == null) {
+private MeshTabPanel getMeshTabPanel() {
+	if (meshTabPanel == null) {
 		try {
-			ivjMeshSpecificationPanel1 = new cbit.vcell.math.gui.MeshSpecificationPanel();
-			ivjMeshSpecificationPanel1.setName("MeshSpecificationPanel1");
+			meshTabPanel = new MeshTabPanel();
+			meshTabPanel.setName("MeshTabPanel");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -135,7 +137,7 @@ private cbit.vcell.math.gui.MeshSpecificationPanel getMeshSpecificationPanel1() 
 			handleException(ivjExc);
 		}
 	}
-	return ivjMeshSpecificationPanel1;
+	return meshTabPanel;
 }
 
 
@@ -193,7 +195,7 @@ private void initialize() {
 		// user code end
 		setName("SimulationEditor");
 		setLayout(new java.awt.BorderLayout());
-		setSize(547, 346);
+		setPreferredSize(new Dimension(547, 530));
 		add(getJTabbedPane1(), "Center");
 		initConnections();
 		connEtoC1();
@@ -247,7 +249,7 @@ public void prepareToEdit(Simulation simulation) {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
-		getMeshSpecificationPanel1().setSimulation(clonedSimulation);
+		getMeshTabPanel().setSimulation(clonedSimulation);
 		getSolverTaskDescriptionAdvancedPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		
 		boolean shouldMeshBeEnabled = false;
@@ -258,7 +260,7 @@ public void prepareToEdit(Simulation simulation) {
 				shouldMeshBeEnabled = true;
 		}
 		if (!shouldMeshBeEnabled) {
-			getJTabbedPane1().remove(getMeshSpecificationPanel1());
+			getJTabbedPane1().remove(getMeshTabPanel());
 		}
 		setClonedSimulation(clonedSimulation);
 	} catch (Throwable exc) {

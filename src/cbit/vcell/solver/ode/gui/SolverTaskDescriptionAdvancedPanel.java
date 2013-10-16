@@ -24,7 +24,6 @@ import javax.swing.JCheckBox;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.vcell.chombo.ChomboSolverSpecPanel;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -68,7 +67,6 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	private SundialsSolverOptionsPanel sundialsSolverOptionsPanel = null;
-	private ChomboSolverSpecPanel chomboSolverSpecPanel = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private CollapsiblePanel generalOptionsPanel;
@@ -735,16 +733,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
-		
-		gridy ++;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getChomboSolverSpecPanel(), gbc);		
-		
+				
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -856,7 +845,6 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			stopAtSpatiallyUniformPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
-			getChomboSolverSpecPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			updateSensitivityAnalysisComboBox();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
@@ -1094,16 +1082,5 @@ private void performSensitivityAnalysisCheckbox_actionPerformed() {
 public void showSensitivityAnalysisHelp(){
 	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help);
 }
-
-	private ChomboSolverSpecPanel getChomboSolverSpecPanel() {
-		if (chomboSolverSpecPanel == null) {
-			try {
-				chomboSolverSpecPanel = new ChomboSolverSpecPanel();
-			} catch (java.lang.Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return chomboSolverSpecPanel;
-	}
 
 }
