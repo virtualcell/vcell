@@ -201,7 +201,12 @@ public class SimulationData extends VCData {
 			for(String fileName:fileNames){
 				File desinationFile = new File(destinationUserDir,fileName);
 				if(!desinationFile.exists()){
-					xferAmplistorData(amplistorUserPath+"/"+fileName,desinationFile);
+					try {
+						xferAmplistorData(amplistorUserPath+"/"+fileName,desinationFile);
+					} catch (Exception e) {
+						e.printStackTrace();
+						//ignore
+					}
 				}
 
 			}
@@ -412,7 +417,7 @@ public class SimulationData extends VCData {
 					throw new FileNotFoundException();
 				}
 				if(responseCode != HttpURLConnection.HTTP_OK){
-					return;
+					throw new IOException("Unexpected HttpURLConnection.getResonseCode()="+responseCode+" for amplistor url="+urlStr);
 				}
 				String xAmpliSize = urlCon.getHeaderField("X-Ampli-Size");
 				long contentLength = (xAmpliSize==null?131072:Long.parseLong(xAmpliSize));
