@@ -28,6 +28,7 @@ import javax.swing.event.DocumentListener;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.GuiConstants;
@@ -39,7 +40,7 @@ import cbit.vcell.solver.Simulation;
  * Creation date: (1/9/01 8:56:10 AM)
  * @author: Jim Schaff
  */
-public class MeshSpecificationPanel extends javax.swing.JPanel {
+public class MeshSpecificationPanel extends CollapsiblePanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextField ivjGeometrySizeTextField = null;
 	private javax.swing.JLabel ivjXLabel = null;
@@ -50,7 +51,6 @@ public class MeshSpecificationPanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjZTextField = null;
 	private javax.swing.JLabel ivjGeometrySizeLabel = null;
 	private javax.swing.JLabel ivjMeshSizeLabel = null;
-	private javax.swing.JLabel ivjJLabelTitle = null;
 	private JCheckBox autoMeshSizeCheckBox = null;
 	private boolean bInProgress = false;
 	private JTextField totalSizeTextField = new JTextField();
@@ -95,7 +95,7 @@ class IvjEventHandler implements java.awt.event.FocusListener, ItemListener, Doc
  * MeshSpecificationPanel constructor comment.
  */
 public MeshSpecificationPanel() {
-	super();
+	super("Mesh Size");
 	initialize();
 }
 
@@ -201,31 +201,6 @@ private javax.swing.JTextField getGeometrySizeTextField() {
 		}
 	}
 	return ivjGeometrySizeTextField;
-}
-
-/**
- * Return the JLabelTitle property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabelTitle() {
-	if (ivjJLabelTitle == null) {
-		try {
-			ivjJLabelTitle = new javax.swing.JLabel();
-			ivjJLabelTitle.setName("JLabelTitle");
-			ivjJLabelTitle.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-			ivjJLabelTitle.setText("Specify mesh size:");
-			ivjJLabelTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-			ivjJLabelTitle.setFont(ivjJLabelTitle.getFont().deriveFont(java.awt.Font.BOLD));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabelTitle;
 }
 
 /**
@@ -475,7 +450,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MeshSpecificationPanel");
-		setLayout(new java.awt.GridBagLayout());
+		getContentPanel().setLayout(new java.awt.GridBagLayout());
 		setSize(324, 310);
 		setEnabled(false);
 		
@@ -486,20 +461,11 @@ private void initialize() {
 
 		// 0
 		int gridy = 0;
-		java.awt.GridBagConstraints constraintsJLabelTitle = new java.awt.GridBagConstraints();
-		constraintsJLabelTitle.gridx = 0; constraintsJLabelTitle.gridy = gridy;
-		constraintsJLabelTitle.gridwidth = 4;
-		constraintsJLabelTitle.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJLabelTitle(), constraintsJLabelTitle);
-
-		//
-		gridy ++;
 		java.awt.GridBagConstraints constraintsGeometrySizeLabel = new java.awt.GridBagConstraints();
 		constraintsGeometrySizeLabel.gridx = 0; constraintsGeometrySizeLabel.gridy = gridy;
 		constraintsGeometrySizeLabel.anchor = java.awt.GridBagConstraints.LINE_END;
 		constraintsGeometrySizeLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getGeometrySizeLabel(), constraintsGeometrySizeLabel);
+		getContentPanel().add(getGeometrySizeLabel(), constraintsGeometrySizeLabel);
 
 		java.awt.GridBagConstraints constraintsGeometrySizeTextField = new java.awt.GridBagConstraints();
 		constraintsGeometrySizeTextField.gridx = 2; constraintsGeometrySizeTextField.gridy = gridy;
@@ -507,7 +473,7 @@ private void initialize() {
 		constraintsGeometrySizeTextField.weightx = 1.0;
 		constraintsGeometrySizeTextField.gridwidth = 2;
 		constraintsGeometrySizeTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getGeometrySizeTextField(), constraintsGeometrySizeTextField);
+		getContentPanel().add(getGeometrySizeTextField(), constraintsGeometrySizeTextField);
 
 		//
 		gridy ++;
@@ -515,7 +481,7 @@ private void initialize() {
 		constraintsMeshSizeLabel.gridx = 0; constraintsMeshSizeLabel.gridy = gridy;
 		constraintsMeshSizeLabel.anchor = java.awt.GridBagConstraints.LINE_END;
 		constraintsMeshSizeLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getMeshSizeLabel(), constraintsMeshSizeLabel);
+		getContentPanel().add(getMeshSizeLabel(), constraintsMeshSizeLabel);
 		
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2; gbc.gridy = gridy;
@@ -524,14 +490,14 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new java.awt.Insets(4, 0, 4, 4);
 		gbc.anchor = GridBagConstraints.WEST;
-		add(getAutoMeshSizeCheckBox(), gbc);
+		getContentPanel().add(getAutoMeshSizeCheckBox(), gbc);
 		
 		//
 		gridy ++;
 		java.awt.GridBagConstraints constraintsXLabel = new java.awt.GridBagConstraints();
 		constraintsXLabel.gridx = 1; constraintsXLabel.gridy = gridy;
 		constraintsXLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getXLabel(), constraintsXLabel);
+		getContentPanel().add(getXLabel(), constraintsXLabel);
 
 		java.awt.GridBagConstraints constraintsXTextField = new java.awt.GridBagConstraints();
 		constraintsXTextField.gridx = 2; constraintsXTextField.gridy = gridy;
@@ -539,14 +505,14 @@ private void initialize() {
 		constraintsXTextField.weightx = 1.0;
 		constraintsXTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 		constraintsXTextField.gridwidth = 2;
-		add(getXTextField(), constraintsXTextField);
+		getContentPanel().add(getXTextField(), constraintsXTextField);
 		
 		// 
 		gridy ++;
 		java.awt.GridBagConstraints constraintsYLabel = new java.awt.GridBagConstraints();
 		constraintsYLabel.gridx = 1; constraintsYLabel.gridy = gridy;
 		constraintsYLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getYLabel(), constraintsYLabel);
+		getContentPanel().add(getYLabel(), constraintsYLabel);
 
 		java.awt.GridBagConstraints constraintsYTextField = new java.awt.GridBagConstraints();
 		constraintsYTextField.gridx = 2; constraintsYTextField.gridy = gridy;
@@ -554,14 +520,14 @@ private void initialize() {
 		constraintsYTextField.weightx = 1.0;
 		constraintsYTextField.gridwidth = 2;
 		constraintsYTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getYTextField(), constraintsYTextField);
+		getContentPanel().add(getYTextField(), constraintsYTextField);
 
 		//
 		gridy ++;
 		java.awt.GridBagConstraints constraintsZLabel = new java.awt.GridBagConstraints();
 		constraintsZLabel.gridx = 1; constraintsZLabel.gridy = gridy;
 		constraintsZLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getZLabel(), constraintsZLabel);
+		getContentPanel().add(getZLabel(), constraintsZLabel);
 
 		java.awt.GridBagConstraints constraintsZTextField = new java.awt.GridBagConstraints();
 		constraintsZTextField.gridx = 2; constraintsZTextField.gridy = gridy;
@@ -569,7 +535,7 @@ private void initialize() {
 		constraintsZTextField.weightx = 1.0;
 		constraintsZTextField.gridwidth = 2;
 		constraintsZTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getZTextField(), constraintsZTextField);
+		getContentPanel().add(getZTextField(), constraintsZTextField);
 		
 		//
 		gridy ++;
@@ -577,7 +543,7 @@ private void initialize() {
 		gbc.gridx = 0; gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("Total Size (elements)"), gbc);
+		getContentPanel().add(new JLabel("Total Size (elements)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2;
@@ -587,7 +553,7 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		totalSizeTextField.setForeground(Color.blue);
-		add(totalSizeTextField, gbc);
+		getContentPanel().add(totalSizeTextField, gbc);
 		
 		//
 		gridy ++;
@@ -596,14 +562,14 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("Spatial Step (um)"), gbc);
+		getContentPanel().add(new JLabel("Spatial Step (um)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(new JLabel("\u0394x"), gbc);
+		getContentPanel().add(new JLabel("\u0394x"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2; 
@@ -613,7 +579,7 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		ivjDxTextField.setForeground(Color.blue);
-		add(ivjDxTextField, gbc);
+		getContentPanel().add(ivjDxTextField, gbc);
 		
 		//
 		gridy ++;
@@ -622,7 +588,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(ivjDyLabel, gbc);
+		getContentPanel().add(ivjDyLabel, gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2; 
@@ -632,7 +598,7 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		ivjDyTextField.setForeground(Color.blue);
-		add(ivjDyTextField, gbc);
+		getContentPanel().add(ivjDyTextField, gbc);
 		
 		//
 		gridy ++;
@@ -641,7 +607,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
-		add(ivjDzLabel, gbc);
+		getContentPanel().add(ivjDzLabel, gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 2; 
@@ -651,7 +617,7 @@ private void initialize() {
 		gbc.gridwidth = 2;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		ivjDzTextField.setForeground(Color.blue);
-		add(ivjDzTextField, gbc);
+		getContentPanel().add(ivjDzTextField, gbc);
 		
 		initConnections();		
 	} catch (java.lang.Throwable ivjExc) {
@@ -779,14 +745,15 @@ private void updateSize() {
 	try {
 		ISize iSize = new ISize(sx, sy, sz);
 		getMeshSpecification().setSamplingSize(iSize);
-//		updateDisplay();
-		return;
 	} catch (NumberFormatException nexc) {
 		error = "NumberFormatException " + nexc.getMessage();
 	} catch (java.beans.PropertyVetoException pexc) {
 		error = pexc.getMessage();
 	}
-	DialogUtils.showErrorDialog(this, "Error setting mesh size : " + error);
+	if (error != null)
+	{
+		DialogUtils.showErrorDialog(this, "Error setting mesh size : " + error);
+	}
 }
 
 long computeAnotherSizeWRTAspectRatio(int oneSize, double ratio) {
@@ -945,7 +912,6 @@ private void updateTotalSizeAndSpatialStep() {
 	
 	try {
 		int dim = getMeshSpecification().getGeometry().getDimension();
-		Extent extent = getMeshSpecification().getGeometry().getExtent();
 		
 		String xtext = getXTextField().getText();
 		int numX = Integer.parseInt(xtext);	

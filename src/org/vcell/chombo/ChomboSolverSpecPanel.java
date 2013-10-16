@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.InputVerifier;
@@ -29,17 +27,19 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 
 import com.lowagie.text.Font;
@@ -70,15 +70,19 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			}
 		};
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == solverTaskDescription && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION)) {
+			if (evt.getSource() == simulation.getSolverTaskDescription() && evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION)) {
 				updateDisplay();
 			}
-			else if (evt.getSource() == solverTaskDescription.getChomboSolverSpec())
+			else if (evt.getSource() == simulation.getSolverTaskDescription().getChomboSolverSpec())
 			{
 				if (evt.getPropertyName().equals(ChomboSolverSpec.PROPERTY_NAME_MAX_BOX_SIZE))
 				{
-					maxBoxSizeComboBox.setSelectedItem(solverTaskDescription.getChomboSolverSpec().getMaxBoxSize());
+					maxBoxSizeComboBox.setSelectedItem(simulation.getSolverTaskDescription().getChomboSolverSpec().getMaxBoxSize());
 				}
+			}
+			else if (evt.getSource() == simulation.getMeshSpecification())
+			{
+				updateFinestInfoPanel();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -88,7 +92,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			{
 				if (fillRatioTextField.getText() == null || fillRatioTextField.getText().trim().length() == 0)
 				{
-					fillRatioTextField.setText(solverTaskDescription.getChomboSolverSpec().getFillRatio() + "");
+					fillRatioTextField.setText(simulation.getSolverTaskDescription().getChomboSolverSpec().getFillRatio() + "");
 				}
 				else
 				{
@@ -106,7 +110,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 						{
 							roi = roi.trim();
 							try {
-								solverTaskDescription.getChomboSolverSpec().getRefinementLevel(i).setRoiExpression(roi);
+								simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(i).setRoiExpression(roi);
 							} catch (ExpressionException e1) {
 								//DialogUtils.showErrorDialog(ChomboSolverSpecPanel.this, e1.getMessage(), e1);
 							}
@@ -124,12 +128,16 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private ArrayList<JPanel> levelPanels = new ArrayList<JPanel>();
 	private List<JComboBox> refinementRatioComboBoxes = new ArrayList<JComboBox>();
 	private List<JTextField> refinementRoiTextFields = new ArrayList<JTextField>();
-	private SolverTaskDescription solverTaskDescription = null;
+	private Simulation simulation = null;
 	private JPanel mainPanel = null;
 	private JComboBox maxBoxSizeComboBox = null;
 	private JTextField fillRatioTextField;
 	private Component fillerComponent = Box.createRigidArea(new Dimension(5,5));
-
+	private JPanel finestInfoPanel;
+	private JTextField finestSizeTextField;
+	private JTextField finestDxTextField;
+	private CollapsiblePanel refinementPanel;
+	
 	private InputVerifier roiInputVerifier = new InputVerifier()
 	{
 		@Override
@@ -148,7 +156,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 					{
 						if (refinementRoiTextFields.get(level) == roiTextField)
 						{
-							solverTaskDescription.getChomboSolverSpec().getRefinementLevel(level).setRoiExpression(roi);
+							simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(level).setRoiExpression(roi);
 						}
 					}
 					roiTextField.setBorder(UIManager.getBorder("TextField.border"));
@@ -167,27 +175,95 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			return false;
 		}
 	};
-	
+
 	public ChomboSolverSpecPanel() {
-		super("Chombo Options");
+		super("EBChombo Options");
 		initialize();
 	}
 
+	private JPanel getFinestInfoPanel()
+	{
+		if (finestInfoPanel == null)
+		{
+		  finestInfoPanel  = new JPanel(new GridBagLayout());
+		  finestInfoPanel.setVisible(false);
+		  
+		  finestSizeTextField = new JTextField(40);
+		  finestSizeTextField.setForeground(Color.blue);
+		  finestSizeTextField.setBorder(null);
+		  finestSizeTextField.setEditable(false);
+		  
+		  finestDxTextField = new JTextField(40);
+		  finestDxTextField.setEditable(false);
+		  finestDxTextField.setForeground(Color.blue);
+		  finestDxTextField.setBorder(null);
+		  
+		  int gridx = 0;
+		  GridBagConstraints gbc = new GridBagConstraints();
+		  gbc.gridx = gridx;
+		  gbc.gridy = 0;
+		  gbc.insets = new Insets(1, 5, 1, 2);
+		  JLabel label = new JLabel("Finest Mesh");
+		  label.setFont(label.getFont().deriveFont(Font.BOLD));
+			finestInfoPanel.add(label, gbc);
+		  
+			++ gridx;
+		  gbc = new GridBagConstraints();
+		  gbc.gridx = gridx;
+		  gbc.gridy = 0;
+		  gbc.weightx = 0.3;
+		  gbc.insets = new Insets(1, 2, 1, 2);
+		  gbc.fill = GridBagConstraints.HORIZONTAL;
+		  finestInfoPanel.add(finestSizeTextField, gbc);
+		  
+		  ++ gridx;
+		  gbc = new GridBagConstraints();
+		  gbc.gridx = gridx;
+		  gbc.gridy = 0;
+		  gbc.insets = new Insets(1, 5, 1, 2);
+		  label = new JLabel("Finest Spatial Step");
+		  label.setFont(label.getFont().deriveFont(Font.BOLD));
+			finestInfoPanel.add(label, gbc);
+		  
+			++ gridx;
+			gbc = new GridBagConstraints();
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(1, 5, 1, 0);
+			label = new JLabel("(");
+			finestInfoPanel.add(label, gbc);
+			
+			++ gridx;
+		  gbc = new GridBagConstraints();
+		  gbc.gridx = gridx;
+		  gbc.gridy = 0;
+		  gbc.weightx = 0.7;
+		  gbc.insets = new Insets(0, 2, 1, 0);
+		  gbc.fill = GridBagConstraints.HORIZONTAL;
+		  finestInfoPanel.add(finestDxTextField, gbc);
+		  
+			++ gridx;
+			gbc = new GridBagConstraints();
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(0, 0, 1, 2);
+			label = new JLabel(")");
+			finestInfoPanel.add(label, gbc);
+		}
+		return finestInfoPanel;
+	}
+	
 	private void initialize() 
 	{
 		setMaximumSize(new Dimension(500, 150));
 		setPreferredSize(new Dimension(500, 200));
 		maxBoxSizeComboBox = new JComboBox();
-		maxBoxSizeComboBox.addItem(new Integer(8));
-		maxBoxSizeComboBox.addItem(new Integer(16));
-		maxBoxSizeComboBox.addItem(new Integer(32));
-		maxBoxSizeComboBox.addItem(new Integer(64));
-		maxBoxSizeComboBox.addItem(new Integer(128));
-		maxBoxSizeComboBox.addItem(new Integer(256));
-		maxBoxSizeComboBox.addItem(new Integer(512));
-		maxBoxSizeComboBox.addItem(new Integer(1024));
-		maxBoxSizeComboBox.addItem(new Integer(2048));
-		maxBoxSizeComboBox.addItem(new Integer(4096));
+		int start = 8;
+		for (int i = 0; i < 10; ++ i)
+		{
+			maxBoxSizeComboBox.addItem(new Integer(start));
+			start *= 2;
+		}
 		
 		fillRatioTextField = new JTextField(10);
 		fillRatioTextField.addFocusListener(ivjEventHandler);
@@ -226,51 +302,66 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.WEST;
 		northPanel.add(fillRatioTextField, gbc);
 		
-		JToolBar toolbar = new JToolBar();
-		toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
-		toolbar.setFloatable(false);
-		JLabel label = new JLabel("Levels");
-		toolbar.add(label);
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		toolbar.add(Box.createHorizontalStrut(10));
-		toolbar.add(getAddLevelButton());
-		toolbar.add(getDeleteLevelButton());
-		toolbar.add(Box.createHorizontalGlue());
-		label = new JLabel("(Leave all ROIs emtpy to refine all membrane elements.)");
-		label.setFont(label.getFont().deriveFont(Font.BOLDITALIC, label.getFont().getSize() - 1));
-		toolbar.add(label);
-		toolbar.add(Box.createHorizontalStrut(10));
-				
-		CollapsiblePanel refinementPanel = new CollapsiblePanel("Mesh Refinement");
-		refinementPanel.getContentPanel().setLayout(new GridBagLayout());		
-		gbc = new GridBagConstraints();
-		gbc.insets = new java.awt.Insets(0, 5, 0, 0);
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.WEST;
-		refinementPanel.getContentPanel().add(toolbar, gbc);
-		
-		mainPanel  = new JPanel(new GridBagLayout());
-		JScrollPane scroll = new JScrollPane(mainPanel);
-		scroll.setBorder(null);
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.PAGE_START;
-		refinementPanel.getContentPanel().add(scroll, gbc);
-		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
 		getContentPanel().add(northPanel, BorderLayout.NORTH);
-		getContentPanel().add(refinementPanel, BorderLayout.CENTER);
+		getContentPanel().add(getRefinementPanel(), BorderLayout.CENTER);
 		
 		maxBoxSizeComboBox.addActionListener(ivjEventHandler);
 		getAddLevelButton().addActionListener(ivjEventHandler);
 		getDeleteLevelButton().addActionListener(ivjEventHandler);
+	}
+
+	private CollapsiblePanel getRefinementPanel() {
+		if (refinementPanel == null)
+		{
+			JToolBar toolbar = new JToolBar();
+			toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
+			toolbar.setFloatable(false);
+			JLabel label = new JLabel("Levels");
+			toolbar.add(label);
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			toolbar.add(Box.createHorizontalStrut(10));
+			toolbar.add(getAddLevelButton());
+			toolbar.add(getDeleteLevelButton());
+			toolbar.add(Box.createHorizontalGlue());
+			label = new JLabel("(Leave all ROIs emtpy to refine all membrane elements.)");
+			label.setFont(label.getFont().deriveFont(Font.BOLDITALIC, label.getFont().getSize() - 1));
+			toolbar.add(label);
+			toolbar.add(Box.createHorizontalStrut(10));
+					
+			refinementPanel = new CollapsiblePanel("Mesh Refinement");
+			refinementPanel.getContentPanel().setLayout(new GridBagLayout());		
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.insets = new java.awt.Insets(0, 5, 0, 0);
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.WEST;
+			refinementPanel.getContentPanel().add(toolbar, gbc);
+			
+			mainPanel  = new JPanel(new GridBagLayout());
+			JScrollPane scroll = new JScrollPane(mainPanel);
+			scroll.setBorder(null);
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			refinementPanel.getContentPanel().add(scroll, gbc);
+		  
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.insets = new java.awt.Insets(5, 0, 0, 0);
+			refinementPanel.getContentPanel().add(getFinestInfoPanel(), gbc);
+		}
+		return refinementPanel;
 	}
 	
 	private JButton getAddLevelButton() {
@@ -308,13 +399,39 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	}	
 
 	private void addLevelButton_actionPerformed() {	
-		solverTaskDescription.getChomboSolverSpec().addRefinementLevel(new RefinementLevel());
-		addLevel(solverTaskDescription.getChomboSolverSpec().getNumRefinementLevels()-1);
+		simulation.getSolverTaskDescription().getChomboSolverSpec().addRefinementLevel(new RefinementLevel());
+		addLevel(simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels()-1);
 	}
 
+	private void updateFinestInfoPanel()
+	{
+		boolean bHasRefinement = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels() > 0;
+		finestInfoPanel.setVisible(bHasRefinement);
+		getDeleteLevelButton().setEnabled(bHasRefinement);
+		if (bHasRefinement)
+		{
+			Extent extent = simulation.getMathDescription().getGeometry().getExtent();
+			ISize finestSize = simulation.getSolverTaskDescription().getChomboSolverSpec().getFinestSamplingSize(simulation.getMeshSpecification().getSamplingSize());
+			String sizeDisplay = finestSize.getX() + " x " + finestSize.getY();
+			String dxDisplay = (extent.getX() / finestSize.getX()) +  ", " + (extent.getY() / finestSize.getY());
+			if (simulation.getMathDescription().getGeometry().getDimension() > 2)
+			{
+				sizeDisplay += " x " + finestSize.getZ();
+				dxDisplay += ", " + (extent.getZ() / finestSize.getZ());
+			}
+			
+			finestSizeTextField.setText(sizeDisplay);
+			finestSizeTextField.setCaretPosition(0);
+			finestSizeTextField.setToolTipText(sizeDisplay);
+			finestDxTextField.setText(dxDisplay);
+			finestDxTextField.setCaretPosition(0);
+			finestDxTextField.setToolTipText(dxDisplay);
+		}
+	}
+	
 	private void addLevel(int levelIndex) {
-		RefinementLevel rfl = solverTaskDescription.getChomboSolverSpec().getRefinementLevel(levelIndex);
-		getDeleteLevelButton().setEnabled(true);
+		RefinementLevel rfl = simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(levelIndex);
+		updateFinestInfoPanel();
 		
 		JPanel levelPanel = new JPanel(new GridBagLayout());
 		levelPanels.add(levelPanel);
@@ -392,9 +509,9 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	}
 
 	private void deleteLevelButton_actionPerformed() {
-		int lastIndex = solverTaskDescription.getChomboSolverSpec().getNumRefinementLevels() - 1;
+		int lastIndex = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels() - 1;
 		
-		solverTaskDescription.getChomboSolverSpec().deleteRefinementLevel();
+		simulation.getSolverTaskDescription().getChomboSolverSpec().deleteRefinementLevel();
 		JPanel panel = levelPanels.get(lastIndex);
 		levelPanels.remove(panel);
 		mainPanel.remove(panel);
@@ -402,20 +519,18 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		JComboBox comboBox = refinementRatioComboBoxes.remove(lastIndex);
 		comboBox.removeActionListener(ivjEventHandler);
 
-		if (solverTaskDescription.getChomboSolverSpec().getNumRefinementLevels() == 0) {
-			getDeleteLevelButton().setEnabled(false);
-		}
+		updateFinestInfoPanel();
 		updateUI();
 	}
 
 	private void updateDisplay() {
-		if (!solverTaskDescription.getSolverDescription().isChomboSolver()) {
+		if (!simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 			setVisible(false);
 			return;
 		}
 		setVisible(true);
-		maxBoxSizeComboBox.setSelectedItem(solverTaskDescription.getChomboSolverSpec().getMaxBoxSize());
-		fillRatioTextField.setText(solverTaskDescription.getChomboSolverSpec().getFillRatio() + "");
+		maxBoxSizeComboBox.setSelectedItem(simulation.getSolverTaskDescription().getChomboSolverSpec().getMaxBoxSize());
+		fillRatioTextField.setText(simulation.getSolverTaskDescription().getChomboSolverSpec().getFillRatio() + "");
 		
 		for (int i = 0; i < levelPanels.size(); i ++) {
 			remove(levelPanels.get(i));
@@ -423,8 +538,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		levelPanels.clear();
 		refinementRatioComboBoxes.clear();
 		
-		if (solverTaskDescription.getChomboSolverSpec() != null) {
-			int numLevels = solverTaskDescription.getChomboSolverSpec().getNumRefinementLevels();
+		if (simulation.getSolverTaskDescription().getChomboSolverSpec() != null) {
+			int numLevels = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
 			for (int i = 0; i < numLevels; ++ i) 
 			{
 				addLevel(i);
@@ -432,23 +547,25 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		}
 	}
 
-	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
-		SolverTaskDescription oldValue = this.solverTaskDescription;
+	public final void setSimulation(Simulation newValue) {
+		Simulation oldValue = this.simulation;
 		/* Stop listening for events from the current object */
 		if (oldValue != null) {
-			oldValue.removePropertyChangeListener(ivjEventHandler);
-			if (oldValue.getChomboSolverSpec() != null)
+			oldValue.getSolverTaskDescription().removePropertyChangeListener(ivjEventHandler);
+			if (oldValue.getSolverTaskDescription().getChomboSolverSpec() != null)
 			{
-				oldValue.getChomboSolverSpec().removePropertyChangeListener(ivjEventHandler);
+				oldValue.getSolverTaskDescription().getChomboSolverSpec().removePropertyChangeListener(ivjEventHandler);
+				oldValue.getMeshSpecification().removePropertyChangeListener(ivjEventHandler);
 			}
 		}
-		this.solverTaskDescription = newValue;
+		this.simulation = newValue;
 		if (newValue != null)
 		{
 			newValue.addPropertyChangeListener(ivjEventHandler);
-			if (newValue.getChomboSolverSpec() != null)
+			if (newValue.getSolverTaskDescription().getChomboSolverSpec() != null)
 			{
-				newValue.getChomboSolverSpec().addPropertyChangeListener(ivjEventHandler);
+				newValue.getSolverTaskDescription().getChomboSolverSpec().addPropertyChangeListener(ivjEventHandler);
+				newValue.getMeshSpecification().addPropertyChangeListener(ivjEventHandler);
 			}
 		}
 		updateDisplay();		
@@ -457,7 +574,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private void setMaxBoxSize() {
 		try
 		{
-			solverTaskDescription.getChomboSolverSpec().setMaxBoxSize((Integer)maxBoxSizeComboBox.getSelectedItem());
+			simulation.getSolverTaskDescription().getChomboSolverSpec().setMaxBoxSize((Integer)maxBoxSizeComboBox.getSelectedItem());
 		}
 		catch (PropertyVetoException ex)
 		{
@@ -466,14 +583,14 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	}
 	
 	private void setRefRatio(int levelIndex) {
-		RefinementLevel rfl = solverTaskDescription.getChomboSolverSpec().getRefinementLevel(levelIndex);
+		RefinementLevel rfl = simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(levelIndex);
 		JComboBox comboBox = refinementRatioComboBoxes.get(levelIndex);
 		rfl.setRefineRatio((Integer)comboBox.getSelectedItem());
 	}
 	
 	private void setFillRatio() {
 		double fillRatio = Double.parseDouble(fillRatioTextField.getText());
-		solverTaskDescription.getChomboSolverSpec().setFillRatio(fillRatio);
+		simulation.getSolverTaskDescription().getChomboSolverSpec().setFillRatio(fillRatio);
 	}
 
 }
