@@ -1042,6 +1042,7 @@ private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage)
 }
 public static final String GEOM_FROM_WORKSPACE = "GEOM_FROM_WORKSPACE";
 public static final String VCPIXELCLASSES = "VCPIXELCLASSES";
+private enum NRRDTYPE {DOUBLE,FLOAT,UNSIGNEDCHAR};
 
 public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo,
@@ -1077,6 +1078,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 	AsynchClientTask parseImageTask = new AsynchClientTask("read and parse image file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(final Hashtable<String, Object> hashTable) throws Exception {
+
 			final Component guiParent =(Component)hashTable.get(ClientRequestManager.GUI_PARENT);
 			try {
 				FieldDataFileOperationSpec fdfos = null;
@@ -1086,31 +1088,86 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						throw new Exception("No file selected");
 					}
 					if (ExtensionFilter.isMatchingExtension(imageFile, ".nrrd")){
+						
 						DataInputStream dis = null;
 						try{
 							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile)) ;
 							dis = new DataInputStream(bis);
-							int x = 0;
-							int y = 0;
-							int z = 0;
+							int xsize = 1;
+							int ysize = 1;
+							int zsize = 1;
+							double xspace = 1.0;
+							double yspace = 1.0;
+							double zspace = 1.0;
+							NRRDTYPE type = null;
+							int dimension = -1;
 							//read header lines
+							int byteCount = 0;
 							while(true){
 								String line = dis.readLine();
 								if(line == null || line.length() == 0){
 									break;
 								}
 								StringTokenizer stringTokenizer = new StringTokenizer(line, ": ");
-								if(stringTokenizer.nextToken().equals("sizes")){
-									x = Integer.parseInt(stringTokenizer.nextToken());
-									y = Integer.parseInt(stringTokenizer.nextToken());
-									z = Integer.parseInt(stringTokenizer.nextToken());
+								String headerParam = stringTokenizer.nextToken();
+//								System.out.println(headerParam);
+								if(headerParam.equals("sizes")){
+									if(dimension != -1){
+										xsize = Integer.parseInt(stringTokenizer.nextToken());
+										if(dimension >= 2){ysize = Integer.parseInt(stringTokenizer.nextToken());}
+										if(dimension >= 3){zsize = Integer.parseInt(stringTokenizer.nextToken());}
+										for (int i = 4; i < dimension; i++) {
+											if(Integer.parseInt(stringTokenizer.nextToken()) != 1){throw new Exception("Dimensions > 3 not supported");}
+										}
+									}else{
+										throw new Exception("dimension expected to be set before reading sizes");
+									}
+								}else if(headerParam.equals("spacings")){
+									if(dimension != -1){
+										xspace = Double.parseDouble(stringTokenizer.nextToken());
+										if(dimension >= 2){yspace = Double.parseDouble(stringTokenizer.nextToken());}
+										if(dimension >= 3){zspace = Double.parseDouble(stringTokenizer.nextToken());}
+										//ignore other dimension spacings
+									}else{
+										throw new Exception("dimension expected to be set before reading spacings");
+									}
+								}else if(headerParam.equals("type")){
+									String nextToken = stringTokenizer.nextToken();
+									if(nextToken.equalsIgnoreCase("double")){
+										type = NRRDTYPE.DOUBLE;
+									}else if(nextToken.equalsIgnoreCase("float")){
+										type = NRRDTYPE.FLOAT;
+									}else if(nextToken.equalsIgnoreCase("unsigned")){
+										nextToken = stringTokenizer.nextToken();
+										if(nextToken.equalsIgnoreCase("char")){
+											type = NRRDTYPE.UNSIGNEDCHAR;
+										}else{
+											throw new Exception("Unknown nrrd data type="+nextToken);
+										}
+									}else{
+										throw new Exception("Unknown nrrd data type="+nextToken);
+									}
+								}else if(headerParam.equals("dimension")){
+									dimension = Integer.parseInt(stringTokenizer.nextToken());
+									if(dimension < 1){
+										throw new Exception("unexpected dimension="+dimension);
+									}
 								}
 							}
-							double[] data = new double[x*y*z];
+							double[] data = new double[xsize*ysize*zsize];
 							double minValue = Double.POSITIVE_INFINITY;
 							double maxValue = Double.NEGATIVE_INFINITY;
 							for (int i = 0; i < data.length; i++) {
-								data[i] = dis.readDouble();
+								if(type == NRRDTYPE.DOUBLE){
+									data[i] = dis.readDouble();
+								}else if(type == NRRDTYPE.FLOAT){
+									data[i] = dis.readFloat();
+								}else if(type == NRRDTYPE.UNSIGNEDCHAR){
+									data[i] = dis.readUnsignedByte();
+								}else{
+									throw new Exception("Unexpected data type="+type.toString());
+								}
+								
 								minValue = Math.min(minValue,data[i]);
 								maxValue = Math.max(maxValue,data[i]);
 							}
@@ -1122,8 +1179,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							}
 							fdfos = new FieldDataFileOperationSpec();
 							fdfos.origin = new Origin(0, 0, 0);
-							fdfos.extent = new Extent(1, 1, 1);
-							fdfos.isize = new ISize(x, y, z);
+							fdfos.extent = new Extent((xsize==1?.5:(xsize)*xspace), (ysize==1?.5:(ysize)*yspace), (zsize==1?.5:(zsize)*zspace));
+							fdfos.isize = new ISize(xsize, ysize, zsize);
 							fdfos.shortSpecData = new short[][][] {{dataToSegment}};
 						}finally{
 							if(dis != null){try{dis.close();}catch(Exception e){e.printStackTrace();}}
