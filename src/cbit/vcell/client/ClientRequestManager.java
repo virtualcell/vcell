@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -44,6 +43,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -1043,6 +1043,7 @@ private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage)
 public static final String GEOM_FROM_WORKSPACE = "GEOM_FROM_WORKSPACE";
 public static final String VCPIXELCLASSES = "VCPIXELCLASSES";
 private enum NRRDTYPE {DOUBLE,FLOAT,UNSIGNEDCHAR};
+private enum NRRDENCODING {RAW,GZIP};
 
 public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo,
@@ -1088,10 +1089,12 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						throw new Exception("No file selected");
 					}
 					if (ExtensionFilter.isMatchingExtension(imageFile, ".nrrd")){
-						
+
+
 						DataInputStream dis = null;
 						try{
-							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile)) ;
+							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile));
+							bis = new BufferedInputStream(new FileInputStream(imageFile));
 							dis = new DataInputStream(bis);
 							int xsize = 1;
 							int ysize = 1;
@@ -1100,9 +1103,9 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							double yspace = 1.0;
 							double zspace = 1.0;
 							NRRDTYPE type = null;
+							NRRDENCODING encoding = null;
 							int dimension = -1;
 							//read header lines
-							int byteCount = 0;
 							while(true){
 								String line = dis.readLine();
 								if(line == null || line.length() == 0){
@@ -1152,12 +1155,37 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 									if(dimension < 1){
 										throw new Exception("unexpected dimension="+dimension);
 									}
+								}else if(headerParam.equals("encoding")){
+									encoding = NRRDENCODING.valueOf(stringTokenizer.nextToken().toUpperCase());
 								}
+							}
+							if(encoding == NRRDENCODING.GZIP){
+								dis.close();
+								bis = new BufferedInputStream(new FileInputStream(imageFile));
+								boolean bnewLine = false;
+								while(true){
+									int currentChar = bis.read();
+									if(currentChar == '\n'){
+										if(bnewLine){
+											break;//2 newlines end header
+										}
+										bnewLine = true;
+									}else{
+										bnewLine = false;
+									}
+								}
+								GZIPInputStream gzipInputStream = new GZIPInputStream(bis);
+								dis = new DataInputStream(gzipInputStream);
 							}
 							double[] data = new double[xsize*ysize*zsize];
 							double minValue = Double.POSITIVE_INFINITY;
 							double maxValue = Double.NEGATIVE_INFINITY;
 							for (int i = 0; i < data.length; i++) {
+								if(i % 262144 == 0){
+									if(getClientTaskStatusSupport() != null){
+										getClientTaskStatusSupport().setMessage("Reading "+encoding+" "+type+" NRRD data "+(((long)i*(long)100)/(long)data.length)+" % done.");
+									}
+								}
 								if(type == NRRDTYPE.DOUBLE){
 									data[i] = dis.readDouble();
 								}else if(type == NRRDTYPE.FLOAT){
@@ -1172,6 +1200,10 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								maxValue = Math.max(maxValue,data[i]);
 							}
 							dis.close();
+							if(getClientTaskStatusSupport() != null){
+								getClientTaskStatusSupport().setMessage("Scaling "+encoding+" "+type+" NRRD data.");
+							}
+
 							short[] dataToSegment = new short[data.length];
 							double scaleShort = Math.pow(2, Short.SIZE)-1;
 							for (int i = 0; i < data.length; i++) {
