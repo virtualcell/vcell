@@ -13,6 +13,7 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGInput;
 import java.io.*;
+import java.util.ArrayList;
 
 import org.vcell.util.FileUtils;
 
@@ -113,20 +114,20 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		}
 		
 		File[] files = workingDir.listFiles();
-		String[] filenames = new String[files.length];
-		String[] filecontents = new String[files.length];
-		
+		ArrayList<String> filenames = new ArrayList<String>();
+		ArrayList<String> filecontents = new ArrayList<String>();
+	
 		for (int i = 0; i < files.length; i ++) {
 			if(files[i].getName().equals(file_dll_cygwin.getName()) || files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
 				continue;
 			}
-			filenames[i] = files[i].getName();
-			filecontents[i] = FileUtils.readFileToString(files[i]);
+			filenames.add(files[i].getName());
+			filecontents.add(FileUtils.readFileToString(files[i]));
 //			files[i].delete();
 		}		
 //		workingDir.delete();
 		
-		bngOutput = new BNGOutput(stdoutString, filenames, filecontents);
+		bngOutput = new BNGOutput(stdoutString, filenames.toArray(new String[0]), filecontents.toArray(new String[0]));
 		System.out.println("--------------Finished BNG----------------------------");
 		
 	} catch(org.vcell.util.ExecutableException ex ){
