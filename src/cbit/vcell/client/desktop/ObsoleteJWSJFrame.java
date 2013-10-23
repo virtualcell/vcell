@@ -11,6 +11,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class ObsoleteJWSJFrame extends JFrame {
 
@@ -22,7 +27,26 @@ public class ObsoleteJWSJFrame extends JFrame {
 		gridBagLayout.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		getContentPane().setLayout(gridBagLayout);
 		
+		JPanel panel = new JPanel();
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 0;
+		getContentPane().add(panel, gbc_panel);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0};
+		gbl_panel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		
 		JEditorPane dtrpnmyFirstHeading = new JEditorPane();
+		GridBagConstraints gbc_dtrpnmyFirstHeading = new GridBagConstraints();
+		gbc_dtrpnmyFirstHeading.insets = new Insets(4, 4, 4, 4);
+		gbc_dtrpnmyFirstHeading.fill = GridBagConstraints.BOTH;
+		gbc_dtrpnmyFirstHeading.gridx = 0;
+		gbc_dtrpnmyFirstHeading.gridy = 0;
+		panel.add(dtrpnmyFirstHeading, gbc_dtrpnmyFirstHeading);
 		dtrpnmyFirstHeading.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
 		dtrpnmyFirstHeading.setEditable(false);
 		
@@ -47,26 +71,33 @@ public class ObsoleteJWSJFrame extends JFrame {
 			"<!DOCTYPE html>\r\n"+"" +
 			"<html>\r\n"+
 				"<body>\r\n"+
-					"<h1>VCell has a new installer method!</h1>"+
-					"<p>VCell no longer uses 'Java Web Start'.  Please reinstall VCell by visiting our software installation page here: <a href=\"http://vcell.org/vcell_software\" >Run VCell Software</a>.</p>"+
+					"<h1><center>VCell has a new installer method!</center></h1>"+
+					"<p>VCell no longer uses 'Java Web Start'.  Please reinstall VCell by visiting our installation page here: <a href=\"http://vcell.org/vcell_software\" >Run VCell Software</a>.</p>"+
 					"<p>You can also visit our main website at <a href=\"http://vcell.org\">http://vcell.org</a></p>"+
 					"<p>If you have any questions or problems installing or using VCell, email <b><i>VCell_Support@vcell.org</b></i></p>"+
-					"<p>Please note: If you have any prior installed VCell launchers or web shortcuts on your computer desktops or similar links delete them to avoid conflicts with the new VCell installer.</p>"+
-					"<p>VCell automatically checks for new software updates when launched.  If new software updates are available a dialog will appear asking you to permit the update.<p>"+
+					"<p>Please delete any prior installed VCell launchers or web shortcuts to avoid conflicts with the new VCell installer.</p>"+
+					"<p>VCell will check for software updates when launched, please allow updates to occur if prompted.<p>"+
 				"</body>"+
 			"</html>"
 		);
-		GridBagConstraints gbc_dtrpnmyFirstHeading = new GridBagConstraints();
-		gbc_dtrpnmyFirstHeading.fill = GridBagConstraints.BOTH;
-		gbc_dtrpnmyFirstHeading.gridx = 0;
-		gbc_dtrpnmyFirstHeading.gridy = 0;
-		getContentPane().add(dtrpnmyFirstHeading, gbc_dtrpnmyFirstHeading);
+		
+		JButton btnNewButton = new JButton("Quit");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.insets = new Insets(4, 0, 4, 0);
+		gbc_btnNewButton.gridx = 0;
+		gbc_btnNewButton.gridy = 1;
+		panel.add(btnNewButton, gbc_btnNewButton);
 	}
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-//		//making signed jar file for obsolete jws message.
+//		//making and deploying signed jar file for obsolete jws message.
 //		//open cmd.exe and cd to work area C:\temp\ObsoleteJWSJFrame.
 //		//copy cbit.vcell.client.desktop.ObsoleteJWSJFrame* classes from eclipse "bin" dir to cbit/vcell/client/desktop directory.
 		
@@ -108,7 +139,7 @@ public class ObsoleteJWSJFrame extends JFrame {
 //		//copy cbit_vcell_client_desktop_ObsoleteJWSJFrame.jar to apache jws site
 
 		ObsoleteJWSJFrame obsoleteJWSJFrame = new ObsoleteJWSJFrame();
-		obsoleteJWSJFrame.setTitle("VCell Improved Installer");
+		obsoleteJWSJFrame.setTitle("VCell Improved Installer beginning Oct 23, 2013");
 		obsoleteJWSJFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		obsoleteJWSJFrame.pack();
 		obsoleteJWSJFrame.setSize(400,400);
