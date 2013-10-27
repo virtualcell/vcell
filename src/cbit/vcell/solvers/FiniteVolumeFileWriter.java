@@ -35,11 +35,11 @@ import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.Version;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
+import cbit.image.VCPixelClass;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -1846,7 +1846,6 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			
 			for (double d : distances) {
 				dos.writeDouble(d);
-				
 			}
 		} finally {
 			if (dos != null) {
@@ -1962,8 +1961,15 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				double distZ = Math.max(distX, distY);	// we set the distance on the z axis to something that makes sense
 				Extent newExtent = new Extent(geometry.getExtent().getX(), geometry.getExtent().getY(), distZ * 3);
 				VCImage newImage = new VCImageUncompressed(null, newPixels, newExtent, img.getNumX(), img.getNumY(), 3);
-				simGeometry = new Geometry((Version)null, newImage);
-
+				// copy the pixel classes too
+				ArrayList<VCPixelClass> newPixelClasses = new ArrayList<VCPixelClass>();
+				for (VCPixelClass origPixelClass : geometry.getGeometrySpec().getImage().getPixelClasses()){
+					SubVolume origSubvolume = geometry.getGeometrySpec().getImageSubVolumeFromPixelValue(origPixelClass.getPixel());
+					newPixelClasses.add(new VCPixelClass(null,  origSubvolume.getName(), origPixelClass.getPixel()));
+				}
+				newImage.setPixelClasses(newPixelClasses.toArray(new VCPixelClass[newPixelClasses.size()]));
+				simGeometry = new Geometry(geometry, newImage);
+				
 				Nz = 3;
 			}
 			GeometrySpec simGeometrySpec = simGeometry.getGeometrySpec();
