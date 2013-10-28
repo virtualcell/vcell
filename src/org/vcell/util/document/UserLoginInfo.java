@@ -35,7 +35,7 @@ public class UserLoginInfo implements Serializable {
 		this.userName = userName;
 		this.digestedPassword = digestedPassword;
 		os_name = System.getProperty("os.name");
-		os_arch = getArchitecture();
+		os_arch = getArchitecture(os_name);
 		os_version = System.getProperty("os.version");
 		java_version = System.getProperty("java.version");
 		vcellSoftwareVersion = System
@@ -48,16 +48,16 @@ public class UserLoginInfo implements Serializable {
 	 * 
 	 * @return String identifying architecture
 	 */
-	private static String getArchitecture() {
-		String arch = System.getProperty("os.name");
-		if (arch.contains("Windows")) {
+	private static String getArchitecture(String osName) {
+		String arch = System.getProperty("os.arch");
+		if (osName.contains("Windows")) {
 			final boolean is64bit = (System.getenv("ProgramFiles(x86)") != null);
 			if (is64bit) {
 				arch += " - 64bit";
 			} else {
 				arch += " - 32bit";
 			}
-		} else if (arch.contains("Linux")) {
+		} else if (osName.contains("Linux")) {
 			try {
 				BufferedReader br = new BufferedReader(new FileReader("/proc/cpuinfo"));
 				try {
