@@ -59,30 +59,34 @@ public class UserLoginInfo implements Serializable {
 			}
 		} else if (arch.contains("Linux")) {
 			try {
-				BufferedReader br = new BufferedReader(new FileReader(
-						"/proc/cpuinfo"));
-				String line = br.readLine();
-				while (line != null) {
-					if (line.startsWith("flags")) {
-						for (String flag : line.split("\\s+")) {
-							if (flag.equals("lm")) {
-								arch += " - 64bit";
-								break;
+				BufferedReader br = new BufferedReader(new FileReader("/proc/cpuinfo"));
+				try {
+					String line = br.readLine();
+					while (line != null) {
+						if (line.startsWith("flags")) {
+							for (String flag : line.split("\\s+")) {
+								if (flag.equals("lm")) {
+									arch += " - 64bit";
+									break;
+								}
+								if (flag.equals("tm")) {
+									arch += " - 32bit";
+									break;
+								}
+								if (flag.equals("rm")) {
+									arch += " - 16bit"; // unlikely, but for
+														// completeness
+									break;
+								}
 							}
-							if (flag.equals("tm")) {
-								arch += " - 32bit";
-								break;
-							}
-							if (flag.equals("rm")) {
-								arch += " - 16bit"; // unlikely, but for
-													// completeness
-								break;
-							}
+							break; // there is a flags entry for each cpu, but
+									// the
+									// first one should be good enough
 						}
-						break; // there is a flags entry for each cpu, but the
-								// first one should be good enough
+						line = br.readLine();
 					}
-					line = br.readLine();
+				} finally {
+					br.close();
 				}
 
 			} catch (Exception e) {
