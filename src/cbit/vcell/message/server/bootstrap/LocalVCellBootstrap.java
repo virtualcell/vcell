@@ -210,7 +210,7 @@ public static void main(java.lang.String[] args) {
 		
 		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
 		
-		int lifeSignMessageInterval_MS = 5*60000; //5 minutes -- possibly make into a property later
+		int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 		new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
