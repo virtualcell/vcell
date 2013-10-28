@@ -10,6 +10,8 @@
 
 package cbit.vcell.server;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.Serializable;
 
 import org.vcell.util.PropertyLoader;
@@ -33,11 +35,69 @@ public class UserLoginInfo implements Serializable {
 		this.userName = userName;
 		this.digestedPassword = digestedPassword;
 		os_name = System.getProperty("os.name");
-		os_arch = System.getProperty("os.arch");
+		os_arch = getArchitecture(os_name);
 		os_version = System.getProperty("os.version");
 		java_version = System.getProperty("java.version");
 		vcellSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	}
+	
+	/**
+	 * use os.arch System property to identify architecture. If Windows,
+	 * supplement information with 32 or 64 bit
+	 * 
+	 * @return String identifying architecture
+	 */
+	private static String getArchitecture(String osName) {
+		String arch = System.getProperty("os.arch");
+		if (osName.contains("Windows")) {
+			final boolean is64bit = (System.getenv("ProgramFiles(x86)") != null);
+			if (is64bit) {
+				arch += " - 64bit";
+			} else {
+				arch += " - 32bit";
+			}
+		} else if (osName.contains("Linux")) {
+			try {
+				BufferedReader br = new BufferedReader(new FileReader("/proc/cpuinfo"));
+				try {
+					String line = br.readLine();
+					while (line != null) {
+						if (line.startsWith("flags")) {
+							for (String flag : line.split("\\s+")) {
+								if (flag.equals("lm")) {
+									arch += " - 64bit";
+									break;
+								}
+								if (flag.equals("tm")) {
+									arch += " - 32bit";
+									break;
+								}
+								if (flag.equals("rm")) {
+									arch += " - 16bit"; // unlikely, but for
+														// completeness
+									break;
+								}
+							}
+							break; // there is a flags entry for each cpu, but
+									// the
+									// first one should be good enough
+						}
+						line = br.readLine();
+					}
+				} finally {
+					br.close();
+				}
+	
+			} catch (Exception e) {
+				System.err
+						.println("Exception trying to determine Linux bit size");
+				e.printStackTrace();
+			}
+		}
+	
+		return arch;
+	}
+
 	public static class DigestedPassword implements Serializable {
 		private String digestedPasswordStr;
 		public DigestedPassword(){
