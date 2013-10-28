@@ -16,6 +16,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -132,6 +133,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	}
 
 
+	
 	/**
 	 * Starts the application.
 	 * @param args an array of command-line arguments
@@ -145,6 +147,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties();
 			CommandService.bQuiet = true;
+			Executable.bQuiet = true;
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
@@ -193,7 +196,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
             
-			int lifeSignMessageInterval_MS = 5*60000; //5 minutes -- possibly make into a property later
+			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
      
 			KeyFactory keyFactory = new OracleKeyFactory();
@@ -212,14 +215,29 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			
 			DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
-			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
+			final VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 			
-			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
+			final VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
 
 			dataSetControllerImpl.addDataJobListener(vcellServices);
 	        exportServiceImpl.addExportListener(vcellServices);
 
 			vcellServices.init();
+			
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				
+				public void run() {
+					System.out.println("Executing shutdown hook");
+					try {
+						vcMessagingService.closeAll();
+					} catch (VCMessagingException e) {
+						e.printStackTrace();
+					}
+					//vcellServices.stopService();
+					System.out.println("done executing vcellServices.stopService()");
+				}
+			});
+
 
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);
