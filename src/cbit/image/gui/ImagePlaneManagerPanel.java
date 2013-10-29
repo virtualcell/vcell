@@ -1435,12 +1435,17 @@ private void updateInfo(MouseEvent mouseEvent) {
 							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()){
 								infoS+="Chombo Info TBI";
 							}else{
-								PDEDataViewer.VolumeDataInfo volumeDataInfo =
-									getDataInfoProvider().getVolumeDataInfo(volumeIndex);
-								
-								infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
-								infoS+= " svID="+volumeDataInfo.subvolumeID;
-								infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+								try{
+									PDEDataViewer.VolumeDataInfo volumeDataInfo =
+										getDataInfoProvider().getVolumeDataInfo(volumeIndex);
+									
+									infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
+									infoS+= " svID="+volumeDataInfo.subvolumeID;
+									infoS+= " vrID="+volumeDataInfo.volumeRegionID;
+								}catch(Exception e){
+									//This can happen with FieldData viewer
+									e.printStackTrace();
+								}
 							}
 						}
 						String curveDescr = CurveRenderer.getROIDescriptions(wc,getCurveRenderer());

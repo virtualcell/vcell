@@ -1271,7 +1271,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 				}else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
 					getClientTaskStatusSupport().setMessage("Reading data from VCell server.");
 					VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
-					PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
+					PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID(),null);
 					ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
 					pdeDataContext.setVariableNameAndTime(docInfo.getVarName(), newImageSizeInfo.getTimePoints()[newImageSizeInfo.getSelectedTimeIndex()]);
 					double[] data = pdeDataContext.getDataValues();
@@ -1355,7 +1355,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument.GeomFromFieldDataCreationInfo docInfo = (VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo;
-			PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID());
+			PDEDataContext pdeDataContext =	getMdiManager().getFieldDataWindowManager().getPDEDataContext(docInfo.getExternalDataID(),null);
 			CartesianMesh mesh = pdeDataContext.getCartesianMesh();
 			ISize meshISize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
 			double[] timePoints = pdeDataContext.getTimePoints();
