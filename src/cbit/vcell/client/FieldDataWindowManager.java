@@ -10,21 +10,29 @@
 
 package cbit.vcell.client;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.Matchable;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -33,32 +41,53 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.data.NewClientPDEDataContext;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.data.SimulationModelInfo;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 
 public class FieldDataWindowManager 
 	extends TopLevelWindowManager
@@ -70,7 +99,7 @@ public class FieldDataWindowManager
 
 	private FieldDataGUIPanel fieldDataGUIPanel;
 	private ExternalDataIdentifier currentlyViewedEDI;
-	private PDEDataViewer currentlyViewedPDEDV;
+	private OutputFunctionViewer currentlyViewedOutputFunctionViewer;
 	
 	
 	public FieldDataWindowManager(FieldDataGUIPanel fdgp, RequestManager requestManager){
@@ -111,9 +140,9 @@ public class FieldDataWindowManager
 	}
 	
 	
-	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI) throws DataAccessException{
+	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI,OutputContext outputContext) throws DataAccessException{
 		return 
-			((PDEDataManager)getRequestManager().getDataManager(null, eDI, true)).getPDEDataContext();
+			((PDEDataManager)getRequestManager().getDataManager(outputContext, eDI, true)).getPDEDataContext();
 	}
 	
 public void viewData(final ExternalDataIdentifier eDI){
@@ -122,22 +151,22 @@ public void viewData(final ExternalDataIdentifier eDI){
 	if(eDI != null && eDI.equals(currentlyViewedEDI) && childWindowManager != null && childWindowManager.getChildWindowFromContext(eDI) != null){
 		childWindowManager.getChildWindowFromContext(eDI).show();
 	} else {
-		if(currentlyViewedPDEDV != null){
+		if(currentlyViewedOutputFunctionViewer != null){
 			if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
-				getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
+				getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedOutputFunctionViewer.getPDEDataViewer());
 			}
-			if(currentlyViewedPDEDV.getPdeDataContext() != null){
-				currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+			if(currentlyViewedOutputFunctionViewer != null){
+				currentlyViewedOutputFunctionViewer.getPDEDataViewer().getPdeDataContext().removePropertyChangeListener(this);
 			}
 		}
-		if(currentlyViewedPDEDV != null){
+		if(currentlyViewedOutputFunctionViewer != null){
 			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(eDI);
 			if (childWindow!=null){
 				childWindow.close();
 			}
 		}
 		currentlyViewedEDI = null;
-		currentlyViewedPDEDV = null;
+		currentlyViewedOutputFunctionViewer = null;
 		if(eDI == null){
 			return;
 		}
@@ -146,7 +175,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataContext newPDEDataContext = getPDEDataContext(eDI);
+				PDEDataContext newPDEDataContext = getPDEDataContext(eDI,null/*(currentlyViewedOutputFunctionViewer==null?null:currentlyViewedOutputFunctionViewer.getOutputContext())*/);
 				hashTable.put("newPDEDataContext", newPDEDataContext);
 			}				
 		};
@@ -155,11 +184,12 @@ public void viewData(final ExternalDataIdentifier eDI){
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {				
 				try{
-					currentlyViewedPDEDV = new PDEDataViewer();
+					PDEDataViewer currentlyViewedPDEDV = new PDEDataViewer();
 					PDEDataContext newPDEDataContext = (PDEDataContext)hashTable.get("newPDEDataContext");
 					currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
 					newPDEDataContext.addPropertyChangeListener(FieldDataWindowManager.this);
 					getLocalRequestManager().getAsynchMessageManager().addDataJobListener(currentlyViewedPDEDV);
+					currentlyViewedOutputFunctionViewer = new OutputFunctionViewer(currentlyViewedPDEDV, FieldDataWindowManager.this,eDI);
 					
 					DataViewerManager dvm = new DataViewerManager(){
 						public void dataJobMessage(DataJobEvent event){
@@ -173,8 +203,8 @@ public void viewData(final ExternalDataIdentifier eDI){
 						}
 						public void removeDataListener(DataListener newListener){
 						}
-						public void startExport(
-								OutputContext outputContext,ExportSpecs exportSpecs){
+						public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
+							getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
 						}
 						public void simStatusChanged(SimStatusEvent simStatusEvent) {
 						}
@@ -194,18 +224,18 @@ public void viewData(final ExternalDataIdentifier eDI){
 					
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 					currentlyViewedEDI = eDI;
-					ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedPDEDV, currentlyViewedEDI, "Field Data Viewer ("+eDI.getName()+")");
+					ChildWindow childWindow = childWindowManager.addChildWindow(currentlyViewedOutputFunctionViewer, currentlyViewedEDI, "Field Data Viewer ("+eDI.getName()+")");
 					childWindow.setSize(600,500);
 					childWindow.setIsCenteredOnParent();
 					childWindow.show();
 
 				} catch (Exception e){
-					if(currentlyViewedPDEDV != null){
+					if(currentlyViewedOutputFunctionViewer != null){
 						if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
-							getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
+							getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedOutputFunctionViewer.getPDEDataViewer());
 						}
-						if(currentlyViewedPDEDV.getPdeDataContext() != null){
-							currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(FieldDataWindowManager.this);
+						if(currentlyViewedOutputFunctionViewer != null){
+							currentlyViewedOutputFunctionViewer.getPDEDataViewer().getPdeDataContext().removePropertyChangeListener(FieldDataWindowManager.this);
 						}
 					}
 					throw e;
@@ -215,8 +245,322 @@ public void viewData(final ExternalDataIdentifier eDI){
 		ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
 	}
 }
+private static class OutputFunctionViewer extends JPanel{
+	private PDEDataViewer pdeDataViewer;
+	private OutputFunctionsPanel outputFunctionsPanel;
+	private Geometry geom;
+	private MathDescription mathDescription;
+	private ExternalDataIdentifier edi;
+	private FieldDataWindowManager fieldDataWindowManager;
+	public OutputFunctionViewer(PDEDataViewer pdeDataViewer,FieldDataWindowManager fieldDataWindowManager,ExternalDataIdentifier edi) throws Exception{
+		this.pdeDataViewer = pdeDataViewer;
+		this.edi = edi;
+		this.fieldDataWindowManager = fieldDataWindowManager;
+		this.outputFunctionsPanel = new OutputFunctionsPanel();
+		CartesianMesh cartesianMesh = pdeDataViewer.getPdeDataContext().getCartesianMesh();
+		VCImageUncompressed vcImage = new VCImageUncompressed(null, new byte[cartesianMesh.getNumVolumeElements()], cartesianMesh.getExtent(), cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
+		this.geom = new Geometry("temp",vcImage);
+		this.mathDescription = new MathDescription("temp");
+		mathDescription.setGeometry(geom);
+		setMathDescVariables();
+		this.pdeDataViewer.setSimNameSimDataID(new SimNameSimDataID("temp", new VCSimulationIdentifier(edi.getKey(), edi.getOwner()),null));
+		this.pdeDataViewer.setSimulationModelInfo(new SimulationModelInfo() {
+			
+			@Override
+			public String getVolumeNamePhysiology(int subVolumeID) {
+				// TODO Auto-generated method stub
+				return "volPhysiology";
+			}
+			
+			@Override
+			public String getVolumeNameGeometry(int subVolumeID) {
+				// TODO Auto-generated method stub
+				return "volGeometry";
+			}
+			
+			@Override
+			public String getSimulationName() {
+				// TODO Auto-generated method stub
+				return "simName";
+			}
+			
+			@Override
+			public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut,
+					boolean bFromGeometry) {
+				// TODO Auto-generated method stub
+				return "membraneName";
+			}
+			
+			@Override
+			public String getContextName() {
+				// TODO Auto-generated method stub
+				return "contextName";
+			}
+		});
+		
+		SimulationOwner simulationOwner = new SimulationOwner() {
+			private OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
+			{
+				outputFunctionContext.addPropertyChangeListener(new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						final String PDEDC_KEY = "PDEDC_KEY";
+						AsynchClientTask task1 = new AsynchClientTask("getPDEDataContext...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+							@Override
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
+								OutputContext outputContext = OutputFunctionViewer.this.getOutputContext();
+								PDEDataContext pdeDataContext = OutputFunctionViewer.this.fieldDataWindowManager.getPDEDataContext(OutputFunctionViewer.this.edi,outputContext);
+								hashTable.put(PDEDC_KEY, pdeDataContext);
+							}
+						};
+						AsynchClientTask task2 = new AsynchClientTask("setPDEDataContext...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+							@Override
+							public void run(Hashtable<String, Object> hashTable) throws Exception {
+								OutputFunctionViewer.this.pdeDataViewer.setPdeDataContext((PDEDataContext)hashTable.get(PDEDC_KEY));
+								setMathDescVariables();
+							}
+						};
+						ClientTaskDispatcher.dispatch(OutputFunctionViewer.this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1,task2},true,false,false,null,true);
+					}
+				});
+			}
+			
+			@Override
+			public void removePropertyChangeListener(PropertyChangeListener listener) {
+				// TODO Auto-generated method stub
+				System.out.println("somebody remove mysimowner listener "+listener);
+			}
+			
+			@Override
+			public Geometry getGeometry() {
+				// TODO Auto-generated method stub
+				return geom;
+			}
+			
+			@Override
+			public void addPropertyChangeListener(PropertyChangeListener listener) {
+				// TODO Auto-generated method stub
+				System.out.println("somebody add mysimowner listener "+listener);
+				
+			}
+			
+			@Override
+			public void removeSimulation(Simulation simulation)
+					throws PropertyVetoException {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void refreshMathDescription() {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public Simulation[] getSimulations() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public OutputFunctionContext getOutputFunctionContext() {
+				// TODO Auto-generated method stub
+				return outputFunctionContext;
+			}
+			
+			@Override
+			public String getName() {
+				// TODO Auto-generated method stub
+				return "temp";
+			}
+			
+			@Override
+			public MathDescription getMathDescription() {
+				// TODO Auto-generated method stub
+				return mathDescription;
+			}
+			
+			@Override
+			public Simulation copySimulation(Simulation simulation)
+					throws PropertyVetoException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public Simulation addNewSimulation() throws PropertyVetoException {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		VCDocument fakeVCDocument = new VCDocument(){
+
+			@Override
+			public boolean compareEqual(Matchable obj) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public String getDescription() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public int getDocumentType() {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public String getName() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Version getVersion() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void refreshDependencies() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void setDescription(String description)
+					throws PropertyVetoException {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void setName(String newName) throws PropertyVetoException {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public String getObjectPathDescription(Object object) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getObjectDescription(Object object) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void gatherIssues(List<Issue> issueList) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		};
+		DocumentWindowManager documentWindowManager = new DocumentWindowManager(pdeDataViewer, fieldDataWindowManager.getRequestManager(), fakeVCDocument){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void simStatusChanged(SimStatusEvent simStatusEvent) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void addResultsFrame(SimulationWindow simWindow) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public VCDocument getVCDocument() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			SimulationWindow haveSimulationWindow(
+					VCSimulationIdentifier vcSimulationIdentifier) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void resetDocument(VCDocument newDocument) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void updateConnectionStatus(ConnectionStatus connStatus) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public boolean isRecyclable() {
+				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			public RequestManager getRequestManager() {
+				// TODO Auto-generated method stub
+				return OutputFunctionViewer.this.fieldDataWindowManager.getRequestManager();
+			}
+			
+		};
+		
+		SimulationWorkspace simulationWorkspace = new SimulationWorkspace(documentWindowManager, simulationOwner);
+		this.pdeDataViewer.setSimulationModelInfo(new SimulationWorkspaceModelInfo(simulationOwner, "temp"));
+
+		setLayout(new BorderLayout());
+		add(pdeDataViewer,BorderLayout.CENTER);
+		add(outputFunctionsPanel,BorderLayout.SOUTH);
+		outputFunctionsPanel.setSimulationWorkspace(simulationWorkspace);
+	}
+	public PDEDataViewer getPDEDataViewer(){
+		return pdeDataViewer;
+	}
+	public OutputContext getOutputContext() throws Exception{
+		Field outputfunctioncontextField = OutputFunctionsPanel.class.getDeclaredField("outputFunctionContext");
+		outputfunctioncontextField.setAccessible(true);
+		OutputFunctionContext outputFunctionContext = (OutputFunctionContext)outputfunctioncontextField.get(outputFunctionsPanel);
+		OutputContext outputContext = new OutputContext(outputFunctionContext.getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
+		return outputContext;
+	}
+	private void setMathDescVariables() throws Exception{
+		AnnotatedFunction[] functions = this.pdeDataViewer.getPdeDataContext().getFunctions();
+		for (int i = 0; i < functions.length; i++) {
+			if(functions[i].getFunctionType().equals(VariableType.VOLUME) && mathDescription.getVariable(functions[i].getName()) == null){
+				mathDescription.addVariable(functions[i]);
+			}
+		}
+		DataIdentifier[] dataIds = this.pdeDataViewer.getPdeDataContext().getDataIdentifiers();
+		for (int i = 0; i < dataIds.length; i++) {
+			if(dataIds[i].getVariableType().equals(VariableType.VOLUME) && mathDescription.getVariable(dataIds[i].getName()) == null){
+				if(!dataIds[i].isFunction()){
+					mathDescription.addVariable(new VolVariable(dataIds[i].getName(), dataIds[i].getDomain()));
+				}
+			}
+		}
+	}
+}
+
 public void propertyChange(PropertyChangeEvent evt) {
-	if(evt.getSource() == currentlyViewedPDEDV.getPdeDataContext() &&
+	if(evt.getSource() == currentlyViewedOutputFunctionViewer.getPDEDataViewer().getPdeDataContext() &&
 			(
 					evt.getPropertyName().equals(PDEDataContext.PROP_CHANGE_FUNC_ADDED) ||
 					evt.getPropertyName().equals(PDEDataContext.PROP_CHANGE_FUNC_REMOVED)

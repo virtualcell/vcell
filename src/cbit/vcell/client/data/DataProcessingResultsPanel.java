@@ -14,6 +14,12 @@ import java.awt.CardLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -22,9 +28,12 @@ import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.ListSelectionModel;
@@ -35,8 +44,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
 
 import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
@@ -45,9 +59,16 @@ import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.ClientMDIManager;
+import cbit.vcell.client.DatabaseWindowManager;
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 
@@ -161,6 +182,10 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 				}
 			}
 		});
+		imageList.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e)  {imageListPopup(e);}
+			public void mouseReleased(MouseEvent e) {imageListPopup(e);}
+		});
 		imageList.setVisibleRowCount(5);
 		imageScrollPane.setViewportView(imageList);
 		
@@ -185,7 +210,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 				if (!source.getValueIsAdjusting()) {
 			        updateImageDisplay();
 			    }
-}
+			}
 		});
 		spatialTimeSlider.setPaintTicks(true);
 		spatialTimeSlider.setValue(5);
@@ -257,6 +282,79 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //		}
 //	}
 
+	private void imageListPopup(MouseEvent e) {
+	    if (e.isPopupTrigger()) { //if the event shows the menu
+	    	
+	    	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this,DocumentWindow.class);
+	    	final RequestManager requestManager = documentWindow.getTopLevelWindowManager().getRequestManager();
+	    	try{
+		    	JPopupMenu jPopupMenu = new JPopupMenu();
+		    	JMenuItem makeFieldData = new JMenuItem("Make Field Data");
+		    	makeFieldData.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try{
+				    		//Massive hack, must not remain
+					    	Method m = requestManager.getClass().getDeclaredMethod("getMdiManager", null);
+					    	m.setAccessible(true);
+					    	ClientMDIManager clientMDIManager = (ClientMDIManager)m.invoke(requestManager, null);
+					    	clientMDIManager.showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
+					    	FieldDataGUIPanel fieldDataGUIPanel = clientMDIManager.getFieldDataWindowManager().getFieldDataGUIPanel();
+					    	
+//							FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
+//							String initialExtDataName = (String)hashTable.get("initFDName");
+
+					    	AsynchClientTask[] newFieldDataTasks = FieldDataGUIPanel.addNewExternalData(DataProcessingResultsPanel.this, fieldDataGUIPanel, false);
+					    	AsynchClientTask[] taskArray = new AsynchClientTask[1 + newFieldDataTasks.length];
+					    	System.arraycopy(newFieldDataTasks, 0, taskArray, 1, newFieldDataTasks.length); // add to the end
+					    	
+					    	taskArray[0] = new AsynchClientTask("get data from PostProcess Image...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+					    		public void run(Hashtable<String, Object> hashTable) throws Exception {
+					    			hashTable.put("initFDName", imageList.getSelectedValue());
+					    			FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+					    			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+					    			fdos.owner = requestManager.getDocumentManager().getUser();
+					    			fdos.variableTypes = new VariableType[dpo.getDataGenerators().size()];
+					    			fdos.varNames = new String[dpo.getDataGenerators().size()];
+					    			fdos.doubleSpecData = new double[dpo.getTimes().length][dpo.getDataGenerators().size()][];
+					    			int index = 0;
+					    			for(String varName:dpo.getDataGenerators().keySet()){
+					    				fdos.variableTypes[index] = VariableType.VOLUME;
+					    				fdos.varNames[index] = varName;
+					    				Vector<SourceDataInfo> sdiV = dpo.getDataGenerators().get(varName);
+					    				if(index==0){
+							    			fdos.times = dpo.getTimes();
+							    			fdos.origin = sdiV.get(0).getOrigin();
+							    			fdos.extent = sdiV.get(0).getExtent();
+							    			fdos.isize = new ISize(sdiV.get(0).getXSize(),sdiV.get(0).getYSize(),sdiV.get(0).getZSize());
+					    				}
+						    			for (int i = 0; i < sdiV.size(); i++) {
+						    				fdos.doubleSpecData[i][index] = (double[])sdiV.get(i).getData();
+										}
+
+					    				index++;
+									}
+					    			hashTable.put("fdos", fdos);
+					    		}
+					    	};
+					    	
+					    	ClientTaskDispatcher.dispatch(DataProcessingResultsPanel.this, new Hashtable<String, Object>(), taskArray, false, true, null);
+					    	
+						}catch(Exception e2){
+				    		e2.printStackTrace();
+				    		DialogUtils.showErrorDialog(DataProcessingResultsPanel.this, e2.getMessage());							
+						}
+					}
+				});
+		    	jPopupMenu.add(makeFieldData);
+		        imageList.setSelectedIndex(imageList.locationToIndex(e.getPoint()));
+		        jPopupMenu.show(imageList, e.getX(), e.getY());
+	    	}catch(Exception e2){
+	    		e2.printStackTrace();
+	    		DialogUtils.showErrorDialog(this, e2.getMessage());
+	    	}
+	    }
+	}
 	private void updateImageDisplay(){
 		String selectedVarName = (String)imageList.getSelectedValue();
 		if(selectedVarName == null){
@@ -444,4 +542,5 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //			update();
 //		}
 //	}
+	
 }

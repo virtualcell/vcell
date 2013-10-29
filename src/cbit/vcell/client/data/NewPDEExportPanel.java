@@ -1173,7 +1173,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 			}
 			public int getNumAvailableSimulations() {
 				if(simulations==null){
-					VCDocument thisDocument = ((DocumentWindowManager)getDataViewerManager()).getVCDocument();
+					VCDocument thisDocument = (getDataViewerManager() instanceof DocumentWindowManager?((DocumentWindowManager)getDataViewerManager()).getVCDocument():null);
 					if(thisDocument instanceof BioModel){
 						String thisSimContextName = dataInfoProvider.getSimulationModelInfo().getContextName();
 						SimulationContext[] simContexts = ((BioModel)thisDocument).getSimulationContexts();
@@ -1187,6 +1187,8 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 						simulations = thisSimulationContext.getSimulations();
 					}else if(thisDocument instanceof MathModel){
 						simulations = ((MathModel)thisDocument).getSimulations();
+					}else{
+						simulations = new Simulation[0];
 					}
 				}
 				return simulations.length;
