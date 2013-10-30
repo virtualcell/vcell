@@ -364,14 +364,16 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		{
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 		}		
-		return createFrapData(dataProcessingOutput, SimDataConstants.FLUOR_DATA_NAME,maxIntensity,progressListener);
+		return createFrapData(dataProcessingOutput, SimDataConstants.FLUOR_DATA_NAME,0,maxIntensity,progressListener);
 	}
 
-	public static FRAPData createFrapData(DataProcessingOutput dataProcessingOutput,String selectedVariableName,Double maxIntensity,ClientTaskStatusSupport progressListener) throws ImageException{
+	public static FRAPData createFrapData(DataProcessingOutput dataProcessingOutput,String selectedVariableName,int slice,Double maxIntensity,ClientTaskStatusSupport progressListener) throws ImageException{
 		// construct 
 		double[] time = dataProcessingOutput.getTimes(); 
 		HashMap<String, Vector<SourceDataInfo>> varMaps = dataProcessingOutput.getDataGenerators();
 		Vector<SourceDataInfo> sdInfo = varMaps.get(SimDataConstants.FLUOR_DATA_NAME);
+		int XY_SIZE = sdInfo.get(0).getXSize()*sdInfo.get(0).getYSize();
+		int Z_SIZE = 1;//sdInfo.get(0).getZSize();
 		// find scalefactor to scale up the data to avoid losing precesion when casting double to short
 		double linearScaleFactor = 1;
 		if(maxIntensity != null)
@@ -390,16 +392,16 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 		UShortImage[] dataImages = new UShortImage[time.length];
 		for (int i = 0; i < time.length; i++) {
 			double[] doubleData = (double[])sdInfo.get(i).getData();
-			short[] shortData = new short[doubleData.length];
-			for(int j=0; j<doubleData.length; j++)
+			short[] shortData = new short[XY_SIZE];
+			for(int j=0; j<shortData.length; j++)
 			{
-				shortData[j] = (short)(doubleData[j]*linearScaleFactor);
+				shortData[j] = (short)(doubleData[j+(slice*XY_SIZE)]*linearScaleFactor);
 			}
 			dataImages[i] = new UShortImage(
 						shortData,
 						sdInfo.get(i).getOrigin(),
 						sdInfo.get(i).getExtent(),
-						sdInfo.get(i).getXSize(),sdInfo.get(i).getYSize(),sdInfo.get(i).getZSize());
+						sdInfo.get(i).getXSize(),sdInfo.get(i).getYSize(),Z_SIZE);
 			
 			if(progressListener != null){
 				int progress = (int)(((i+1)*1.0/time.length)*100);
@@ -407,12 +409,12 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			}
 		}
 		
-		ImageDataset imageDataSet = new ImageDataset(dataImages,time,sdInfo.get(0).getZSize());
+		ImageDataset imageDataSet = new ImageDataset(dataImages,time,Z_SIZE);
 		FRAPData frapData = new FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
 		return frapData;
 	}
-	public static FRAPData importFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput, String selectedVariableName,Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception{
-		FRAPData frapData = createFrapData(dataProcessingOutput, selectedVariableName, maxIntensity, progressListener);
+	public static FRAPData importFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput, String selectedVariableName,int slice,Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception{
+		FRAPData frapData = createFrapData(dataProcessingOutput, selectedVariableName,slice, maxIntensity, progressListener);
 		return frapData;
 	}
 	
