@@ -6,7 +6,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
+import java.util.Vector;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -19,6 +21,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
@@ -27,6 +30,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import javax.swing.JComboBox;
 
 public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 	private DocumentWindowManager documentWindowManager;
@@ -42,6 +46,22 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 				if(wizardParent != null){
 					wizardParent.setNextFinishButtonEnabled(variableName != null);
 				}
+				if(variableName != null && dataProcessingOutput != null && dataProcessingOutput.getDataGenerators().get(variableName) != null){
+					Vector<SourceDataInfo> sourceDataInfoV = dataProcessingOutput.getDataGenerators().get(variableName);
+					int lastSliceSelected = (Integer)comboBox.getSelectedItem();
+					comboBox.setEnabled(true);
+					comboBox.removeAllItems();
+					if(sourceDataInfoV.get(0).getZSize() > 1){
+						for (int i = 0; i < sourceDataInfoV.get(0).getZSize(); i++) {
+							((DefaultComboBoxModel)comboBox.getModel()).addElement(i);
+						}
+						comboBox.setSelectedItem(lastSliceSelected);
+					}else{
+						((DefaultComboBoxModel)comboBox.getModel()).addElement(0);
+						comboBox.setEnabled(false);
+					}
+					
+				}
 			}
 		}
 	};
@@ -49,9 +69,9 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 	public LoadFRAPData_PostProcessingDataPanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		JButton btnNewButton = new JButton("Choose Post Processing Data source...");
@@ -101,7 +121,7 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 			}
 		});
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.insets = new Insets(4, 0, 0, 0);
+		gbc_btnNewButton.insets = new Insets(4, 0, 5, 0);
 		gbc_btnNewButton.gridx = 0;
 		gbc_btnNewButton.gridy = 0;
 		add(btnNewButton, gbc_btnNewButton);
@@ -116,7 +136,7 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.insets = new Insets(4, 4, 5, 4);
+		gbc_scrollPane.insets = new Insets(0, 4, 4, 4);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 2;
@@ -124,10 +144,29 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 		
 		list = new JList();
 		scrollPane.setViewportView(list);
+		
+		lblNewLabel = new JLabel("Select 2D Z-slice:");
+		GridBagConstraints gbc_lblNewLabel2 = new GridBagConstraints();
+		gbc_lblNewLabel2.gridx = 0;
+		gbc_lblNewLabel2.gridy = 3;
+		add(lblNewLabel, gbc_lblNewLabel2);
+		
+		comboBox = new JComboBox();
+		GridBagConstraints gbc_comboBox = new GridBagConstraints();
+		gbc_comboBox.insets = new Insets(0, 4, 4, 4);
+		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBox.gridx = 0;
+		gbc_comboBox.gridy = 4;
+		add(comboBox, gbc_comboBox);
+		((DefaultComboBoxModel)comboBox.getModel()).addElement(0);
+		comboBox.setEnabled(false);
 	}
 	
 	public String getSelectedVariableName(){
 		return variableName;
+	}
+	public int getSelectedSlice(){
+		return (Integer)comboBox.getSelectedItem();
 	}
 	public void setDocumentWindowManager(DocumentWindowManager documentWindowManager){
 		this.documentWindowManager = documentWindowManager;
@@ -136,6 +175,8 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 		return dataProcessingOutput;
 	}
 	private Wizard wizardParent;
+	private JComboBox comboBox;
+	private JLabel lblNewLabel;
 	public void setWizard(Wizard wizardParent){
 		this.wizardParent = wizardParent;
 		if(wizardParent != null){

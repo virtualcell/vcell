@@ -64,9 +64,9 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
 		AsynchClientTask loadTask = new AsynchClientTask(LOADING_MESSAGE, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception{
 				String selectedVariableName = postProcessingDataPanel.getSelectedVariableName();
+				int selectedSlice = postProcessingDataPanel.getSelectedSlice();
 				DataProcessingOutput dataProcessingOutput = postProcessingDataPanel.getDataProcessingOutput();
-//				Vector<SourceDataInfo> sourceDataInfoV = dataProcessingOutput.getDataGenerators().get(selectedVariableName);
-				FRAPStudy newFRAPStudy = FRAPWorkspace.loadFRAPDataFromDataProcessingOutput(dataProcessingOutput,selectedVariableName, 65535.0,this.getClientTaskStatusSupport());
+				FRAPStudy newFRAPStudy = FRAPWorkspace.loadFRAPDataFromDataProcessingOutput(dataProcessingOutput,selectedVariableName,selectedSlice, 65535.0,this.getClientTaskStatusSupport());
 				isFileLoaded = true;
 				hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
 			}

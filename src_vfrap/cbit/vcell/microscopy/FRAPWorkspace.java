@@ -64,12 +64,12 @@ public abstract class FRAPWorkspace
 		
 		return newFrapStudy;
 	}
-	public static FRAPStudy loadFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput,String selectedVariableName, Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	public static FRAPStudy loadFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput,String selectedVariableName, int slice,Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
-		newFrapData = FRAPData.importFRAPDataFromDataProcessingOutput(dataProcessingOutput, selectedVariableName,maxIntensity, clientTaskStatusSupport);
+		newFrapData = FRAPData.importFRAPDataFromDataProcessingOutput(dataProcessingOutput, selectedVariableName,slice,maxIntensity, clientTaskStatusSupport);
 		newFrapStudy.setFrapData(newFrapData);
 		return newFrapStudy;
 	}
