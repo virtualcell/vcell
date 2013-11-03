@@ -10,6 +10,9 @@
 
 package cbit.vcell.client.test;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
@@ -45,6 +48,12 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
+	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
+		List<String> newArgs = new ArrayList<String>();
+		newArgs.addAll(Arrays.asList(args));
+		newArgs.remove(0);
+		args = newArgs.toArray(new String[0]);
+	}
 	StringBuffer stringBuffer = new StringBuffer();
 	for (int i = 0; i < args.length; i++){
 		stringBuffer.append("arg"+i+"=\""+args[i]+"\" ");
