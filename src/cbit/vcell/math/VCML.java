@@ -227,6 +227,7 @@ public class VCML {
 	public final static String ROIExpression = "ROIExpression";
 	public final static String MeshRefinement = "MeshRefinement";
 	public final static String RefinementLevel = "RefinementLevel";
+	public final static String ViewLevel = "ViewLevel";
 	public final static String ChomboBox = "ChomboBox";
 	public final static String NumOfLevels = "NumOfLevels";
 	public final static String NumOfBoxes = "NumOfBoxes";

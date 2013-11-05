@@ -10,8 +10,10 @@
 
 package cbit.vcell.solver.ode.gui;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
@@ -23,11 +25,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.RefinementLevel;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.GuiUtils;
+
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -70,6 +73,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JLabel labelFinestMesh;
 	private JLabel labelRefinementRoiTitle;
 	private JLabel labelRefinementRoi;
+	private JLabel labelViewLevelMeshTitle;
+	private JLabel labelViewLevelMesh;
 	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
@@ -147,33 +152,18 @@ private void displayMesh() {
       if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
 				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
 				String labelText = "";
-				switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
+				int dimension = getSimulation().getMeshSpecification().getGeometry().getDimension();
+				switch (dimension) {
 					case 0 :
 					{
 				    labelText = "error: no mesh expected";
 				    break;
 					}
-					case 1 :
+					default :
 					{
-				    labelText = samplingSize.getX() + " elements";
+				    labelText = GuiUtils.getMeshSizeText(dimension, samplingSize, true) + " elements";
 				    break;
 					}
-					case 2 :
-					{
-					    // 06/12/2002 JMW Replaced this line...
-						//labelText = "("+samplingSize.getX()+","+samplingSize.getY()+") elements";
-						labelText = samplingSize.getX() + "x" + samplingSize.getY() + " = " +
-							samplingSize.getX() * samplingSize.getY() + " elements";
-					  break;
-					}
-					case 3 :
-					{
-					    // 06/12/2002 JMW Replaced this line...
-						//labelText = "("+samplingSize.getX()+","+samplingSize.getY()+","+samplingSize.getZ()+") elements";
-						labelText = samplingSize.getX() + "x" + samplingSize.getY() + "x" + samplingSize.getZ() + " = " +
-							samplingSize.getX() * samplingSize.getY() * samplingSize.getZ() + " elements";
-					  break;
-				  }
 				}
 				getJLabelMesh().setText(labelText);
 
@@ -185,13 +175,8 @@ private void displayMesh() {
 					labelFinestMeshTitle.setVisible(true);
 					labelFinestMesh.setVisible(true);
 					
-					ISize finestISize = chomboSolverSpec.getFinestSamplingSize(getSimulation().getMeshSpecification().getSamplingSize());
-					int nx = finestISize.getX();
-					int ny = finestISize.getY();
-					int nz = finestISize.getZ();
-					String text = (getSimulation().getMeshSpecification().getGeometry().getDimension() == 2 
-							? nx + "x" + ny + " = " + nx * ny
-							: nx + "x" + ny + "x" + nz + " = " + nx * ny * nz) + " elements";
+					ISize finestISize = chomboSolverSpec.getFinestSamplingSize(samplingSize);
+					String text = GuiUtils.getMeshSizeText(dimension, finestISize, true);
 					labelFinestMesh.setText(text);
 					boolean bHasRefinement = numRefinementLevels > 0;
 					if (bHasRefinement) {
@@ -205,6 +190,9 @@ private void displayMesh() {
 						getJLabelMeshRefinement().setText(refinementText);
 						labelRefinementRoiTitle.setVisible(true);
 						labelRefinementRoi.setVisible(true);
+						labelViewLevelMeshTitle.setVisible(true);
+						labelViewLevelMesh.setVisible(true);
+						labelViewLevelMesh.setText(GuiUtils.getMeshSizeText(dimension, chomboSolverSpec.getViewLevelSamplingSize(samplingSize), true));
 						if (chomboSolverSpec.hasRefinementRoi())
 						{
 							labelRefinementRoi.setText(chomboSolverSpec.getRefinementRoiDisplayLable());
@@ -220,6 +208,8 @@ private void displayMesh() {
 						labelFinestMesh.setVisible(false);
 						labelRefinementRoiTitle.setVisible(false);
 						labelRefinementRoi.setVisible(false);
+						labelViewLevelMeshTitle.setVisible(false);
+						labelViewLevelMesh.setVisible(false);
 					}
         } else {
         	labelMeshRefinementTitle.setVisible(false);
@@ -228,6 +218,8 @@ private void displayMesh() {
         	labelFinestMeshTitle.setVisible(false);
 					labelRefinementRoiTitle.setVisible(false);
 					labelRefinementRoi.setVisible(false);
+					labelViewLevelMeshTitle.setVisible(false);
+					labelViewLevelMesh.setVisible(false);
         }
       }
     } catch (Exception exc) {
@@ -717,73 +709,73 @@ private JPanel getSettingsPanel() {
 		settingsPanel = new JPanel(new GridBagLayout());
 		
 		int gridy = 0;		
-		java.awt.GridBagConstraints constraintsJLabel12 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel12 = new GridBagConstraints();
 		constraintsJLabel12.gridx = 0; 
 		constraintsJLabel12.gridy = gridy;
-		constraintsJLabel12.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel12.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(getJLabel12(), constraintsJLabel12); // timestep
 		
-		java.awt.GridBagConstraints constraintsJLabel13 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel13 = new GridBagConstraints();
 		constraintsJLabel13.gridx = 1; 
 		constraintsJLabel13.gridy = gridy;
-		constraintsJLabel13.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel13.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(new JLabel("output", javax.swing.SwingConstants.CENTER), constraintsJLabel13); // output
 		
-		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 2; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(getJLabelRelTol(), gbc); // rel tol
 
-		gbc = new java.awt.GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 3; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(getJLabelAbsTol(), gbc); // abs tol	
 		
-		java.awt.GridBagConstraints constraintsJLabel10 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel10 = new GridBagConstraints();
 		constraintsJLabel10.gridx = 4; 
 		constraintsJLabel10.gridy = gridy;
-		constraintsJLabel10.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel10.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(getJLabel10(), constraintsJLabel10);
 		
-		gbc = new java.awt.GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 5; 
 		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		settingsPanel.add(new JLabel(), gbc); // abs tol	
 		
 		gridy ++;		
-		java.awt.GridBagConstraints constraintsJLabelTimestep = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabelTimestep = new GridBagConstraints();
 		constraintsJLabelTimestep.gridx = 0; 
 		constraintsJLabelTimestep.gridy = gridy;
-		constraintsJLabelTimestep.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsJLabelTimestep.insets = new Insets(0, 4, 4, 4);
 		settingsPanel.add(getJLabelTimestep(), constraintsJLabelTimestep);
 
-		java.awt.GridBagConstraints constraintsJLabelOutput = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabelOutput = new GridBagConstraints();
 		constraintsJLabelOutput.gridx = 1; 
 		constraintsJLabelOutput.gridy = gridy;
-		constraintsJLabelOutput.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsJLabelOutput.insets = new Insets(0, 4, 4, 4);
 		settingsPanel.add(getJLabelOutput(), constraintsJLabelOutput);
 
-		gbc = new java.awt.GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 2; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		settingsPanel.add(getJLabelRelTolValue(), gbc);
 		
-		gbc = new java.awt.GridBagConstraints();
+		gbc = new GridBagConstraints();
 		gbc.gridx = 3; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.insets = new Insets(0, 4, 4, 4);
 		settingsPanel.add(getJLabelAbsTolValue(), gbc);
 		
-		java.awt.GridBagConstraints constraintsJLabelSensitivity = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabelSensitivity = new GridBagConstraints();
 		constraintsJLabelSensitivity.gridx = 4; 
 		constraintsJLabelSensitivity.gridy = gridy;
-		constraintsJLabelSensitivity.insets = new java.awt.Insets(0, 4, 4, 4);
+		constraintsJLabelSensitivity.insets = new Insets(0, 4, 4, 4);
 		settingsPanel.add(getJLabelSensitivity(), constraintsJLabelSensitivity);
 
 	}
@@ -800,128 +792,148 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		
 		int gridy = 0;
-		java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel2 = new GridBagConstraints();
 		constraintsJLabel2.gridx = 0; 
 		constraintsJLabel2.gridy = gridy;
-		constraintsJLabel2.anchor = java.awt.GridBagConstraints.LINE_END;
-		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel2.anchor = GridBagConstraints.LINE_END;
+		constraintsJLabel2.insets = new Insets(4, 4, 4, 4);
 		add(new JLabel("Annotation:"), constraintsJLabel2);
 
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJScrollPane1 = new GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; 
 		constraintsJScrollPane1.gridy = gridy;
 		constraintsJScrollPane1.gridwidth = GridBagConstraints.REMAINDER;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJScrollPane1.fill = GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJScrollPane1.insets = new Insets(4, 4, 4, 4);
 		add(new JScrollPane(getJTextAreaDescription()), constraintsJScrollPane1);
 				
 		gridy ++;
-		java.awt.GridBagConstraints constraintsJLabel3 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel3 = new GridBagConstraints();
 		constraintsJLabel3.gridx = 0; 
 		constraintsJLabel3.gridy = gridy;
-		constraintsJLabel3.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel3.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel3.anchor = GridBagConstraints.EAST;
+		constraintsJLabel3.insets = new Insets(4, 4, 4, 4);
 		add(new JLabel("Settings:"), constraintsJLabel3); // Time:
 
-		java.awt.GridBagConstraints  gbc = new java.awt.GridBagConstraints();
+		GridBagConstraints  gbc = new GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 3;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(4, 4, 4, 4);
 		add(getSettingsPanel(), gbc); 	
 		
 		gridy ++;
-		java.awt.GridBagConstraints constraintsJLabel11 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel11 = new GridBagConstraints();
 		constraintsJLabel11.gridx = 0; 
 		constraintsJLabel11.gridy = gridy;
-		constraintsJLabel11.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel11.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel11.anchor = GridBagConstraints.EAST;
+		constraintsJLabel11.insets = new Insets(4, 4, 4, 4);
 		add(getJLabel11(), constraintsJLabel11); // Mesh:
 
-		java.awt.GridBagConstraints constraintsJLabelMesh = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabelMesh = new GridBagConstraints();
 		constraintsJLabelMesh.gridx = 1; 
 		constraintsJLabelMesh.gridy = gridy;
 		constraintsJLabelMesh.weightx = 1.0;
 		constraintsJLabelMesh.gridwidth = 2;
-		constraintsJLabelMesh.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelMesh.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabelMesh.fill = GridBagConstraints.HORIZONTAL;
+		constraintsJLabelMesh.insets = new Insets(4, 4, 4, 4);
 		add(getJLabelMesh(), constraintsJLabelMesh);
 
-		java.awt.GridBagConstraints constraintsJLabel8 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabel8 = new GridBagConstraints();
 		constraintsJLabel8.gridx = 3; 
 		constraintsJLabel8.gridy = gridy;
-		constraintsJLabel8.anchor = java.awt.GridBagConstraints.EAST;
-		constraintsJLabel8.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabel8.anchor = GridBagConstraints.EAST;
+		constraintsJLabel8.insets = new Insets(4, 4, 4, 4);
 		add(getJLabel8(), constraintsJLabel8); // Geometry Size
 
-		java.awt.GridBagConstraints constraintsJLabelGeometrySize = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsJLabelGeometrySize = new GridBagConstraints();
 		constraintsJLabelGeometrySize.gridx = 4; 
 		constraintsJLabelGeometrySize.gridy = gridy;
 		constraintsJLabelGeometrySize.weightx = 1.0;
-		constraintsJLabelGeometrySize.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsJLabelGeometrySize.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJLabelGeometrySize.fill = GridBagConstraints.HORIZONTAL;
+		constraintsJLabelGeometrySize.insets = new Insets(4, 4, 4, 4);
 		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
 
 		gridy ++;
-		java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
-		constraints.gridx = 0; constraints.gridy = gridy;
-		constraints.anchor = java.awt.GridBagConstraints.EAST;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.gridx = 0; 
+		constraints.gridy = gridy;
+		constraints.anchor = GridBagConstraints.EAST;
+		constraints.insets = new Insets(4, 4, 4, 4);
 		labelMeshRefinementTitle = new JLabel("Mesh Refinement:");
 		add(labelMeshRefinementTitle, constraints);
 		
-		constraints = new java.awt.GridBagConstraints();
-		constraints.gridx = 1; constraintsJLabelMesh.gridy = gridy;
-		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraints = new GridBagConstraints();
+		constraints.gridx = 1; 
+		constraints.gridy = gridy;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.gridwidth = 2;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraints.insets = new Insets(4, 4, 4, 4);
 		add(getJLabelMeshRefinement(), constraints);
 		
-		constraints = new java.awt.GridBagConstraints();
+		constraints = new GridBagConstraints();
 		constraints.gridx = 3; constraints.gridy = gridy;
-		constraints.anchor = java.awt.GridBagConstraints.EAST;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraints.anchor = GridBagConstraints.EAST;
+		constraints.insets = new Insets(4, 4, 4, 4);
 		labelFinestMeshTitle = new JLabel("Finest Level Mesh:");
 		add(labelFinestMeshTitle, constraints);
 		
-		constraints = new java.awt.GridBagConstraints();
+		constraints = new GridBagConstraints();
 		constraints.gridx = 4; constraintsJLabelMesh.gridy = gridy;
-		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.gridwidth = GridBagConstraints.REMAINDER;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraints.insets = new Insets(4, 4, 4, 4);
 		labelFinestMesh = new JLabel();
 		labelFinestMesh.setForeground(java.awt.Color.blue);
 		add(labelFinestMesh, constraints);
 		
 		gridy ++;
-		constraints = new java.awt.GridBagConstraints();
+		constraints = new GridBagConstraints();
 		constraints.gridx = 0; constraints.gridy = gridy;
-		constraints.anchor = java.awt.GridBagConstraints.EAST;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraints.anchor = GridBagConstraints.EAST;
+		constraints.insets = new Insets(4, 4, 4, 4);
 		labelRefinementRoiTitle = new JLabel("Refinement ROI(s):");
 		add(labelRefinementRoiTitle, constraints);
 		
-		constraints = new java.awt.GridBagConstraints();
+		constraints = new GridBagConstraints();
 		constraints.gridx = 1; 
 		constraintsJLabelMesh.gridy = gridy;
-		constraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraints.gridwidth = 3;
-		constraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.gridwidth = 2;
+		constraints.insets = new Insets(4, 4, 4, 4);
 		add(getRefinementRoi(), constraints);
 
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.EAST;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		labelViewLevelMeshTitle = new JLabel("View Level Mesh:");
+		add(labelViewLevelMeshTitle, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4; 
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		labelViewLevelMesh = new JLabel();
+		labelViewLevelMesh.setForeground(Color.blue);
+		add(labelViewLevelMesh, gbc);
+		
 		gridy ++;
-		java.awt.GridBagConstraints constraintsMathOverridesPanel1 = new java.awt.GridBagConstraints();
+		GridBagConstraints constraintsMathOverridesPanel1 = new GridBagConstraints();
 		constraintsMathOverridesPanel1.gridx = 0; 
 		constraintsMathOverridesPanel1.gridy = gridy;
 		constraintsMathOverridesPanel1.gridwidth = GridBagConstraints.REMAINDER;
-		constraintsMathOverridesPanel1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsMathOverridesPanel1.fill = GridBagConstraints.BOTH;
 		constraintsMathOverridesPanel1.weightx = 1.0;
 		constraintsMathOverridesPanel1.weighty = 1.0;
-		constraintsMathOverridesPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsMathOverridesPanel1.insets = new Insets(4, 4, 4, 4);
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Parameters with values changed from defaults");
 		collapsiblePanel.getContentPanel().setLayout(new BorderLayout());
 		collapsiblePanel.getContentPanel().add(getMathOverridesPanel1(), BorderLayout.CENTER);
@@ -949,7 +961,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		java.awt.Insets insets = frame.getInsets();
+		Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
 	} catch (Throwable exception) {

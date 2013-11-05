@@ -4180,6 +4180,10 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		maxBoxSize.setText(param.getMaxBoxSize() + "");
 		chomboElement.addContent(maxBoxSize);
 		
+		Element viewLevel = new Element(XMLTags.ViewLevelTag);
+		viewLevel.setText(param.getViewLevel() + "");
+		chomboElement.addContent(viewLevel);
+		
 		Element fillRatio = new Element(XMLTags.FillRatioTag);
 		fillRatio.setText(param.getFillRatio() + "");
 		chomboElement.addContent(fillRatio);
