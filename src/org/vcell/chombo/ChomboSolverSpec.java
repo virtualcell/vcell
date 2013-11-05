@@ -28,8 +28,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private ArrayList<RefinementLevel> refinementLevelList = new ArrayList<RefinementLevel>();
 	public static String PROPERTY_NAME_MAX_BOX_SIZE = "maxBoxSize";
 	public static String PROPERTY_NAME_FILL_RATIO = "fillRatio";
+
 	private transient PropertyChangeSupport propertyChange;
 	private transient VetoableChangeSupport vetoChange;
+	private int viewLevel = 0;
 
 	public ChomboSolverSpec(int maxBoxSize) {
 		this.maxBoxSize = maxBoxSize;
@@ -38,6 +40,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public ChomboSolverSpec(ChomboSolverSpec css) {
 		this.maxBoxSize = css.maxBoxSize;
 		this.fillRatio = css.fillRatio;
+		this.viewLevel = css.viewLevel;
 		this.refinementLevelList = new ArrayList<RefinementLevel>();
 		for (RefinementLevel rl : css.refinementLevelList)
 		{
@@ -45,10 +48,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 	}
 	
-	public ChomboSolverSpec(int maxBoxSize, double fillRatio, ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
+	public ChomboSolverSpec(int maxBoxSize, double fillRatio, int viewLevel, ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
 		super();
 		this.maxBoxSize = maxBoxSize;
 		this.fillRatio = fillRatio;
+		this.viewLevel = viewLevel;
 		refinementLevelList = refineLevelList;
 		addVetoableChangeListener(this);
 	}
@@ -76,10 +80,20 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	}
 
 	public void addRefinementLevel(RefinementLevel rfl) {
+		int lastRefineIndex = refinementLevelList.size();
 		refinementLevelList.add(rfl);
+		if (viewLevel == lastRefineIndex) // finest level was chosen
+		{
+			viewLevel = refinementLevelList.size();
+		}
 	}
 	
 	public void deleteRefinementLevel() {
+		int lastRefineIndex = refinementLevelList.size();
+		if (viewLevel >= lastRefineIndex) // finest level was chosen
+		{
+			viewLevel --;
+		}
 		refinementLevelList.remove(refinementLevelList.size() - 1);
 	}
 
@@ -88,17 +102,28 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	}
 	
 	public ISize getFinestSamplingSize(ISize coarsestSize) {
+		return getLevelSamplingSize(coarsestSize, refinementLevelList.size());
+	}
+
+	public ISize getLevelSamplingSize(ISize coarsestSize, int level) {
 		int xsize = coarsestSize.getX();
 		int ysize = coarsestSize.getY();
 		int zsize = coarsestSize.getZ();
-		for (RefinementLevel rfl : refinementLevelList) {
+		for (int i = 0; i < level; ++ i) {
+			RefinementLevel rfl = refinementLevelList.get(i);
 			xsize *= rfl.getRefineRatio();
 			ysize *= rfl.getRefineRatio();
 			zsize *= rfl.getRefineRatio();
 		}
 		return new ISize(xsize, ysize, zsize);
 	}
-
+	
+	public ISize getViewLevelSamplingSize(ISize coarsestSize) 
+	{
+		return getLevelSamplingSize(coarsestSize, viewLevel);
+	}
+	
+	
 	public boolean compareEqual(Matchable object) {
 		if (this == object) {
 			return (true);
@@ -109,6 +134,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		
 		ChomboSolverSpec chomboSolverSpec = (ChomboSolverSpec) object;
 		if (chomboSolverSpec.maxBoxSize != maxBoxSize)
+		{
+			return false;
+		}
+		if (chomboSolverSpec.viewLevel != viewLevel)
 		{
 			return false;
 		}
@@ -132,6 +161,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append(VCML.ChomboSolverSpec + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t" + VCML.MaxBoxSize + " " + maxBoxSize + "\n");
 		buffer.append("\t" + VCML.FillRatio + " " + fillRatio + "\n");
+		buffer.append("\t" + VCML.ViewLevel + " " + viewLevel + "\n");
 		buffer.append("\t" + VCML.MeshRefinement + " " + VCML.BeginBlock + "\n");
 		for (RefinementLevel level : refinementLevelList) {
 			buffer.append(level.getVCML());
@@ -162,6 +192,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				maxBoxSize = Integer.parseInt(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.ViewLevel))
+			{
+				token = tokens.nextToken();
+				viewLevel = Integer.parseInt(token);
 			}
 			else if (token.equalsIgnoreCase(VCML.FillRatio))
 			{
@@ -300,5 +335,13 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			}
 		}
 		return errorMessage;
+	}
+	
+	public int getViewLevel() {
+		return viewLevel;
+	}
+
+	public void setViewLevel(int viewLevel) {
+		this.viewLevel = viewLevel;
 	}
 }

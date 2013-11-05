@@ -6224,6 +6224,12 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 		{
 			maxBoxSize = Integer.parseInt(maxBoxSizeElement.getText());
 		}
+		Element viewLevelElement = element.getChild(XMLTags.ViewLevelTag, vcNamespace);
+		Integer viewLevel = null;
+		if (viewLevelElement != null)
+		{
+			viewLevel = Integer.parseInt(viewLevelElement.getText());
+		}
 		Element fillRatioElement = element.getChild(XMLTags.FillRatioTag, vcNamespace);
 		double fillRatio = ChomboSolverSpec.getDefaultFillRatio();
 		if (fillRatioElement != null)
@@ -6248,7 +6254,11 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 					refineLevelList.add(rfl);
 				}
 			}
-			return new ChomboSolverSpec(maxBoxSize, fillRatio, refineLevelList);
+			if (viewLevel == null)
+			{
+				viewLevel = refineLevelList.size();
+			}
+			return new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, refineLevelList);
 		} catch (ExpressionException e) {
 			throw new XmlParseException(e);
 		}

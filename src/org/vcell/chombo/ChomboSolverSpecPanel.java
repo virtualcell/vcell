@@ -20,22 +20,27 @@ import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
+import org.w3c.dom.css.ViewCSS;
 
 import cbit.vcell.client.GuiConstants;
 import cbit.vcell.parser.ExpressionException;
@@ -54,9 +59,14 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 				addLevelButton_actionPerformed();
 			} else if (e.getSource() == getDeleteLevelButton()) {
 				deleteLevelButton_actionPerformed();
-			} else if (e.getSource() == maxBoxSizeComboBox)
+			} 
+			else if (e.getSource() == maxBoxSizeComboBox)
 			{
 				setMaxBoxSize();
+			}
+			else if (e.getSource() == viewLevelComboBox)
+			{
+				setViewLevel();
 			}
 			else {
 				String cmd = e.getActionCommand();	
@@ -137,6 +147,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 	private JTextField finestSizeTextField;
 	private JTextField finestDxTextField;
 	private CollapsiblePanel refinementPanel;
+	private JComboBox viewLevelComboBox = null;
 	
 	private InputVerifier roiInputVerifier = new InputVerifier()
 	{
@@ -264,6 +275,22 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			maxBoxSizeComboBox.addItem(new Integer(start));
 			start *= 2;
 		}
+		viewLevelComboBox = new JComboBox();
+		viewLevelComboBox.setRenderer(new DefaultListCellRenderer() {
+			
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value,
+					int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if ((Integer)value <= simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels())
+				{
+					int dim = simulation.getMathDescription().getGeometry().getDimension();
+					ISize xyz = simulation.getSolverTaskDescription().getChomboSolverSpec().getLevelSamplingSize(simulation.getMeshSpecification().getSamplingSize(), (Integer)value);
+					setText(GuiUtils.getMeshSizeText(dim, xyz, false));
+				}
+				return this;
+			}
+		});
 		
 		fillRatioTextField = new JTextField(10);
 		fillRatioTextField.addFocusListener(ivjEventHandler);
@@ -301,6 +328,22 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		gbc.weightx = 1.0;
 		gbc.anchor = GridBagConstraints.WEST;
 		northPanel.add(fillRatioTextField, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
+		gbc.gridx = 4;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.EAST;
+		northPanel.add(new JLabel("View Level"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.gridx = 5;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		northPanel.add(viewLevelComboBox, gbc);
 		
 		getContentPanel().setLayout(new BorderLayout(0, 2));
 		getContentPanel().add(northPanel, BorderLayout.NORTH);
@@ -400,7 +443,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 
 	private void addLevelButton_actionPerformed() {	
 		simulation.getSolverTaskDescription().getChomboSolverSpec().addRefinementLevel(new RefinementLevel());
-		addLevel(simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels()-1);
+		int levelIndex = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels()-1;
+		addLevel(levelIndex);
+		viewLevelComboBox.addItem(levelIndex + 1);
+		viewLevelComboBox.setSelectedItem(simulation.getSolverTaskDescription().getChomboSolverSpec().getViewLevel());
 	}
 
 	private void updateFinestInfoPanel()
@@ -510,7 +556,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 
 	private void deleteLevelButton_actionPerformed() {
 		int lastIndex = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels() - 1;
-		
+
+		viewLevelComboBox.removeItem(lastIndex + 1);
 		simulation.getSolverTaskDescription().getChomboSolverSpec().deleteRefinementLevel();
 		JPanel panel = levelPanels.get(lastIndex);
 		levelPanels.remove(panel);
@@ -518,6 +565,8 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		
 		JComboBox comboBox = refinementRatioComboBoxes.remove(lastIndex);
 		comboBox.removeActionListener(ivjEventHandler);
+
+		viewLevelComboBox.setSelectedItem(simulation.getSolverTaskDescription().getChomboSolverSpec().getViewLevel());
 
 		updateFinestInfoPanel();
 		updateUI();
@@ -538,13 +587,17 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		levelPanels.clear();
 		refinementRatioComboBoxes.clear();
 		
+		viewLevelComboBox.addItem(new Integer(0));
 		if (simulation.getSolverTaskDescription().getChomboSolverSpec() != null) {
 			int numLevels = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
 			for (int i = 0; i < numLevels; ++ i) 
 			{
 				addLevel(i);
+				viewLevelComboBox.addItem(i + 1);
 			}
 		}
+		viewLevelComboBox.setSelectedItem(simulation.getSolverTaskDescription().getChomboSolverSpec().getViewLevel());
+		viewLevelComboBox.addActionListener(ivjEventHandler);
 	}
 
 	public final void setSimulation(Simulation newValue) {
@@ -582,6 +635,10 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		{
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
+	}
+	
+	private void setViewLevel() {
+		simulation.getSolverTaskDescription().getChomboSolverSpec().setViewLevel((Integer)viewLevelComboBox.getSelectedItem());
 	}
 	
 	private void setRefRatio(int levelIndex) {

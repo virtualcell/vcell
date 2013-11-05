@@ -599,6 +599,7 @@ public class XMLTags {
 	//ChomboSolverSpec Option 
     public final static String ChomboSolverSpec = "ChomboSolverSpec";
     public final static String MaxBoxSizeTag = "MaxBoxSize";
+    public final static String ViewLevelTag = "ViewLevel";
     public final static String FillRatioTag = "FillRatio";
     public final static String ROIExpressionTag = "ROIExpression";
     public final static String MeshRefinementTag = "MeshRefinement";

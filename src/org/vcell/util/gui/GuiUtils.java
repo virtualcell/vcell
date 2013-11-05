@@ -28,6 +28,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.vcell.util.ISize;
+
 import cbit.vcell.desktop.BioModelNode;
 
 public class GuiUtils {
@@ -132,5 +134,22 @@ public class GuiUtils {
 		JLabel label = new JLabel(text);
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		return label;
+	}
+	
+	public static String getMeshSizeText(int dim, ISize size, boolean bTotal)
+	{
+		int nx = size.getX();
+		int ny = size.getY();
+		int nz = size.getZ();
+		switch (dim)
+		{
+		case 1:
+			return nx + (bTotal ? " = " + nx : "");
+		case 2:
+			return nx + "x" + ny + (bTotal ? " = " + nx * ny : "");
+		case 3:
+			return nx + "x" + ny + "x" + nz + (bTotal ? " = " + size.getXYZ() : "");
+		}
+		return null;
 	}
 }

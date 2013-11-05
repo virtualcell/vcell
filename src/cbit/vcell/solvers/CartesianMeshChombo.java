@@ -523,7 +523,8 @@ public class CartesianMeshChombo extends CartesianMesh {
 			else if (me.level > viewLevel)
 			{
 			  // in this case we need to convert the coordinates to the fine mesh to find the correct membrane element in me.level
-				throw new RuntimeException("View level can only be finest level for now");
+				// we will worry about this later.
+				return -1;
 			}
 			if (ci0.x == ci1.x && ci0.y == ci1.y && (dimension == 2 || ci0.z == ci1.z))
 			{
