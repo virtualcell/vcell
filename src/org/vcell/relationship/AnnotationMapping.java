@@ -220,7 +220,7 @@ public class AnnotationMapping {
 		return xRef;
 	}
 	
-	private static ArrayList<String> getNameRef(ArrayList<Xref> xRef, String entryName){
+	public static ArrayList<String> getNameRef(ArrayList<Xref> xRef, String entryName){
 		ArrayList<String> names = new ArrayList<String>();
 		for(Xref xref : xRef){
 			try {
@@ -242,8 +242,19 @@ public class AnnotationMapping {
 					String name = DataBaseReferenceReader.getGOTerm(xref.getId());
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
-				}else{
-					System.out.println(xref.getDb());
+				}
+//				else if(xref.getDb().toLowerCase().equals("ec-code")){
+//					WSDBFetchServerServiceLocator providerLocator = new WSDBFetchServerServiceLocator();
+//					WSDBFetchServer server = providerLocator.getWSDbfetch();
+//					String[] supported = server.getSupportedDBs();
+//					for (int i = 0; i < supported.length; i++) {
+//						System.out.println(supported[i]);
+//					}
+//					String fetchResultStr = server.fetchBatch("embl", xref.getId(),null,null);
+//					System.out.println(xref.getId() + ">>>>>>> lookup"+fetchResultStr);
+//				}
+				else{
+					//System.out.println(xref.getDb());
 				}
 			} catch (DbfConnException e) {
 				// TODO Auto-generated catch block
@@ -272,7 +283,7 @@ public class AnnotationMapping {
 			}
 		}
 
-		if(names.size() == 0) names.add(entryName);
+		if(names.size() == 0 && entryName != null) names.add(entryName);
 		return names;
 	}
 	
