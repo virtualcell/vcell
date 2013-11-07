@@ -68,21 +68,34 @@ public class AnnotationMapping {
 		// check whether the object is existed: if so, check the linkage, if not linked -> add linkage
 		 //			  otherwise, create object and add link
 		 if(type.equals(VCID.CLASS_SPECIES) ){
-			SpeciesContext speciesContext = bioModel.getModel().getSpeciesContext(name);
-			if(bioModel.getRelationshipModel().getRelationshipObjects(speciesContext).size() == 0){
-				ArrayList<Xref> xRef = getXrefs(bioModel, refInfo);
-				ArrayList<String> refName = new ArrayList<String>(Arrays.asList(name));//getNameRef(xRef, name);
-				BioPaxObject bpObject = bioModel.getPathwayModel().findFromNameAndType(refName.get(0), EntityImpl.TYPE_PHYSICALENTITY);
-				if(bpObject == null){
-					bpObject = createPhysicalEntity(xRef, refName, name);
-					bioModel.getPathwayModel().add(bpObject);
+			 //lookup name by speciesContext
+			ArrayList<SpeciesContext> speciesContextArrList = new ArrayList<SpeciesContext>(Arrays.asList(new SpeciesContext[] {bioModel.getModel().getSpeciesContext(name)}));
+			if(speciesContextArrList.get(0) == null){
+				speciesContextArrList.clear();
+				//lookup name by species
+				for (int i = 0; i < bioModel.getModel().getSpeciesContexts().length; i++) {
+					if(bioModel.getModel().getSpeciesContexts()[i].getSpecies().getCommonName().equals(name)){
+						speciesContextArrList.add(bioModel.getModel().getSpeciesContexts()[i]);
+					}
 				}
-				if(!isLinked(bioModel, bpObject, speciesContext)) {
-					// create linkage
-					RelationshipObject newRelationship = new RelationshipObject(speciesContext, bpObject);
-					bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
-					return info;
-				}
+			}
+			for (int i = 0; i < speciesContextArrList.size(); i++) {
+				SpeciesContext speciesContext = speciesContextArrList.get(i);
+				if(bioModel.getRelationshipModel().getRelationshipObjects(speciesContext).size() == 0){
+					ArrayList<Xref> xRef = getXrefs(bioModel, refInfo);
+					ArrayList<String> refName = getNameRef(xRef, name);
+					BioPaxObject bpObject = bioModel.getPathwayModel().findFromNameAndType(refName.get(0), EntityImpl.TYPE_PHYSICALENTITY);
+					if(bpObject == null){
+						bpObject = createPhysicalEntity(xRef, refName, name);
+						bioModel.getPathwayModel().add(bpObject);
+					}
+					if(!isLinked(bioModel, bpObject, speciesContext)) {
+						// create linkage
+						RelationshipObject newRelationship = new RelationshipObject(speciesContext, bpObject);
+						bioModel.getRelationshipModel().addRelationshipObject(newRelationship);	
+						return info;
+					}
+				}				
 			}
 		 }else if(type.equals(VCID.CLASS_BIOMODEL)){
 //				BioPaxObject bpObject = bioModel.getPathwayModel().findFromName(refName.get(0), "Pathway");

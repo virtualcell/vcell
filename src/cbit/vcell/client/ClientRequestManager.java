@@ -2616,7 +2616,11 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			// create biopax objects using annotation
 			if (doc instanceof BioModel) {
 				BioModel bioModel = (BioModel) doc;
-				bioModel.getVCMetaData().createBioPaxObjects(bioModel);
+				try{
+					bioModel.getVCMetaData().createBioPaxObjects(bioModel);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 			}
 			requester.prepareDocumentToLoad(doc, inNewWindow);
 			hashTable.put("doc", doc);

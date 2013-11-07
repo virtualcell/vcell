@@ -26,6 +26,9 @@ public class RelationshipObject implements Identifiable{
 	
 	public RelationshipObject(BioModelEntityObject bioModelObject, BioPaxObject biopaxObject) {
 		super();
+		if(bioModelObject == null || biopaxObject == null){
+			throw new IllegalArgumentException("Relationship objects cannot be null, BioModelEntityObject="+bioModelObject+" BioPaxObject"+biopaxObject);
+		}
 		this.bioModelObject = bioModelObject;
 		this.biopaxObject = biopaxObject;
 	}

@@ -31,7 +31,11 @@ public class RelationshipReader {
 			if (child instanceof Element){
 				Element childElement = (Element)child;
 				if (childElement.getName().equals(XMLTags.relationshipObjectTag)){
-					relationshipModel.addRelationshipObject(addObjectRelationshipObject(childElement, provider));
+					try{
+						relationshipModel.addRelationshipObject(addObjectRelationshipObject(childElement, provider));
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 				}else{
 					showUnexpected(childElement);
 				}
@@ -40,24 +44,18 @@ public class RelationshipReader {
 		return relationshipModel;
 	}
 
-	private RelationshipObject addObjectRelationshipObject(Element element, IdentifiableProvider provider) {
-		try {
-			VCID bioPaxObjectID = null;
-			VCID bioModelObjectID = null;
-			for (Object attr : element.getAttributes()){
-				Attribute attribute = (Attribute)attr;
-				if (attribute.getName().equals(XMLTags.bioPaxObjectIdTag)){
-					bioPaxObjectID = VCID.fromString(attribute.getValue());
-				} else if (attribute.getName().equals(XMLTags.bioModelObjectIdTag)){
-					bioModelObjectID = VCID.fromString(attribute.getValue());
-				}
+	private RelationshipObject addObjectRelationshipObject(Element element, IdentifiableProvider provider) throws Exception{
+		VCID bioPaxObjectID = null;
+		VCID bioModelObjectID = null;
+		for (Object attr : element.getAttributes()){
+			Attribute attribute = (Attribute)attr;
+			if (attribute.getName().equals(XMLTags.bioPaxObjectIdTag)){
+				bioPaxObjectID = VCID.fromString(attribute.getValue());
+			} else if (attribute.getName().equals(XMLTags.bioModelObjectIdTag)){
+				bioModelObjectID = VCID.fromString(attribute.getValue());
 			}
-			RelationshipObject ro = RelationshipObject.createRelationshipObject(bioModelObjectID, bioPaxObjectID, provider);
-			return ro;
-		} catch (InvalidVCIDException e) {
-			e.printStackTrace();
 		}
-		return null;
+		return RelationshipObject.createRelationshipObject(bioModelObjectID, bioPaxObjectID, provider);
 	}
 
 }

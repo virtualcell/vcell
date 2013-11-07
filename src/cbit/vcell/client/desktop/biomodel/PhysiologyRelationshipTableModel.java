@@ -86,24 +86,28 @@ public class PhysiologyRelationshipTableModel extends VCellSortTableModel<Physio
 	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
-		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
-			if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
-				RelationshipObject reObject = new RelationshipObject(bioModelEntityObject, entitySelectionTableRow.getBioPaxObject());
-				bioModel.getRelationshipModel().addRelationshipObject(reObject);
-			} else {// if the row is unchecked and the link is in the relationshipModel, 
-				   // then remove the link from the relationshipModel
-				ArrayList<RelationshipObject> relationshipObjectsToRemove = new ArrayList<RelationshipObject>();
-				for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
-					if (re.getBioModelEntityObject() == bioModelEntityObject
-							&& re.getBioPaxObject() == (entitySelectionTableRow.getBioPaxObject())){
-						relationshipObjectsToRemove.add(re);
+		try {
+			if(valueNew instanceof Boolean && iCol == iColSelected) {
+				PhysiologyRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
+				if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
+					RelationshipObject reObject = new RelationshipObject(bioModelEntityObject, entitySelectionTableRow.getBioPaxObject());
+					bioModel.getRelationshipModel().addRelationshipObject(reObject);
+				} else {// if the row is unchecked and the link is in the relationshipModel, 
+					   // then remove the link from the relationshipModel
+					ArrayList<RelationshipObject> relationshipObjectsToRemove = new ArrayList<RelationshipObject>();
+					for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
+						if (re.getBioModelEntityObject() == bioModelEntityObject
+								&& re.getBioPaxObject() == (entitySelectionTableRow.getBioPaxObject())){
+							relationshipObjectsToRemove.add(re);
+						}
 					}
-				}
-				for (RelationshipObject re : relationshipObjectsToRemove){
-					bioModel.getRelationshipModel().removeRelationshipObject(re);
-				}
-			}			
+					for (RelationshipObject re : relationshipObjectsToRemove){
+						bioModel.getRelationshipModel().removeRelationshipObject(re);
+					}
+				}			
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	

@@ -86,21 +86,25 @@ public class BioPaxRelationshipTableModel extends VCellSortTableModel<BioPaxRela
 	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
-		if(valueNew instanceof Boolean && iCol == iColSelected) {
-			BioPaxRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
-			if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
-				RelationshipObject reObject = new RelationshipObject(entitySelectionTableRow.getBioModelEntityObject(), bioPaxObject);
-				bioModel.getRelationshipModel().addRelationshipObject(reObject);
-			} else {// if the row is unchecked and the link is in the relationshipModel, 
-				   // then remove the link from the relationshipModel
-				for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
-					if (re.getBioPaxObject() == bioPaxObject
-							&& re.getBioModelEntityObject() == entitySelectionTableRow.getBioModelEntityObject()){
-						bioModel.getRelationshipModel().removeRelationshipObject(re);
-						return;
+		try {
+			if(valueNew instanceof Boolean && iCol == iColSelected) {
+				BioPaxRelationshipTableRow entitySelectionTableRow = getValueAt(iRow);
+				if ((Boolean)valueNew) { // if the row is checked, then add the link to relationshipModel
+					RelationshipObject reObject = new RelationshipObject(entitySelectionTableRow.getBioModelEntityObject(), bioPaxObject);
+					bioModel.getRelationshipModel().addRelationshipObject(reObject);
+				} else {// if the row is unchecked and the link is in the relationshipModel, 
+					   // then remove the link from the relationshipModel
+					for(RelationshipObject re: bioModel.getRelationshipModel().getRelationshipObjects()){
+						if (re.getBioPaxObject() == bioPaxObject
+								&& re.getBioModelEntityObject() == entitySelectionTableRow.getBioModelEntityObject()){
+							bioModel.getRelationshipModel().removeRelationshipObject(re);
+							return;
+						}
 					}
-				}
-			}			
+				}			
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
