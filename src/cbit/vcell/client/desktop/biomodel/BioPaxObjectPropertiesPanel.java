@@ -19,7 +19,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.JTable;
 import org.vcell.pathway.BioPaxObject;
@@ -30,6 +32,7 @@ import org.vcell.pathway.Control;
 import org.vcell.pathway.Dna;
 import org.vcell.pathway.DnaRegion;
 import org.vcell.pathway.Entity;
+import org.vcell.pathway.EntityImpl;
 import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
@@ -44,6 +47,7 @@ import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
 import org.vcell.pathway.sbpax.SBEntity;
+import org.vcell.relationship.AnnotationMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -53,6 +57,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.model.BioModelEntityObject;
 
 
@@ -136,6 +142,74 @@ private void handleException(java.lang.Throwable exception) {
 	 exception.printStackTrace(System.out);
 }
 
+
+private TreeSet<Entity> lookupEntities =
+new TreeSet<Entity>(new Comparator<Entity>() {
+	@Override
+	public int compare(Entity o1, Entity o2) {
+		return ((EntityImpl)o1).getID().compareTo(((EntityImpl)o2).getID());
+	}
+});
+
+private synchronized boolean lookupContains(Entity entity){
+return lookupEntities.contains(entity);
+}
+private synchronized void lookupAdd(Entity entity){
+lookupEntities.add(entity);
+}
+private synchronized void lookupRemove(Entity entity){
+lookupEntities.remove(entity);
+}
+
+private void lookupFormalName(final int tableRow){
+final String FORMAL_NAMES_KEY = "FORMAL_NAMES_KEY";
+final Entity entity = (Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject;
+AsynchClientTask initLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
+	@Override
+	public void run(Hashtable<String, Object> hashTable) throws Exception {
+		if(!lookupContains(entity)){
+			lookupAdd(entity);
+		}
+		refreshInterface();
+	}
+};
+AsynchClientTask lookupTask = new AsynchClientTask("looking...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false) {
+	@Override
+	public void run(Hashtable<String, Object> hashTable) throws Exception {
+		ArrayList<Xref> xrefArrList = entity.getxRef();
+		ArrayList<String> formalNames = AnnotationMapping.getNameRef(xrefArrList, null);
+		if(formalNames != null && formalNames.size() > 0){
+			hashTable.put(FORMAL_NAMES_KEY, formalNames);
+		}
+	}
+};
+AsynchClientTask finishLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false) {
+	@Override
+	public void run(Hashtable<String, Object> hashTable) throws Exception {
+		try{
+			ArrayList<String> formalNames = (ArrayList<String>)hashTable.get(FORMAL_NAMES_KEY);
+			if(formalNames != null){
+				entity.setFormalNames(formalNames);
+			}else if(entity.getxRef() != null && entity.getxRef().size() > 0){
+				String str = "";
+				for (int i = 0; i < ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getxRef().size(); i++) {
+					str+= (i>0?"\n":"")+entity.getxRef().get(i).getDb()+":"+entity.getxRef().get(i).getId();
+				}
+				throw new Exception("Formal name lookup not implemented using:\n"+str);
+			}else{
+				throw new Exception("No cross-references available to lookup formal name");
+			}
+		}finally{
+			lookupRemove(entity);
+			refreshInterface();
+			table.setRowSelectionInterval(tableRow, tableRow);
+		}
+	}
+};
+ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {initLookupTask,lookupTask,finishLookupTask}, null, false, false, false, null, false);
+
+}
+
 private void initialize() {
 	try {
 		table = new ScrollTable();
@@ -164,6 +238,8 @@ private void initialize() {
 						if (bioModelEntityObject != null) {
 							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
 							selectionManager.setSelectedObjects(new Object[]{bioModelEntityObject});
+						}else if(((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames() == null || ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames().size() == 0){
+							lookupFormalName(crow);
 						}
 			    	} else if (bioPaxObject instanceof Xref) { // if xRef, get url
 			    		String url = ((Xref) bioPaxObject).getURL();
@@ -246,11 +322,16 @@ protected void refreshInterface() {
 		// entity::type
 		propertyList.add(new BioPaxObjectProperty("Type", bioPaxObject.getTypeLabel()));
 		// entity::name
-		ArrayList<String> name = entity.getName();
-		if (name != null){
-			if (name.size() > 0) {
-				propertyList.add(new BioPaxObjectProperty("Name", name.get(0)));
+		if(lookupContains(entity)){
+			propertyList.add(new BioPaxObjectProperty("Name",entity.getName().get(0)+" (looking...)"));
+		}else if(entity.getFormalNames() != null && entity.getFormalNames().size() != 0){
+			propertyList.add(new BioPaxObjectProperty("Name", entity.getName().get(0)+" ("+entity.getFormalNames().get(0)+")"));
+		}else if (entity.getName() != null && entity.getName().size() > 0){
+			String displayName = entity.getName().get(0);
+			if(entity.getxRef() != null && entity.getxRef().size() > 0){
+				displayName = displayName+" (double-click lookup)";
 			}
+			propertyList.add(new BioPaxObjectProperty("Name", displayName));			// entity::name
 		}
 		// entity::availability (***ignored***)
 		// entity::dataSource (***ignored***)
@@ -272,8 +353,8 @@ protected void refreshInterface() {
 			CellularLocationVocabulary cellularLocation = physicalEntity.getCellularLocation();
 			if (cellularLocation!=null){
 				propertyList.add(new BioPaxObjectProperty("Cellular Location", cellularLocation.getTerm().get(0),cellularLocation));
-			}else if (name != null && name.size()>1){
-				String location  = name.get(1);
+			}else if (entity.getName() != null && entity.getName().size()>1){
+				String location  = entity.getName().get(1);
 				if (location.contains("[") && location.contains("]")){
 					location = location.substring(location.indexOf("[")+1, location.indexOf("]"));
 					propertyList.add(new BioPaxObjectProperty("Cellular Location", location));
