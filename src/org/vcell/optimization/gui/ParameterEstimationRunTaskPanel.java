@@ -849,7 +849,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			try {
 				saveSolutionAsNewSimButton = new javax.swing.JButton();
 				saveSolutionAsNewSimButton.setName("SaveSolutionAsNewSimButton");
-				saveSolutionAsNewSimButton.setText("Save Solution as New Simulation...");
+				saveSolutionAsNewSimButton.setText("Create New Simulation from Solution...");
 				saveSolutionAsNewSimButton.setEnabled(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
@@ -1155,15 +1155,13 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			if (optSpec == null){
 				throw new RuntimeException("optimization not yet performed");
 			}
-			if (optSpec.getObjectiveFunction() instanceof OdeObjectiveFunction){
-				//
-				// add new simulation to the Application (other bookkeeping required?)
-				//
-				SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-				Simulation newSim = simContext.addNewSimulation();
-				parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
-				DialogUtils.showInfoDialog(this, "created simulation \""+newSim.getName()+"\"");
-			}
+			//
+			// add new simulation to the Application (other bookkeeping required?)
+			//
+			SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
+			Simulation newSim = simContext.addNewSimulation();
+			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
+			DialogUtils.showInfoDialog(this, "created simulation \""+newSim.getName()+"\"");
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, e.getMessage(), e);
