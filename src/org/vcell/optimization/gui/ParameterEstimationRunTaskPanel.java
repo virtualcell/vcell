@@ -849,7 +849,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			try {
 				saveSolutionAsNewSimButton = new javax.swing.JButton();
 				saveSolutionAsNewSimButton.setName("SaveSolutionAsNewSimButton");
-				saveSolutionAsNewSimButton.setText("Save Solution as New Simulation...");
+				saveSolutionAsNewSimButton.setText("Create New Simulation from Solution...");
 				saveSolutionAsNewSimButton.setEnabled(false);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
