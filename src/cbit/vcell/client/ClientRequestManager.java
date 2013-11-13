@@ -25,10 +25,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -58,6 +63,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -151,7 +157,10 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.RayCaster;
+import cbit.vcell.geometry.surface.StlReader;
+import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
@@ -1040,6 +1049,89 @@ private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage)
 	fdfos.shortSpecData = new short[][][] {{templateShorts}};
 	return fdfos;
 }
+
+public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceFile) throws Exception{
+	SurfaceCollection surfaceCollection = null;
+	if(ExtensionFilter.isMatchingExtension(surfaceFile, ".stl")){
+		surfaceCollection = StlReader.readStl(surfaceFile);
+	}else if(ExtensionFilter.isMatchingExtension(surfaceFile, ".mesh")){//NOT VCell mesh, salk Hughes Hoppe mesh
+		//convert to .stl and read
+		BufferedWriter stlBufferedWriter = null;
+		File tempstlFile = File.createTempFile("salk",".stl");
+		try{
+			BufferedReader salkBufferedReader = new BufferedReader(new FileReader(surfaceFile));
+			String line;
+			ArrayList<double[]> vertList = new ArrayList<double[]>();
+			//read vertices
+			while((line = salkBufferedReader.readLine()) != null){
+				StringTokenizer st = new StringTokenizer(line," ");
+				String firstToken = st.nextToken();
+				int vertIndex = Integer.parseInt(st.nextToken());
+				if(firstToken.equals("Vertex")){
+					vertList.add(new double[] {Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken())});
+					if(vertList.size() != vertIndex){//numbering starts at 1
+						throw new Exception("Index not match position in list");
+					}
+				}else if(firstToken.equals("Face")){
+					break;//read all vertices
+				}else{
+					return null;
+				}
+			}
+			stlBufferedWriter = new BufferedWriter(new FileWriter(tempstlFile));
+			stlBufferedWriter.write("solid VCell salk convert\n");
+			//read faces
+			do{
+				stlBufferedWriter.write("facet normal 0 0 0\n");
+				stlBufferedWriter.write("outer loop\n");
+				StringTokenizer st = new StringTokenizer(line," ");
+				String firstToken = st.nextToken();
+				Integer.parseInt(st.nextToken());//ignore index token
+				if(firstToken.equals("Face")){
+					for (int i = 0; i < 3; i++) {
+						int vertListIndex = Integer.parseInt(st.nextToken())-1;
+						double[] vertCoordinatges = vertList.get(vertListIndex);
+						stlBufferedWriter.write("vertex "+vertCoordinatges[0]+" "+vertCoordinatges[1]+" "+vertCoordinatges[2]+"\n");//indexes start at 1, not 0
+					}
+				}else{
+					throw new Exception("Expecting token 'Face' but got "+firstToken);
+				}
+				stlBufferedWriter.write("endloop\n");
+				stlBufferedWriter.write("endfacet\n");
+			}while((line = salkBufferedReader.readLine()) != null);
+			stlBufferedWriter.write("endsolid VCell salk convert\n");
+			
+			stlBufferedWriter.close();
+			surfaceCollection = StlReader.readStl(tempstlFile);
+		}catch(Exception e){
+			//we couldn't read this for some reason
+			e.printStackTrace();
+		}finally{
+			if(stlBufferedWriter != null){try{stlBufferedWriter.close();}catch(Exception e){e.printStackTrace();}}
+			if(tempstlFile != null){tempstlFile.delete();}
+		}
+	}
+	if(surfaceCollection != null){
+		Geometry geometry = RayCaster.createGeometryFromSTL(new GeometryThumbnailImageFactoryAWT(), surfaceCollection, 1000000);
+		FieldDataFileOperationSpec fdfos = new FieldDataFileOperationSpec();
+		fdfos.origin = geometry.getOrigin();
+		fdfos.extent = geometry.getExtent();
+		VCImage image = geometry.getGeometrySpec().getImage();
+		if(image.getNumPixelClasses() == 1){
+			throw new Exception("STL import failed during processing, pixelclass count=1");
+		}
+		fdfos.isize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());
+		byte[] pixels = image.getPixels();
+		short[] dataToSegment = new short[image.getNumXYZ()];
+		for (int i=0;i<pixels.length;i++){
+			dataToSegment[i] = pixels[i];
+		}
+		fdfos.shortSpecData = new short[][][] {{dataToSegment}};
+		return fdfos;
+	}
+	return null;
+}
+
 public static final String GEOM_FROM_WORKSPACE = "GEOM_FROM_WORKSPACE";
 public static final String VCPIXELCLASSES = "VCPIXELCLASSES";
 private enum NRRDTYPE {DOUBLE,FLOAT,UNSIGNEDCHAR};
@@ -1217,26 +1309,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 						}finally{
 							if(dis != null){try{dis.close();}catch(Exception e){e.printStackTrace();}}
 						}
-					}else
-					//
-					// before trying images, try surface
-					//
-					if (ExtensionFilter.isMatchingExtension(imageFile, ".stl")){
-						Geometry geometry = RayCaster.createGeometryFromSTL(new GeometryThumbnailImageFactoryAWT(), imageFile, 1000000);
-						fdfos = new FieldDataFileOperationSpec();
-						fdfos.origin = geometry.getOrigin();
-						fdfos.extent = geometry.getExtent();
-						VCImage image = geometry.getGeometrySpec().getImage();
-						if(image.getNumPixelClasses() == 1){
-							throw new Exception("STL import failed during processing.");
-						}
-						fdfos.isize = new ISize(image.getNumX(),image.getNumY(),image.getNumZ());
-						byte[] pixels = image.getPixels();
-						short[] dataToSegment = new short[image.getNumXYZ()];
-						for (int i=0;i<pixels.length;i++){
-							dataToSegment[i] = pixels[i];
-						}
-						fdfos.shortSpecData = new short[][][] {{dataToSegment}};
+					}else if ((fdfos = createFDOSFromSurfaceFile(imageFile)) != null){//try surface file formats
+						//work already done at this point
 					}else{
 						File[] dirFiles = null;
 						ImageSizeInfo origImageSizeInfo = null;

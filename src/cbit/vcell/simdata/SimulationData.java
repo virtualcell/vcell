@@ -1134,7 +1134,7 @@ private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws Dat
 		dataSet.read(pdeFile, zipFile);
 	} catch (IOException ex) {
 		ex.printStackTrace();
-		throw new DataAccessException("data at time="+time+" read error");
+		throw new DataAccessException("data at time="+time+" read error",ex);
 	}
 
 	return dataSet;
