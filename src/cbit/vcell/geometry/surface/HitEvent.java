@@ -20,18 +20,22 @@ public class HitEvent implements Comparable<HitEvent> {
 	private cbit.vcell.geometry.surface.Polygon polygon = null;
 	private double unitNormalInRayDirection;
 	private double hitRayZ;
+	private double centroidZ;
+	private final String debugMessage;
 
-/**
- * HitEvent constructor comment.
- */
-public HitEvent(Surface argSurface, Polygon argPolygon, double argUnitNormalInRayDirection, double argRayZ) {
-	super();
-	this.surface = argSurface;
-	this.polygon = argPolygon;
-	this.unitNormalInRayDirection = argUnitNormalInRayDirection;
-//	System.out.println("rayU="+argRayZ+", unitInRayDirection="+argUnitNormalInRayDirection);
-	this.hitRayZ = argRayZ;
-}
+	/**
+	 * HitEvent constructor comment.
+	 */
+	public HitEvent(Surface argSurface, Polygon argPolygon, double argUnitNormalInRayDirection, double argRayZ, double centroidZ, String debugMessage) {
+		super();
+		this.surface = argSurface;
+		this.polygon = argPolygon;
+		this.unitNormalInRayDirection = argUnitNormalInRayDirection;
+//		System.out.println("rayU="+argRayZ+", unitInRayDirection="+argUnitNormalInRayDirection);
+		this.hitRayZ = argRayZ;
+		this.centroidZ = centroidZ;
+		this.debugMessage = debugMessage;
+	}
 
 
 /**
@@ -39,9 +43,9 @@ public HitEvent(Surface argSurface, Polygon argPolygon, double argUnitNormalInRa
  * Creation date: (7/20/2004 12:24:06 PM)
  * @return double
  */
-public double getHitRayZ() {
-	return hitRayZ;
-}
+	public double getHitRayZ() {
+		return hitRayZ;
+	}
 
 
 /**
@@ -77,9 +81,17 @@ public int compareTo(HitEvent o) {
 	}
 }
 
+public double getCentroidZ() {
+	return centroidZ;
+}
+
+public String getDebugMessage(){
+	return this.debugMessage;
+}
+
 public String toString(){
 	Vect3d unitNormal = new Vect3d();
 	polygon.getUnitNormal(unitNormal);
-	return "HitEvent(rayZ="+hitRayZ+", unitNormalInRayDirection="+unitNormalInRayDirection+", polygon="+polygon.toString()+", normal="+unitNormal+", surface="+surface.toString()+", interiorMask="+surface.getInteriorMask()+", exteriorMask="+surface.getExteriorMask();
+	return "HitEvent(rayZ="+hitRayZ+", centroidZ="+centroidZ+", unitNormalInRayDirection="+unitNormalInRayDirection+", polygon="+polygon.toString()+", normal="+unitNormal+", surface="+surface.toString()+", interiorMask="+surface.getInteriorMask()+", exteriorMask="+surface.getExteriorMask()+", extraMessage=\""+debugMessage+"\"";
 }
 }

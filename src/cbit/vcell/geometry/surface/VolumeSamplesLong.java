@@ -31,16 +31,13 @@ public class VolumeSamplesLong extends VolumeSamples {
 		return bHasZero;
 	}
 	
-	public void add(int index, long mask, float distance){
-//		System.out.println("index="+index+", mask="+mask+", distance="+distance);
+	public void add(int index, long mask){
 		incidentSurfaceMaskLong[index] = incidentSurfaceMaskLong[index] | mask;
-//System.out.println("mask["+index+"]="+mask+", distance="+distance);
 		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskLong[index])){
 			System.out.println("connected across surface");
 		}
-//		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
 	}
-	
+		
 	public void fillEmpty(int numSamples, int volumeOffset, int volumeStride){
 		//
 		// if at least one hit, then there are no empty samples

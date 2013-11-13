@@ -484,8 +484,9 @@ public class RayCasterBitSet {
 							double u = (dot11_xy * dot0p_xy - dot01_xy * dot1p_xy) * invDenom;
 							double v = (dot00_xy * dot1p_xy - dot01_xy * dot0p_xy) * invDenom;
 							if ((u > 0) && (v > 0) && (u + v < 1)){
-								double v2z = az + (u*v0z) + (v*v1z);                    
-								hitList.addHitEvent(new HitEvent(surface,polygon,nz,v2z));
+								double v2z = az + (u*v0z) + (v*v1z);
+								double centroidZ = (az+bz+cz)/3;
+								hitList.addHitEvent(new HitEvent(surface,polygon,nz,v2z,centroidZ,"no message"));
 								hitCount++;
 							}
 						}
@@ -511,7 +512,8 @@ public class RayCasterBitSet {
 							double v = (dot00_xz * dot1p_xz - dot01_xz * dot0p_xz) * invDenom;
 							if ((u > 0) && (v > 0) && (u + v < 1)){
 								double v2y = ay + (u*v0y) + (v*v1y);                    
-								hitList.addHitEvent(new HitEvent(surface,polygon,ny,v2y));
+								double centroidY = (ay+by+cy)/3;
+								hitList.addHitEvent(new HitEvent(surface,polygon,ny,v2y,centroidY,"no message"));
 								hitCount++;
 							}
 						}
@@ -537,7 +539,8 @@ public class RayCasterBitSet {
 							double v = (dot00_yz * dot1p_yz - dot01_yz * dot0p_yz) * invDenom;
 							if ((u > 0) && (v > 0) && (u + v < 1)){
 								double v2x = ax + (u*v0x) + (v*v1x);                    
-								hitList.addHitEvent(new HitEvent(surface,polygon,nx,v2x));
+								double centroidX = (ax+bx+cx)/3;
+								hitList.addHitEvent(new HitEvent(surface,polygon,nx,v2x,centroidX,"no message"));
 								hitCount++;
 							}
 						}

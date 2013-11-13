@@ -25,18 +25,19 @@ public class RationalNumber extends Number {
 	private boolean bZero = false;
 	public final static RationalNumber ZERO = new RationalNumber(0);
 	public final static RationalNumber ONE = new RationalNumber(1);
-/**
- * RationalNumber constructor comment.
- */
-public RationalNumber(long integer) {
-//	this.num = integer;
-//	this.den = 1;
-	this.bignum = BigInteger.valueOf(integer);
-	this.bigden = BigInteger.ONE;
-	if (integer == 0) {
-		bZero = true;
+
+	/**
+	 * RationalNumber constructor comment.
+	 */
+	public RationalNumber(long integer) {
+//		this.num = integer;
+//		this.den = 1;
+		this.bignum = BigInteger.valueOf(integer);
+		this.bigden = BigInteger.ONE;
+		if (integer == 0) {
+			bZero = true;
+		}
 	}
-}
 /**
  * RationalNumber constructor comment.
  */
@@ -89,6 +90,31 @@ public RationalNumber(BigInteger numerator, BigInteger denominator) {
 		this.bigden = this.bigden.divide(gcf);
 	}
 }
+
+public static RationalNumber min(RationalNumber a, RationalNumber b){
+	RationalNumber diff = a.sub(b);
+	if (diff.isZero()){
+		return a;
+	}else if (diff.bigden.signum()!=diff.bignum.signum()){
+		// difference is negative
+		return a;
+	}else{
+		return b;
+	}
+}
+
+public static RationalNumber max(RationalNumber a, RationalNumber b){
+	RationalNumber diff = a.sub(b);
+	if (diff.isZero()){
+		return a;
+	}else if (diff.bigden.signum()!=diff.bignum.signum()){
+		// difference is negative
+		return b;
+	}else{
+		return a;
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (3/27/2003 12:50:27 PM)
@@ -216,11 +242,14 @@ private static BigDecimal floor(BigDecimal value) {
 	}
 }
 
-
 public static RationalNumber getApproximateFraction(double value) {
+	return getApproximateFraction(value,1e-5,64);
+}
 
-	final BigDecimal tolerance = new BigDecimal(1e-5);
-	final MathContext roundHalfUp = new MathContext(64,RoundingMode.HALF_UP);
+private static RationalNumber getApproximateFraction(double value,double tolerance,int bigDecimalPrecision) {
+
+	final BigDecimal tol = new BigDecimal(tolerance);
+	final MathContext roundHalfUp = new MathContext(bigDecimalPrecision,RoundingMode.HALF_UP);
 
 	BigDecimal X = new BigDecimal(value).abs();
 	BigDecimal Z = X;
@@ -234,7 +263,7 @@ public static RationalNumber getApproximateFraction(double value) {
 	}
 
 	for (int i=0;i<30;i++){
-		if (new BigDecimal(N).divide(new BigDecimal(D2),roundHalfUp).subtract(X).divide(X,roundHalfUp).abs().compareTo(tolerance)<=0){
+		if (new BigDecimal(N).divide(new BigDecimal(D2),roundHalfUp).subtract(X).divide(X,roundHalfUp).abs().compareTo(tol)<=0){
 			break;
 		}
 		Z = BigDecimal.ONE.divide(Z.subtract(new BigDecimal(floor(Z).toBigInteger())),roundHalfUp);
@@ -433,7 +462,7 @@ public RationalNumber sub(RationalNumber rational) {
  * @return java.lang.String
  */
 public String toString() {
-	return infix();
+	return infix()+",double="+doubleValue();
 }
 
 public String infix() {
@@ -442,6 +471,37 @@ public String infix() {
 	}else{
 		return this.bignum+"/"+this.bigden;
 	}
+}
+
+private int compareTo(RationalNumber r) {
+	RationalNumber diff = this.sub(r);
+	if (diff.isZero()){
+		return 0;
+	}else if (diff.bigden.signum()!=diff.bignum.signum()){	// this < r
+		return -1;
+	}else{
+		return 1;
+	}
+}
+
+public boolean lt(RationalNumber r) {
+	return this.compareTo(r) == -1;
+}
+
+public boolean gt(RationalNumber r) {
+	return this.compareTo(r) == 1;
+}
+
+public boolean eq(RationalNumber r) {
+	return this.compareTo(r) == 0;
+}
+
+public boolean le(RationalNumber r) {
+	return this.compareTo(r) < 1;
+}
+
+public boolean ge(RationalNumber r) {
+	return this.compareTo(r) > -1;
 }
 
 }

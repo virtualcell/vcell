@@ -10,17 +10,13 @@
 
 package cbit.vcell.geometry.surface;
 
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import javax.management.RuntimeErrorException;
-
 public class VolumeSamplesBitSet extends VolumeSamples {
 	private HashMap<Long,BitSet> bitSets = new HashMap<Long, BitSet>();
 	int size;
-	private float[] distanceMapL1;
 	
 	public VolumeSamplesBitSet(int size){
 		super(size);
@@ -39,18 +35,15 @@ public class VolumeSamplesBitSet extends VolumeSamples {
 		return false;
 	}
 	
-	public void add(int index, long mask, float distance){
+	public void add(int index, long mask){
 		BitSet bs = bitSets.get(mask);
 		if (bs==null){
 			bs = new BitSet(size);
 			bitSets.put(mask,bs);
 		}
 		bs.set(index);
-//		System.out.println("index="+index+", mask="+mask+", distance="+distance);
-//		incidentSurfaceMask[index] = incidentSurfaceMask[index] | mask;
-//		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
 	}
-	
+		
 	public void fillEmpty(int numSamples, int volumeOffset, int volumeStride){
 		//
 		// if at least one hit, then there are no empty samples

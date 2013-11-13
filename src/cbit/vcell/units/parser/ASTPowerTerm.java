@@ -19,7 +19,7 @@ public class ASTPowerTerm extends SimpleNode {
 				if (power.equals(RationalNumber.ONE)){
 					return jjtGetChild(0).toInfix(power);
 				}else{
-					return jjtGetChild(0).toInfix(RationalNumber.ONE)+"^"+power;
+					return jjtGetChild(0).toInfix(RationalNumber.ONE)+"^"+power.infix();
 				}
 			}else{
 				return jjtGetChild(0).toInfix(RationalNumber.ONE)+"^"+jjtGetChild(1).toInfix(power);
@@ -51,7 +51,7 @@ public class ASTPowerTerm extends SimpleNode {
 				}else{
 					switch(format) {
 					case plain:{
-						return jjtGetChild(0).toSymbol(power, format)+power;
+						return jjtGetChild(0).toSymbol(power, format)+power.infix();
 					}
 					case unicode:{
 						String powerString = ASTRationalNumberExponent.getUnicodeExponent(power);
