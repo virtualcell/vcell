@@ -37,9 +37,7 @@ import cbit.vcell.parser.ExpressionException;
 public class RayCaster {
 	
 	public static boolean bDebug = false;
-	
-	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory, File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
-		SurfaceCollection surfaceCollection = StlReader.readStl(stlFile);
+	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory,SurfaceCollection surfaceCollection, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
 		
 		Node[] nodes = surfaceCollection.getNodes();
 		double minX = Double.MAX_VALUE;
@@ -64,7 +62,7 @@ public class RayCaster {
 		Origin origin = new Origin(minX - 0.2*extent.getX(),minY - 0.2*extent.getY(),minZ - 0.2*extent.getZ());
 		
 		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);
-		
+
 		Geometry geometry = createGeometry(geometryThumbnailImageFactory, surfaceCollection, origin, extent, sampleSize);
 		
 		return geometry;

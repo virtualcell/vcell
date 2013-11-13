@@ -196,7 +196,9 @@ public class StlReader {
 	}
 
 	public static SurfaceCollection readASCIIStl(File file) throws IOException{
-		String fileContents = XmlUtil.getXMLString(file.getAbsolutePath());
+		String fileContents = XmlUtil.getXMLString(file.getAbsolutePath()).trim();
+		fileContents = fileContents.replaceFirst("^solid.*", "solid name");//get rid of description text
+		fileContents = fileContents.replaceFirst("endsolid.*", "endsolid name");//get rid of description text
 		CommentStringTokenizer tokens = new CommentStringTokenizer(fileContents);
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase("solid")){
