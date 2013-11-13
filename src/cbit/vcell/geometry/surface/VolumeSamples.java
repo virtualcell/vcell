@@ -29,7 +29,7 @@ public abstract class VolumeSamples {
 	
 	public abstract boolean hasZeros();
 	
-	public abstract void add(int index, long mask, float distance);
+	public abstract void add(int index, long mask);
 
 	public abstract void fillEmpty(int numSamples, int volumeOffset, int volumeStride);
 	

@@ -31,18 +31,15 @@ public class VolumeSamplesInt extends VolumeSamples {
 		return bHasZero;
 	}
 	
-	public void add(int index, long mask, float distance){
-//		System.out.println("index="+index+", mask="+mask+", distance="+distance);
+	public void add(int index, long mask){
 		if( (mask & 0xFFFFFFFFL) != mask )
 		{
 			System.err.println("Error: Surface mask doesn't fit into an int.");
 		}
 		incidentSurfaceMaskInt[index] = (int) (incidentSurfaceMaskInt[index] | (mask & 0xFFFFFFFFL));
-//System.out.println("mask["+index+"]="+mask+", distance="+distance);
 		if (RayCaster.connectsAcrossSurface(incidentSurfaceMaskInt[index])){
 			System.out.println("connected across surface");
 		}
-//		getDistanceMapL1()[index] = Math.min(getDistanceMapL1()[index],distance);
 	}
 	
 	public void fillEmpty(int numSamples, int volumeOffset, int volumeStride){

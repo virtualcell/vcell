@@ -11,15 +11,15 @@
 package cbit.vcell.geometry.surface;
 
 
-public class RayCastResults {
+public class RayCastResultsRational {
 	private int numX;
 	private int numY;
 	private int numZ;
-	private HitList[] hitListsXY;  // index = i + numX*j
-	private HitList[] hitListsXZ;  // index = i + numX*k
-	private HitList[] hitListsYZ;  // index = j + numY*k
+	private HitListRational[] hitListsXY;  // index = i + numX*j
+	private HitListRational[] hitListsXZ;  // index = i + numX*k
+	private HitListRational[] hitListsYZ;  // index = j + numY*k
 	
-	public RayCastResults(HitList[] aHitListXY, HitList[] aHitListXZ, HitList[] aHitListYZ, int aNumX, int aNumY, int aNumZ){
+	public RayCastResultsRational(HitListRational[] aHitListXY, HitListRational[] aHitListXZ, HitListRational[] aHitListYZ, int aNumX, int aNumY, int aNumZ){
 		this.hitListsXY = aHitListXY;
 		this.hitListsXZ = aHitListXZ;
 		this.hitListsYZ = aHitListYZ;
@@ -40,15 +40,15 @@ public class RayCastResults {
 		return numZ;
 	}
 
-	public HitList[] getHitListsXY() {
+	public HitListRational[] getHitListsXY() {
 		return hitListsXY;
 	}
 
-	public HitList[] getHitListsXZ() {
+	public HitListRational[] getHitListsXZ() {
 		return hitListsXZ;
 	}
 
-	public HitList[] getHitListsYZ() {
+	public HitListRational[] getHitListsYZ() {
 		return hitListsYZ;
 	}
 	
@@ -92,17 +92,5 @@ public class RayCastResults {
 			}
 		}
 		return distanceMap;
-	}
-
-	public void reconcileHitLists() {
-		for (HitList hitList : hitListsXY){
-			hitList.reconcileHitEvents();
-		}
-		for (HitList hitList : hitListsXZ){
-			hitList.reconcileHitEvents();
-		}
-		for (HitList hitList : hitListsYZ){
-			hitList.reconcileHitEvents();
-		}
 	}
 }

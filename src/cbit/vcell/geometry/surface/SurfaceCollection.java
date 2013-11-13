@@ -129,6 +129,9 @@ public void removeSurface(Surface surface) {
  */
 public void setNodes(Node[] nodes) {
 	fieldNodes = nodes;
+	for (int i=0;i<nodes.length;i++){
+		nodes[i].setGlobalIndex(i);
+	}
 }
 
 

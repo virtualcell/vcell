@@ -14,18 +14,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
+import cbit.vcell.matrix.RationalNumber;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 12:16:23 PM)
  * @author: Jim Schaff
  */
-public class HitList {
-	private ArrayList<HitEvent> hitEvents = new ArrayList<HitEvent>();
+public class HitListRational {
+	private ArrayList<HitEventRational> hitEvents = new ArrayList<HitEventRational>();
 
 /**
  * HitList constructor comment.
  */
-public HitList() {
+public HitListRational() {
 	super();
 }
 
@@ -35,7 +37,7 @@ public HitList() {
  * Creation date: (7/20/2004 12:21:02 PM)
  * @param hitEvent cbit.vcell.geometry.gui.HitEvent
  */
-public void addHitEvent(HitEvent hitEvent) {
+public void addHitEvent(HitEventRational hitEvent) {
 	hitEvents.add(hitEvent);
 	Collections.sort(hitEvents);
 }
@@ -59,44 +61,7 @@ public boolean isEmpty() {
 	return hitEvents.isEmpty();
 }
 
-public void reconcileHitEvents(){
-	//
-	// fix hit events caused by numerical imprecision (or ill conditioned meshes ... such as faces that touch or almost touch).
-	//
-	double epsilon = 1e-8;
-	Iterator<HitEvent> iter = hitEvents.iterator();
-	HitEvent prev = null;
-	while (iter.hasNext()){
-		HitEvent curr = iter.next();
-		if (prev != null){
-			if (Math.abs(prev.getHitRayZ()-curr.getHitRayZ())<epsilon){
-				if (prev.getUnitNormalInRayDirection()*curr.getUnitNormalInRayDirection() < 0){
-					//
-					// normals pointing in opposite directions and hit times are very close ... pretend we missed it (won't sample the inside anyway)
-					// this happens when a ray intersects two triangles that form a sharp edge (or hit very close to a dull edge)
-					// in either case, 
-					// remove them both (treat this as a miss)
-					//
-					hitEvents.remove(curr);
-					hitEvents.remove(prev);
-					prev = null;
-					curr = null;
-					iter = hitEvents.iterator();
-				}else{
-					//
-					// normals pointing in same direction and hit times are very close.  ... we assume that we hit two adjacent triangles that are
-					// facing the same way.  In this case, we only need one of these hits.
-					// remove curr only, prev stays the same (we treat this as a single hit).
-					iter.remove();
-					continue;
-				}
-			}
-		}
-		prev = curr;
-	}
-}
-
-public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int volumeOffset, int volumeStride){
+public void sampleRegionIDs(RationalNumber[] samplesZ, VolumeSamples volumeSamples, int volumeOffset, int volumeStride){
 	//
 	// if at least one hit, then can determine which region it is
 	//
@@ -107,19 +72,19 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 	int sampleIndex = 0;
 	int hitIndex = 0;
 	while (sampleIndex < samplesZ.length){
-		HitEvent currHitEvent = hitEvents.get(hitIndex);
-		if (samplesZ[sampleIndex] <= currHitEvent.getHitRayZ()){
-			if (currHitEvent.getUnitNormalInRayDirection() < 0){
+		HitEventRational currHitEvent = hitEvents.get(hitIndex);
+		if (samplesZ[sampleIndex].le(currHitEvent.getHitRayZ())){
+			if (currHitEvent.getUnitNormalInRayDirection().lt(RationalNumber.ZERO)){
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getExteriorMask());
-			}else if (currHitEvent.getUnitNormalInRayDirection() > 0) {
+			}else if (currHitEvent.getUnitNormalInRayDirection().gt(RationalNumber.ZERO)) {
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getInteriorMask());
 			}else{
 				throw new RuntimeException("don't know whether we are coming or going");
 			}
 			if (hitIndex>0){
 				// if not first hit record, include previous record also
-				HitEvent prevHitEvent = hitEvents.get(hitIndex-1);
-				if (prevHitEvent.getUnitNormalInRayDirection() < 0){
+				HitEventRational prevHitEvent = hitEvents.get(hitIndex-1);
+				if (prevHitEvent.getUnitNormalInRayDirection().lt(RationalNumber.ZERO)){
 					volumeSamples.add(volumeIndex, prevHitEvent.getSurface().getInteriorMask());
 				}else{
 					volumeSamples.add(volumeIndex, prevHitEvent.getSurface().getExteriorMask());
@@ -133,7 +98,7 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 			hitIndex++;
 		}else{
 			// sampling past end of hit records, use the last record
-			if (currHitEvent.getUnitNormalInRayDirection() < 0){
+			if (currHitEvent.getUnitNormalInRayDirection().lt(RationalNumber.ZERO)){
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getInteriorMask());
 			}else{
 				volumeSamples.add(volumeIndex, currHitEvent.getSurface().getExteriorMask());
@@ -144,11 +109,12 @@ public void sampleRegionIDs(double[] samplesZ, VolumeSamples volumeSamples, int 
 	}
 }
 
+
 public String getDescription() {
 	if (getNumHits()>0){
 		StringBuffer buffer = new StringBuffer();
-		for (HitEvent event : hitEvents){
-			buffer.append("[t="+event.getHitRayZ()+", centroidT="+event.getCentroidZ()+", polygon="+event.getPolygon().hashCode()+", normal="+event.getUnitNormalInRayDirection()+", extra=\""+event.getDebugMessage()+"\"]\n");
+		for (HitEventRational event : hitEvents){
+			buffer.append("[t="+event.getHitRayZ().doubleValue()+", centroidT="+event.getCentroidZ().doubleValue()+", polygon="+event.getPolygon().hashCode()+", normal="+event.getUnitNormalInRayDirection().doubleValue()+", extra=\""+event.getDebugMessage()+"\"]\n");
 		}
 		return buffer.toString();
 	}else{
