@@ -518,7 +518,7 @@ public void show() {
 	for (int i = 0; i < rows; i ++){
 		StringBuffer s = new StringBuffer();
 		for (int j = 0; j < cols; j ++){
-			s.append(get_elem(i, j).toString());
+			s.append(get_elem(i, j).infix());
 			if (j < cols - 1){
 				s.append(",\t");
 			}	
