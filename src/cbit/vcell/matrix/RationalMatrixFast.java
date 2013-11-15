@@ -100,7 +100,7 @@ public RationalMatrixFast (RationalMatrix mat) {
 				if (num.equals(BigInteger.valueOf(numLong)) && den.equals(BigInteger.valueOf(denLong))){
 					set_elem(i,j,numLong,denLong);
 				}else{
-					throw new IllegalArgumentException("RationalMatrixFast cannot represent element("+i+","+j+")="+r+" as ratio of longs");
+					throw new IllegalArgumentException("RationalMatrixFast cannot represent element("+i+","+j+")="+r.infix()+" as ratio of longs");
 				}
 			}
 		}
@@ -613,7 +613,7 @@ public void show() {
 	for (int i = 0; i < rows; i ++){
 		StringBuffer s = new StringBuffer();
 		for (int j = 0; j < cols; j ++){
-			s.append(get_elem(i, j));
+			s.append(get_elem(i, j).infix());
 			if (j < cols - 1){
 				s.append(",\t");
 			}	

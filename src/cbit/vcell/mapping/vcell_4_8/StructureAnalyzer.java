@@ -459,7 +459,7 @@ static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nu
 					if (coeff.doubleValue() != 1.0){
 						System.out.println("i="+i+" j="+j);
 						nullSpaceMatrix.show();
-						throw new Exception("expecting a coefficient of 1.0, instead coeff = "+coeff);
+						throw new Exception("expecting a coefficient of 1.0, instead coeff = "+coeff.infix());
 					}
 					firstSCM = speciesContextMappings[j];
 					//
@@ -479,7 +479,7 @@ static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nu
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+					constantExp = Expression.mult(new Expression(coeff),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																new Expression(scSTE, argMathMapping.getNameScope()));
 					bFirst = false;
 				}else{
@@ -490,7 +490,7 @@ static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nu
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = argSimContext.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()), 
+					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff), 
 							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping), new Expression(sc, argMathMapping.getNameScope()))));
 					//
 					// add term to K expression
@@ -501,7 +501,7 @@ static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nu
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff.toString()), sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+					constantExp = Expression.add(constantExp, Expression.mult(new Expression(coeff), sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																				new Expression(scSTE, argMathMapping.getNameScope())));
 				}
 			}

@@ -461,7 +461,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					if (coeff.doubleValue() != 1.0){
 						System.out.println("i="+i+" j="+j);
 						nullSpaceMatrix.show();
-						throw new Exception("expecting a coefficient of 1.0, instead coeff = "+coeff);
+						throw new Exception("expecting a coefficient of 1.0, instead coeff = "+coeff.infix());
 					}
 					firstSCM = speciesContextMappings[j];
 					//
@@ -481,7 +481,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(new Expression(coeff.toString()),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+					constantExp = Expression.mult(new Expression(coeff),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																new Expression(scSTE, argMathMapping.getNameScope()));
 					bFirst = false;
 				}else{
@@ -492,7 +492,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = argSimContext.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()),
+					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff),
 							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),new Expression(sc, argMathMapping.getNameScope()))));
 					//
 					// add term to K expression
@@ -503,7 +503,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff.toString()),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																			new Expression(scSTE, argMathMapping.getNameScope())));
 				}
 			}
@@ -738,7 +738,7 @@ private void substituteIntoFastSystem() throws Exception {
 		if (speciesContextMappings[j].getDependencyExpression() != null){
 			Expression dependentVar = new Expression(speciesContextMappings[j].getSpeciesContext(), mathMapping.getNameScope());
 			Expression dependentExp = new Expression(speciesContextMappings[j].getDependencyExpression());
-//System.out.println("trying to substitute '"+dependentExp.toString()+"' for variable '"+dependentVar.toString()+"'"); 
+//System.out.println("trying to substitute '"+dependentExp.infix()+"' for variable '"+dependentVar.toString()+"'"); 
 			for (int i=0;i<fastSpeciesContextMappings.length;i++){
 				SpeciesContextMapping scm = fastSpeciesContextMappings[i];
 				if (scm.getFastInvariant()!=null){
