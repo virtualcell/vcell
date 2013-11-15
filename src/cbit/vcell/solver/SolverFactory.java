@@ -61,7 +61,9 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 		solver = new CVodeSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
 		solver = new CombinedSundialsSolver(simTask, directory, sessionLog, bMessaging);
-	} else if (solverDescription.equals(SolverDescription.FiniteVolume) || solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
+	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
+		solver = new FVSolver(simTask, directory, sessionLog, bMessaging);
+	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
 		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
