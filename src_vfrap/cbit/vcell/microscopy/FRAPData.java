@@ -63,13 +63,14 @@ import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
@@ -337,84 +338,70 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 	}
 	
 	
-	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception
-	{
-		DataProcessingOutput dataProcessingOutput = new DataProcessingOutput();
-		if (!inputHDF5File.exists()) {
-		throw new Exception("File not found "+inputHDF5File.getAbsolutePath());
-		}
-		// retrieve an instance of H5File
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		if (fileFormat == null){
-		throw new Exception("Cannot find HDF5 FileFormat.");
-		}
-		// open the file with read-only access
-		FileFormat hdf5File = fileFormat.open(inputHDF5File.getAbsolutePath(), FileFormat.READ);
-		if (hdf5File == null){
-		throw new Exception("Failed to open file: "+inputHDF5File.getAbsolutePath());
-		}
-		// open the file and retrieve the file structure
-		hdf5File.open();
-		Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5File.getRootNode()).getUserObject();
-		DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
-		// close file resource
-		hdf5File.close();
-		//set message to load variable
-		if(progressListener != null)
-		{
+	public static FRAPData importFRAPDataFromHDF5Data(File inputHDF5File, Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception{
+		if(progressListener != null){
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 		}		
-		return createFrapData(dataProcessingOutput, SimDataConstants.FLUOR_DATA_NAME,0,maxIntensity,progressListener);
+		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+			(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/), inputHDF5File);
+		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
+			(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
+				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimDataConstants.FLUOR_DATA_NAME,0), inputHDF5File);
+		ArrayList<SourceDataInfo> sdiArr =
+			dataProcessingOutputDataValues.createSourceDataInfos(
+				dataProcessingOutputInfo.getVariableISize(SimDataConstants.FLUOR_DATA_NAME),
+				dataProcessingOutputInfo.getVariableOrigin(SimDataConstants.FLUOR_DATA_NAME),
+				dataProcessingOutputInfo.getVariableExtent(SimDataConstants.FLUOR_DATA_NAME));
+		return createFrapData(sdiArr, dataProcessingOutputInfo.getVariableTimePoints(), 0, maxIntensity, progressListener);
 	}
 
-	public static FRAPData createFrapData(DataProcessingOutput dataProcessingOutput,String selectedVariableName,int slice,Double maxIntensity,ClientTaskStatusSupport progressListener) throws ImageException{
-		// construct 
-		double[] time = dataProcessingOutput.getTimes(); 
-		HashMap<String, Vector<SourceDataInfo>> varMaps = dataProcessingOutput.getDataGenerators();
-		Vector<SourceDataInfo> sdInfo = varMaps.get(SimDataConstants.FLUOR_DATA_NAME);
-		int XY_SIZE = sdInfo.get(0).getXSize()*sdInfo.get(0).getYSize();
-		int Z_SIZE = 1;//sdInfo.get(0).getZSize();
-		// find scalefactor to scale up the data to avoid losing precesion when casting double to short
+	public static FRAPData createFrapData(ArrayList<SourceDataInfo> sourceDataInfoArr,double[] times,int slice,Double maxIntensity,ClientTaskStatusSupport progressListener) throws ImageException{
+		if(sourceDataInfoArr.size() != times.length){
+			throw new ImageException("Error FRAPData.createFrapData: times array length must equal SourceDataInfo vector size");
+		}
+		// construct
+		int XY_SIZE = sourceDataInfoArr.get(0).getXSize()*sourceDataInfoArr.get(0).getYSize();
+		int SLICE_OFFSET = slice*XY_SIZE;
+		int Z_SIZE = 1;//slice always 2D data
+		// find scale factor to scale up the data to avoid losing precision when casting double to short
 		double linearScaleFactor = 1;
-		if(maxIntensity != null)
-		{
+		if(maxIntensity != null){
 			double maxDataValue = 0;
-			for (int i = 0; i < time.length; i++) {
-				double[] doubleData = (double[])sdInfo.get(i).getData();
-				for(int j=0; j<doubleData.length; j++)
-				{
-					maxDataValue = Math.max(maxDataValue, doubleData[j]);
+			for (int i = 0; i < times.length; i++) {
+				if(sourceDataInfoArr.get(i).getMinMax() != null){
+					maxDataValue = Math.max(maxDataValue, sourceDataInfoArr.get(i).getMinMax().getMax());
+				}else{
+					double[] doubleData = (double[])sourceDataInfoArr.get(i).getData();
+					for(int j=0; j<doubleData.length; j++){
+						maxDataValue = Math.max(maxDataValue, doubleData[j]);
+					}
 				}
 			}
 			linearScaleFactor = maxIntensity.doubleValue()/maxDataValue;
 		}
 		//saving each time step 2D double array to a UShortImage
-		UShortImage[] dataImages = new UShortImage[time.length];
-		for (int i = 0; i < time.length; i++) {
-			double[] doubleData = (double[])sdInfo.get(i).getData();
+		UShortImage[] dataImages = new UShortImage[times.length];
+		for (int i = 0; i < times.length; i++) {
+			double[] doubleData = (double[])sourceDataInfoArr.get(i).getData();
 			short[] shortData = new short[XY_SIZE];
 			for(int j=0; j<shortData.length; j++)
 			{
-				shortData[j] = (short)(doubleData[j+(slice*XY_SIZE)]*linearScaleFactor);
+				shortData[j] = (short)(doubleData[j+(SLICE_OFFSET)]*linearScaleFactor);
 			}
 			dataImages[i] = new UShortImage(
 						shortData,
-						sdInfo.get(i).getOrigin(),
-						sdInfo.get(i).getExtent(),
-						sdInfo.get(i).getXSize(),sdInfo.get(i).getYSize(),Z_SIZE);
+						sourceDataInfoArr.get(i).getOrigin(),
+						sourceDataInfoArr.get(i).getExtent(),
+						sourceDataInfoArr.get(i).getXSize(),sourceDataInfoArr.get(i).getYSize(),Z_SIZE);
 			
 			if(progressListener != null){
-				int progress = (int)(((i+1)*1.0/time.length)*100);
+				int progress = (int)(((i+1)*1.0/times.length)*100);
 				progressListener.setProgress(progress);
 			}
 		}
 		
-		ImageDataset imageDataSet = new ImageDataset(dataImages,time,Z_SIZE);
+		ImageDataset imageDataSet = new ImageDataset(dataImages,times,Z_SIZE);
 		FRAPData frapData = new FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-		return frapData;
-	}
-	public static FRAPData importFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput, String selectedVariableName,int slice,Double maxIntensity, ClientTaskStatusSupport progressListener) throws Exception{
-		FRAPData frapData = createFrapData(dataProcessingOutput, selectedVariableName,slice, maxIntensity, progressListener);
 		return frapData;
 	}
 	

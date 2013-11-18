@@ -32,13 +32,14 @@ import cbit.image.gui.SourceDataInfo;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
@@ -202,13 +203,26 @@ public class FRAPOptData {
 		//read results from netCDF file
 		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		//get dataprocessing output
-		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
+		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+				(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/), hdf5File);
+		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
+				(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
+					new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,0), hdf5File);
+
+//		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
 		//get ref sim time points
-		double[] rawRefDataTimePoints = dataProcessingOutput.getTimes();
+		double[] rawRefDataTimePoints = dataProcessingOutputInfo.getVariableTimePoints();
 		//get shifted time points
 		refDataTimePoints = shiftTimeForBaseDiffRate(rawRefDataTimePoints);
 		//get summarized raw ref data
-		double[][] rawData = getDataFromSourceDataInfo(dataProcessingOutput);
+		double[][] rawData = new double[dataProcessingOutputInfo.getVariableISize(FRAPStudy.ROI_EXTDATA_NAME).getXYZ()][rawRefDataTimePoints.length];
+		for(int i=0; i<rawRefDataTimePoints.length; i++){
+			double[] temp = dataProcessingOutputDataValues.getDataValues()[i];
+			for(int j=0; j<temp.length; j++){
+				rawData[j][i] = temp[j];
+			}
+		}
+
 		 //contains only 8rois +1(the area that beyond 8 rois)
 		//extend to whole roi data
 		dimensionReducedRefData = FRAPOptimizationUtils.extendSimToFullROIData(expFrapStudy.getFrapData(), rawData, refDataTimePoints.length);
@@ -227,62 +241,62 @@ public class FRAPOptData {
 				                      getExpFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), getLocalWorkspace());
 	}
 	
-	public double[][] getDataFromSourceDataInfo(DataProcessingOutput dataProcessingOutput)
-	{
-		double[][] results = null;
-		Vector<SourceDataInfo> sourceDataInfoList = dataProcessingOutput.getDataGenerators().get(FRAPStudy.ROI_EXTDATA_NAME);
-		if(sourceDataInfoList != null && sourceDataInfoList.size() > 0)
-		{
-			double[] rowData = (double[])sourceDataInfoList.get(0).getData();
-			results = new double[rowData.length][sourceDataInfoList.size()];// rois * timePoints
-			for(int i=0; i<sourceDataInfoList.size(); i++)
-			{
-				double[] temp = (double[])sourceDataInfoList.get(i).getData();
-				for(int j=0; j<temp.length; j++)
-				{
-					results[j][i] = temp[j];
-				}
-			}
-		}
-		return results;
-	}
-	
-	public DataProcessingOutput getRawReferenceDataFromHDF5(File hdf5File) throws DataAccessException {
-		try {
-			DataProcessingOutput dataProcessingOutput = null;
-			
-			if (hdf5File.exists()) {
-				dataProcessingOutput = new DataProcessingOutput();
-				// retrieve an instance of H5File
-				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-				if (fileFormat == null){
-					throw new Exception("Cannot find HDF5 FileFormat.");
-				}
-				// open the file with read-only access	
-				FileFormat testFile = null;
-				try{
-					testFile = fileFormat.open(hdf5File.getAbsolutePath(), FileFormat.READ);
-					// open the file and retrieve the file structure
-					testFile.open();
-					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
-					DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
-				}catch(Exception e){
-					throw new IOException("Error reading file");
-				}finally{
-					if(testFile != null){testFile.close();}
-				}
-				//uncomment it for Debug
-				//DataSetControllerImpl.do_iterate(hdf5File);
-			}else{
-				throw new FileNotFoundException("file not found");
-			}
-
-			return dataProcessingOutput;
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage(),e);
-		}
-	}
+//	public double[][] getDataFromSourceDataInfo(DataProcessingOutput dataProcessingOutput)
+//	{
+//		double[][] results = null;
+//		Vector<SourceDataInfo> sourceDataInfoList = dataProcessingOutput.getDataGenerators().get(FRAPStudy.ROI_EXTDATA_NAME);
+//		if(sourceDataInfoList != null && sourceDataInfoList.size() > 0)
+//		{
+//			double[] rowData = (double[])sourceDataInfoList.get(0).getData();
+//			results = new double[rowData.length][sourceDataInfoList.size()];// rois * timePoints
+//			for(int i=0; i<sourceDataInfoList.size(); i++)
+//			{
+//				double[] temp = (double[])sourceDataInfoList.get(i).getData();
+//				for(int j=0; j<temp.length; j++)
+//				{
+//					results[j][i] = temp[j];
+//				}
+//			}
+//		}
+//		return results;
+//	}
+//	
+//	public DataProcessingOutput getRawReferenceDataFromHDF5(File hdf5File) throws DataAccessException {
+//		try {
+//			DataProcessingOutput dataProcessingOutput = null;
+//			
+//			if (hdf5File.exists()) {
+//				dataProcessingOutput = new DataProcessingOutput();
+//				// retrieve an instance of H5File
+//				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+//				if (fileFormat == null){
+//					throw new Exception("Cannot find HDF5 FileFormat.");
+//				}
+//				// open the file with read-only access	
+//				FileFormat testFile = null;
+//				try{
+//					testFile = fileFormat.open(hdf5File.getAbsolutePath(), FileFormat.READ);
+//					// open the file and retrieve the file structure
+//					testFile.open();
+//					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
+//					DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,false,null,null,null);
+//				}catch(Exception e){
+//					throw new IOException("Error reading file");
+//				}finally{
+//					if(testFile != null){testFile.close();}
+//				}
+//				//uncomment it for Debug
+//				//DataSetControllerImpl.do_iterate(hdf5File);
+//			}else{
+//				throw new FileNotFoundException("file not found");
+//			}
+//
+//			return dataProcessingOutput;
+//		}catch (Exception e){
+//			e.printStackTrace(System.out);
+//			throw new DataAccessException(e.getMessage(),e);
+//		}
+//	}
 	
 	private double[] shiftTimeForBaseDiffRate(double[] timePoints)
 	{ 

@@ -24,7 +24,6 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
@@ -179,8 +178,8 @@ public SimDataBlock getSimDataBlock(String varName, double time) throws DataAcce
 	return getVCDataManager().getSimDataBlock(getOutputContext(),getVcDataIdentifier(), varName, time);
 }
 
-public DataProcessingOutput getDataProcessingOutput() throws DataAccessException {
-	return getVCDataManager().getDataProcessingOutput(getVcDataIdentifier());
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+	return getVCDataManager().doDataOperation(dataOperation);
 }
 
 

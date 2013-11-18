@@ -17,12 +17,13 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**
@@ -223,10 +224,10 @@ public ParticleDataBlock getParticleDataBlock(User user, VCDataIdentifier vcdID,
  * @return cbit.vcell.server.DataSet
  * @param time double
  */
-public DataProcessingOutput getDataProcessingOutput(User user, VCDataIdentifier vcdID) throws DataAccessException {
-	checkReadAccess(user, vcdID);
+public DataOperationResults doDataOperation(User user, DataOperation dataOperation) throws DataAccessException {
+	checkReadAccess(user, dataOperation.getVCDataIdentifier());
 	try {
-		return dataSetControllerImpl.getDataProcessingOutput(vcdID);
+		return dataSetControllerImpl.doDataOperation(dataOperation);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

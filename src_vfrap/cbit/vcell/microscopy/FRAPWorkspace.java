@@ -11,15 +11,16 @@
 package cbit.vcell.microscopy;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.KeyValue;
 
+import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.DataProcessingOutput;
 
 public abstract class FRAPWorkspace 
 {
@@ -64,12 +65,12 @@ public abstract class FRAPWorkspace
 		
 		return newFrapStudy;
 	}
-	public static FRAPStudy loadFRAPDataFromDataProcessingOutput(DataProcessingOutput dataProcessingOutput,String selectedVariableName, int slice,Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
+	public static FRAPStudy loadFRAPDataFromDataProcessingOutput(ArrayList<SourceDataInfo> sdInfo,double[] times, int slice,Double maxIntensity, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception
 	{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
-		newFrapData = FRAPData.importFRAPDataFromDataProcessingOutput(dataProcessingOutput, selectedVariableName,slice,maxIntensity, clientTaskStatusSupport);
+		newFrapData = FRAPData.createFrapData(sdInfo, times, slice, maxIntensity, clientTaskStatusSupport);
 		newFrapStudy.setFrapData(newFrapData);
 		return newFrapStudy;
 	}

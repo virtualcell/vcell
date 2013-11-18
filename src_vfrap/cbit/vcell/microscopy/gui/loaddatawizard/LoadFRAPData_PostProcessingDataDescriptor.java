@@ -8,6 +8,11 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -15,7 +20,6 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
-import cbit.vcell.solver.DataProcessingOutput;
 
 public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescriptor {
     public static final String IDENTIFIER = "LoadFRAPData_PostProcessingDataDescriptor";
@@ -29,7 +33,7 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
         setPanelComponent(postProcessingDataPanel);
         setPanelDescriptorIdentifier(IDENTIFIER);
         setProgressPopupShown(true); 
-        setTaskProgressKnown(true);
+        setTaskProgressKnown(false);
     }
 
     //This method is override to make sure that it backs to FileTypePanel
@@ -54,7 +58,7 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
 		final String LOADING_MESSAGE = "Loading variable data "+postProcessingDataPanel.getSelectedVariableName()+"...";
 		AsynchClientTask updateUIBeforeLoadTask = new AsynchClientTask("Updating status message...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception{
-				 if(postProcessingDataPanel.getSelectedVariableName() == null || postProcessingDataPanel.getDataProcessingOutput() == null){
+				 if(postProcessingDataPanel.getSelectedVariableName() == null || postProcessingDataPanel.getSelectedDataManager() == null){
 					 throw new RuntimeException("Post Processing Data variable not selected");
 				 }
 				VirtualFrapMainFrame.updateStatus(LOADING_MESSAGE);
@@ -65,8 +69,16 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
 			public void run(Hashtable<String, Object> hashTable) throws Exception{
 				String selectedVariableName = postProcessingDataPanel.getSelectedVariableName();
 				int selectedSlice = postProcessingDataPanel.getSelectedSlice();
-				DataProcessingOutput dataProcessingOutput = postProcessingDataPanel.getDataProcessingOutput();
-				FRAPStudy newFRAPStudy = FRAPWorkspace.loadFRAPDataFromDataProcessingOutput(dataProcessingOutput,selectedVariableName,selectedSlice, 65535.0,this.getClientTaskStatusSupport());
+				DataProcessingOutputInfo dataProcessingOutputInfo = postProcessingDataPanel.getSelectedDataProcessingOutputInfo();
+				PDEDataManager pdeDataManager = postProcessingDataPanel.getSelectedDataManager();
+				DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
+					(DataOperationResults.DataProcessingOutputDataValues)pdeDataManager.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(pdeDataManager.getVCDataIdentifier(), selectedVariableName,selectedSlice));
+				ArrayList<SourceDataInfo> sdiArr =
+					dataProcessingOutputDataValues.createSourceDataInfos(
+						dataProcessingOutputInfo.getVariableISize(selectedVariableName),
+						dataProcessingOutputInfo.getVariableOrigin(selectedVariableName),
+						dataProcessingOutputInfo.getVariableExtent(selectedVariableName));
+				FRAPStudy newFRAPStudy = FRAPWorkspace.loadFRAPDataFromDataProcessingOutput(sdiArr,dataProcessingOutputInfo.getVariableTimePoints(),0/*data already sliced*/, 65535.0,this.getClientTaskStatusSupport());
 				isFileLoaded = true;
 				hashTable.put(FRAPStudyPanel.NEW_FRAPSTUDY_KEY, newFRAPStudy);
 			}

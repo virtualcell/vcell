@@ -15,6 +15,8 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
@@ -22,7 +24,6 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 
@@ -116,8 +117,8 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
 	return getDataManager().getSimDataBlock(varName, time);
 }
 
-public DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException {
-	return getDataManager().getDataProcessingOutput();
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+	return getDataManager().doDataOperation(dataOperation);
 }
 
 

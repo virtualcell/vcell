@@ -5,12 +5,17 @@ import java.util.ArrayList;
 
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.util.ColumnDescription;
 
 public class DataSetTimeSeries implements Serializable {
 
+	public interface DataSetPostProcessData{
+		public double[] getTimes();
+		public String[] getVariableStatNames();
+		public double[] getVariableStatValues(String varName);
+	}
+	
 	public final VCDataIdentifier vcDataIdentifier;
 	public final VarData[] varDatas;
 	
@@ -30,7 +35,7 @@ public class DataSetTimeSeries implements Serializable {
 		this.varDatas = getVarDatas(odeDataBlock);
 	}
 
-	public DataSetTimeSeries(VCDataIdentifier vcdataID, DataProcessingOutput dataProcessingOutput) {
+	public DataSetTimeSeries(VCDataIdentifier vcdataID, DataSetPostProcessData dataProcessingOutput) {
 		this.vcDataIdentifier = vcdataID;
 		this.varDatas = getVarDatas(dataProcessingOutput);
 	}
@@ -52,7 +57,7 @@ public class DataSetTimeSeries implements Serializable {
 		return valValuesArray.toArray(new VarData[0]);
 	}
 
-	private VarData[] getVarDatas(DataProcessingOutput dataProcessingOutput){
+	private VarData[] getVarDatas(DataSetPostProcessData dataProcessingOutput){
 		ArrayList<VarData> varValuesArray = new ArrayList<VarData>();
 		//
 		// add time as a variable

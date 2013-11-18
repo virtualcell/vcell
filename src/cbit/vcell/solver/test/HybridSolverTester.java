@@ -25,12 +25,15 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
@@ -115,23 +118,22 @@ public class HybridSolverTester {
 					VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(), sim.getVersion().getOwner());
 					VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					File hdf5File = new File(simDataDir, vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-					DataProcessingOutput dpo = getRawDataFromHDF5(hdf5File);
+					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+							(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID), hdf5File);
 
 					//initialize for the first time
 					
 					if(i == 0){ //do only one time
-						timePoints = dpo.getTimes();
-						for(int j=0; j<varNames.length; j++)
-						{
+						timePoints = dataProcessingOutputInfo.getVariableTimePoints();
+						for(int j=0; j<varNames.length; j++){
 							double[][] data = new double[numRuns+1][timePoints.length]; //row: numTimePoints, col:first col time + numRuns
 							data[0] = timePoints;
 							results.add(data);
 						}
 					}
 					//write into results after each run
-					for(int j=0; j<varNames.length; j++)
-					{
-						results.get(j)[i+1] = getDataFromSourceDataInfo(dpo, varNames[j], timePoints.length);
+					for(int j=0; j<varNames.length; j++){
+						results.get(j)[i+1] = dataProcessingOutputInfo.getVariableStatValues().get(varNames[j]);
 					}
 					
 					//delete the file generated for this run
@@ -172,63 +174,6 @@ public class HybridSolverTester {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	
-	public DataProcessingOutput getRawDataFromHDF5(File hdf5File) throws DataAccessException {
-		try {
-			DataProcessingOutput dataProcessingOutput = null;
-			
-			if (hdf5File.exists()) {
-				dataProcessingOutput = new DataProcessingOutput();
-				// retrieve an instance of H5File
-				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-				if (fileFormat == null){
-					throw new Exception("Cannot find HDF5 FileFormat.");
-				}
-				// open the file with read-only access	
-				FileFormat testFile = null;
-				try{
-					testFile = fileFormat.open(hdf5File.getAbsolutePath(), FileFormat.READ);
-					// open the file and retrieve the file structure
-					testFile.open();
-					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)testFile.getRootNode()).getUserObject();
-					DataSetControllerImpl.populateHDF5(root, "",dataProcessingOutput,true,null,null,null);
-				}catch(Exception e){
-					throw new IOException("Error reading file");
-				}finally{
-					if(testFile != null){testFile.close();}
-				}
-				
-			}else{
-				throw new FileNotFoundException("file not found");
-			}
-
-			return dataProcessingOutput;
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage(),e);
-		}
-	}
-	
-	public double[] getDataFromSourceDataInfo(DataProcessingOutput dataProcessingOutput, String varName, int numTimePoints)
-	{
-		double[] varData = null;
-		double sourceData[][] = dataProcessingOutput.getVariableStatValues();
-		int varIndex = 0;
-		for(String dpoVarName:dataProcessingOutput.getVariableStatNames()){
-			if(dpoVarName.equals(varName)){
-				break;
-			}else {
-				varIndex ++;
-			}
-		}
-		if(sourceData != null && sourceData.length > 0)
-		{
-			varData = sourceData[varIndex];
-			
-		}
-		return varData;
 	}
 	
 	public void deleteSimFiles(File rootDir, final VCSimulationDataIdentifier vcSimDataID){
