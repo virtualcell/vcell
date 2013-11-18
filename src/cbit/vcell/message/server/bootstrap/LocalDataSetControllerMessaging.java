@@ -20,6 +20,8 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -31,7 +33,6 @@ import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**
@@ -281,10 +282,10 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs export
 
 
 
-public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.getDataProcessingOutput(vcdataID=" + vcdataID + ")");
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.doDataOperation(...)");
 	try {
-		return dataServerProxy.getDataProcessingOutput(vcdataID);
+		return dataServerProxy.doDataOperation(dataOperation);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;

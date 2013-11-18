@@ -45,9 +45,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
@@ -63,14 +65,18 @@ import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataValues;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.solver.DataProcessingOutput;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
@@ -79,9 +85,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //	private NetcdfFile ncfile;
 	private JList varJList;
 	private PlotPane plotPane = null;
-	private double[] timeArray;
 	private int[] lastSelectedIdxArray = null;
-	private DataProcessingOutput dpo;
 	private JScrollPane graphScrollPane;
 	private ImagePlaneManagerPanel imagePlaneManagerPanel;
 	private JScrollPane imageScrollPane;
@@ -91,6 +95,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	private JLabel minTimeLabel;
 	private JLabel maxTimeLabel;
 	private JPanel cardLayoutPanel;
+	private DataProcessingOutputInfo dataProcessingOutputInfo;
 	
 	public DataProcessingResultsPanel() {
 		super();
@@ -293,57 +298,61 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		    	makeFieldData.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						try{
-				    		//Massive hack, must not remain
-					    	Method m = requestManager.getClass().getDeclaredMethod("getMdiManager", null);
-					    	m.setAccessible(true);
-					    	ClientMDIManager clientMDIManager = (ClientMDIManager)m.invoke(requestManager, null);
-					    	clientMDIManager.showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
-					    	FieldDataGUIPanel fieldDataGUIPanel = clientMDIManager.getFieldDataWindowManager().getFieldDataGUIPanel();
-					    	
-//							FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
-//							String initialExtDataName = (String)hashTable.get("initFDName");
-
-					    	AsynchClientTask[] newFieldDataTasks = FieldDataGUIPanel.addNewExternalData(DataProcessingResultsPanel.this, fieldDataGUIPanel, false);
-					    	AsynchClientTask[] taskArray = new AsynchClientTask[1 + newFieldDataTasks.length];
-					    	System.arraycopy(newFieldDataTasks, 0, taskArray, 1, newFieldDataTasks.length); // add to the end
-					    	
-					    	taskArray[0] = new AsynchClientTask("get data from PostProcess Image...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-					    		public void run(Hashtable<String, Object> hashTable) throws Exception {
-					    			hashTable.put("initFDName", imageList.getSelectedValue());
-					    			FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-					    			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-					    			fdos.owner = requestManager.getDocumentManager().getUser();
-					    			fdos.variableTypes = new VariableType[dpo.getDataGenerators().size()];
-					    			fdos.varNames = new String[dpo.getDataGenerators().size()];
-					    			fdos.doubleSpecData = new double[dpo.getTimes().length][dpo.getDataGenerators().size()][];
-					    			int index = 0;
-					    			for(String varName:dpo.getDataGenerators().keySet()){
-					    				fdos.variableTypes[index] = VariableType.VOLUME;
-					    				fdos.varNames[index] = varName;
-					    				Vector<SourceDataInfo> sdiV = dpo.getDataGenerators().get(varName);
-					    				if(index==0){
-							    			fdos.times = dpo.getTimes();
-							    			fdos.origin = sdiV.get(0).getOrigin();
-							    			fdos.extent = sdiV.get(0).getExtent();
-							    			fdos.isize = new ISize(sdiV.get(0).getXSize(),sdiV.get(0).getYSize(),sdiV.get(0).getZSize());
-					    				}
-						    			for (int i = 0; i < sdiV.size(); i++) {
-						    				fdos.doubleSpecData[i][index] = (double[])sdiV.get(i).getData();
-										}
-
-					    				index++;
-									}
-					    			hashTable.put("fdos", fdos);
-					    		}
-					    	};
-					    	
-					    	ClientTaskDispatcher.dispatch(DataProcessingResultsPanel.this, new Hashtable<String, Object>(), taskArray, false, true, null);
-					    	
-						}catch(Exception e2){
-				    		e2.printStackTrace();
-				    		DialogUtils.showErrorDialog(DataProcessingResultsPanel.this, e2.getMessage());							
+						if(true){
+							DialogUtils.showWarningDialog(DataProcessingResultsPanel.this, "This function unavailable.  To be re-implemented");
+							return;
 						}
+//						try{
+//				    		//Massive hack, must not remain
+//					    	Method m = requestManager.getClass().getDeclaredMethod("getMdiManager", null);
+//					    	m.setAccessible(true);
+//					    	ClientMDIManager clientMDIManager = (ClientMDIManager)m.invoke(requestManager, null);
+//					    	clientMDIManager.showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
+//					    	FieldDataGUIPanel fieldDataGUIPanel = clientMDIManager.getFieldDataWindowManager().getFieldDataGUIPanel();
+//					    	
+////							FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec)hashTable.get("fdos");
+////							String initialExtDataName = (String)hashTable.get("initFDName");
+//
+//					    	AsynchClientTask[] newFieldDataTasks = FieldDataGUIPanel.addNewExternalData(DataProcessingResultsPanel.this, fieldDataGUIPanel, false);
+//					    	AsynchClientTask[] taskArray = new AsynchClientTask[1 + newFieldDataTasks.length];
+//					    	System.arraycopy(newFieldDataTasks, 0, taskArray, 1, newFieldDataTasks.length); // add to the end
+//					    	
+//					    	taskArray[0] = new AsynchClientTask("get data from PostProcess Image...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//					    		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//					    			hashTable.put("initFDName", imageList.getSelectedValue());
+//					    			FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+//					    			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+//					    			fdos.owner = requestManager.getDocumentManager().getUser();
+//					    			fdos.variableTypes = new VariableType[dpo.getDataGenerators().size()];
+//					    			fdos.varNames = new String[dpo.getDataGenerators().size()];
+//					    			fdos.doubleSpecData = new double[dpo.getTimes().length][dpo.getDataGenerators().size()][];
+//					    			int index = 0;
+//					    			for(String varName:dpo.getDataGenerators().keySet()){
+//					    				fdos.variableTypes[index] = VariableType.VOLUME;
+//					    				fdos.varNames[index] = varName;
+//					    				Vector<SourceDataInfo> sdiV = dpo.getDataGenerators().get(varName);
+//					    				if(index==0){
+//							    			fdos.times = dpo.getTimes();
+//							    			fdos.origin = sdiV.get(0).getOrigin();
+//							    			fdos.extent = sdiV.get(0).getExtent();
+//							    			fdos.isize = new ISize(sdiV.get(0).getXSize(),sdiV.get(0).getYSize(),sdiV.get(0).getZSize());
+//					    				}
+//						    			for (int i = 0; i < sdiV.size(); i++) {
+//						    				fdos.doubleSpecData[i][index] = (double[])sdiV.get(i).getData();
+//										}
+//
+//					    				index++;
+//									}
+//					    			hashTable.put("fdos", fdos);
+//					    		}
+//					    	};
+//					    	
+//					    	ClientTaskDispatcher.dispatch(DataProcessingResultsPanel.this, new Hashtable<String, Object>(), taskArray, false, true, null);
+//					    	
+//						}catch(Exception e2){
+//				    		e2.printStackTrace();
+//				    		DialogUtils.showErrorDialog(DataProcessingResultsPanel.this, e2.getMessage());							
+//						}
 					}
 				});
 		    	jPopupMenu.add(makeFieldData);
@@ -356,17 +365,55 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	    }
 	}
 	private void updateImageDisplay(){
-		String selectedVarName = (String)imageList.getSelectedValue();
-		if(selectedVarName == null){
-			imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(null);
-			imagePlaneManagerPanel.setSourceDataInfo(null);
-			
-		}else{
-			Vector<SourceDataInfo> dataV = dpo.getDataGenerators().get(selectedVarName);
-			int timeIndex = spatialTimeSlider.getValue();
-			SourceDataInfo sdi = dataV.get(timeIndex);
-			imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(sdi.getMinMax());
-			imagePlaneManagerPanel.setSourceDataInfo(sdi);
+		try {
+			final String selectedVarName = (String)imageList.getSelectedValue();
+			if(selectedVarName == null){
+				imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(null);
+				imagePlaneManagerPanel.setSourceDataInfo(null);
+				
+			}else{
+				final String SDI_KEY = "SDI_KEY";
+				AsynchClientTask getDataTask  = new AsynchClientTask("Getting data...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						double timePoint = dataProcessingOutputInfo.getVariableTimePoints()[spatialTimeSlider.getValue()];//assumes all timepoints same
+						DataProcessingOutputDataValues dataProcessingOutputDataValues =
+								(DataProcessingOutputDataValues)pdeDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(pdeDataContext.getVCDataIdentifier(),selectedVarName,timePoint));
+
+						double min = Double.POSITIVE_INFINITY;
+						double max = Double.NEGATIVE_INFINITY;
+						for(int i = 0; i < dataProcessingOutputDataValues.getDataValues()[0].length; i++){
+							if(!Double.isNaN(dataProcessingOutputDataValues.getDataValues()[0][i])){
+								min = Math.min(min, dataProcessingOutputDataValues.getDataValues()[0][i]);
+								max = Math.max(max, dataProcessingOutputDataValues.getDataValues()[0][i]);
+							}
+						}
+						Range minmax = new Range(min,max);
+						ISize iSize = dataProcessingOutputInfo.getVariableISize(selectedVarName);
+//						 0, xSize, 1, ySize, xSize, zSize, xSize*ySize
+						SourceDataInfo sdi =
+							new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, dataProcessingOutputDataValues.getDataValues()[0],
+								dataProcessingOutputInfo.getVariableExtent(selectedVarName),
+								dataProcessingOutputInfo.getVariableOrigin(selectedVarName),
+								minmax,0,
+								iSize.getX(), 1,
+								iSize.getY(), iSize.getX(),
+								iSize.getZ(), iSize.getX()*iSize.getY());
+						hashTable.put(SDI_KEY, sdi);
+//						System.out.println("isize="+iSize.getXYZ()+" datalength="+dataProcessingOutputDataValues.getDataValues()[0].length+" range="+minmax);
+					}
+				};
+				AsynchClientTask updateGUITask  = new AsynchClientTask("Updating GUI...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						SourceDataInfo sdi = (SourceDataInfo)hashTable.get(SDI_KEY);
+						imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(sdi.getMinMax());
+						imagePlaneManagerPanel.setSourceDataInfo(sdi);						
+					}
+				};
+				ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {getDataTask,updateGUITask},false,false,false,null,true);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, e.getMessage());
 		}
 	}
 	
@@ -385,21 +432,13 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //		update();
 //	}
 
-	private void read(PDEDataContext pdeDataContext) throws Exception {
-		
-		if(dpo != null && timeArray!= null && timeArray.length == pdeDataContext.getTimePoints().length){
-			System.out.println("--------------------"+timeArray.length+"=="+pdeDataContext.getTimePoints().length);
-			//we already read this
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-		dpo = null;
-		timeArray = null;
-		
+	private PDEDataContext pdeDataContext;
+
+	private void read(PDEDataContext pdeDataContext0) throws Exception {
+		this.pdeDataContext = pdeDataContext0;
+		dataProcessingOutputInfo = null;
 		try {
-			dpo = pdeDataContext.getDataProcessingOutput();
-			if (dpo != null) {
-				timeArray = dpo.getTimes();
-			}
+			dataProcessingOutputInfo = (DataProcessingOutputInfo)pdeDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(pdeDataContext.getVCDataIdentifier()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
@@ -419,44 +458,44 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {		
 				varJList.removeAll();
-				if (/*ncfile*/ dpo == null) {
+				if (/*ncfile*/ dataProcessingOutputInfo == null) {
 					plotPane.setPlot2D(null);
 				} else {
+//					if(!dataProcessingOutputInfo.areAllTimesEqual()){
+//						throw new Exception("Unexpected DataProcessingOutputInfo areAllTimesEqual false.");
+//					}
+
+					int numTimePoints = dataProcessingOutputInfo.getVariableTimePoints().length;
+					
 					spatialTimeSlider.setMinimum(0);
-					spatialTimeSlider.setMaximum(timeArray.length-1);
+					spatialTimeSlider.setMaximum(numTimePoints-1);
 					spatialTimeSlider.setValue(0);
 					
-					minTimeLabel.setText(timeArray[0]+"");
-					maxTimeLabel.setText(timeArray[timeArray.length-1]+"");
+					minTimeLabel.setText(dataProcessingOutputInfo.getVariableTimePoints()[0]+"");
+					maxTimeLabel.setText(dataProcessingOutputInfo.getVariableTimePoints()[numTimePoints-1]+"");
 					
 					DefaultListModel imageListModel = new DefaultListModel();
-					 HashMap<String, Vector<SourceDataInfo>> imgHashMap = dpo.getDataGenerators();
-					 if (imgHashMap != null) {
-						Set<String> imgNamesset = imgHashMap.keySet();
-						Iterator<String> imgNameIter = imgNamesset.iterator();
-						while (imgNameIter.hasNext()) {
-							imageListModel.addElement(imgNameIter.next());
+					for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+						if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
+							imageListModel.addElement(dataProcessingOutputInfo.getVariableNames()[i]);
 						}
-						imageList.setModel(imageListModel);
-						((DefaultListSelectionModel)imageList.getSelectionModel()).clearSelection();
 					}
+					imageList.setModel(imageListModel);
+					((DefaultListSelectionModel)imageList.getSelectionModel()).clearSelection();	 
 					 
-					 
-					 
-					//					List<Variable> varList = ncfile.getVariables();
 					DefaultListModel dlm = new DefaultListModel();
-					for (int i = 0; i < dpo.getVariableStatNames().length; i++) {
-						if(dpo.getVariableUnits() != null && dpo.getVariableUnits()[i] != null && dpo.getVariableUnits()[i].length() > 0){
-							dlm.addElement(dpo.getVariableStatNames()[i] + "_(" + dpo.getVariableUnits()[i] + ")");
-						}else{
-							dlm.addElement(dpo.getVariableStatNames()[i]);
+					for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+						String variableName = dataProcessingOutputInfo.getVariableNames()[i];
+						if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.statistic)){
+							String variableUnits = dataProcessingOutputInfo.getVariableUnits(variableName);
+							if(variableUnits != null){
+								dlm.addElement(variableName + "_(" + variableUnits + ")");
+							}else{
+								dlm.addElement(variableName);
+							}
 						}
 					}
-//					for (Variable var : varList) {
-//						if (!var.getName().equals(ReservedSymbol.TIME.getName())) {
-//							dlm.addElement(var.getName());
-//						}
-//					}
+
 					int[] lastSelectedIdxArray0 = varJList.getSelectedIndices(); 
 					varJList.setModel(dlm);
 					lastSelectedIdxArray = lastSelectedIdxArray0;
@@ -491,9 +530,9 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //				
 //				totalColumns += numColumns;
 			}
-			int numTimes = timeArray.length;
+			int numTimes = dataProcessingOutputInfo.getVariableTimePoints().length;
 			double[][] plotDatas = new double[totalColumns][numTimes];
-			plotDatas[0] = timeArray;
+			plotDatas[0] = dataProcessingOutputInfo.getVariableTimePoints();//assumes all times same
 			String[] plotNames = new String[totalColumns - 1];
 			int columnCount = 0;
 			for (int v = 0; v < numSelectedVars; v ++) {
@@ -503,6 +542,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 				{
 					varName = varName.substring(0, varName.indexOf("_("));
 				}
+
 //				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
 //				int[] shape = volVar.getShape();
 //				int numColumns = shape[1];
@@ -521,7 +561,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					}
 					plotNames[columnCount] = plotName;
 					for (int j = 0; j < numTimes; j++) {
-						plotDatas[columnCount + 1][j] = dpo.getVariableStatValues(varName)[j];//data.get(j, i);
+						plotDatas[columnCount + 1][j] = dataProcessingOutputInfo.getVariableStatValues().get(varName)[j];//data.get(j, i);
 					}
 					columnCount ++;
 				}

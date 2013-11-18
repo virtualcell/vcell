@@ -5,11 +5,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -17,25 +18,27 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.ISize;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 
-import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import javax.swing.JComboBox;
 
 public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 	private DocumentWindowManager documentWindowManager;
+	private PDEDataManager selectedPDEDataManager;
 	private JLabel mainLabel;
-	private DataProcessingOutput dataProcessingOutput;
+	private DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo;
 	private String variableName;
 	private JList list;
 	private ListSelectionListener listSelectionListener = new ListSelectionListener() {
@@ -46,13 +49,13 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 				if(wizardParent != null){
 					wizardParent.setNextFinishButtonEnabled(variableName != null);
 				}
-				if(variableName != null && dataProcessingOutput != null && dataProcessingOutput.getDataGenerators().get(variableName) != null){
-					Vector<SourceDataInfo> sourceDataInfoV = dataProcessingOutput.getDataGenerators().get(variableName);
+				if(variableName != null && dataProcessingOutputInfo != null && dataProcessingOutputInfo.getVariableISize(variableName) != null){
+					ISize isize = dataProcessingOutputInfo.getVariableISize(variableName);
 					int lastSliceSelected = (Integer)comboBox.getSelectedItem();
 					comboBox.setEnabled(true);
 					comboBox.removeAllItems();
-					if(sourceDataInfoV.get(0).getZSize() > 1){
-						for (int i = 0; i < sourceDataInfoV.get(0).getZSize(); i++) {
+					if(isize.getZ() > 1){
+						for (int i = 0; i < isize.getZ(); i++) {
 							((DefaultComboBoxModel)comboBox.getModel()).addElement(i);
 						}
 						comboBox.setSelectedItem(lastSliceSelected);
@@ -78,7 +81,7 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try{
-					dataProcessingOutput = null;
+					dataProcessingOutputInfo = null;
 					list.removeListSelectionListener(listSelectionListener);
 					list.setListData(new Object[0]);
 					
@@ -92,20 +95,26 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 					AsynchClientTask dataManagerTask = new AsynchClientTask("Getting Data Info...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							PDEDataManager dataManager = (PDEDataManager)documentWindowManager.getRequestManager().getDataManager(null,vcSimulationDataIdentifier,!openModelInfoHolder.isCompartmental);
-							dataProcessingOutput = dataManager.getDataProcessingOutput();
+							selectedPDEDataManager = (PDEDataManager)documentWindowManager.getRequestManager().getDataManager(null,vcSimulationDataIdentifier,!openModelInfoHolder.isCompartmental);
+							dataProcessingOutputInfo =
+								(DataOperationResults.DataProcessingOutputInfo)selectedPDEDataManager.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(selectedPDEDataManager.getVCDataIdentifier()));
 						}
 					};
 					AsynchClientTask updateListTask = new AsynchClientTask("Updating List...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							if(dataProcessingOutput.getDataGenerators() == null || dataProcessingOutput.getDataGenerators().size() == 0){
+							ArrayList<String> imageDataNames = new ArrayList<String>();
+							for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+								if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
+									imageDataNames.add(dataProcessingOutputInfo.getVariableNames()[i]);
+								}
+							}
+							if(imageDataNames.size() == 0){
 								throw new Exception("No image based Post Processing Data found in '"+openModelInfoHolder.simInfo.getSimulationVersion().getName()+"'");
 							}
-							String[] listData = dataProcessingOutput.getDataGenerators().keySet().toArray(new String[0]);
 							try{
 								list.removeListSelectionListener(listSelectionListener);
-								list.setListData(listData);
+								list.setListData(imageDataNames.toArray(new String[0]));
 							}finally{
 								list.addListSelectionListener(listSelectionListener);
 							}
@@ -168,11 +177,14 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 	public int getSelectedSlice(){
 		return (Integer)comboBox.getSelectedItem();
 	}
+	public PDEDataManager getSelectedDataManager(){
+		return selectedPDEDataManager;
+	}
+	public DataProcessingOutputInfo getSelectedDataProcessingOutputInfo(){
+		return dataProcessingOutputInfo;
+	}
 	public void setDocumentWindowManager(DocumentWindowManager documentWindowManager){
 		this.documentWindowManager = documentWindowManager;
-	}
-	public DataProcessingOutput getDataProcessingOutput() {
-		return dataProcessingOutput;
 	}
 	private Wizard wizardParent;
 	private JComboBox comboBox;

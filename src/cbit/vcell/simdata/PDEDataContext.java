@@ -22,11 +22,12 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
@@ -224,11 +225,8 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param time double
  */
 protected abstract SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException;
-protected abstract DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException;
+public abstract DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException;
 
-public DataProcessingOutput getDataProcessingOutput() throws DataAccessException {
-	return retrieveDataProcessingOutput();
-}
 
 /**
  * Gets the timePoint property (double) value.

@@ -28,7 +28,6 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -265,13 +264,13 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 	}
 }
 
-public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdID) throws DataAccessException {
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
 	try {
-		return getDataSetController().getDataProcessingOutput(vcdID);
+		return getDataSetController().doDataOperation(dataOperation);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getDataProcessingOutput(vcdID);
+			return getDataSetController().doDataOperation(dataOperation);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());

@@ -17,6 +17,8 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.message.VCMessageSession;
@@ -27,7 +29,6 @@ import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.solver.DataProcessingOutput;
 
 /**
  * Insert the type's description here.
@@ -57,8 +58,8 @@ public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(OutputContext outp
 	return (DataIdentifier[])rpc("getDataIdentifiers",new Object[]{outputContext,userLoginInfo.getUser(), vcdID});
 }
 
-public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdID) throws DataAccessException {
-	return (DataProcessingOutput)rpc("getDataProcessingOutput", new Object[]{userLoginInfo.getUser(), vcdID});
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+	return (DataOperationResults)rpc("doDataOperation", new Object[]{userLoginInfo.getUser(), dataOperation});
 }
 
 

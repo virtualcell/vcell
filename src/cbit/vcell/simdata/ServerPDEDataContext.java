@@ -16,11 +16,12 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
@@ -113,8 +114,8 @@ protected SimDataBlock getSimDataBlock(java.lang.String varName, double time) th
 	return getDataServerImpl().getSimDataBlock(getOutputContext(),user, getVCDataIdentifier(), varName, time);
 }
 
-public DataProcessingOutput retrieveDataProcessingOutput() throws DataAccessException {
-	return getDataServerImpl().getDataProcessingOutput(user, getVCDataIdentifier());
+public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+	return getDataServerImpl().doDataOperation(user, dataOperation);
 }
 
 

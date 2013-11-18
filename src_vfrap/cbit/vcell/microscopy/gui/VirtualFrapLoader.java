@@ -26,7 +26,6 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.batchrun.FRAPBatchRunWorkspace;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.DataProcessingOutput;
 
 public class VirtualFrapLoader {
 	
