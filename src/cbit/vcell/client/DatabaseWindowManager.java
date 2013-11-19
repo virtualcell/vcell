@@ -40,12 +40,12 @@ import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
@@ -542,7 +542,12 @@ public void deleteSelected() {
 }
 
 public void exportDocument() {
-	getRequestManager().exportDocument(this);
+	if (getPanelSelection() != null) {
+		getRequestManager().exportDocument(this);
+	}
+	else {
+		PopupGenerator.showInfoDialog(this, "no model selected");
+	}
 }
 
 /**
