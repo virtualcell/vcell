@@ -30,6 +30,7 @@ public class AnnotatedFunction extends Function implements Matchable {
 		PREDEFINED,
 		OLDUSERDEFINED,
 		OUTPUTFUNCTION,
+		POSTPROCESSFUNCTION
 	}
 
 	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, Domain domain, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
@@ -101,7 +102,9 @@ public boolean isOldUserDefined() {
 public boolean isOutputFunction() {
 	return functionCategory.equals(FunctionCategory.OUTPUTFUNCTION);
 }
-
+public boolean isPostProcessFunction() {
+	return functionCategory.equals(FunctionCategory.POSTPROCESSFUNCTION);
+}
 public String getDisplayName() {
 	return displayName;
 }
