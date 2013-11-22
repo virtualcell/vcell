@@ -32,6 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.vcell.util.Extent;
@@ -222,7 +223,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  gbc = new GridBagConstraints();
 		  gbc.gridx = gridx;
 		  gbc.gridy = 0;
-		  gbc.weightx = 0.3;
+		  gbc.weightx = 0.5;
 		  gbc.insets = new Insets(1, 2, 1, 2);
 		  gbc.fill = GridBagConstraints.HORIZONTAL;
 		  finestInfoPanel.add(finestSizeTextField, gbc);
@@ -248,16 +249,18 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  gbc = new GridBagConstraints();
 		  gbc.gridx = gridx;
 		  gbc.gridy = 0;
-		  gbc.weightx = 0.7;
+		  gbc.weightx = 0.5;
 		  gbc.insets = new Insets(0, 2, 1, 0);
+		  gbc.anchor = GridBagConstraints.LINE_END;
 		  gbc.fill = GridBagConstraints.HORIZONTAL;
+		  finestDxTextField.setHorizontalAlignment(SwingConstants.CENTER);
 		  finestInfoPanel.add(finestDxTextField, gbc);
 		  
 			++ gridx;
 			gbc = new GridBagConstraints();
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			gbc.insets = new Insets(0, 0, 1, 2);
+			gbc.insets = new Insets(1, 0, 1, 2);
 			label = new JLabel(")");
 			finestInfoPanel.add(label, gbc);
 		}
