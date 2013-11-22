@@ -351,7 +351,7 @@ private void insertMathModelMetaData(Connection con,User user ,MathModelMetaData
 		insertSimulationEntryLinkSQL(con, getNewKey(con), mathModelKey, simKey);
 	}
 	
-	ApplicationMathTable.table.saveOutputFunctionsMathModel(con, mathModelKey, mathModel.getAllPostProcessAndUserOutputFunctions());
+	ApplicationMathTable.table.saveOutputFunctionsMathModel(con, mathModelKey, mathModel.getOutputFunctions());
 }
 
 

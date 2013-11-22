@@ -125,6 +125,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 						try {
 							nextButtonClicked();
 						} catch (Exception ex) {
+							ex.printStackTrace(System.out);
 							DialogUtils.showErrorDialog(OutputFunctionsPanel.this, ex.getMessage());
 							return;
 						}
@@ -538,13 +539,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	}
 
 	
-	private ArrayList<Object> gatherGeometryClasses() throws ExpressionException, InconsistentDomainException {
-		String exprStr = getFunctionExpressionTextField().getText();
-		if (exprStr == null) {
-			throw new ExpressionException("No expression provided for output function.");
-		}
-		Expression expr = new Expression(exprStr);
-
+	private ArrayList<Object> getPossibleGeometryClassesAndVariableTypes(Expression expr) throws ExpressionException, InconsistentDomainException {
 		SimulationOwner simulationOwner = getSimulationWorkspace().getSimulationOwner();
 		MathDescription mathDescription = simulationOwner.getMathDescription();
 		boolean bSpatial = simulationOwner.getGeometry().getDimension() > 0;
@@ -556,7 +551,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		
 		// here use math description as symbol table because we allow 
 		// new expression itself to be function of constant.
-		expr = MathUtilities.substituteFunctions(expr, mathDescription).flatten();
+		expr = MathUtilities.substituteFunctions(expr, outputFunctionContext).flatten();
 		String[] symbols = expr.getSymbols();
 		// using bit operation to determine whether geometry classes for symbols in expression are vol, membrane or both. 01 => vol; 10 => membrane; 11 => both 
 		int gatherFlag = 0;		 
@@ -572,6 +567,9 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 					varTypes[i] = VariableType.VOLUME;
 				} else {
 					Variable var = mathDescription.getVariable(symbols[i]);
+					if (var == null){
+						var = mathDescription.getPostProcessingBlock().getDataGenerator(symbols[i]);
+					}
 					varTypes[i] = VariableType.getVariableType(var);
 					bHasVariable = true;
 					if (var.getDomain() != null) {
@@ -583,8 +581,14 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 							gatherFlag |= 2;
 						}
 					}
+					if (varTypes[i].equals(VariableType.POSTPROCESSING)){
+						gatherFlag |= 4;
+					}
 				}
 			}
+		}
+		if (gatherFlag > 4) {
+			throw new RuntimeException("cannot mix post processing variables with membrane or volume variables");
 		}
 		int numGeomClasses = geomClassSet.size();
 		if (numGeomClasses == 0) {
@@ -628,7 +632,14 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		if (bSpatial) {
 			DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 			ArrayList<Object> objectsList = null;
-			objectsList = gatherGeometryClasses();
+			
+			String exprStr = getFunctionExpressionTextField().getText();
+			if (exprStr == null) {
+				throw new ExpressionException("No expression provided for output function.");
+			}
+			Expression expr = new Expression(exprStr);
+
+			objectsList = getPossibleGeometryClassesAndVariableTypes(expr);
 
 			for (Object ob : objectsList) {
 				aModel.addElement(ob);
@@ -726,12 +737,17 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 		} else {
 			newFunctionVariableType = VariableType.NONSPATIAL;
 		}
-		AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, newFunctionVariableType, FunctionCategory.OUTPUTFUNCTION);
+		AnnotatedFunction tempFunction = new AnnotatedFunction(funcName, funcExp, domain, null, newFunctionVariableType, FunctionCategory.OUTPUTFUNCTION);
 	
-		VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(newFunction, funcExp);
-		if (!vt.compareEqual(newFunctionVariableType)) {
-			newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, vt, FunctionCategory.OUTPUTFUNCTION);
+		VariableType vt = outputFunctionContext.computeFunctionTypeWRTExpression(tempFunction, funcExp);
+
+		FunctionCategory category = FunctionCategory.OUTPUTFUNCTION;
+		if (vt.equals(VariableType.POSTPROCESSING)){
+			category = FunctionCategory.POSTPROCESSFUNCTION;
 		}
+		
+		AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, domain, null, vt, category);
+		
 		outputFunctionContext.addOutputFunction(newFunction);
 		setSelectedObjects(new Object[] {newFunction});
 		enableDeleteFnButton();

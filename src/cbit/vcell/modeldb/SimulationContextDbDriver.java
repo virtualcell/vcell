@@ -794,9 +794,11 @@ private SimulationContext getSimulationContextSQL(QueryHashtable dbc, Connection
 	assignSpeciesContextSpecsSQL(con,simContextKey, simContext);
 	assignReactionSpecsSQL(con,simContextKey, simContext);
 	
-	ApplicationMathTable.OutputFunctionCategories outputFunctionCategories = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
-	simContext.getOutputFunctionContext().setOutputFunctions(outputFunctionCategories.getOutputFunctionsList());
-	simContext.getOutputFunctionContext().setPostProcessFunctions(outputFunctionCategories.getPostProcessFunctionsList());
+	ArrayList<AnnotatedFunction> outputFunctionList = ApplicationMathTable.table.getOutputFunctionsSimcontext(con, simContextKey);
+	if(outputFunctionList != null){
+		OutputFunctionContext outputFnContext = simContext.getOutputFunctionContext();
+		outputFnContext.setOutputFunctions(outputFunctionList);
+	}
 	
 	SimContextTable.table.readAppComponents(con, simContext);
 	
@@ -976,7 +978,7 @@ private void insertSimulationContext(InsertHashtable hash, Connection con, User 
 	insertSpeciesContextSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to speciesContext
 	insertReactionSpecsSQL(con, newVersion.getVersionKey(), simContext, updatedModel); // links to reactionSteps
 	insertAnalysisTasksSQL(con, newVersion.getVersionKey(), simContext); // inserts AnalysisTasks
-	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getAllPostProcessAndUserOutputFunctions());
+	ApplicationMathTable.table.saveOutputFunctionsSimContext(con, newVersion.getVersionKey(), simContext.getOutputFunctionContext().getOutputFunctionsList());
 	DataSymbolTable.table.saveDataSymbols(con,newVersion.getVersionKey(),simContext.getDataContext(),user);
 	
 	hash.put(simContext,newVersion.getVersionKey());

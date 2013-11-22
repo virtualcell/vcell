@@ -10,7 +10,6 @@
 
 package cbit.vcell.solver;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -33,6 +32,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.DataGenerator;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.InsideVariable;
@@ -60,7 +60,6 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
 	public static final String PROPERTY_OUTPUT_FUNCTIONS = "outputFunctions";
-	public static final String PROPERTY_POSTPROCESS_FUNCTIONS = "postProcessFunctions";
 
 	public class OutputFunctionNameScope extends AbstractNameScope  {
 		public OutputFunctionNameScope(){
@@ -90,7 +89,6 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 
 	private ArrayList<AnnotatedFunction> outputFunctionsList = new ArrayList<AnnotatedFunction>();
-	private ArrayList<AnnotatedFunction> postProcessFunctionsList = new ArrayList<AnnotatedFunction>();
 	private SimulationOwner simulationOwner = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
@@ -110,15 +108,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	public ArrayList<AnnotatedFunction> getOutputFunctionsList() {
 		return outputFunctionsList;
 	}
-	public ArrayList<AnnotatedFunction> getPostProcessFunctionsList() {
-		return postProcessFunctionsList;
-	}
-	public ArrayList<AnnotatedFunction> getAllPostProcessAndUserOutputFunctions(){
-		ArrayList<AnnotatedFunction> allOutputFunctionsList = new ArrayList<AnnotatedFunction>();
-		allOutputFunctionsList.addAll(getOutputFunctionsList());
-		allOutputFunctionsList.addAll(getPostProcessFunctionsList());
-		return allOutputFunctionsList;
-	}
+
 	public boolean compareEqual(Matchable obj){
 		if (obj instanceof OutputFunctionContext) {
 			if (!Compare.isEqualOrNull(outputFunctionsList, ((OutputFunctionContext)obj).outputFunctionsList)){
@@ -159,22 +149,16 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		if (obsFunction == null){
 			return;
 		}	
-		if(!obsFunction.getFunctionCatogery().equals(AnnotatedFunction.FunctionCategory.POSTPROCESSFUNCTION)){	
-			try {
-				obsFunction.getExpression().bindExpression(this);
-			} catch (ExpressionBindingException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
-			}
-	
-			ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
-			newFunctionsList.add(obsFunction);
-			setOutputFunctions0(newFunctionsList);
-		}else{
-			ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(postProcessFunctionsList);
-			newFunctionsList.add(obsFunction);
-			setPostProcessFunctions(newFunctionsList);
+		try {
+			obsFunction.getExpression().bindExpression(this);
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
 		}
+
+		ArrayList<AnnotatedFunction> newFunctionsList = new ArrayList<AnnotatedFunction>(outputFunctionsList);
+		newFunctionsList.add(obsFunction);
+		setOutputFunctions0(newFunctionsList);
 	}   
 
 	public void removeOutputFunction(AnnotatedFunction obsFunction) throws PropertyVetoException {
@@ -261,33 +245,8 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 	}
 	
 	public void setOutputFunctions(ArrayList<AnnotatedFunction> outputFunctions) throws java.beans.PropertyVetoException {
-		//make sure none are PostProcess
-		if(outputFunctions != null){
-			for(AnnotatedFunction annotatedFunction:outputFunctions){
-				if(annotatedFunction.getFunctionCatogery().equals(AnnotatedFunction.FunctionCategory.POSTPROCESSFUNCTION)){
-					throw new PropertyVetoException("setOutputfunctions cannot be PostProcess type", new PropertyChangeEvent(this, PROPERTY_OUTPUT_FUNCTIONS, outputFunctionsList, outputFunctions));
-				}
-			}
-		}
 		setOutputFunctions0(outputFunctions);
 		rebindAll();		
-	}
-	public void setPostProcessFunctions(ArrayList<AnnotatedFunction> postProcessFunctions) throws java.beans.PropertyVetoException {
-		//make sure all are PostProcess
-		if(postProcessFunctions != null){
-			for(AnnotatedFunction annotatedFunction:postProcessFunctions){
-				if(!annotatedFunction.getFunctionCatogery().equals(AnnotatedFunction.FunctionCategory.POSTPROCESSFUNCTION)){
-					throw new PropertyVetoException("setPostProcessFunctions must all be PostProcess type", new PropertyChangeEvent(this, PROPERTY_OUTPUT_FUNCTIONS, postProcessFunctionsList, postProcessFunctions));
-				}
-			}
-		}
-		
-//		setOutputFunctions0(outputFunctions);
-//		rebindAll();		
-		ArrayList<AnnotatedFunction> oldValue = postProcessFunctionsList;
-		fireVetoableChange(PROPERTY_POSTPROCESS_FUNCTIONS, oldValue, postProcessFunctions);
-		postProcessFunctionsList = postProcessFunctions;
-		firePropertyChange(PROPERTY_POSTPROCESS_FUNCTIONS, oldValue, postProcessFunctions);
 	}
 
 	/**
@@ -437,6 +396,9 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 					entryMap.put(var.getName(), var);
 				} 
 			}
+			for (DataGenerator dataGenerator : mathDescription.getPostProcessingBlock().getDataGeneratorList()){
+				entryMap.put(dataGenerator.getName(), dataGenerator);
+			}
 		}
 		entryMap.put(ReservedVariable.TIME.getName(), ReservedVariable.TIME);
 		int dimension = mathDescription.getGeometry().getDimension();
@@ -481,6 +443,10 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 			if (ste != null && !(ste instanceof PseudoConstant) && !(ste instanceof Constant)) {
 				return ste;
 			}
+			ste = mathDescription.getPostProcessingBlock().getDataGenerator(identifierString);
+			if (ste instanceof DataGenerator){
+				return ste;
+			}
 		}
 		// see if it is an output function.
 		ste = getOutputFunction(identifierString);
@@ -500,7 +466,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		
 		// here use math description as symbol table because we allow 
 		// new expression itself to be function of constant.
-		newexp = MathUtilities.substituteFunctions(newexp, mathDescription).flatten();
+		newexp = MathUtilities.substituteFunctions(newexp, this).flatten();
 		String[] symbols = newexp.getSymbols();
 		VariableType functionType = outputFunction.getFunctionType();
 		String funcName = outputFunction.getName();
@@ -514,6 +480,9 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 					varTypes[i] = functionType;
 				} else {
 					Variable var = mathDescription.getVariable(symbols[i]);
+					if (var == null){
+						var = mathDescription.getPostProcessingBlock().getDataGenerator(symbols[i]);
+					}
 					varTypes[i] = VariableType.getVariableType(var);
 					if (funcDomain != null) {
 						if (var.getDomain() == null) {

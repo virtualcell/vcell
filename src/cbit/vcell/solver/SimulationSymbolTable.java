@@ -652,6 +652,8 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 						}
 						funcType = VariableType.MEMBRANE_REGION;
 					}
+				} else if (vt.incompatibleWith(funcType)){
+					throw new InconsistentDomainException("Function domains conflict between variable domains '"+vt.getDefaultLabel()+"' and '"+funcType.getDefaultLabel()+" for function " + function.getName());
 				}
 			}
 		}

@@ -495,10 +495,6 @@ public MathModel getMathModelUnresolved(QueryHashtable dbc, User user, KeyValue 
 		if (outputFunctions != null) {
 			newMathModel.getOutputFunctionContext().setOutputFunctions(outputFunctions);
 		}
-		ArrayList<AnnotatedFunction> postProcessFunctions = mathModelMetaData.getPostProcessFunctions();
-		if (postProcessFunctions != null) {
-			newMathModel.getOutputFunctionContext().setPostProcessFunctions(postProcessFunctions);
-		}
 	}catch (java.beans.PropertyVetoException e){
 		throw new DataAccessException("PropertyVetoException caught "+e.getMessage());
 	}
@@ -1940,11 +1936,9 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 		}
 		MathModelMetaData mathModelMetaData = null;
 		if (oldVersion==null){
-			mathModelMetaData = new MathModelMetaData(mathDescriptionKey, simKeys, mathModel.getName(), mathModel.getDescription(),
-				mathModel.getOutputFunctionContext().getOutputFunctionsList(),mathModel.getOutputFunctionContext().getPostProcessFunctionsList());
+			mathModelMetaData = new MathModelMetaData(mathDescriptionKey, simKeys, mathModel.getName(), mathModel.getDescription(),mathModel.getOutputFunctionContext().getOutputFunctionsList());
 		}else{
-			mathModelMetaData = new MathModelMetaData(oldVersion, mathDescriptionKey, simKeys,
-				mathModel.getOutputFunctionContext().getOutputFunctionsList(),mathModel.getOutputFunctionContext().getPostProcessFunctionsList());
+			mathModelMetaData = new MathModelMetaData(oldVersion, mathDescriptionKey, simKeys,mathModel.getOutputFunctionContext().getOutputFunctionsList());
 			if (!mathModel.getDescription().equals(oldVersion.getAnnot())) {
 				try {
 					mathModelMetaData.setDescription(mathModel.getDescription());
@@ -1973,7 +1967,6 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 			updatedMathModel.addSimulation((Simulation)memoryToDatabaseHash.get(mathModel.getSimulations(i)));
 		}
 		updatedMathModel.getOutputFunctionContext().setOutputFunctions(mathModel.getOutputFunctionContext().getOutputFunctionsList());
-		updatedMathModel.getOutputFunctionContext().setPostProcessFunctions(mathModel.getOutputFunctionContext().getPostProcessFunctionsList());
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(updatedMathModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),
 				updatedMathModel.createMathModelChildSummary().toDatabaseSerialization());

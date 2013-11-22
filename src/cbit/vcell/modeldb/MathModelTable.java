@@ -147,8 +147,8 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con,Ses
 }
 
 private MathModelMetaData populateOutputFunctions(Connection con,KeyValue mathDescrRef,Version mathModelVersion,KeyValue[] simulationKeys) throws SQLException,DataAccessException{
-	ApplicationMathTable.OutputFunctionCategories outputFunctionCategories = ApplicationMathTable.table.getOutputFunctionsMathModel(con, mathModelVersion.getVersionKey());
-	return new MathModelMetaData(mathModelVersion,mathDescrRef,simulationKeys,outputFunctionCategories.getOutputFunctionsList(),outputFunctionCategories.getPostProcessFunctionsList());
+	ArrayList<AnnotatedFunction> outputFunctions = ApplicationMathTable.table.getOutputFunctionsMathModel(con, mathModelVersion.getVersionKey());
+	return new MathModelMetaData(mathModelVersion,mathDescrRef,simulationKeys,outputFunctions);
 }
 /**
  * This method was created in VisualAge.
