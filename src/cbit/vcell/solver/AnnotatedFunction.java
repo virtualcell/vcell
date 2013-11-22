@@ -29,7 +29,7 @@ public class AnnotatedFunction extends Function implements Matchable {
 	public enum FunctionCategory {
 		PREDEFINED,
 		OLDUSERDEFINED,
-		OUTPUTFUNCTION,
+		OUTPUTFUNCTION, 
 		POSTPROCESSFUNCTION
 	}
 

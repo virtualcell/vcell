@@ -40,12 +40,11 @@ public class MathModelMetaData implements Versionable, java.io.Serializable {
 	private java.lang.String fieldDescription = new String();
 	
 	private ArrayList<AnnotatedFunction> outputFunctions;
-	private ArrayList<AnnotatedFunction> postProcessFunctions;
 
 /**
  * BioModelMetaData constructor comment.
  */
-public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String argName, String argDescription,ArrayList<AnnotatedFunction> outputFunctions,ArrayList<AnnotatedFunction> postProcessFunctions) {
+public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String argName, String argDescription,ArrayList<AnnotatedFunction> outputFunctions) {
 	this.version = null;
 	this.fieldName = argName;
 	this.fieldDescription = argDescription;
@@ -56,14 +55,13 @@ public MathModelMetaData(KeyValue argMathKey, KeyValue simulationKeys[], String 
 		}
 	}
 	this.outputFunctions = outputFunctions;
-	this.postProcessFunctions = postProcessFunctions;
 }
 
 
 /**
  * BioModelMetaData constructor comment.
  */
-public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simulationKeys[],ArrayList<AnnotatedFunction> outputFunctions,ArrayList<AnnotatedFunction> postProcessFunctions) {
+public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simulationKeys[],ArrayList<AnnotatedFunction> outputFunctions) {
 	this.version = argVersion;
 	if (version!=null){
 		this.fieldName = version.getName();
@@ -82,15 +80,7 @@ public MathModelMetaData(Version argVersion, KeyValue argMathKey, KeyValue simul
 public ArrayList<AnnotatedFunction> getOutputFunctions(){
 	return outputFunctions;
 }
-public ArrayList<AnnotatedFunction> getPostProcessFunctions(){
-	return postProcessFunctions;
-}
-public ArrayList<AnnotatedFunction> getAllPostProcessAndUserOutputFunctions(){
-	ArrayList<AnnotatedFunction> allOutputFunctionsList = new ArrayList<AnnotatedFunction>();
-	allOutputFunctionsList.addAll(getOutputFunctions());
-	allOutputFunctionsList.addAll(getPostProcessFunctions());
-	return allOutputFunctionsList;
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (4/24/2003 3:32:21 PM)

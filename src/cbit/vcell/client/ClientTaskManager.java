@@ -110,7 +110,6 @@ public class ClientTaskManager {
 						newOutputFunctions.add(new AnnotatedFunction(afn));
 					}
 					newSimulationContext.getOutputFunctionContext().setOutputFunctions(newOutputFunctions);
-					newSimulationContext.getOutputFunctionContext().setPostProcessFunctions(new ArrayList<AnnotatedFunction>(simulationContext.getOutputFunctionContext().getPostProcessFunctionsList()));
 				} else {
 					if (simulationContext.getSimulations().length > 0) {
 						DialogUtils.showWarningDialog(requester, "Simulations are not copied because new application is of different type.");

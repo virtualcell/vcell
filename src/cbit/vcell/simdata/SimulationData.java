@@ -64,6 +64,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverUtilities;
@@ -559,7 +560,9 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 	}
 	
 	checkSelfReference(function);
-	function.getExpression().bindExpression(this);
+	if (!function.isPostProcessFunction()){
+		function.getExpression().bindExpression(this);
+	}
 	addFunctionToListInternal(function);
 	
 }

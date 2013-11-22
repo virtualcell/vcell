@@ -34,10 +34,11 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 	private static final int MEMBRANE_REGION_TYPE = 5;
 	private static final int CONTOUR_REGION_TYPE = 6;
 	private static final int NONSPATIAL_TYPE = 7;
+	private static final int POSTPROCESSING_TYPE = 8;
 	
-	private static final String[] NAMES = {"Unknown","Volume","Membrane","Contour","Volume_Region","Membrane_Region","Contour_Region","Nonspatial"};
-	private static final String[] LABEL = {"Unknown","Conc","Density","Density","Conc","Density","Density","Conc"};
-	private static final String[] UNITS = {"Unknown","uM","molecules/um^2","molecules/um","uM","molecules/um^2","molecules/um","uM"};
+	private static final String[] NAMES = {"Unknown","Volume","Membrane","Contour","Volume_Region","Membrane_Region","Contour_Region","Nonspatial","Post_Process"};
+	private static final String[] LABEL = {"Unknown","Conc","Density","Density","Conc","Density","Density","Conc","Unknown"};
+	private static final String[] UNITS = {"Unknown","uM","molecules/um^2","molecules/um","uM","molecules/um^2","molecules/um","uM","Unknown"};
 	
 	public static final VariableType UNKNOWN = new VariableType(UNKNOWN_TYPE);
 	public static final VariableType VOLUME = new VariableType(VOLUME_TYPE);
@@ -47,8 +48,10 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 	public static final VariableType MEMBRANE_REGION = new VariableType(MEMBRANE_REGION_TYPE);
 	public static final VariableType CONTOUR_REGION = new VariableType(CONTOUR_REGION_TYPE);
 	public static final VariableType NONSPATIAL = new VariableType(NONSPATIAL_TYPE);
+	public static final VariableType POSTPROCESSING = new VariableType(POSTPROCESSING_TYPE);
 	
 	public enum VariableDomain {
+		VARIABLEDOMAIN_POSTPROCESSING("PostProcessing"),
 		VARIABLEDOMAIN_UNKNOWN("Unknown"),
 		VARIABLEDOMAIN_VOLUME("Volume"),
 		VARIABLEDOMAIN_MEMBRANE("Membrane"),
@@ -72,6 +75,9 @@ private VariableType(int varType) {
 	switch (type) {
 	case UNKNOWN_TYPE:
 		variableDomain = VariableDomain.VARIABLEDOMAIN_UNKNOWN;
+		break;
+	case POSTPROCESSING_TYPE:
+		variableDomain = VariableDomain.VARIABLEDOMAIN_POSTPROCESSING;
 		break;
 	case VOLUME_TYPE:
 	case VOLUME_REGION_TYPE:
@@ -250,8 +256,16 @@ public static VariableType getVariableType(Variable var) {
 		return VariableType.MEMBRANE;
 	} else if (var instanceof OutsideVariable) {
 		return VariableType.MEMBRANE;
+	} else if (var instanceof DataGenerator){
+		return VariableType.POSTPROCESSING;
 	} else {
 		return VariableType.UNKNOWN;
 	}
+}
+public boolean incompatibleWith(VariableType funcType) {
+	if ((this.type == POSTPROCESSING_TYPE || funcType.type == POSTPROCESSING_TYPE) && this.type != funcType.type){
+		return false;
+	}
+	return true;
 }
 }

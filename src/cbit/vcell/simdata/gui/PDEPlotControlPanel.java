@@ -57,6 +57,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
@@ -103,6 +104,7 @@ public class PDEPlotControlPanel extends JPanel {
 	
 	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
 		new DataIdentifierFilter(){
+			private boolean bPostProcessingMode = false;
 			private String ALL = "All Variables";
 			private String VOLUME_FILTER_SET = "Volume Variables";
 			private String MEMBRANE_FILTER_SET = "Membrane Variables";
@@ -110,6 +112,12 @@ public class PDEPlotControlPanel extends JPanel {
 			private String REGION_SIZE_FILTER_SET = "Region Sizes";
 			private String[] FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
 			public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+				if (bPostProcessingMode && dataidentifier.getVariableType().equals(VariableType.POSTPROCESSING)){
+					return true;
+				}
+				if (!bPostProcessingMode && dataidentifier.getVariableType().equals(VariableType.POSTPROCESSING)){
+					return false;
+				}
 				String varName = dataidentifier.getName();
 				boolean bSizeVar = varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName()) 
 						|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
@@ -148,6 +156,12 @@ public class PDEPlotControlPanel extends JPanel {
 			}
 			public boolean isAcceptAll(String filterSetName){
 				return filterSetName.equals(ALL);
+			}
+			public boolean isPostProcessingMode() {
+				return bPostProcessingMode;
+			}
+			public void setPostProcessingMode(boolean bPostProcessingMode) {
+				this.bPostProcessingMode = bPostProcessingMode;
 			}
 		};
 	

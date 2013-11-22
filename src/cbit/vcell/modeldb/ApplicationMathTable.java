@@ -100,27 +100,13 @@ private void saveOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue s
 		ApplicationMathTable.table.outputFuncSmall);
 }
 
-public static class OutputFunctionCategories{
-	private ArrayList<AnnotatedFunction> outputFunctionsList;
-	private ArrayList<AnnotatedFunction> postProcessFunctionsList;
-	public OutputFunctionCategories(ArrayList<AnnotatedFunction> outputFunctionsList,ArrayList<AnnotatedFunction> postProcessFunctionsList) {
-		this.outputFunctionsList = outputFunctionsList;
-		this.postProcessFunctionsList = postProcessFunctionsList;
-	}
-	public ArrayList<AnnotatedFunction> getOutputFunctionsList() {
-		return outputFunctionsList;
-	}
-	public ArrayList<AnnotatedFunction> getPostProcessFunctionsList() {
-		return postProcessFunctionsList;
-	}
-}
-public OutputFunctionCategories getOutputFunctionsSimcontext(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
+public ArrayList<AnnotatedFunction> getOutputFunctionsSimcontext(Connection con,KeyValue simContextRef) throws SQLException,DataAccessException{
 	return getOutputFunctions(con, null, simContextRef);
 }
-public OutputFunctionCategories getOutputFunctionsMathModel(Connection con,KeyValue mathModelRef) throws SQLException,DataAccessException{
+public ArrayList<AnnotatedFunction> getOutputFunctionsMathModel(Connection con,KeyValue mathModelRef) throws SQLException,DataAccessException{
 	return getOutputFunctions(con, mathModelRef, null);
 }
-private OutputFunctionCategories getOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef) throws SQLException,DataAccessException{
+private ArrayList<AnnotatedFunction> getOutputFunctions(Connection con,KeyValue mathModelRef,KeyValue simContextRef) throws SQLException,DataAccessException{
 	Statement stmt = null;
 	try{
 		stmt = con.createStatement();
@@ -140,17 +126,7 @@ private OutputFunctionCategories getOutputFunctions(Connection con,KeyValue math
 		if(outputFunctionsXML == null){
 			return null;
 		}
-		ArrayList<AnnotatedFunction> allOutputfunctions = convertOutputFunctionXMLToFuncList(outputFunctionsXML);
-		ArrayList<AnnotatedFunction> outputFunctionsList = new ArrayList<AnnotatedFunction>();
-		ArrayList<AnnotatedFunction> postProcessFunctionsList = new ArrayList<AnnotatedFunction>();
-		for(AnnotatedFunction annotatedFunction:allOutputfunctions){
-			if(annotatedFunction.getFunctionCatogery().equals(AnnotatedFunction.FunctionCategory.POSTPROCESSFUNCTION)){
-				postProcessFunctionsList.add(annotatedFunction);
-			}else{
-				outputFunctionsList.add(annotatedFunction);
-			}
-		}
-		return new OutputFunctionCategories(outputFunctionsList, postProcessFunctionsList);
+		return convertOutputFunctionXMLToFuncList(outputFunctionsXML);
 	}catch (XmlParseException e){
 		throw new DataAccessException(e.getMessage(),e);
 	}finally{
