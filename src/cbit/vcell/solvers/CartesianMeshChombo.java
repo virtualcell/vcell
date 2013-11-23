@@ -265,7 +265,6 @@ public class CartesianMeshChombo extends CartesianMesh {
 					int c = -1;
 					int[] index = (int[]) vectValues.get(++ c);
 					int[] level = (int[]) vectValues.get(++ c);
-					int[] membraneId = (int[]) vectValues.get(++ c);
 					int[] i = (int[]) vectValues.get(++ c);
 					int[] j = (int[]) vectValues.get(++ c);
 					int[] k = null;
@@ -289,6 +288,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 					}
 					double[] volFrac = (double[])vectValues.get(++ c);
 					double[] areaFrac = (double[])vectValues.get(++ c);
+					//int[] membraneId = (int[]) vectValues.get(++ c);  -- newly added.
 					double unitVol = chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
 					chomboMesh.membraneElements = new MembraneElement[index.length];
 					chomboMesh.metrics = new MetricsEntry[index.length];
