@@ -32,6 +32,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private transient PropertyChangeSupport propertyChange;
 	private transient VetoableChangeSupport vetoChange;
 	private int viewLevel = 0;
+	private boolean bSaveVCellOutput = true;
+	private boolean bSaveChomboOutput = false;
 
 	public ChomboSolverSpec(int maxBoxSize) {
 		this.maxBoxSize = maxBoxSize;
@@ -41,6 +43,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.maxBoxSize = css.maxBoxSize;
 		this.fillRatio = css.fillRatio;
 		this.viewLevel = css.viewLevel;
+		this.bSaveVCellOutput = css.bSaveVCellOutput;
+		this.bSaveChomboOutput = css.bSaveChomboOutput;
 		this.refinementLevelList = new ArrayList<RefinementLevel>();
 		for (RefinementLevel rl : css.refinementLevelList)
 		{
@@ -48,11 +52,14 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 	}
 	
-	public ChomboSolverSpec(int maxBoxSize, double fillRatio, int viewLevel, ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
+	public ChomboSolverSpec(int maxBoxSize, double fillRatio, int viewLevel, boolean bSaveVCellOutput, boolean bSaveChomboOutput, 
+			ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
 		super();
 		this.maxBoxSize = maxBoxSize;
 		this.fillRatio = fillRatio;
 		this.viewLevel = viewLevel;
+		this.bSaveVCellOutput = bSaveVCellOutput;
+		this.bSaveChomboOutput = bSaveChomboOutput;
 		refinementLevelList = refineLevelList;
 		addVetoableChangeListener(this);
 	}
@@ -145,6 +152,14 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		{
 			return false;
 		}
+		if (chomboSolverSpec.bSaveVCellOutput != bSaveVCellOutput)
+		{
+			return false;
+		}
+		if (chomboSolverSpec.bSaveChomboOutput != bSaveChomboOutput)
+		{
+			return false;
+		}
 		if (chomboSolverSpec.getNumRefinementLevels() != getNumRefinementLevels()) {
 			return false;
 		}
@@ -162,6 +177,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append("\t" + VCML.MaxBoxSize + " " + maxBoxSize + "\n");
 		buffer.append("\t" + VCML.FillRatio + " " + fillRatio + "\n");
 		buffer.append("\t" + VCML.ViewLevel + " " + viewLevel + "\n");
+		buffer.append("\t" + VCML.SaveVCellOutput + " " + bSaveVCellOutput + "\n");
+		buffer.append("\t" + VCML.SaveChomboOutput + " " + bSaveChomboOutput + "\n");
 		buffer.append("\t" + VCML.MeshRefinement + " " + VCML.BeginBlock + "\n");
 		for (RefinementLevel level : refinementLevelList) {
 			buffer.append(level.getVCML());
@@ -202,6 +219,16 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				fillRatio = Double.parseDouble(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.SaveVCellOutput))
+			{
+				token = tokens.nextToken();
+				bSaveVCellOutput = Boolean.parseBoolean(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.SaveChomboOutput))
+			{
+				token = tokens.nextToken();
+				bSaveChomboOutput = Boolean.parseBoolean(token);
 			}
 			else if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
@@ -343,5 +370,31 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 
 	public void setViewLevel(int viewLevel) {
 		this.viewLevel = viewLevel;
+	}
+
+	public boolean isSaveVCellOutput() {
+		return bSaveVCellOutput;
+	}
+
+	public void setSaveVCellOutput(boolean newValue) {
+		boolean oldValue = this.bSaveVCellOutput;
+		if (oldValue == newValue)
+		{
+			return;
+		}
+		this.bSaveVCellOutput = newValue;
+	}
+
+	public boolean isSaveChomboOutput() {
+		return bSaveChomboOutput;
+	}
+
+	public void setSaveChomboOutput(boolean newValue) {
+		boolean oldValue = this.bSaveChomboOutput;
+		if (oldValue == newValue)
+		{
+			return;
+		}
+		this.bSaveChomboOutput = newValue;
 	}
 }

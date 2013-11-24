@@ -610,7 +610,6 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			oldValue.getSolverTaskDescription().removePropertyChangeListener(ivjEventHandler);
 			if (oldValue.getSolverTaskDescription().getChomboSolverSpec() != null)
 			{
-				oldValue.getSolverTaskDescription().removePropertyChangeListener(ivjEventHandler);
 				oldValue.getSolverTaskDescription().getChomboSolverSpec().removePropertyChangeListener(ivjEventHandler);
 				oldValue.getMeshSpecification().removePropertyChangeListener(ivjEventHandler);
 			}
@@ -618,10 +617,9 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		this.simulation = newValue;
 		if (newValue != null)
 		{
-			newValue.addPropertyChangeListener(ivjEventHandler);
+			newValue.getSolverTaskDescription().addPropertyChangeListener(ivjEventHandler);
 			if (newValue.getSolverTaskDescription().getChomboSolverSpec() != null)
 			{
-				newValue.getSolverTaskDescription().addPropertyChangeListener(ivjEventHandler);
 				newValue.getSolverTaskDescription().getChomboSolverSpec().addPropertyChangeListener(ivjEventHandler);
 				newValue.getMeshSpecification().addPropertyChangeListener(ivjEventHandler);
 			}

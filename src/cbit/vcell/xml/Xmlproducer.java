@@ -4188,6 +4188,14 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		fillRatio.setText(param.getFillRatio() + "");
 		chomboElement.addContent(fillRatio);
 		
+		Element saveVCellOutput = new Element(XMLTags.SaveVCellOutput);
+		saveVCellOutput.setText(param.isSaveVCellOutput() + "");
+		chomboElement.addContent(saveVCellOutput);
+		
+		Element saveChomboOutput = new Element(XMLTags.SaveChomboOutput);
+		saveChomboOutput.setText(param.isSaveChomboOutput() + "");
+		chomboElement.addContent(saveChomboOutput);
+		
 		Element meshRefinement = new Element(XMLTags.MeshRefinementTag);
 		for (int i = 0; i < param.getNumRefinementLevels(); i ++) {
 			RefinementLevel rfl = param.getRefinementLevel(i);

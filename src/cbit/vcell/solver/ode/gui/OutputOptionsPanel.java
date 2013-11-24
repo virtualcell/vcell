@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.vcell.chombo.ChomboOutputOptionsPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
@@ -57,6 +58,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 	private javax.swing.JLabel ivjPointsLabel = null;
 		
 	private SolverTaskDescription solverTaskDescription = null;
+	private ChomboOutputOptionsPanel chomboOutputOptionsPanel = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
@@ -398,7 +400,20 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			constraintsExplicitOutputPanel.weighty = 1.0;
 			constraintsExplicitOutputPanel.insets = new java.awt.Insets(0, 4, 4, 4);
 			getContentPanel().add(getExplicitOutputPanel(), constraintsExplicitOutputPanel);
+				
+			chomboOutputOptionsPanel = new ChomboOutputOptionsPanel();
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = 3;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.anchor = GridBagConstraints.PAGE_START;
+			gbc.gridwidth = 2;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			getContentPanel().add(chomboOutputOptionsPanel, gbc);
 					
+			
 			getbuttonGroup1().add(getDefaultOutputRadioButton());
 			getbuttonGroup1().add(getUniformOutputRadioButton());
 			getbuttonGroup1().add(getExplicitOutputRadioButton());
@@ -704,6 +719,9 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.Smoldyn)) {
 			getDefaultOutputPanel().setVisible(false);
 			getDefaultOutputRadioButton().setVisible(false);
+		} else if (solverTaskDescription.getSolverDescription().isChomboSolver()) {
+				getDefaultOutputPanel().setVisible(false);
+				getDefaultOutputRadioButton().setVisible(false);
 		} else {
 			getDefaultOutputPanel().setVisible(true);
 			getDefaultOutputRadioButton().setVisible(true);
@@ -810,6 +828,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			newValue.addPropertyChangeListener(ivjEventHandler);
 		}		
 		solverTaskDescription = newValue;
+		chomboOutputOptionsPanel.setSolverTaskDescription(solverTaskDescription);
 		firePropertyChange("solverTaskDescription", oldValue, newValue);
 		
 		initConnections();
