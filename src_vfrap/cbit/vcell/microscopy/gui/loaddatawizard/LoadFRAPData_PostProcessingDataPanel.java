@@ -97,7 +97,7 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							selectedPDEDataManager = (PDEDataManager)documentWindowManager.getRequestManager().getDataManager(null,vcSimulationDataIdentifier,!openModelInfoHolder.isCompartmental);
 							dataProcessingOutputInfo =
-								(DataOperationResults.DataProcessingOutputInfo)selectedPDEDataManager.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(selectedPDEDataManager.getVCDataIdentifier()));
+								(DataOperationResults.DataProcessingOutputInfo)selectedPDEDataManager.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(selectedPDEDataManager.getVCDataIdentifier(),false,selectedPDEDataManager.getOutputContext()));
 						}
 					};
 					AsynchClientTask updateListTask = new AsynchClientTask("Updating List...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

@@ -75,6 +75,9 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
+import com.sun.media.CreateSourceThreadAction;
+
+import cbit.image.VCImageUncompressed;
 import cbit.image.gui.SourceDataInfo;
 import cbit.plot.PlotData;
 import cbit.rmi.event.DataJobEvent;
@@ -83,8 +86,11 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -93,6 +99,7 @@ import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.SimResampleInfoProvider;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
@@ -104,6 +111,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.simdata.gui.SpatialSelection;
@@ -633,10 +641,10 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 	throw new DataAccessException("Unimplemented operation "+dataOperation.getClass().getName());
 }
 private static class DataProcessingHelper{
-	public String specificVarName;
-	public Double specificTime;
-	public Integer specificSlice;
-	public ArrayList<double[]> specificDataValues;//[time][slice]
+	public String[] specificVarNames;
+	public TimePointHelper specificTimePointHelper;
+	public DataIndexHelper specificDataIndexHelper;
+	public double[][][] specificDataValues;//[var][time][data]
 	
 	public String[] statVarNames;
 	public String[] statVarUnits;
@@ -650,13 +658,14 @@ private static class DataProcessingHelper{
 	public long[] tempDims;
 	public DataProcessingHelper(){
 	}
-	public DataProcessingHelper(String specificVarName,Double specificTime,Integer specificSlice){
-		this.specificVarName = specificVarName;
-		this.specificTime = specificTime;
-		this.specificSlice = specificSlice;
+	public DataProcessingHelper(String[] specificVarNames,TimePointHelper specificTimePointHelper,DataIndexHelper specificDataIndexHelper){
+		this.specificVarNames = specificVarNames;
+		this.specificTimePointHelper = specificTimePointHelper;
+		this.specificDataIndexHelper = specificDataIndexHelper;
+		this.specificDataValues = new double[specificVarNames.length][][];
 	}
 	public boolean isInfoOnly(){
-		return specificVarName == null;
+		return specificVarNames == null;
 	}
 	public String[] getVarNames(){
 		String[] arr = new String[statVarNames.length+imageNames.size()];
@@ -670,6 +679,9 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public ISize[] getVarISizes(){
+		if(imageISize.size() == 0){
+			return null;
+		}
 		ISize[] arr = new ISize[statVarNames.length+imageNames.size()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
@@ -681,6 +693,9 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public Origin[] getVarOrigins(){
+		if(imageOrigin.size() == 0){
+			return null;
+		}
 		Origin[] arr = new Origin[statVarNames.length+imageNames.size()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
@@ -692,6 +707,9 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public Extent[] getVarExtents(){
+		if(imageExtent.size() == 0){
+			return null;
+		}
 		Extent[] arr = new Extent[statVarNames.length+imageNames.size()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
@@ -761,19 +779,64 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 						dataProcessingHelper.getVarOrigins(),
 						dataProcessingHelper.getVarExtents(),
 						dataProcessingHelper.getVarStatValues());
-			}else if(dataOperation instanceof DataProcessingOutputDataValuesOP){
-				DataProcessingHelper dataProcessingHelper =
-					new DataProcessingHelper(((DataProcessingOutputDataValuesOP)dataOperation).getVariableName(),((DataProcessingOutputDataValuesOP)dataOperation).getTimePoint(),((DataProcessingOutputDataValuesOP)dataOperation).getSlice());
-				iterateHDF5(root,"",dataProcessingHelper);
-				if(dataProcessingHelper.specificDataValues == null){
-					throw new Exception("Couldn't find postprocess data for var="+dataProcessingHelper.specificVarName+" time="+dataProcessingHelper.specificTime+" slice="+dataProcessingHelper.specificSlice);
+				//map function names to PostProcess state variable name
+				ArrayList<String> postProcessImageVarNames = new ArrayList<String>();
+				for (int i = 0; i < ((DataOperationResults.DataProcessingOutputInfo)dataProcessingOutputResults).getVariableNames().length; i++) {
+					String variableName = ((DataOperationResults.DataProcessingOutputInfo)dataProcessingOutputResults).getVariableNames()[i];
+					if(((DataOperationResults.DataProcessingOutputInfo)dataProcessingOutputResults).getPostProcessDataType(variableName).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
+						postProcessImageVarNames.add(variableName);
+					}
 				}
-				if(dataProcessingHelper.specificSlice == null && dataProcessingHelper.specificTime != null){
+				HashMap<String, String> mapFunctionNameToStateVarName = null;
+				if(((DataProcessingOutputInfoOP)dataOperation).getOutputContext() != null){
+					mapFunctionNameToStateVarName = new HashMap<String, String>();
+					for (int i = 0; i < ((DataProcessingOutputInfoOP)dataOperation).getOutputContext().getOutputFunctions().length; i++) {
+						AnnotatedFunction annotatedFunction = ((DataProcessingOutputInfoOP)dataOperation).getOutputContext().getOutputFunctions()[i];
+						if(annotatedFunction.getFunctionType().equals(VariableType.POSTPROCESSING)){
+							String[] symbols = annotatedFunction.getExpression().flatten().getSymbols();
+							//Find any PostProcess state var that matches a symbol in the function
+							for (int j = 0; j < symbols.length; j++) {
+								if(postProcessImageVarNames.contains(symbols[j])){
+									mapFunctionNameToStateVarName.put(annotatedFunction.getName(), symbols[j]);
+									break;
+								}
+							}
+						}
+					}
+				}
+				if(mapFunctionNameToStateVarName != null && mapFunctionNameToStateVarName.size() > 0){
+					dataProcessingOutputResults = new DataOperationResults.DataProcessingOutputInfo(((DataOperationResults.DataProcessingOutputInfo)dataProcessingOutputResults),mapFunctionNameToStateVarName);
+				}
+			}else if(dataOperation instanceof DataProcessingOutputDataValuesOP){
+				DataProcessingOutputDataValuesOP dataDataProcessingOutputDataValuesOP = (DataProcessingOutputDataValuesOP)dataOperation;
+				AnnotatedFunction[] annotatedFunctions = (dataDataProcessingOutputDataValuesOP.getOutputContext()==null?null:dataDataProcessingOutputDataValuesOP.getOutputContext().getOutputFunctions());
+				AnnotatedFunction foundFunction = null;
+				if(annotatedFunctions != null){
+					for (int i = 0; i < annotatedFunctions.length; i++) {
+						if(annotatedFunctions[i].getName().equals(dataDataProcessingOutputDataValuesOP.getVariableName())){
+							foundFunction = annotatedFunctions[i];
+							break;
+						}
+					}
+				}
+				if(foundFunction != null){
+					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+						(DataOperationResults.DataProcessingOutputInfo)getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(dataOperation.getVCDataIdentifier(),false,((DataProcessingOutputDataValuesOP) dataOperation).getOutputContext()), dataProcessingOutputFileHDF5);
+					FunctionHelper functionHelper = getPostProcessStateVariables(foundFunction, dataProcessingOutputInfo);
+					DataProcessingHelper dataProcessingHelper = new DataProcessingHelper(functionHelper.postProcessStateVars,dataDataProcessingOutputDataValuesOP.getTimePointHelper(),dataDataProcessingOutputDataValuesOP.getDataIndexHelper());
+					iterateHDF5(root,"",dataProcessingHelper);
+					dataProcessingOutputResults =
+						evaluatePostProcessFunction(dataProcessingOutputInfo, functionHelper.postProcessStateVars, dataProcessingHelper.specificDataValues,
+							dataDataProcessingOutputDataValuesOP.getDataIndexHelper(), dataDataProcessingOutputDataValuesOP.getTimePointHelper(), functionHelper.flattenedBoundExpression,dataDataProcessingOutputDataValuesOP.getVariableName());
+				}else{
+					DataProcessingHelper dataProcessingHelper =
+						new DataProcessingHelper(new String[] {dataDataProcessingOutputDataValuesOP.getVariableName()},dataDataProcessingOutputDataValuesOP.getTimePointHelper(),dataDataProcessingOutputDataValuesOP.getDataIndexHelper());
+					iterateHDF5(root,"",dataProcessingHelper);
+					if(dataProcessingHelper.specificDataValues == null){
+						throw new Exception("Couldn't find postprocess data as specified for var="+dataDataProcessingOutputDataValuesOP.getVariableName());
+					}
 					dataProcessingOutputResults = new DataOperationResults.DataProcessingOutputDataValues(dataOperation.getVCDataIdentifier(),
-							dataProcessingHelper.specificVarName, dataProcessingHelper.specificTime, dataProcessingHelper.specificDataValues.toArray(new double[1][]));						
-				}else if(dataProcessingHelper.specificSlice != null && dataProcessingHelper.specificTime == null){
-					dataProcessingOutputResults = new DataOperationResults.DataProcessingOutputDataValues(dataOperation.getVCDataIdentifier(),
-							dataProcessingHelper.specificVarName, dataProcessingHelper.specificSlice, dataProcessingHelper.specificDataValues.toArray(new double[0][]));												
+						dataDataProcessingOutputDataValuesOP.getVariableName(),dataDataProcessingOutputDataValuesOP.getTimePointHelper(),dataDataProcessingOutputDataValuesOP.getDataIndexHelper(), dataProcessingHelper.specificDataValues[0]);	
 				}
 			}
 		}catch(Exception e){
@@ -786,6 +849,98 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 	}
 
 	return dataProcessingOutputResults;
+}
+
+private static class FunctionHelper{
+	public String[] postProcessStateVars;
+	public Expression flattenedBoundExpression;
+	public FunctionHelper(String[] postProcessStateVars,Expression flattenedBoundExpression) {
+		this.postProcessStateVars = postProcessStateVars;
+		this.flattenedBoundExpression = flattenedBoundExpression;
+	}
+	
+}
+private static FunctionHelper getPostProcessStateVariables(AnnotatedFunction annotatedFunction,DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo) throws Exception{
+	Expression flattenedExpression = annotatedFunction.getExpression().flatten();
+	String[] postProcessSymbols = flattenedExpression.getSymbols();
+	ArrayList<String> alteredPostProcessSymbols = new ArrayList<String>();
+	for (int i = 0; i < postProcessSymbols.length; i++) {
+		if(postProcessSymbols[i].equals("t") || postProcessSymbols[i].equals("x") || postProcessSymbols[i].equals("y") || postProcessSymbols[i].equals("z")){
+			//skip
+		}else{
+			alteredPostProcessSymbols.add(postProcessSymbols[i]);
+		}
+	}
+	postProcessSymbols = alteredPostProcessSymbols.toArray(new String[0]);
+	String[] bindSymbols = new String[postProcessSymbols.length+TXYZ_OFFSET];
+	bindSymbols[0]="t";
+	bindSymbols[1]="x";
+	bindSymbols[2]="y";
+	bindSymbols[3]="z";
+	for (int i = 0; i < postProcessSymbols.length; i++) {
+		bindSymbols[i+TXYZ_OFFSET] = postProcessSymbols[i];
+	}
+	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(bindSymbols);
+	flattenedExpression.bindExpression(simpleSymbolTable);
+	return new FunctionHelper(postProcessSymbols, flattenedExpression);
+}
+
+private static DataProcessingOutputDataValues evaluatePostProcessFunction(
+	DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo,
+	String[] postProcessSymbols,
+	double[][][] postProcessData,
+	DataIndexHelper dataIndexHelper,
+	TimePointHelper timePointHelper,
+	Expression flattenedBoundExpression,String varName) throws Exception{
+	
+	ISize iSize = dataProcessingOutputInfo.getVariableISize(postProcessSymbols[0]);
+	VCImageUncompressed vcImage = new VCImageUncompressed(null, new byte[iSize.getXYZ()], new Extent(1, 1, 1), iSize.getX(), iSize.getY(), iSize.getZ());
+	int dimension = 1+(iSize.getY()> 1?1:0)+(iSize.getZ()>1?1:0);
+	RegionImage regionImage = new RegionImage(vcImage, dimension, dataProcessingOutputInfo.getVariableExtent(postProcessSymbols[0]), dataProcessingOutputInfo.getVariableOrigin(postProcessSymbols[0]), RegionImage.NO_SMOOTHING);
+	CartesianMesh cartesianMesh = CartesianMesh.createSimpleCartesianMesh(
+		dataProcessingOutputInfo.getVariableOrigin(postProcessSymbols[0]), dataProcessingOutputInfo.getVariableExtent(postProcessSymbols[0]), dataProcessingOutputInfo.getVariableISize(postProcessSymbols[0]), regionImage);
+	
+	double[] evaluatedValues = null;
+	ISize DATA_SIZE = dataProcessingOutputInfo.getVariableISize(postProcessSymbols[0]);
+	int DATA_SIZE_XY = DATA_SIZE.getX()*DATA_SIZE.getY();
+	if(dataIndexHelper.isAllDataIndexes()){
+		evaluatedValues = new double[DATA_SIZE.getXYZ()];
+	}else if(dataIndexHelper.isSingleSlice()){
+		evaluatedValues = new double[DATA_SIZE_XY];
+	}else{
+		evaluatedValues = new double[dataIndexHelper.getDataIndexes().length];
+	}
+		
+	double[] timePoints = null;
+	if(timePointHelper.isAllTimePoints()){
+		timePoints = dataProcessingOutputInfo.getVariableTimePoints();
+	}else{
+		timePoints = new double[] {timePointHelper.getTimePoint()};
+	}
+	
+	double args[] = new double[TXYZ_OFFSET+postProcessSymbols.length];
+
+	for (int t = 0; t < timePoints.length; t++) {
+		args[0] = timePoints[t];
+		for (int i = 0; i < evaluatedValues.length; i++) {
+			Coordinate coord;
+			if(dataIndexHelper.isAllDataIndexes()){
+				coord = cartesianMesh.getCoordinateFromVolumeIndex(i);
+			}else if(dataIndexHelper.isSingleSlice()){
+				coord = cartesianMesh.getCoordinateFromVolumeIndex(dataIndexHelper.getSliceIndex()*DATA_SIZE_XY+i);
+			}else{
+				coord = cartesianMesh.getCoordinateFromVolumeIndex(dataIndexHelper.getDataIndexes()[i]);
+			}
+			args[1] = coord.getX();
+			args[2] = coord.getY();
+			args[3] = coord.getZ();
+			for (int j = 0; j < postProcessSymbols.length; j++) {
+				args[TXYZ_OFFSET+j] = postProcessData[j][t][i];
+			}
+			evaluatedValues[i] = flattenedBoundExpression.evaluateVector(args);
+		}		
+	}
+	return new DataOperationResults.DataProcessingOutputDataValues(dataProcessingOutputInfo.getVCDataIdentifier(),varName,timePointHelper,dataIndexHelper , new double[][] {evaluatedValues});
 }
 
 private static void iterateHDF5(HObject hObject,String indent,DataProcessingHelper dataProcessingHelper) throws Exception{
@@ -831,49 +986,67 @@ private static void iterateHDF5(HObject hObject,String indent,DataProcessingHelp
 		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINZ)));
 		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTZ)));
 	    		}else{
-	    			throw new Exception("Unexpeced number of origin/extent values");
+	    			throw new Exception("Unexpected number of origin/extent values");
 	    		}
 				dataProcessingHelper.imageNames.add(hObject.getName());
 				dataProcessingHelper.imageOrigin.add(imgDataOrigin);
 				dataProcessingHelper.imageExtent.add(imgDataExtent);
-			}else if(!group.getName().equals(dataProcessingHelper.specificVarName)){
-				return;
-			}
-    		List<HObject> imageDataAtEachTime = ((Group)hObject).getMemberList();
-			for(HObject nextImageData:imageDataAtEachTime){
-				if(dataProcessingHelper.isInfoOnly()){
-					printInfo(nextImageData,indent+" ");
-					processDims(nextImageData, dataProcessingHelper,true);
-					long[] dims = dataProcessingHelper.tempDims;
-					ISize isize = new ISize((int)dims[0], (int)(dims.length>1?dims[1]:1), (int)(dims.length>2?dims[2]:1));
-					dataProcessingHelper.imageISize.add(isize);
-					break;//only need 1st one for info
-				}else{
-	        		int timeIndex = Integer.parseInt(nextImageData.getName().substring(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX.length()));
-	        		if(dataProcessingHelper.specificTime == null || dataProcessingHelper.specificTime == dataProcessingHelper.times[timeIndex]){
-//	        			if(dataProcessingHelper.specificDataValues != null){
-//	        				throw new Exception("Expecting specificDataValues to be null");
-//	        			}
-	        			processDims(nextImageData, dataProcessingHelper,false);
-	        			if(dataProcessingHelper.specificSlice == null){//whole data at 1 timepoint
-	        				dataProcessingHelper.specificDataValues = new ArrayList<double[]>();
-	        				dataProcessingHelper.specificDataValues.add((double[])dataProcessingHelper.tempData);
-	        				return;
-	        			}else{//1 slice at all timepoints
-		        			if(dataProcessingHelper.specificDataValues == null){
-		        				dataProcessingHelper.specificDataValues = new ArrayList<double[]>();
-		        			}
-							long[] dims = dataProcessingHelper.tempDims;
-							ISize isize = new ISize((int)dims[0], (int)(dims.length>1?dims[1]:1), (int)(dims.length>2?dims[2]:1));
-							int xysize = isize.getX()*isize.getY();
-							double[] sliceData = new double[xysize];
-							System.arraycopy((double[])dataProcessingHelper.tempData, dataProcessingHelper.specificSlice*xysize, sliceData, 0, sliceData.length);
-		        			dataProcessingHelper.specificDataValues.add(sliceData);	        				
-	        			}
-	        		}
-
+				//get ISize
+				processDims(((Group)hObject).getMemberList().get(0), dataProcessingHelper,true);
+				long[] dims = dataProcessingHelper.tempDims;
+				ISize isize = new ISize((int)dims[0], (int)(dims.length>1?dims[1]:1), (int)(dims.length>2?dims[2]:1));
+				dataProcessingHelper.imageISize.add(isize);
+			}else{
+				int currentVarNameIndex = -1;
+				for (int i = 0; i < dataProcessingHelper.specificVarNames.length; i++) {
+					if(group.getName().equals(dataProcessingHelper.specificVarNames[i])){
+						currentVarNameIndex = i;
+						break;
+					}
 				}
-			}			
+				if(currentVarNameIndex == -1){
+					return;//skip this group
+				}
+				dataProcessingHelper.specificDataValues[currentVarNameIndex] = new double[(dataProcessingHelper.specificTimePointHelper.isAllTimePoints()?dataProcessingHelper.times.length:1)][];
+	    		List<HObject> imageDataAtEachTime = ((Group)hObject).getMemberList();
+				for(HObject nextImageData:imageDataAtEachTime){
+//					if(dataProcessingHelper.isInfoOnly()){
+//						printInfo(nextImageData,indent+" ");
+//						processDims(nextImageData, dataProcessingHelper,true);
+//						long[] dims = dataProcessingHelper.tempDims;
+//						ISize isize = new ISize((int)dims[0], (int)(dims.length>1?dims[1]:1), (int)(dims.length>2?dims[2]:1));
+//						dataProcessingHelper.imageISize.add(isize);
+//						break;//only need 1st one for info
+//					}else{
+		        		int hdf5GroupTimeIndex = Integer.parseInt(nextImageData.getName().substring(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX.length()));
+		        		if(dataProcessingHelper.specificTimePointHelper.isAllTimePoints() || dataProcessingHelper.specificTimePointHelper.getTimePoint() == dataProcessingHelper.times[hdf5GroupTimeIndex]){
+	
+		        			int timeIndex = (dataProcessingHelper.specificTimePointHelper.isAllTimePoints()?hdf5GroupTimeIndex:0);
+		        			processDims(nextImageData, dataProcessingHelper,false);
+		        			long[] dims = dataProcessingHelper.tempDims;
+		        			ISize isize = new ISize((int)dims[0], (int)(dims.length>1?dims[1]:1), (int)(dims.length>2?dims[2]:1));
+		        			if(dataProcessingHelper.specificDataIndexHelper.isAllDataIndexes()){
+		        				dataProcessingHelper.specificDataValues[currentVarNameIndex][timeIndex] = (double[])dataProcessingHelper.tempData;
+		        			}else if(dataProcessingHelper.specificDataIndexHelper.isSingleSlice()){
+		        				dataProcessingHelper.specificDataValues[currentVarNameIndex][timeIndex] = new double[isize.getX()*isize.getY()];
+		        				System.arraycopy(
+		        					(double[])dataProcessingHelper.tempData,dataProcessingHelper.specificDataIndexHelper.getSliceIndex()*(isize.getX()*isize.getY()),
+		        					dataProcessingHelper.specificDataValues[currentVarNameIndex][timeIndex], 0, isize.getX()*isize.getY());
+		        			}else{
+		        				dataProcessingHelper.specificDataValues[currentVarNameIndex][timeIndex] = new double[dataProcessingHelper.specificDataIndexHelper.getDataIndexes().length];
+		        				for (int i = 0; i < dataProcessingHelper.specificDataIndexHelper.getDataIndexes().length; i++) {
+		        					dataProcessingHelper.specificDataValues[currentVarNameIndex][timeIndex][i] = ((double[])dataProcessingHelper.tempData)[dataProcessingHelper.specificDataIndexHelper.getDataIndexes()[i]];
+								}
+		        			}
+		        			if(dataProcessingHelper.specificTimePointHelper.isSingleTimePoint()){
+		        				//break out after we get our data
+		        				break;
+		        			}
+		        		}
+	
+//					}
+				}
+			}
 		}
 	}else if(hObject instanceof Dataset){
 		Dataset dataset = (Dataset)hObject;
@@ -3897,7 +4070,7 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 		return new DataSetTimeSeries(vcdataID, odeDatablock);
 	}catch (Exception e){
 		System.err.println(e.getMessage());
-		final DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)doDataOperation(new DataOperation.DataProcessingOutputInfoOP(vcdataID));
+		final DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)doDataOperation(new DataOperation.DataProcessingOutputInfoOP(vcdataID,true,null));
 		DataSetTimeSeries.DataSetPostProcessData dataSetPostProcessData = new DataSetTimeSeries.DataSetPostProcessData(){
 			@Override
 			public double[] getTimes() {

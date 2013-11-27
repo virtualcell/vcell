@@ -119,7 +119,7 @@ public class HybridSolverTester {
 					VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					File hdf5File = new File(simDataDir, vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-							(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID), hdf5File);
+							(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
 
 					//initialize for the first time
 					
