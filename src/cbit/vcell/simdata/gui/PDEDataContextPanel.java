@@ -1678,7 +1678,7 @@ public void setDescription(Curve curve){
 private SourceDataInfo calculateSourceDataInfo(CartesianMesh mesh, double[] sdiData,VariableType sdiVarType,Range newRange) {
 	SourceDataInfo sdi = null;
 	//
-	if (sdiVarType.equals(VariableType.VOLUME)) {
+	if (sdiVarType.equals(VariableType.VOLUME) || sdiVarType.equals(VariableType.POSTPROCESSING)) {
 		//Set data to display
 		int yIncr = mesh.getSizeX();
 		int zIncr = mesh.getSizeX() * mesh.getSizeY();

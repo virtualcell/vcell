@@ -12,40 +12,31 @@ import org.vcell.util.Range;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.gui.SourceDataInfo;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 
 public class DataOperationResults implements Serializable{
 
 	public static class DataProcessingOutputDataValues extends DataOperationResults{
 		private String variableName;
-		private Double timePoint;
-		private Integer slice;
-		private double[][] dataValues;//[all Times][1 slice] or [1 time][all slices]
-		public DataProcessingOutputDataValues(VCDataIdentifier vcDataIdentifier,String variableName,Double timePoint,double[][] dataValues){
-			//mode 1:  timepoint != null return all slices for var at time==timepoint
-			//mode 2:  slice != null return all slice data for all times
+		private TimePointHelper timePointHelper;
+		private DataIndexHelper dataIndexHelper;
+		private double[][] dataValues;//[time][data]
+		public DataProcessingOutputDataValues(VCDataIdentifier vcDataIdentifier,String variableName,TimePointHelper timePointHelper,DataIndexHelper dataIndexHelper,double[][] dataValues){
 			super(vcDataIdentifier);
 			this.variableName = variableName;
-			this.timePoint = timePoint;
+			this.timePointHelper = timePointHelper;
 			this.dataValues = dataValues;
-			this.slice = null;
-		}
-		public DataProcessingOutputDataValues(VCDataIdentifier vcDataIdentifier,String variableName,Integer slice,double[][] dataValues){
-			//mode 1:  timepoint != null return all slices for var at time==timepoint
-			//mode 2:  slice != null return all slice data for all times
-			super(vcDataIdentifier);
-			this.variableName = variableName;
-			this.timePoint = null;
-			this.dataValues = dataValues;
-			this.slice = slice;
+			this.dataIndexHelper = dataIndexHelper;
 		}
 		public String getVariableName() {
 			return variableName;
 		}
-		public Double getTimePoint() {
-			return timePoint;
+		public TimePointHelper getTimePointHelper() {
+			return timePointHelper;
 		}
-		public Integer getSlice(){
-			return slice;
+		public DataIndexHelper getDataIndexHelper(){
+			return dataIndexHelper;
 		}
 		public double[][] getDataValues(){
 			return dataValues;
@@ -63,7 +54,7 @@ public class DataOperationResults implements Serializable{
 				Range range = new Range(min,max);
 //				System.out.println("isize="+iSize.getXYZ()+" datalength="+dataValues[i].length+" range="+range);
 				SourceDataInfo sdi =
-						new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, dataValues[i], extent, origin, range, 0, iSize.getX(), 1, iSize.getY(), iSize.getX(), (slice==null?iSize.getZ():1), (slice==null?xySize:0));
+						new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, dataValues[i], extent, origin, range, 0, iSize.getX(), 1, iSize.getY(), iSize.getX(), (dataIndexHelper.isAllDataIndexes()?iSize.getZ():1), (dataIndexHelper.isAllDataIndexes()?xySize:0));
 				sdiInfoArr.add(sdi);
 			}
 			return sdiInfoArr;
@@ -79,6 +70,7 @@ public class DataOperationResults implements Serializable{
 		private String[] variableUnits;
 		private PostProcessDataType[] postProcessDataTypes;
 		private HashMap<String, double[]> variableStatValues;
+		private HashMap<String, String> mapFunctionNameToStateVarName;
 		public DataProcessingOutputInfo(VCDataIdentifier vcDataIdentifier,String[] variableNames,ISize[] variableISize,double[] variableTimePoints,String[] variableUnits,PostProcessDataType[] postProcessDataTypes,Origin[] variableOrigins,Extent[] variableExtents,HashMap<String, double[]> variableStatValues){
 			super(vcDataIdentifier);
 			this.variableNames = variableNames;
@@ -89,6 +81,20 @@ public class DataOperationResults implements Serializable{
 			this.variableOrigins = variableOrigins;
 			this.variableExtents = variableExtents;
 			this.variableStatValues = variableStatValues;
+		}
+		public DataProcessingOutputInfo(DataProcessingOutputInfo dataProcessingOutputInfo,HashMap<String, String> mapFunctionNameToStateVarName){
+			this(
+					dataProcessingOutputInfo.getVCDataIdentifier(),
+					dataProcessingOutputInfo.variableNames,
+					dataProcessingOutputInfo.variableISize,
+					dataProcessingOutputInfo.variableTimePoints,
+					dataProcessingOutputInfo.variableUnits,
+					dataProcessingOutputInfo.postProcessDataTypes,
+					dataProcessingOutputInfo.variableOrigins,
+					dataProcessingOutputInfo.variableExtents,
+					dataProcessingOutputInfo.variableStatValues
+			);
+			this.mapFunctionNameToStateVarName = mapFunctionNameToStateVarName;
 		}
 		public HashMap<String, double[]> getVariableStatValues(){
 			return variableStatValues;
@@ -129,6 +135,9 @@ public class DataOperationResults implements Serializable{
 //			return true;
 //		}
 		private int getVariableIndex(String variableName){
+			if(mapFunctionNameToStateVarName != null && mapFunctionNameToStateVarName.keySet().contains(variableName)){
+				variableName = mapFunctionNameToStateVarName.get(variableName);
+			}
 			for (int i = 0; i < variableNames.length; i++) {
 				if(variableNames[i].equals(variableName)){
 					return i;

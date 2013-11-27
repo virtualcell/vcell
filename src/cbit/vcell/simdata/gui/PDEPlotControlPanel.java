@@ -100,6 +100,8 @@ public class PDEPlotControlPanel extends JPanel {
 		String[] getFilterSetNames();
 		String getDefaultFilterName();
 		boolean isAcceptAll(String filterSetName);
+		void setPostProcessingMode(boolean bPostProcessingMode);
+		boolean isPostProcessingMode();
 	};
 	
 	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
@@ -310,6 +312,9 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 	filterVariableNames();
 }
 
+public void setPostProcessingMode(boolean bPostProcessingMode){
+	this.dataIdentifierFilter.setPostProcessingMode(bPostProcessingMode);
+}
 
 /**
  * connEtoC1:  (model1.change.stateChanged(javax.swing.event.ChangeEvent) --> PDEPlotControlPanel.setTimeFromSlider(I)V)

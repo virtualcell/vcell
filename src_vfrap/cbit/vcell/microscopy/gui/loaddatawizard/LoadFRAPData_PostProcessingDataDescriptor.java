@@ -11,6 +11,8 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -72,7 +74,8 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
 				DataProcessingOutputInfo dataProcessingOutputInfo = postProcessingDataPanel.getSelectedDataProcessingOutputInfo();
 				PDEDataManager pdeDataManager = postProcessingDataPanel.getSelectedDataManager();
 				DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
-					(DataOperationResults.DataProcessingOutputDataValues)pdeDataManager.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(pdeDataManager.getVCDataIdentifier(), selectedVariableName,selectedSlice));
+				(DataOperationResults.DataProcessingOutputDataValues)pdeDataManager.doDataOperation(
+					new DataOperation.DataProcessingOutputDataValuesOP(pdeDataManager.getVCDataIdentifier(), selectedVariableName,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(selectedSlice),null));
 				ArrayList<SourceDataInfo> sdiArr =
 					dataProcessingOutputDataValues.createSourceDataInfos(
 						dataProcessingOutputInfo.getVariableISize(selectedVariableName),

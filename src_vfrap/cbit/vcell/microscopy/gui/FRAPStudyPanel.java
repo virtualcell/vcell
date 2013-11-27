@@ -1500,6 +1500,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					public boolean isAcceptAll(String filterSetName){
 						return filterSetName.equals(ALL_DATAIDENTIFIERS);
 					}
+					@Override
+					public void setPostProcessingMode(boolean bPostProcessingMode) {
+						// TODO Auto-generated method stub
+					}
+					@Override
+					public boolean isPostProcessingMode() {
+						// TODO Auto-generated method stub
+						return false;
+					}
 				}
 			);
 			

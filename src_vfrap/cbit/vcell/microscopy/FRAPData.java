@@ -65,6 +65,8 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.Cachetable;
@@ -343,10 +345,10 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 		}		
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-			(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/), inputHDF5File);
+			(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
 			(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
-				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimDataConstants.FLUOR_DATA_NAME,0), inputHDF5File);
+				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimDataConstants.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null), inputHDF5File);
 		ArrayList<SourceDataInfo> sdiArr =
 			dataProcessingOutputDataValues.createSourceDataInfos(
 				dataProcessingOutputInfo.getVariableISize(SimDataConstants.FLUOR_DATA_NAME),
