@@ -24,6 +24,8 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -35,9 +37,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.vcell.util.PropertyChangeListenerProxyVCell;
+
 @SuppressWarnings("serial")
 public class CollapsiblePanel extends JPanel {
 
+	private PropertyChangeSupport propertyChangeSupport;
+	public static final String SEARCHPPANEL_EXPANDED = "SEARCHPPANEL_EXPANDED";
+	
 	private class ComponentTitledBorder implements Border, MouseListener {
 		int offset = 7;
 
@@ -171,7 +178,19 @@ public class CollapsiblePanel extends JPanel {
         add(contentPanel, gbc);
         contentPanel.setVisible(bExpanded);
 	}
+	private PropertyChangeSupport getPropertyChangesupSupport(){
+		if(propertyChangeSupport == null){
+			propertyChangeSupport = new PropertyChangeSupport(this);
+		}
+		return propertyChangeSupport;
+	}
 	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		PropertyChangeListenerProxyVCell.addProxyListener(getPropertyChangesupSupport(), listener);
+	}
+	public void removePropertyChangeListener(PropertyChangeListener listener){
+		PropertyChangeListenerProxyVCell.removeProxyListener(getPropertyChangesupSupport(), listener);
+	}
 	private void toggleExpand() {
 		if (!isVisible()) {
 			return;
@@ -179,6 +198,7 @@ public class CollapsiblePanel extends JPanel {
 		borderLabel.setIcon(bExpanded ? expandedIcon : collapsedIcon);
 		contentPanel.setVisible(bExpanded);
 		revalidate();
+		getPropertyChangesupSupport().firePropertyChange(SEARCHPPANEL_EXPANDED, !bExpanded, bExpanded);
 	}
 	
 	public JPanel getContentPanel() {
