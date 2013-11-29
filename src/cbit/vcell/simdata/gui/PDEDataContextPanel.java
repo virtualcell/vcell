@@ -718,7 +718,7 @@ private SpatialSelection[] fetchSpatialSelections0(Curve curveOfInterest,boolean
 					continue;
 				}
 				//
-				if(	(vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
+				if(	(vt.equals(VariableType.POSTPROCESSING)  || vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
 					curves[i] instanceof ControlPointCurve &&
 					!(curves[i] instanceof CurveSelectionCurve) &&
 					(	
@@ -1171,7 +1171,7 @@ public boolean isAddControlPointOK(int tool, Coordinate wc,Curve addedToThisCurv
 	//
 	CurveRenderer curveR = getImagePlaneManagerPanel().getCurveRenderer();
 	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
-	if(variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION)){
+	if(variableType.equals(VariableType.POSTPROCESSING) || variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.VOLUME_REGION)){
 		return true;
 	}
 
@@ -1210,7 +1210,7 @@ private boolean isValidDataSampler(Curve curve) {
 	VariableType vt = getPdeDataContext().getDataIdentifier().getVariableType();
 	boolean isCurveVisible = true;
 	//
-	if (vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) {
+	if (vt.equals(VariableType.POSTPROCESSING) ||vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) {
 			//
 			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = false;}
 			else{
@@ -1661,7 +1661,7 @@ public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider)
 
 public void setDescription(Curve curve){
 	VariableType variableType = getPdeDataContext().getDataIdentifier().getVariableType();
-	boolean isVolume = variableType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
+	boolean isVolume = variableType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME) || variableType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_POSTPROCESSING);
 	curve.setDescription(
 			(isVolume?CurveValueProvider.DESCRIPTION_VOLUME:CurveValueProvider.DESCRIPTION_MEMBRANE)+
 			(curve instanceof SinglePoint

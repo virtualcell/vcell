@@ -1809,7 +1809,7 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 //					DataOperationResults.DataProcessingOutputLineScanResults dataProcessingOutputLineScanResults =
 //					(DataOperationResults.DataProcessingOutputLineScanResults)getPdeDataContext().doDataOperation(new DataOperation.DataProcessingOutputLineScanOP(vcdataID, outputContext, variable, time, spatialSelection));
 //					return dataProcessingOutputLineScanResults.getPlotData();
-					return null;
+					throw new DataAccessException("Remote getLineScan method should not be called for PostProcess");
 				}
 				
 				@Override
@@ -2362,8 +2362,17 @@ private void showSpatialPlot() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// get plots, ignoring points
 			PlotData[] plotDatas = new PlotData[sl.length];
-			for (int i = 0; i < sl.length; i++){				
-				PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[i]);
+			for (int i = 0; i < sl.length; i++){
+				PlotData plotData = null;
+				if(getPdeDataContext() instanceof PostProcessDataPDEDataContext){
+					SpatialSelectionVolume ssVolume = (SpatialSelectionVolume)sl[i];
+					SpatialSelection.SSHelper ssvHelper = ssVolume.getIndexSamples(0.0,1.0);
+					ssvHelper.initializeValues_VOLUME(getPdeDataContext().getDataValues());
+					double[] values = ssvHelper.getSampledValues();
+					plotData = new PlotData(ssvHelper.getWorldCoordinateLengths(), values);
+				}else{
+					plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[i]);
+				}
 				plotDatas[i] = plotData;								
 			}
 			hashTable.put("plotDatas", plotDatas);
