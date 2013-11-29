@@ -39,7 +39,7 @@ public abstract class SpatialSelection implements java.io.Serializable, org.vcel
 			if(coords.length != argIndexes.length || (argMembraneIndexesInOut != null && argIndexes.length != argMembraneIndexesInOut.length)){
 				throw new IllegalArgumentException(this.getClass().getName()+" Coordinate,index and membIndexInOut arrays must be same length");
 			}
-			if(!(vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
+			if(!(vt.equals(VariableType.POSTPROCESSING) || vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
 				!(vt.equals(VariableType.MEMBRANE) || vt.equals(VariableType.MEMBRANE_REGION))){
 				throw new IllegalArgumentException(this.getClass().getName()+" Unsupported VariableType="+vt.getTypeName());
 			}
@@ -78,7 +78,7 @@ public abstract class SpatialSelection implements java.io.Serializable, org.vcel
 			return indexes.length;
 		}
 		public void initializeValues_VOLUME(double[] sourceValues){
-			if(!varType.equals(VariableType.VOLUME)){
+			if(!(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.POSTPROCESSING))){
 				throw new IllegalArgumentException(this.getClass().getName()+".initializeValues_VOLUME Unsupported VariableType="+varType.getTypeName());
 			}
 			initValues(sourceValues);

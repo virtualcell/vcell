@@ -85,7 +85,7 @@ private boolean areTouchingFace(org.vcell.util.CoordinateIndex ci1, org.vcell.ut
  */
 private int getConvertedIndexFromCI(CoordinateIndex ci) {
 
-	if (getVariableType().equals(VariableType.VOLUME)){
+	if (getVariableType().equals(VariableType.VOLUME) || getVariableType().equals(VariableType.POSTPROCESSING)){
 		return getMesh().getVolumeIndex(ci);
 	}else if (getVariableType().equals(VariableType.VOLUME_REGION)){
 		return getMesh().getVolumeRegionIndex(ci);
@@ -520,19 +520,20 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 					wcV[i],wcV[i-1]
 					);
 			intersectNotNullCount+= (intersectArr[j] != null?1:0);
-
-			//Find out if this face is part of a Membrane
-			int vi1 = getMesh().getVolumeIndex(faces[j][0]);
-			int vi2 = getMesh().getVolumeIndex(faces[j][1]);
-			for(int k=0;k<getMesh().getMembraneElements().length;k+= 1){
-				int inside = getMesh().getMembraneElements()[k].getInsideVolumeIndex();
-				int outside = getMesh().getMembraneElements()[k].getOutsideVolumeIndex();
-				if((vi1 == inside && vi2 == outside) || (vi1 == outside && vi2 == inside)){
-					bCrossMembraneArr[j] = true;
-					crossMembraneIndexInOutArr[j][MEMB_INDEX] = k;
-					crossMembraneIndexInOutArr[j][IN_VOL] = inside;
-					crossMembraneIndexInOutArr[j][OUT_VOL] = outside;
-					break;
+			if(getMesh().getMembraneElements() != null){
+				//Find out if this face is part of a Membrane
+				int vi1 = getMesh().getVolumeIndex(faces[j][0]);
+				int vi2 = getMesh().getVolumeIndex(faces[j][1]);
+				for(int k=0;k<getMesh().getMembraneElements().length;k+= 1){
+					int inside = getMesh().getMembraneElements()[k].getInsideVolumeIndex();
+					int outside = getMesh().getMembraneElements()[k].getOutsideVolumeIndex();
+					if((vi1 == inside && vi2 == outside) || (vi1 == outside && vi2 == inside)){
+						bCrossMembraneArr[j] = true;
+						crossMembraneIndexInOutArr[j][MEMB_INDEX] = k;
+						crossMembraneIndexInOutArr[j][IN_VOL] = inside;
+						crossMembraneIndexInOutArr[j][OUT_VOL] = outside;
+						break;
+					}
 				}
 			}
 			//System.out.println("----- vi1="+vi1+" vi2="+vi2+" face="+j+" intersect="+intersectArr[j]+" bCrossMembrane="+bCrossMembraneArr[j]);
