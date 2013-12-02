@@ -188,7 +188,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		DefaultListModel pointListModel = new DefaultListModel();
 		for (int i = 0; i < pointVector.size(); i++){
 			Coordinate tp = null;
-			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
 				SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
 				tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
 			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){

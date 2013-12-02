@@ -113,7 +113,7 @@ public int getCombinedIndicesCount(){
 	}
 	return total;
 }
-public void initIndices(int meshSizeXYZ){
+public void initIndices(){
 	if(roi == null){
 		return;
 	}
@@ -121,12 +121,10 @@ public void initIndices(int meshSizeXYZ){
 	for(int i=0;i<meshIndices.length;i+= 1){
 		meshIndices[i] = new int[roi[i].cardinality()];
 		int counter = 0;
-		for(int j=0;j<meshSizeXYZ;j+= 1){
-			if(roi[i].get(j)){
-				meshIndices[i][counter] = j;
-				counter+= 1;
-			}
-		}
+		for (int j = roi[i].nextSetBit(0); j >= 0; j = roi[i].nextSetBit(j+1)) {
+			meshIndices[i][counter] = j;
+			counter++;
+		}	
 	}
 	indices = meshIndices;
 }
