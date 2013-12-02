@@ -1635,6 +1635,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 											postProcessPdeDataViewer.setPostProcessingPanelVisible(false);
 											postProcessPdeDataViewer.setDataViewerManager((DocumentWindowManager)documentWindow.getTopLevelWindowManager());
 											hashTable.put(POST_PROCESS_PDEDV, postProcessPdeDataViewer);
+											PDEDataViewer.this.addDataJobListener(postProcessPdeDataViewer);
 										}
 									};
 									final String POST_PROCESS_PDEDC = "POST_PROCESS_PDEDC";
@@ -1763,16 +1764,17 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 				
 				@Override
 				public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException,DataAccessException {
-//					DataOperationResults.DataProcessingOutputTimeSeriesResults dataProcessingOutputTimeSeries =
-//					(DataOperationResults.DataProcessingOutputTimeSeriesResults)getPdeDataContext().doDataOperation(new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec, outputContext));
-//					return dataProcessingOutputTimeSeries.getTimeSeriesJobResults();
-					return null;
+					DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
+							new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
+					DataOperationResults.DataProcessingOutputTimeSeriesValues dataopDataProcessingOutputTimeSeriesValues =
+							(DataOperationResults.DataProcessingOutputTimeSeriesValues)parentPDEDataContext.doDataOperation(dataProcessingOutputTimeSeriesOP);
+					return dataopDataProcessingOutputTimeSeriesValues.getTimeSeriesJobResults();
 				}
 				
 				@Override
 				public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {													
 					DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
-							parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingletimetimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext));
+							parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
 					PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdataID.getOwner(), vcdataID.getID(), varName, time, Long.MIN_VALUE);
 					SimDataBlock simDataBlock = new SimDataBlock(pdeDataInfo, dataProcessingOutputValues.getDataValues()[0], VariableType.POSTPROCESSING);
 					return simDataBlock;
@@ -1806,9 +1808,6 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 				
 				@Override
 				public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdataID, String variable, double time,SpatialSelection spatialSelection) throws RemoteException,DataAccessException {
-//					DataOperationResults.DataProcessingOutputLineScanResults dataProcessingOutputLineScanResults =
-//					(DataOperationResults.DataProcessingOutputLineScanResults)getPdeDataContext().doDataOperation(new DataOperation.DataProcessingOutputLineScanOP(vcdataID, outputContext, variable, time, spatialSelection));
-//					return dataProcessingOutputLineScanResults.getPlotData();
 					throw new DataAccessException("Remote getLineScan method should not be called for PostProcess");
 				}
 				
@@ -1885,6 +1884,19 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 	return postProcessDataPDEDataContext;
 }
 
+//private static double[] extractTimeRange(double[] alltimes,double startTime,double stoptime){
+//	ArrayList<Double> selectedtimePointsList = new ArrayList<Double>();
+//	for (int i = 0; i < alltimes.length; i++) {
+//		if(alltimes[i] >= startTime && alltimes[i] <= stoptime){
+//			selectedtimePointsList.add(alltimes[i]);
+//		}
+//	}
+//	double[] selectedTimePoints = new double[selectedtimePointsList.size()];
+//	for (int j = 0; j < selectedtimePointsList.size(); j++) {
+//		selectedTimePoints[j] = selectedtimePointsList.get(j);
+//	}
+//	return selectedTimePoints;
+//}
 private static class PostProcessDataPDEDataContext extends NewClientPDEDataContext{
 	DataProcessingOutputInfo dataProcessingOutputInfo;
 	public PostProcessDataPDEDataContext(PDEDataManager pdeDataManager/*,DataProcessingOutputInfo dataProcessingOutputInfo*/) throws Exception{
@@ -2284,7 +2296,7 @@ private void showKymograph() {
 		int[] crossingMembraneIndices = null;
 		double[] accumDistances = null;
 		for (int i = 0; i < lineSSOnly.size(); i++){
-			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
 				SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
 				SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
 				indices = ssh.getSampledIndexes();
@@ -2420,9 +2432,8 @@ private void showTimePlot() {
 	//Collect all sample curves created by user	
 	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true);
 	SpatialSelection[] spatialSelectionArr2 = null;
-	if (varType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)) {
-		spatialSelectionArr2 = getPDEDataContextPanel1().fetchSpatialSelections(
-				varType.equals(VariableType.VOLUME) ? VariableType.VOLUME_REGION : VariableType.VOLUME, true, true);
+	if (varType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME) || varType.getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_POSTPROCESSING)) {
+		spatialSelectionArr2 = getPDEDataContextPanel1().fetchSpatialSelections(varType, true, true);
 	} else {
 		spatialSelectionArr2 = getPDEDataContextPanel1().fetchSpatialSelections(
 				varType.equals(VariableType.MEMBRANE) ? VariableType.MEMBRANE_REGION : VariableType.MEMBRANE, true, true);
@@ -2455,7 +2466,7 @@ private void showTimePlot() {
 		//
 		indices = new int[singlePointSSOnly.size()];
 		for (int i = 0; i < singlePointSSOnly.size(); i++){
-			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
 				SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
 				indices[i] = ssv.getIndex(0);
 			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){

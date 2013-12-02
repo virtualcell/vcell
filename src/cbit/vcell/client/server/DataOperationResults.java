@@ -9,6 +9,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.Range;
+import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.gui.SourceDataInfo;
@@ -17,6 +18,17 @@ import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.T
 
 public class DataOperationResults implements Serializable{
 
+	public static class DataProcessingOutputTimeSeriesValues extends DataOperationResults{
+		private TimeSeriesJobResults timeSeriesJobResults;
+		public DataProcessingOutputTimeSeriesValues(VCDataIdentifier vcDataIdentifier,TimeSeriesJobResults timeSeriesJobResults){
+			super(vcDataIdentifier);
+			this.timeSeriesJobResults = timeSeriesJobResults;
+		}
+		public TimeSeriesJobResults getTimeSeriesJobResults(){
+			return timeSeriesJobResults;
+		}
+	}
+	
 	public static class DataProcessingOutputDataValues extends DataOperationResults{
 		private String variableName;
 		private TimePointHelper timePointHelper;

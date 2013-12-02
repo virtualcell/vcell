@@ -209,7 +209,7 @@ public class FRAPOptData {
 				(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
 				(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
-					new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null), hdf5File);
+					new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), hdf5File);
 
 //		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
 		//get ref sim time points

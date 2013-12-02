@@ -75,7 +75,7 @@ public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescri
 				PDEDataManager pdeDataManager = postProcessingDataPanel.getSelectedDataManager();
 				DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
 				(DataOperationResults.DataProcessingOutputDataValues)pdeDataManager.doDataOperation(
-					new DataOperation.DataProcessingOutputDataValuesOP(pdeDataManager.getVCDataIdentifier(), selectedVariableName,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(selectedSlice),null));
+					new DataOperation.DataProcessingOutputDataValuesOP(pdeDataManager.getVCDataIdentifier(), selectedVariableName,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(selectedSlice),null,null));
 				ArrayList<SourceDataInfo> sdiArr =
 					dataProcessingOutputDataValues.createSourceDataInfos(
 						dataProcessingOutputInfo.getVariableISize(selectedVariableName),
