@@ -22,7 +22,9 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
+@SuppressWarnings("serial")
 public class Event implements Matchable, Serializable {
+
 	public static class EventAssignment implements Matchable, Serializable {
 		private Variable variable = null;
 		private Expression assignmentExpression = null;
@@ -74,11 +76,28 @@ public class Event implements Matchable, Serializable {
 		public final Expression getAssignmentExpression() {
 			return assignmentExpression;
 		}
+		
 		public void bind(MathDescription mathDescription) throws ExpressionBindingException {
-			variable = mathDescription.getVariable(variable.getName());
-			assignmentExpression.bindExpression(mathDescription);
+			if (mathDescription != null) {
+				if (variable != null) {
+					variable = mathDescription.getVariable(variable.getName());
+					if (assignmentExpression != null) {
+						assignmentExpression.bindExpression(mathDescription);
+					}
+					else {
+						throw new IllegalStateException("assignmentExpression is null");
+					}
+				}
+				else {
+					throw new IllegalStateException("variable is null");
+				}
+			}
+			else {
+					throw new IllegalArgumentException("null mathDescription passed");
+			}
 		}	
 	}
+	
 	public static class Delay implements Matchable, Serializable {
 		private boolean bUseValuesFromTriggerTime;
 		private Expression durationExpression = null;
