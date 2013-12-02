@@ -22,7 +22,7 @@ public class DataOperation implements Serializable{
 		}
 	}
 	public static class DataProcessingOutputDataValuesOP extends DataOperation{
-		public static class DataIndexHelper{
+		public static class DataIndexHelper implements Serializable{
 			private boolean isSingleSlice;
 			private int[] dataIndexes;
 			private DataIndexHelper(){
@@ -60,7 +60,7 @@ public class DataOperation implements Serializable{
 				return dataIndexes[0];
 			}
 		}
-		public static class TimePointHelper{
+		public static class TimePointHelper implements Serializable{
 			private double[] specificTimePoints;
 			private TimePointHelper(double[] specificTimePoints){
 				this.specificTimePoints = specificTimePoints;
