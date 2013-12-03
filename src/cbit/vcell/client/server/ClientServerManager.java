@@ -241,18 +241,19 @@ public void cleanup() {
 }
 
 public static void checkClientServerSoftwareVersion(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
+	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
+	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
+		return;
+	}
 	if (clientServerInfo.getServerType() == ClientServerInfo.SERVER_REMOTE) {
 		String[] hosts = clientServerInfo.getHosts();
 		for (int i = 0; i < hosts.length; i ++) {
 			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
-			String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
-			if (serverSoftwareVersion != null) {
-				if(!serverSoftwareVersion.equals(clientSoftwareVersion)) {
+			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
 					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n" 
 						+ "current version : " + clientSoftwareVersion + "\n"
 						+ "new version : " + serverSoftwareVersion + "\n"
 						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
-				}
 				break;
 			}
 		}		
