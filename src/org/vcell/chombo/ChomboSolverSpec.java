@@ -331,7 +331,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		return false;
 	}
 
-	public String getRefinementRoiDisplayLable() {
+	public String getRefinementRoiDisplayLabel() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < refinementLevelList.size(); ++ i)
 		{
