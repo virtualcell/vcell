@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1774,26 +1775,30 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println();
 }
 
-	private void assignPhases(Geometry geometry, SubVolume[] subVolumes, int startingIndex, int[] phases, int[] numAssigned) {
-		if (phases[startingIndex] == -1) {
+	private void assignPhases(CompartmentSubDomain[] subDomains, int startingIndex, int[] phases, int[] numAssigned) 
+	{
+		if (phases[startingIndex] == -1) 
+		{
 			return;
 		}
-		if (numAssigned[0] == subVolumes.length) {
+		if (numAssigned[0] == subDomains.length) 
+		{
 			return;
 		}
-		for (int j = 0; j < subVolumes.length; j ++) {
-			if (startingIndex == j) {
+		for (int j = subDomains.length - 1; j >= 0 ; j --) 
+		{
+			if (startingIndex == j || phases[j] != -1) 
+			{
 				continue;
 			}
 			 
-			SurfaceClass sc = geometry.getGeometrySurfaceDescription().getSurfaceClass(subVolumes[startingIndex], subVolumes[j]);
-			if (sc != null) {
-				if (phases[j] == -1) {
-					numAssigned[0] ++;
-					// membrane between i and j, different phase
-					phases[j] = phases[startingIndex] == 0 ? 1 : 0;
-					assignPhases(geometry, subVolumes, j, phases, numAssigned);		
-				}
+			MembraneSubDomain mem = getSimulationTask().getSimulation().getMathDescription().getMembraneSubDomain(subDomains[startingIndex], subDomains[j]);
+			if (mem != null) 
+			{
+				numAssigned[0] ++;
+				// membrane between i and j, different phase
+				phases[j] = phases[startingIndex] == 0 ? 1 : 0;
+				assignPhases(subDomains, j, phases, numAssigned);
 			}
 		}
 	}
@@ -1888,53 +1893,33 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 				printWriter.println(FVInputFileKeyword.DOMAIN_ORIGIN + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
 				break;
 		}
-		SubVolume[] subVolumes = geometrySpec.getSubVolumes();
-		int numSubVolumes = subVolumes.length;
-		int phases[] = new int[numSubVolumes];
+		List<CompartmentSubDomain> featureList = new ArrayList<CompartmentSubDomain>();
+		Enumeration<SubDomain> enum1 = simulation.getMathDescription().getSubDomains();
+		while (enum1.hasMoreElements())
+		{
+			SubDomain sd = enum1.nextElement();
+			if (sd instanceof CompartmentSubDomain)
+			{
+				featureList.add((CompartmentSubDomain) sd);
+			}
+		}
+		int numFeatures = featureList.size();
+		CompartmentSubDomain[] features = featureList.toArray(new CompartmentSubDomain[0]);
+		int phases[] = new int[numFeatures];
 		Arrays.fill(phases, -1);
-		phases[numSubVolumes - 1] = 0;
-		int[] numAssigned = new int[1];
-		boolean bHasRefinement = chomboSolverSpec.getNumRefinementLevels() > 0;
-		// if there are mesh refinement, immediately use finer 
-	  // since usually the coarsest is bad.
-		boolean bPhaseBad = bHasRefinement;
-		if (!bHasRefinement)
-		{
-			assignPhases(resampledGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
+		phases[numFeatures - 1] = 0;
+		int[] numAssigned = new int[] {1};
+		assignPhases(features, numFeatures - 1, phases, numAssigned);
 			
-			// validate phase
-			for (int i = 0; i < phases.length; ++ i)
+		for (int i = 0; i < phases.length; ++ i)
+		{
+			if (phases[i] == -1)
 			{
-				if (phases[i] == -1)
-				{
-					bPhaseBad = true;
-					break;
-				}
+				throw new SolverException("Failed to assign a phase to CompartmentSubdomain '" + features[i].getName()  + "'. It might be caused by too coarsh a mesh.");
 			}
 		}
-
-		if (bPhaseBad)
-		{
-			Geometry finerGeometry = (Geometry) BeanUtils.cloneSerializable(resampledGeometry);
-			GeometrySurfaceDescription geoSurfaceDesc = finerGeometry.getGeometrySurfaceDescription();
-			ISize sampleSize = geoSurfaceDesc.getVolumeSampleSize();
-			ISize newSize = new ISize(sampleSize.getX() * 4,  sampleSize.getY() * 4, sampleSize.getZ()* 4);
-			geoSurfaceDesc.setVolumeSampleSize(newSize);
-			geoSurfaceDesc.updateAll();	
-			
-			subVolumes = finerGeometry.getGeometrySpec().getSubVolumes();
-			Arrays.fill(phases, -1);
-			phases[numSubVolumes - 1] = 0;
-			numAssigned[0] = 0;
-			assignPhases(finerGeometry, subVolumes, numSubVolumes - 1, phases, numAssigned);
-			for (int i = 0; i < phases.length; ++ i)
-			{
-				if (phases[i] == -1)
-				{
-					throw new SolverException("Failed to assign a phase to subVolume '" + subVolumes[i].getName()  + "'. It might be caused by too coarsh a mesh.");
-				}
-			}
-		}
+		
+		SubVolume[] subVolumes = geometrySpec.getSubVolumes();
 		if (geometrySpec.hasImage()) {
 			Geometry geometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
 			Geometry simGeometry = geometry;
@@ -2008,7 +1993,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			}
 			
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + simGeometrySpec.getNumSubVolumes() + " " + FVInputFileKeyword.DISTANCE_MAP);
-			for (int i = 0; i < numSubVolumes; i++) {
+			for (int i = 0; i < subVolumes.length; i++) {
 				File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
 				writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
 				printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
@@ -2016,7 +2001,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		} else {
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
 			Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
-			for (int i = 0; i < numSubVolumes; i++) {
+			for (int i = 0; i < subVolumes.length; i++) {
 				printWriter.print(subVolumes[i].getName() + " " + phases[i] + " ");
 				if (subVolumes[i] instanceof AnalyticSubVolume) {
 					printWriter.println(rvachevExps[i].infix() + ";");			

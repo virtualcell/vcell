@@ -195,7 +195,14 @@ private void displayMesh() {
 						labelViewLevelMesh.setText(GuiUtils.getMeshSizeText(dimension, chomboSolverSpec.getViewLevelSamplingSize(samplingSize), true));
 						if (chomboSolverSpec.hasRefinementRoi())
 						{
-							labelRefinementRoi.setText(chomboSolverSpec.getRefinementRoiDisplayLable());
+							int maxLen = 60;
+							String refinementRoiDisplayLabel = chomboSolverSpec.getRefinementRoiDisplayLabel();
+							labelRefinementRoi.setToolTipText(refinementRoiDisplayLabel);
+							if (refinementRoiDisplayLabel.length() > maxLen)
+							{
+								refinementRoiDisplayLabel = refinementRoiDisplayLabel.substring(0, maxLen) + "...";
+							}
+							labelRefinementRoi.setText(refinementRoiDisplayLabel);
 						}
 						else
 						{
