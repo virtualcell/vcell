@@ -28,7 +28,10 @@ import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -158,6 +161,34 @@ public class ClientTaskManager {
 					}
 				}
 			}
+			//If changing spatial to non-spatial
+			//set diffusion to 0, velocity and boundary to null
+//			srcSimContext.getReactionContext().getspe
+			Parameter[] allParameters = destSimContext.getAllParameters();
+			if(allParameters != null && allParameters.length > 0){
+				for (int i = 0; i < allParameters.length; i++) {
+					if(allParameters[i] instanceof SpeciesContextSpecParameter){
+						SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)allParameters[i];
+						int role = speciesContextSpecParameter.getRole();
+						if(role == SpeciesContextSpec.ROLE_DiffusionRate){
+							speciesContextSpecParameter.setExpression(new Expression(0));
+						}else if (role == SpeciesContextSpec.ROLE_BoundaryValueXm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueXp
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueYm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueYp
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueZm
+								|| role == SpeciesContextSpec.ROLE_BoundaryValueZp) {
+							speciesContextSpecParameter.setExpression(null);
+							
+						} else if (role == SpeciesContextSpec.ROLE_VelocityX
+								|| role == SpeciesContextSpec.ROLE_VelocityY
+								|| role == SpeciesContextSpec.ROLE_VelocityZ) {
+							speciesContextSpecParameter.setExpression(null);
+						}
+					}
+				}
+			}
+			
 		}
 		destSimContext.setName(newSimulationContextName);	
 		return destSimContext;
