@@ -786,10 +786,14 @@ public final class BeanUtils {
 		return bos.toByteArray();
 	}
 
-	public static String getStackTrace(Throwable exception) {
+	public static String getStackTrace(Throwable throwable) {
 		StringWriter out = new StringWriter();
 		PrintWriter pw = new PrintWriter(out);
-		exception.printStackTrace(pw);
+		Throwable t = throwable; 
+		while (t != null) {
+			t.printStackTrace(pw);
+			t = t.getCause( );
+		}
 		pw.close();
 		return out.getBuffer().toString();
 	}

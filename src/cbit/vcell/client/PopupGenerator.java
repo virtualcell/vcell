@@ -15,6 +15,8 @@ import cbit.vcell.client.server.*;
 import javax.swing.*;
 
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 /**
@@ -34,11 +36,29 @@ public class PopupGenerator extends DialogUtils {
  * @param preferenceName java.lang.String
  */
 public static void showErrorDialog(TopLevelWindowManager requester, String message) {
-	showErrorDialog(requester.getComponent(), message);
+	showErrorDialog(requester, message,null);
 }
 
+/**
+ * showErrorDialog. If requester is of type DocumentWindowManager, offer to send context information
+ * to VCellSupport 
+ * @param requester
+ * @param message to display
+ * @param ex may be null
+ */
 public static void showErrorDialog(TopLevelWindowManager requester, String message, Throwable ex) {
-	showErrorDialog(requester.getComponent(), message, ex);
+	DialogUtils.ErrorContext errorContext = null;
+	if (requester instanceof DocumentWindowManager) {
+		DocumentWindowManager dwm = (DocumentWindowManager) requester;
+		VCDocument doc = dwm.getVCDocument();
+		String contextString = doc.getName();
+		Version v = doc.getVersion();
+		if (v != null) {
+			contextString += " " + v.identificationString();
+		}
+		errorContext = new DialogUtils.ErrorContext(contextString, requester.getUserPreferences()); 
+	}
+	showErrorDialog(requester.getComponent(), message, ex, errorContext);
 }
 
 public static void showInfoDialog(TopLevelWindowManager requester, String message) {
