@@ -266,7 +266,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedOptions.add(dateLabel2);
 		startDatePanel = new DatePanel();
 		Calendar cal = new GregorianCalendar();
-		cal.roll(Calendar.WEEK_OF_MONTH, false);
+		cal.add(Calendar.DATE, -7);
 		startDatePanel.setCalendar(cal);
 		advancedOptions.add(startDatePanel);
 		endDatePanel = new DatePanel();
