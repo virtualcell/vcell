@@ -178,7 +178,7 @@ public boolean getShowWarning(int warningType) {
  * @return cbit.util.Preference[]
  */
 private Preference[] getUserChoices() {
-	Vector<Preference> userChoices = new Vector<>(); 
+	Vector<Preference> userChoices = new Vector<Preference>(); 
 	// warning choices
 	Enumeration<Preference> en = warningHash.elements();
 	while (en.hasMoreElements()) {
