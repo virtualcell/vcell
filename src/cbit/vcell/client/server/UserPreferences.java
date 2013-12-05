@@ -62,7 +62,7 @@ public class UserPreferences {
 	private final static int NUM_WARNING_PREFERENCES = 16;
 	
 	// default
-	private boolean[] showWarningDefaults = new boolean[] {
+	private static boolean[] showWarningDefaults = new boolean[] {
 		true,
 		true,
 		true,
@@ -83,12 +83,19 @@ public class UserPreferences {
 
 	//a generic user preference nevertheless: Last directory used for import XML/image, export, saveImageAs
 	public final static int GENERAL_LAST_PATH_USED = 0;
+	public final static int SEND_MODEL_INFO_IN_ERROR_REPORT = 1;
 	
-	private final static int NUM_GENERAL_PREFERENCES = 1;
+	private final static int NUM_GENERAL_PREFERENCES = 2;
 	
-	private String [] genDefaults = {
+	private static String [] genDefaults = {
 		".",		// default is current directory.
+		"true" //send model info to VCell Support
 	};
+	
+	static {
+		assert(showWarningDefaults.length == NUM_WARNING_PREFERENCES);
+		assert(genDefaults.length == NUM_GENERAL_PREFERENCES);
+	}
 	
 	// user choices
 	private Hashtable<String, Preference> warningHash = new Hashtable<String, Preference>();// keyed by "WARN"+number
@@ -104,14 +111,6 @@ public UserPreferences(ClientServerManager clientServerManager) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/12/2004 9:08:48 PM)
- * @return cbit.vcell.client.server.ClientServerManager
- */
-private ClientServerManager getClientServerManager() {
-	return clientServerManager;
-}
 	public String getGenPref(int prefType) {
 
 		if (prefType < 0 || prefType > (NUM_GENERAL_PREFERENCES - 1)) {
@@ -140,6 +139,14 @@ private ClientServerManager getClientServerManager() {
 			return null;
 			//throw e;
 		}
+	}
+	/**
+	 * return general preference as boolean
+	 * @param prefType key of general preference
+	 * @return true if present and true, false if problem
+	 */
+	public boolean getGenPrefBoolean(int prefType) {
+		return Boolean.valueOf(getGenPref(prefType)); 
 	}
 
 
@@ -171,16 +178,16 @@ public boolean getShowWarning(int warningType) {
  * @return cbit.util.Preference[]
  */
 private Preference[] getUserChoices() {
-	Vector userChoices = new Vector();
+	Vector<Preference> userChoices = new Vector<Preference>(); 
 	// warning choices
-	Enumeration en = warningHash.elements();
+	Enumeration<Preference> en = warningHash.elements();
 	while (en.hasMoreElements()) {
-		Preference preference = (Preference)en.nextElement();
+		Preference preference = en.nextElement();
 		userChoices.add(preference);
 	}
 	en = genericHash.elements();
 	while (en.hasMoreElements()) {
-		Preference preference = (Preference)en.nextElement();
+		Preference preference = en.nextElement();
 		userChoices.add(preference);
 	}
 	// other choices
@@ -275,11 +282,17 @@ private void saveToDatabase() {
  * @param preference java.lang.String
  */
 public void setGenPref(int prefType, String preferenceString) {
-
 	Preference newPreference = new Preference(UserPreferences.GEN_PREF +prefType, preferenceString);
 	setGenPref(prefType, newPreference);
 }
-
+/**
+ * set boolean preference
+ * @param prefType
+ * @param boolPref new value
+ */
+public void setGenPref(int prefType, boolean boolPref) { 
+	setGenPref(prefType, Boolean.toString(boolPref) );
+}
 
 private void setShowWarning(int warningType, Preference newPreference) {
 	

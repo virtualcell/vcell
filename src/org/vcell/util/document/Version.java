@@ -177,8 +177,12 @@ public KeyValue getVersionKey() {
     return versionKey;
 }
 
-@Override
-public String toString() {
+/**
+ * return String for identification in log and email 
+ * messages
+ * @return key elements of version
+ */
+public String identificationString( ) { 
     StringBuffer buffer = new StringBuffer();
     SimpleDateFormat newDateFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.US);
     buffer.append("[");
@@ -191,12 +195,21 @@ public String toString() {
     buffer.append("Flag(" + ((versionFlag!=null)?(versionFlag.toString()):"null") + "), ");
     buffer.append("Date("+((versionDate!=null)?(newDateFormatter.format(versionDate)):"null")+ "), ");
     if (getAnnot().length() < 25) {
-	buffer.append("Annot(" + getAnnot() + ")");
+		buffer.append("Annot(" + getAnnot() + ")");
     } else {
-	buffer.append("Annot(" + "Length=" + getAnnot().length() + ")");
+		buffer.append("Annot(" + "Length=" + getAnnot().length() + ")");
     }
     buffer.append("]");
 
     return buffer.toString();
 }
+
+/**
+ * current implementation returns {@link #identificationString()}
+ */
+@Override
+public String toString() {
+	return identificationString();
+}
+
 }
