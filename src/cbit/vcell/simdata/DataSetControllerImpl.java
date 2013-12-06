@@ -147,29 +147,28 @@ public class DataSetControllerImpl implements SimDataConstants {
 		public void updateMessage(String message);
 	};
 	
-	private class TimeInfo {
+	private static class TimeInfo {
 		private boolean[] wantsTheseTimes;
 		private double[] desiredTimeValues;
-		public TimeInfo(VCDataIdentifier vcdID,double startTime,double step,double endTime) throws DataAccessException{
-			double dataTimes[] = getDataSetTimes(vcdID);
-			if (dataTimes.length<=0){
+		public TimeInfo(VCDataIdentifier vcdID,double startTime,double step,double endTime,double allDataTimes[]) throws DataAccessException{
+			if (allDataTimes.length<=0){
 				throw new DataAccessException("No times found for "+vcdID.toString());
 			}	
 
-			wantsTheseTimes = new boolean[dataTimes.length];
+			wantsTheseTimes = new boolean[allDataTimes.length];
 			desiredTimeValues = null;
 			int desiredNumTimes = 0;
 			
 			Arrays.fill(wantsTheseTimes,false);
-			double[] tempTimes = new double[dataTimes.length];
+			double[] tempTimes = new double[allDataTimes.length];
 			
 			int stepCounter = 0;
-			for(int i=0;i<dataTimes.length;i+= 1){
-				if(dataTimes[i] > endTime){
+			for(int i=0;i<allDataTimes.length;i+= 1){
+				if(allDataTimes[i] > endTime){
 					break;
 				}
-				if(dataTimes[i] == startTime){
-					tempTimes[desiredNumTimes] = dataTimes[i];
+				if(allDataTimes[i] == startTime){
+					tempTimes[desiredNumTimes] = allDataTimes[i];
 					desiredNumTimes+= 1;
 					stepCounter = 0;
 					wantsTheseTimes[i] = true;
@@ -177,7 +176,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 						break;
 					}
 				}else if(desiredNumTimes > 0 && stepCounter%step == 0){
-					tempTimes[desiredNumTimes] = dataTimes[i];
+					tempTimes[desiredNumTimes] = allDataTimes[i];
 					desiredNumTimes+= 1;
 					wantsTheseTimes[i] = true;
 				}
@@ -255,13 +254,14 @@ public class DataSetControllerImpl implements SimDataConstants {
 				AnnotatedFunction argFunc,
 				int[] argIndices,
 				boolean[] argWantsTheseTimes,
-				DataSetControllerImpl.ProgressListener argProgressListener)
+				DataSetControllerImpl.ProgressListener argProgressListener,
+				OutputContext outputContext)
 									throws IOException,DataAccessException,ExpressionException,MathException{
 										
 			wantsTheseTimes = argWantsTheseTimes;
 			dataSetTimes = DataSetControllerImpl.this.getDataSetTimes(argVcdID);
 			simData = getVCData(argVcdID);
-			functionIndexesArr = findFunctionIndexes(argVcdID,argFunc,argIndices);
+			functionIndexesArr = findFunctionIndexes(argVcdID,argFunc,argIndices,outputContext);
 			if(!functionIndexesArr[0].hasNearFarInterpolation()){
 				blockSize = functionIndexesArr[0].getIndexes().length;
 				for(int i=0;i<functionIndexesArr.length;i+= 1){
@@ -360,14 +360,18 @@ public class DataSetControllerImpl implements SimDataConstants {
 			return origVal;
 		}
 		public boolean hasNearFarInterpolation(){
-			for (int i = 0; i < inside_near_far_indexes.length; i++) {
-				if(inside_near_far_indexes[i] != null){
-					return true;
+			if(inside_near_far_indexes != null){
+				for (int i = 0; i < inside_near_far_indexes.length; i++) {
+					if(inside_near_far_indexes[i] != null){
+						return true;
+					}
 				}
 			}
-			for (int i = 0; i < outside_near_far_indexes.length; i++) {
-				if(outside_near_far_indexes[i] != null){
-					return true;
+			if(outside_near_far_indexes != null){
+				for (int i = 0; i < outside_near_far_indexes.length; i++) {
+					if(outside_near_far_indexes[i] != null){
+						return true;
+					}
 				}
 			}
 			return false;
@@ -385,9 +389,9 @@ public class DataSetControllerImpl implements SimDataConstants {
 			functionArgs[3] = xyz.getZ(); // z
 			for(int i=0;i<funcVarNames.length;i+= 1){
 				functionArgs[i+TXYZ_OFFSET] = argValues[i];
-				if(inside_near_far_indexes[i] != null && inside_near_far_indexes[i].volIndexFar != -1){
+				if(inside_near_far_indexes != null && inside_near_far_indexes[i] != null && inside_near_far_indexes[i].volIndexFar != -1){
 					functionArgs[i+TXYZ_OFFSET] = VolumeIndexNearFar.interpolate(argValues[i], argValues[funcVarNames.length+i]);
-				}else if(outside_near_far_indexes[i] != null && outside_near_far_indexes[i].volIndexFar != -1){
+				}else if(outside_near_far_indexes != null && outside_near_far_indexes[i] != null && outside_near_far_indexes[i].volIndexFar != -1){
 					functionArgs[i+TXYZ_OFFSET] = VolumeIndexNearFar.interpolate(argValues[i], argValues[funcVarNames.length+i]);			
 				}
 			}
@@ -406,9 +410,9 @@ public class DataSetControllerImpl implements SimDataConstants {
 				VolumeIndexNearFar[] arg_outside_near_far_indexes){
 			for(int i=0;i<argVarNames.length;i+= 1){
 				if(
-					(arg_inside_near_far_indexes[i] != null && arg_inside_near_far_indexes[i].volIndexNear != argIndexes[i])
+					(arg_inside_near_far_indexes != null && arg_inside_near_far_indexes[i] != null && arg_inside_near_far_indexes[i].volIndexNear != argIndexes[i])
 					||
-					(arg_outside_near_far_indexes[i] != null && arg_outside_near_far_indexes[i].volIndexNear != argIndexes[i]))
+					(arg_outside_near_far_indexes != null && arg_outside_near_far_indexes[i] != null && arg_outside_near_far_indexes[i].volIndexNear != argIndexes[i]))
 				{
 					throw new RuntimeException("FunctionIndexes: 'near' indexes should always match argIndexes when they exist");
 				}
@@ -452,6 +456,9 @@ public void addDataJobListener(DataJobListener newListener) {
  */
 private SpatialStatsInfo calcSpatialStatsInfo(OutputContext outputContext,TimeSeriesJobSpec timeSeriesJobSpec,VCDataIdentifier vcdID) throws Exception{
 
+	if(getVCData(vcdID) instanceof SimulationData && ((SimulationData)getVCData(vcdID)).isPostProcessing(outputContext, timeSeriesJobSpec.getVariableNames()[0])){
+		return new SpatialStatsInfo();
+	}
 	SpatialStatsInfo ssi = new SpatialStatsInfo();
 	//Determine weights for indices of each variable if we are going to be calculating spatial statistics
 	ssi.bWeightsValid = true;
@@ -1571,7 +1578,14 @@ private SimDataBlock evaluateFunction(
 	// variables are indexed by a number, t=0, x=1, y=2, z=3, a(i) = 4+i where a's are other variables
 	// these variables
 	//
-	CartesianMesh mesh = getMesh(vcdID);
+	CartesianMesh mesh = null;
+	if(function.getFunctionType().equals(VariableType.POSTPROCESSING)){
+		mesh = ((SimulationData)simData).getPostProcessingMesh(function.getName(),outputContext);
+	}
+	if(mesh == null){
+		mesh = getMesh(vcdID);
+	}
+	
 	
 	String[] dependentIDs = exp.getSymbols();
 	Vector<SimDataHolder> dataSetList = new Vector<SimDataHolder>();
@@ -1580,7 +1594,7 @@ private SimDataBlock evaluateFunction(
 	int dataLength = 0;
 	long lastModified = 0;
 	VariableType variableType = function.getFunctionType();
-	if (variableType.equals(VariableType.VOLUME)) {
+	if (variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.POSTPROCESSING)) {
 		dataLength = mesh.getNumVolumeElements();
 	} else if (variableType.equals(VariableType.MEMBRANE)) {
 		dataLength = mesh.getNumMembraneElements();
@@ -1606,13 +1620,13 @@ private SimDataBlock evaluateFunction(
 				//
 				if (simDataBlock.getVariableType().equals(VariableType.VOLUME)){
 					computedVariableType = VariableType.MEMBRANE;
-					computedDataLength = getMesh(vcdID).getMembraneElements().length;
+					computedDataLength = mesh.getMembraneElements().length;
 				//
 				// if inside/outside volume element dependent, then can only be a membrane type 
 				//
 				}else if (simDataBlock.getVariableType().equals(VariableType.VOLUME_REGION) && variableType==null){
 					computedVariableType = VariableType.MEMBRANE_REGION;
-					computedDataLength = getMesh(vcdID).getNumMembraneRegions();
+					computedDataLength = mesh.getNumMembraneRegions();
 				}
 				dataSetList.addElement(simDataBlock);
 			}else{	
@@ -1641,9 +1655,9 @@ private SimDataBlock evaluateFunction(
 			final double[] steResampledFieldData =
 				((FieldDataParameterVariable)ste).getResampledFieldData();
 			final VariableType newVariableType =
-				(steResampledFieldData.length == getMesh(vcdID).getNumVolumeElements()?
+				(steResampledFieldData.length == mesh.getNumVolumeElements()?
 							VariableType.VOLUME:
-								(steResampledFieldData.length == getMesh(vcdID).getNumMembraneElements()?
+								(steResampledFieldData.length == mesh.getNumMembraneElements()?
 										VariableType.MEMBRANE:null)
 				);
 			if(newVariableType == null){
@@ -1672,16 +1686,19 @@ private SimDataBlock evaluateFunction(
 	       
 	if (computedDataLength <= 0) {
 		log.alert("dependencies for function '"+function+"' not found, assuming datalength of volume");
-		try {
-			computedDataLength = getMesh(vcdID).getDataLength(VariableType.VOLUME);
-			computedVariableType = VariableType.VOLUME;
-		}catch (MathException e){
-			log.exception(e);
-			throw new RuntimeException("MathException, cannot determine domain for function '"+function+"'");
-		}catch (FileNotFoundException e){
-			log.exception(e);
-			throw new RuntimeException("Mesh not found, cannot determine domain for function '"+function+"'");
-		}
+		computedDataLength = mesh.getDataLength(VariableType.VOLUME);
+		computedVariableType = VariableType.VOLUME;
+
+//		try {
+//			computedDataLength = mesh.getDataLength(VariableType.VOLUME);
+//			computedVariableType = VariableType.VOLUME;
+//		}catch (MathException e){
+//			log.exception(e);
+//			throw new RuntimeException("MathException, cannot determine domain for function '"+function+"'");
+//		}catch (FileNotFoundException e){
+//			log.exception(e);
+//			throw new RuntimeException("Mesh not found, cannot determine domain for function '"+function+"'");
+//		}
 	}
 
 	if (!variableType.equals(computedVariableType)) {
@@ -1705,14 +1722,14 @@ private SimDataBlock evaluateFunction(
 		//
 		// initialize argments to expression
 		//
-		if (variableType.equals(VariableType.VOLUME)){
+		if (variableType.equals(VariableType.VOLUME) || variableType.equals(VariableType.POSTPROCESSING)){
 			Coordinate coord = mesh.getCoordinateFromVolumeIndex(i);
 			args[1] = coord.getX();
 			args[2] = coord.getY();
 			args[3] = coord.getZ();
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
-				if (simDataHolder.getVariableType().equals(VariableType.VOLUME)){
+				if (simDataHolder.getVariableType().equals(VariableType.VOLUME) || simDataHolder.getVariableType().equals(VariableType.POSTPROCESSING)){
 					args[TXYZ_OFFSET + j] = simDataHolder.getData()[i];
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)){
 					int volumeIndex = mesh.getVolumeRegionIndex(i);
@@ -2399,9 +2416,35 @@ private Vector<DataSetIdentifier> identifyDataDependencies(AnnotatedFunction fun
  * @param function cbit.vcell.math.Function
  * @param time double
  */
-private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFunction function,int[] dataIndexes)
+private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFunction function,int[] dataIndexes,OutputContext outputContext)
 	throws ExpressionException, DataAccessException, IOException, MathException {
 
+	if(function.getFunctionType().equals(VariableType.POSTPROCESSING)){
+		FunctionIndexes[] fiArr = new FunctionIndexes[dataIndexes.length];
+		Vector<DataSetIdentifier> dependencyList = identifyDataDependencies(function);
+		SimulationData simData = (SimulationData)getVCData(vcdID);
+		String[] varNames = new String[dependencyList.size()];
+		String[] simFileVarNames = new String[dependencyList.size()];
+		for (int i = 0; i < varNames.length; i++) {
+			varNames[i] = dependencyList.get(i).getName();
+			simFileVarNames[i] = dependencyList.get(i).getName();
+		}
+		CartesianMesh mesh = simData.getPostProcessingMesh(function.getName(), outputContext);
+		int[][] varIndexes = new int[dataIndexes.length][varNames.length];
+		for(int i=0;i<dataIndexes.length;i+= 1){
+			for (int j = 0; j < varNames.length; j++) {
+				varIndexes[i][j] = dataIndexes[i];
+			}
+		}
+//		VolumeIndexNearFar[][] inside_near_far_indexes = null;//new VolumeIndexNearFar[dataIndexes.length][/*varNames.length*/];
+//		VolumeIndexNearFar[][] outside_near_far_indexes = null;//new VolumeIndexNearFar[dataIndexes.length][/*varNames.length*/];
+		for(int i=0;i<dataIndexes.length;i+= 1){
+			fiArr[i] = new FunctionIndexes(function,mesh.getCoordinateFromVolumeIndex(dataIndexes[i]),varNames,simFileVarNames,varIndexes[i],null,null/*inside_near_far_indexes[i],outside_near_far_indexes[i]*/);
+		}
+		return fiArr;
+
+	}
+	
 	VariableType variableType = function.getFunctionType();
 	Vector<DataSetIdentifier> dependencyList = identifyDataDependencies(function);
 	int varIndex = TXYZ_OFFSET+dependencyList.size();
@@ -2937,7 +2980,7 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
 						vcdID,
 						varName,
 						mesh,
-						new TimeInfo(vcdID,time,1,time));
+						new TimeInfo(vcdID,time,1,time,getDataSetTimes(vcdID)));//PostProcess never calls LineScan so send in VCell times
 				}
 			} catch (Exception e) {
 				throw new DataAccessException("Error getLineScan adjustingMembraneValues\n"+e.getMessage(),e);
@@ -3018,7 +3061,6 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
 		throw new DataAccessException(e.getMessage());
 	}
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -3500,13 +3542,26 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 
 private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputContext, final VCDataIdentifier vcdID,final TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
-	TimeInfo timeInfo =
-		new TimeInfo(vcdID,timeSeriesJobSpec.getStartTime(),timeSeriesJobSpec.getStep(),timeSeriesJobSpec.getEndTime());
+	double dataTimes[] = null;
+	boolean isPostProcessing = false;
+	try{
+		if(getVCData(vcdID) instanceof SimulationData && ((SimulationData)getVCData(vcdID)).isPostProcessing(outputContext, timeSeriesJobSpec.getVariableNames()[0])){
+			isPostProcessing = true;
+			dataTimes = ((SimulationData)getVCData(vcdID)).getDataTimesPostProcess(outputContext);
+		}
+	}catch(Exception e){
+		//ignore
+		e.printStackTrace();
+	}
+	if(dataTimes == null){
+		dataTimes =  getDataSetTimes(vcdID);
+	}
+	TimeInfo timeInfo = new TimeInfo(vcdID,timeSeriesJobSpec.getStartTime(),timeSeriesJobSpec.getStep(),timeSeriesJobSpec.getEndTime(),dataTimes);
+
 //	boolean[] wantsTheseTimes = timeInfo.getWantsTheseTimes();
 //	double[] desiredTimeValues = timeInfo.getDesiredTimeValues();
 //	int desiredNumTimes = desiredTimeValues.length;
 	
-	double dataTimes[] = getDataSetTimes(vcdID);
 	if (dataTimes.length<=0){
 		return null;
 	}	
@@ -3626,7 +3681,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 				} else {
 					throw new Exception("DataSetControllerImpl::getTimeSeriesValues_private(): has to be SimulationData to get time plot.");
 				}
-				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,function,indices,wantsTheseTimes, progressListener);
+				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,function,indices,wantsTheseTimes, progressListener,outputContext);
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(
 							timeSeriesJobSpec.getVcDataJobID(),
@@ -3717,7 +3772,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
 	            timeSeriesFormatedValuesArr);
-			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+			if(!isPostProcessing && timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
 				adjustMembraneAdjacentVolumeValues(
 						outputContext,
 						tsJobResultsNoStats.getTimesAndValuesForVariable(timeSeriesJobSpec.getVariableNames()[0]),
@@ -3974,7 +4029,7 @@ private void adjustMembraneAdjacentVolumeValues(
 			if(vinf_inside.volIndexNear == volumeDataIndexes[crossingCondensedOrigLocation[j]]){
 				if(!bIsSpecial && mfi_inside == null){
 					mfi_inside =
-						new MultiFunctionIndexes(vcdID,insideFunction,crossingCondensedIndexes,timeInfo.wantsTheseTimes,null);
+						new MultiFunctionIndexes(vcdID,insideFunction,crossingCondensedIndexes,timeInfo.wantsTheseTimes,null,outputContext);
 				}
 				for (int k = 0; k < timeInfo.desiredTimeValues.length; k++) {
 					if(bTimeFormat){
@@ -3986,7 +4041,7 @@ private void adjustMembraneAdjacentVolumeValues(
 			}else if(vinf_outside.volIndexNear == volumeDataIndexes[crossingCondensedOrigLocation[j]]){
 				if(!bIsSpecial && mfi_outside == null){
 					mfi_outside =
-						new MultiFunctionIndexes(vcdID,outsideFunction,crossingCondensedIndexes,timeInfo.wantsTheseTimes,null);
+						new MultiFunctionIndexes(vcdID,outsideFunction,crossingCondensedIndexes,timeInfo.wantsTheseTimes,null,outputContext);
 				}
 				for (int k = 0; k < timeInfo.desiredTimeValues.length; k++) {
 					if(bTimeFormat){

@@ -39,17 +39,31 @@ import java.util.zip.ZipFile;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.client.server.DataOperation;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputInfoOP;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataValues;
+import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
@@ -59,6 +73,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -635,7 +650,16 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	switch (dataType) {
 		case PDE_DATA:
+			try{
 			return getPDEDataFile(timepoint).lastModified();
+			}catch(DataAccessException e){
+				//PostProcess times don't always match exactly
+				if(getDataProcessingOutputSourceFileHDF5().exists()){
+					return getDataProcessingOutputSourceFileHDF5().lastModified();
+				}else{
+					throw e;
+				}
+			}
 		case ODE_DATA:
 			return getODEDataFile().lastModified();
 		case PARTICLE_DATA:
@@ -667,7 +691,14 @@ private DataSetIdentifier getDataSetIdentifier(String identifier) {
 	return null;
 }
 
-
+public synchronized double[] getDataTimesPostProcess(OutputContext outputContext) throws DataAccessException {
+	refreshDataProcessingOutputInfo(outputContext);
+	return dataProcessingOutputInfo.getVariableTimePoints();
+}
+//public synchronized double[] getDataTimes(String varName,OutputContext outputContext) throws DataAccessException {
+//	getDataProcessingOutputInfo(outputContext);
+//	return dataProcessingOutputInfo.getVariableTimePoints();
+//}
 /**
  * This method was created in VisualAge.
  * @return double[]
@@ -737,7 +768,6 @@ public SymbolTableEntry getEntry(String identifier) {
 			return adsi;
 		}
 	}
-	
 	return null;
 }
 
@@ -931,6 +961,38 @@ private synchronized File getSubdomainFilePrivate() throws FileNotFoundException
 	return null;
 }
 
+public synchronized CartesianMesh getPostProcessingMesh(String varName,OutputContext outputContext) throws DataAccessException{
+	refreshDataProcessingOutputInfo(outputContext);
+	return createPostProcessingMesh(varName, outputContext);
+}
+private CartesianMesh createPostProcessingMesh(String varName,OutputContext outputContext) throws DataAccessException{
+	try{
+		refreshDataProcessingOutputInfo(outputContext);
+		//create mesh here because we know the variablename
+		ISize varISize = dataProcessingOutputInfo.getVariableISize(varName);
+		Extent varExtent = dataProcessingOutputInfo.getVariableExtent(varName);
+		Origin varOrigin = dataProcessingOutputInfo.getVariableOrigin(varName);
+		VCImage vcImage = new VCImageUncompressed(null,
+			new byte[varISize.getXYZ()],
+			varExtent,
+			varISize.getX(),
+			varISize.getY(),
+			varISize.getZ());
+		RegionImage regionImage = new RegionImage(vcImage,
+			1+(varISize.getY()>0?1:0)+(varISize.getZ()>0?1:0),
+			varExtent,
+			varOrigin,
+			RegionImage.NO_SMOOTHING);
+		return CartesianMesh.createSimpleCartesianMesh(
+			dataProcessingOutputInfo.getVariableOrigin(varName),
+			varExtent,
+			varISize, regionImage);
+	}catch(DataAccessException dae){
+		throw dae;
+	}catch(Exception e){
+		throw new DataAccessException(e.getMessage(),(e.getCause()==null?e:e.getCause()));
+	}
+}
 
 /**
  * This method was created in VisualAge.
@@ -1205,6 +1267,18 @@ public synchronized VCDataIdentifier getResultsInfoObject() {
 }
 
 
+private double extractClosestPostProcessTime(double vcellTimePoint){
+	double closestPostProcessTimePoint = dataProcessingOutputInfo.getVariableTimePoints()[0];
+	for (int i = 0; i < dataProcessingOutputInfo.getVariableTimePoints().length; i++) {
+		double postProcessTimePoint = dataProcessingOutputInfo.getVariableTimePoints()[i];
+		if (postProcessTimePoint == vcellTimePoint){
+			return vcellTimePoint;
+		}else if(Math.abs(vcellTimePoint-postProcessTimePoint) < Math.abs(vcellTimePoint-closestPostProcessTimePoint)){
+			closestPostProcessTimePoint = postProcessTimePoint;
+		}
+	}
+	return closestPostProcessTimePoint;
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.DataBlock
@@ -1212,11 +1286,24 @@ public synchronized VCDataIdentifier getResultsInfoObject() {
  * @param simID java.lang.String
  */
 public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, String varName, double time) throws DataAccessException, IOException {
-	refreshLogFile();
+	refreshLogFile();	
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
+	}
+	try{
+		if(isPostProcessing(outputContext, varName)){
+			PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastDataProcessingOutputInfoTime);
+			DataProcessingOutputDataValuesOP dataProcessingOutputDataValuesOP =
+				new DataProcessingOutputDataValuesOP(vcDataId, varName, TimePointHelper.createSingleTimeTimePointHelper(extractClosestPostProcessTime(time)), DataIndexHelper.createAllDataIndexesDataIndexHelper(), outputContext, null);
+			DataProcessingOutputDataValues dataProcessingOutputDataValues =
+				(DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
+			return new SimDataBlock(pdeDataInfo,dataProcessingOutputDataValues.getDataValues()[0]/*1 time only*/,VariableType.POSTPROCESSING);
+		}
+	}catch(Exception e){
+		//ignore
+		e.printStackTrace();
 	}
 		
 	File pdeFile = getPDEDataFile(time);
@@ -1284,17 +1371,59 @@ synchronized double[][][] getSimDataTimeSeries0(
 		ex.printStackTrace(System.out);
 	}
 
-	String varNamesInDataSet[] = new String[varNames.length];
-	for (int i = 0; i < varNamesInDataSet.length; i++) {
-		varNamesInDataSet[i] = getDataSetIdentifier(varNames[i]).getQualifiedName();
-	}
-	// Setup parameters for SimDataReader
 	int resultsCounter = 0;
 	for(int i=0;i<wantsThisTime.length;i+= 1){
 		if(wantsThisTime[i]){
 			resultsCounter+= 1;
 		}
 	}
+	final int NUM_STATS = 4;//min,max,mean,wmean
+	//Create results buffer
+	double[][][] results = new double[resultsCounter][][];//[timePoints][varNames][dataIndexes]
+
+	for(int i=0;i<results.length;i+= 1){
+		results[i] = new double[varNames.length][];
+		for(int j=0;j<results[i].length;j+= 1){
+			if(spatialStatsInfo != null){
+				results[i][j] = new double[NUM_STATS];//min,max.mean,wmean
+			}else{
+				results[i][j] = new double[indexes[j].length];
+			}
+		}
+	}
+	try{
+		if(isPostProcessing(outputContext, varNames[0])){
+			double[] specificTimePoints = new double[results.length];
+			int counter = 0;
+			for (int i = 0; i < dataProcessingOutputInfo.getVariableTimePoints().length; i++) {
+				if(wantsThisTime[i]){
+					specificTimePoints[counter] = dataProcessingOutputInfo.getVariableTimePoints()[i];
+					counter++;
+				}
+			}
+//			PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastDataProcessingOutputInfoTime);
+			for (int i = 0; i < varNames.length; i++) {
+				DataProcessingOutputDataValuesOP dataProcessingOutputDataValuesOP =
+					new DataProcessingOutputDataValuesOP(vcDataId, varNames[i],
+						TimePointHelper.createSpecificTimePointHelper(specificTimePoints), DataIndexHelper.createSpecificDataIndexHelper(indexes[i]), outputContext, null);
+				DataProcessingOutputDataValues dataProcessingOutputDataValues =
+					(DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
+				for (int j = 0; j < specificTimePoints.length; j++) {
+					results[j][i] = dataProcessingOutputDataValues.getDataValues()[j];
+				}
+			}
+			return results;
+		}
+	}catch(Exception e){
+		//ignore
+		e.printStackTrace();
+	}
+
+	String varNamesInDataSet[] = new String[varNames.length];
+	for (int i = 0; i < varNamesInDataSet.length; i++) {
+		varNamesInDataSet[i] = getDataSetIdentifier(varNames[i]).getQualifiedName();
+	}
+	// Setup parameters for SimDataReader
 	double[] tempDataTimes = dataTimes.clone();
 	
 	String[] tempZipFileNames = null;
@@ -1315,20 +1444,6 @@ synchronized double[][][] getSimDataTimeSeries0(
 	}
 	SimDataReader sdr = null;
 
-	final int NUM_STATS = 4;//min,max,mean,wmean
-	//Create results buffer
-	double[][][] results = new double[resultsCounter][][];
-
-	for(int i=0;i<results.length;i+= 1){
-		results[i] = new double[varNamesInDataSet.length][];
-		for(int j=0;j<results[i].length;j+= 1){
-			if(spatialStatsInfo != null){
-				results[i][j] = new double[NUM_STATS];//min,max.mean,wmean
-			}else{
-				results[i][j] = new double[indexes[j].length];
-			}
-		}
-	}
 
 	
 	double[][] singleTimePointResultsBuffer = new double[varNamesInDataSet.length][];
@@ -1459,6 +1574,14 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				Domain domain = Variable.getDomainFromCombinedIdentifier(varNames[i]);
 				String varName = Variable.getNameFromCombinedIdentifier(varNames[i]);
 				dataSetIdentifierList.addElement(new DataSetIdentifier(varName,varType,domain));
+			}
+			refreshDataProcessingOutputInfo(outputContext);
+			if(dataProcessingOutputInfo != null){
+				for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+					if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataProcessingOutputInfo.PostProcessDataType.image)){
+						dataSetIdentifierList.addElement(new DataSetIdentifier(dataProcessingOutputInfo.getVariableNames()[i],VariableType.POSTPROCESSING,null));
+					}
+				}
 			}
 		} 
 
@@ -2013,6 +2136,43 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	for (DataSetIdentifier dsi : dataSetIdentifierList) {
 		entryMap.put(dsi.getName(), dsi);
 	}
+}
+
+private DataProcessingOutputInfo dataProcessingOutputInfo;
+private OutputContext lastOutputContext;
+private long lastDataProcessingOutputInfoTime = 0;
+private void refreshDataProcessingOutputInfo(OutputContext outputContext) throws DataAccessException{
+	File dataProcessingOutputFile = getDataProcessingOutputSourceFileHDF5();
+	AnnotatedFunction[] lastFunctions = (lastOutputContext==null?null:lastOutputContext.getOutputFunctions());
+	AnnotatedFunction[] currentFunctions = (outputContext==null?null:outputContext.getOutputFunctions());
+	boolean bFunctionsEqual = Compare.isEqualOrNull(lastFunctions, currentFunctions);
+	if(!bFunctionsEqual || dataProcessingOutputInfo == null || (dataProcessingOutputFile.exists() && lastDataProcessingOutputInfoTime != dataProcessingOutputFile.lastModified())){
+		lastDataProcessingOutputInfoTime = dataProcessingOutputFile.lastModified();
+		DataProcessingOutputInfoOP dataProcessingOutputInfoOP = new DataProcessingOutputInfoOP(vcDataId, false, outputContext);
+		try{
+		dataProcessingOutputInfo = (DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(dataProcessingOutputInfoOP, dataProcessingOutputFile);
+		}catch(Exception e){
+			throw new DataAccessException(e.getMessage(),(e.getCause()==null?e:e.getCause()));
+		}
+	}
+}
+public boolean isPostProcessing(OutputContext outputContext,String varName) throws Exception{
+	refreshDataProcessingOutputInfo(outputContext);
+	if(dataProcessingOutputInfo != null){
+		for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+			if(dataProcessingOutputInfo.getVariableNames()[i].equals(varName) && dataProcessingOutputInfo.getPostProcessDataType(varName).equals(DataProcessingOutputInfo.PostProcessDataType.image)){
+				return true;
+			}
+		}
+	}
+	if(outputContext != null){
+		for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
+			if(outputContext.getOutputFunctions()[i].getFunctionType().equals(VariableType.POSTPROCESSING) && outputContext.getOutputFunctions()[i].getName().equals(varName)){
+				return true;
+			}
+		}
+	}
+	return false;	
 }
 
 public File getDataProcessingOutputSourceFileHDF5(){

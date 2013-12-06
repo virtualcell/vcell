@@ -679,10 +679,13 @@ public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Exten
 }
 
 
+public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent, ISize size, RegionImage regionImage) throws IOException{
+	return createSimpleCartesianMesh(orig, extent, size, regionImage, false);
+}
 /**
  * This method was created by a SmartGuide.
  */
-public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent, ISize size, RegionImage regionImage) throws IOException{
+public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent, ISize size, RegionImage regionImage,boolean bCreateSubvolumeMap) throws IOException{
 	CartesianMesh mesh = new CartesianMesh();
 	mesh.setOrigin(orig);
 	mesh.setExtent(extent);
@@ -691,7 +694,11 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 	mesh.meshRegionInfo = new MeshRegionInfo();	
 	byte[] compressRegionBytes = BeanUtils.compress(regionImage.getShortEncodedRegionIndexImage());
 	mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes, mesh.getNumVolumeElements());
-	
+	if(bCreateSubvolumeMap){
+		for (int i = 0; i < regionImage.getNumRegions(); i++) {
+			mesh.meshRegionInfo.mapVolumeRegionToSubvolume(i, 0, 1, "region"+i);
+		}
+	}
 	return mesh;
 }
 
@@ -931,7 +938,7 @@ public CoordinateIndex getCoordinateIndexFromVolumeIndex(int volIndex) {
  */
 public int getDataLength(VariableType pdeVariableType) {
 	int num = 0;
-	if (pdeVariableType.equals(VariableType.VOLUME)) {
+	if (pdeVariableType.equals(VariableType.VOLUME) || pdeVariableType.equals(VariableType.POSTPROCESSING)) {
 		num = getSizeX() * getSizeY() * getSizeZ();
 	} else if (pdeVariableType.equals(VariableType.MEMBRANE)) {
 		num = (membraneElements == null ? 0 : membraneElements.length);

@@ -150,14 +150,15 @@ private BufferedImage getScaledRGBVolume(CartesianMesh mesh,int meshMode,int ima
  * @return int[]
  */
 public int[] getPixelsRGB(int imageScale,int membrScale,int meshMode,int volVarMembrOutlineThickness) {
-	if (getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME)) {
+	if (getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
+		getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.POSTPROCESSING)) {
 		CartesianMesh mesh = getServerPDEDataContext().getCartesianMesh();
 		MeshDisplayAdapter meshDisplayAdapter = new MeshDisplayAdapter(mesh);
 		BufferedImage bufferedImage = getScaledRGBVolume(mesh,meshMode,imageScale,false);
 		//
 		// apply curve renderer
 		//
-		if (volVarMembrOutlineThickness > 0){
+		if (!getServerPDEDataContext().getDataIdentifier().getVariableType().equals(VariableType.POSTPROCESSING) && volVarMembrOutlineThickness > 0){
 			cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
 				new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 			curveRenderer.setNormalAxis(getNormalAxis());
