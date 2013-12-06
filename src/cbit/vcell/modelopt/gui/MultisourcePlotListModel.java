@@ -10,6 +10,11 @@
 
 package cbit.vcell.modelopt.gui;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
@@ -28,6 +33,13 @@ public class MultisourcePlotListModel extends DefaultListModelCivilized implemen
 public MultisourcePlotListModel() {
 	super();
 	addPropertyChangeListener(this);
+}
+
+
+@Override
+public Object getElementAt(int index) {
+	// TODO Auto-generated method stub
+	return super.getElementAt(index);
 }
 
 
@@ -131,7 +143,27 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
+private ArrayList<SortDataReferenceHelper> sortDataReferenceHelpers;
+private boolean bSort = true;
+public void setSort(boolean bSort){
+	if(this.bSort == bSort){
+		return;
+	}
+	this.bSort = bSort;
+	firePropertyChange("dataSources", null, fieldDataSources);
+}
+public ArrayList<SortDataReferenceHelper> getSortedDataReferences(){
+	return sortDataReferenceHelpers;
+}
 
+public static class SortDataReferenceHelper{
+	public int unsortedIndex;
+	public DataReference dataReference;
+	public SortDataReferenceHelper(int unsortedIndex,DataReference dataReference) {
+		this.unsortedIndex = unsortedIndex;
+		this.dataReference = dataReference;
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/31/2005 4:18:09 PM)
@@ -140,7 +172,7 @@ private void refreshAll() {
 	//
 	// get list of objects (data names)
 	//
-	java.util.Vector<DataReference> dataReferenceList = new java.util.Vector<DataReference>();
+	sortDataReferenceHelpers = new ArrayList<SortDataReferenceHelper>();
 	for (int i = 0; getDataSources()!=null && i < getDataSources().length; i++){
 		DataSource dataSource = getDataSources(i);
 		String[] columnNames = dataSource.getColumnNames();
@@ -150,10 +182,30 @@ private void refreshAll() {
 			if (j == timeIndex){
 				continue;
 			}
-			dataReferenceList.add(new DataReference(dataSource, columnNames[j]));
+			sortDataReferenceHelpers.add(new SortDataReferenceHelper(sortDataReferenceHelpers.size(),new DataReference(dataSource, columnNames[j])));
 		}
 	}
-	setContents((dataReferenceList.size() > 0? BeanUtils.getArray(dataReferenceList,DataReference.class):null));
+	if(bSort && sortDataReferenceHelpers.size() > 0){
+		Collections.sort(sortDataReferenceHelpers, new Comparator<SortDataReferenceHelper>() {
+			@Override
+			public int compare(SortDataReferenceHelper o1, SortDataReferenceHelper o2) {
+				int idCompare = o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
+				if(idCompare == 0){
+					return o1.dataReference.getDataSource().getName().compareToIgnoreCase(o2.dataReference.getDataSource().getName());
+				}
+				return idCompare;
+			}
+		});
+	}
+	if(sortDataReferenceHelpers.size() > 0){
+		DataReference[] dataReferences = new DataReference[sortDataReferenceHelpers.size()];
+		for (int i = 0; i < dataReferences.length; i++) {
+			dataReferences[i] = sortDataReferenceHelpers.get(i).dataReference;
+		}
+		setContents(dataReferences);		
+	}else{
+		setContents(null);
+	}
 }
 
 
@@ -172,30 +224,44 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
 
-
 /**
  * Sets the dataSources property (cbit.vcell.modelopt.gui.DataSource[]) value.
  * @param dataSources The new value for the property.
  * @see #getDataSources
  */
-public void setDataSources(DataSource[] dataSources) {
+public void setDataSources(final DataSource[] dataSources) {
+//	if(dataSources != null && dataSources.length > 0){
+//		sortIndexes = new Integer[dataSources.length];
+//		for (int i = 0; i < dataSources.length; i++) {
+//			sortIndexes[i] = i;
+//		}
+//		Arrays.sort(sortIndexes, new Comparator<Integer>() {
+//			@Override
+//			public int compare(Integer o1, Integer o2) {
+//				dataSources[o1].
+//				return ;
+//			}
+//		});
+//	}else{
+//		sortIndexes = null;
+//	}
 	DataSource[] oldValue = fieldDataSources;
 	fieldDataSources = dataSources;
 	firePropertyChange("dataSources", oldValue, dataSources);
 }
 
-
-/**
- * Sets the dataSources index property (cbit.vcell.modelopt.gui.DataSource[]) value.
- * @param index The index value into the property array.
- * @param dataSources The new value for the property.
- * @see #getDataSources
- */
-public void setDataSources(int index, DataSource dataSources) {
-	DataSource oldValue = fieldDataSources[index];
-	fieldDataSources[index] = dataSources;
-	if (oldValue != null && !oldValue.equals(dataSources)) {
-		firePropertyChange("dataSources", null, fieldDataSources);
-	};
-}
+//
+///**
+// * Sets the dataSources index property (cbit.vcell.modelopt.gui.DataSource[]) value.
+// * @param index The index value into the property array.
+// * @param dataSources The new value for the property.
+// * @see #getDataSources
+// */
+//public void setDataSources(int index, DataSource dataSources) {
+//	DataSource oldValue = fieldDataSources[index];
+//	fieldDataSources[index] = dataSources;
+//	if (oldValue != null && !oldValue.equals(dataSources)) {
+//		firePropertyChange("dataSources", null, fieldDataSources);
+//	};
+//}
 }

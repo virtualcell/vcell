@@ -317,7 +317,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 								selectedColorIdx++;
 							}
 						}
-						int[] selectedIndices = multisourcePlotPane.getSelectedIndices();
+						int[] selectedIndices = multisourcePlotPane.getUnsortedSelectedIndices();
 						multisourcePlotPane.setDataSources(newDataSourceArr, selectedColors);
 						if(selectedIndices.length == 0)
 						{
@@ -325,7 +325,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 						}
 						else
 						{
-							multisourcePlotPane.setSelectedIndices(selectedIndices);
+							multisourcePlotPane.setUnsortedSelectedIndices(selectedIndices);
 						}
 					}
 				}
