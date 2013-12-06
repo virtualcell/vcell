@@ -11,6 +11,8 @@
 package cbit.vcell.modelopt.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import org.vcell.util.Range;
@@ -22,6 +24,12 @@ import cbit.plot.Plot2D;
 import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
+
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.JPanel;
+import javax.swing.JCheckBox;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -37,6 +45,8 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	
 	private Color[] autoContrastColors;
+	private JPanel panel;
+	private JCheckBox chckbxNewCheckBox;
 	
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -161,21 +171,9 @@ private void connPtoP3SetTarget() {
  * @return The dataSources property value.
  * @see #setDataSources
  */
-public DataSource[] getDataSources() {
+private DataSource[] getDataSources() {
 	return fieldDataSources;
 }
-
-
-/**
- * Gets the dataSources index property (cbit.vcell.modelopt.gui.DataSource) value.
- * @return The dataSources property value.
- * @param index The index value into the property array.
- * @see #setDataSources
- */
-public DataSource getDataSources(int index) {
-	return getDataSources()[index];
-}
-
 
 /**
  * Return the defaultListSelectionModelFixed property value.
@@ -220,13 +218,43 @@ private javax.swing.JList getJList1() {
 	return ivjJList1;
 }
 
-public int[] getSelectedIndices()
+public int[] getUnsortedSelectedIndices()
 {
-	return getJList1().getSelectedIndices();
+	int[] selectedIndices = getJList1().getSelectedIndices();
+	if(getmultisourcePlotListModel().getSortedDataReferences() != null){
+		if(getmultisourcePlotListModel().getSortedDataReferences().size() != getJList1().getModel().getSize()){
+			throw new RuntimeException(this.getClass().getName()+": sort size not match list size");
+		}
+		int[] unsortedSelectedIndices = new int[selectedIndices.length];
+		for (int i = 0; i < selectedIndices.length; i++) {
+			unsortedSelectedIndices[i] = getmultisourcePlotListModel().getSortedDataReferences().get(i).unsortedIndex;
+		}
+		return unsortedSelectedIndices;
+	}
+	return selectedIndices;
 }
 
-public void setSelectedIndices(int[] selectedIndices)
+public void setUnsortedSelectedIndices(int[] unsortedSelectedIndices)
 {
+	int[] selectedIndices = null;
+	if(unsortedSelectedIndices != null && getmultisourcePlotListModel().getSortedDataReferences() != null){
+		if(getmultisourcePlotListModel().getSortedDataReferences().size() != getJList1().getModel().getSize()){
+			throw new RuntimeException(this.getClass().getName()+": sort size not match list size");
+		}
+		int[] sortedSelectedIndices = new int[unsortedSelectedIndices.length];
+		for (int i = 0; i < unsortedSelectedIndices.length; i++) {
+			for (int j = 0; j < getmultisourcePlotListModel().getSortedDataReferences().size(); j++) {
+				if(getmultisourcePlotListModel().getSortedDataReferences().get(j).unsortedIndex == unsortedSelectedIndices[j]){
+					sortedSelectedIndices[i] = j;
+					break;
+				}
+			}
+		}
+		selectedIndices = sortedSelectedIndices;
+		
+	}else{
+		selectedIndices = unsortedSelectedIndices;
+	}
 	getJList1().setSelectedIndices(selectedIndices);
 }
 /**
@@ -334,8 +362,8 @@ private void initialize() {
 		setName("MultisourcePlotPane");
 		setLayout(new java.awt.BorderLayout());
 		setSize(568, 498);
+		add(getPanel(), BorderLayout.WEST);
 		add(getplotPane(), BorderLayout.CENTER);
-		add(getReferenceDataListScrollPane(), BorderLayout.WEST);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -418,7 +446,8 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 				double[] dependentValues = dataSource.getColumnData(i);
 				PlotData plotData = new PlotData(independentValues, dependentValues);
 				plotDataList.add(plotData);
-				colorV.add(autoContrastColors[selectedIndex]);
+				int unsortedSelecteIndex = (getmultisourcePlotListModel().getSortedDataReferences()==null?selectedIndex:getmultisourcePlotListModel().getSortedDataReferences().get(selectedIndex).unsortedIndex);
+				colorV.add(autoContrastColors[unsortedSelecteIndex]);
 				nameList.add(prefix+columnNames[i]);
 				renderHintList.add(dataSource.getRenderHints());
 				break;
@@ -475,21 +504,6 @@ public void setDataSources(DataSource[] dataSources, Color[] colorArray) {
 }
 
 /**
- * Sets the dataSources index property (cbit.vcell.modelopt.gui.DataSource[]) value.
- * @param index The index value into the property array.
- * @param dataSources The new value for the property.
- * @see #getDataSources
- */
-public void setDataSources(int index, DataSource dataSources) {
-	DataSource oldValue = fieldDataSources[index];
-	fieldDataSources[index] = dataSources;
-	if (oldValue != null && !oldValue.equals(dataSources)) {
-		firePropertyChange("dataSources", null, fieldDataSources);
-	};
-}
-
-
-/**
  * Method generated to support the promotion of the listVisible attribute.
  * @param arg1 boolean
  */
@@ -501,4 +515,40 @@ public void forceXYRange(Range xRange,Range yRange) {
 	getplotPane().forceXYRange(xRange, yRange);
 }
 
+	private JPanel getPanel() {
+		if (panel == null) {
+			panel = new JPanel();
+			panel.setLayout(new BorderLayout(0, 0));
+			panel.add(getReferenceDataListScrollPane(), BorderLayout.CENTER);
+//			panel.add(getChckbxNewCheckBox(), BorderLayout.SOUTH);
+		}
+		return panel;
+	}
+//	private JCheckBox getChckbxNewCheckBox() {
+//		if (chckbxNewCheckBox == null) {
+//			chckbxNewCheckBox = new JCheckBox("Sort");
+//			chckbxNewCheckBox.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					Object[] selectedValues = getJList1().getSelectedValues();
+//					getmultisourcePlotListModel().setSort(chckbxNewCheckBox.isSelected());
+//					if(selectedValues != null && selectedValues.length > 0){
+//						int[] selectedIndices = new int[selectedValues.length];
+//						for (int j = 0; j < selectedValues.length; j++) {
+//							DataReference selectedDataReference = (DataReference)selectedValues[j];
+//							for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+//								DataReference dataReference = (DataReference)((AbstractListModel)(getJList1().getModel())).getElementAt(i);
+//								if(selectedDataReference.getIdentifier().equals(dataReference.getIdentifier()) && selectedDataReference.getDataSource().getName().equals(dataReference.getDataSource().getName())){
+//									selectedIndices[j] = i;
+//									break;
+//								}
+//							}
+//						}
+//						getJList1().setSelectedIndices(selectedIndices);
+//					}
+//				}
+//			});
+//		}
+//		return chckbxNewCheckBox;
+//	}
 }
