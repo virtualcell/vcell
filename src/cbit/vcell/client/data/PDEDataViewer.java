@@ -544,7 +544,7 @@ public class PDEDataViewer extends DataViewer {
 		public boolean isDefined(DataIdentifier dataIdentifier,int dataIndex){
 			try {
 				Domain varDomain = dataIdentifier.getDomain();
-				if (varDomain == null) {
+				if (varDomain == null || dataIdentifier.getVariableType().equals(VariableType.POSTPROCESSING)) {
 					return true;
 				}
 				VariableType varType = dataIdentifier.getVariableType();
@@ -1630,6 +1630,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 												getClientTaskStatusSupport().setMessage("Creating Post Process GUI...");
 											}
 											final PDEDataViewer postProcessPdeDataViewer = new PDEDataViewer();
+//System.out.println("----------parentPDEDV="+PDEDataViewer.this.hashCode()+" PostProcessPDEDV="+postProcessPdeDataViewer.hashCode());
 											postProcessPdeDataViewerPanel.add(postProcessPdeDataViewer,BorderLayout.CENTER);
 											postProcessPdeDataViewer.getPDEPlotControlPanel1().setPostProcessingMode(true);
 											postProcessPdeDataViewer.setPostProcessingPanelVisible(false);
@@ -1657,6 +1658,33 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 											}
 											final PDEDataViewer postProcessPdeDataViewer = (PDEDataViewer)hashTable.get(POST_PROCESS_PDEDV);
 											postProcessPdeDataViewer.setPdeDataContext((PostProcessDataPDEDataContext)hashTable.get(POST_PROCESS_PDEDC));
+											SimulationModelInfo simulationModelInfo =
+													new SimulationModelInfo() {
+														@Override
+														public String getVolumeNamePhysiology(int subVolumeID) {
+															return "PostProcess";
+														}
+														@Override
+														public String getVolumeNameGeometry(int subVolumeID) {
+															return "PostProcess";
+														}
+														@Override
+														public String getSimulationName() {
+															return PDEDataViewer.this.getSimulationModelInfo().getSimulationName();
+														}
+														@Override
+														public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut,boolean bFromGeometry) {
+															return "PostProcess";
+														}
+														@Override
+														public String getContextName() {
+															return PDEDataViewer.this.getSimulationModelInfo().getContextName();
+														}
+													};
+											postProcessPdeDataViewer.setSimulationModelInfo(simulationModelInfo);
+											postProcessPdeDataViewer.setSimNameSimDataID(
+												new ExportSpecs.SimNameSimDataID(PDEDataViewer.this.getSimulation().getName(),
+														PDEDataViewer.this.getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null));
 											PDEDataViewer.this.getPdeDataContext().addPropertyChangeListener(new PropertyChangeListener() {
 												@Override
 												public void propertyChange(PropertyChangeEvent evt) {
@@ -1755,29 +1783,28 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 //				DataIdentifier[] dataIdentifiers;
 				
 				@Override
-				public ExportEvent makeRemoteFile(OutputContext outputContext,
-						ExportSpecs exportSpecs) throws DataAccessException,
-						RemoteException {
-					// TODO Auto-generated method stub
-					return null;
+				public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException,RemoteException {
+					throw new DataAccessException("Not implemented");
 				}
 				
 				@Override
 				public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException,DataAccessException {
-					DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
-							new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
-					DataOperationResults.DataProcessingOutputTimeSeriesValues dataopDataProcessingOutputTimeSeriesValues =
-							(DataOperationResults.DataProcessingOutputTimeSeriesValues)parentPDEDataContext.doDataOperation(dataProcessingOutputTimeSeriesOP);
-					return dataopDataProcessingOutputTimeSeriesValues.getTimeSeriesJobResults();
+					return parentPDEDataContext.getDataManager().getTimeSeriesValues(timeSeriesJobSpec);
+//					DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
+//							new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
+//					DataOperationResults.DataProcessingOutputTimeSeriesValues dataopDataProcessingOutputTimeSeriesValues =
+//							(DataOperationResults.DataProcessingOutputTimeSeriesValues)parentPDEDataContext.doDataOperation(dataProcessingOutputTimeSeriesOP);
+//					return dataopDataProcessingOutputTimeSeriesValues.getTimeSeriesJobResults();
 				}
 				
 				@Override
-				public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {													
-					DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
-							parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
-					PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdataID.getOwner(), vcdataID.getID(), varName, time, Long.MIN_VALUE);
-					SimDataBlock simDataBlock = new SimDataBlock(pdeDataInfo, dataProcessingOutputValues.getDataValues()[0], VariableType.POSTPROCESSING);
-					return simDataBlock;
+				public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {
+					return parentPDEDataContext.getDataManager().getSimDataBlock(varName, time);
+//					DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
+//							parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
+//					PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdataID.getOwner(), vcdataID.getID(), varName, time, Long.MIN_VALUE);
+//					SimDataBlock simDataBlock = new SimDataBlock(pdeDataInfo, dataProcessingOutputValues.getDataValues()[0], VariableType.POSTPROCESSING);
+//					return simDataBlock;
 				}
 				
 				@Override
@@ -1934,7 +1961,7 @@ private static class PostProcessDataPDEDataContext extends NewClientPDEDataConte
 		return CartesianMesh.createSimpleCartesianMesh(
 					dataProcessingOutputInfo.getVariableOrigin(varName),
 					varExtent,
-					varISize, regionImage);
+					varISize, regionImage,true);
 	}
 
 	@Override

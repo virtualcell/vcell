@@ -2414,6 +2414,7 @@ private void startExport() {
 						if(varSelectionDataIdnetDataIdentifier != null){
 							selectionHasVolumeVariables = selectionHasVolumeVariables ||
 								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.VOLUME) ||
+								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.POSTPROCESSING) ||
 								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.VOLUME_REGION);
 							selectionHasMembraneVariables = selectionHasMembraneVariables ||
 								varSelectionDataIdnetDataIdentifier.getVariableType().equals(VariableType.MEMBRANE) ||
@@ -2624,7 +2625,7 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 			String varListName = dataIDArr[i].getName();//"("+vmPrefix+")  "+dataIDArr[i].getName();
 			if(getBothVarRadioButton().isSelected()){
 				dataIdentifierTreeSet.add(varListName);
-			}else if(getVolVarRadioButton().isSelected() && dataIDArr[i].getVariableType().equals(VariableType.VOLUME)){
+			}else if(getVolVarRadioButton().isSelected() && (dataIDArr[i].getVariableType().equals(VariableType.VOLUME) || dataIDArr[i].getVariableType().equals(VariableType.POSTPROCESSING))){
 				dataIdentifierTreeSet.add(varListName);
 			}else if(getMembVarRadioButton().isSelected() && dataIDArr[i].getVariableType().equals(VariableType.MEMBRANE)){
 				dataIdentifierTreeSet.add(varListName);

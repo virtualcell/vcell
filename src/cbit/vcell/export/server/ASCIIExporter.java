@@ -598,7 +598,7 @@ private FileBackedDataContainer getSlice(OutputContext outputContext,User user, 
 	
 //	StringBuffer buffer = new StringBuffer();
 
-	if (simDataBlock.getVariableType().equals(VariableType.VOLUME)) {
+	if (simDataBlock.getVariableType().equals(VariableType.VOLUME) || simDataBlock.getVariableType().equals(VariableType.POSTPROCESSING)) {
 		//
 		// put data in csv format
 		//
