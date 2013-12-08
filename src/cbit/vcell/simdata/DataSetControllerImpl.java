@@ -685,8 +685,11 @@ private static class DataProcessingHelper{
 	public boolean isInfoOnly(){
 		return specificVarNames == null;
 	}
+	public int getNumImageVars(){
+		return (imageNames==null?0:imageNames.size());
+	}
 	public String[] getVarNames(){
-		String[] arr = new String[statVarNames.length+imageNames.size()];
+		String[] arr = new String[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = statVarNames[i];
@@ -697,10 +700,10 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public ISize[] getVarISizes(){
-		if(imageISize.size() == 0){
+		if(getNumImageVars() == 0){
 			return null;
 		}
-		ISize[] arr = new ISize[statVarNames.length+imageNames.size()];
+		ISize[] arr = new ISize[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = null;
@@ -711,10 +714,10 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public Origin[] getVarOrigins(){
-		if(imageOrigin.size() == 0){
+		if(getNumImageVars() == 0){
 			return null;
 		}
-		Origin[] arr = new Origin[statVarNames.length+imageNames.size()];
+		Origin[] arr = new Origin[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = null;
@@ -725,10 +728,10 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public Extent[] getVarExtents(){
-		if(imageExtent.size() == 0){
+		if(getNumImageVars() == 0){
 			return null;
 		}
-		Extent[] arr = new Extent[statVarNames.length+imageNames.size()];
+		Extent[] arr = new Extent[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = null;
@@ -739,7 +742,7 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public String[] getVarUnits(){
-		String[] arr = new String[statVarNames.length+imageNames.size()];
+		String[] arr = new String[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = statVarUnits[i];
@@ -750,7 +753,7 @@ private static class DataProcessingHelper{
 		return arr;
 	}
 	public DataOperationResults.DataProcessingOutputInfo.PostProcessDataType[] getPostProcessDataTypes(){
-		DataOperationResults.DataProcessingOutputInfo.PostProcessDataType[] arr = new DataOperationResults.DataProcessingOutputInfo.PostProcessDataType[statVarNames.length+imageNames.size()];
+		DataOperationResults.DataProcessingOutputInfo.PostProcessDataType[] arr = new DataOperationResults.DataProcessingOutputInfo.PostProcessDataType[statVarNames.length+getNumImageVars()];
 		for (int i = 0; i < arr.length; i++) {
 			if(i < statVarNames.length){
 				arr[i] = DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.statistic;
