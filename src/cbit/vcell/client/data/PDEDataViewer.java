@@ -110,6 +110,7 @@ import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperationResults;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
@@ -1621,11 +1622,45 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 						}else if(ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_IMAGE_TABNAME)){
 							try{
 								final DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, DocumentWindow.class);
+								final String HAS_SPATIAL = "HAS_SPATIAL_KEY";
 								if(postProcessPdeDataViewerPanel.getComponentCount() == 0){
+									AsynchClientTask postProcessInfoTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+										@Override
+										public void run(Hashtable<String, Object> hashTable) throws Exception {
+											if(getClientTaskStatusSupport() != null){
+												getClientTaskStatusSupport().setMessage("Getting Post Process Info...");
+											}
+											//Get PostProcess Image state variables info
+											DataProcessingOutputInfoOP dataProcessingOutputInfoOP =
+												new DataProcessingOutputInfoOP(PDEDataViewer.this.getPdeDataContext().getVCDataIdentifier(), false, null);
+											DataProcessingOutputInfo dataProcessingOutputInfo = 
+													(DataProcessingOutputInfo)PDEDataViewer.this.getPdeDataContext().doDataOperation(dataProcessingOutputInfoOP);
+											if(dataProcessingOutputInfo != null && dataProcessingOutputInfo.getVariableNames() != null){
+												boolean bFoundImageStateVariables = false;
+												for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+													if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataProcessingOutputInfo.PostProcessDataType.image)){
+														bFoundImageStateVariables = true;
+														break;
+													}
+												}
+												if(!bFoundImageStateVariables){
+													hashTable.put(HAS_SPATIAL, Boolean.FALSE);
+												}else{
+													hashTable.put(HAS_SPATIAL, Boolean.TRUE);
+												}
+											}else{
+												hashTable.put(HAS_SPATIAL, Boolean.FALSE);
+											}
+										}
+									};
 									final String POST_PROCESS_PDEDV = "POST_PROCESS_PDEDV";
 									AsynchClientTask createPostProcessPDEDataViewer = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
+											if(((Boolean)hashTable.get(HAS_SPATIAL)).equals(Boolean.FALSE)){
+												postProcessPdeDataViewerPanel.add(new JLabel("No Spatial Post Processing Data"),BorderLayout.CENTER);
+												throw UserCancelException.CANCEL_GENERIC;
+											}
 											if(getClientTaskStatusSupport() != null){
 												getClientTaskStatusSupport().setMessage("Creating Post Process GUI...");
 											}
@@ -1704,7 +1739,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 										}
 									};
 
-									ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(), new AsynchClientTask[] {createPostProcessPDEDataViewer,postProcessPDEDCTask,setPostProcessPDEDatacontext},true, false, false, null, true);
+									ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(), new AsynchClientTask[] {postProcessInfoTask,createPostProcessPDEDataViewer,postProcessPDEDCTask,setPostProcessPDEDatacontext},true, false, false, null, true);
 
 									
 //									final PDEDataViewer postProcessPdeDataViewer = new PDEDataViewer();

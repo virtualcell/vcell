@@ -2148,9 +2148,10 @@ private void refreshDataProcessingOutputInfo(OutputContext outputContext) throws
 	boolean bFunctionsEqual = Compare.isEqualOrNull(lastFunctions, currentFunctions);
 	if(!bFunctionsEqual || dataProcessingOutputInfo == null || (dataProcessingOutputFile.exists() && lastDataProcessingOutputInfoTime != dataProcessingOutputFile.lastModified())){
 		lastDataProcessingOutputInfoTime = dataProcessingOutputFile.lastModified();
+		lastOutputContext = outputContext;
 		DataProcessingOutputInfoOP dataProcessingOutputInfoOP = new DataProcessingOutputInfoOP(vcDataId, false, outputContext);
 		try{
-		dataProcessingOutputInfo = (DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(dataProcessingOutputInfoOP, dataProcessingOutputFile);
+			dataProcessingOutputInfo = (DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(dataProcessingOutputInfoOP, dataProcessingOutputFile);
 		}catch(Exception e){
 			throw new DataAccessException(e.getMessage(),(e.getCause()==null?e:e.getCause()));
 		}
