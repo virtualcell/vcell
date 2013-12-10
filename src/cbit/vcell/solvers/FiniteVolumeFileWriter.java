@@ -49,7 +49,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.geometry.surface.DistanceMapGenerator;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -306,6 +305,7 @@ public void write(String[] parameterNames) throws Exception {
 		writeModelDescription();
 		writeChomboSpec();
 		writeVariables();
+		writePostProcessingBlock();
 		writeCompartments();
 		writeMembranes();
 	}
@@ -378,13 +378,17 @@ private void writeSmoldyn() throws Exception {
 	printWriter.println();
 }
 
-private void writePostProcessingBlock() throws Exception{ // SolverException, ExpressionException and exceptions from roiDataGenerator.getROIDataGeneratorDescription()
+private void writePostProcessingBlock() throws Exception { // SolverException, ExpressionException and exceptions from roiDataGenerator.getROIDataGeneratorDescription()
 	PostProcessingBlock postProcessingBlock = simTask.getSimulation().getMathDescription().getPostProcessingBlock();
 	if (postProcessingBlock.getNumDataGenerators() == 0) { // to make c++ code write default var statisitcs, without the token it won't write anything
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
 		printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_END);
 		printWriter.println();
 		return;
+	}
+	if (bChomboSolver && postProcessingBlock.getDataGeneratorList().size() > 0)
+	{
+		throw new Exception("Data generators are not supported by " + simTask.getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel());
 	}
 	printWriter.println(" # Post Processing Block");
 	printWriter.println(FVInputFileKeyword.POST_PROCESSING_BLOCK_BEGIN);
@@ -1457,7 +1461,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		} else if (vars[i] instanceof VolVariable) {
 			if (bChomboSolver && domainName == null)
 			{
-				throw new MathException(SolverDescription.Chombo.getDisplayLabel() + " requires all variables are defined in a domain");
+				throw new MathException(simTask.getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel() + " requires that every variable is defined in a single domain");
 			}
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
@@ -1515,7 +1519,7 @@ private void writeVariables() throws MathException, ExpressionException, IOExcep
 		} else if (vars[i] instanceof MemVariable) {
 			if (bChomboSolver && domainName == null)
 			{
-				throw new MathException(SolverDescription.Chombo.getDisplayLabel() + " requires all variables are defined in a domain");
+				throw new MathException(simTask.getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel() + " requires that every variable is defined in a single domain");
 			}
 			MemVariable memVar = (MemVariable)vars[i];
 			if (mathDesc.isPDE(memVar)) {
@@ -1871,7 +1875,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		int dimension = geometrySpec.getDimension();
 		if (dimension == 1)
 		{
-			throw new SolverException(SolverDescription.Chombo + " is only supported for simulations with 2D or 3D geometry.");
+			throw new SolverException(simTask.getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel() + " is only supported for simulations with 2D or 3D geometry.");
 		}
 		Simulation simulation = getSimulationTask().getSimulation();
 		SolverTaskDescription solverTaskDescription = simulation.getSolverTaskDescription();
