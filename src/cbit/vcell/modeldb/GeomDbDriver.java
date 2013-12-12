@@ -21,6 +21,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
+import org.vcell.util.Extent;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
@@ -35,6 +36,7 @@ import cbit.image.GifParsingException;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
+import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
@@ -841,11 +843,33 @@ private void insertBrowseImageDataSQL(Connection con, KeyValue key, KeyValue ima
 		browseImageDataTable.getSQLValueList(key, imageKey);
 	//	System.out.println(sql);
 
+	byte[] gifEncodedImage = null;
+	try{
+		if(image != null){
+			if(image.getNumZ() > 1){
+				byte[] sliceBytes = new byte[image.getNumX()*image.getNumY()];
+				System.arraycopy(image.getPixels(), 0, sliceBytes, 0, sliceBytes.length);
+				gifEncodedImage =
+					BrowseImage.makeBrowseGIFImage(
+						new VCImageUncompressed(null, sliceBytes, new Extent(1, 1, 1), image.getNumX(),image.getNumY(), 1)).getGifEncodedData();
+			}else{
+				gifEncodedImage = BrowseImage.makeBrowseGIFImage(image).getGifEncodedData();				
+			}
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+	}
+	if(gifEncodedImage == null){
+		gifEncodedImage =
+			BrowseImage.makeBrowseGIFImage(
+				new VCImageUncompressed(null, new byte[BrowseImage.BROWSE_XSIZE*BrowseImage.BROWSE_YSIZE], new Extent(1, 1, 1), BrowseImage.BROWSE_XSIZE, BrowseImage.BROWSE_YSIZE, 1)).getGifEncodedData();
+		
+	}
 	updateCleanSQL(con,sql);
 	updateCleanLOB(	con,browseImageDataTable.id.toString(),key,
 					browseImageDataTable.tableName,
 					browseImageDataTable.data.getUnqualifiedColName(),
-					BrowseImage.makeBrowseGIFImage(image).getGifEncodedData());
+					gifEncodedImage);
 	/*
 	PreparedStatement pps;
 	pps = con.prepareStatement(sql);
