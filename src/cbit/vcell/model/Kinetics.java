@@ -14,21 +14,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AbstractNameScope;
@@ -39,7 +37,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 /**
@@ -67,7 +64,6 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static String GTK_ReactionRate_oldname = "reaction rate";
 	public static String GTK_CurrentDensity_oldname = "inward current density";
 
-	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
 	public static final int ROLE_UserDefined	= 0;
 	public static final int ROLE_ReactionRate	= 1;
@@ -144,6 +140,15 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.Concentration_Reactant1,
 		VCMODL.Concentration_Reactant2,
 	};
+	
+	/**
+	 * this are tags known to be used in future models of VCell; use to
+	 * provide appropriate warning message to user
+	 */
+	private static final String UnsupportedFutureRoleTags[] = {
+		"ChargeValence"
+	};
+	
 
 	private static final String DefaultNames[] = {
 		null,
@@ -192,7 +197,26 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conc_reactant1
 		new RealInterval(0,Double.POSITIVE_INFINITY) // Conc_reactant2
 	};
-
+	
+	/**
+	 * make sure same String is not in {@link #RoleTags} and {@link #UnsupportedFutureRoleTags}
+	 * @return true if not (things are good)
+	 */
+	private static boolean tagNotDuplicated( ) {
+		for (String r: RoleTags) {
+			for (String u: UnsupportedFutureRoleTags) {
+				if (r.equals(u)) {
+					System.err.println("duplicated tag " + r);
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	static {
+		assert(tagNotDuplicated());
+	}
 
 	public class KineticsParameter extends Parameter implements ExpressionContainer {
 		
@@ -857,7 +881,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 }
 
 
-public final void fromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException {
+public final void fromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException, DataAccessException {
 	try {
 		reading(true);
 		ArrayList<KineticsParameter> localKineticParameters = getKineticsParametersFromTokens(kinetics_vcmlStr);
@@ -882,7 +906,7 @@ public final void fromTokens(String kinetics_vcmlStr) throws ExpressionException
 
 
 
-private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException {
+private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kinetics_vcmlStr) throws ExpressionException, PropertyVetoException, DataAccessException {
 	//
 	//  old format (version 1) (still supported for reading)
 	//
@@ -943,8 +967,11 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	
 	
 	CommentStringTokenizer tokens = new CommentStringTokenizer(kinetics_vcmlStr);
+	@SuppressWarnings("unused")
 	String kineticsKeywordToken = tokens.nextToken();
+	@SuppressWarnings("unused")
 	String kineticsNameToken = tokens.nextToken();
+	@SuppressWarnings("unused")
 	String beginBraceToken = tokens.nextToken(); // read "{"
 	ModelUnitSystem unitSystem = reactionStep.getModel().getUnitSystem();
 	
@@ -994,7 +1021,8 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 		// assume that this line is a reserved ROLE
 		//
 		KineticsParameter parameterForRole = null;
-		for (int i = 0; i < RoleTags.length; i++){
+		//loop until parameterForRole set 
+		for (int i = 0; (parameterForRole == null) && i < RoleTags.length; i++){
 			if (firstTokenOfLine.equalsIgnoreCase(RoleTags[i])){
 				//
 				// get the parameter with this reserved role
@@ -1018,6 +1046,17 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 				}	
 			}
 		}
+		
+		if (parameterForRole == null) {
+			//something is wrong -- check for future role tag to improve error message
+			for (int i = 0; i < UnsupportedFutureRoleTags.length; i++){
+				if (firstTokenOfLine.equalsIgnoreCase(UnsupportedFutureRoleTags[i])) {
+					throw new DataAccessException("Model was saved in newer version of virtual cell.");
+				}
+			}
+			throw new DataAccessException("unrecognized token " + firstTokenOfLine + " in kinetic law " + this.getKineticsDescription().getName());
+		}
+		
 
 		String nextTokenAfterRole = tokens.nextToken();
 		if (nextTokenAfterRole.endsWith("'") && nextTokenAfterRole.startsWith("'")){
