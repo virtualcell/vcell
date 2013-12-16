@@ -52,6 +52,7 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
@@ -97,6 +98,7 @@ public class PDEPlotControlPanel extends JPanel {
 
 	public static interface DataIdentifierFilter{
 		boolean accept(String filterSetName,DataIdentifier dataidentifier);
+		ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers);
 		String[] getFilterSetNames();
 		String getDefaultFilterName();
 		boolean isAcceptAll(String filterSetName);
@@ -104,70 +106,109 @@ public class PDEPlotControlPanel extends JPanel {
 		boolean isPostProcessingMode();
 	};
 	
-	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
-		new DataIdentifierFilter(){
-			private boolean bPostProcessingMode = false;
-			private String ALL = "All Variables";
-			private String VOLUME_FILTER_SET = "Volume Variables";
-			private String MEMBRANE_FILTER_SET = "Membrane Variables";
-			private String USER_DEFINED_FILTER_SET = "User Functions";
-			private String REGION_SIZE_FILTER_SET = "Region Sizes";
-			private String[] FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
-			public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
-				if (bPostProcessingMode && dataidentifier.getVariableType().equals(VariableType.POSTPROCESSING)){
-					return true;
+	public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
+		private boolean bPostProcessingMode = false;
+		private String ALL = "All Variables";
+		private String VOLUME_FILTER_SET = "Volume Variables";
+		private String MEMBRANE_FILTER_SET = "Membrane Variables";
+		private String USER_DEFINED_FILTER_SET = "User Functions";
+		private String REGION_SIZE_FILTER_SET = "Region Sizes";
+		private String SPECIES_FILTER_SET = SimulationWorkspaceModelInfo.FilterType.Species.toString();
+		private String FLUX_FILTER_SET = SimulationWorkspaceModelInfo.FilterType.Flux.toString();
+		private String[] FILTER_SET_NAMES;
+		private SimulationWorkspaceModelInfo simulationWorkspaceModelInfo;
+		public DefaultDataIdentifierFilter(){
+			this(null);
+		}
+		public DefaultDataIdentifierFilter(SimulationWorkspaceModelInfo simulationWorkspaceModelInfo){
+			this.simulationWorkspaceModelInfo = simulationWorkspaceModelInfo;
+			FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
+			if(simulationWorkspaceModelInfo != null){
+				String[] temp = new String[FILTER_SET_NAMES.length+2];
+				System.arraycopy(FILTER_SET_NAMES, 0, temp, 0, FILTER_SET_NAMES.length);
+				temp[FILTER_SET_NAMES.length] = SPECIES_FILTER_SET;
+				temp[FILTER_SET_NAMES.length+1] = FLUX_FILTER_SET;
+				FILTER_SET_NAMES = temp;
+			}
+		}
+		public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] filterTheseDataIdentifiers) {
+			if(filterSetName.equals(SPECIES_FILTER_SET) || filterSetName.equals(FLUX_FILTER_SET)){
+				if(simulationWorkspaceModelInfo != null){
+					try{
+						return simulationWorkspaceModelInfo.filter(
+							filterTheseDataIdentifiers,SimulationWorkspaceModelInfo.FilterType.valueOf(filterSetName));
+					}catch(Exception e){
+						e.printStackTrace();
+					}
 				}
-				if (!bPostProcessingMode && dataidentifier.getVariableType().equals(VariableType.POSTPROCESSING)){
-					return false;
+				return null;
+			}
+			
+			ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
+			for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
+				if (bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
+					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+					continue;
 				}
-				String varName = dataidentifier.getName();
+				if (!bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
+					continue;
+				}
+				String varName = filterTheseDataIdentifiers[i].getName();
 				boolean bSizeVar = varName.startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName()) 
 						|| varName.startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
 								|| varName.startsWith(MathMapping.PARAMETER_SIZE_FUNCTION_PREFIX);
 				
-				if (filterSetName.equals(REGION_SIZE_FILTER_SET)) {
-					return bSizeVar;
+				if (filterSetName.equals(REGION_SIZE_FILTER_SET) && bSizeVar) {
+					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+					continue;
 				}
-				if (bSizeVar) {
-					return false;
+				if (!filterSetName.equals(REGION_SIZE_FILTER_SET) && bSizeVar) {
+					continue;
 				}
 				
 				if(filterSetName.equals(ALL)){
-					return true;
-				}else if(filterSetName.equals(VOLUME_FILTER_SET)){
-					return dataidentifier.getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME);
-				}else if(filterSetName.equals(MEMBRANE_FILTER_SET)){
-					return dataidentifier.getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_MEMBRANE);
+					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+				}else if(filterSetName.equals(VOLUME_FILTER_SET) && filterTheseDataIdentifiers[i].getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_VOLUME)){
+					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+				}else if(filterSetName.equals(MEMBRANE_FILTER_SET) && filterTheseDataIdentifiers[i].getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_MEMBRANE)){
+					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
 				}else if(filterSetName.equals(USER_DEFINED_FILTER_SET)){
 					if(functionsList != null){
 						for (AnnotatedFunction f : functionsList) {
 							if(!f.isPredefined() && f.getName().equals(varName)){
-								return true;
+								acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+								break;
 							}
 						}
 					}
-					return false;
 				}
-				throw new IllegalArgumentException("PDEPlotControlPanel.DEFAULT_DATAIDENTIFIER_FILTE: Unknown Filter name "+filterSetName);
 			}
-			public String getDefaultFilterName() {
-				return ALL;
+			if(acceptedDataIdentifiers.size() > 0){
+				return acceptedDataIdentifiers;
 			}
-			public String[] getFilterSetNames() {
-				return FILTER_SET_NAMES;
-			}
-			public boolean isAcceptAll(String filterSetName){
-				return filterSetName.equals(ALL);
-			}
-			public boolean isPostProcessingMode() {
-				return bPostProcessingMode;
-			}
-			public void setPostProcessingMode(boolean bPostProcessingMode) {
-				this.bPostProcessingMode = bPostProcessingMode;
-			}
-		};
+			return null;
+		}
+		public String getDefaultFilterName() {
+			return ALL;
+		}
+		public String[] getFilterSetNames() {
+			return FILTER_SET_NAMES;
+		}
+		public boolean isAcceptAll(String filterSetName){
+			return filterSetName.equals(ALL);
+		}
+		public boolean isPostProcessingMode() {
+			return bPostProcessingMode;
+		}
+		public void setPostProcessingMode(boolean bPostProcessingMode) {
+			this.bPostProcessingMode = bPostProcessingMode;
+		}
+		public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+			return accept(filterSetName, new DataIdentifier[] {dataidentifier}) != null;
+		}
+	};
 	
-	private DataIdentifierFilter dataIdentifierFilter = DEFAULT_DATAIDENTIFIER_FILTER;
+	private DataIdentifierFilter dataIdentifierFilter;// = new DefaultDataIdentifierFilter();
 	
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
@@ -229,7 +270,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
-	setDataIdentifierFilter(DEFAULT_DATAIDENTIFIER_FILTER);
+	setDataIdentifierFilter(new DefaultDataIdentifierFilter());
 }
 
 public void viewFunction() {
@@ -622,11 +663,12 @@ private void filterVariableNames(){
 			}
 		};
 		
-		AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		final ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
+		AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
-				ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
+				
 				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
 					DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
 					DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
@@ -641,14 +683,25 @@ private void filterVariableNames(){
 						}
 					});
 		
-					for(DataIdentifier di : dataIdentifierArr){
-						if(dataIdentifierFilter == null || dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), di)){
-							displayDataIdentifiers.add(di);
+					if(dataIdentifierFilter == null){
+						displayDataIdentifiers.addAll(Arrays.asList(dataIdentifierArr));
+					}else{
+						ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr);
+						if(acceptedDataIdentifiers != null){
+							displayDataIdentifiers.addAll(acceptedDataIdentifiers);
 						}
 					}
 				}
+			}
+		};
+		
+		AsynchClientTask task3 = new AsynchClientTask("Update filtered variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				getDefaultListModelCivilized1().removeListDataListener(ivjEventHandler);
 				getDefaultListModelCivilized1().setContents(displayDataIdentifiers.size() == 0?null:displayDataIdentifiers.toArray(new DataIdentifier[0]));
-				
+				getJList1().clearSelection();
+				getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 				if(getJList1().getModel().getSize() > 0){
 					if(oldselection == null){
 						getJList1().setSelectedIndex(0);
@@ -668,8 +721,9 @@ private void filterVariableNames(){
 					
 				}
 			}
+			
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3});
 	}
 }
 
