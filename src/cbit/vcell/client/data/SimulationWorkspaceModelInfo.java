@@ -19,15 +19,14 @@ import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.SimulationOwner;
@@ -176,6 +175,25 @@ public String getVolumeNameGeometry(int subVolumeID) {
 	}
 	
 	return results;
+}
+public String[] getFilterNames(){
+	if(simulationOwner instanceof SimulationContext){
+		ArrayList<String> filterNames = new ArrayList<String>();
+		for(FilterType filterType:FilterType.values()){
+			filterNames.add(filterType.toString());
+		}
+		return filterNames.toArray(new String[0]);		
+	}
+	return null;
+}
+public boolean hasFilter(String filterName){
+	String[] filterNames = getFilterNames();
+	for (int i = 0; filterNames != null && i < filterNames.length; i++) {
+		if(filterNames[i].equals(filterName)){
+			return true;
+		}
+	}
+	return false;
 }
 public static enum FilterType {Species,Flux};
 public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifiers,FilterType filterType) throws Exception{

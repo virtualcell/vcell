@@ -361,7 +361,7 @@ public class PDEDataViewer extends DataViewer {
 					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
 						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo){
+						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
 							getPDEPlotControlPanel1().setDataIdentifierFilter(getPDEPlotControlPanel1().new DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
 						}
 					} else {

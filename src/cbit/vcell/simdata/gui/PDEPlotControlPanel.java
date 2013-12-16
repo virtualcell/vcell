@@ -113,8 +113,6 @@ public class PDEPlotControlPanel extends JPanel {
 		private String MEMBRANE_FILTER_SET = "Membrane Variables";
 		private String USER_DEFINED_FILTER_SET = "User Functions";
 		private String REGION_SIZE_FILTER_SET = "Region Sizes";
-		private String SPECIES_FILTER_SET = SimulationWorkspaceModelInfo.FilterType.Species.toString();
-		private String FLUX_FILTER_SET = SimulationWorkspaceModelInfo.FilterType.Flux.toString();
 		private String[] FILTER_SET_NAMES;
 		private SimulationWorkspaceModelInfo simulationWorkspaceModelInfo;
 		public DefaultDataIdentifierFilter(){
@@ -123,27 +121,23 @@ public class PDEPlotControlPanel extends JPanel {
 		public DefaultDataIdentifierFilter(SimulationWorkspaceModelInfo simulationWorkspaceModelInfo){
 			this.simulationWorkspaceModelInfo = simulationWorkspaceModelInfo;
 			FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
-			if(simulationWorkspaceModelInfo != null){
-				String[] temp = new String[FILTER_SET_NAMES.length+2];
+			if(simulationWorkspaceModelInfo != null && simulationWorkspaceModelInfo.getFilterNames() != null){
+				String[] temp = new String[FILTER_SET_NAMES.length+simulationWorkspaceModelInfo.getFilterNames().length];
 				System.arraycopy(FILTER_SET_NAMES, 0, temp, 0, FILTER_SET_NAMES.length);
-				temp[FILTER_SET_NAMES.length] = SPECIES_FILTER_SET;
-				temp[FILTER_SET_NAMES.length+1] = FLUX_FILTER_SET;
+				System.arraycopy(simulationWorkspaceModelInfo.getFilterNames(),0, temp, FILTER_SET_NAMES.length, simulationWorkspaceModelInfo.getFilterNames().length);
 				FILTER_SET_NAMES = temp;
 			}
 		}
 		public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] filterTheseDataIdentifiers) {
-			if(filterSetName.equals(SPECIES_FILTER_SET) || filterSetName.equals(FLUX_FILTER_SET)){
-				if(simulationWorkspaceModelInfo != null){
+			if(simulationWorkspaceModelInfo != null){
+				if(simulationWorkspaceModelInfo.hasFilter(filterSetName)){
 					try{
-						return simulationWorkspaceModelInfo.filter(
-							filterTheseDataIdentifiers,SimulationWorkspaceModelInfo.FilterType.valueOf(filterSetName));
+						return simulationWorkspaceModelInfo.filter(filterTheseDataIdentifiers,SimulationWorkspaceModelInfo.FilterType.valueOf(filterSetName));
 					}catch(Exception e){
 						e.printStackTrace();
-					}
+					}					
 				}
-				return null;
-			}
-			
+			}			
 			ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
 			for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
 				if (bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
