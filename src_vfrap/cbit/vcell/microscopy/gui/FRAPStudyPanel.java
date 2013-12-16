@@ -1509,6 +1509,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						// TODO Auto-generated method stub
 						return false;
 					}
+					@Override
+					public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers) {
+						throw new RuntimeException("Not Implemented for FRAP");
+					}
 				}
 			);
 			

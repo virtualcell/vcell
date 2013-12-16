@@ -10,14 +10,26 @@
 
 package cbit.vcell.client.data;
 
+import java.util.ArrayList;
+
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.SimulationOwner;
 
 /**
@@ -165,5 +177,42 @@ public String getVolumeNameGeometry(int subVolumeID) {
 	
 	return results;
 }
-
+public static enum FilterType {Species,Flux};
+public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifiers,FilterType filterType) throws Exception{
+	if(simulationOwner instanceof SimulationContext){
+		MathMapping mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+		MathDescription mathDescription = mathMapping.getMathDescription();
+		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+		ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
+		for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
+			Variable variable = mathDescription.getVariable(filterTheseDataIdentifiers[i].getName());
+			SymbolTableEntry[] symbolTableEntries = mathSymbolMapping.getBiologicalSymbol(variable);
+			System.out.println("-----DI="+filterTheseDataIdentifiers[i].getName()+" var="+variable);
+			if(symbolTableEntries != null){
+				for (int j = 0; j < symbolTableEntries.length; j++) {
+					System.out.println("        "+symbolTableEntries[j]);
+					if(filterType.equals(FilterType.Species) && symbolTableEntries[j] instanceof SpeciesContext){
+						acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+						break;
+					}else if(filterType.equals(FilterType.Flux)  && symbolTableEntries[j] instanceof KineticsParameter){
+						KineticsParameter kineticsParameter = (KineticsParameter)symbolTableEntries[j];
+						if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
+							acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+							break;
+						}
+					}
+				}
+			}			
+		}
+		if(acceptedDataIdentifiers.size() > 0){
+			return acceptedDataIdentifiers;
+		}
+		return null;
+	}else{
+		return null;
+//		MathDescription mathDescription = simulationOwner.getMathDescription();
+//		Variable variable = mathDescription.getVariable(dataName);
+//		System.out.println("-----"+variable);
+	}
+}
 }
