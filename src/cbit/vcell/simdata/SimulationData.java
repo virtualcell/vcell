@@ -2143,10 +2143,13 @@ private OutputContext lastOutputContext;
 private long lastDataProcessingOutputInfoTime = 0;
 private void refreshDataProcessingOutputInfo(OutputContext outputContext) throws DataAccessException{
 	File dataProcessingOutputFile = getDataProcessingOutputSourceFileHDF5();
+	if(dataProcessingOutputInfo == null && !dataProcessingOutputFile.exists()){
+		return;
+	}
 	AnnotatedFunction[] lastFunctions = (lastOutputContext==null?null:lastOutputContext.getOutputFunctions());
 	AnnotatedFunction[] currentFunctions = (outputContext==null?null:outputContext.getOutputFunctions());
 	boolean bFunctionsEqual = Compare.isEqualOrNull(lastFunctions, currentFunctions);
-	if(!bFunctionsEqual || dataProcessingOutputInfo == null || (dataProcessingOutputFile.exists() && lastDataProcessingOutputInfoTime != dataProcessingOutputFile.lastModified())){
+	if(!bFunctionsEqual || dataProcessingOutputInfo == null || lastDataProcessingOutputInfoTime != dataProcessingOutputFile.lastModified()){
 		lastDataProcessingOutputInfoTime = dataProcessingOutputFile.lastModified();
 		lastOutputContext = outputContext;
 		DataProcessingOutputInfoOP dataProcessingOutputInfoOP = new DataProcessingOutputInfoOP(vcDataId, false, outputContext);
