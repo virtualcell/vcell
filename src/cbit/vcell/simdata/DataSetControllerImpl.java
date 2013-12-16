@@ -1211,6 +1211,7 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 	}
     final String NAME_ATTR = "_name";
     final String UNIT_ATTR = "_unit";
+    final String STAT_PREFIX = "comp_";
 
 	List<Metadata> metaDataL = hObject.getMetadata();
 	if(metaDataL != null){
@@ -1235,12 +1236,14 @@ private static void populateStatNamesAndUnits(HObject hObject,DataProcessingHelp
 		Iterator<String> attrIter = attrHashMap.keySet().iterator();
 		for (int j = 0; j < attrHashMap.size(); j++) {
 			String compVal = attrIter.next();
-			int compVarIdx = Integer.parseInt(compVal.substring(5, 6));
 			if(compVal.contains(NAME_ATTR)){
+				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length(), compVal.indexOf('_', STAT_PREFIX.length())));
 				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
 			}else if(compVal.contains(UNIT_ATTR)){
+				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length(), compVal.indexOf('_', STAT_PREFIX.length())));
 				variableUnits[compVarIdx] = attrHashMap.get(compVal);
 			}else{//old way for var names(e.g. comp_0 = abc) with no "_name" or "_unit"
+				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length()));
 				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
 			}
 		}
