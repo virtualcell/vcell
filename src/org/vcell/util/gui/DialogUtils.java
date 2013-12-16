@@ -17,6 +17,8 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -26,6 +28,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -40,10 +43,12 @@ import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -57,6 +62,10 @@ import cbit.vcell.client.test.VCellClientTest;
  * @author: Ion Moraru
  */
 public class DialogUtils {
+	public final static String SHARE_MODEL_TEXT =
+		"Sending your model information will improve the ability of the Virtual Cell Support team to diagnose " +
+		"and repair transient software bugs which have escaped release testing. We may use the information you send to " +
+		"make copies of your models for the sole purpose of reproducing the bugs you've encountered.";
 	
 	private static abstract class SwingDispatcherSync {
 
@@ -248,13 +257,15 @@ private static void browserLauncherError(Component requester, Throwable e, Strin
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 12:54:40 AM)
- * @param message java.lang.Object
- */
+@SuppressWarnings("serial")
+private static class JPanelWithCb extends JPanel {
+	JPanelWithCb( ) {
+		super(new BorderLayout());
+	}
+	JCheckBox allowSendCb;
+}
 
-private static JPanel createMessagePanel(final String message) {
+private static JPanelWithCb createMessagePanel(final String message) {
 	JTextPane textArea = new JTextPane();
 	if (message != null && message.contains("<html>")) {
 		textArea.setContentType("text/html");
@@ -274,11 +285,36 @@ private static JPanel createMessagePanel(final String message) {
 			(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
 	
 	JScrollPane scroller = new JScrollPane();
-	JPanel panel = new JPanel(new BorderLayout());
+	JPanelWithCb panel = new JPanelWithCb();
 	scroller.setViewportView(textArea);
 	scroller.getViewport().setPreferredSize(preferredSize);
 	panel.add(scroller, BorderLayout.CENTER);
 	return panel;
+}
+
+/**
+ * add send model info to VCellSupport panel to JPanelWithCb (see {@link #createMessagePanel(String)}
+ * @param panel
+ * @param initialCheckboxState
+ */
+private static void addModelSendInformation(JPanelWithCb panel, boolean initialCheckboxState) {
+		JPanel buttonPanel = new JPanel();
+		panel.add(buttonPanel, BorderLayout.SOUTH);
+		JPanel sendModelPanel = new JPanel();
+		buttonPanel.add(sendModelPanel);
+		
+		panel.allowSendCb = new JCheckBox("Send model info to VCell support team");
+		sendModelPanel.add(panel.allowSendCb);
+		
+		JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
+		helpBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Component c = (Component) e.getSource();
+				DialogUtils.showInfoDialog(c,SHARE_MODEL_TEXT);
+			}
+		});
+		sendModelPanel.add(helpBtn);
+		panel.allowSendCb.setSelected(initialCheckboxState);
 }
 
 private static JDialog prepareWarningDialog(final Component requester,final String message) {
@@ -654,7 +690,7 @@ private static String showOptionsDialog(final Component requester,Component show
 		okEnabler.setJOptionPane(pane);
 	}
 	try {
-		ZEnforcer.showModalDialogOnTop(dialog,requester);
+		DialogUtils.showModalJDialogOnTop(dialog, requester);
 		Object selectedValue = pane.getValue();
 		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
 			return SimpleUserMessage.OPTION_CANCEL;
@@ -671,41 +707,98 @@ public static void showErrorDialog(final Component requester,final String messag
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
+ * show error dialog in standard way
+ * @param requester parent Component, may be null
+ * @param message message to display
+ * @param exception exception to dialog and possibility email to VCellSupport; may be null
  */
 public static void showErrorDialog(final Component requester, final String message, final Throwable exception) {
+	showErrorDialog(requester,message,exception,null);
+}
+
+public static class ErrorContext {
+	/**
+	 * information for enhanced ErrorDialog 
+	 * @param modelInfo may not be null
+	 * @param userPreferences may not be null
+	 */
+	public ErrorContext(String modelInfo,
+			UserPreferences userPreferences) {
+		this.modelInfo = modelInfo;
+		this.userPreferences = userPreferences;
+		if (modelInfo == null || userPreferences == null) {
+			throw new IllegalArgumentException("null point passed to ErrorContextInformation");
+		}
+	}
+	final public String modelInfo;
+	final public UserPreferences userPreferences;
+}
+
+
+/**
+ * show error dialog in standard way. If modelInfo is not null user is prompted to allow sending of context information
+ * @param requester parent Component, may be null
+ * @param message message to display
+ * @param exception exception to dialog and possibility email to VCellSupport; may be null
+ * @param modelInfo information to include in email to VCellSupport; may be null 
+ */
+public static void showErrorDialog(final Component requester, final String message, final Throwable exception, 
+		final ErrorContext errorContext) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
+			final boolean haveContext = errorContext != null;
 			String errMsg = message;
-			boolean bSER = false;
+			boolean sendErrorReport = false;
 			if (errMsg == null || errMsg.trim().length() == 0) {
 				errMsg = "Virtual Cell has encountered a problem. Please tell Virtual Cell about this problem to help improve Virtual Cell.";
 				if (exception != null) {
-					bSER = true;
+					sendErrorReport = true;
 				}
 			} 
 			if (exception instanceof ClassCastException || exception instanceof ArrayIndexOutOfBoundsException 
 					|| exception instanceof NullPointerException
 					|| exception instanceof Error) {
-				bSER = true;
-//				String stackTrace = BeanUtils.getStackTrace(exception);
-//
-//				errMsg = "<html>" + errMsg +
-//				"<p>We have created an error report as follows that you can send to help improve Virtual Cell. " +
-//				"<p><u>Error Report</u><p>" + stackTrace + "</html>";
+				sendErrorReport = true;
+			}
+			String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
+			if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
+				 sendErrorReport = false;	
 			}
 			
-			JPanel panel = createMessagePanel(errMsg);
+			boolean initialCheckState = false;
+			final boolean goingToEmail = sendErrorReport && VCellClientTest.getVCellClient() != null;
+			JPanelWithCb panel = createMessagePanel(errMsg);
+			if (goingToEmail && haveContext) {
+				initialCheckState = errorContext.userPreferences.getGenPrefBoolean(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT);
+				addModelSendInformation(panel, initialCheckState);
+			}
+				
 			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
 			JDialog dialog = pane.createDialog(requester, "Error");
 			dialog.setResizable(true);
 			try{
-				ZEnforcer.showModalDialogOnTop(dialog,requester);
-				if (bSER && VCellClientTest.getVCellClient() != null) {
-					VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
+				if (goingToEmail) {
+					if (haveContext) {
+						Throwable throwableToSend = null; 
+						final boolean userSelectedSendModel = panel.allowSendCb.isSelected();
+						if (userSelectedSendModel) {
+							assert(errorContext != null);
+							throwableToSend = new RuntimeException(errorContext.modelInfo,exception);
+						}
+						else {
+							throwableToSend = new RuntimeException("User declined to share model",exception);
+						}
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
+						if (userSelectedSendModel != initialCheckState) {
+							errorContext.userPreferences.setGenPref(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT,userSelectedSendModel);
+						}
+					}
+					else {
+						assert(haveContext == false);
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
+					}
+					
 				}
 			} finally{
 				dialog.dispose();
@@ -713,6 +806,17 @@ public static void showErrorDialog(final Component requester, final String messa
 			return null;
 		}
 	}.dispatchConsumeException();
+}
+
+/**
+ * subclass to carry supplemental information about context of exception
+ * currently unused until deployed in postprocessors
+ */
+@SuppressWarnings({ "serial", "unused" })
+private static class ContextCarrierException extends RuntimeException {
+	ContextCarrierException(String msg, Throwable payload) {
+		super(msg,payload);
+	}
 }
 
 public static void showWarningDialog(final Component requester, final String message) {
@@ -840,10 +944,12 @@ public static Object showListDialog(final Component requester, Object[] names, S
  * @param preferences cbit.vcell.client.UserPreferences
  * @param preferenceName java.lang.String
  */
+@SuppressWarnings("rawtypes")
 public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer listCellRenderer) {
 	try{
 	return
 	new SwingDispatcherSync (){
+		@SuppressWarnings({ "unchecked" })
 		public Object runSwing() throws Exception{
 			JPanel panel = new JPanel(new BorderLayout());
 			final JOptionPane pane = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -967,6 +1073,33 @@ public static String showOKCancelWarningDialog(final Component parentComponent, 
 			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
 		}
 	}.dispatchWrapRuntime();	
+}
+
+public static void showModalJDialogOnTop(JDialog jdialog, Component component) {
+	jdialog.setModal(true);
+	jdialog.setVisible(true);
+}
+
+public static Icon swingIcon(int optionPaneValue){
+	String key;
+	switch (optionPaneValue) {
+	case JOptionPane.QUESTION_MESSAGE:
+		key= "questionIcon";
+		break;
+	case JOptionPane.WARNING_MESSAGE:
+		key= "warningIcon";
+		break;
+	case JOptionPane.ERROR_MESSAGE:
+		key= "errorIcon";
+		break;
+	case JOptionPane.INFORMATION_MESSAGE:
+		key= "informationIcon";
+		break;
+		default:
+			throw new UnsupportedOperationException("DialogUtils.swingIcon value " + optionPaneValue);
+	}
+	Icon i = UIManager.getIcon("OptionPane." + key);
+	return i;
 }
 
 }
