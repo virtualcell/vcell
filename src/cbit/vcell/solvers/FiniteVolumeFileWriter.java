@@ -19,8 +19,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1915,12 +1917,14 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		int[] numAssigned = new int[] {1};
 		assignPhases(features, numFeatures - 1, phases, numAssigned);
 			
+		Map<String, Integer> subDomainPhaseMap = new HashMap<String, Integer>();
 		for (int i = 0; i < phases.length; ++ i)
 		{
 			if (phases[i] == -1)
 			{
 				throw new SolverException("Failed to assign a phase to CompartmentSubdomain '" + features[i].getName()  + "'. It might be caused by too coarsh a mesh.");
 			}
+			subDomainPhaseMap.put(features[i].getName(), phases[i]);
 		}
 		
 		SubVolume[] subVolumes = geometrySpec.getSubVolumes();
@@ -2000,13 +2004,15 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			for (int i = 0; i < subVolumes.length; i++) {
 				File distanceMapFile = new File(userDirectory, getSimulationTask().getSimulationJobID() + "_" + subVolumes[i].getName() + DISTANCE_MAP_FILE_EXTENSION);
 				writeDistanceMapFile(deltaX, distanceMaps[i], distanceMapFile);
-				printWriter.println(subVolumes[i].getName() + " " + phases[i] + " " + distanceMapFile.getAbsolutePath());
+				int phase = subDomainPhaseMap.get(subVolumes[i].getName());
+				printWriter.println(subVolumes[i].getName() + " " + phase + " " + distanceMapFile.getAbsolutePath());
 			}
 		} else {
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
 			Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
 			for (int i = 0; i < subVolumes.length; i++) {
-				printWriter.print(subVolumes[i].getName() + " " + phases[i] + " ");
+				int phase = subDomainPhaseMap.get(subVolumes[i].getName());
+				printWriter.print(subVolumes[i].getName() + " " + phase + " ");
 				if (subVolumes[i] instanceof AnalyticSubVolume) {
 					printWriter.println(rvachevExps[i].infix() + ";");			
 				}
