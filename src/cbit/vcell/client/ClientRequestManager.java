@@ -171,6 +171,8 @@ import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.numericstest.ModelGeometryOP;
+import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
@@ -933,13 +935,16 @@ public Geometry getGeometryFromDocumentSelection(Component parentComponent,VCDoc
 				}
 				int[] selection = DialogUtils.showComponentOKCancelTableList(JOptionPane.getFrameForComponent(parentComponent),
 						"Select Geometry", columnNames, rowData, ListSelectionModel.SINGLE_SELECTION);
-				BioModel bioModel = getDocumentManager().getBioModel((BioModelInfo)vcDocumentInfo);
-				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
-					if(bioModel.getSimulationContexts()[i].getName().equals(rowData[selection[0]][0])){
-						geom = bioModel.getSimulationContexts()[i].getGeometry();
-						break;
-					}
-				}
+				ModelGeometryOPResults modelGeometryOPResults =
+					(ModelGeometryOPResults)getDocumentManager().getSessionManager().getUserMetaDbServer().doTestSuiteOP(new ModelGeometryOP((BioModelInfo)vcDocumentInfo, rowData[selection[0]][0]));
+				geom = getDocumentManager().getGeometry(modelGeometryOPResults.getGeometryKey());
+//				BioModel bioModel = getDocumentManager().getBioModel((BioModelInfo)vcDocumentInfo);
+//				for (int i = 0; i < bioModel.getSimulationContexts().length; i++) {
+//					if(bioModel.getSimulationContexts()[i].getName().equals(rowData[selection[0]][0])){
+//						geom = bioModel.getSimulationContexts()[i].getGeometry();
+//						break;
+//					}
+//				}
 			}else{
 				throw new Exception("BioModel '"+bioModelInfo.getVersion().getName()+"' contains no spatial geometries.");
 			}
@@ -952,8 +957,11 @@ public Geometry getGeometryFromDocumentSelection(Component parentComponent,VCDoc
 		MathModelChildSummary mathModelChildSummary = mathModelInfo.getMathModelChildSummary();
 		if(mathModelChildSummary != null){
 			if(mathModelChildSummary.getGeometryDimension() > 0){
-				MathModel mathModel = getDocumentManager().getMathModel(mathModelInfo);
-				geom = mathModel.getMathDescription().getGeometry();
+				ModelGeometryOPResults modelGeometryOPResults =
+					(ModelGeometryOPResults)getDocumentManager().getSessionManager().getUserMetaDbServer().doTestSuiteOP(new ModelGeometryOP((MathModelInfo)vcDocumentInfo));
+				geom = getDocumentManager().getGeometry(modelGeometryOPResults.getGeometryKey());
+//				MathModel mathModel = getDocumentManager().getMathModel(mathModelInfo);
+//				geom = mathModel.getMathDescription().getGeometry();
 			}else{
 				throw new Exception("MathModel '"+mathModelInfo.getVersion().getName()+"' contains no spatial geometry.");				
 			}

@@ -89,6 +89,8 @@ import cbit.vcell.numericstest.LoadTestInfoOP;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
+import cbit.vcell.numericstest.ModelGeometryOP;
+import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
 import cbit.vcell.numericstest.RemoveTestCriteriaOP;
@@ -2971,10 +2973,52 @@ public static TestSuiteOPResults testSuiteOP(TestSuiteOP tsop,Connection con,Use
 	Statement stmt = null;
 	
 	try{
+		if(tsop instanceof ModelGeometryOP){
+			ModelGeometryOP modelGeometryOP = (ModelGeometryOP)tsop;
+			if(modelGeometryOP.getVCDocumentInfo() instanceof BioModelInfo){
+				BioModelInfo bioModelInfo = (BioModelInfo)modelGeometryOP.getVCDocumentInfo();
+				sql =
+					"SELECT "+SimContextTable.table.geometryRef.getQualifiedColName()+
+					" FROM "+
+						SimContextTable.table.getTableName()+","+BioModelSimContextLinkTable.table.getTableName()+
+					" WHERE "+
+						SimContextTable.table.name.getQualifiedColName()+" = '"+modelGeometryOP.getBioModelApplicationName()+"'"+
+						" AND "+
+						BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+" = "+SimContextTable.table.id.getQualifiedColName()+
+						" AND "+
+						BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+" = "+bioModelInfo.getVersion().getVersionKey().toString();
+			}else if(modelGeometryOP.getVCDocumentInfo() instanceof MathModelInfo){
+				MathModelInfo mathModelInfo = (MathModelInfo)modelGeometryOP.getVCDocumentInfo();
+				sql =
+					"SELECT "+MathDescTable.table.geometryRef.getQualifiedColName()+
+					" FROM "+
+						MathDescTable.table.getTableName()+","+MathModelTable.table.getTableName()+
+					" WHERE "+
+						MathModelTable.table.id.getQualifiedColName()+" = "+mathModelInfo.getVersion().getVersionKey().toString()+
+						" AND "+
+						MathModelTable.table.mathRef.getQualifiedColName()+" = "+MathDescTable.table.id.getQualifiedColName();
+			}else{
+				throw new IllegalArgumentException("UnImplemented VCDocumentInfo type="+modelGeometryOP.getVCDocumentInfo().getClass().getName());
+			}
+			stmt = con.createStatement();
+			ResultSet rset = stmt.executeQuery(sql);
+			BigDecimal geometryKey = null;
+			if(rset.next()){
+				geometryKey = rset.getBigDecimal(1);
+				if(rset.next()){
+					throw new DataAccessException("Expecting only 1 Geometry but found at least 2");
+				}
+			}else{
+				throw new DataAccessException("No Geometry found using criteria");
+			}
+			rset.close();
+			stmt.close();
+			return new ModelGeometryOPResults(new KeyValue(geometryKey));
+		}
 		//
 		//LoadTest operations -------------------------------------------------------------------------------------------------
 		//
-		if(tsop instanceof LoadTestInfoOP){
+		else if(tsop instanceof LoadTestInfoOP){
 			//
 			//Delete LoadTest
 			//
