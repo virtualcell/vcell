@@ -11,6 +11,7 @@
 package cbit.vcell.server;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -101,7 +102,7 @@ void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws D
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws DataAccessException;
+org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws DataAccessException,UseridIDExistsException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)

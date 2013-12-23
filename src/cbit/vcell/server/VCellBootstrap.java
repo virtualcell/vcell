@@ -14,6 +14,7 @@ import java.rmi.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -42,6 +43,6 @@ public VCellServer getVCellServer(User user,UserLoginInfo.DigestedPassword diges
  */
 String getVCellSoftwareVersion() throws RemoteException;
 
-public UserInfo insertUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException;
+public UserInfo insertUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException,UseridIDExistsException;
 public void sendLostPassword(String userid) throws RemoteException, DataAccessException;
 }
