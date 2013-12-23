@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -209,10 +210,13 @@ public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) t
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
+public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException,UseridIDExistsException {
 	try {
 		KeyValue key = adminDbTop.insertUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);
+	}catch (UseridIDExistsException e){
+		log.exception(e);
+		throw e;
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
