@@ -25,6 +25,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
@@ -249,7 +250,7 @@ public static void main(java.lang.String[] args) {
 		e.printStackTrace();
 	}
 }
-public UserInfo insertUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException {
+public UserInfo insertUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException,UseridIDExistsException {
 	return adminDbServer.insertUserInfo(newUserInfo);
 }
 public void sendLostPassword(String userid) throws RemoteException,DataAccessException {
