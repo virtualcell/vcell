@@ -20,6 +20,7 @@ import java.util.Vector;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -733,19 +734,22 @@ void insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJob
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLException {
+KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLException,UseridIDExistsException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
 		if(userDB.getUserFromUserid(con,newUserInfo.userid) != null){
-			throw new SQLException("Insert new user failed: username '"+newUserInfo.userid+"' already exists");
+			throw new UseridIDExistsException("Insert new user failed: username '"+newUserInfo.userid+"' already exists");
 		}
 		KeyValue key = userDB.insertUserInfo(con,newUserInfo);
 		con.commit();
 		return key;
 	} catch (Throwable e) {
 		log.exception(e);
+		if(e instanceof UseridIDExistsException){
+			throw (UseridIDExistsException)e;
+		}
 		try {
 			con.rollback();
 		}catch (Throwable rbe){
