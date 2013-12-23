@@ -361,6 +361,8 @@ public class UserRegistrationOP implements Serializable{
 				if(hashTable.containsKey(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR)){
 					//retry if requested
 					if(hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) instanceof UseridIDExistsException){
+						//Exception handled here, suppress ClientTaskDispatcher error dialog.
+						hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
 						UserInfo newUserInfo = (UserInfo)hashTable.get(NEW_USER_INFO_KEY);
 						PopupGenerator.showErrorDialog(currWindowManager, "Login ID '"+newUserInfo.userid+"' cannot be used, enter a different one.");
 						//Use thread to restart registration process again
