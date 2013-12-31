@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
@@ -24,6 +25,8 @@ import ncsa.hdf.object.Group;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperationResults;
@@ -32,8 +35,11 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
@@ -198,18 +204,132 @@ public class HybridSolverTester {
 	//arguments: vcml file name, starting random seed, number of runs, var names
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
-		if(args.length != 5)
-		{
+		boolean bAlternate = false;
+		if(args.length == 4){
+			bAlternate = true;
+		}else if(args.length != 5){
+			System.out.println("usage: HybridSolverTest SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :)");
 			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime");
 			System.exit(1);
 		}
+		
 		try{
-			HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
-			hst.runHybridTest();
+			if(bAlternate){
+				final String user ="boris";
+				final String simID = args[0];
+				VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
+				final String prefix = "SimID_"+simID+"_";
+				
+				ArrayList<Double> simTimes = new ArrayList<Double>();
+				StringTokenizer st = new StringTokenizer(args[1], ":");
+				while(st.hasMoreTokens()){
+					double timePoint = Double.parseDouble(st.nextToken());
+					simTimes.add(timePoint);
+				}
+				
+				ArrayList<Integer> simLocs = new ArrayList<Integer>();
+				st = new StringTokenizer(args[2], ":");
+				while(st.hasMoreTokens()){
+					int location = Integer.parseInt(st.nextToken());
+					simLocs.add(location);
+				}
+				
+				ArrayList<String> simVars = new ArrayList<String>();
+				st = new StringTokenizer(args[3], ":");
+				while(st.hasMoreTokens()){
+					String var = st.nextToken();
+					simVars.add(var);
+				}
+				
+				File borisDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
+				File[] trialList = borisDir.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						return
+							pathname.isFile() &&
+							pathname.getName().startsWith(prefix) &&
+							pathname.getName().endsWith("_.log");
+					}
+				});
+				if(trialList == null || trialList.length == 0){
+					System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
+					return;
+				}
+				System.out.println("found "+trialList.length+" trials in dir "+borisDir.getAbsolutePath());
+				
+				StringBuffer sb = new StringBuffer();
+				printheader(simTimes, simLocs, simVars, sb);
+				for (int i = 0; i < trialList.length; i++) {
+					double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
+					String jobIndex = trialList[i].getName().substring(prefix.length(), trialList[i].getName().indexOf('_', prefix.length()));
+					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, Integer.parseInt(jobIndex));
+					SimulationData simData = new SimulationData(vcSimulationDataIdentifier, borisDir, null, null);
+					if(i == 0){
+						DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
+						for (int j = 0; j < dataIdentifiers.length; j++) {
+							System.out.println(dataIdentifiers[i]);
+						}
+					}
+					for (int times = 0; times < simTimes.size(); times++) {
+						double timePoint = simTimes.get(times);
+						for (int vars = 0; vars < simVars.size(); vars++) {
+							SimDataBlock simDataBlock = simData.getSimDataBlock(null, simVars.get(vars), timePoint);
+							double[] data = simDataBlock.getData();
+							for (int locs = 0; locs < simLocs.size(); locs++) {
+								int dataIndex = simLocs.get(locs);
+								trialData[times][locs][vars] = data[dataIndex];
+							}
+						}
+					}
+					
+					for (int times = 0; times < simTimes.size(); times++) {
+						for (int locs = 0; locs < simLocs.size(); locs++) {
+							for (int vars = 0; vars < simVars.size(); vars++) {
+								sb.append(trialData[times][locs][vars]+",");
+							}
+							sb.append(",");
+						}
+					}
+					sb.append("\n");				
+				}
+				System.out.println(sb.toString());
+			}else{
+				HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
+				hst.runHybridTest();
+			}
 		}catch(Exception e){
 			e.printStackTrace(System.out);
 			System.exit(1);
 		}
 	}
 
+	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,StringBuffer sb){
+		String commas = ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+		int locVarNum = simLocs.size()*(simVars.size()+1);
+		for (int times = 0; times < simTimes.size(); times++) {
+			double timePoint = simTimes.get(times);
+			sb.append(timePoint+commas.substring(0, locVarNum));
+		}
+		sb.append("\n");
+		
+		for (int times = 0; times < simTimes.size(); times++) {
+			for (int locs = 0; locs < simLocs.size(); locs++) {
+				int loc = simLocs.get(locs);
+				sb.append(loc+commas.substring(0, simVars.size()+1));
+			}
+		}
+		sb.append("\n");
+		
+		for (int times = 0; times < simTimes.size(); times++) {
+			for (int locs = 0; locs < simLocs.size(); locs++) {
+				for (int vars = 0; vars < simVars.size(); vars++) {
+					String var = simVars.get(vars);
+					sb.append("\""+var+"\""+",");
+				}
+				sb.append(",");
+			}
+		}
+		sb.append("\n");				
+
+	}
 }
