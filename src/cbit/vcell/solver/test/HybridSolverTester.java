@@ -242,33 +242,67 @@ public class HybridSolverTester {
 				}
 				
 				File borisDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
-				File[] trialList = borisDir.listFiles(new FileFilter() {
-					@Override
-					public boolean accept(File pathname) {
-						return
-							pathname.isFile() &&
-							pathname.getName().startsWith(prefix) &&
-							pathname.getName().endsWith("_.log");
-					}
-				});
-				if(trialList == null || trialList.length == 0){
-					System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
-					return;
-				}
-				System.out.println("found "+trialList.length+" trials in dir "+borisDir.getAbsolutePath());
+//				File[] trialList = borisDir.listFiles(new FileFilter() {
+//					@Override
+//					public boolean accept(File pathname) {
+//						return
+//							pathname.isFile() &&
+//							pathname.getName().startsWith(prefix) &&
+//							pathname.getName().endsWith("_.log");
+//					}
+//				});
+//				if(trialList == null || trialList.length == 0){
+//					System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
+//					return;
+//				}
+//				System.out.println("found "+trialList.length+" trials in dir "+borisDir.getAbsolutePath());
 				
 				StringBuffer sb = new StringBuffer();
-				printheader(simTimes, simLocs, simVars, sb);
-				for (int i = 0; i < trialList.length; i++) {
+//				for (int i = 0; i < trialList.length; i++) {
+				int jobCounter = 0;
+				final int TIME_SPACE_EXTRA = 1;
+				while(true){
 					double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
-					String jobIndex = trialList[i].getName().substring(prefix.length(), trialList[i].getName().indexOf('_', prefix.length()));
-					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, Integer.parseInt(jobIndex));
-					SimulationData simData = new SimulationData(vcSimulationDataIdentifier, borisDir, null, null);
-					if(i == 0){
+//					String jobIndex = trialList[i].getName().substring(prefix.length(), trialList[i].getName().indexOf('_', prefix.length()));
+					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
+					SimulationData simData = null;
+					try{
+						simData = new SimulationData(vcSimulationDataIdentifier, borisDir, null, null);
+					}catch(FileNotFoundException e){
+						if(jobCounter == 0){
+							System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
+						}else{
+							System.out.println("found "+jobCounter+" trials in dir "+borisDir.getAbsolutePath()+" matching SimID="+simID);
+						}
+						break;
+					}
+					if(jobCounter == 0){
+						//print state vars
 						DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
 						for (int j = 0; j < dataIdentifiers.length; j++) {
-							System.out.println(dataIdentifiers[i]);
+							System.out.println(dataIdentifiers[j]);
 						}
+
+						//Convert user input times to actual data times
+						double[] allDatasetTimes = simData.getDataTimes();
+						for (int times = 0; times < simTimes.size(); times++) {
+							double masterDelta = Double.POSITIVE_INFINITY;
+							double timePoint = -1;
+							for (int j = 0; j < allDatasetTimes.length; j++) {
+								double tempDelta = Math.abs(simTimes.get(times)-allDatasetTimes[j]);
+								if(tempDelta < masterDelta){
+									masterDelta = tempDelta;
+									timePoint = allDatasetTimes[j];
+									if(tempDelta == 0){
+										break;
+									}
+								}
+							}
+							System.out.println("User time="+simTimes.get(times)+" converted to dataset time="+timePoint);
+							simTimes.set(times, timePoint);
+						}
+						
+						printheader(simTimes, simLocs, simVars, sb,TIME_SPACE_EXTRA);
 					}
 					for (int times = 0; times < simTimes.size(); times++) {
 						double timePoint = simTimes.get(times);
@@ -289,8 +323,12 @@ public class HybridSolverTester {
 							}
 							sb.append(",");
 						}
+						for (int timeSpace = 0; timeSpace < TIME_SPACE_EXTRA; timeSpace++) {
+							sb.append(",");
+						}
 					}
-					sb.append("\n");				
+					sb.append("\n");
+					jobCounter++;
 				}
 				System.out.println(sb.toString());
 			}else{
@@ -303,12 +341,17 @@ public class HybridSolverTester {
 		}
 	}
 
-	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,StringBuffer sb){
+	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,StringBuffer sb,int timeSpaceExtra){
 		String commas = ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+		String timeSpaceExtraCommas = "";
+		if(timeSpaceExtra > 0){
+			timeSpaceExtraCommas = commas.substring(0, timeSpaceExtra);
+		}
 		int locVarNum = simLocs.size()*(simVars.size()+1);
 		for (int times = 0; times < simTimes.size(); times++) {
 			double timePoint = simTimes.get(times);
 			sb.append(timePoint+commas.substring(0, locVarNum));
+			sb.append(timeSpaceExtraCommas);
 		}
 		sb.append("\n");
 		
@@ -317,6 +360,7 @@ public class HybridSolverTester {
 				int loc = simLocs.get(locs);
 				sb.append(loc+commas.substring(0, simVars.size()+1));
 			}
+			sb.append(timeSpaceExtraCommas);
 		}
 		sb.append("\n");
 		
@@ -328,6 +372,7 @@ public class HybridSolverTester {
 				}
 				sb.append(",");
 			}
+			sb.append(timeSpaceExtraCommas);
 		}
 		sb.append("\n");				
 
