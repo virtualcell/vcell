@@ -314,7 +314,7 @@ public class SimulationData extends VCData {
 //				urlCon.setRequestProperty("Content-Type","application/xml");
 //				urlCon.setRequestProperty("Accept","application/xml");
 				int responseCode = urlCon.getResponseCode();
-				if(responseCode == 404){//filenotfound
+				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
 					return false;
 				}
 				return true;
