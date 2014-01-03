@@ -13,6 +13,7 @@ package cbit.vcell.solver.test;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -205,37 +206,43 @@ public class HybridSolverTester {
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
 		boolean bAlternate = false;
-		if(args.length == 4){
+		if(args.length == 6){
 			bAlternate = true;
 		}else if(args.length != 5){
-			System.out.println("usage: HybridSolverTest SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :)");
+			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) outputFileDirectory");
 			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime");
 			System.exit(1);
 		}
 		
+		FileWriter fw = null;
 		try{
 			if(bAlternate){
-				final String user ="boris";
-				final String simID = args[0];
+				final String user = args[0];
+				final String simID = args[1];
 				VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
 				final String prefix = "SimID_"+simID+"_";
+				final File outputFile = new File(args[5],simID+".csv");
+				if(outputFile.exists()){
+					throw new Exception("Output File '"+outputFile+"' exists already.");
+				}
+				fw = new FileWriter(outputFile);
 				
 				ArrayList<Double> simTimes = new ArrayList<Double>();
-				StringTokenizer st = new StringTokenizer(args[1], ":");
+				StringTokenizer st = new StringTokenizer(args[2], ":");
 				while(st.hasMoreTokens()){
 					double timePoint = Double.parseDouble(st.nextToken());
 					simTimes.add(timePoint);
 				}
 				
 				ArrayList<Integer> simLocs = new ArrayList<Integer>();
-				st = new StringTokenizer(args[2], ":");
+				st = new StringTokenizer(args[3], ":");
 				while(st.hasMoreTokens()){
 					int location = Integer.parseInt(st.nextToken());
 					simLocs.add(location);
 				}
 				
 				ArrayList<String> simVars = new ArrayList<String>();
-				st = new StringTokenizer(args[3], ":");
+				st = new StringTokenizer(args[4], ":");
 				while(st.hasMoreTokens()){
 					String var = st.nextToken();
 					simVars.add(var);
@@ -257,7 +264,8 @@ public class HybridSolverTester {
 //				}
 //				System.out.println("found "+trialList.length+" trials in dir "+borisDir.getAbsolutePath());
 				
-				StringBuffer sb = new StringBuffer();
+				
+//				StringBuffer sb = new StringBuffer();
 //				for (int i = 0; i < trialList.length; i++) {
 				int jobCounter = 0;
 				final int TIME_SPACE_EXTRA = 1;
@@ -302,7 +310,7 @@ public class HybridSolverTester {
 							simTimes.set(times, timePoint);
 						}
 						
-						printheader(simTimes, simLocs, simVars, sb,TIME_SPACE_EXTRA);
+						printheader(simTimes, simLocs, simVars, fw,TIME_SPACE_EXTRA);
 					}
 					for (int times = 0; times < simTimes.size(); times++) {
 						double timePoint = simTimes.get(times);
@@ -319,18 +327,18 @@ public class HybridSolverTester {
 					for (int times = 0; times < simTimes.size(); times++) {
 						for (int locs = 0; locs < simLocs.size(); locs++) {
 							for (int vars = 0; vars < simVars.size(); vars++) {
-								sb.append(trialData[times][locs][vars]+",");
+								fw.write(trialData[times][locs][vars]+",");
 							}
-							sb.append(",");
+							fw.write(",");
 						}
 						for (int timeSpace = 0; timeSpace < TIME_SPACE_EXTRA; timeSpace++) {
-							sb.append(",");
+							fw.write(",");
 						}
 					}
-					sb.append("\n");
+					fw.write("\n");
 					jobCounter++;
 				}
-				System.out.println(sb.toString());
+//				System.out.println(sb.toString());
 			}else{
 				HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
 				hst.runHybridTest();
@@ -338,10 +346,12 @@ public class HybridSolverTester {
 		}catch(Exception e){
 			e.printStackTrace(System.out);
 			System.exit(1);
+		}finally{
+			if(fw !=null){try{fw.close();}catch(Exception e){e.printStackTrace();}}
 		}
 	}
 
-	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,StringBuffer sb,int timeSpaceExtra){
+	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,FileWriter fw,int timeSpaceExtra) throws IOException{
 		String commas = ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
 		String timeSpaceExtraCommas = "";
 		if(timeSpaceExtra > 0){
@@ -350,31 +360,31 @@ public class HybridSolverTester {
 		int locVarNum = simLocs.size()*(simVars.size()+1);
 		for (int times = 0; times < simTimes.size(); times++) {
 			double timePoint = simTimes.get(times);
-			sb.append(timePoint+commas.substring(0, locVarNum));
-			sb.append(timeSpaceExtraCommas);
+			fw.write(timePoint+commas.substring(0, locVarNum));
+			fw.write(timeSpaceExtraCommas);
 		}
-		sb.append("\n");
+		fw.write("\n");
 		
 		for (int times = 0; times < simTimes.size(); times++) {
 			for (int locs = 0; locs < simLocs.size(); locs++) {
 				int loc = simLocs.get(locs);
-				sb.append(loc+commas.substring(0, simVars.size()+1));
+				fw.write(loc+commas.substring(0, simVars.size()+1));
 			}
-			sb.append(timeSpaceExtraCommas);
+			fw.write(timeSpaceExtraCommas);
 		}
-		sb.append("\n");
+		fw.write("\n");
 		
 		for (int times = 0; times < simTimes.size(); times++) {
 			for (int locs = 0; locs < simLocs.size(); locs++) {
 				for (int vars = 0; vars < simVars.size(); vars++) {
 					String var = simVars.get(vars);
-					sb.append("\""+var+"\""+",");
+					fw.write("\""+var+"\""+",");
 				}
-				sb.append(",");
+				fw.write(",");
 			}
-			sb.append(timeSpaceExtraCommas);
+			fw.write(timeSpaceExtraCommas);
 		}
-		sb.append("\n");				
+		fw.write("\n");				
 
 	}
 }
