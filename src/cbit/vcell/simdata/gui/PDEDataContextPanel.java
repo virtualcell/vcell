@@ -40,6 +40,7 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
+import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 
 /**
  * Insert the type's description here.
@@ -916,18 +917,34 @@ public String getCurveValue(CurveSelectionInfo csi) {
 							String xCoordString = NumberUtils.formatNumber(segmentWC.getX());
 							String yCoordString = NumberUtils.formatNumber(segmentWC.getY());
 							String zCoordString = NumberUtils.formatNumber(segmentWC.getZ());
+							boolean bDefined = getDataInfoProvider() == null || getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]);
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
-										(getDataInfoProvider() == null || getDataInfoProvider().isDefined(membraneIndexes[csi.getSegment()]) ? membraneValues[csi.getSegment()] : "Undefined");
-							if(getDataInfoProvider() != null){
-								PDEDataViewer.MembraneDataInfo membraneDataInfo =
-									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);
-								infoS+= "          ";
-								infoS+= " \""+membraneDataInfo.membraneName+"\"";
-								infoS+= " mrID="+membraneDataInfo.membraneRegionID;
+										(bDefined ? membraneValues[csi.getSegment()] : "Undefined");
+							if (getPdeDataContext().getCartesianMesh() != null && getPdeDataContext().getCartesianMesh().isChomboMesh())
+							{
+								if (bDefined && getDataInfoProvider() != null)
+								{
+									StructureMetricsEntry structure = ((CartesianMeshChombo)getDataInfoProvider().getPDEDataContext().getCartesianMesh()).getStructureInfo(getDataInfoProvider().getPDEDataContext().getDataIdentifier());
+									if (structure != null)
+									{
+										infoS+= " || " + structure.getDisplayLabel();
+									}
+								}
 							}
-							String curveDescr = CurveRenderer.getROIDescriptions(segmentWC,getImagePlaneManagerPanel().getCurveRenderer());
-							if(curveDescr != null){infoS+= "     "+curveDescr;}
+							else
+							{
+								if(getDataInfoProvider() != null){
+									PDEDataViewer.MembraneDataInfo membraneDataInfo =
+										getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);
+									infoS+= "          ";
+									infoS+= " \""+membraneDataInfo.membraneName+"\"";
+									infoS+= " mrID="+membraneDataInfo.membraneRegionID;
+								}
+							
+								String curveDescr = CurveRenderer.getROIDescriptions(segmentWC,getImagePlaneManagerPanel().getCurveRenderer());
+								if(curveDescr != null){infoS+= "     "+curveDescr;}
+							}
 							break;
 						}
 					}

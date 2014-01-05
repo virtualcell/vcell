@@ -13,6 +13,7 @@ package cbit.image.gui;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
@@ -29,6 +30,8 @@ import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.gui.CurveEditorTool;
 import cbit.vcell.geometry.gui.CurveEditorToolPanel;
 import cbit.vcell.geometry.gui.CurveRenderer;
+import cbit.vcell.solvers.CartesianMeshChombo;
+import cbit.vcell.solvers.CartesianMeshChombo.StructureMetricsEntry;
 
 /**
  * Insert the type's description here.
@@ -1055,8 +1058,9 @@ private void initialize() {
 
 		java.awt.GridBagConstraints constraintsInfoJlabel = new java.awt.GridBagConstraints();
 		constraintsInfoJlabel.gridx = 0; constraintsInfoJlabel.gridy = 1;
-		constraintsInfoJlabel.gridwidth = 2;
-		constraintsInfoJlabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsInfoJlabel.gridwidth = GridBagConstraints.REMAINDER;
+		constraintsInfoJlabel.weighty = 0.1;
+		constraintsInfoJlabel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsInfoJlabel.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(getInfoJlabel(), constraintsInfoJlabel);
 		initConnections();
@@ -1410,31 +1414,35 @@ private void updateInfo(MouseEvent mouseEvent) {
 							}
 						}
 					}
-					boolean isChombo = getDataInfoProvider() != null && getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh();
 					if (infoS == null && getSourceDataInfo() != null) {
 						CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						int volumeIndex = getSourceDataInfo().calculateWorldIndex(ci);
 						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
-//						if(isChombo){
-//							quantizedWC = getSourceDataInfo().getChombotWorldCoordinateFromIndex(ci);
-//						}
+						boolean bUndefined = getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex));
 						String xCoordString = NumberUtils.formatNumber(quantizedWC.getX());
 						String yCoordString = NumberUtils.formatNumber(quantizedWC.getY());
 						String zCoordString = NumberUtils.formatNumber(quantizedWC.getZ());
 						infoS = 
-							(isChombo?"Chombo":"")+"(" + xCoordString +
+							"(" + xCoordString +
 							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +
 							(getSourceDataInfo().getZSize() > 1?"," + zCoordString:"") + ") "+
 							"["+volumeIndex+"]"+
 							" ["+ci.x+
 							(getSourceDataInfo().getYSize() > 1?","+ci.y:"")+
 							(getSourceDataInfo().getZSize() > 1?","+ci.z:"")+"] "+
-							(getSourceDataInfo().isDataNull()||(getDataInfoProvider() != null && !getDataInfoProvider().isDefined(volumeIndex))?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
+							(bUndefined?"Undefined":getSourceDataInfo().getDataValueAsString(ci.x, ci.y, ci.z));
 						if(getDataInfoProvider() != null ){
-							infoS+= "          ";
 							if(getDataInfoProvider().getPDEDataContext().getCartesianMesh().isChomboMesh()){
-								infoS+="Chombo Info TBI";
+								if (!bUndefined)
+								{
+									StructureMetricsEntry structure = ((CartesianMeshChombo)getDataInfoProvider().getPDEDataContext().getCartesianMesh()).getStructureInfo(getDataInfoProvider().getPDEDataContext().getDataIdentifier());
+									if (structure != null)
+									{
+										infoS += " || " + structure.getDisplayLabel();
+									}
+								}
 							}else{
+								infoS+= "          ";
 								try{
 									PDEDataViewer.VolumeDataInfo volumeDataInfo =
 										getDataInfoProvider().getVolumeDataInfo(volumeIndex);
