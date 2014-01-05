@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.server;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -71,29 +72,44 @@ public ExportOutput(boolean valid, String dataType, String simID, String dataID,
 //	return tempDataFile;
 //}
 
-public void writeDataToOutputStream(OutputStream outputStream) throws FileNotFoundException, IOException{
-	FileInputStream fis = new FileInputStream(data.getDataFile());
-	ReadableByteChannel source = Channels.newChannel(fis);
-    WritableByteChannel target = Channels.newChannel(outputStream);
-
-    ByteBuffer buffer = ByteBuffer.allocate(16 * 4096);
-    while (source.read(buffer) != -1) {
-        buffer.flip(); // Prepare the buffer to be drained
-        while (buffer.hasRemaining()) {
-            target.write(buffer);
-        }
-        buffer.clear(); // Empty buffer to get ready for filling
-    }
-
-    source.close();
+public void writeDataToOutputStream(OutputStream outputStream,boolean bDeleteTempFile) throws FileNotFoundException, IOException{
+//	FileInputStream fis = new FileInputStream(data.getDataFile());
+//	ReadableByteChannel source = Channels.newChannel(fis);
+//    WritableByteChannel target = Channels.newChannel(outputStream);
+//
+//    ByteBuffer buffer = ByteBuffer.allocate(16 * 4096);
+//    while (source.read(buffer) != -1) {
+//        buffer.flip(); // Prepare the buffer to be drained
+//        while (buffer.hasRemaining()) {
+//            target.write(buffer);
+//        }
+//        buffer.clear(); // Empty buffer to get ready for filling
+//    }
+//
+//    source.close();
+//	fis.close();
 	
-	
-	
-	
-//	FileChannel fc = fis.getChannel();
-//	fc.transferTo(0, data.getDataFile().length(),  outputStream);
-//	fc.close();
-	fis.close();
+	FileInputStream fis = null;
+	BufferedInputStream bis = null;
+	try{
+		fis = new FileInputStream(data.getDataFile());
+		bis = new BufferedInputStream(fis);
+		// Copy the contents of the file to the output stream
+		byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,data.getDataFile().length())];
+		int count = 0;                 
+		while ((count = bis.read(buffer)) >= 0) {    
+			outputStream.write(buffer, 0, count);
+		}                 
+		outputStream.flush();
+	}finally{
+		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
+		if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
+		if(bDeleteTempFile){
+			if(!data.getDataFile().delete()){
+				new Exception("Failed to delete ExportOutput Tempfile '"+data.getDataFile()+"'").printStackTrace();
+			}
+		}
+	}
 }
 
 public FileBackedDataContainer getDataContainer(){
