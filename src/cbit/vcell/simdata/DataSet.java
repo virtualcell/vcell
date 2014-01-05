@@ -32,6 +32,7 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 
 public class DataSet implements java.io.Serializable
@@ -408,6 +409,7 @@ private void readHdf5SolutionMetaData(InputStream is) throws Exception
 			Dataset dataset = (Dataset)member;
 			String dsname = dataset.getName();
 			int vt = -1;
+			String domain = null;
 			List<Attribute> solAttrList = dataset.getMetadata();
 			for (Attribute attr : solAttrList)
 			{
@@ -415,11 +417,14 @@ private void readHdf5SolutionMetaData(InputStream is) throws Exception
 				if(attrName.equals("variable type")){
 					Object obj = attr.getValue();
 					vt = ((int[])obj)[0];
-					break;
+				} else if (attrName.equals("domain")) {
+					Object obj = attr.getValue();
+					domain = ((String[])obj)[0];
 				}
 			}
 			long[] dims = dataset.getDims();
-			dataBlockList.addElement(DataBlock.createDataBlock(dsname, vt, (int) dims[0], 0));
+			String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
+			dataBlockList.addElement(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
 		}
 	} finally {
 		try {

@@ -26,7 +26,6 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.CartesianMeshChombo.Segment2D;
-import cbit.vcell.solvers.CartesianMeshChombo.SurfaceTriangleEntry3D;
 import cbit.vcell.solvers.ContourElement;
 import cbit.vcell.solvers.MembraneElement;
 

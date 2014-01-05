@@ -25,12 +25,14 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.Origin;
+import cbit.vcell.simdata.DataIdentifier;
 
 @SuppressWarnings("serial")
 public class CartesianMeshChombo extends CartesianMesh {
 
-	public static class SurfaceTriangleEntry3D implements Serializable {
+	private static class SurfaceTriangleEntry3D implements Serializable {
 		public int memIndex;
 		public int faceIndex = 0;
 		public Coordinate p0;
@@ -45,7 +47,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 		public int prevNeigbhor;
 		public int nextNeigbhor;
 		
-		public Segment2D(int memIndex, int prevVertex, int nextVertex,
+		private Segment2D(int memIndex, int prevVertex, int nextVertex,
 				int prevNeigbhor, int nextNeigbhor) {
 			super();
 			this.memIndex = memIndex;
@@ -57,22 +59,21 @@ public class CartesianMeshChombo extends CartesianMesh {
 		
 	}
 	
-	public static class SliceViewEntry implements Serializable {
+	private static class SliceViewEntry implements Serializable {
 		public int memIndex;
 		public double[] crossPoints;
 	}
 	
-	public static class MetricsEntry implements Serializable
+	private static class MembraneElementMetricsEntry implements Serializable
 	{
 		public int index, level, i,j,k;
 //		public double x,y,z;
 //		public double normalx, normaly, normalz;
 //		double volFrac;
 //		double areaFrac;
-		public MetricsEntry(int index, int level, int i, int j, int k)
-//				, double x, double y, double z, double normalx, double normaly,
-//				double normalz, double volFrac, double areaFrac
-//				) 
+//		public int membraneId;
+//		private int cornerPhaseMask;
+		private MembraneElementMetricsEntry(int index, int level, int i, int j, int k)
 		{
 			super();
 			this.index = index;
@@ -80,15 +81,36 @@ public class CartesianMeshChombo extends CartesianMesh {
 			this.i = i;
 			this.j = j;
 			this.k = k;
-//			this.x = x;
-//			this.y = y;
-//			this.z = z;
-//			this.normalx = normalx;
-//			this.normaly = normaly;
-//			this.normalz = normalz;
-//			this.volFrac = volFrac;
-//			this.areaFrac = areaFrac;
 		}		
+	}
+	
+	private enum StructureType
+	{
+		feature,
+		membrane,
+	}
+	
+	public static class StructureMetricsEntry implements Serializable
+	{
+		private String name;
+		private StructureType type;
+		private double size;
+		private int numPoints;
+		private StructureMetricsEntry(String name, StructureType type, double size, int numPoints) {
+			super();
+			this.name = name;
+			this.type = type;
+			this.size = size;
+			this.numPoints = numPoints;
+		}
+		public String getDisplayLabel()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(name)
+			.append(" size=" + NumberUtils.formatNumber(size))
+			.append(" #points=" + numPoints);
+			return sb.toString();
+		}
 	}
 		
 	private int dimension = 0;
@@ -97,7 +119,8 @@ public class CartesianMeshChombo extends CartesianMesh {
 	private int[] refineRatios;
 
 	private transient double[] dx;
-	private transient MetricsEntry[] metrics = null;
+	private transient MembraneElementMetricsEntry[] membraneElementMetrics = null;
+	private transient StructureMetricsEntry[] structureMetrics = null;
 	
 	// 3D
 	private transient Map<Integer, List<SurfaceTriangleEntry3D>> surfaceTriangleMap = new HashMap<Integer, List<SurfaceTriangleEntry3D>>();
@@ -111,7 +134,9 @@ public class CartesianMeshChombo extends CartesianMesh {
 //	private static final String ROOT_GROUP = "/";
 //	private static final String MESH_GROUP = "/mesh";
 	private static final String BOXES_DATASET = "boxes";
-	private static final String METRICS_DATASET = "metrics";
+	private static final String MEMBRANE_ELEMENT_METRICS_DATASET_OLD = "metrics";
+	private static final String MEMBRANE_ELEMENT_METRICS_DATASET = "membrane elements";
+	private static final String STRUCTURE_METRICS_DATASET = "structures";
 	private static final String VERTICES_DATASET = "vertices";
 	private static final String SEGMENTS_DATASET = "segments";
 	private static final String SURFACE_DATASET = "surface triangles";
@@ -134,246 +159,267 @@ public class CartesianMeshChombo extends CartesianMesh {
 		if(fileFormat == null){
 			throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
 		}
-		FileFormat meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
-		meshFile.open();
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)meshFile.getRootNode();
-		Group rootGroup = (Group)rootNode.getUserObject();
-		Group meshGroup = (Group)rootGroup.getMemberList().get(0);
-		List<Attribute> meshAttrList = meshGroup.getMetadata();
-		
-		int[] nx = new int[3];
-		Arrays.fill(nx, 1);
-		chomboMesh.dx = new double[3];
-		double[] extent = new double[3];
-		Arrays.fill(extent, 1);
-		double[] origin = new double[3];
-		
-		for (Attribute attr : meshAttrList)
+		FileFormat meshFile = null;
+		try
 		{
-			String attrName = attr.getName();
-			Object value = attr.getValue();
-			if (attrName.equals(MESH_ATTR_DIMENSION))
+			meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
+			meshFile.open();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)meshFile.getRootNode();
+			Group rootGroup = (Group)rootNode.getUserObject();
+			Group meshGroup = (Group)rootGroup.getMemberList().get(0);
+			List<Attribute> meshAttrList = meshGroup.getMetadata();
+			
+			int[] nx = new int[3];
+			Arrays.fill(nx, 1);
+			chomboMesh.dx = new double[3];
+			double[] extent = new double[3];
+			Arrays.fill(extent, 1);
+			double[] origin = new double[3];
+			
+			for (Attribute attr : meshAttrList)
 			{
-				chomboMesh.dimension = ((int[])value)[0];
-			}
-			else if (attrName.equals(MESH_ATTR_NUM_LEVELS))
-			{
-				chomboMesh.numLevels = ((int[])value)[0];
-			}
-			else if (attrName.equals(MESH_ATTR_VIEW_LEVEL))
-			{
-				chomboMesh.viewLevel = ((int[])value)[0];
-			}
-			else if (attrName.equals(MESH_ATTR_REFINE_RATIOS))
-			{
-				chomboMesh.refineRatios = (int[])value;
-			}
-			else
-			{
-				String[] valueStrArray = (String[])value;
-				String value0 = valueStrArray[0];
-				StringTokenizer st = new StringTokenizer(value0, "{,} ");
-				List<Double> valueList = new ArrayList<Double>();
-				while (st.hasMoreTokens())
+				String attrName = attr.getName();
+				Object value = attr.getValue();
+				if (attrName.equals(MESH_ATTR_DIMENSION))
 				{
-					String token = st.nextToken();
-					valueList.add(Double.parseDouble(token));
+					chomboMesh.dimension = ((int[])value)[0];
 				}
-				if (attrName.equals(MESH_ATTR_DX))
+				else if (attrName.equals(MESH_ATTR_NUM_LEVELS))
 				{
-					for (int i = 0; i < valueList.size(); ++ i)
+					chomboMesh.numLevels = ((int[])value)[0];
+				}
+				else if (attrName.equals(MESH_ATTR_VIEW_LEVEL))
+				{
+					chomboMesh.viewLevel = ((int[])value)[0];
+				}
+				else if (attrName.equals(MESH_ATTR_REFINE_RATIOS))
+				{
+					chomboMesh.refineRatios = (int[])value;
+				}
+				else
+				{
+					String[] valueStrArray = (String[])value;
+					String value0 = valueStrArray[0];
+					StringTokenizer st = new StringTokenizer(value0, "{,} ");
+					List<Double> valueList = new ArrayList<Double>();
+					while (st.hasMoreTokens())
 					{
-						chomboMesh.dx[i] = valueList.get(i);
+						String token = st.nextToken();
+						valueList.add(Double.parseDouble(token));
+					}
+					if (attrName.equals(MESH_ATTR_DX))
+					{
+						for (int i = 0; i < valueList.size(); ++ i)
+						{
+							chomboMesh.dx[i] = valueList.get(i);
+						}
+					}
+					else if (attrName.equals(MESH_ATTR_EXTENT))
+					{
+						for (int i = 0; i < valueList.size(); ++ i)
+						{
+							extent[i] = valueList.get(i);
+						}
+						chomboMesh.extent = new Extent(extent[0], extent[1], extent[2]);
+					}
+					else if (attrName.equals(MESH_ATTR_NX))
+					{
+						for (int i = 0; i < valueList.size(); ++ i)
+						{
+							nx[i] = valueList.get(i).intValue();
+						}
+						chomboMesh.size = new ISize(nx[0], nx[1], nx[2]);
+					}
+					else if (attrName.equals(MESH_ATTR_ORIGIN))
+					{
+						for (int i = 0; i < valueList.size(); ++ i)
+						{
+							origin[i] = valueList.get(i);
+						}
+						chomboMesh.origin = new Origin(origin[0], origin[1], origin[2]);
 					}
 				}
-				else if (attrName.equals(MESH_ATTR_EXTENT))
+			}
+			
+			List<HObject> memberList = meshGroup.getMemberList();
+			for (HObject member : memberList)
+			{
+				if (member instanceof Dataset)
 				{
-					for (int i = 0; i < valueList.size(); ++ i)
+					Dataset dataset = (Dataset)member;
+					Vector vectValues = (Vector)dataset.read();
+					String name = dataset.getName();
+					if (name.equals(VERTICES_DATASET))
 					{
-						extent[i] = valueList.get(i);
+						int c = -1;
+						double[] x = (double[]) vectValues.get(++ c);
+						double[] y = (double[]) vectValues.get(++ c);
+						double[] z = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z = (double[]) vectValues.get(++ c);
+						}
+						chomboMesh.vertices = new Coordinate[x.length];
+						for (int i = 0; i < x.length; ++ i)
+						{
+							chomboMesh.vertices[i] = new Coordinate(x[i], y[i], z == null ? 0 : z[i]);
+						}
 					}
-					chomboMesh.extent = new Extent(extent[0], extent[1], extent[2]);
-				}
-				else if (attrName.equals(MESH_ATTR_NX))
-				{
-					for (int i = 0; i < valueList.size(); ++ i)
+					else if (name.equals(SEGMENTS_DATASET))
 					{
-						nx[i] = valueList.get(i).intValue();
+						int c = -1;
+						int[] index = (int[]) vectValues.get(++ c);
+						int[] prevVertex = (int[]) vectValues.get(++ c);
+						int[] nextVertex = (int[]) vectValues.get(++ c);
+						int[] prevNeighbor = (int[]) vectValues.get(++ c);
+						int[] nextNeighbor = (int[]) vectValues.get(++ c);
+						double[] z = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z = (double[]) vectValues.get(++ c);
+						}
+						chomboMesh.segments = new Segment2D[index.length];
+						for (int i = 0; i < index.length; ++ i)
+						{
+							chomboMesh.segments[i] = new Segment2D(index[i], prevVertex[i], nextVertex[i], prevNeighbor[i], nextNeighbor[i]);
+						}
 					}
-					chomboMesh.size = new ISize(nx[0], nx[1], nx[2]);
-				}
-				else if (attrName.equals(MESH_ATTR_ORIGIN))
-				{
-					for (int i = 0; i < valueList.size(); ++ i)
+					else if (name.equals(STRUCTURE_METRICS_DATASET))
 					{
-						origin[i] = valueList.get(i);
+						int c = -1;
+						String[] sname = (String[]) vectValues.get(++ c);
+						String[] type = (String[]) vectValues.get(++ c);
+						double[] size = (double[]) vectValues.get(++ c);
+						int[] numPoints = (int[]) vectValues.get(++ c);
+						chomboMesh.structureMetrics = new StructureMetricsEntry[sname.length];
+						for (int n = 0; n < sname.length; ++ n)
+						{
+							chomboMesh.structureMetrics[n] = new StructureMetricsEntry(sname[n], StructureType.valueOf(type[n]), size[n], numPoints[n]);
+						}
 					}
-					chomboMesh.origin = new Origin(origin[0], origin[1], origin[2]);
+					else if (name.equals(MEMBRANE_ELEMENT_METRICS_DATASET) || name.equals(MEMBRANE_ELEMENT_METRICS_DATASET_OLD))
+					{
+						int c = -1;
+						int[] index = (int[]) vectValues.get(++ c);
+						int[] level = (int[]) vectValues.get(++ c);
+						int[] i = (int[]) vectValues.get(++ c);
+						int[] j = (int[]) vectValues.get(++ c);
+						int[] k = null;
+						if (chomboMesh.dimension == 3)
+						{
+							k = (int[]) vectValues.get(++ c);
+						}
+						double[] x = (double[])vectValues.get(++ c);
+						double[] y = (double[])vectValues.get(++ c);
+						double[] z = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z = (double[])vectValues.get(++ c);
+						}
+						double[] normalx = (double[])vectValues.get(++ c);
+						double[] normaly = (double[])vectValues.get(++ c);
+						double[] normalz = null;
+						if (chomboMesh.dimension == 3)
+						{
+							normalz = (double[])vectValues.get(++ c);
+						}
+						double[] volFrac = (double[])vectValues.get(++ c);
+						double[] areaFrac = (double[])vectValues.get(++ c);
+						//int[] membraneId = (int[]) vectValues.get(++ c);
+						//int[] cornerPhaseMask = (int[]) vectValues.get(++ c);
+						double unitVol = chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
+						chomboMesh.membraneElements = new MembraneElement[index.length];
+						chomboMesh.membraneElementMetrics = new MembraneElementMetricsEntry[index.length];
+						for (int n = 0; n < index.length; ++ n)
+						{
+							int insideIndex = (k == null ? 0 : k[n] * chomboMesh.size.getY() * chomboMesh.size.getX())
+									+ j[n] * chomboMesh.size.getX() + i[n];
+							int outsideIndex = insideIndex;
+							double area = areaFrac[n] * unitVol;
+							chomboMesh.membraneElementMetrics[n] = new MembraneElementMetricsEntry(index[n], level[n], i[n], j[n], k == null ? 0 : k[n]);
+							chomboMesh.membraneElements[n] = new MembraneElement(index[n], insideIndex, outsideIndex,
+									-1, -1, -1, -1,
+									(float)area,
+									(float)normalx[n],
+									(float)normaly[n],
+									(float)(normalz == null ? 0 : normalz[n]),
+									(float)x[n],
+									(float)y[n],
+									(float)(z == null ? 0 : z[n]));
+						}
+					}
+					else if (name.equals(SURFACE_DATASET))
+					{
+						int c = 0;
+						int[] index = (int[]) vectValues.get(c);
+						int[] faceIndex = (int[]) vectValues.get(++ c);
+						int[] neighbor = (int[])vectValues.get(++ c);
+						double[] x0 = (double[])vectValues.get(++ c);
+						double[] y0 = (double[])vectValues.get(++ c);
+						double[] z0 = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z0 = (double[])vectValues.get(++ c);
+						}
+						double[] x1 = (double[])vectValues.get(++ c);
+						double[] y1 = (double[])vectValues.get(++ c);
+						double[] z1 = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z1 = (double[])vectValues.get(++ c);
+						}
+						double[] x2 = (double[])vectValues.get(++ c);
+						double[] y2 = (double[])vectValues.get(++ c);
+						double[] z2 = null;
+						if (chomboMesh.dimension == 3)
+						{
+							z2 = (double[])vectValues.get(++ c);
+						}
+						for (int n = 0; n < index.length; ++ n)
+						{
+							int memIndex = index[n];
+							List<SurfaceTriangleEntry3D> edgeList = chomboMesh.surfaceTriangleMap.get(memIndex);
+							if (edgeList == null)
+							{
+								edgeList = new ArrayList<SurfaceTriangleEntry3D>();
+								chomboMesh.surfaceTriangleMap.put(index[n], edgeList);
+							}
+							SurfaceTriangleEntry3D mp = new SurfaceTriangleEntry3D();
+							mp.memIndex = index[n];
+							mp.faceIndex = faceIndex[n];
+							mp.p0 = new Coordinate(x0[n], y0[n], z0 == null ? 0 : z0[n]);
+							mp.p1 = new Coordinate(x1[n], y1[n], z1 == null ? 0 : z1[n]);
+							mp.p2 = new Coordinate(x2[n], y2[n], z2 == null ? 0 : z2[n]);
+							edgeList.add(mp);
+						}
+					}
+					else if (name.equals(SLICE_VIEW_DATASET))
+					{
+						int c = 0;
+						int[] index = (int[]) vectValues.get(c);
+						double[][] coords = new double[12][index.length];
+						for (int n = 0; n < 12; ++ n) {
+							coords[n] = (double[])vectValues.get(++ c);
+						}					
+						for (int n = 0; n < index.length; ++ n) {
+							SliceViewEntry sve = new SliceViewEntry();
+							sve.memIndex = index[n];
+							sve.crossPoints = new double[12];
+							for (int m = 0; m < 12; ++ m)
+							{
+								sve.crossPoints[m] = coords[m][n];							
+							}
+							chomboMesh.sliceViewList.add(sve);
+						}
+					}
 				}
 			}
 		}
-		
-		List<HObject> memberList = meshGroup.getMemberList();
-		for (HObject member : memberList)
+		finally
 		{
-			if (member instanceof Dataset)
+			if (meshFile != null)
 			{
-				Dataset dataset = (Dataset)member;
-				Vector vectValues = (Vector)dataset.read();
-				String name = dataset.getName();
-				if (name.equals(BOXES_DATASET))
-				{
-					// not needed right now
-				}
-				else if (name.equals(VERTICES_DATASET))
-				{
-					int c = -1;
-					double[] x = (double[]) vectValues.get(++ c);
-					double[] y = (double[]) vectValues.get(++ c);
-					double[] z = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z = (double[]) vectValues.get(++ c);
-					}
-					chomboMesh.vertices = new Coordinate[x.length];
-					for (int i = 0; i < x.length; ++ i)
-					{
-						chomboMesh.vertices[i] = new Coordinate(x[i], y[i], z == null ? 0 : z[i]);
-					}
-				}
-				else if (name.equals(SEGMENTS_DATASET))
-				{
-					int c = -1;
-					int[] index = (int[]) vectValues.get(++ c);
-					int[] prevVertex = (int[]) vectValues.get(++ c);
-					int[] nextVertex = (int[]) vectValues.get(++ c);
-					int[] prevNeighbor = (int[]) vectValues.get(++ c);
-					int[] nextNeighbor = (int[]) vectValues.get(++ c);
-					double[] z = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z = (double[]) vectValues.get(++ c);
-					}
-					chomboMesh.segments = new Segment2D[index.length];
-					for (int i = 0; i < index.length; ++ i)
-					{
-						chomboMesh.segments[i] = new Segment2D(index[i], prevVertex[i], nextVertex[i], prevNeighbor[i], nextNeighbor[i]);
-					}
-				}
-				else if (name.equals(METRICS_DATASET))
-				{
-					int c = -1;
-					int[] index = (int[]) vectValues.get(++ c);
-					int[] level = (int[]) vectValues.get(++ c);
-					int[] i = (int[]) vectValues.get(++ c);
-					int[] j = (int[]) vectValues.get(++ c);
-					int[] k = null;
-					if (chomboMesh.dimension == 3)
-					{
-						k = (int[]) vectValues.get(++ c);
-					}
-					double[] x = (double[])vectValues.get(++ c);
-					double[] y = (double[])vectValues.get(++ c);
-					double[] z = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z = (double[])vectValues.get(++ c);
-					}
-					double[] normalx = (double[])vectValues.get(++ c);
-					double[] normaly = (double[])vectValues.get(++ c);
-					double[] normalz = null;
-					if (chomboMesh.dimension == 3)
-					{
-						normalz = (double[])vectValues.get(++ c);
-					}
-					double[] volFrac = (double[])vectValues.get(++ c);
-					double[] areaFrac = (double[])vectValues.get(++ c);
-					//int[] membraneId = (int[]) vectValues.get(++ c);  -- newly added.
-					double unitVol = chomboMesh.dx[0] * chomboMesh.dx[1] * chomboMesh.dx[2];
-					chomboMesh.membraneElements = new MembraneElement[index.length];
-					chomboMesh.metrics = new MetricsEntry[index.length];
-					for (int n = 0; n < index.length; ++ n)
-					{
-						int insideIndex = (k == null ? 0 : k[n] * chomboMesh.size.getY() * chomboMesh.size.getX())
-								+ j[n] * chomboMesh.size.getX() + i[n];
-						int outsideIndex = insideIndex;
-						double area = areaFrac[n] * unitVol;
-						chomboMesh.metrics[n] = new MetricsEntry(index[n], level[n], i[n], j[n], k == null ? 0 : k[n]);
-						chomboMesh.membraneElements[n] = new MembraneElement(index[n], insideIndex, outsideIndex,
-								-1, -1, -1, -1,
-								(float)area,
-								(float)normalx[n],
-								(float)normaly[n],
-								(float)(normalz == null ? 0 : normalz[n]),
-								(float)x[n],
-								(float)y[n],
-								(float)(z == null ? 0 : z[n]));
-					}
-				}
-				else if (name.equals(SURFACE_DATASET))
-				{
-					int c = 0;
-					int[] index = (int[]) vectValues.get(c);
-					int[] faceIndex = (int[]) vectValues.get(++ c);
-					int[] neighbor = (int[])vectValues.get(++ c);
-					double[] x0 = (double[])vectValues.get(++ c);
-					double[] y0 = (double[])vectValues.get(++ c);
-					double[] z0 = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z0 = (double[])vectValues.get(++ c);
-					}
-					double[] x1 = (double[])vectValues.get(++ c);
-					double[] y1 = (double[])vectValues.get(++ c);
-					double[] z1 = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z1 = (double[])vectValues.get(++ c);
-					}
-					double[] x2 = (double[])vectValues.get(++ c);
-					double[] y2 = (double[])vectValues.get(++ c);
-					double[] z2 = null;
-					if (chomboMesh.dimension == 3)
-					{
-						z2 = (double[])vectValues.get(++ c);
-					}
-					for (int n = 0; n < index.length; ++ n)
-					{
-						int memIndex = index[n];
-						List<SurfaceTriangleEntry3D> edgeList = chomboMesh.surfaceTriangleMap.get(memIndex);
-						if (edgeList == null)
-						{
-							edgeList = new ArrayList<SurfaceTriangleEntry3D>();
-							chomboMesh.surfaceTriangleMap.put(index[n], edgeList);
-						}
-						SurfaceTriangleEntry3D mp = new SurfaceTriangleEntry3D();
-						mp.memIndex = index[n];
-						mp.faceIndex = faceIndex[n];
-						mp.p0 = new Coordinate(x0[n], y0[n], z0 == null ? 0 : z0[n]);
-						mp.p1 = new Coordinate(x1[n], y1[n], z1 == null ? 0 : z1[n]);
-						mp.p2 = new Coordinate(x2[n], y2[n], z2 == null ? 0 : z2[n]);
-						edgeList.add(mp);
-					}
-				}
-				else if (name.equals(SLICE_VIEW_DATASET))
-				{
-					int c = 0;
-					int[] index = (int[]) vectValues.get(c);
-					double[][] coords = new double[12][index.length];
-					for (int n = 0; n < 12; ++ n) {
-						coords[n] = (double[])vectValues.get(++ c);
-					}					
-					for (int n = 0; n < index.length; ++ n) {
-						SliceViewEntry sve = new SliceViewEntry();
-						sve.memIndex = index[n];
-						sve.crossPoints = new double[12];
-						for (int m = 0; m < 12; ++ m)
-						{
-							sve.crossPoints[m] = coords[m][n];							
-						}
-						chomboMesh.sliceViewList.add(sve);
-					}
-				}
+				meshFile.close();
 			}
 		}
 		// set neighbors to membrane elements
@@ -408,7 +454,8 @@ public class CartesianMeshChombo extends CartesianMesh {
 		objectList.add(viewLevel);
 		objectList.add(refineRatios);
 		objectList.add(membraneElements);
-		objectList.add(metrics);
+		objectList.add(membraneElementMetrics);
+		objectList.add(structureMetrics);
 		objectList.add(vertices);
 		if (dimension == 2)
 		{
@@ -439,7 +486,8 @@ public class CartesianMeshChombo extends CartesianMesh {
 			viewLevel = (Integer)objArray[++ index];
 			refineRatios = (int[])objArray[++ index];
 			membraneElements = (MembraneElement[])objArray[++ index];
-			metrics = (MetricsEntry[])objArray[++ index];
+			membraneElementMetrics = (MembraneElementMetricsEntry[])objArray[++ index];
+			structureMetrics = (StructureMetricsEntry[])objArray[++ index];
 			vertices = (Coordinate[])objArray[++ index];
 			if (dimension == 2)
 			{
@@ -513,7 +561,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 	
 	public int findMembraneIndexFromVolumeIndex(CoordinateIndex ci)
 	{
-		for (MetricsEntry me : metrics)
+		for (MembraneElementMetricsEntry me : membraneElementMetrics)
 		{
 			CoordinateIndex ci0 = new CoordinateIndex(me.i, me.j, me.k);
 			CoordinateIndex ci1 = ci;
@@ -548,5 +596,19 @@ public class CartesianMeshChombo extends CartesianMesh {
 		int j = (int)((wc.getY() - getOrigin().getY()) / dx[1]);
 		int k = dimension < 3 ? 0 : (int)((wc.getZ() - getOrigin().getZ()) / dx[2]);
 		return findMembraneIndexFromVolumeIndex(new CoordinateIndex(i, j, k));
+	}
+
+	public StructureMetricsEntry getStructureInfo(DataIdentifier dataIdentifier) {
+		if (structureMetrics != null && dataIdentifier != null && dataIdentifier.getDomain() != null)
+		{
+			for (StructureMetricsEntry sme : structureMetrics)
+			{
+				if (sme.name != null && sme.name.equals(dataIdentifier.getDomain().getName()))
+				{
+					return sme;
+				}
+			}
+		}
+		return null;
 	}
 }
