@@ -53,7 +53,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	public static final int WARNING_STOCH_MEGABYTES = 100; //stoch
 	
 	public static final int WARNING_SCAN_JOBS = 20;
-	public static final int MAX_LIMIT_SCAN_JOBS = 100;
+	public static final int MAX_LIMIT_SCAN_JOBS = 25000;
 	/**
 	 * Database version of the Simulation.
 	 */
