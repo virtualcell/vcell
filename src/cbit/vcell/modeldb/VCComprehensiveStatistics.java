@@ -215,6 +215,59 @@ public class VCComprehensiveStatistics {
 		}
 	}
 	
+	private Object waitForModel(final BigString modelXML,final boolean bMath){
+		final Object[] modelArr = new Object[] {null};
+		final Exception[] excArr = new Exception[] {null};
+		final Boolean[] flagArr = new Boolean[] {false};
+		long startTime = System.currentTimeMillis();
+		Thread processThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try{
+					if(bMath){
+						modelArr[0] = XmlHelper.XMLToMathModel(new XMLSource(modelXML.toString()));
+						((MathModel)modelArr[0]).refreshDependencies();				
+					}else{
+						modelArr[0] = XmlHelper.XMLToBioModel(new XMLSource(modelXML.toString()));
+						((BioModel)modelArr[0]).refreshDependencies();
+					}
+					flagArr[0] = true;
+				}catch(Exception e){
+					e.printStackTrace();
+					excArr[0] = e;
+				}
+			}
+		});
+		processThread.start();
+		boolean bOK = false;
+		while(true){
+			if((System.currentTimeMillis()-startTime) > 60*1000){
+				break;
+			}
+			if(excArr[0] != null){
+				break;
+			}
+			if(flagArr[0]){
+				bOK = true;
+				break;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if(!bOK){
+			return null;
+		}
+		if(bMath){
+			return (MathModel)modelArr[0];
+		}else{
+			return (BioModel)modelArr[0];
+		}
+
+	}
 	private void collectMathModelStats(long startDateInMs, long endDateInMs) throws DataAccessException {
 		retrieveUsers();
 		for (User user : userList) {
@@ -228,15 +281,21 @@ public class VCComprehensiveStatistics {
 				for (MathModelInfo mmi : mathModelInfos){
 					Date createDate = mmi.getVersion().getDate();
 					long t = createDate.getTime();
+//if(!mmi.getVersion().getVersionKey().toString().equals("")){
+//					continue;
+//}
 					if (t < startDateInMs || t > endDateInMs) {
 						continue;
 					}
-					modelStat.count_model ++;
+//					modelStat.count_model ++;
 					try {
 						BigString mathModelXML = dbServerImpl.getMathModelXML(user, mmi.getVersion().getVersionKey());
-						MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
-						mathModel.refreshDependencies();
-						
+						MathModel mathModel = (MathModel)waitForModel(mathModelXML, true);
+						if(mathModel == null){
+							System.out.println("----------          Skipped MathModel "+mmi.getVersion()+"          ----------");
+							continue;
+						}
+						modelStat.count_model ++;								
 						boolean bHasCompletedSim = false;
 						for (Simulation sim : mathModel.getSimulations()) {
 							SimulationStatus ss = dbServerImpl.getSimulationStatus(sim.getKey());
@@ -353,15 +412,21 @@ public class VCComprehensiveStatistics {
 				for (BioModelInfo bmi : bioModelInfos){
 					Date createDate = bmi.getVersion().getDate();
 					long t = createDate.getTime();
+//if(!bmi.getVersion().getVersionKey().toString().equals("84787242")){
+//	continue;
+//}
 					if (t < startDateInMs || t > endDateInMs) {
 						continue;
 					}
-					modelStat.count_model ++;
+//					modelStat.count_model ++;
 					try {
 						BigString bioModelXML = dbServerImpl.getBioModelXML(user, bmi.getVersion().getVersionKey());
-						BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-						bioModel.refreshDependencies();
-						
+						BioModel bioModel = (BioModel)waitForModel(bioModelXML, false);
+						if(bioModel == null){
+							System.out.println("----------          Skipped BioModel "+bmi.getVersion()+"          ----------");
+							continue;
+						}
+						modelStat.count_model ++;
 						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
 							modelStat.count_geoDimApplications[simContext.getGeometry().getDimension()] ++;
 							if (simContext.isStoch()) {
