@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -23,12 +24,17 @@ import java.util.StringTokenizer;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
+import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
@@ -36,6 +42,8 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.VCellBootstrap;
+import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
@@ -46,6 +54,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -202,14 +211,152 @@ public class HybridSolverTester {
 			
 	}
 	
-	//arguments: vcml file name, starting random seed, number of runs, var names
+	private static void makeAltCSV(String csTimes,String csSimLocs,String csSimVars,FileWriter fw,String user,String simID,boolean bInit,File userSimDataDir) throws Exception{
+		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
+		final String prefix = "SimID_"+simID+"_";
+		
+		ArrayList<Double> simTimes = new ArrayList<Double>();
+		StringTokenizer st = new StringTokenizer(csTimes, ":");
+		while(st.hasMoreTokens()){
+			double timePoint = Double.parseDouble(st.nextToken());
+			simTimes.add(timePoint);
+		}
+		
+		ArrayList<Integer> simLocs = new ArrayList<Integer>();
+		st = new StringTokenizer(csSimLocs, ":");
+		while(st.hasMoreTokens()){
+			int location = Integer.parseInt(st.nextToken());
+			simLocs.add(location);
+		}
+		
+		ArrayList<String> simVars = new ArrayList<String>();
+		st = new StringTokenizer(csSimVars, ":");
+		while(st.hasMoreTokens()){
+			String var = st.nextToken();
+			simVars.add(var);
+		}
+		
+		int jobCounter = 0;
+		final int TIME_SPACE_EXTRA = 1;
+		while(true){
+			double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
+			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
+			SimulationData simData = null;
+			try{
+				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
+			}catch(FileNotFoundException e){
+				if(jobCounter == 0){
+					System.out.println("found no trials matching SimID="+simID+" in user dir "+userSimDataDir.getAbsolutePath());
+				}else{
+					System.out.println("found "+jobCounter+" trials in dir "+userSimDataDir.getAbsolutePath()+" matching SimID="+simID);
+				}
+				break;
+			}
+			if(jobCounter == 0){
+				//Convert user input times to actual data times
+				double[] allDatasetTimes = simData.getDataTimes();
+				for (int times = 0; times < simTimes.size(); times++) {
+					double masterDelta = Double.POSITIVE_INFINITY;
+					double timePoint = -1;
+					for (int j = 0; j < allDatasetTimes.length; j++) {
+						double tempDelta = Math.abs(simTimes.get(times)-allDatasetTimes[j]);
+						if(tempDelta < masterDelta){
+							masterDelta = tempDelta;
+							timePoint = allDatasetTimes[j];
+							if(tempDelta == 0){
+								break;
+							}
+						}
+					}
+					System.out.println("User time="+simTimes.get(times)+" converted to dataset time="+timePoint);
+					simTimes.set(times, timePoint);
+				}
+			}
+			if(bInit && jobCounter == 0){
+				//print state vars
+				DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
+				for (int j = 0; j < dataIdentifiers.length; j++) {
+					System.out.println(dataIdentifiers[j]);
+				}
+				
+				printheader(simTimes, simLocs, simVars, fw,TIME_SPACE_EXTRA);
+			}
+
+			for (int times = 0; times < simTimes.size(); times++) {
+				double timePoint = simTimes.get(times);
+				for (int vars = 0; vars < simVars.size(); vars++) {
+					SimDataBlock simDataBlock = simData.getSimDataBlock(null, simVars.get(vars), timePoint);
+					double[] data = simDataBlock.getData();
+					for (int locs = 0; locs < simLocs.size(); locs++) {
+						int dataIndex = simLocs.get(locs);
+						trialData[times][locs][vars] = data[dataIndex];
+					}
+				}
+			}
+			
+			for (int times = 0; times < simTimes.size(); times++) {
+				for (int locs = 0; locs < simLocs.size(); locs++) {
+					for (int vars = 0; vars < simVars.size(); vars++) {
+						fw.write(trialData[times][locs][vars]+",");
+					}
+					fw.write(",");
+				}
+				for (int timeSpace = 0; timeSpace < TIME_SPACE_EXTRA; timeSpace++) {
+					fw.write(",");
+				}
+			}
+			fw.write("\n");
+			jobCounter++;
+		}
+		fw.flush();
+	}
+
+	private static VCellConnection runSim(UserLoginInfo userLoginInfo,VCSimulationIdentifier vcSimulationIdentifier,VCellConnection vcellConnection) throws Exception{
+		if(vcellConnection == null){
+			String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40106" + "/"+"VCellBootstrapServer";
+			VCellBootstrap vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
+			vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
+		}
+		SimulationStatus simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+		System.out.println("initial status="+simulationStatus);
+		if(simulationStatus!=null && simulationStatus.isRunning()/*!simulationStatus.isNeverRan() && !simulationStatus.isCompleted()*/){
+			throw new Exception("Sim in unexpected state "+simulationStatus);
+		}
+		BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
+		Simulation sim = XmlHelper.XMLToSim(simXML.toString());
+
+		int scanCount = sim.getScanCount();
+		vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+		long startTime = System.currentTimeMillis();
+		while((simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey())) == null ||
+				(simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed())){
+			Thread.sleep(250);
+			MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+			if((System.currentTimeMillis()-startTime) > 60000){
+				throw new Exception("Sim finished too fast or took too long to start");
+			}
+		}
+		SimulationStatus lastSimStatus = simulationStatus;
+		while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
+			Thread.sleep(3000);
+			simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			if(simulationStatus !=null && !simulationStatus.toString().equals(lastSimStatus.toString())){
+				lastSimStatus = simulationStatus;
+				System.out.println("running status="+simulationStatus);
+			}
+			MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+		}
+		System.out.println("last run simStatus="+simulationStatus);
+		return vcellConnection;
+	}
+	
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
 		boolean bAlternate = false;
-		if(args.length == 6){
+		if(args.length == 8){
 			bAlternate = true;
 		}else if(args.length != 5){
-			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) outputFileDirectory");
+			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly");
 			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime");
 			System.exit(1);
 		}
@@ -219,126 +366,67 @@ public class HybridSolverTester {
 			if(bAlternate){
 				final String user = args[0];
 				final String simID = args[1];
-				VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
-				final String prefix = "SimID_"+simID+"_";
-				final File outputFile = new File(args[5],simID+".csv");
-				if(outputFile.exists()){
-					throw new Exception("Output File '"+outputFile+"' exists already.");
-				}
-				fw = new FileWriter(outputFile);
+				final int numRuns = Integer.parseInt(args[5]);
 				
-				ArrayList<Double> simTimes = new ArrayList<Double>();
-				StringTokenizer st = new StringTokenizer(args[2], ":");
-				while(st.hasMoreTokens()){
-					double timePoint = Double.parseDouble(st.nextToken());
-					simTimes.add(timePoint);
-				}
+				final String simPrefix  = "SimID_"+simID+"_";
+				File userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
+				File outputDir = new File(args[6]);
+				boolean bCalcOnly = Boolean.parseBoolean(args[7]);
 				
-				ArrayList<Integer> simLocs = new ArrayList<Integer>();
-				st = new StringTokenizer(args[3], ":");
-				while(st.hasMoreTokens()){
-					int location = Integer.parseInt(st.nextToken());
-					simLocs.add(location);
-				}
-				
-				ArrayList<String> simVars = new ArrayList<String>();
-				st = new StringTokenizer(args[4], ":");
-				while(st.hasMoreTokens()){
-					String var = st.nextToken();
-					simVars.add(var);
-				}
-				
-				File borisDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
-//				File[] trialList = borisDir.listFiles(new FileFilter() {
-//					@Override
-//					public boolean accept(File pathname) {
-//						return
-//							pathname.isFile() &&
-//							pathname.getName().startsWith(prefix) &&
-//							pathname.getName().endsWith("_.log");
-//					}
-//				});
-//				if(trialList == null || trialList.length == 0){
-//					System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
-//					return;
-//				}
-//				System.out.println("found "+trialList.length+" trials in dir "+borisDir.getAbsolutePath());
-				
-				
-//				StringBuffer sb = new StringBuffer();
-//				for (int i = 0; i < trialList.length; i++) {
-				int jobCounter = 0;
-				final int TIME_SPACE_EXTRA = 1;
-				while(true){
-					double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
-//					String jobIndex = trialList[i].getName().substring(prefix.length(), trialList[i].getName().indexOf('_', prefix.length()));
-					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
-					SimulationData simData = null;
-					try{
-						simData = new SimulationData(vcSimulationDataIdentifier, borisDir, null, null);
-					}catch(FileNotFoundException e){
-						if(jobCounter == 0){
-							System.out.println("found no trials matching SimID="+simID+" in user dir "+borisDir.getAbsolutePath());
-						}else{
-							System.out.println("found "+jobCounter+" trials in dir "+borisDir.getAbsolutePath()+" matching SimID="+simID);
-						}
-						break;
-					}
-					if(jobCounter == 0){
-						//print state vars
-						DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
-						for (int j = 0; j < dataIdentifiers.length; j++) {
-							System.out.println(dataIdentifiers[j]);
-						}
+				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
+				UserLoginInfo userLoginInfo = new UserLoginInfo(user, new DigestedPassword("cbittech"));
 
-						//Convert user input times to actual data times
-						double[] allDatasetTimes = simData.getDataTimes();
-						for (int times = 0; times < simTimes.size(); times++) {
-							double masterDelta = Double.POSITIVE_INFINITY;
-							double timePoint = -1;
-							for (int j = 0; j < allDatasetTimes.length; j++) {
-								double tempDelta = Math.abs(simTimes.get(times)-allDatasetTimes[j]);
-								if(tempDelta < masterDelta){
-									masterDelta = tempDelta;
-									timePoint = allDatasetTimes[j];
-									if(tempDelta == 0){
-										break;
-									}
+				File[] trialList = null;
+				VCellConnection vCellConnection = null;
+				try{
+					if(!bCalcOnly){
+						for (int runIndex = 0; runIndex < numRuns; runIndex++) {
+							System.out.println("-----     Starting run "+(runIndex+1)+" of "+numRuns);
+							vCellConnection = runSim(userLoginInfo,vcSimulationIdentifier,vCellConnection);
+							if(trialList == null){
+								trialList = userSimDataDir.listFiles(new FileFilter() {
+								@Override
+								public boolean accept(File pathname) {
+									return pathname.getName().startsWith(simPrefix) && !pathname.getName().endsWith(".simtask.xml");
 								}
+								});
 							}
-							System.out.println("User time="+simTimes.get(times)+" converted to dataset time="+timePoint);
-							simTimes.set(times, timePoint);
-						}
-						
-						printheader(simTimes, simLocs, simVars, fw,TIME_SPACE_EXTRA);
-					}
-					for (int times = 0; times < simTimes.size(); times++) {
-						double timePoint = simTimes.get(times);
-						for (int vars = 0; vars < simVars.size(); vars++) {
-							SimDataBlock simDataBlock = simData.getSimDataBlock(null, simVars.get(vars), timePoint);
-							double[] data = simDataBlock.getData();
-							for (int locs = 0; locs < simLocs.size(); locs++) {
-								int dataIndex = simLocs.get(locs);
-								trialData[times][locs][vars] = data[dataIndex];
+							System.out.println("-----     Copying run "+(runIndex+1)+" of "+numRuns);
+							File outputRunDir = makeOutputRunDir(outputDir,runIndex);
+							for (int j = 0; j < trialList.length; j++) {
+								FileUtils.copyFile(trialList[j], new File(outputRunDir,trialList[j].getName()));
+								trialList[j].delete();
 							}
 						}
 					}
 					
-					for (int times = 0; times < simTimes.size(); times++) {
-						for (int locs = 0; locs < simLocs.size(); locs++) {
-							for (int vars = 0; vars < simVars.size(); vars++) {
-								fw.write(trialData[times][locs][vars]+",");
+					//calc stats
+					final File outputFile = new File(outputDir,simID+".csv");
+					if(outputFile.exists()){
+						throw new Exception("Output File '"+outputFile+"' exists already.");
+					}
+					fw = new FileWriter(outputFile);
+					for (int runIndex = 0; runIndex < numRuns; runIndex++) {
+						makeAltCSV(args[2],args[3],args[4],fw,user,simID/*makeNewSimID(simID, runIndex)*/,runIndex==0,makeOutputRunDir(outputDir,runIndex));
+					}
+					fw.close();
+				}finally{
+					if(!bCalcOnly){
+						File[] straglers = userSimDataDir.listFiles(new FileFilter() {
+							@Override
+							public boolean accept(File pathname) {
+								return pathname.getName().startsWith(simPrefix);
 							}
-							fw.write(",");
-						}
-						for (int timeSpace = 0; timeSpace < TIME_SPACE_EXTRA; timeSpace++) {
-							fw.write(",");
+							});
+						if(straglers != null){
+							for (int i = 0; i < straglers.length; i++) {
+								straglers[i].delete();
+							}
 						}
 					}
-					fw.write("\n");
-					jobCounter++;
 				}
-//				System.out.println(sb.toString());
+
+				
 			}else{
 				HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
 				hst.runHybridTest();
@@ -351,6 +439,15 @@ public class HybridSolverTester {
 		}
 	}
 
+	private static File makeOutputRunDir(File baseOutputDir,int runIndex){
+		File outputRunDir = new File(baseOutputDir,"run"+runIndex);
+		if(!outputRunDir.exists()){
+			outputRunDir.mkdir();
+		}
+		return outputRunDir;
+		
+	}
+	
 	private static void printheader(ArrayList<Double> simTimes,ArrayList<Integer> simLocs,ArrayList<String> simVars,FileWriter fw,int timeSpaceExtra) throws IOException{
 		String commas = ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
 		String timeSpaceExtraCommas = "";
