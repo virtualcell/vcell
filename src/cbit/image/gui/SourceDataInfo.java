@@ -333,8 +333,8 @@ private Coordinate getVCellWorldCoordinateFromUnitized(double unitizedX, double 
 }
 private Coordinate getChomboWorldCoordinateFromUnitized(double unitizedX, double unitizedY, double unitizedZ) 
 {
-	// not returning the center of the volume 
-	return new Coordinate(origin.getX() + unitizedX*extent.getX() ,origin.getY() + unitizedY*extent.getY(), origin.getZ() + unitizedZ*extent.getZ());
+	// not returning the center of the volume
+	return getWorldCoordinateFromIndex(getDataIndexFromUnitized(unitizedX, unitizedY, unitizedZ));
 }
 
 //int t = ((int)(((double)lastPrintPoint/(double)getWorldPixelSize())*8));
