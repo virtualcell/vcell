@@ -752,6 +752,7 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 
     String nameAtt = "_name";
     String unitAtt = "_unit";
+    final String STAT_PREFIX = "comp_";
     for (int i=0; i<n; i++){
     	
         obj = (HObject)members.get(i);
@@ -781,12 +782,14 @@ public static void populateHDF5(Group g, String indent,DataProcessingOutput data
 	    		Iterator<String> attrIter = attrHashMap.keySet().iterator();
 	    		for (int j = 0; j < attrHashMap.size(); j++) {
 	    			String compVal = attrIter.next();
-	    			int compVarIdx = Integer.parseInt(compVal.substring(5, 6));
 	    			if(compVal.contains(nameAtt)){
+	    				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length(), compVal.indexOf('_', STAT_PREFIX.length())));
 	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
 	    			}else if(compVal.contains(unitAtt)){
+	    				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length(), compVal.indexOf('_', STAT_PREFIX.length())));
 	    				variableUnits[compVarIdx] = attrHashMap.get(compVal);
 	    			}else{//old way for var names(e.g. comp_0 = abc) with no "_name" or "_unit"
+	    				int compVarIdx = Integer.parseInt(compVal.substring(STAT_PREFIX.length()));
 	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
 	    			}
 				}
