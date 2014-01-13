@@ -21,7 +21,7 @@ jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${vcellservice_jmxport}"
 jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.ssl=false"
 jmxargs="${jmxargs} -Djava.rmi.server.hostname=${vcellservice_jmxhost}"
 
-jvmprop="-Xmx${vcellservice_memoryMB}M -Dvcell.propertyfile=${common_propertyfile}"
+jvmprop="-Xmx${vcellservice_memoryMB}M -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
 
 arguments="123 ${common_logdir} ${common_batchSystemType}"
 
