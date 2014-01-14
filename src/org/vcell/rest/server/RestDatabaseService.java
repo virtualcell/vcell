@@ -11,6 +11,7 @@ import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -630,7 +631,7 @@ public class RestDatabaseService {
     	}
     }
 
-	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException {
+	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {
 		return localAdminDbServer.insertUserInfo(newUserInfo);
 	}
 

@@ -15,6 +15,7 @@ import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 
 public final class EmailTokenVerifyRestlet extends Restlet {
 	public EmailTokenVerifyRestlet(Context context) {
@@ -38,6 +39,9 @@ public final class EmailTokenVerifyRestlet extends Restlet {
 						e1.printStackTrace();
 						throw new RuntimeException(e1.getMessage(),e1);
 					} catch (DataAccessException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException(e1.getMessage(),e1);
+					} catch (UseridIDExistsException e1) {
 						e1.printStackTrace();
 						throw new RuntimeException(e1.getMessage(),e1);
 					}
