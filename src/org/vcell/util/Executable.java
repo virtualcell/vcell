@@ -107,7 +107,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 		// monitor the process; blocking call
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
-		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 1000);
+		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
 		setExitValue(new Integer(exitCode));
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
@@ -259,8 +259,8 @@ public static void main(java.lang.String[] args) {
 protected final int monitorProcess(InputStream inputStreamOut, InputStream inputStreamErr, long pollingIntervalMS) throws ExecutableException {
 	long t = System.currentTimeMillis();
 	
-	char charArrayOut[] = new char[10000];
-	char charArrayErr[] = new char[10000];
+	char charArrayOut[] = new char[1000000];
+	char charArrayErr[] = new char[1000000];
 	String outString = new String();
 	String errString = new String();
 	int numReadOut = 0; int numReadErr = 0; int exitValue = 0;
