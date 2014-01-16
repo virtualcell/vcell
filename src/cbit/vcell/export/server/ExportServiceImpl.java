@@ -243,36 +243,42 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 
 		// we need to make new output
 		log.print("ExportServiceImpl.makeRemoteFile(): Starting new export job: " + newExportJob);
-		ExportOutput[] exportOutputs = null;
-		switch (exportSpecs.getFormat()) {
-			case FORMAT_CSV:
-				exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-			case FORMAT_QUICKTIME:
-			case FORMAT_GIF:
-			case FORMAT_JPEG:
-			case FORMAT_ANIMATED_GIF:
-				exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport);
-				boolean bOverrideZip = exportOutputs.length == 1;
-				if(bSaveAsZip && !bOverrideZip){
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-				}else{
-					return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-				}
-			case FORMAT_NRRD:
-				NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);
-			case FORMAT_UCD:
-				exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-			case FORMAT_VTK_IMAGE:
-				exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-			case FORMAT_VTK_UNSTRUCT:
-				exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
-				return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob);
-			default:
-				throw new DataAccessException("Unknown export format requested");
+		FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
+		try{
+			ExportOutput[] exportOutputs = null;
+			switch (exportSpecs.getFormat()) {
+				case FORMAT_CSV:
+					exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				case FORMAT_QUICKTIME:
+				case FORMAT_GIF:
+				case FORMAT_JPEG:
+				case FORMAT_ANIMATED_GIF:
+					exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport,fileDataContainerManager);
+					boolean bOverrideZip = exportOutputs.length == 1;
+					if(bSaveAsZip && !bOverrideZip){
+						return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					}else{
+						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					}
+				case FORMAT_NRRD:
+//------------------check this
+					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);
+				case FORMAT_UCD:
+					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				case FORMAT_VTK_IMAGE:
+					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				case FORMAT_VTK_UNSTRUCT:
+					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+				default:
+					throw new DataAccessException("Unknown export format requested");
+			}
+		}finally{
+			fileDataContainerManager.closeAllAndDelete();
 		}
 	}catch(UserCancelException ex)
 	{
@@ -366,7 +372,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  * This function saves the remote file into a compressed zip file.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException, MalformedURLException {
+private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 
 			// check outputs and package into zip file
@@ -377,7 +383,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 				if (exportOutputs[i].isValid()) {
 					ZipEntry zipEntry = new ZipEntry(exportOutputs[i].getSimID() + exportOutputs[i].getDataID() + exportOutputs[i].getDataType());
 					zipOut.putNextEntry(zipEntry);
-					exportOutputs[i].writeDataToOutputStream(zipOut,true);
+					exportOutputs[i].writeDataToOutputStream(zipOut,fileDataContainerManager);
 					//zipOut.write(exportOutputs[i].getData());
 				} else {
 					exportValid = false;
@@ -400,7 +406,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 /**
  * Save remote file in it original format without compression.
  */
-private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException, MalformedURLException
+private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException
 {
 	boolean exportValid = true;
 	String fileNames = "";
@@ -411,7 +417,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		File file = new File(exportBaseDir + newExportJob.getJobID() + extStr);
 		FileOutputStream fileOut = new FileOutputStream(file);
 		BufferedOutputStream out= new BufferedOutputStream(fileOut);
-		exportOutputs[0].writeDataToOutputStream(out,true);
+		exportOutputs[0].writeDataToOutputStream(out,fileDataContainerManager);
 		//out.write(exportOutputs[0].getData());
 		out.close();
 		fileNames = fileNames + file.getName();
@@ -423,7 +429,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 				File moreFile = new File(exportBaseDir + newExportJob.getJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);
 				ObjectOutputStream moreOut= new ObjectOutputStream(moreFileOut);
-				exportOutputs[i].writeDataToOutputStream(moreOut,true);
+				exportOutputs[i].writeDataToOutputStream(moreOut,fileDataContainerManager);
 				//moreOut.writeObject(exportOutputs[i].getData());
 				moreOut.close();
 				fileNames = "\t"+fileNames + moreFile.getName();
