@@ -22,57 +22,34 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 
 import org.vcell.util.FileUtils;
+
+import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+
 /**
  * This type was created in VisualAge.
  */
 public class ExportOutput implements Serializable {
-	
 	private boolean valid;
 	private String dataType;
 	private String simID;
 	private String dataID;
-	private FileBackedDataContainer data;
+	private FileDataContainerID fileDataContainerID;
 	
-/**
- * This method was created in VisualAge.
- * @param dataType java.lang.String
- * @param dataID java.lang.String
- * @param data byte[]
- * @throws IOException 
- */
-public ExportOutput(boolean valid, String dataType, String simID, String dataID, byte[] data) throws IOException {
-	this.valid = valid;
-	this.dataType = dataType;
-	this.simID = simID;
-	this.dataID = dataID;
 
-	this.data = new FileBackedDataContainer(data);
-	
-}
-
-
-public ExportOutput(boolean valid, String dataType, String simID, String dataID, FileBackedDataContainer dataContainer) throws IOException {
+public ExportOutput(boolean valid, String dataType, String simID, String dataID, FileDataContainerManager fileDataContainerManager) throws IOException {
 	this.valid = valid;
 	this.dataType = dataType;
 	this.simID = simID;
 	this.dataID = dataID;
      
 	//this.data = putDataIntoTempFile(data);
-	this.data = dataContainer;
+	this.fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
 }
 
-//private File putDataIntoTempFile(byte[] dataBytes) throws IOException{
-//	File tempDataFile = File.createTempFile("TestTempFile", ".tmp");
-//	tempDataFile.deleteOnExit();
-//	//System.out.print("Created temp file at: "+tempDataFile.getAbsolutePath()+" for "+dataBytes.length+" bytes ....");
-//	FileUtils.writeByteArrayToFile(dataBytes, tempDataFile);
-//	//System.out.println("Done writing.");
-//	return tempDataFile;
-//}
-
-public void writeDataToOutputStream(OutputStream outputStream,boolean bDeleteTempFile) throws FileNotFoundException, IOException{
+public void writeDataToOutputStream(OutputStream outputStream,FileDataContainerManager fileDataContainerManager) throws FileNotFoundException, IOException{
 //	FileInputStream fis = new FileInputStream(data.getDataFile());
 //	ReadableByteChannel source = Channels.newChannel(fis);
 //    WritableByteChannel target = Channels.newChannel(outputStream);
@@ -92,10 +69,11 @@ public void writeDataToOutputStream(OutputStream outputStream,boolean bDeleteTem
 	FileInputStream fis = null;
 	BufferedInputStream bis = null;
 	try{
-		fis = new FileInputStream(data.getDataFile());
+		File dataFile = fileDataContainerManager.getFileDataContainer(fileDataContainerID).getDataFile();
+		fis = new FileInputStream(dataFile);
 		bis = new BufferedInputStream(fis);
 		// Copy the contents of the file to the output stream
-		byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,data.getDataFile().length())];
+		byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,dataFile.length())];
 		int count = 0;                 
 		while ((count = bis.read(buffer)) >= 0) {    
 			outputStream.write(buffer, 0, count);
@@ -104,16 +82,11 @@ public void writeDataToOutputStream(OutputStream outputStream,boolean bDeleteTem
 	}finally{
 		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
 		if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
-		if(bDeleteTempFile){
-			if(!data.getDataFile().delete()){
-				new Exception("Failed to delete ExportOutput Tempfile '"+data.getDataFile()+"'").printStackTrace();
-			}
-		}
 	}
 }
 
-public FileBackedDataContainer getDataContainer(){
-	return this.data;
+public FileDataContainerID getFileDataContainerID(){
+	return fileDataContainerID;
 }
 
 //public byte[] getData() throws IOException {

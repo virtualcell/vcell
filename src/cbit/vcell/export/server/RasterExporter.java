@@ -254,7 +254,7 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 	);
 }
 
-public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir)
+public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager)
 						throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -307,7 +307,8 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 					volumeDataUnitV.toArray(new String[0]),
 					volumeDataV.toArray(new double[0][]),
 					stringWriter);
-				ExportOutput exportOut = new ExportOutput(true,".ucd",simID.toString(),"_vol_"+j,stringWriter.toString().getBytes());
+				ExportOutput exportOut = new ExportOutput(true,".ucd",simID.toString(),"_vol_"+j,fileDataContainerManager);
+				fileDataContainerManager.append(exportOut.getFileDataContainerID(), stringWriter.toString());
 				exportOutV.add(exportOut);				
 			}
 			if(membraneDataV.size() > 0){
@@ -318,7 +319,8 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 					membraneDataUnitV.toArray(new String[0]),
 					membraneDataV.toArray(new double[0][]),
 					stringWriter);
-				ExportOutput exportOut = new ExportOutput(true,".ucd",simID.toString(),"_memb_"+j,stringWriter.toString().getBytes());
+				ExportOutput exportOut = new ExportOutput(true,".ucd",simID.toString(),"_memb_"+j,fileDataContainerManager);
+				fileDataContainerManager.append(exportOut.getFileDataContainerID(), stringWriter.toString());
 				exportOutV.add(exportOut);				
 			}
 
@@ -363,7 +365,7 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 }
 
 public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs, String tempDir) throws Exception{
+		ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager) throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -418,7 +420,8 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 					}
 					sb.append("\n");
 				}
-				ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"_vol_"+j,sb.toString().getBytes());
+				ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"_vol_"+j,fileDataContainerManager);
+				fileDataContainerManager.append(exportOut.getFileDataContainerID(), sb.toString());
 				exportOutV.add(exportOut);				
 
 			}else{
@@ -433,7 +436,7 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 }
 
 public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir)throws Exception{
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager)throws Exception{
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -496,8 +499,9 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 //	volumeDataUnitV.toArray(new String[0]),
 //	volumeDataV.toArray(new double[0][]),
 //	stringWriter);
-	ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"vol_"+j,stringWriter.toString().getBytes());
-	exportOutV.add(exportOut);				
+		ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"vol_"+j,fileDataContainerManager);
+		fileDataContainerManager.append(exportOut.getFileDataContainerID(), stringWriter.toString());
+		exportOutV.add(exportOut);				
 	}
 	if(membraneDataV.size() > 0){
 		int[] regionIDs = new int[mesh.getNumMembraneElements()];
@@ -518,8 +522,9 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 //	membraneDataUnitV.toArray(new String[0]),
 //	membraneDataV.toArray(new double[0][]),
 //	stringWriter);
-	ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"memb_"+j,stringWriter.toString().getBytes());
-	exportOutV.add(exportOut);				
+		ExportOutput exportOut = new ExportOutput(true,".vtk",simID.toString(),"memb_"+j,fileDataContainerManager);
+		fileDataContainerManager.append(exportOut.getFileDataContainerID(), stringWriter.toString());
+		exportOutV.add(exportOut);				
 	}
 	
 	

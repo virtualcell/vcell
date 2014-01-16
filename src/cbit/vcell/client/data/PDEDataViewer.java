@@ -128,6 +128,7 @@ import cbit.vcell.export.gloworm.quicktime.MediaTrack;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
@@ -2838,64 +2839,69 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
 			DataInfoProvider dataInfoProvider = getPDEDataContextPanel1().getDataInfoProvider();
-			try {
-				for (int t = 0; t < tsJobResultsNoStats.getTimes().length; t++) {
-					getClientTaskStatusSupport().setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)t/(double)tsJobResultsNoStats.getTimes().length),3)+"%");
-					
-					double min = Double.POSITIVE_INFINITY;
-					double max = Double.NEGATIVE_INFINITY;
-					for (int index = 1; index < timeSeries.length; index++) {
-						double v = timeSeries[index][t];
-						if((dataInfoProvider == null || dataInfoProvider.isDefined(index-1)) && !Double.isNaN(v) && !Double.isInfinite(v)){
-							min = Math.min(min, v);
-							max = Math.max(max, v);
+			FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
+			try{
+				try {
+					for (int t = 0; t < tsJobResultsNoStats.getTimes().length; t++) {
+						getClientTaskStatusSupport().setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)t/(double)tsJobResultsNoStats.getTimes().length),3)+"%");
+						
+						double min = Double.POSITIVE_INFINITY;
+						double max = Double.NEGATIVE_INFINITY;
+						for (int index = 1; index < timeSeries.length; index++) {
+							double v = timeSeries[index][t];
+							if((dataInfoProvider == null || dataInfoProvider.isDefined(index-1)) && !Double.isNaN(v) && !Double.isInfinite(v)){
+								min = Math.min(min, v);
+								max = Math.max(max, v);
+							}
 						}
-					}
-					das.setValueDomain(new Range(min,max));
-					if(das.getAutoScale()){
-						das.setActiveScaleRange(new Range(min,max));
-					}
-					int[][] surfacesColors = new int[surfaceCanvas.getSurfaceCollection().getSurfaceCount()][];
-					for (int i = 0; i < surfaceCanvas.getSurfaceCollection().getSurfaceCount(); i += 1) {
-						Surface surface = surfaceCanvas.getSurfaceCollection().getSurfaces(i);
-						surfacesColors[i] = new int[surface.getPolygonCount()];
-						for (int j = 0; j < surface.getPolygonCount(); j += 1) {
-							int membIndex = meshRegionSurfaces.getMembraneIndexForPolygon(i, j);
-							surfacesColors[i][j] = das.getColorFromValue(timeSeries[membIndex+1][t]);
+						das.setValueDomain(new Range(min,max));
+						if(das.getAutoScale()){
+							das.setActiveScaleRange(new Range(min,max));
 						}
+						int[][] surfacesColors = new int[surfaceCanvas.getSurfaceCollection().getSurfaceCount()][];
+						for (int i = 0; i < surfaceCanvas.getSurfaceCollection().getSurfaceCount(); i += 1) {
+							Surface surface = surfaceCanvas.getSurfaceCollection().getSurfaces(i);
+							surfacesColors[i] = new int[surface.getPolygonCount()];
+							for (int j = 0; j < surface.getPolygonCount(); j += 1) {
+								int membIndex = meshRegionSurfaces.getMembraneIndexForPolygon(i, j);
+								surfacesColors[i][j] = das.getColorFromValue(timeSeries[membIndex+1][t]);
+							}
+						}
+						surfaceCanvas.setSurfacesColors(surfacesColors);
+						
+						surfaceCanvas.paintImmediately(0, 0, surfaceWidth, surfaceHeight);
+						surfaceCanvas.paint(g2D);
+						bufferedImage.getRGB(0, 0, surfaceWidth, surfaceHeight, singleFrame, 0, surfaceWidth);
+						sampleDuration = 1;
+						sample =
+							FormatSpecificSpecs.getVideoMediaSample(
+								surfaceWidth, surfaceHeight * varNames.length, sampleDuration, false, FormatSpecificSpecs.CODEC_JPEG, 1.0f, singleFrame);
+						chunks[t] = new VideoMediaChunk(sample,fileDataContainerManager);
 					}
-					surfaceCanvas.setSurfacesColors(surfacesColors);
-					
+				}finally{
+					surfaceCanvas.setSurfacesColors(origSurfacesColors);
 					surfaceCanvas.paintImmediately(0, 0, surfaceWidth, surfaceHeight);
-					surfaceCanvas.paint(g2D);
-					bufferedImage.getRGB(0, 0, surfaceWidth, surfaceHeight, singleFrame, 0, surfaceWidth);
-					sampleDuration = 1;
-					sample =
-						FormatSpecificSpecs.getVideoMediaSample(
-							surfaceWidth, surfaceHeight * varNames.length, sampleDuration, false, FormatSpecificSpecs.CODEC_JPEG, 1.0f, singleFrame);
-					chunks[t] = new VideoMediaChunk(sample);
 				}
+				MediaTrack videoTrack = new MediaTrack(chunks);
+				MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
+				newMovie.addUserDataEntry(new UserDataEntry("cpy", "\u00A9" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
+				newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
+				newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + timePoints[beginTimeIndex] + " - " + timePoints[endTimeIndex]));
+				for (int k = 0; k < varNames.length; k ++) {
+					String entryType = "v" + (k < 10 ? "0" : "") + k; // pad with 0 if k < 10
+					UserDataEntry entry = new UserDataEntry(entryType,	"Variable name: " + varNames[k] + " min: " + das.getValueDomain().getMin() 
+							+ " max: " + das.getValueDomain().getMax());
+					newMovie.addUserDataEntry(entry);
+				}
+				getClientTaskStatusSupport().setMessage("Writing Movie to disk...");
+				FileOutputStream fos = new FileOutputStream(selectedFile);
+				DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
+				MediaMethods.writeMovie(movieOutput, newMovie);
+				movieOutput.close();
+				fos.close();
 			}finally{
-				surfaceCanvas.setSurfacesColors(origSurfacesColors);
-				surfaceCanvas.paintImmediately(0, 0, surfaceWidth, surfaceHeight);
+				fileDataContainerManager.closeAllAndDelete();
 			}
-			MediaTrack videoTrack = new MediaTrack(chunks);
-			MediaMovie newMovie = new MediaMovie(videoTrack, videoTrack.getDuration(), timeScale);
-			newMovie.addUserDataEntry(new UserDataEntry("cpy", "\u00A9" + (new GregorianCalendar()).get(Calendar.YEAR) + ", UCHC"));
-			newMovie.addUserDataEntry(new UserDataEntry("des", "Dataset name: " + movieVCDataIdentifier.getID()));
-			newMovie.addUserDataEntry(new UserDataEntry("cmt", "Time range: " + timePoints[beginTimeIndex] + " - " + timePoints[endTimeIndex]));
-			for (int k = 0; k < varNames.length; k ++) {
-				String entryType = "v" + (k < 10 ? "0" : "") + k; // pad with 0 if k < 10
-				UserDataEntry entry = new UserDataEntry(entryType,	"Variable name: " + varNames[k] + " min: " + das.getValueDomain().getMin() 
-						+ " max: " + das.getValueDomain().getMax());
-				newMovie.addUserDataEntry(entry);
-			}
-			getClientTaskStatusSupport().setMessage("Writing Movie to disk...");
-			FileOutputStream fos = new FileOutputStream(selectedFile);
-			DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
-			MediaMethods.writeMovie(movieOutput, newMovie);
-			movieOutput.close();
-			fos.close();
 		}
 	};
 	ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2, task3 }, true, true, null);
