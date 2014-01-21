@@ -9,18 +9,27 @@
  */
 
 package cbit.vcell.solver.ode.gui;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -28,23 +37,25 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.gui.MyDataInterface.FilterCategory;
 import cbit.vcell.util.ColumnDescription;
 
 /**
@@ -73,7 +84,6 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JScrollPane ivjJScrollPaneYAxis = null;
 	private JLabel ivjJLabelSensitivityParameter = null;
 	private JPanel ivjJPanelSensitivity = null;
-	private ODESolverResultSet fieldOdeSolverResultSet = null;
 	private DefaultListModel ivjDefaultListModelY = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private int[] plottableColumnIndices = new int[0];
@@ -85,7 +95,8 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JComboBox ivjXAxisComboBox = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private ODESolverResultSet ivjodeSolverResultSet1 = null;
+	private MyDataInterface ivjodeSolverResultSet1 = null;
+	private MyDataInterface fieldOdeSolverResultSet = null;
 	
 	private static ImageIcon function_icon = null;
 	
@@ -122,6 +133,8 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 		};
 	};
 	private SymbolTable fieldSymbolTable = null;
+	private JPanel panel;
+	private JButton btnYFilter;
 
 /**
  * ODESolverPlotSpecificationPanel constructor comment.
@@ -175,7 +188,7 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(ODESolverResultSet value) {
+private void connEtoC11(MyDataInterface value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -215,7 +228,7 @@ private void connEtoC12(javax.swing.event.ChangeEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(ODESolverResultSet value) {
+private void connEtoC13(MyDataInterface value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -334,7 +347,7 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(ODESolverResultSet value) {
+private void connEtoC9(MyDataInterface value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -682,7 +695,7 @@ private javax.swing.JLabel getMinLabel() {
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public ODESolverResultSet getOdeSolverResultSet() {
+public MyDataInterface getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
@@ -692,7 +705,7 @@ public ODESolverResultSet getOdeSolverResultSet() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ODESolverResultSet getodeSolverResultSet1() {
+private MyDataInterface getodeSolverResultSet1() {
 	// user code begin {1}
 	// user code end
 	return ivjodeSolverResultSet1;
@@ -1054,18 +1067,19 @@ private void initialize() {
 		setMinimumSize(new java.awt.Dimension(125, 300));
 
 		java.awt.GridBagConstraints constraintsXAxisLabel = new java.awt.GridBagConstraints();
+		constraintsXAxisLabel.anchor = GridBagConstraints.WEST;
 		constraintsXAxisLabel.gridx = 0; constraintsXAxisLabel.gridy = 0;
-		constraintsXAxisLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXAxisLabel.insets = new Insets(4, 4, 5, 4);
 		add(getXAxisLabel(), constraintsXAxisLabel);
-
-		java.awt.GridBagConstraints constraintsYAxisLabel = new java.awt.GridBagConstraints();
-		constraintsYAxisLabel.gridx = 0; constraintsYAxisLabel.gridy = 2;
-		constraintsYAxisLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getYAxisLabel(), constraintsYAxisLabel);
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.insets = new Insets(4, 4, 5, 4);
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 2;
+		add(getPanel(), gbc_panel);
 
 		java.awt.GridBagConstraints constraintsJPanelSensitivity = new java.awt.GridBagConstraints();
-		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 5;
-		constraintsJPanelSensitivity.gridheight = 2;
+		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 4;
 		constraintsJPanelSensitivity.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanelSensitivity.weightx = 1.0;
 		add(getJPanelSensitivity(), constraintsJPanelSensitivity);
@@ -1075,14 +1089,14 @@ private void initialize() {
 		constraintsJScrollPaneYAxis.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPaneYAxis.weightx = 1.0;
 		constraintsJScrollPaneYAxis.weighty = 1.0;
-		constraintsJScrollPaneYAxis.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJScrollPaneYAxis.insets = new Insets(4, 4, 5, 4);
 		add(getJScrollPaneYAxis(), constraintsJScrollPaneYAxis);
 
 		java.awt.GridBagConstraints constraintsXAxisComboBox = new java.awt.GridBagConstraints();
 		constraintsXAxisComboBox.gridx = 0; constraintsXAxisComboBox.gridy = 1;
 		constraintsXAxisComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsXAxisComboBox.weightx = 1.0;
-		constraintsXAxisComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXAxisComboBox.insets = new Insets(4, 4, 5, 4);
 		add(getXAxisComboBox(), constraintsXAxisComboBox);
 
 		initConnections();
@@ -1092,7 +1106,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
 /**
  * Comment
  */
@@ -1362,9 +1375,10 @@ private void regeneratePlot2D() throws ExpressionException {
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
-	ODESolverResultSet oldValue = fieldOdeSolverResultSet;
+public void setOdeSolverResultSet(MyDataInterface odeSolverResultSet) {
+	MyDataInterface oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
+	fieldOdeSolverResultSet.setMathDescription((MathDescription)getSymbolTable());
 	if (odeSolverResultSet==null){
 		setPlot2D(null);
 		return;
@@ -1378,10 +1392,10 @@ public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
  * @param newValue cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setodeSolverResultSet1(ODESolverResultSet newValue) {
+private void setodeSolverResultSet1(MyDataInterface newValue) {
 	if (ivjodeSolverResultSet1 != newValue) {
 		try {
-			ODESolverResultSet oldValue = getodeSolverResultSet1();
+			MyDataInterface oldValue = getodeSolverResultSet1();
 			/* Stop listening for events from the current object */
 			if (ivjodeSolverResultSet1 != null) {
 				ivjodeSolverResultSet1.removePropertyChangeListener(ivjEventHandler);
@@ -1516,7 +1530,7 @@ private synchronized void setYIndicesFromList() {
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private void sortIndices(final ODESolverResultSet odeSolverResultSet, ArrayList<Integer> indices) {
+private void sortIndices(final MyDataInterface odeSolverResultSet, ArrayList<Integer> indices) {
 	Collections.sort(indices, new Comparator<Integer>() {
 
 		public int compare(Integer o1, Integer o2) {
@@ -1524,7 +1538,7 @@ private void sortIndices(final ODESolverResultSet odeSolverResultSet, ArrayList<
 	        ColumnDescription columnDescriptionJ = odeSolverResultSet.getColumnDescriptions(o2);
 	        String nameI = columnDescriptionI.getName();
 			String nameJ = columnDescriptionJ.getName();
-			return nameI.compareTo(nameJ);
+			return nameI.compareToIgnoreCase(nameJ);
 		}
 	});
 }
@@ -1535,7 +1549,7 @@ private void sortIndices(final ODESolverResultSet odeSolverResultSet, ArrayList<
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) throws ExpressionException {
+private synchronized void updateChoices(MyDataInterface odeSolverResultSet) throws ExpressionException {
 	if (odeSolverResultSet == null) {
 		return;
 	}
@@ -1608,7 +1622,7 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
 /**
  * Comment
  */
-private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws ExpressionException {
+private void updateResultSet(MyDataInterface odeSolverResultSet) throws ExpressionException {
 	String[] columnNames = new String[odeSolverResultSet.getColumnDescriptionsCount()];
 
 	for (int i = 0; i < columnNames.length; i++){
@@ -1673,4 +1687,94 @@ public String[] getSelectedVariableNames() {
 	}
 	return selectedNames;
 }
+private JPanel getPanel() {
+	if (panel == null) {
+		panel = new JPanel();
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		GridBagConstraints gbc_ivjYAxisLabel = new GridBagConstraints();
+		gbc_ivjYAxisLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_ivjYAxisLabel.weightx = 1.0;
+		gbc_ivjYAxisLabel.gridx = 0;
+		gbc_ivjYAxisLabel.gridy = 0;
+		panel.add(getYAxisLabel(), gbc_ivjYAxisLabel);
+		GridBagConstraints gbc_btnYFilter = new GridBagConstraints();
+		gbc_btnYFilter.anchor = GridBagConstraints.EAST;
+		gbc_btnYFilter.gridx = 1;
+		gbc_btnYFilter.gridy = 0;
+		panel.add(getBtnYFilter(), gbc_btnYFilter);
+	}
+	return panel;
+}
+private JButton getBtnYFilter() {
+	if (btnYFilter == null) {
+		btnYFilter = new JButton("Filter...");
+		btnYFilter.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showFilterSettings();
+			}
+		});
+	}
+	return btnYFilter;
+}
+
+private HashMap<JCheckBox, FilterCategory> filterSettings;
+private JCheckBox getFilterSetting(FilterCategory filterCategory){
+	if(filterSettings == null){
+		filterSettings = new HashMap<JCheckBox, MyDataInterface.FilterCategory>();
+	}
+	for(JCheckBox jCheckBox:filterSettings.keySet()){
+		if(filterSettings.get(jCheckBox).equals(filterCategory)){
+			return jCheckBox;
+		}
+	}
+	JCheckBox newJCheckBox = new JCheckBox(filterCategory.getName());
+	newJCheckBox.setSelected(true);
+	filterSettings.put(newJCheckBox,filterCategory);
+	return newJCheckBox;		
+}
+private void showFilterSettings(){
+	HashMap<JCheckBox, FilterCategory> oldFilterSettings = filterSettings;
+	filterSettings = null;
+	if(getOdeSolverResultSet() != null){
+		FilterCategory[] filterCategories = getOdeSolverResultSet().getSupportedFilterCategories();
+		for (int i = 0; i < filterCategories.length; i++) {
+			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
+			if(oldFilterSettings != null){
+				for(JCheckBox jCheckBox:oldFilterSettings.keySet()){
+					if(filterSettings.get(newFiltersJCheckBox).equals(oldFilterSettings.get(jCheckBox))){
+						newFiltersJCheckBox.setSelected(jCheckBox.isSelected());
+						break;
+					}
+				}
+			}
+		}
+	}else{
+		DialogUtils.showWarningDialog(this, "Cannot display filter, no resultset.");
+		return;
+	}
+	
+	JPanel filterPanel = new JPanel();
+	filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
+	filterPanel.setBorder(new LineBorder(Color.black));
+	for (JCheckBox jCheckBox:filterSettings.keySet()) {
+		jCheckBox.setAlignmentX(0f);
+		filterPanel.add(jCheckBox);
+	}			
+	
+	DialogUtils.showComponentCloseDialog(this, filterPanel, "Choose displayed variable types:");
+	
+	ArrayList<FilterCategory> selectedFilterCategories = new ArrayList<MyDataInterface.FilterCategory>();
+	for(JCheckBox jCheckBox:filterSettings.keySet()){
+		if(jCheckBox.isSelected()){
+			selectedFilterCategories.add(filterSettings.get(jCheckBox));
+		}
+	}
+	getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategory[0]));
+}
+
 }

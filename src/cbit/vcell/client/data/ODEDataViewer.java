@@ -13,15 +13,11 @@ import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JOptionPane;
-
-import org.vcell.util.BeanUtils;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.ExportMonitorPanel;
@@ -53,8 +49,8 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 					iniHistogramDisplay();
 				}
 			}
-			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("odeSolverResultSet"))) 
-				connPtoP1SetSource();
+//			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("odeSolverResultSet"))) 
+//				connPtoP1SetSource();
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 
 				connEtoM2(evt);
 		};
@@ -88,32 +84,17 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 
 
 /**
- * connPtoP1SetSource:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
- */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			ivjConnPtoP1Aligning = true;
-			this.setOdeSolverResultSet(getODESolverPlotSpecificationPanel1().getOdeSolverResultSet());
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connPtoP1SetTarget:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
  */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
+	if(getOdeSolverResultSet() == null){
+		return;
+	}
 	try {
 		if (ivjConnPtoP1Aligning == false) {
 			ivjConnPtoP1Aligning = true;
-			getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(this.getOdeSolverResultSet());
+			getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(new MyDataInterfaceImpl(this.getOdeSolverResultSet()));
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
