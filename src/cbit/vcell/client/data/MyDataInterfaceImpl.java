@@ -1,134 +1,108 @@
 package cbit.vcell.client.data;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.TreeSet;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.util.ObjectNotFoundException;
 
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.Variable;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.ode.gui.MyDataInterface;
-import cbit.vcell.solver.stoch.StochSolverResultSetColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 public class MyDataInterfaceImpl implements MyDataInterface {
 	
-	private ODESolverResultSet odeSolverResultSet = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private FilterCategory[] selectedFilters = null;
+	private FilterCategoryType[] selectedFilters = null;
+	private ODEDataViewer odeDataViewer;
 	
-	public class FilterCategoryImpl implements FilterCategory {
-		private final String categoryName;
-		public FilterCategoryImpl(String categoryName){
-			this.categoryName = categoryName;
-		}
-		public String getName(){
-			return this.categoryName;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if(!(obj instanceof FilterCategory)){
-				return false;
-			}
-			return getName().equals(((FilterCategory)obj).getName());
-		}
-		@Override
-		public int hashCode() {
-			return categoryName.hashCode();
-		}
-		
-	}
-	
-//	private final FilterCategory[] filterCategories = new FilterCategory[]{
-//		new FilterCategoryImpl("volume"),
-//		new FilterCategoryImpl("user function"),
-//		new FilterCategoryImpl("model function"),
-//		new FilterCategoryImpl("reserved variable")
-//	};
-	
-	public MyDataInterfaceImpl(ODESolverResultSet odeSolverResultSet){
-		this.odeSolverResultSet = odeSolverResultSet;
+	private PropertyChangeListener myPropertyChangeListener =
+			new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+//					System.out.println("-----"+MyDataInterfaceImpl.class.getSimpleName()+": "+evt.getPropertyName()+" "+evt.getSource().getClass().getSimpleName());
+					if( (evt.getSource() == getOdeSolverResultSet() && evt.getPropertyName().equals("columnDescriptions")) ||
+						(evt.getSource() == odeDataViewer && evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO))){
+						resetFilterCategories();
+					}
+				}
+			};
+	public MyDataInterfaceImpl(){
 		propertyChange = new PropertyChangeSupport(this);
 	}
 
-	private MathDescription mathDescription;
-	public void setMathDescription(MathDescription mathDescription){
-		this.mathDescription = mathDescription;
-	}
-	private FilterCategory getFilterCategory(ColumnDescription columnDescription){
-		String displayName = null;
-		if(columnDescription instanceof ODESolverResultSetColumnDescription){
-			ODESolverResultSetColumnDescription odeSolverResultSetColumnDescription = (ODESolverResultSetColumnDescription)columnDescription;
-			if(mathDescription.getVariable(columnDescription.getName()) != null){
-				Variable var = mathDescription.getVariable(columnDescription.getName());
-				displayName = var.getClass().getSimpleName();
-			}else{
-				if(ReservedVariable.TIME.getName().equals(columnDescription.getName()) ||
-					ReservedVariable.X.getName().equals(columnDescription.getName()) ||
-					ReservedVariable.Y.getName().equals(columnDescription.getName()) ||
-					ReservedVariable.Z.getName().equals(columnDescription.getName())){
-					displayName = FilterCategory.RESERVE_VAR_FILTER_CATEGORY;
-				}else if(columnDescription.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
-					displayName = SimDataConstants.HISTOGRAM_INDEX_NAME;
-				}
-//				else if(getPlot2D() != null){
-//					for (int i = 0; i < getPlot2D().getSymbolTableEntries().length; i++) {
-//						if(getPlot2D().getSymbolTableEntries()[i].getName().equals(columnDescription.getName())){
-//							displayName = getPlot2D().getSymbolTableEntries()[i].getClass().getSimpleName();
-//							break;
-//						}
-//					}
-//				}
-				if(displayName == null){
-					displayName = "ODE Unknown";
-				}
-			}
-		}else if(columnDescription instanceof FunctionColumnDescription){
-			boolean bUser = ((FunctionColumnDescription)columnDescription).getIsUserDefined();
-			displayName = "Function"+(bUser?" (user)":" (model)");
-		}else if(columnDescription instanceof StochSolverResultSetColumnDescription){
-			StochSolverResultSetColumnDescription stochSolverResultSetColumnDescription = (StochSolverResultSetColumnDescription)columnDescription;
-			if(mathDescription.getVariable(columnDescription.getName()) != null){
-				Variable var = mathDescription.getVariable(columnDescription.getName());
-				displayName = "Stoch"+var.getClass().getSimpleName();
-			}else{
-				displayName = "Stoch Unknown";
-			}
+	public void setODEDataViewer(ODEDataViewer newODEDataViewer){
+		if(this.odeDataViewer != null){
+			this.odeDataViewer.removePropertyChangeListener(myPropertyChangeListener);
 		}
-		return new FilterCategoryImpl(displayName);
-	}
-	@Override
-	public FilterCategory[] getSupportedFilterCategories() {
-		ArrayList<FilterCategory> filterCategoryArrList = new ArrayList<MyDataInterface.FilterCategory>();
-		for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-			ColumnDescription columnDescription = odeSolverResultSet.getColumnDescriptions(i);
-			FilterCategory filterCategory = getFilterCategory(columnDescription);
-			if(filterCategory.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
-				//multitrial data have 'TrialNo' placeholder that is not displayed as plottable variable
-				//so skip this.
-				continue;
-			}
-			if(filterCategory.getName().equals(FilterCategory.RESERVE_VAR_FILTER_CATEGORY)){
-				//ODESolverPlotSpecificationPanel non-multitrial data must have TIME reserved variable
-				//so skip (don't give user chance to filter it off the display list)
-				continue;
-			}
-			filterCategoryArrList.add(filterCategory);
+		this.odeDataViewer = newODEDataViewer;
+		if(this.odeDataViewer != null){
+			this.odeDataViewer.addPropertyChangeListener(myPropertyChangeListener);
 		}
-		return filterCategoryArrList.toArray(new FilterCategory[0]);
+		resetFilterCategories();
+	}
+	private void resetFilterCategories(){
+		if(this.odeDataViewer == null ||
+			this.odeDataViewer.getSimulationModelInfo() == null ||
+			!(this.odeDataViewer.getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo)){
+			return;
+		}
+		AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				filterCategoryMap =
+					((SimulationWorkspaceModelInfo)odeDataViewer.getSimulationModelInfo()).getFilterCategories(
+						getOdeSolverResultSet().getColumnDescriptions());
+			}
+		};
+		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
+			}
+		};
+		ClientTaskDispatcher.dispatch(odeDataViewer, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+				false, false, false, null, true);
+	}
+	
+	private HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap;
+	private HashMap<ColumnDescription, FilterCategoryType> getFilterCategoryMap() {
+		return filterCategoryMap;
+	}
+
+	private FilterCategoryType getFilterCategory(ColumnDescription columnDescription) {
+		HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = getFilterCategoryMap();
+		if(filterCategoryMap != null){
+			return filterCategoryMap.get(columnDescription);
+		}
+		return null;
 	}
 
 	@Override
-	public void selectCategory(FilterCategory[] filterCategories) {
+	public FilterCategoryType[] getSupportedFilterCategories() {
+		HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = getFilterCategoryMap();
+		if(filterCategoryMap != null){
+			TreeSet<FilterCategoryType> uniqCategoryTypes = new TreeSet<SimulationWorkspaceModelInfo.FilterCategoryType>();
+			uniqCategoryTypes.addAll(filterCategoryMap.values());
+			return uniqCategoryTypes.toArray(new FilterCategoryType[0]);
+		}
+		return new FilterCategoryType[0];
+	}
+
+	@Override
+	public void selectCategory(FilterCategoryType[] filterCategories) {
 		this.selectedFilters = filterCategories;
-		propertyChange.firePropertyChange("columnDescriptions", null, getColumnDescriptions());
+		propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
 	}
 
 	@Override
@@ -143,113 +117,81 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 
 	@Override
 	public int getColumnDescriptionsCount() {
-		return getColumnDescriptions().length;
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.getColumnDescriptionsCount();
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
+		return getFilteredColumnDescriptions().length;
 	}
 
 	@Override
-	public ColumnDescription getColumnDescriptions(int i) {
-		return getColumnDescriptions()[i];
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.getColumnDescriptions(i);
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
+	public ColumnDescription getColumnDescription(String columnName) throws ObjectNotFoundException{
+		ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getColumnDescriptions();
+		for (int j = 0; j < columnDescriptions.length; j++) {
+			if(columnDescriptions[j].getName().equals(columnName)){
+				return columnDescriptions[j];
+			}
+		}
+		throw new ObjectNotFoundException("Couldn't find DolumnDescription="+columnName);
 	}
 
 	@Override
 	public FunctionColumnDescription[] getFunctionColumnDescriptions() {
 		ArrayList<FunctionColumnDescription> functionColumnDescriptions = new ArrayList<FunctionColumnDescription>();
-		ColumnDescription[] filteredColumnDescriptions = getColumnDescriptions();
+		ColumnDescription[] filteredColumnDescriptions = getFilteredColumnDescriptions();
 		for (int i = 0; i < filteredColumnDescriptions.length; i++) {
 			if(filteredColumnDescriptions[i] instanceof FunctionColumnDescription){
 				functionColumnDescriptions.add((FunctionColumnDescription)filteredColumnDescriptions[i]);
 			}
 		}
 		return functionColumnDescriptions.toArray(new FunctionColumnDescription[0]);
-		
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.getFunctionColumnDescriptions();
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
 	}
 
 	@Override
-	public int findColumn(String columnName) {
-		for (int i = 0; i < getColumnDescriptionsCount(); i++) {
-			if (columnName.equals(getColumnDescriptions(i).getName())) return (i);
-		}
-		return (-1);
-
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.findColumn(sensParamName);
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
-	}
-
-	@Override
-	public double[] extractColumn(int findColumn) throws ExpressionException {
-		ColumnDescription filterColumnDescription = getColumnDescriptions(findColumn);
-		for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
-			if(filterColumnDescription.getName().equals(odeSolverResultSet.getColumnDescriptions(i).getName())){
-				return odeSolverResultSet.extractColumn(i);
+	public double[] extractColumn(String columnName) throws ExpressionException,ObjectNotFoundException{
+		for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptionsCount(); i++) {
+			if(getOdeSolverResultSet().getColumnDescriptions(i).getName().equals(columnName)){
+				return getOdeSolverResultSet().extractColumn(i);
 			}
 		}
-		throw new RuntimeException("Couldn't find column "+findColumn);
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.extractColumn(findColumn);
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
+		throw new ObjectNotFoundException("Couldn't find column "+columnName);
 	}
 
 	@Override
 	public boolean isMultiTrialData() {
-		return odeSolverResultSet.isMultiTrialData();
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.isMultiTrialData();
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
+		return getOdeSolverResultSet().isMultiTrialData();
 	}
 
 	@Override
 	public int getRowCount() {
-		return odeSolverResultSet.getRowCount();
-//		if (selectedFilters == null || selectedFilters.length == 0){
-//			return odeSolverResultSet.getRowCount();
-//		}else{
-//			throw new RuntimeException("not yet implemented");
-//		}
+		return getOdeSolverResultSet().getRowCount();
 	}
 
 	@Override
-	public ColumnDescription[] getColumnDescriptions() {
+	public ColumnDescription[] getXColumnDescriptions() {
+		return getOdeSolverResultSet().getColumnDescriptions();
+	}
+	
+	@Override
+	public ColumnDescription[] getFilteredColumnDescriptions() {
 		if (selectedFilters == null){
-			return odeSolverResultSet.getColumnDescriptions();
+			return getOdeSolverResultSet().getColumnDescriptions();
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
-			for (int i = 0; i < odeSolverResultSet.getColumnDescriptions().length; i++) {
-				if(getFilterCategory(odeSolverResultSet.getColumnDescriptions()[i]).getName().equals(FilterCategory.RESERVE_VAR_FILTER_CATEGORY)){
-					selectedColumnDescriptions.add(odeSolverResultSet.getColumnDescriptions()[i]);
-					continue;
-				}
-				FilterCategory selectedFilterCategory = getFilterCategory(odeSolverResultSet.getColumnDescriptions()[i]);
+			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
+				FilterCategoryType selectedFilterCategory = getFilterCategory(getOdeSolverResultSet().getColumnDescriptions()[i]);
 				for (int j = 0; j < selectedFilters.length; j++) {
 					if(selectedFilters[j].equals(selectedFilterCategory)){
-						selectedColumnDescriptions.add(odeSolverResultSet.getColumnDescriptions()[i]);
+						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
 						break;
 					}
 				}
 			}
 			return selectedColumnDescriptions.toArray(new ColumnDescription[0]);
 		}
+	}
+
+	private ODESolverResultSet getOdeSolverResultSet() {
+		if(this.odeDataViewer == null){
+			return null;
+		}
+		return odeDataViewer.getOdeSolverResultSet();
 	}
 
 }

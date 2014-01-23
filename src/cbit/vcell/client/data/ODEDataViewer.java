@@ -94,7 +94,13 @@ private void connPtoP1SetTarget() {
 	try {
 		if (ivjConnPtoP1Aligning == false) {
 			ivjConnPtoP1Aligning = true;
-			getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(new MyDataInterfaceImpl(this.getOdeSolverResultSet()));
+			if(getODESolverPlotSpecificationPanel1().getOdeSolverResultSet() != null){
+				//make sure listeners are removed
+				getODESolverPlotSpecificationPanel1().getOdeSolverResultSet().setODEDataViewer(null);
+			}
+			MyDataInterfaceImpl myDataInterfaceImpl = new MyDataInterfaceImpl();
+			myDataInterfaceImpl.setODEDataViewer(this);
+			getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(myDataInterfaceImpl);
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
@@ -322,11 +328,11 @@ public void iniHistogramDisplay()
 	
 	if(getOdeSolverResultSet().isMultiTrialData())
 	{
-		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(false);
+		getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().setEnabled(false);
 	}
 	else //single trial
 	{
-		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(true);
+		getODESolverPlotSpecificationPanel1().getXAxisComboBox_frm().setEnabled(true);
 	}
 }
 

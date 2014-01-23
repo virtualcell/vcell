@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -21,6 +22,7 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Kinetics;
@@ -29,7 +31,10 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.util.ColumnDescription;
 
 /**
  * Insert the type's description here.
@@ -232,5 +237,64 @@ public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifi
 //		Variable variable = mathDescription.getVariable(dataName);
 //		System.out.println("-----"+variable);
 	}
+}
+
+public static enum FilterCategoryType {Species,Reactions,UserFunctions,ReservedXYZT,Other};
+public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(ColumnDescription[] columnDescriptions) throws Exception{
+	HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = new HashMap<ColumnDescription,FilterCategoryType>();
+		if(simulationOwner instanceof SimulationContext){
+			MathMapping mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+			MathDescription mathDescription = mathMapping.getMathDescription();
+			MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+//			Enumeration<Variable> variableEnum = mathDescription.getVariables();
+			for (int i = 0; i < columnDescriptions.length; i++) {
+				boolean bSpecies = false;
+				boolean bIsUserFunc = false;
+				boolean bReaction = false;
+				boolean bReserved = false;
+				Variable variable = mathDescription.getVariable(columnDescriptions[i].getName());
+				if(variable == null && columnDescriptions[i].getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
+					System.out.println(columnDescriptions[i]);
+				}else{
+					filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Other);
+				}
+
+				if(variable == null){
+					if(ReservedVariable.TIME.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.X.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.Y.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.Z.getName().equals(columnDescriptions[i].getName())){
+							bReserved = true;
+							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.ReservedXYZT);
+					}else if(columnDescriptions[i] instanceof FunctionColumnDescription){
+						if(((FunctionColumnDescription)columnDescriptions[i]).getIsUserDefined()){
+							bIsUserFunc = true;
+							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.UserFunctions);
+						}
+					}
+				}else{
+					SymbolTableEntry[] symbolTableEntries = mathSymbolMapping.getBiologicalSymbol(variable);
+	//				System.out.println(variable.getName()+" "+VariableType.getVariableType(variable)+" --"+variable);
+					for (int j = 0;symbolTableEntries != null &&  j < symbolTableEntries.length; j++) {
+	//					System.out.println("   "+symbolTableEntries[i]);
+						if(symbolTableEntries[j] instanceof SpeciesContext){
+							bSpecies =  true;
+							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Species);
+						}else if(symbolTableEntries[j] instanceof KineticsParameter){
+							KineticsParameter kineticsParameter = (KineticsParameter)symbolTableEntries[j];
+							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
+								bReaction = true;
+								filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Reactions);
+							}
+						}
+					}
+				}
+//				System.out.println((bSpecies?"+":"-")+(bIsUserFunc?"+":"-")+(bReaction?"+":"-")+(bReserved?"+":"-")+" bVAR="+(variable!=null)+" "+columnDescriptions[i].getName());
+			}
+		}else if (simulationOwner instanceof MathModel){
+		}else{
+			throw new RuntimeException("Unexpected SimulationOwner="+simulationOwner.getClass().getName());
+		}
+		return filterCategoryMap;
 }
 }

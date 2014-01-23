@@ -2,41 +2,39 @@ package cbit.vcell.solver.ode.gui;
 
 import java.beans.PropertyChangeListener;
 
-import cbit.vcell.math.MathDescription;
+import org.vcell.util.ObjectNotFoundException;
+
+import cbit.vcell.client.data.ODEDataViewer;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 public interface MyDataInterface {
 
-	public interface FilterCategory {
-		public static final String RESERVE_VAR_FILTER_CATEGORY = "Reserved XYZT";
-		public String getName();
-	}
-
+	void setODEDataViewer(ODEDataViewer odeDataViewer);
+	
 	void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
 	void addPropertyChangeListener(PropertyChangeListener ivjEventHandler);
 
 	int getColumnDescriptionsCount();
 
-	ColumnDescription getColumnDescriptions(int i);
+	ColumnDescription getColumnDescription(String columnName) throws ObjectNotFoundException;
 
-	ColumnDescription[] getColumnDescriptions();
+	ColumnDescription[] getXColumnDescriptions();
+	
+	ColumnDescription[] getFilteredColumnDescriptions();
 	
 	FunctionColumnDescription[] getFunctionColumnDescriptions();
 
-	int findColumn(String sensParamName);
-
-	double[] extractColumn(int findColumn) throws ExpressionException;
+	double[] extractColumn(String columnName) throws ExpressionException,ObjectNotFoundException;
 
 	boolean isMultiTrialData();
 
 	int getRowCount();
 	
-	FilterCategory[] getSupportedFilterCategories();
+	FilterCategoryType[] getSupportedFilterCategories();
 
-	void selectCategory(FilterCategory[] filterCategories);
-	
-	void setMathDescription(MathDescription mathDescription);
+	void selectCategory(FilterCategoryType[] filterCategories);
 }
