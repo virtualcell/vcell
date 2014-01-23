@@ -19,6 +19,7 @@ import java.util.zip.DataFormatException;
 import cbit.vcell.export.gloworm.atoms.AtomConstants;
 import cbit.vcell.export.gloworm.atoms.MediaData;
 import cbit.vcell.export.gloworm.atoms.SampleDescriptionEntry;
+import cbit.vcell.export.server.FileDataContainerManager;
 /**
  * This type was created in VisualAge.
  */
@@ -72,27 +73,30 @@ public class VideoMediaChunk implements MediaChunk {
 
 private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOException {
 	// append data bytes to file and clear memory copy
-	RandomAccessFile fw = new RandomAccessFile(dataFile, "rw");
-	fw.seek(dataFile.length());
-	if (bInitializeFile) {
-		fw.writeInt(0);
-		fw.writeBytes(MediaData.type);
-		setOffset(8);
-	} else {
-		setOffset((int)dataFile.length());
+	RandomAccessFile fw = null;
+	try{
+		fw = new RandomAccessFile(dataFile, "rw");
+		fw.seek(dataFile.length());
+		if (bInitializeFile) {
+			fw.writeInt(0);
+			fw.writeBytes(MediaData.type);
+			setOffset(8);
+		} else {
+			setOffset((int)dataFile.length());
+		}
+		fw.write(dataBytes);
+		// update the media data atom header
+		fw.seek(0);
+		fw.writeInt((int)dataFile.length());
+	}finally{
+		if(fw!= null){try{fw.close();}catch(Exception e){e.printStackTrace();}}
 	}
-	fw.write(dataBytes);
-	// update the media data atom header
-	fw.seek(0);
-	fw.writeInt((int)dataFile.length());
-	fw.close();
 }
 
-public VideoMediaChunk(VideoMediaSample sample) throws IOException{
+public VideoMediaChunk(VideoMediaSample sample,FileDataContainerManager fileDataContainerManager) throws IOException{
 	init(sample);
 	
-	this.dataFile = File.createTempFile("VideoMediaChunk_", ".tmp");
-	this.dataFile.deleteOnExit();
+	this.dataFile = fileDataContainerManager.getFile(fileDataContainerManager.getNewFileDataContainerID());
 	boolean bInitializeFile = true;
 
 	writeChunks(sample.getDataBytes(),bInitializeFile);

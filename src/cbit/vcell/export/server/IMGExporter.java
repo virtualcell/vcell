@@ -163,11 +163,11 @@ private static class ParticleInfo{
  * This method was created in VisualAge.
  */
 public ExportOutput[] makeMediaData(
-		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport)
+		OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,FileDataContainerManager fileDataContainerManager)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	ParticleInfo particleInfo = checkParticles(exportSpecs,user,dataServerImpl,jobRequest.getJobID());
-	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo);
+	return makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,particleInfo,fileDataContainerManager);
 }
 
 private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,DataServerImpl dataServerImpl,final long jobID) throws Exception{
@@ -311,7 +311,7 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 
 private static ExportOutput[] makeMedia(ExportServiceImpl exportServiceImpl,
 		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,ParticleInfo particleInfo)
+		ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,ParticleInfo particleInfo,FileDataContainerManager fileDataContainerManager)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	boolean bOverLay = false;
@@ -424,7 +424,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 			varNameIndex0++;
 			if(varNameIndex0==varNames.length){
 				String dataID = createDataID(exportSpecs, sliceNumber, "overlay", timeIndex0);
-				createMedia(exportOutputV, vcdID, dataID, exportSpecs,true,bEndslice,bBegintime,bEndTime, bSingleTimePoint, varNames,displayPreferences,movieHolder, overLayPixels, currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight()*varNames.length);
+				createMedia(exportOutputV, vcdID, dataID, exportSpecs,true,bEndslice,bBegintime,bEndTime, bSingleTimePoint, varNames,displayPreferences,movieHolder, overLayPixels, currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight()*varNames.length,fileDataContainerManager);
 				varNameIndex0 = 0;
 				timeIndex0++;
 				if(timeIndex0>endTimeIndex){
@@ -434,7 +434,7 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 		}else{
 			String dataID = createDataID(exportSpecs, sliceNumber, varNames[varNameIndex0], timeIndex0);
 			boolean bEndVars = varNameIndex0 == varNames.length-1;
-			createMedia(exportOutputV, vcdID, dataID, exportSpecs,bEndVars,bEndslice,bBegintime, bEndTime, bSingleTimePoint, new String[] {varNames[varNameIndex0]},new DisplayPreferences[] {displayPreferences[varNameIndex0]},movieHolder, currentSliceTimeMirrorInfo.getPixels(), currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight());
+			createMedia(exportOutputV, vcdID, dataID, exportSpecs,bEndVars,bEndslice,bBegintime, bEndTime, bSingleTimePoint, new String[] {varNames[varNameIndex0]},new DisplayPreferences[] {displayPreferences[varNameIndex0]},movieHolder, currentSliceTimeMirrorInfo.getPixels(), currentSliceTimeMirrorInfo.getMirrorWidth(), currentSliceTimeMirrorInfo.getMirrorHeight(),fileDataContainerManager);
 			timeIndex0++;
 			if(timeIndex0>endTimeIndex){
 				timeIndex0 = beginTimeIndex;
@@ -636,7 +636,7 @@ private static class MovieHolder{
 private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentifier vcdID,String dataID,
 		ExportSpecs exportSpecs,boolean bEndVars,boolean bEndSlice,
 		boolean bBeginTime,boolean bEndTime,boolean bSingleTimePoint,String[] varNameArr,DisplayPreferences[] displayPreferencesArr,
-		MovieHolder movieHolder,int[] pixels,int mirrorWidth,int mirrorHeight) throws Exception{
+		MovieHolder movieHolder,int[] pixels,int mirrorWidth,int mirrorHeight,FileDataContainerManager fileDataContainerManager) throws Exception{
 	
 	boolean isGrayScale = true;
 	for (int i = 0; i < displayPreferencesArr.length; i++) {
@@ -654,12 +654,16 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		gifImage.write(gifOut);
 		gifOut.close();
 		byte[] data = bytesOut.toByteArray();
-		exportOutputV.add(new ExportOutput(true, ".gif", vcdID.getID(), dataID, data));
+		ExportOutput exportOutput = new ExportOutput(true, ".gif", vcdID.getID(), dataID, fileDataContainerManager);
+		fileDataContainerManager.append(exportOutput.getFileDataContainerID(), data);
+		exportOutputV.add(exportOutput);
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_JPEG && 
 			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.JPEG*/){
 		VideoMediaSample jpegEncodedVideoMediaSample = 
 			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, 1, isGrayScale,FormatSpecificSpecs.CODEC_JPEG, ((ImageSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
-		exportOutputV.add(new ExportOutput(true, ".jpg", vcdID.getID(), dataID, jpegEncodedVideoMediaSample.getDataBytes()));
+		ExportOutput exportOutput = new ExportOutput(true, ".jpg", vcdID.getID(), dataID, fileDataContainerManager);
+		fileDataContainerManager.append(exportOutput.getFileDataContainerID(), jpegEncodedVideoMediaSample.getDataBytes());
+		exportOutputV.add(exportOutput);
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_ANIMATED_GIF && 
 			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.ANIMATED_GIF*/){
 		int imageDuration = (int)Math.ceil((movieHolder.getSampleDurationSeconds()*100));//1/100's of a second
@@ -680,7 +684,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			movieHolder.getGifImage().write(gifOut);
 			gifOut.close();
 			byte[] data = bytesOut.toByteArray();
-			exportOutputV.add(new ExportOutput(true, ".gif", vcdID.getID(), dataID, data));
+			ExportOutput exportOutput = new ExportOutput(true, ".gif", vcdID.getID(), dataID, fileDataContainerManager);
+			fileDataContainerManager.append(exportOutput.getFileDataContainerID(), data);
+			exportOutputV.add(exportOutput);
 		}
 
 	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_QUICKTIME && 
@@ -695,7 +701,7 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			movieHolder.getVarNameVideoMediaChunkHash().put(VIDEOMEDIACHUNKID,new Vector<VideoMediaChunk>());
 			movieHolder.getVarNameDataIDHash().put(VIDEOMEDIACHUNKID, dataID);
 		}
-		movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID).add(new VideoMediaChunk(videoMediaSample));
+		movieHolder.getVarNameVideoMediaChunkHash().get(VIDEOMEDIACHUNKID).add(new VideoMediaChunk(videoMediaSample,fileDataContainerManager));
 		if(bEndTime && !bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
 			double[] allTimes = exportSpecs.getTimeSpecs().getAllTimes();
@@ -719,7 +725,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			MediaMethods.writeMovie(movieOutput, newMovie);
 			movieOutput.close();
 			byte[] finalMovieBytes = bytesOut.toByteArray();
-			exportOutputV.add(new ExportOutput(true, ".mov", simID, dataID, finalMovieBytes));
+			ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, dataID,fileDataContainerManager);
+			fileDataContainerManager.append(exportOutput.getFileDataContainerID(), finalMovieBytes);
+			exportOutputV.add(exportOutput);
 			movieHolder.getVarNameVideoMediaChunkHash().clear();
 			movieHolder.getVarNameDataIDHash().clear();
 		}else if(bEndVars && bEndTime && bEndSlice && bQTVR){
@@ -737,7 +745,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 				writeQTVRWorker(movieOutputStream, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);
 				movieOutputStream.close();
 				byte[] finalMovieBytes = baos.toByteArray();
-				exportOutputV.add(new ExportOutput(true, ".mov", simID, storedDataID, finalMovieBytes));					
+				ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, storedDataID,fileDataContainerManager);
+				fileDataContainerManager.append(exportOutput.getFileDataContainerID(), finalMovieBytes);
+				exportOutputV.add(exportOutput);					
 			}
 			movieHolder.getVarNameVideoMediaChunkHash().clear();
 			movieHolder.getVarNameDataIDHash().clear();
