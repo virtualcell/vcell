@@ -29,6 +29,7 @@ public class AllStructureSuite extends StructureSuite {
 	public static final String TITLE = "Reactions for all Structures";
 	
 	protected final Model.Owner modelOwner;
+	private boolean bModelStructureOrder;
 
 	public AllStructureSuite(Model.Owner modelOwner) {
 		super(TITLE);
@@ -36,7 +37,15 @@ public class AllStructureSuite extends StructureSuite {
 	}
 	
 	public List<Structure> getStructures() {
+		if(bModelStructureOrder){
+			Structure[] modelStructures = modelOwner.getModel().getStructures();
+			return Arrays.asList(modelStructures);
+		}
 		return Arrays.asList(sortStructures(modelOwner.getModel()));
+	}
+	
+	public void setModelStructureOrder(boolean bModelStructureOrder){
+		this.bModelStructureOrder = bModelStructureOrder;
 	}
 
 	@Override
