@@ -45,6 +45,8 @@ import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
@@ -69,6 +71,8 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.graph.structures.AllStructureSuite;
+import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -939,6 +943,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 		boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 		boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
+		if(mode == Mode.SELECT && bStartRxContainerLabel){
+			return;
+		}
 		try {
 			switch (mode) {
 			case SELECT: {
@@ -1153,6 +1160,33 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
+	private boolean bStartRxContainerLabel = false;
+	@Override
+	public void mouseMoved(MouseEvent event) {
+		if(getReactionCartoon() == null){ return; }
+		int eventX = event.getX();
+		int eventY = event.getY();
+		startPointWorld = new java.awt.Point(
+				(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
+				(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
+		startShape = getReactionCartoon().pickWorld(startPointWorld);
+		if(startShape instanceof ReactionContainerShape){
+//			Point relativeStart = new Point(startPointWorld.x-startShape.getAbsX(), startPointWorld.y-startShape.getAbsY());
+//			Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(0, 0);
+//			boolean bInsideLabel =
+//					labelOutlineRectangle.contains(relativeStart.x,relativeStart.y);
+//			System.out.println(bInsideLabel+" "+startShape.getLabel()+" "+relativeStart+" "+labelOutlineRectangle);
+
+			Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
+			boolean bLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
+//			System.out.println(bLabel+" "+startShape.getLabel()+" "+startPointWorld+" "+labelOutlineRectangle);
+			if(bLabel){
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}else{
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+		}
+	}
 	@Override
 	public void mousePressed(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
@@ -1163,6 +1197,18 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			startShape = getReactionCartoon().pickWorld(startPointWorld);
+			if(startShape instanceof ReactionContainerShape){
+//				Point relativeStart = new Point(startPointWorld.x-startShape.getAbsX(), startPointWorld.y-startShape.getAbsY());
+//				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(0, 0);
+//				boolean bInsideLabel =
+//						labelOutlineRectangle.contains(relativeStart.x,relativeStart.y);
+//				System.out.println(bInsideLabel+" "+startShape.getLabel()+" "+relativeStart+" "+labelOutlineRectangle);
+
+				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
+				bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
+//				System.out.println(bStartRxContainerLabel+" "+startShape.getLabel()+" "+startPointWorld+" "+labelOutlineRectangle);
+//				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}
 			// Always select with MousePress
 			boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 			boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
@@ -1195,6 +1241,88 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
 				return;
 			}
+			if(mode == Mode.SELECT && bStartRxContainerLabel){
+				bStartRxContainerLabel = false;
+//				System.out.println("Released RxContainerLabel "+endPointWorld+" "+endShape);
+				StructureSuite structureSuite = null;
+				if(endShape instanceof ReactionContainerShape){
+					structureSuite = getReactionCartoon().getStructureSuite();
+					ReactionContainerShape reactionContainerShape = ((ReactionContainerShape)endShape);
+//					System.out.println("start="+startShape+" end="+endShape+" "+reactionContainerShape.getGraphModel());
+				}else if (endShape instanceof ContainerContainerShape){
+//					structureSuite = getReactionCartoon().getStructureSuite();
+					ContainerContainerShape containerContainerShape = ((ContainerContainerShape)endShape);
+//					System.out.println(containerContainerShape.getGraphModel());
+				}else{
+//					System.out.println(endShape+" "+endPointWorld);
+				}
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				
+				if(structureSuite != null){
+					Shape closestNeighborShape = null;
+					Structure[] originalOrderedStructArr = structureSuite.getStructures().toArray(new Structure[0]);
+					//find where user wants to put the structure
+					Structure[] newStructOrder = null;
+					Integer insertFlag = null;
+					try{
+						for(int i=0;i<originalOrderedStructArr.length;i++){
+							ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
+							int beginX = rxContainerShape.getAbsX();
+							int endX = rxContainerShape.getAbsX()+rxContainerShape.getWidth();
+							System.out.println(rxContainerShape+" "+beginX+" "+endX);
+							final int INSERT_BEGINNING = -1;
+							final int INSERT_END = -2;
+							
+							if(rxContainerShape == endShape){
+								if(Math.abs(endPointWorld.x-beginX) < Math.abs(endPointWorld.x-endX)){
+									if(i > 0){
+										closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i-1]);
+									}else{
+										insertFlag = INSERT_BEGINNING;
+									}
+								}else{
+									if(i<(originalOrderedStructArr.length-1)){
+										closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i+1]);
+									}else{
+										insertFlag = INSERT_END;
+									}
+								}
+								if(startShape == endShape || startShape == closestNeighborShape){
+									return;
+								}
+								ArrayList<Structure> newStructOrderList = new ArrayList<Structure>(Arrays.asList(originalOrderedStructArr));
+								newStructOrderList.remove(((ReactionContainerShape)startShape).getStructure());
+								int indexEnd = newStructOrderList.indexOf(((ReactionContainerShape)endShape).getStructure());
+								int indexClosestNeighbor = (closestNeighborShape==null?(insertFlag==INSERT_BEGINNING?0:newStructOrderList.size()):newStructOrderList.indexOf(((ReactionContainerShape)closestNeighborShape).getStructure()));
+								if(indexClosestNeighbor < indexEnd){
+									newStructOrderList.add(indexEnd, ((ReactionContainerShape)startShape).getStructure());
+								}else{
+									newStructOrderList.add(indexClosestNeighbor, ((ReactionContainerShape)startShape).getStructure());
+								}
+//								for(Structure structure:newStructOrderList){
+//									System.out.println(structure.getName());
+//								}
+								Structure[] forcStructures = newStructOrderList.toArray(new Structure[0]);
+								if(structureSuite instanceof AllStructureSuite){
+									((AllStructureSuite)structureSuite).setModelStructureOrder(true);
+								}
+								getModel().setStructures(forcStructures);
+								break;
+							}
+						}
+						System.out.println("between="+endShape+" "+closestNeighborShape+" insertPosition="+insertFlag);
+						//Set new Ordering of all structures
+						for(int i=0;i<originalOrderedStructArr.length;i++){
+							ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
+							
+						}
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+				return;
+			}
+
 			// else do select and move
 			switch (mode) {
 			case SELECT: {

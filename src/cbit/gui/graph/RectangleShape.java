@@ -18,6 +18,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
@@ -33,14 +34,21 @@ public abstract class RectangleShape extends Shape {
 		return new ImmutableVisualState(this, VisualState.PaintLayer.COMPARTMENT);
 	}
 
+	public Rectangle getLabelOutline( int absPosX, int absPosY){
+		int textX = absPosX + Math.max(0, getSpaceManager().getSize().width / 2 - getLabelSize().width / 2);
+		int textY = absPosY + Math.max(0, 5 + getLabelSize().height);
+		return new Rectangle(textX - 5, textY - getLabelSize().height + 3,getLabelSize().width + 10, getLabelSize().height);
+	}
 	protected void drawLabel(Graphics2D g2D, int absPosX, int absPosY) {
 		if (getLabel() != null && getLabel().length() > 0) {
 			int textX = absPosX
 					+ Math.max(0, getSpaceManager().getSize().width / 2 - getLabelSize().width / 2);
 			int textY = absPosY + Math.max(0, 5 + getLabelSize().height);
+//			System.out.println("drawLabel "+textX+" "+textY+" "+getLabelPos());
+			Rectangle outlineRectangle = getLabelOutline(absPosX, absPosY);
 			if (isSelected()) {
-				drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,
-						getLabelSize().width + 10, getLabelSize().height, g2D,
+				drawRaisedOutline(outlineRectangle.x, outlineRectangle.y,
+						outlineRectangle.width, outlineRectangle.height, g2D,
 						Color.white, Color.black, Color.gray);
 			}
 			Color origColor = g2D.getColor();
