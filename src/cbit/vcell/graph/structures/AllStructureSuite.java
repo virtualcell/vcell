@@ -19,6 +19,7 @@ import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Path;
 import cbit.util.graph.Tree;
+import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -29,7 +30,7 @@ public class AllStructureSuite extends StructureSuite {
 	public static final String TITLE = "Reactions for all Structures";
 	
 	protected final Model.Owner modelOwner;
-	private boolean bModelStructureOrder;
+	private boolean bModelStructureOrder = true;
 
 	public AllStructureSuite(Model.Owner modelOwner) {
 		super(TITLE);
@@ -38,8 +39,12 @@ public class AllStructureSuite extends StructureSuite {
 	
 	public List<Structure> getStructures() {
 		if(bModelStructureOrder){
-			Structure[] modelStructures = modelOwner.getModel().getStructures();
-			return Arrays.asList(modelStructures);
+			ArrayList<Structure> modelStructures = new ArrayList<Structure>();
+			Diagram[] modelDiagrams = modelOwner.getModel().getDiagrams();
+			for(Diagram diagram:modelDiagrams){
+				modelStructures.add(diagram.getStructure());
+			}
+			return modelStructures;
 		}
 		return Arrays.asList(sortStructures(modelOwner.getModel()));
 	}
@@ -47,7 +52,9 @@ public class AllStructureSuite extends StructureSuite {
 	public void setModelStructureOrder(boolean bModelStructureOrder){
 		this.bModelStructureOrder = bModelStructureOrder;
 	}
-
+	public boolean getModelStructureOrder(){
+		return this.bModelStructureOrder;
+	}
 	@Override
 	public boolean areReactionsShownFor(Structure structure) { return true; }
 

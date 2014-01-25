@@ -9,7 +9,7 @@
  */
 
 package cbit.gui.graph;
-import java.awt.BorderLayout;
+import java.awt.BasicStroke;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -17,15 +17,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -33,6 +30,7 @@ import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
 
 import cbit.gui.graph.GraphModel.NotReadyException;
+import cbit.vcell.graph.ReactionContainerShape;
 
 @SuppressWarnings("serial")
 public class GraphPane extends JPanel implements GraphListener, MouseListener, Scrollable {
@@ -267,6 +265,11 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 
 	public void mouseReleased(MouseEvent e) {}
 
+	private Rectangle dropTargetRectangle;
+	private static final BasicStroke dropTargetRectangleStroke = new BasicStroke(2, BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL, 1, new float[] {10f}, 0);
+	public void setDropTargetRectangle(Rectangle dropTargetRectangle){
+		this.dropTargetRectangle = dropTargetRectangle;
+	}
 	@Override
 	public void paintComponent(Graphics argGraphics) {
 		super.paintComponent(argGraphics);
@@ -279,6 +282,12 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 					needsLayout = false;					
 //				}
 				graphModel.paint(g,this);
+				if(dropTargetRectangle != null){
+					Stroke origStroke = g.getStroke();
+					g.setStroke(dropTargetRectangleStroke);
+					g.drawRect(dropTargetRectangle.x, dropTargetRectangle.y, dropTargetRectangle.width, dropTargetRectangle.height);
+					g.setStroke(origStroke);
+				}
 			}	
 		}catch (Exception e){
 			handleException(e);
@@ -330,6 +339,13 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 		Shape pickedShape = graphModel.pickWorld(unzoomedMousePos);
 		if(pickedShape == null) {
 			return getToolTipText();
+		}
+		if(pickedShape instanceof ReactionContainerShape){
+			Rectangle labelOutlineRectangle = ((ReactionContainerShape)pickedShape).getLabelOutline(pickedShape.getAbsX(),pickedShape.getAbsY());
+			boolean bLabel = labelOutlineRectangle.contains(unzoomedMousePos.x, unzoomedMousePos.y);
+			if(bLabel){
+				return "drag to MOVE '"+pickedShape.getLabel()+"'";
+			}
 		}
 		return pickedShape.getLabel();
 	}

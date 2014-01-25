@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -37,6 +38,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JViewport;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import org.vcell.util.SimpleFilenameFilter;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -45,12 +48,11 @@ import org.vcell.util.gui.SimpleTransferable;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.GraphPane;
+import cbit.gui.graph.GraphResizeManager;
 import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
@@ -61,12 +63,11 @@ import cbit.gui.graph.actions.CartoonToolMiscActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphLayoutTasks;
 import cbit.gui.graph.actions.GraphViewAction;
+import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
@@ -74,6 +75,7 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.GeneralLumpedKinetics;
@@ -329,6 +331,31 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	public void layout(String layoutName) throws Exception {
 		System.out.println(layoutName);
+		//-----Turn off user forced reaction diagram structure order
+		if(getReactionCartoon().getStructureSuite() instanceof AllStructureSuite){
+			AllStructureSuite allStructureSuite = ((AllStructureSuite)getReactionCartoon().getStructureSuite());
+			if(allStructureSuite.getModelStructureOrder()){
+				//make auto-sort
+				allStructureSuite.setModelStructureOrder(false);
+				//get auto-sorted structures
+				List<Structure> autoSortedStructures = allStructureSuite.getStructures();
+				ArrayList<Diagram> newDiagramOrderList = new ArrayList<Diagram>();
+				for(Structure structure:autoSortedStructures){
+					newDiagramOrderList.add(getModel().getDiagram(structure));
+				}
+				Diagram[] autosortDiagramOrder = newDiagramOrderList.toArray(new Diagram[0]);
+				final String OK = "OK";
+				String response =
+					DialogUtils.showWarningDialog(getGraphPane(), "Existing 'Structure' order preference set by user may be reset, continue?", new String[] {OK,"Cancel"},OK);
+				if(response != null &&  response.equals(OK)){
+					getModel().setDiagrams(autosortDiagramOrder);
+				}else{
+					allStructureSuite.setModelStructureOrder(true);
+					return;
+				}
+			}
+		}
+		//-----
 		GraphLayoutTasks.dispatchTasks(getGraphPane(), graphEmbeddingManager, this, layoutName);
 	}
 
@@ -936,6 +963,24 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
+	private RXContainerDropTargetInfo lastRXContainerDropTargetInfo;
+	private ReactionContainerShape getReactionContainerShapeAtPoint(Point dragPointWorld){
+		Shape mouseShape = getReactionCartoon().pickWorld(dragPointWorld);
+		if(mouseShape instanceof ReactionContainerShape){
+			return (ReactionContainerShape)mouseShape;
+		}else {
+			while(mouseShape != null && !(mouseShape instanceof ContainerContainerShape)){
+				mouseShape = mouseShape.getParent();
+			}
+			if(mouseShape != null){
+				mouseShape = ((ContainerContainerShape)mouseShape).pick(dragPointWorld, PaintLayer.COMPARTMENT);
+				if(mouseShape instanceof ReactionContainerShape){
+					return (ReactionContainerShape)mouseShape;
+				}
+			}
+		}
+		return null;
+	}
 	@Override
 	public void mouseDragged(MouseEvent event) {
 		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
@@ -944,6 +989,54 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 		boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
 		if(mode == Mode.SELECT && bStartRxContainerLabel){
+			Point dragPointWorld = getGraphModel().getResizeManager().unzoom(event.getPoint());
+			Shape mouseShape = getReactionContainerShapeAtPoint(dragPointWorld);
+			if(mouseShape instanceof ReactionContainerShape){
+				Structure[] originalOrderedStructArr = getReactionCartoon().getStructureSuite().getStructures().toArray(new Structure[0]);
+				RXContainerDropTargetInfo rxContainerDropTargetInfo = getRXContainerDropTargetInfo(originalOrderedStructArr, mouseShape,dragPointWorld);
+				if(!Compare.isEqualOrNull(lastRXContainerDropTargetInfo, rxContainerDropTargetInfo)){
+					lastRXContainerDropTargetInfo = rxContainerDropTargetInfo;
+					if(rxContainerDropTargetInfo != null){
+						Graphics graphics = getGraphPane().getGraphics();
+						Shape closestNeighborShape = rxContainerDropTargetInfo.closestNeighborShape;
+						Integer insertFlag = rxContainerDropTargetInfo.insertFlag;
+	//					Boolean bInsertBeginning = (insertFlag==null?null:(insertFlag==RXContainerDropTargetInfo.INSERT_BEGINNING?true:false));
+						int x = 0;
+						int width = 0;
+						final int BOX_RADIUS = 10;
+						if(insertFlag == null){
+							x = Math.max(mouseShape.getAbsX(),closestNeighborShape.getAbsX())-BOX_RADIUS;
+							width = 2*BOX_RADIUS;
+						}else{
+							if(insertFlag == RXContainerDropTargetInfo.INSERT_BEGINNING){
+								x = mouseShape.getAbsX();
+								width = BOX_RADIUS;
+							}else{
+								x = mouseShape.getAbsX()+mouseShape.getWidth()-BOX_RADIUS;
+								width = BOX_RADIUS;
+							}
+						}
+						GraphResizeManager graphResizeManager = getGraphModel().getResizeManager();
+						//System.out.println("Painting drop target");
+						Rectangle dropTargetRectangle = new Rectangle((int)graphResizeManager.zoom(x), (int)graphResizeManager.zoom(mouseShape.getAbsY()), (int)graphResizeManager.zoom(width), (int)graphResizeManager.zoom(mouseShape.getHeight()));
+						getGraphPane().setDropTargetRectangle(dropTargetRectangle);
+						getGraphPane().repaint();
+						//					graphics.drawRect(x, mouseShape.getAbsY(), width, mouseShape.getHeight());
+					}else{
+						//clear drop target drawing
+						//System.out.println("Clearing drop target");
+						getGraphPane().setDropTargetRectangle(null);
+						getGraphPane().repaint();
+					}
+				}
+			}else{
+				if(lastRXContainerDropTargetInfo != null){
+					//System.out.println("OUTSIDE Clearing drop target");
+					getGraphPane().setDropTargetRectangle(null);
+					getGraphPane().repaint();
+				}
+				lastRXContainerDropTargetInfo = null;
+			}
 			return;
 		}
 		try {
@@ -1164,26 +1257,20 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	@Override
 	public void mouseMoved(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
-		int eventX = event.getX();
-		int eventY = event.getY();
-		startPointWorld = new java.awt.Point(
-				(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
-				(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
-		startShape = getReactionCartoon().pickWorld(startPointWorld);
-		if(startShape instanceof ReactionContainerShape){
-//			Point relativeStart = new Point(startPointWorld.x-startShape.getAbsX(), startPointWorld.y-startShape.getAbsY());
-//			Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(0, 0);
-//			boolean bInsideLabel =
-//					labelOutlineRectangle.contains(relativeStart.x,relativeStart.y);
-//			System.out.println(bInsideLabel+" "+startShape.getLabel()+" "+relativeStart+" "+labelOutlineRectangle);
-
-			Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
+		Point startPointWorld = 
+				getGraphModel().getResizeManager().unzoom(event.getPoint());
+		Shape mouseShape = getReactionCartoon().pickWorld(startPointWorld);
+		if(mouseShape instanceof ReactionContainerShape){
+			Rectangle labelOutlineRectangle = ((ReactionContainerShape)mouseShape).getLabelOutline(mouseShape.getAbsX(), mouseShape.getAbsY());
 			boolean bLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
-//			System.out.println(bLabel+" "+startShape.getLabel()+" "+startPointWorld+" "+labelOutlineRectangle);
 			if(bLabel){
-				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				if(!getGraphPane().getCursor().equals(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR))){
+					getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				}
 			}else{
-				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				if(!getGraphPane().getCursor().equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))){
+					getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
 			}
 		}
 	}
@@ -1198,6 +1285,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			startShape = getReactionCartoon().pickWorld(startPointWorld);
 			if(startShape instanceof ReactionContainerShape){
+				lastRXContainerDropTargetInfo = null;
 //				Point relativeStart = new Point(startPointWorld.x-startShape.getAbsX(), startPointWorld.y-startShape.getAbsY());
 //				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(0, 0);
 //				boolean bInsideLabel =
@@ -1227,6 +1315,63 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
+	private class RXContainerDropTargetInfo implements Matchable{
+		public final static int INSERT_BEGINNING = -1;
+		public final static int INSERT_END = -2;
+		public Shape closestNeighborShape;
+		public Integer insertFlag;
+		public Shape dropShape;
+		
+		public RXContainerDropTargetInfo(Shape dropShape,Shape closestNeighborShape,Integer insertFlag) {
+			this.dropShape = dropShape;
+			this.closestNeighborShape = closestNeighborShape;
+			this.insertFlag = insertFlag;
+		}
+		@Override
+		public boolean compareEqual(Matchable obj) {
+			if(obj instanceof RXContainerDropTargetInfo){
+				return
+					(this.dropShape == ((RXContainerDropTargetInfo)obj).dropShape)
+					&&
+					(this.closestNeighborShape == ((RXContainerDropTargetInfo)obj).closestNeighborShape)
+					&&
+					Compare.isEqualOrNull(this.insertFlag, ((RXContainerDropTargetInfo)obj).insertFlag);
+			}
+			return false;
+		}
+		
+	}
+	private RXContainerDropTargetInfo getRXContainerDropTargetInfo(Structure[] originalOrderedStructArr,Shape dropShape,Point dropPoint){
+		
+		Shape closestNeighborShape = null;
+		Integer insertFlag = null;
+		for(int i=0;i<originalOrderedStructArr.length;i++){
+			ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
+			int beginX = rxContainerShape.getAbsX();
+			int endX = rxContainerShape.getAbsX()+rxContainerShape.getWidth();			
+			if(rxContainerShape == dropShape){
+				if(Math.abs(dropPoint.x-beginX) < Math.abs(dropPoint.x-endX)){
+					if(i > 0){
+						closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i-1]);
+					}else{
+						insertFlag = RXContainerDropTargetInfo.INSERT_BEGINNING;
+					}
+				}else{
+					if(i<(originalOrderedStructArr.length-1)){
+						closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i+1]);
+					}else{
+						insertFlag = RXContainerDropTargetInfo.INSERT_END;
+					}
+				}
+				if(startShape == dropShape || startShape == closestNeighborShape){
+					return null;
+				}
+				return new RXContainerDropTargetInfo(dropShape,closestNeighborShape, insertFlag);
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void mouseReleased(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
@@ -1242,79 +1387,41 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if(mode == Mode.SELECT && bStartRxContainerLabel){
+				getGraphPane().setDropTargetRectangle(null);
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				bStartRxContainerLabel = false;
 //				System.out.println("Released RxContainerLabel "+endPointWorld+" "+endShape);
 				StructureSuite structureSuite = null;
-				if(endShape instanceof ReactionContainerShape){
+				Shape mouseShape = getReactionContainerShapeAtPoint(endPointWorld);
+				if(mouseShape instanceof ReactionContainerShape){
 					structureSuite = getReactionCartoon().getStructureSuite();
-					ReactionContainerShape reactionContainerShape = ((ReactionContainerShape)endShape);
-//					System.out.println("start="+startShape+" end="+endShape+" "+reactionContainerShape.getGraphModel());
-				}else if (endShape instanceof ContainerContainerShape){
-//					structureSuite = getReactionCartoon().getStructureSuite();
-					ContainerContainerShape containerContainerShape = ((ContainerContainerShape)endShape);
-//					System.out.println(containerContainerShape.getGraphModel());
-				}else{
-//					System.out.println(endShape+" "+endPointWorld);
 				}
-				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				
 				if(structureSuite != null){
-					Shape closestNeighborShape = null;
 					Structure[] originalOrderedStructArr = structureSuite.getStructures().toArray(new Structure[0]);
 					//find where user wants to put the structure
-					Structure[] newStructOrder = null;
-					Integer insertFlag = null;
 					try{
-						for(int i=0;i<originalOrderedStructArr.length;i++){
-							ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
-							int beginX = rxContainerShape.getAbsX();
-							int endX = rxContainerShape.getAbsX()+rxContainerShape.getWidth();
-							System.out.println(rxContainerShape+" "+beginX+" "+endX);
-							final int INSERT_BEGINNING = -1;
-							final int INSERT_END = -2;
-							
-							if(rxContainerShape == endShape){
-								if(Math.abs(endPointWorld.x-beginX) < Math.abs(endPointWorld.x-endX)){
-									if(i > 0){
-										closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i-1]);
-									}else{
-										insertFlag = INSERT_BEGINNING;
-									}
-								}else{
-									if(i<(originalOrderedStructArr.length-1)){
-										closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i+1]);
-									}else{
-										insertFlag = INSERT_END;
-									}
-								}
-								if(startShape == endShape || startShape == closestNeighborShape){
-									return;
-								}
-								ArrayList<Structure> newStructOrderList = new ArrayList<Structure>(Arrays.asList(originalOrderedStructArr));
-								newStructOrderList.remove(((ReactionContainerShape)startShape).getStructure());
-								int indexEnd = newStructOrderList.indexOf(((ReactionContainerShape)endShape).getStructure());
-								int indexClosestNeighbor = (closestNeighborShape==null?(insertFlag==INSERT_BEGINNING?0:newStructOrderList.size()):newStructOrderList.indexOf(((ReactionContainerShape)closestNeighborShape).getStructure()));
-								if(indexClosestNeighbor < indexEnd){
-									newStructOrderList.add(indexEnd, ((ReactionContainerShape)startShape).getStructure());
-								}else{
-									newStructOrderList.add(indexClosestNeighbor, ((ReactionContainerShape)startShape).getStructure());
-								}
-//								for(Structure structure:newStructOrderList){
-//									System.out.println(structure.getName());
-//								}
-								Structure[] forcStructures = newStructOrderList.toArray(new Structure[0]);
-								if(structureSuite instanceof AllStructureSuite){
-									((AllStructureSuite)structureSuite).setModelStructureOrder(true);
-								}
-								getModel().setStructures(forcStructures);
-								break;
+						RXContainerDropTargetInfo rxContainerDropTargetInfo = getRXContainerDropTargetInfo(originalOrderedStructArr, mouseShape,endPointWorld);
+						if(rxContainerDropTargetInfo != null){
+							ArrayList<Structure> newStructOrderList = new ArrayList<Structure>(Arrays.asList(originalOrderedStructArr));
+							newStructOrderList.remove(((ReactionContainerShape)startShape).getStructure());
+							int indexEnd = newStructOrderList.indexOf(((ReactionContainerShape)mouseShape).getStructure());
+							int indexClosestNeighbor =
+								(rxContainerDropTargetInfo.closestNeighborShape==null?(rxContainerDropTargetInfo.insertFlag==RXContainerDropTargetInfo.INSERT_BEGINNING?0:newStructOrderList.size()):newStructOrderList.indexOf(((ReactionContainerShape)rxContainerDropTargetInfo.closestNeighborShape).getStructure()));
+							if(indexClosestNeighbor < indexEnd){
+								newStructOrderList.add(indexEnd, ((ReactionContainerShape)startShape).getStructure());
+							}else{
+								newStructOrderList.add(indexClosestNeighbor, ((ReactionContainerShape)startShape).getStructure());
 							}
-						}
-						System.out.println("between="+endShape+" "+closestNeighborShape+" insertPosition="+insertFlag);
-						//Set new Ordering of all structures
-						for(int i=0;i<originalOrderedStructArr.length;i++){
-							ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
-							
+							if(structureSuite instanceof AllStructureSuite){
+								((AllStructureSuite)structureSuite).setModelStructureOrder(true);
+							}
+							ArrayList<Diagram> newDiagramOrderList = new ArrayList<Diagram>();
+							for(Structure structure:newStructOrderList){
+								newDiagramOrderList.add(getModel().getDiagram(structure));
+							}
+							getModel().setDiagrams(newDiagramOrderList.toArray(new Diagram[0]));
+
 						}
 					}catch(Exception e){
 						e.printStackTrace();
