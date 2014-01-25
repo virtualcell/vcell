@@ -67,6 +67,11 @@ public class VCMLComparator {
 			if (result != 0) {
 				return result;
 			}
+			//Do not sort diagram tags because their order is meaningful
+			if (e1.getName().equals(XMLTags.DiagramTag)) {                         //or eName2, no re-ordering for Coordinate elements. 
+				return result;//0 
+			}
+
 			if (eName1.equals(XMLTags.CoordinateTag)) {                         //or eName2, no re-ordering for Coordinate elements. 
 				return result; 
 			}

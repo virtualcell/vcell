@@ -137,7 +137,8 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	
 	sql = 	" SELECT *" + 
 			" FROM " + diagramTable.getTableName() + 
-			" WHERE " + diagramTable.modelRef + " = " + modelKey;
+			" WHERE " + diagramTable.modelRef + " = " + modelKey +
+			" ORDER BY "+diagramTable.id;
 			
 	Statement stmt = con.createStatement();
 	Vector<Diagram> diagramList = new Vector<Diagram>();
@@ -161,6 +162,38 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	//
 	Diagram diagramArray[] = new Diagram[diagramList.size()];
 	diagramList.copyInto(diagramArray);
+	
+//	//Check this----------------------------
+//	System.out.println("-------------------------------------------Starting Diagram check------------------------------------------------------------------------");
+//	int count = 0;
+//	boolean bOrderMatched = true;
+//	sql = 	" SELECT *" + 
+//			" FROM " + diagramTable.getTableName() + 
+//			" WHERE " + diagramTable.modelRef + " = " + modelKey +
+//			" ORDER BY "+diagramTable.id.getUnqualifiedColName();
+//	stmt = con.createStatement();
+//	try{
+//		ResultSet rset = stmt.executeQuery(sql);
+//		while(rset.next()){
+//			Diagram diagram = getDiagram(dbc, con,rset, structureTopology);
+//			System.out.println(rset.getBigDecimal(diagramTable.id.getUnqualifiedColName())+" "+
+//					"ord='"+diagram.getStructure().getName()+"' "+
+//					"unord='"+diagramArray[count].getStructure().getName()+"' "+
+//					rset.getString(diagramTable.name.getUnqualifiedColName())+" "+
+//					rset.getBigDecimal(diagramTable.structRef.getUnqualifiedColName()));
+//			if(!diagram.getName().equals(diagramArray[count].getName()) ||
+//				!(diagram.getStructure().getName().equals(diagramArray[count].getStructure().getName()))){
+//				bOrderMatched = false;
+//			}
+//			count++;
+//		}
+//	}finally{
+//		stmt.close();
+//	}
+//	if(!bOrderMatched){
+//		System.out.println("Order not match!!!!!");
+//	}
+//	//----------------------------------------
 	return diagramArray;
 }
 

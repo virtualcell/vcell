@@ -1051,7 +1051,7 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqual(fieldReactionSteps, model.fieldReactionSteps)){
 		return false;
 	}
-	if (!Compare.isEqual(fieldDiagrams, model.fieldDiagrams)){
+	if (!Compare.isEqualStrict(fieldDiagrams, model.fieldDiagrams)){
 		return false;
 	}
 	if (!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
