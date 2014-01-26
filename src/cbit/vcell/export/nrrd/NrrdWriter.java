@@ -10,6 +10,9 @@
 
 package cbit.vcell.export.nrrd;
 import java.io.*;
+
+import cbit.vcell.export.server.FileDataContainerManager;
+import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 public class NrrdWriter {
 /**
  * Insert the method's description here.
@@ -64,70 +67,62 @@ private static void writeArrayFieldString(FileWriter fw, String name, String[] d
  * Creation date: (4/26/2004 10:51:32 AM)
  * @param headerFileName java.lang.String
  * @param baseDir java.io.File
- * @param info cbit.vcell.export.nrrd.NrrdInfo
+ * @param nrrdInfo cbit.vcell.export.nrrd.NrrdInfo
  * @exception java.io.IOException The exception description.
  * @exception java.io.FileNotFoundException The exception description.
  */
-public static NrrdInfo writeNRRD(String fileName, File baseDir, NrrdInfo info) throws IOException, FileNotFoundException {
-	if (info == null) throw new IOException("No info specified for header");
-	if (!baseDir.exists()) throw new FileNotFoundException("Base directory " + baseDir.getCanonicalPath() + " does not exist");
-	// for simplicity we enforce header and data files to be in the same directory
-	File file = new File(baseDir, fileName);
-	File dataFile = new File(baseDir, info.getDatafile());
-	if (file.exists()) throw new IOException("File " + file.getCanonicalPath() + " already exists");
-	if (! dataFile.exists()) throw new FileNotFoundException("Referenced data file " + baseDir.getCanonicalPath() + " does not exist");
-	// should be OK to write now
+public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager fileDataContainerManager) throws IOException{
 	// write header first
-	FileWriter fw = new FileWriter(file);
+	nrrdInfo.setHeaderFileID(fileDataContainerManager.getNewFileDataContainerID());
+	FileWriter headerFileWriter = null;
 	try {
-		fw.write(NrrdInfo.MAGIC + "\n");
-		fw.write("endian: " + NrrdInfo.ENDIAN + "\n");
-		fw.write("# " + info.getMainComment() + "\n");
-		fw.write("type: " + info.getType() + "\n");
-		fw.write("dimension: " + info.getDimension() + "\n");
-		fw.write("encoding: " + info.getEncoding() + "\n");
-		writeArrayFieldString(fw, "sizes", info.getSizes());
-		writeArrayFieldString(fw, "spacings", info.getSpacings());
-		writeArrayFieldString(fw, "aximins", info.getAxismins());
-		writeArrayFieldString(fw, "axismaxs", info.getAxismaxs());
-		writeArrayFieldString(fw, "centers", info.getCenters());
-		writeArrayFieldString(fw, "labels", info.getLabels());
-		writeArrayFieldString(fw, "units", info.getUnits());
-		fw.write("min: " + info.getMin() + "\n");
-		fw.write("max: " + info.getMax() + "\n");
-		fw.write("lineskip: " + info.getLineskip() + "\n");
-		fw.write("byteskip: " + info.getByteskip() + "\n");
-		if (info.isSeparateHeader()) {
-			fw.write("datafile: " + info.getDatafile() + "\n");
+		headerFileWriter = 	new FileWriter(fileDataContainerManager.getFile(nrrdInfo.getHeaderFileID()));
+		headerFileWriter.write(NrrdInfo.MAGIC + "\n");
+		headerFileWriter.write("endian: " + NrrdInfo.ENDIAN + "\n");
+		headerFileWriter.write("# " + nrrdInfo.getMainComment() + "\n");
+		headerFileWriter.write("type: " + nrrdInfo.getType() + "\n");
+		headerFileWriter.write("dimension: " + nrrdInfo.getDimension() + "\n");
+		headerFileWriter.write("encoding: " + nrrdInfo.getEncoding() + "\n");
+		writeArrayFieldString(headerFileWriter, "sizes", nrrdInfo.getSizes());
+		writeArrayFieldString(headerFileWriter, "spacings", nrrdInfo.getSpacings());
+		writeArrayFieldString(headerFileWriter, "aximins", nrrdInfo.getAxismins());
+		writeArrayFieldString(headerFileWriter, "axismaxs", nrrdInfo.getAxismaxs());
+		writeArrayFieldString(headerFileWriter, "centers", nrrdInfo.getCenters());
+		writeArrayFieldString(headerFileWriter, "labels", nrrdInfo.getLabels());
+		writeArrayFieldString(headerFileWriter, "units", nrrdInfo.getUnits());
+		headerFileWriter.write("min: " + nrrdInfo.getMin() + "\n");
+		headerFileWriter.write("max: " + nrrdInfo.getMax() + "\n");
+		headerFileWriter.write("lineskip: " + nrrdInfo.getLineskip() + "\n");
+		headerFileWriter.write("byteskip: " + nrrdInfo.getByteskip() + "\n");
+		if (nrrdInfo.isSeparateHeader()) {
+			headerFileWriter.write("datafile: " + nrrdInfo.getCanonicalFilename(false) + "\n");
 		} else {
-			fw.write("\n");
+			headerFileWriter.write("\n");
 		}
-	} catch (IOException exc) {
-		throw exc;
-	} finally {
-		fw.close();
+	}finally {
+		if(headerFileWriter != null){try{headerFileWriter.close();}catch(Exception e){e.printStackTrace();}}
 	}
 	// if we didn't want a detached header, append the datafile
-	if (! info.isSeparateHeader()) {
-		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(file.getCanonicalPath(), true));
-		BufferedInputStream in = new BufferedInputStream(new FileInputStream(dataFile));
+	BufferedOutputStream headerdOut = null;
+	BufferedInputStream dataIN = null;
+	if (! nrrdInfo.isSeparateHeader()) {
+		headerdOut = new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getHeaderFileID()), true));
+		dataIN = new BufferedInputStream(new FileInputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID())));
 		byte[] bytes = new byte[65536];
 		try {
-			int b = in.read(bytes);
+			int b = dataIN.read(bytes);
 			while (b != -1) {
-				out.write(bytes, 0, b);
-				b = in.read(bytes);
+				headerdOut.write(bytes, 0, b);
+				b = dataIN.read(bytes);
 			}
-		} catch (IOException exc) {
-			throw exc;
-		} finally {
-			in.close();
-			out.close();
+			headerdOut.flush();
+		}finally {
+			if(headerdOut != null){try{headerdOut.close();}catch(Exception e){e.printStackTrace();}}
+			if(dataIN != null){try{dataIN.close();}catch(Exception e){e.printStackTrace();}}
 		}
 	}
 	// successful write
-	info.setHasData(true);
-	info.setHeaderfile(fileName);
-	return info;
+	nrrdInfo.setHasData(true);
+	return nrrdInfo;
 }
 }
