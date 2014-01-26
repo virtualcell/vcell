@@ -9,6 +9,15 @@
  */
 
 package cbit.vcell.export.nrrd;
+
+import org.vcell.util.document.VCDataIdentifier;
+
+import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.RasterExporter;
+import cbit.vcell.export.server.RasterSpecs;
+import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.simdata.SimDataConstants;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/23/2004 2:45:58 PM)
@@ -27,7 +36,7 @@ public class NrrdInfo {
 	private String type = null;
 	private String encoding = null;
 	// optional fields; setters should check for validity
-	private String datafile = null;
+	private FileDataContainerID dataFileID = null;
 	private String content = "";
 	private double min = Double.NaN;
 	private double max = Double.NaN;
@@ -43,7 +52,8 @@ public class NrrdInfo {
 	private String mainComment = null;
 	private boolean separateHeader = false;
 	private boolean hasData = false;
-	private String headerfile = null;
+	private FileDataContainerID headerFileID = null;
+	private String canonicalFileName;
 
 /**
  * Insert the method's description here.
@@ -77,6 +87,12 @@ public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String ty
 	return info;
 }
 
+public void setCanonicalFileNamePrefix(String canonicalfileanme){
+	this.canonicalFileName = canonicalfileanme;
+}
+public String getCanonicalFilename(boolean bHeader){
+	return canonicalFileName+(bHeader?"_header":"_data")+".nrrd";
+}
 
 /**
  * Insert the method's description here.
@@ -133,8 +149,8 @@ public java.lang.String getContent() {
  * Creation date: (4/26/2004 2:25:02 PM)
  * @return java.lang.String
  */
-public java.lang.String getDatafile() {
-	return datafile;
+public FileDataContainerID getDataFileID() {
+	return dataFileID;
 }
 
 
@@ -163,10 +179,9 @@ public java.lang.String getEncoding() {
  * Creation date: (4/26/2004 7:42:40 PM)
  * @return java.lang.String
  */
-public java.lang.String getHeaderfile() {
-	return headerfile;
+public FileDataContainerID getHeaderFileID() {
+	return headerFileID;
 }
-
 
 /**
  * Insert the method's description here.
@@ -333,8 +348,8 @@ public void setContent(java.lang.String newContent) {
  * Creation date: (4/26/2004 2:26:08 PM)
  * @param newDatafile java.lang.String
  */
-public void setDatafile(java.lang.String newDatafile) {
-	datafile = newDatafile;
+public void setDataFileID(FileDataContainerID dataFileID) {
+	this.dataFileID = dataFileID;
 }
 
 
@@ -373,8 +388,8 @@ public void setHasData(boolean newHasData) {
  * Creation date: (4/26/2004 7:42:40 PM)
  * @param newHeaderfile java.lang.String
  */
-public void setHeaderfile(java.lang.String newHeaderfile) {
-	headerfile = newHeaderfile;
+public void setHeaderFileID(FileDataContainerID headerFileID) {
+	this.headerFileID = headerFileID;
 }
 
 

@@ -11,9 +11,11 @@
 package cbit.vcell.export.server;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -719,17 +721,25 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 					"\nmin: " + (displayPreferencesArr==null || displayPreferencesArr[i].getScaleSettings()==null?"default":displayPreferencesArr[i].getScaleSettings().getMin()) +
 					"\nmax: " + (displayPreferencesArr==null || displayPreferencesArr[i].getScaleSettings()==null?"default":displayPreferencesArr[i].getScaleSettings().getMax())
 					));				
+			}		
+			FileOutputStream fos = null;
+			BufferedOutputStream bos = null;
+			DataOutputStream movieos = null;
+			try{
+				ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, dataID,fileDataContainerManager);
+				fos = new FileOutputStream(fileDataContainerManager.getFile(exportOutput.getFileDataContainerID()));
+				bos = new BufferedOutputStream(fos);
+				movieos = new DataOutputStream(bos);
+				MediaMethods.writeMovie(movieos, newMovie);
+				movieos.close();
+				exportOutputV.add(exportOutput);
+				movieHolder.getVarNameVideoMediaChunkHash().clear();
+				movieHolder.getVarNameDataIDHash().clear();
+			}finally{
+				if(movieos != null){try{movieos.close();}catch(Exception e){e.printStackTrace();}}
+				if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
+				if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
 			}
-			ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
-			DataOutputStream movieOutput = new DataOutputStream(bytesOut);
-			MediaMethods.writeMovie(movieOutput, newMovie);
-			movieOutput.close();
-			byte[] finalMovieBytes = bytesOut.toByteArray();
-			ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, dataID,fileDataContainerManager);
-			fileDataContainerManager.append(exportOutput.getFileDataContainerID(), finalMovieBytes);
-			exportOutputV.add(exportOutput);
-			movieHolder.getVarNameVideoMediaChunkHash().clear();
-			movieHolder.getVarNameDataIDHash().clear();
 		}else if(bEndVars && bEndTime && bEndSlice && bQTVR){
 			String simID = exportSpecs.getVCDataIdentifier().getID();
 			Enumeration<String> allStoredVarNamesEnum = movieHolder.getVarNameVideoMediaChunkHash().keys();
@@ -740,14 +750,22 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 				int beginTimeIndex = exportSpecs.getTimeSpecs().getBeginTimeIndex();
 				int endTimeIndex = exportSpecs.getTimeSpecs().getEndTimeIndex();
 				int numTimes = endTimeIndex-beginTimeIndex+1;
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				DataOutputStream movieOutputStream = new DataOutputStream(baos);
-				writeQTVRWorker(movieOutputStream, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);
-				movieOutputStream.close();
-				byte[] finalMovieBytes = baos.toByteArray();
-				ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, storedDataID,fileDataContainerManager);
-				fileDataContainerManager.append(exportOutput.getFileDataContainerID(), finalMovieBytes);
-				exportOutputV.add(exportOutput);					
+				FileOutputStream fos = null;
+				BufferedOutputStream bos = null;
+				DataOutputStream movieos = null;
+				try{
+					ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, storedDataID,fileDataContainerManager);
+					fos = new FileOutputStream(fileDataContainerManager.getFile(exportOutput.getFileDataContainerID()));
+					bos = new BufferedOutputStream(fos);
+					movieos = new DataOutputStream(bos);
+					writeQTVRWorker(movieos, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);
+					movieos.close();
+					exportOutputV.add(exportOutput);
+				}finally{
+					if(movieos != null){try{movieos.close();}catch(Exception e){e.printStackTrace();}}
+					if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
+					if(fos != null){try{fos.close();}catch(Exception e){e.printStackTrace();}}
+				}
 			}
 			movieHolder.getVarNameVideoMediaChunkHash().clear();
 			movieHolder.getVarNameDataIDHash().clear();

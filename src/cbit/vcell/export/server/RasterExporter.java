@@ -23,6 +23,7 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.*;
+import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 12:53:34 PM)
@@ -48,7 +49,7 @@ public RasterExporter(ExportServiceImpl exportServiceImpl) {
 /**
  * This method was created in VisualAge.
  */
-private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, String tempDir) 
+private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs,FileDataContainerManager fileDataContainerManager) 
 						throws RemoteException, DataAccessException, IOException {
 
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
@@ -66,7 +67,8 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						"double",
 						"raw"
 					);
-					nrrdInfo.setContent("5D VCData from " + simID);
+					nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames().length + "vars");
+					nrrdInfo.setContent("5D(x,y,z,t,var) VCData from " + simID);
 					nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell", "???"});
 					nrrdInfo.setSpacings(new double[] {
 						mesh.getExtent().getX() / mesh.getSizeX(),
@@ -77,11 +79,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					});
 					nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 					// make datafile and update info
-					String fileID = simID + "_Full_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames().length + "vars";
-					File datafile = new File(tempDir, fileID + "_data.nrrd");
-					nrrdInfo.setDatafile(datafile.getName());
-					DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(datafile)));
+					nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+					DataOutputStream out = null;
 					try {
+						out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 							for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 								double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
@@ -90,17 +91,11 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 								}
 							}
 						}
-					} catch (IOException exc) {
-						throw new DataAccessException(exc.toString());
-					} finally {
-						out.close();
+					}finally {
+						if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
 					}
 					// write out final output
-					File headerfile = new File(tempDir, fileID + ".nrrd");
-					nrrdInfo = NrrdWriter.writeNRRD(headerfile.getName(), headerfile.getParentFile(), nrrdInfo);
-					if (! nrrdInfo.isSeparateHeader()) {
-						datafile.delete(); // don't need it anymore, was appended to header
-					}
+					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					return new NrrdInfo[] {nrrdInfo};
 				}
 				default: {
@@ -111,7 +106,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 		case NRRD_BY_TIME: {
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
-					Vector nrrdinfoV = new Vector();
+					Vector<NrrdInfo> nrrdinfoV = new Vector();
 					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 						// create the info object
 						NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
@@ -120,8 +115,9 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 							"double",
 							"raw"
 						);
+						nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + formatTime(timeSpecs2.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars");
 						nrrdinfoV.add(nrrdInfo);
-						nrrdInfo.setContent("4D VCData from " + simID);
+						nrrdInfo.setContent("4D(x,y,z,var) VCData from " + simID);
 						nrrdInfo.setCenters(new String[] {"cell", "cell", "cell","???"});
 						nrrdInfo.setSpacings(new double[] {
 							mesh.getExtent().getX() / mesh.getSizeX(),
@@ -131,11 +127,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						});
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						// make datafile and update info						
-						String fileID = simID + "_Full_" + formatTime(timeSpecs2.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars";
-						File datafile = new File(tempDir, fileID + "_data.nrrd");
-						nrrdInfo.setDatafile(datafile.getName());
-						DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(datafile)));
+						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+						DataOutputStream out = null;
 						try {
+							out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 							for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								//for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
 									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
@@ -147,14 +142,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						} catch (IOException exc) {
 							throw new DataAccessException(exc.toString());
 						} finally {
-							out.close();
+							if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
 						}
 						// write out final output
-						File headerfile = new File(tempDir, fileID + ".nrrd");
-						nrrdInfo = NrrdWriter.writeNRRD(headerfile.getName(), headerfile.getParentFile(), nrrdInfo);
-						if (! nrrdInfo.isSeparateHeader()) {
-							datafile.delete(); // don't need it anymore, was appended to header
-						}
+						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					}
 					if(nrrdinfoV.size() > 0){
 						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
@@ -180,8 +171,9 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 							"double",
 							"raw"
 						);
+						nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames()[i] + "vars");
 						nrrdinfoV.add(nrrdInfo);
-						nrrdInfo.setContent("5D VCData from " + simID);
+						nrrdInfo.setContent("4D(x,y,z,t) VCData from " + simID);
 						nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell"});
 						nrrdInfo.setSpacings(new double[] {
 							mesh.getExtent().getX() / mesh.getSizeX(),
@@ -191,11 +183,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						});
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						// make datafile and update info
-						String fileID = simID + "_Full_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames()[i] + "vars";
-						File datafile = new File(tempDir, fileID + "_data.nrrd");
-						nrrdInfo.setDatafile(datafile.getName());
-						DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(datafile)));
+						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+						DataOutputStream out = null;
 						try {
+							out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 							//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
@@ -207,14 +198,10 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						} catch (IOException exc) {
 							throw new DataAccessException(exc.toString());
 						} finally {
-							out.close();
+							if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
 						}
 						// write out final output
-						File headerfile = new File(tempDir, fileID + ".nrrd");
-						nrrdInfo = NrrdWriter.writeNRRD(headerfile.getName(), headerfile.getParentFile(), nrrdInfo);
-						if (! nrrdInfo.isSeparateHeader()) {
-							datafile.delete(); // don't need it anymore, was appended to header
-						}
+						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					}
 					if(nrrdinfoV.size() > 0){
 						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
@@ -238,7 +225,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 /**
  * This method was created in VisualAge.
  */
-public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir) 
+public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) 
 						throws RemoteException, DataAccessException, IOException {
 	return exportPDEData(
 			outputContext,
@@ -250,11 +237,11 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 		exportSpecs.getTimeSpecs(),
 		exportSpecs.getGeometrySpecs(),
 		(RasterSpecs)exportSpecs.getFormatSpecificSpecs(),
-		tempDir
+		fileDataContainerManager
 	);
 }
 
-public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager)
+public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager)
 						throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
@@ -365,7 +352,7 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 }
 
 public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager) throws Exception{
+		ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
 	
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
@@ -436,7 +423,7 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 }
 
 public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, String tempDir,FileDataContainerManager fileDataContainerManager)throws Exception{
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager)throws Exception{
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();

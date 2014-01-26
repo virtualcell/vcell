@@ -262,17 +262,16 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 					}
 				case FORMAT_NRRD:
-//------------------check this
-					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob);
+					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob,fileDataContainerManager);
 				case FORMAT_UCD:
-					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case FORMAT_VTK_IMAGE:
-					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case FORMAT_VTK_UNSTRUCT:
-					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, exportBaseDir,fileDataContainerManager);
+					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				default:
 					throw new DataAccessException("Unknown export format requested");
@@ -296,7 +295,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
  * Insert the method's description here.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException, MalformedURLException {
+private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 
 	// check outputs and package into zip file
@@ -306,43 +305,36 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 	try {
 		for (int i=0;i<nrrdInfos.length;i++) {
 			if (nrrdInfos[i].isHasData()) {
-				// add the header (or single) file
-				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getHeaderfile());
+				// nrrdInfo 'header' file contains either just the header or both the header and data together
+				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename((nrrdInfos[i].isSeparateHeader()?true:false)));
 				zipOut.putNextEntry(zipEntry);
-				File headerfile = new File(exportBaseDir, nrrdInfos[i].getHeaderfile());
-				BufferedInputStream in = new BufferedInputStream(new FileInputStream(headerfile));
+				BufferedInputStream in = null;
 				byte[] bytes = new byte[65536];
 				try {
+					in = new BufferedInputStream(new FileInputStream(fileDataContainerManager.getFile(nrrdInfos[i].getHeaderFileID())));
 					int b = in.read(bytes);
 					while (b != -1) {
 						zipOut.write(bytes, 0, b);
 						b = in.read(bytes);
 					}
-				} catch (java.io.IOException exc) {
-					throw exc;
 				} finally {
-					// cleanup
-					in.close();
-					headerfile.delete();
+					if(in != null){try{in.close();}catch(Exception e){e.printStackTrace();}}
 				}
 				if (nrrdInfos[i].isSeparateHeader()) {
-					// add separate datafile
-					zipEntry = new ZipEntry(nrrdInfos[i].getDatafile());
+					// The data was not saved with the 'header' file so save it separately
+					zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename(false));
 					zipOut.putNextEntry(zipEntry);
-					File datafile = new File(exportBaseDir, nrrdInfos[i].getDatafile());
-					in = new BufferedInputStream(new FileInputStream(datafile));
+					File datafile = fileDataContainerManager.getFile(nrrdInfos[i].getDataFileID());
+					in = null;
 					try {
+						in = new BufferedInputStream(new FileInputStream(datafile));
 						int b = in.read(bytes);
 						while (b != -1) {
 							zipOut.write(bytes, 0, b);
 							b = in.read(bytes);
 						}
-					} catch (java.io.IOException exc) {
-						throw exc;
 					} finally {
-						// cleanup
-						in.close();
-						datafile.delete();
+						if(in != null){try{in.close();}catch(Exception e){e.printStackTrace();}}
 					}
 				}
 			} else {
