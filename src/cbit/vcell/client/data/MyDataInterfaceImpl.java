@@ -80,7 +80,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 		return filterCategoryMap;
 	}
 
-	private FilterCategoryType getFilterCategory(ColumnDescription columnDescription) {
+	private FilterCategoryType getFilterCategoryType(ColumnDescription columnDescription) {
 		HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = getFilterCategoryMap();
 		if(filterCategoryMap != null){
 			return filterCategoryMap.get(columnDescription);
@@ -175,7 +175,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
 			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
-				FilterCategoryType selectedFilterCategory = getFilterCategory(getOdeSolverResultSet().getColumnDescriptions()[i]);
+				FilterCategoryType selectedFilterCategory = getFilterCategoryType(getOdeSolverResultSet().getColumnDescriptions()[i]);
 				for (int j = 0; j < selectedFilters.length; j++) {
 					if(selectedFilters[j].equals(selectedFilterCategory)){
 						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
