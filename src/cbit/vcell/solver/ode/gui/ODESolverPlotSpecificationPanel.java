@@ -9,13 +9,16 @@
  */
 
 package cbit.vcell.solver.ode.gui;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +28,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -42,6 +46,7 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2D;
@@ -79,7 +84,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JPanel ivjSensitivityParameterPanel = null;
 	private JLabel ivjXAxisLabel = null;
 	private JList ivjYAxisChoice = null;
-	private JLabel ivjYAxisLabel = null;
+	private CollapsiblePanel ivjYAxisLabel = null;
 	private JLabel ivjCurLabel = null;
 	private JSlider ivjSensitivityParameterSlider = null;
 	private JScrollPane ivjJScrollPaneYAxis = null;
@@ -87,8 +92,6 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JPanel ivjJPanelSensitivity = null;
 	private DefaultListModel ivjDefaultListModelY = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private String[] plottableNames = new String[0];
-	private int[] fieldYIndices = new int[0];
 	private Plot2D fieldPlot2D = null;
 	private java.lang.String[] resultSetColumnNames = null;
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
@@ -105,24 +108,42 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				connEtoC10(e);
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getXAxisComboBox_frm())
+			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getXAxisComboBox_frm()){
 				try {
 					regeneratePlot2D();
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
+			}else if(filterSettings != null && filterSettings.containsKey(e.getSource())){
+				processFilterSelection();
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet")))
 			{
 				connEtoC1(evt);
 			}
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("YIndices"))) 
-				connEtoC4(evt);
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet"))) 
+			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet"))){
 				connPtoP2SetTarget();
+				getYAxisLabel().expand(false);
+			}
 			if (evt.getSource() == ODESolverPlotSpecificationPanel.this.getodeSolverResultSet1() && (evt.getPropertyName().equals("columnDescriptions"))) 
 				connEtoC7(evt);
+			if(evt.getSource() == getYAxisLabel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
+				if(((Boolean)evt.getNewValue())){
+					showFilterSettings();
+				}else{
+					showFilterSettings();
+					if(filterSettings != null){
+						for(JCheckBox jcheckBox:filterSettings.keySet()){
+							jcheckBox.removeItemListener(ivjEventHandler);
+							jcheckBox.setSelected(true);
+							jcheckBox.addItemListener(ivjEventHandler);
+						}
+						processFilterSelection();
+					}
+				}
+			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getSensitivityParameterSlider()) 
@@ -130,12 +151,12 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getYAxisChoice()) 
-				connEtoC2(e);
+				refreshVisiblePlots(getPlot2D());
 		};
 	};
 	private SymbolTable fieldSymbolTable = null;
 	private JPanel panel;
-	private JButton btnYFilter;
+//	private JButton btnYFilter;
 
 /**
  * ODESolverPlotSpecificationPanel constructor comment.
@@ -234,45 +255,6 @@ private void connEtoC13(MyDataInterface value) {
 		// user code begin {1}
 		// user code end
 		this.updateResultSet(getodeSolverResultSet1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (YAxisChoice.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> ODESolverPlotSpecificationPanel.setYNamesFromList()V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setYIndicesFromList();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC4:  (ODESolverPlotSpecificationPanel.YIndices --> ODESolverPlotSpecificationPanel.refreshPlotData()V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		refreshVisiblePlots(getPlot2D());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -675,16 +657,6 @@ private MyDataInterface getodeSolverResultSet1() {
 
 /**
  * Insert the method's description here.
- * Creation date: (2/8/2001 5:27:49 PM)
- * @return java.lang.String[]
- */
-private java.lang.String[] getPlottableNames() {
-	return plottableNames;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/18/2001 10:42:41 PM)
  * @return java.lang.String[]
  */
@@ -812,16 +784,15 @@ private javax.swing.JSlider getSensitivityParameterSlider() {
 private double[] getSensValues(ColumnDescription colDesc) throws ExpressionException,ObjectNotFoundException {
 	if (getSensitivityParameter() != null) {
 		double sens[] = null;
-		String[] rsetColNames = getPlottableNames();
 		int sensIndex = -1;
 		
-		for (int j = 0; j < rsetColNames.length; j++) {
-			if (rsetColNames[j].equals("sens_"+colDesc.getName()+"_wrt_"+getSensitivityParameter().getName())) {
+		for (int j = 0; j < ((DefaultListModel)getYAxisChoice().getModel()).size(); j++) {
+			if (((DefaultListModel)getYAxisChoice().getModel()).elementAt(j).equals("sens_"+colDesc.getName()+"_wrt_"+getSensitivityParameter().getName())) {
 				sensIndex = j;
 			}
 		}
 		if (sensIndex > -1) {
-			sens = getOdeSolverResultSet().extractColumn(rsetColNames[sensIndex]);
+			sens = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
 		}
 
 		return sens;
@@ -912,12 +883,12 @@ private javax.swing.JList getYAxisChoice() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getYAxisLabel() {
+private CollapsiblePanel getYAxisLabel() {
 	if (ivjYAxisLabel == null) {
 		try {
-			ivjYAxisLabel = new javax.swing.JLabel();
+			ivjYAxisLabel = new CollapsiblePanel("Y Axis: (filter)",false);
 			ivjYAxisLabel.setName("YAxisLabel");
-			ivjYAxisLabel.setText("Y Axis:");
+//			ivjYAxisLabel.setText("Y Axis:");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -928,16 +899,6 @@ private javax.swing.JLabel getYAxisLabel() {
 	}
 	return ivjYAxisLabel;
 }
-
-/**
- * Gets the yIndices property (int[]) value.
- * @return The yIndices property value.
- * @see #setYIndices
- */
-private int[] getYIndices() {
-	return fieldYIndices;
-}
-
 
 /**
  * Called whenever the part throws an exception.
@@ -958,6 +919,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
+	getYAxisLabel().addPropertyChangeListener(ivjEventHandler);
 	getYAxisChoice().addListSelectionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getXAxisComboBox_frm().addItemListener(ivjEventHandler);
@@ -983,13 +945,11 @@ private void initConnections() throws java.lang.Exception {
 			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
 			}
-			if (cd instanceof FunctionColumnDescription) {
-				if (((FunctionColumnDescription)cd).getIsUserDefined()) {
-					if (function_icon == null) {
-						function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
-					}
-					setIcon(function_icon);
+			if (cd instanceof FunctionColumnDescription && ((FunctionColumnDescription)cd).getIsUserDefined()) {
+				if (function_icon == null) {
+					function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
 				}
+				setIcon(function_icon);
 			}
 			return this;
 		}
@@ -1103,8 +1063,12 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 		return;
 	} else {
 		boolean[] visiblePlots = new boolean[plot2D.getNumberOfPlots()];
-		for (int i=0;i<getYIndices().length;i++) {
-			visiblePlots[getYIndices()[i]] = true;
+		int count = 0;
+		for (int i=0;i<getYAxisChoice().getModel().getSize();i++) {
+			if(getYAxisChoice().isSelectedIndex(i)){
+				visiblePlots[count] = true;
+			}
+			count++;
 		}
 		if((getOdeSolverResultSet()!= null) && getOdeSolverResultSet().isMultiTrialData()) {
 			plot2D.setVisiblePlots(visiblePlots,true);
@@ -1135,8 +1099,8 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 //			double[] xData = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[getXIndex()]);
 			//getUnfilteredSortedXAxisNames
 			double[] xData = getOdeSolverResultSet().extractColumn((String)getXAxisComboBox_frm().getSelectedItem());
-			double[][] allData = new double[getPlottableNames().length + 1][xData.length];
-			String[] yNames = new String[getPlottableNames().length];
+			double[][] allData = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
+			String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
 			allData[0] = xData;
 			double[] yData = new double[xData.length];
 	
@@ -1164,7 +1128,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				for (int i=0;i<allData.length-1;i++) {
 					// If sensitivity analysis is enabled, extrapolate values for State vars and non-sensitivity functions
 					if (getSensitivityParameter() != null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescription(getPlottableNames()[i]);
+						ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						double sens[] = getSensValues(cd);
 						yData = getOdeSolverResultSet().extractColumn(cd.getName());
 						// sens array != null for non-sensitivity state vars and functions, so extrapolate
@@ -1180,13 +1144,13 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 							} 
 						// sens array == null for sensitivity state vars and functions, so don't change their original values
 						} else {
-							allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableNames()[i]);
+							allData[i+1] = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						} 
 					} else {
 						// No sensitivity analysis case, so do not alter the original values for any variable or function
-						allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableNames()[i]);
+						allData[i+1] = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 					}
-					yNames[i] = getPlottableNames()[i];
+					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}
 			} else {
 				// When log sensitivity checkbox is selected.
@@ -1201,20 +1165,19 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				// in the result set (a value > -1). If the sensitivity var column does not exist (for user defined functions or
 				// sensitivity variables themselves), the column number returned is -1, so do not change that data column.
 				//
-				String[] rsetColNames = getPlottableNames();
 				for (int i=0;i<allData.length-1;i++) {
 					// Finding sensitivity var column for each column in result set.
-					ColumnDescription cd = getOdeSolverResultSet().getColumnDescription(getPlottableNames()[i]);
+					ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 					int sensIndex = -1;
-					for (int j = 0; j < rsetColNames.length; j++) {
-						if (rsetColNames[j].equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
+					for (int j = 0; j < ((DefaultListModel)getYAxisChoice().getModel()).size(); j++) {
+						if (((DefaultListModel)getYAxisChoice().getModel()).elementAt(j).equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
 							sensIndex = j;
 						}
 					}
 					yData = getOdeSolverResultSet().extractColumn(cd.getName());
 					// If sensitivity var exists, compute log sensitivity
 					if (sensIndex > -1) {
-						double[] sens = getOdeSolverResultSet().extractColumn(rsetColNames[sensIndex]);
+						double[] sens = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
 						for (int k = 0; k < yData.length; k++) {
 							// Extrapolated statevars and functions
 							if (Math.abs(yData[k]) > 1e-6) {
@@ -1243,7 +1206,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 							allData[i+1] = yData;
 						}
 					}
-					yNames[i] = getPlottableNames()[i];
+					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}
 			}
 				
@@ -1277,13 +1240,12 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 	{
 		//a column of data get from ODESolverRestultSet, which is actually the results for a specific variable during multiple trials
 		double[] rowData = new double[getOdeSolverResultSet().getRowCount()];
-		String[] yNames = getPlottableNames();
-		PlotData[] plotData = new PlotData[yNames.length];
+		PlotData[] plotData = new PlotData[((DefaultListModel)getYAxisChoice().getModel()).size()];
 		
 		
 		for (int i=0; i<plotData.length; i++)
 		{
-			ColumnDescription cd = getOdeSolverResultSet().getColumnDescription(getPlottableNames()[i]);
+			ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 			rowData = getOdeSolverResultSet().extractColumn(cd.getName());
 			Point2D[] histogram = generateHistogram(rowData);
 			double[] x = new double[histogram.length];
@@ -1297,10 +1259,10 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 		}
 		
 		SymbolTableEntry[] symbolTableEntries = null;
-		if(getSymbolTable() != null && yNames != null && yNames.length > 0){
-			symbolTableEntries = new SymbolTableEntry[yNames.length];
-			for(int i=0;i<yNames.length;i+= 1){
-				symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
+		if(getSymbolTable() != null && ((DefaultListModel)getYAxisChoice().getModel()).size() > 0){
+			symbolTableEntries = new SymbolTableEntry[((DefaultListModel)getYAxisChoice().getModel()).size()];
+			for(int i=0;i<symbolTableEntries.length;i+= 1){
+				symbolTableEntries[i] = getSymbolTable().getEntry((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 			}
 			
 		}
@@ -1309,6 +1271,8 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 		String xLabel = "Number of Particles";
 		String yLabel = "";
 		
+		String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
+		((DefaultListModel)getYAxisChoice().getModel()).copyInto(yNames);
 		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData, new String[] {title, xLabel, yLabel});
 		refreshVisiblePlots(plot2D);
 		setPlot2D(plot2D);
@@ -1370,16 +1334,6 @@ private void setodeSolverResultSet1(MyDataInterface newValue) {
 
 /**
  * Insert the method's description here.
- * Creation date: (2/8/2001 5:27:49 PM)
- * @param newPlottableNames java.lang.String[]
- */
-private void setPlottableNames(java.lang.String[] newPlottableNames) {
-	plottableNames = newPlottableNames;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/18/2001 10:42:41 PM)
  * @param newResultSetColumnNames java.lang.String[]
  */
@@ -1397,52 +1351,6 @@ public void setSymbolTable(SymbolTable symbolTable) {
 	fieldSymbolTable = symbolTable;
 	firePropertyChange("symbolTable", oldValue, symbolTable);
 }
-
-/**
- * Sets the yIndices property (int[]) value.
- * @param yIndices The new value for the property.
- * @see #getYIndices
- */
-private void setYIndices(int[] yIndices) {
-	int[] oldValue = fieldYIndices;
-	fieldYIndices = yIndices;
-	firePropertyChange("YIndices", oldValue, yIndices);
-}
-
-
-/**
- * Comment
- */
-private synchronized void setYIndicesFromList() {
-/*
- * ONE SHOULDN'T HAVE TO DEAL WITH THIS CRAP !!
- *	
- * this is a workaround for Swing double event firing (which would result in double plotData building)
- */
-	boolean different = false;
-	// we build the new array
-	int[] indices = new int[getYAxisChoice().getSelectedIndices().length];
-	for (int i=0;i<getYAxisChoice().getSelectedIndices().length;i++) {
-		indices[i] = getYAxisChoice().getSelectedIndices()[i];
-		// while building, we also check the stored (maybe new) value
-		if (i < fieldYIndices.length) {
-			different = fieldYIndices[i] != indices[i];
-		} else {
-			// old array is smaller size
-			different = true;
-		}
-	}
-	// while equal so far, old could be larger
-	if (fieldYIndices.length > indices.length) {
-		different = true;
-	}
-	if (different) {
-		setYIndices(indices);
-	} else {
-		// do nothing, we are dealing with the duplicate event
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -1467,6 +1375,9 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	if (odeSolverResultSet == null) {
 		return;
 	}
+	Object xAxisSelection = getXAxisComboBox_frm().getSelectedItem();
+	Object[] yAxisSelections = getYAxisChoice().getSelectedValues();
+	
 	ArrayList<ColumnDescription> variableColumnDescriptions = new ArrayList<ColumnDescription>();
 	ArrayList<ColumnDescription> sensitivityColumnDescriptions = new ArrayList<ColumnDescription>();
 	ColumnDescription timeColumnDescription = null;
@@ -1485,7 +1396,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
         } else {
         	sensitivityColumnDescriptions.add(cd);
         }
-    }    
+    }
     sortColumnDescriptions(variableColumnDescriptions);
     sortColumnDescriptions(sensitivityColumnDescriptions); 
     
@@ -1495,29 +1406,23 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
     	sortedColumndDescriptions.add(timeColumnDescription); // add time first
 	}
     
-    boolean bMultiTrailData = odeSolverResultSet.isMultiTrialData();
+    boolean bMultiTrialData = odeSolverResultSet.isMultiTrialData();
     
     sortedColumndDescriptions.addAll(variableColumnDescriptions);
-    if(!bMultiTrailData)
+    if(!bMultiTrialData)
     {
     	sortedColumndDescriptions.addAll(sensitivityColumnDescriptions);
     }
     //  End hack
 //    setPlottableColumnIndices(sortedIndices);
-    // now store their names
-    String[] names = new String[sortedColumndDescriptions.size()];
-    for (int i = 0; i < names.length; i++) {
-        names[i] = sortedColumndDescriptions.get(i).getName();
-    }
-    setPlottableNames(names);
    
     // finally, update widgets
     try{
     	getXAxisComboBox_frm().removeItemListener(ivjEventHandler);
     	getYAxisChoice().removeListSelectionListener(ivjEventHandler);
 	    getComboBoxModelX_frm().removeAllElements();
-	    if(!bMultiTrailData) {
-	       	// Don't put anything in X Axis, if the results of multifple trials are being displayed.
+	    if(!bMultiTrialData) {
+	       	// Don't put anything in X Axis, if the results of multiple trials are being displayed.
 	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getOdeSolverResultSet().getXColumnDescriptions()));
 	    	sortColumnDescriptions(xColumnDescriptions);
 	    	if(timeColumnDescription != null){
@@ -1531,19 +1436,46 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 		}
 	    
 	    getDefaultListModelY().removeAllElements();
-	    for (int i = 0; i < getPlottableNames().length; i++) {
-	        getDefaultListModelY().addElement(names[i]);
+	    for (int i = 0; i < sortedColumndDescriptions.size(); i++) {
+	        getDefaultListModelY().addElement(sortedColumndDescriptions.get(i).getName());
+	    }
+	    
+	    
+	    
+	    if (sortedColumndDescriptions.size() > 0) {
+	    	//Don't put anything in X Axis, if the results of multifple trials are being displayed.
+	    	if(!bMultiTrialData) {
+	    		getXAxisComboBox_frm().setSelectedItem(xAxisSelection);
+		    	if(getXAxisComboBox_frm().getSelectedIndex() == -1){
+		    		getXAxisComboBox_frm().setSelectedIndex(0);
+		    	}
+	    	}
+	    	if(yAxisSelections != null && yAxisSelections.length > 0){
+	    		ArrayList<Integer> carryoverSelections = new ArrayList<Integer>();
+	    		for (int i = 0; i < getYAxisChoice().getModel().getSize(); i++) {
+	    			for (int j = 0; j < yAxisSelections.length; j++) {
+						if(getYAxisChoice().getModel().getElementAt(i).equals(yAxisSelections[j])){
+							carryoverSelections.add(i);
+							break;
+						}
+					}
+				}
+	    		if(carryoverSelections.size() > 0){
+	    			int[] carryoverInts = new int[carryoverSelections.size()];
+	    			for (int i = 0; i < carryoverInts.length; i++) {
+						carryoverInts[i] = carryoverSelections.get(i);
+					}
+	    			getYAxisChoice().setSelectedIndices(carryoverInts);
+	    		}else{
+	    			getYAxisChoice().setSelectedIndex((getYAxisChoice().getModel().getSize()>1?1:0));
+	    		}
+	    	}else{
+	    		getYAxisChoice().setSelectedIndex(sortedColumndDescriptions.size() > 1 ? 1 : 0);
+	    	}
 	    }
     }finally{
     	getXAxisComboBox_frm().addItemListener(ivjEventHandler);
     	getYAxisChoice().addListSelectionListener(ivjEventHandler);
-    }
-    if (sortedColumndDescriptions.size() > 0) {
-    	//Don't put anything in X Axis, if the results of multifple trials are being displayed.
-    	if(!bMultiTrailData) {
-    		getXAxisComboBox_frm().setSelectedIndex(0);
-    	}
-        getYAxisChoice().setSelectedIndex(sortedColumndDescriptions.size() > 1 ? 1 : 0);
     }
     regeneratePlot2D();
 }
@@ -1633,30 +1565,30 @@ private JPanel getPanel() {
 		gbc_ivjYAxisLabel.gridx = 0;
 		gbc_ivjYAxisLabel.gridy = 0;
 		panel.add(getYAxisLabel(), gbc_ivjYAxisLabel);
-		GridBagConstraints gbc_btnYFilter = new GridBagConstraints();
-		gbc_btnYFilter.anchor = GridBagConstraints.EAST;
-		gbc_btnYFilter.gridx = 1;
-		gbc_btnYFilter.gridy = 0;
-		panel.add(getBtnYFilter(), gbc_btnYFilter);
+//		GridBagConstraints gbc_btnYFilter = new GridBagConstraints();
+//		gbc_btnYFilter.anchor = GridBagConstraints.EAST;
+//		gbc_btnYFilter.gridx = 1;
+//		gbc_btnYFilter.gridy = 0;
+//		panel.add(getBtnYFilter(), gbc_btnYFilter);
 	}
 	return panel;
 }
-private JButton getBtnYFilter() {
-	if (btnYFilter == null) {
-		btnYFilter = new JButton("Filter...");
-		btnYFilter.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					showFilterSettings();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					DialogUtils.showErrorDialog(ODESolverPlotSpecificationPanel.this, e1.getMessage());
-				}
-			}
-		});
-	}
-	return btnYFilter;
-}
+//private JButton getBtnYFilter() {
+//	if (btnYFilter == null) {
+//		btnYFilter = new JButton("Filter...");
+//		btnYFilter.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				try {
+//					showFilterSettings();
+//				} catch (Exception e1) {
+//					e1.printStackTrace();
+//					DialogUtils.showErrorDialog(ODESolverPlotSpecificationPanel.this, e1.getMessage());
+//				}
+//			}
+//		});
+//	}
+//	return btnYFilter;
+//}
 
 private HashMap<JCheckBox, FilterCategoryType> filterSettings;
 private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
@@ -1668,7 +1600,19 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 			return jCheckBox;
 		}
 	}
-	JCheckBox newJCheckBox = new JCheckBox(filterCategory.toString());
+	JCheckBox newJCheckBox = new JCheckBox(filterCategory.toString()){
+		@Override
+		public Dimension getMaximumSize() {
+			//reduce vertical space between checkboxes
+			return new Dimension(super.getMaximumSize().width, 17);//super.getMaximumSize();
+		}
+		@Override
+		public Dimension getPreferredSize() {
+			// TODO Auto-generated method stub
+			return  getMaximumSize();//super.getPreferredSize();
+		}
+		
+	};
 	newJCheckBox.setSelected(true);
 	if(filterCategory.equals(FilterCategoryType.ReservedXYZT)){
 		//Don't let user unselect reserved variables for now
@@ -1678,6 +1622,9 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 	return newJCheckBox;		
 }
 private void showFilterSettings() {
+	getYAxisLabel().getContentPanel().removeAll();
+	getYAxisLabel().getContentPanel().setLayout(null);
+	
 	HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
 	filterSettings = null;
 	if(getOdeSolverResultSet() != null &&
@@ -1696,13 +1643,15 @@ private void showFilterSettings() {
 			}
 		}
 	}else{
-		DialogUtils.showWarningDialog(this, "Cannot display filter, no filter categories set.");
+//		DialogUtils.showWarningDialog(this, "Cannot display filter, no filter categories set.");
+		getYAxisLabel().getContentPanel().setLayout(new BorderLayout());
+		getYAxisLabel().getContentPanel().add(new JLabel("No Filters"));
 		return;
 	}
 	
-	JPanel filterPanel = new JPanel();
+	JPanel filterPanel = getYAxisLabel().getContentPanel();//new JPanel();
 	filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
-	filterPanel.setBorder(new LineBorder(Color.black));
+//	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
 	Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
 		@Override
@@ -1712,13 +1661,26 @@ private void showFilterSettings() {
 		}
 	});
 	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
+		sortedJCheckBoxes[i].removeItemListener(ivjEventHandler);
+		sortedJCheckBoxes[i].addItemListener(ivjEventHandler);
+
 		sortedJCheckBoxes[i].setAlignmentX(0f);
 		filterPanel.add(sortedJCheckBoxes[i]);
-		
 	}
+//	filterPanel.add(Box.createVerticalGlue());
 	
-	DialogUtils.showComponentCloseDialog(this, filterPanel, "Choose displayed types:");
+//	DialogUtils.showComponentCloseDialog(this, filterPanel, "Choose displayed types:");
 	
+//	ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
+//	for(JCheckBox jCheckBox:filterSettings.keySet()){
+//		if(jCheckBox.isSelected()){
+//			selectedFilterCategories.add(filterSettings.get(jCheckBox));
+//		}
+//	}
+//	getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
+}
+
+private void processFilterSelection(){
 	ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
 	for(JCheckBox jCheckBox:filterSettings.keySet()){
 		if(jCheckBox.isSelected()){
