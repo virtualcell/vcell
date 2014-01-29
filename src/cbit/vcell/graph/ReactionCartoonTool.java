@@ -963,7 +963,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
-	private RXContainerDropTargetInfo lastRXContainerDropTargetInfo;
+	private HashMap<RXContainerDropTargetInfo, Boolean> lastRXContainerDropTargetInfoMap;
 	private ReactionContainerShape getReactionContainerShapeAtPoint(Point dragPointWorld){
 		Shape mouseShape = getReactionCartoon().pickWorld(dragPointWorld);
 		if(mouseShape instanceof ReactionContainerShape){
@@ -981,6 +981,35 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 		return null;
 	}
+	private RXContainerDropTargetInfo getSelectedContainerDropTargetInfo(){
+		if(lastRXContainerDropTargetInfoMap != null){
+			for(RXContainerDropTargetInfo rxContainerDropTargetInfo:lastRXContainerDropTargetInfoMap.keySet()){
+				if(lastRXContainerDropTargetInfoMap.get(rxContainerDropTargetInfo)){
+					return rxContainerDropTargetInfo;
+				}
+			}
+		}
+		return null;
+	}
+	private HashMap<Rectangle, Boolean> getDropTargetRectangleMap(boolean bZoomAdjust){
+		GraphResizeManager graphResizeManager = getGraphModel().getResizeManager();
+		HashMap<Rectangle, Boolean> dropTargetRectangleMap = new HashMap<Rectangle, Boolean>();
+		for(RXContainerDropTargetInfo rxContainerDropTargetInfo:lastRXContainerDropTargetInfoMap.keySet()){
+			if(startShape == rxContainerDropTargetInfo.dropShape || startShape == rxContainerDropTargetInfo.closestNeighborShape){
+				continue;
+			}
+			Rectangle dropTargetRectangle = rxContainerDropTargetInfo.absoluteRectangle;
+			if(bZoomAdjust){
+				dropTargetRectangle = new Rectangle(
+					(int)graphResizeManager.zoom(rxContainerDropTargetInfo.absoluteRectangle.x),
+					(int)graphResizeManager.zoom(rxContainerDropTargetInfo.absoluteRectangle.y),
+					(int)graphResizeManager.zoom(rxContainerDropTargetInfo.absoluteRectangle.width),
+					(int)graphResizeManager.zoom(rxContainerDropTargetInfo.absoluteRectangle.height));
+			}
+			dropTargetRectangleMap.put(dropTargetRectangle,lastRXContainerDropTargetInfoMap.get(rxContainerDropTargetInfo));
+		}
+		return dropTargetRectangleMap;
+	}
 	@Override
 	public void mouseDragged(MouseEvent event) {
 		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
@@ -990,52 +1019,18 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
 		if(mode == Mode.SELECT && bStartRxContainerLabel){
 			Point dragPointWorld = getGraphModel().getResizeManager().unzoom(event.getPoint());
-			Shape mouseShape = getReactionContainerShapeAtPoint(dragPointWorld);
-			if(mouseShape instanceof ReactionContainerShape){
-				Structure[] originalOrderedStructArr = getReactionCartoon().getStructureSuite().getStructures().toArray(new Structure[0]);
-				RXContainerDropTargetInfo rxContainerDropTargetInfo = getRXContainerDropTargetInfo(originalOrderedStructArr, mouseShape,dragPointWorld);
-				if(!Compare.isEqualOrNull(lastRXContainerDropTargetInfo, rxContainerDropTargetInfo)){
-					lastRXContainerDropTargetInfo = rxContainerDropTargetInfo;
-					if(rxContainerDropTargetInfo != null){
-						Graphics graphics = getGraphPane().getGraphics();
-						Shape closestNeighborShape = rxContainerDropTargetInfo.closestNeighborShape;
-						Integer insertFlag = rxContainerDropTargetInfo.insertFlag;
-	//					Boolean bInsertBeginning = (insertFlag==null?null:(insertFlag==RXContainerDropTargetInfo.INSERT_BEGINNING?true:false));
-						int x = 0;
-						int width = 0;
-						final int BOX_RADIUS = 10;
-						if(insertFlag == null){
-							x = Math.max(mouseShape.getAbsX(),closestNeighborShape.getAbsX())-BOX_RADIUS;
-							width = 2*BOX_RADIUS;
-						}else{
-							if(insertFlag == RXContainerDropTargetInfo.INSERT_BEGINNING){
-								x = mouseShape.getAbsX();
-								width = BOX_RADIUS;
-							}else{
-								x = mouseShape.getAbsX()+mouseShape.getWidth()-BOX_RADIUS;
-								width = BOX_RADIUS;
-							}
-						}
-						GraphResizeManager graphResizeManager = getGraphModel().getResizeManager();
-						//System.out.println("Painting drop target");
-						Rectangle dropTargetRectangle = new Rectangle((int)graphResizeManager.zoom(x), (int)graphResizeManager.zoom(mouseShape.getAbsY()), (int)graphResizeManager.zoom(width), (int)graphResizeManager.zoom(mouseShape.getHeight()));
-						getGraphPane().setDropTargetRectangle(dropTargetRectangle);
-						getGraphPane().repaint();
-						//					graphics.drawRect(x, mouseShape.getAbsY(), width, mouseShape.getHeight());
-					}else{
-						//clear drop target drawing
-						//System.out.println("Clearing drop target");
-						getGraphPane().setDropTargetRectangle(null);
-						getGraphPane().repaint();
-					}
-				}
-			}else{
-				if(lastRXContainerDropTargetInfo != null){
-					//System.out.println("OUTSIDE Clearing drop target");
-					getGraphPane().setDropTargetRectangle(null);
+			RXContainerDropTargetInfo lastTrueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
+			lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(dragPointWorld, lastRXContainerDropTargetInfoMap);
+			RXContainerDropTargetInfo currentTrueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
+			if(!Compare.isEqualOrNull(lastTrueRXContainerDropTargetInfo, currentTrueRXContainerDropTargetInfo)){
+				if(currentTrueRXContainerDropTargetInfo != null){
+					getGraphPane().setDropTargetRectangleMap(getDropTargetRectangleMap(true));
+					getGraphPane().repaint();
+				}else{
+					//clear drop target drawing
+					getGraphPane().setDropTargetRectangleMap(getDropTargetRectangleMap(true));
 					getGraphPane().repaint();
 				}
-				lastRXContainerDropTargetInfo = null;
 			}
 			return;
 		}
@@ -1285,17 +1280,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			startShape = getReactionCartoon().pickWorld(startPointWorld);
 			if(startShape instanceof ReactionContainerShape){
-				lastRXContainerDropTargetInfo = null;
-//				Point relativeStart = new Point(startPointWorld.x-startShape.getAbsX(), startPointWorld.y-startShape.getAbsY());
-//				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(0, 0);
-//				boolean bInsideLabel =
-//						labelOutlineRectangle.contains(relativeStart.x,relativeStart.y);
-//				System.out.println(bInsideLabel+" "+startShape.getLabel()+" "+relativeStart+" "+labelOutlineRectangle);
-
 				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
 				bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
-//				System.out.println(bStartRxContainerLabel+" "+startShape.getLabel()+" "+startPointWorld+" "+labelOutlineRectangle);
-//				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				if(bStartRxContainerLabel){
+					lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld, null);
+					getGraphPane().setDropTargetRectangleMap(getDropTargetRectangleMap(true));
+					getGraphPane().repaint();					
+				}
 			}
 			// Always select with MousePress
 			boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
@@ -1321,11 +1312,31 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		public Shape closestNeighborShape;
 		public Integer insertFlag;
 		public Shape dropShape;
+		public Rectangle absoluteRectangle;
 		
 		public RXContainerDropTargetInfo(Shape dropShape,Shape closestNeighborShape,Integer insertFlag) {
 			this.dropShape = dropShape;
 			this.closestNeighborShape = closestNeighborShape;
 			this.insertFlag = insertFlag;
+			this.absoluteRectangle = initAbsoluteDropTargetRectangle();
+		}
+		private Rectangle initAbsoluteDropTargetRectangle(){
+			int x = 0;
+			int width = 0;
+			final int BOX_RADIUS = 10;
+			if(insertFlag == null){
+				x = Math.max(dropShape.getAbsX(),closestNeighborShape.getAbsX())-BOX_RADIUS;
+				width = 2*BOX_RADIUS;
+			}else{
+				if(insertFlag == RXContainerDropTargetInfo.INSERT_BEGINNING){
+					x = dropShape.getAbsX();
+					width = BOX_RADIUS;
+				}else{
+					x = dropShape.getAbsX()+dropShape.getWidth()-BOX_RADIUS;
+					width = BOX_RADIUS;
+				}
+			}
+			return new Rectangle(x, dropShape.getAbsY(), width, dropShape.getHeight());
 		}
 		@Override
 		public boolean compareEqual(Matchable obj) {
@@ -1335,41 +1346,45 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					&&
 					(this.closestNeighborShape == ((RXContainerDropTargetInfo)obj).closestNeighborShape)
 					&&
-					Compare.isEqualOrNull(this.insertFlag, ((RXContainerDropTargetInfo)obj).insertFlag);
+					Compare.isEqualOrNull(this.insertFlag, ((RXContainerDropTargetInfo)obj).insertFlag)
+					&&
+					this.absoluteRectangle.equals(((RXContainerDropTargetInfo)obj).absoluteRectangle);
 			}
 			return false;
 		}
-		
 	}
-	private RXContainerDropTargetInfo getRXContainerDropTargetInfo(Structure[] originalOrderedStructArr,Shape dropShape,Point dropPoint){
-		
-		Shape closestNeighborShape = null;
-		Integer insertFlag = null;
-		for(int i=0;i<originalOrderedStructArr.length;i++){
-			ReactionContainerShape rxContainerShape = (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
-			int beginX = rxContainerShape.getAbsX();
-			int endX = rxContainerShape.getAbsX()+rxContainerShape.getWidth();			
-			if(rxContainerShape == dropShape){
-				if(Math.abs(dropPoint.x-beginX) < Math.abs(dropPoint.x-endX)){
-					if(i > 0){
-						closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i-1]);
-					}else{
-						insertFlag = RXContainerDropTargetInfo.INSERT_BEGINNING;
-					}
+	
+	private HashMap<RXContainerDropTargetInfo, Boolean> updateRXContainerDropTargetInfoMap(Point pointWorld,HashMap<RXContainerDropTargetInfo, Boolean> rxContainerDropTargetInfoMap){
+		if(rxContainerDropTargetInfoMap == null){
+//			System.out.println("-----redoing map...");
+			AllStructureSuite allStructureSuite = (getReactionCartoon().getStructureSuite() instanceof AllStructureSuite?(AllStructureSuite)getReactionCartoon().getStructureSuite():null);
+			if(allStructureSuite == null){
+				throw new RuntimeException("Expecting "+AllStructureSuite.class.getName());
+			}
+			rxContainerDropTargetInfoMap = new HashMap<ReactionCartoonTool.RXContainerDropTargetInfo, Boolean>();
+			Structure[] originalOrderedStructArr = allStructureSuite.getStructures().toArray(new Structure[0]);
+			for(int i=0;i<originalOrderedStructArr.length;i++){
+				Shape currentRXContainerShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i]);
+				if(i == 0){
+					rxContainerDropTargetInfoMap.put(new RXContainerDropTargetInfo(currentRXContainerShape, null, RXContainerDropTargetInfo.INSERT_BEGINNING), false);
 				}else{
-					if(i<(originalOrderedStructArr.length-1)){
-						closestNeighborShape = getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i+1]);
-					}else{
-						insertFlag = RXContainerDropTargetInfo.INSERT_END;
+					rxContainerDropTargetInfoMap.put(new RXContainerDropTargetInfo(currentRXContainerShape, (ReactionContainerShape)getReactionCartoon().getShapeFromModelObject(originalOrderedStructArr[i-1]), null), false);
+					if (i == (originalOrderedStructArr.length-1)){
+						rxContainerDropTargetInfoMap.put(new RXContainerDropTargetInfo(currentRXContainerShape, null, RXContainerDropTargetInfo.INSERT_END), false);
 					}
 				}
-				if(startShape == dropShape || startShape == closestNeighborShape){
-					return null;
-				}
-				return new RXContainerDropTargetInfo(dropShape,closestNeighborShape, insertFlag);
+			}			
+		}
+//		System.out.println("-----Starting to update selection...");
+		for(RXContainerDropTargetInfo rxcContainerDropTargetInfo:rxContainerDropTargetInfoMap.keySet()){
+			if(rxcContainerDropTargetInfo.absoluteRectangle.contains(pointWorld)){
+//				System.out.println(rxcContainerDropTargetInfo.dropShape.getLabel()+" "+rxcContainerDropTargetInfo.closestNeighborShape);
+				rxContainerDropTargetInfoMap.put(rxcContainerDropTargetInfo,true);
+			}else{
+				rxContainerDropTargetInfoMap.put(rxcContainerDropTargetInfo,false);
 			}
 		}
-		return null;
+		return rxContainerDropTargetInfoMap;
 	}
 	
 	@Override
@@ -1387,27 +1402,27 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if(mode == Mode.SELECT && bStartRxContainerLabel){
-				getGraphPane().setDropTargetRectangle(null);
+				getGraphPane().setDropTargetRectangleMap(null);
 				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				getGraphPane().repaint();//turn off rxDropTargetRectangles
 				bStartRxContainerLabel = false;
-//				System.out.println("Released RxContainerLabel "+endPointWorld+" "+endShape);
-				StructureSuite structureSuite = null;
-				Shape mouseShape = getReactionContainerShapeAtPoint(endPointWorld);
-				if(mouseShape instanceof ReactionContainerShape){
-					structureSuite = getReactionCartoon().getStructureSuite();
+				RXContainerDropTargetInfo trueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
+				lastRXContainerDropTargetInfoMap = null;
+				if(trueRXContainerDropTargetInfo == null){
+					return;
 				}
-				
+				StructureSuite structureSuite = null;
+				structureSuite = getReactionCartoon().getStructureSuite();
 				if(structureSuite != null){
 					Structure[] originalOrderedStructArr = structureSuite.getStructures().toArray(new Structure[0]);
 					//find where user wants to put the structure
 					try{
-						RXContainerDropTargetInfo rxContainerDropTargetInfo = getRXContainerDropTargetInfo(originalOrderedStructArr, mouseShape,endPointWorld);
-						if(rxContainerDropTargetInfo != null){
+						if(trueRXContainerDropTargetInfo != null){
 							ArrayList<Structure> newStructOrderList = new ArrayList<Structure>(Arrays.asList(originalOrderedStructArr));
 							newStructOrderList.remove(((ReactionContainerShape)startShape).getStructure());
-							int indexEnd = newStructOrderList.indexOf(((ReactionContainerShape)mouseShape).getStructure());
+							int indexEnd = newStructOrderList.indexOf(((ReactionContainerShape)trueRXContainerDropTargetInfo.dropShape).getStructure());
 							int indexClosestNeighbor =
-								(rxContainerDropTargetInfo.closestNeighborShape==null?(rxContainerDropTargetInfo.insertFlag==RXContainerDropTargetInfo.INSERT_BEGINNING?0:newStructOrderList.size()):newStructOrderList.indexOf(((ReactionContainerShape)rxContainerDropTargetInfo.closestNeighborShape).getStructure()));
+								(trueRXContainerDropTargetInfo.closestNeighborShape==null?(trueRXContainerDropTargetInfo.insertFlag==RXContainerDropTargetInfo.INSERT_BEGINNING?0:newStructOrderList.size()):newStructOrderList.indexOf(((ReactionContainerShape)trueRXContainerDropTargetInfo.closestNeighborShape).getStructure()));
 							if(indexClosestNeighbor < indexEnd){
 								newStructOrderList.add(indexEnd, ((ReactionContainerShape)startShape).getStructure());
 							}else{
