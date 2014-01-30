@@ -4,7 +4,6 @@ import java.beans.PropertyChangeListener;
 
 import org.vcell.util.ObjectNotFoundException;
 
-import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
@@ -12,8 +11,6 @@ import cbit.vcell.util.ColumnDescription;
 
 public interface MyDataInterface {
 
-	void setODEDataViewer(ODEDataViewer odeDataViewer);
-	
 	void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
 	void addPropertyChangeListener(PropertyChangeListener ivjEventHandler);

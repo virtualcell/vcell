@@ -1,18 +1,14 @@
 package cbit.vcell.client.data;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.TreeSet;
 
 import org.vcell.util.ObjectNotFoundException;
 
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -21,61 +17,16 @@ import cbit.vcell.util.ColumnDescription;
 
 public class MyDataInterfaceImpl implements MyDataInterface {
 	
-	protected transient java.beans.PropertyChangeSupport propertyChange;
+	private transient java.beans.PropertyChangeSupport propertyChange = new PropertyChangeSupport(this);
 	private FilterCategoryType[] selectedFilters = null;
-	private ODEDataViewer odeDataViewer;
-	
-	private PropertyChangeListener myPropertyChangeListener =
-			new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-//					System.out.println("-----"+MyDataInterfaceImpl.class.getSimpleName()+": "+evt.getPropertyName()+" "+evt.getSource().getClass().getSimpleName());
-					if( (evt.getSource() == getOdeSolverResultSet() && evt.getPropertyName().equals("columnDescriptions")) ||
-						(evt.getSource() == odeDataViewer && evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO))){
-						resetFilterCategories();
-					}
-				}
-			};
-	public MyDataInterfaceImpl(){
-		propertyChange = new PropertyChangeSupport(this);
-	}
-
-	public void setODEDataViewer(ODEDataViewer newODEDataViewer){
-		if(this.odeDataViewer != null){
-			this.odeDataViewer.removePropertyChangeListener(myPropertyChangeListener);
-		}
-		this.odeDataViewer = newODEDataViewer;
-		if(this.odeDataViewer != null){
-			this.odeDataViewer.addPropertyChangeListener(myPropertyChangeListener);
-		}
-		resetFilterCategories();
-	}
-	private void resetFilterCategories(){
-		if(this.odeDataViewer == null ||
-			this.odeDataViewer.getSimulationModelInfo() == null ||
-			!(this.odeDataViewer.getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo)){
-			return;
-		}
-		AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				filterCategoryMap =
-					((SimulationWorkspaceModelInfo)odeDataViewer.getSimulationModelInfo()).getFilterCategories(
-						getOdeSolverResultSet().getColumnDescriptions());
-			}
-		};
-		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
-			}
-		};
-		ClientTaskDispatcher.dispatch(odeDataViewer, new Hashtable<String, Object>(),
-				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
-				false, false, false, null, true);
-	}
-	
 	private HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap;
+	private ODESolverResultSet odeSolverResultSet;
+	
+	public MyDataInterfaceImpl(ODESolverResultSet odeSolverResultSet,HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap){
+		this.odeSolverResultSet = odeSolverResultSet;
+		this.filterCategoryMap = filterCategoryMap;
+	}
+	
 	private HashMap<ColumnDescription, FilterCategoryType> getFilterCategoryMap() {
 		return filterCategoryMap;
 	}
@@ -101,7 +52,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 
 	@Override
 	public void selectCategory(FilterCategoryType[] filterCategories) {
-		this.selectedFilters = filterCategories;
+		this.selectedFilters = (filterCategories==null || filterCategories.length==0?null:filterCategories);
 		propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
 	}
 
@@ -188,10 +139,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 	}
 
 	private ODESolverResultSet getOdeSolverResultSet() {
-		if(this.odeDataViewer == null){
-			return null;
-		}
-		return odeDataViewer.getOdeSolverResultSet();
+		return odeSolverResultSet;
 	}
 
 }
