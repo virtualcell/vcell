@@ -12,6 +12,8 @@ package cbit.vcell.client.data;
 import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -19,11 +21,15 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.plot.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.client.server.DataManager;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.ExportMonitorPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
+import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -41,7 +47,9 @@ public class ODEDataViewer extends DataViewer {
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet")))
+			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet"))
+				||
+				(evt.getSource() == ODEDataViewer.this && evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO)))
 			{
 				connPtoP1SetTarget();
 				if(getOdeSolverResultSet()!=null)
@@ -49,8 +57,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 					iniHistogramDisplay();
 				}
 			}
-//			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("odeSolverResultSet"))) 
-//				connPtoP1SetSource();
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 
 				connEtoM2(evt);
 		};
@@ -94,13 +100,30 @@ private void connPtoP1SetTarget() {
 	try {
 		if (ivjConnPtoP1Aligning == false) {
 			ivjConnPtoP1Aligning = true;
-			if(getODESolverPlotSpecificationPanel1().getOdeSolverResultSet() != null){
-				//make sure listeners are removed
-				getODESolverPlotSpecificationPanel1().getOdeSolverResultSet().setODEDataViewer(null);
+			
+			final String FILTER_CATEGORY_MAP = "FILTER_CATEGORY_MAP";
+			AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(ODEDataViewer.this.getSimulationModelInfo() != null){
+					HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap =
+					((SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo()).getFilterCategories(getOdeSolverResultSet().getColumnDescriptions());
+					hashTable.put(FILTER_CATEGORY_MAP, filterCategoryMap);
+				}
 			}
-			MyDataInterfaceImpl myDataInterfaceImpl = new MyDataInterfaceImpl();
-			myDataInterfaceImpl.setODEDataViewer(this);
-			getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(myDataInterfaceImpl);
+		};
+		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				MyDataInterfaceImpl myDataInterfaceImpl =
+					new MyDataInterfaceImpl(getOdeSolverResultSet(),(HashMap<ColumnDescription, FilterCategoryType>)hashTable.get(FILTER_CATEGORY_MAP));
+				getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(myDataInterfaceImpl);
+			}
+		};
+		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+				false, false, false, null, true);
+
 			ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {

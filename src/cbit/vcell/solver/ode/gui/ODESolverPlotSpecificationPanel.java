@@ -10,15 +10,12 @@
 
 package cbit.vcell.solver.ode.gui;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,13 +25,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -42,12 +37,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.gui.CollapsiblePanel;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -93,65 +85,110 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private DefaultListModel ivjDefaultListModelY = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private Plot2D fieldPlot2D = null;
-	private java.lang.String[] resultSetColumnNames = null;
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JComboBox ivjXAxisComboBox = null;
-	private boolean ivjConnPtoP2Aligning = false;
-	private MyDataInterface ivjodeSolverResultSet1 = null;
+//	private boolean ivjConnPtoP2Aligning = false;
 	private MyDataInterface fieldOdeSolverResultSet = null;
 	
 	private static ImageIcon function_icon = null;
 	
+	public static final String ODE_DATA_CHANGED = "ODE_DATA_CHANGED";
+	public static final String ODE_FILTER_CHANGED = "ODE_FILTER_CHANGED";
+	public static final String ODESOLVERRESULTSET_CHANGED = "ODESOLVERRESULTSET_CHANGED";
+	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getLogSensCheckbox()) 
-				connEtoC10(e);
+			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getLogSensCheckbox()){
+				firePropertyChange(ODE_DATA_CHANGED, false, true);
+			}
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getXAxisComboBox_frm()){
-				try {
-					regeneratePlot2D();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getXAxisComboBox_frm() && e.getStateChange() == ItemEvent.SELECTED){
+				firePropertyChange(ODE_DATA_CHANGED, false, true);
 			}else if(filterSettings != null && filterSettings.containsKey(e.getSource())){
 				processFilterSelection();
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet")))
-			{
-				connEtoC1(evt);
-			}
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this && (evt.getPropertyName().equals("odeSolverResultSet"))){
-				connPtoP2SetTarget();
-				getYAxisLabel().expand(false);
-			}
-			if (evt.getSource() == ODESolverPlotSpecificationPanel.this.getodeSolverResultSet1() && (evt.getPropertyName().equals("columnDescriptions"))) 
-				connEtoC7(evt);
-			if(evt.getSource() == getYAxisLabel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
-				if(((Boolean)evt.getNewValue())){
-					showFilterSettings();
-				}else{
-					showFilterSettings();
-					if(filterSettings != null){
-						for(JCheckBox jcheckBox:filterSettings.keySet()){
-							jcheckBox.removeItemListener(ivjEventHandler);
-							jcheckBox.setSelected(true);
-							jcheckBox.addItemListener(ivjEventHandler);
+			System.out.println("----- '"+evt.getPropertyName()+"' :: "+evt.getSource().getClass().getName());
+			
+			try{
+				if(evt.getPropertyName().equals("columnDescriptions")){
+					firePropertyChange(ODE_FILTER_CHANGED, false, true);
+				}else if(evt.getPropertyName().equals(ODE_DATA_CHANGED)){
+					regeneratePlot2D();
+				}else if(evt.getPropertyName().equals(ODE_FILTER_CHANGED)){
+					updateChoices(getOdeSolverResultSet());
+				}else if(evt.getPropertyName().equals(ODESOLVERRESULTSET_CHANGED)){
+					MyDataInterface oldMyDataInterface = (MyDataInterface)evt.getOldValue();
+					MyDataInterface newMyDataInterface = (MyDataInterface)evt.getNewValue();
+					boolean bUnfilteredColumnsChanged = false;
+					if(!((oldMyDataInterface == null && newMyDataInterface == null) || (oldMyDataInterface == newMyDataInterface))){
+						if(((oldMyDataInterface == null && newMyDataInterface != null) || (oldMyDataInterface != null && newMyDataInterface == null))
+						|| (oldMyDataInterface != null && newMyDataInterface != null && oldMyDataInterface.getXColumnDescriptions().length != newMyDataInterface.getXColumnDescriptions().length)){
+							bUnfilteredColumnsChanged = true;
+						}else{
+							ColumnDescription[] oldcolColumnDescriptions = oldMyDataInterface.getXColumnDescriptions();
+							ColumnDescription[] newcolColumnDescriptions = newMyDataInterface.getXColumnDescriptions();
+							for (int i = 0; i < newcolColumnDescriptions.length; i++) {
+								boolean bFound = false;
+								for (int j = 0; j < oldcolColumnDescriptions.length; j++) {
+									if(oldcolColumnDescriptions[j].getName().equals(newcolColumnDescriptions[i].getName())){
+										bFound = true;
+										break;
+									}
+								}
+								if(!bFound){
+									bUnfilteredColumnsChanged = true;
+									break;
+								}
+							}
 						}
+					}
+					if(bUnfilteredColumnsChanged || filterSettings == null){
+						showFilterSettings();
 						processFilterSelection();
+					}else{
+						firePropertyChange(ODE_DATA_CHANGED, false, true);
+					}
+					enableLogSensitivity();
+					initializeLogSensCheckBox();
+					if(evt.getOldValue() == null){
+						getYAxisLabel().expand(true);
+					}
+				}else if(evt.getSource() == getYAxisLabel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
+					if(((Boolean)evt.getNewValue())){
+						showFilterSettings();
+					}else{
+						if(filterSettings != null){
+							boolean bNeedToShow = false;
+							for(JCheckBox jcheckBox:filterSettings.keySet()){
+								if(!jcheckBox.isSelected()){
+									bNeedToShow = true;
+									jcheckBox.removeItemListener(ivjEventHandler);
+									jcheckBox.setSelected(true);
+									jcheckBox.addItemListener(ivjEventHandler);
+								}
+							}
+							if(bNeedToShow){
+								processFilterSelection();
+							}
+						}
 					}
 				}
+			}catch(Exception exc){
+				exc.printStackTrace();
 			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getSensitivityParameterSlider()) 
-				connEtoC12(e);
+			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getSensitivityParameterSlider()){
+				firePropertyChange(ODE_DATA_CHANGED, false, true);
+			}
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getYAxisChoice()) 
-				refreshVisiblePlots(getPlot2D());
+			if (e.getSource() == ODESolverPlotSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()){
+				firePropertyChange(ODE_DATA_CHANGED, false, true);
+			}
 		};
 	};
 	private SymbolTable fieldSymbolTable = null;
@@ -165,45 +202,6 @@ public ODESolverPlotSpecificationPanel() {
 	super();
 	initialize();
 }
-
-/**
- * connEtoC1:  (ODESolverPlotSpecificationPanel.odeSolverResultSet --> ODESolverPlotSpecificationPanel.setPlottableColumns(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateResultSet(this.getOdeSolverResultSet());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC10:  (LogSensCheckbox.action.actionPerformed(java.awt.event.ActionEvent) --> ODESolverPlotSpecificationPanel.regeneratePlot2D()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.regeneratePlot2D();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC11:  (odeSolverResultSet1.this --> ODESolverPlotSpecificationPanel.initializeLogSensCheckBox()V)
@@ -223,68 +221,6 @@ private void connEtoC11(MyDataInterface value) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC12:  (SensitivityParameterSlider.change.stateChanged(javax.swing.event.ChangeEvent) --> ODESolverPlotSpecificationPanel.regeneratePlot2D()V)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(javax.swing.event.ChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.regeneratePlot2D();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC13:  (odeSolverResultSet1.this --> ODESolverPlotSpecificationPanel.updateResultSet(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
- * @param value cbit.vcell.solver.ode.ODESolverResultSet
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(MyDataInterface value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.updateResultSet(getodeSolverResultSet1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC7:  (odeSolverResultSet1.columnDescriptions --> ODESolverPlotSpecificationPanel.updateResultSet(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getodeSolverResultSet1() != null)) {
-			this.updateResultSet(getodeSolverResultSet1());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC9:  (odeSolverResultSet1.this --> ODESolverPlotSpecificationPanel.enableLogSensitivity(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
@@ -321,59 +257,6 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connPtoP2SetSource:  (ODESolverPlotSpecificationPanel.odeSolverResultSet <--> odeSolverResultSet1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			if ((getodeSolverResultSet1() != null)) {
-				this.setOdeSolverResultSet(getodeSolverResultSet1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP2SetTarget:  (ODESolverPlotSpecificationPanel.odeSolverResultSet <--> odeSolverResultSet1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP2Aligning = true;
-			setodeSolverResultSet1(this.getOdeSolverResultSet());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP2Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connPtoP3SetTarget:  (ComboBoxModelX.this <--> XAxisComboBox.model)
@@ -643,27 +526,6 @@ public MyDataInterface getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
-
-/**
- * Return the odeSolverResultSet1 property value.
- * @return cbit.vcell.solver.ode.ODESolverResultSet
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private MyDataInterface getodeSolverResultSet1() {
-	// user code begin {1}
-	// user code end
-	return ivjodeSolverResultSet1;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/18/2001 10:42:41 PM)
- * @return java.lang.String[]
- */
-private java.lang.String[] getResultSetColumnNames() {
-	return resultSetColumnNames;
-}
-
 /**
  // Method to obtain the sensitivity parameter (if applicable). The method checks the column description names in the
  // result set to find any column description that begins with the substring "sens" and contains the substring "wrt_".
@@ -886,7 +748,7 @@ private javax.swing.JList getYAxisChoice() {
 private CollapsiblePanel getYAxisLabel() {
 	if (ivjYAxisLabel == null) {
 		try {
-			ivjYAxisLabel = new CollapsiblePanel("Y Axis: (filter)",false);
+			ivjYAxisLabel = new CollapsiblePanel("Display Options:",false);
 			ivjYAxisLabel.setName("YAxisLabel");
 //			ivjYAxisLabel.setText("Y Axis:");
 			// user code begin {1}
@@ -927,7 +789,6 @@ private void initConnections() throws java.lang.Exception {
 	getSensitivityParameterSlider().addChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
-	connPtoP2SetTarget();
 	
 	getYAxisChoice().setCellRenderer(new DefaultListCellRenderer() {
 		
@@ -973,23 +834,29 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsXAxisLabel = new java.awt.GridBagConstraints();
 		constraintsXAxisLabel.anchor = GridBagConstraints.WEST;
 		constraintsXAxisLabel.gridx = 0; constraintsXAxisLabel.gridy = 0;
-		constraintsXAxisLabel.insets = new Insets(4, 4, 5, 4);
+		constraintsXAxisLabel.insets = new Insets(4, 4, 0, 4);
 		add(getXAxisLabel(), constraintsXAxisLabel);
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel.insets = new Insets(4, 4, 0, 4);
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = 2;
+		add(getLblNewLabel(), gbc_lblNewLabel);
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.insets = new Insets(4, 4, 5, 4);
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 2;
+		gbc_panel.gridy = 3;
 		add(getPanel(), gbc_panel);
 
 		java.awt.GridBagConstraints constraintsJPanelSensitivity = new java.awt.GridBagConstraints();
-		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 4;
+		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 5;
 		constraintsJPanelSensitivity.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanelSensitivity.weightx = 1.0;
 		add(getJPanelSensitivity(), constraintsJPanelSensitivity);
 
 		java.awt.GridBagConstraints constraintsJScrollPaneYAxis = new java.awt.GridBagConstraints();
-		constraintsJScrollPaneYAxis.gridx = 0; constraintsJScrollPaneYAxis.gridy = 3;
+		constraintsJScrollPaneYAxis.gridx = 0; constraintsJScrollPaneYAxis.gridy = 4;
 		constraintsJScrollPaneYAxis.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPaneYAxis.weightx = 1.0;
 		constraintsJScrollPaneYAxis.weighty = 1.0;
@@ -1285,60 +1152,17 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(MyDataInterface odeSolverResultSet) {
+public void setOdeSolverResultSet(MyDataInterface newMyDataInterface) {
 	MyDataInterface oldValue = fieldOdeSolverResultSet;
-	fieldOdeSolverResultSet = odeSolverResultSet;
-	if (odeSolverResultSet==null){
-		setPlot2D(null);
-		return;
+	/* Stop listening for events from the current object */
+	if (oldValue != null) {
+		oldValue.removePropertyChangeListener(ivjEventHandler);
 	}
-	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
-}
-
-
-/**
- * Set the odeSolverResultSet1 to a new value.
- * @param newValue cbit.vcell.solver.ode.ODESolverResultSet
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setodeSolverResultSet1(MyDataInterface newValue) {
-	if (ivjodeSolverResultSet1 != newValue) {
-		try {
-			MyDataInterface oldValue = getodeSolverResultSet1();
-			/* Stop listening for events from the current object */
-			if (ivjodeSolverResultSet1 != null) {
-				ivjodeSolverResultSet1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjodeSolverResultSet1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjodeSolverResultSet1 != null) {
-				ivjodeSolverResultSet1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP2SetSource();
-			connEtoC9(ivjodeSolverResultSet1);
-			connEtoC11(ivjodeSolverResultSet1);
-			connEtoC13(ivjodeSolverResultSet1);
-			firePropertyChange("odeSolverResultSet", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/18/2001 10:42:41 PM)
- * @param newResultSetColumnNames java.lang.String[]
- */
-private void setResultSetColumnNames(java.lang.String[] newResultSetColumnNames) {
-	resultSetColumnNames = newResultSetColumnNames;
+	fieldOdeSolverResultSet = newMyDataInterface;
+	if (fieldOdeSolverResultSet != null) {
+		fieldOdeSolverResultSet.addPropertyChangeListener(ivjEventHandler);
+	}
+	firePropertyChange(ODESOLVERRESULTSET_CHANGED, oldValue, fieldOdeSolverResultSet);
 }
 
 /**
@@ -1381,15 +1205,20 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	ArrayList<ColumnDescription> variableColumnDescriptions = new ArrayList<ColumnDescription>();
 	ArrayList<ColumnDescription> sensitivityColumnDescriptions = new ArrayList<ColumnDescription>();
 	ColumnDescription timeColumnDescription = null;
-	
-	ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getFilteredColumnDescriptions();
+	//find TIME columnDescription
+	ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getXColumnDescriptions();
+    for (int i = 0; i < columnDescriptions.length; i++) {
+        if (columnDescriptions[i].getName().equals(ReservedVariable.TIME.getName())) {
+        	timeColumnDescription = columnDescriptions[i];
+        }
+    }
+	//find filtered columnDescriptions
+	columnDescriptions = getOdeSolverResultSet().getFilteredColumnDescriptions();
     for (int i = 0; i < columnDescriptions.length; i++) {
         ColumnDescription cd = columnDescriptions[i];
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
-        if (cd.getName().equals(ReservedVariable.TIME.getName())) {
-        	timeColumnDescription = cd;
-        } else if (cd.getParameterName() == null) {
+        if (cd.getParameterName() == null) {
         	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
         		variableColumnDescriptions.add(cd);
         	}
@@ -1477,35 +1306,15 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
     	getXAxisComboBox_frm().addItemListener(ivjEventHandler);
     	getYAxisChoice().addListSelectionListener(ivjEventHandler);
     }
+    
     regeneratePlot2D();
-}
-
-
-/**
- * Comment
- */
-private void updateResultSet(MyDataInterface odeSolverResultSet) throws ExpressionException,ObjectNotFoundException {
-	ColumnDescription[] filteredcColumnDescriptions = getOdeSolverResultSet().getFilteredColumnDescriptions();
-	String[] columnNames = new String[filteredcColumnDescriptions.length];
-
-	for (int i = 0; i < columnNames.length; i++){
-		columnNames[i] = filteredcColumnDescriptions[i].getName();
-	}
-	if (BeanUtils.arrayEquals(columnNames, getResultSetColumnNames())) {
-		// same stuff, maybe more/different data - keep axis choices
-		regeneratePlot2D();
-	} else {
-		// axis choices are different, so update everything
-		setResultSetColumnNames(columnNames);
-		updateChoices(odeSolverResultSet);
-	}
 }
 
 public Plot2D getPlot2D() {
 	return fieldPlot2D;
 }
 
-public void setPlot2D(Plot2D plot2D) {
+private void setPlot2D(Plot2D plot2D) {
 	//amended March 29, 2007. To fire event to ODEDataViewer.
 	Plot2D oldValue = this.fieldPlot2D;
 	this.fieldPlot2D = plot2D;
@@ -1591,6 +1400,7 @@ private JPanel getPanel() {
 //}
 
 private HashMap<JCheckBox, FilterCategoryType> filterSettings;
+private JLabel lblNewLabel;
 private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 	if(filterSettings == null){
 		filterSettings = new HashMap<JCheckBox, FilterCategoryType>();
@@ -1622,14 +1432,15 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 	return newJCheckBox;		
 }
 private void showFilterSettings() {
-	getYAxisLabel().getContentPanel().removeAll();
-	getYAxisLabel().getContentPanel().setLayout(null);
-	
-	HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
-	filterSettings = null;
 	if(getOdeSolverResultSet() != null &&
 		getOdeSolverResultSet().getSupportedFilterCategories() != null &&
 		getOdeSolverResultSet().getSupportedFilterCategories().length > 0){
+		
+		getYAxisLabel().getContentPanel().removeAll();
+		getYAxisLabel().getContentPanel().setLayout(null);
+		HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
+		filterSettings = null;
+
 		FilterCategoryType[] filterCategories = getOdeSolverResultSet().getSupportedFilterCategories();
 		for (int i = 0; i < filterCategories.length; i++) {
 			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
@@ -1682,12 +1493,20 @@ private void showFilterSettings() {
 
 private void processFilterSelection(){
 	ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
-	for(JCheckBox jCheckBox:filterSettings.keySet()){
-		if(jCheckBox.isSelected()){
-			selectedFilterCategories.add(filterSettings.get(jCheckBox));
+	if(filterSettings != null){
+		for(JCheckBox jCheckBox:filterSettings.keySet()){
+			if(jCheckBox.isSelected()){
+				selectedFilterCategories.add(filterSettings.get(jCheckBox));
+			}
 		}
 	}
 	getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
 }
 
+	private JLabel getLblNewLabel() {
+		if (lblNewLabel == null) {
+			lblNewLabel = new JLabel("Y Axis:");
+		}
+		return lblNewLabel;
+	}
 }

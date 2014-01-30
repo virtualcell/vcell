@@ -242,6 +242,9 @@ public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifi
 public static enum FilterCategoryType {Species,Reactions,UserFunctions,ReservedXYZT,Other};
 public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(ColumnDescription[] columnDescriptions) throws Exception{
 	HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = new HashMap<ColumnDescription,FilterCategoryType>();
+	if(columnDescriptions == null){
+		return filterCategoryMap;
+	}
 		if(simulationOwner instanceof SimulationContext){
 			MathMapping mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
 			MathDescription mathDescription = mathMapping.getMathDescription();
@@ -255,18 +258,17 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 				Variable variable = mathDescription.getVariable(columnDescriptions[i].getName());
 				if(variable == null && columnDescriptions[i].getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
 					System.out.println(columnDescriptions[i]);
+				}else if(variable == null && (ReservedVariable.TIME.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.X.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.Y.getName().equals(columnDescriptions[i].getName()) ||
+						ReservedVariable.Z.getName().equals(columnDescriptions[i].getName()))){
+					//do nothing
 				}else{
 					filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Other);
 				}
 
 				if(variable == null){
-					if(ReservedVariable.TIME.getName().equals(columnDescriptions[i].getName()) ||
-						ReservedVariable.X.getName().equals(columnDescriptions[i].getName()) ||
-						ReservedVariable.Y.getName().equals(columnDescriptions[i].getName()) ||
-						ReservedVariable.Z.getName().equals(columnDescriptions[i].getName())){
-							bReserved = true;
-							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.ReservedXYZT);
-					}else if(columnDescriptions[i] instanceof FunctionColumnDescription){
+					if(columnDescriptions[i] instanceof FunctionColumnDescription){
 						if(((FunctionColumnDescription)columnDescriptions[i]).getIsUserDefined()){
 							bIsUserFunc = true;
 							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.UserFunctions);
