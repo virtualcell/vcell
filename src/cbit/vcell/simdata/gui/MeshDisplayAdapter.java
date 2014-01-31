@@ -431,15 +431,12 @@ private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int
 				indexList.add(me.getMembraneIndex());
 				
 				int pcnt = curve.getControlPointCount();
-				if (bOpen && pcnt == 0)
+				if (pcnt == 0 && segment.prevVertex >= 0)
 				{
-					if (segment.prevVertex >= 0)
-					{
-						Coordinate p1 = vertices[segment.prevVertex];
-						curve.appendControlPoint(p1);
-					}
+					Coordinate p1 = vertices[segment.prevVertex];
+					curve.appendControlPoint(p1);
 				}
-				if (segment.nextVertex >= 0)
+				if (segment.nextVertex >= 0 && segment.nextNeigbhor != startingIndex)
 				{
 					Coordinate p2 = vertices[segment.nextVertex];				
 					curve.appendControlPoint(p2);
