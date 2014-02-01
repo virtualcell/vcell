@@ -23,7 +23,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 	private ODESolverResultSet odeSolverResultSet;
 	
 	public MyDataInterfaceImpl(ODESolverResultSet odeSolverResultSet,HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap){
-		this.odeSolverResultSet = odeSolverResultSet;
+		this.odeSolverResultSet = new ODESolverResultSet(odeSolverResultSet);
 		this.filterCategoryMap = filterCategoryMap;
 	}
 	
@@ -115,7 +115,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 	}
 
 	@Override
-	public ColumnDescription[] getXColumnDescriptions() {
+	public ColumnDescription[] getAllColumnDescriptions() {
 		return getOdeSolverResultSet().getColumnDescriptions();
 	}
 	

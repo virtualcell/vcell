@@ -11,6 +11,7 @@
 package cbit.vcell.solver.ode;
 
 import cbit.vcell.util.ColumnDescription;
+import cbit.vcell.util.RowColumnResultSet;
 import cbit.vcell.math.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
@@ -25,7 +26,7 @@ import cbit.vcell.math.*;
  * Creation date: (8/19/2000 8:59:02 PM)
  * @author: John Wagner
  */
-public class ODESolverResultSet extends cbit.vcell.util.RowColumnResultSet implements cbit.vcell.simdata.SimDataConstants, java.io.Serializable {
+public class ODESolverResultSet extends RowColumnResultSet implements cbit.vcell.simdata.SimDataConstants, java.io.Serializable {
 	public static final String TIME_COLUMN = ReservedVariable.TIME.getName();
 /**
  * SimpleODEData constructor comment.
@@ -35,7 +36,9 @@ public class ODESolverResultSet extends cbit.vcell.util.RowColumnResultSet imple
 public ODESolverResultSet() {
 	super();
 }
-
+public ODESolverResultSet(ODESolverResultSet copyThisODESolverResultSet) {
+	super((RowColumnResultSet)copyThisODESolverResultSet);
+}
 public boolean isMultiTrialData()
 {
 	if(getColumnDescriptionsCount() > 0)

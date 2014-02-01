@@ -115,8 +115,9 @@ private void connPtoP1SetTarget() {
 		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				HashMap<ColumnDescription, FilterCategoryType> fcm = (HashMap<ColumnDescription, FilterCategoryType>)hashTable.get(FILTER_CATEGORY_MAP);
 				MyDataInterfaceImpl myDataInterfaceImpl =
-					new MyDataInterfaceImpl(getOdeSolverResultSet(),(HashMap<ColumnDescription, FilterCategoryType>)hashTable.get(FILTER_CATEGORY_MAP));
+					new MyDataInterfaceImpl(getOdeSolverResultSet(),fcm);
 				getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(myDataInterfaceImpl);
 			}
 		};
