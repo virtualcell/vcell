@@ -285,6 +285,7 @@ public void refresh() {
 		getAbsoluteErrorToleranceTextField().setEnabled(false);
 		getAbsoluteErrorToleranceTextField().setText(null);
 		getErrorTolerancesLabel().setText("Linear Solver Tolerance");
+		getRelativeErrorToleranceTextField().setEnabled(true);
 		ErrorTolerance errTol = solverTaskDescription.getErrorTolerance();
 		getRelativeErrorToleranceTextField().setText(errTol.getRelativeErrorTolerance() + "");
 	} else if (solverTaskDescription.getSolverDescription().hasErrorTolerance()) {
