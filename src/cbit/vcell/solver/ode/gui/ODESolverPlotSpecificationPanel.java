@@ -1492,15 +1492,18 @@ private void showFilterSettings() {
 }
 
 private void processFilterSelection(){
-	ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
 	if(filterSettings != null){
+		ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
 		for(JCheckBox jCheckBox:filterSettings.keySet()){
 			if(jCheckBox.isSelected()){
 				selectedFilterCategories.add(filterSettings.get(jCheckBox));
 			}
 		}
+		getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
+	}else{
+		getOdeSolverResultSet().selectCategory(null);
+		
 	}
-	getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
 }
 
 	private JLabel getLblNewLabel() {

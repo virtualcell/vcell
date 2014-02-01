@@ -52,7 +52,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 
 	@Override
 	public void selectCategory(FilterCategoryType[] filterCategories) {
-		this.selectedFilters = (filterCategories==null || filterCategories.length==0?null:filterCategories);
+		this.selectedFilters = filterCategories;
 		propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
 	}
 
