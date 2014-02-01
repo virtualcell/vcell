@@ -73,7 +73,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 							|| s.getTypeName().toLowerCase().contains(lowerCaseSearchText)
 							|| structureTopology.getParentStructure(s) != null && structureTopology.getParentStructure(s).getName().toLowerCase().contains(lowerCaseSearchText)
 							|| s.getStructureSize().getName().toLowerCase().contains(lowerCaseSearchText)
-							|| (s instanceof Membrane && (structureTopology.getInsideFeature((Membrane)s).getName().toLowerCase().contains(lowerCaseSearchText)
+							|| (s instanceof Membrane && 
+									((structureTopology.getInsideFeature((Membrane)s) != null && structureTopology.getInsideFeature((Membrane)s).getName().toLowerCase().contains(lowerCaseSearchText))
 									|| ((Membrane)s).getMembraneVoltage().getName().toLowerCase().contains(lowerCaseSearchText)))) {
 						structureList.add(s);
 					}					
@@ -274,6 +275,6 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 	
 	@Override
 	public int getRowCount() {
-		return getRowCountWithAddNew();
+		return super.getRowCount();//getRowCountWithAddNew();
 	}
 }

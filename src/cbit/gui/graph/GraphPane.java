@@ -267,11 +267,6 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 
 	public void mouseReleased(MouseEvent e) {}
 
-	private HashMap<Rectangle, Boolean> dropTargetRectangleMap;
-	private static final BasicStroke dropTargetRectangleStroke = new BasicStroke(2, BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL, 1, new float[] {10f}, 0);
-	public void setDropTargetRectangleMap(HashMap<Rectangle, Boolean> dropTargetRectangleMap){
-		this.dropTargetRectangleMap = dropTargetRectangleMap;
-	}
 	@Override
 	public void paintComponent(Graphics argGraphics) {
 		super.paintComponent(argGraphics);
@@ -284,21 +279,6 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 					needsLayout = false;					
 //				}
 				graphModel.paint(g,this);
-				if(dropTargetRectangleMap != null){
-					Stroke origStroke = g.getStroke();
-					Color origColor = g.getColor();
-					g.setStroke(dropTargetRectangleStroke);
-					for(Rectangle dropTargetRectangle:dropTargetRectangleMap.keySet()){
-						if(dropTargetRectangleMap.get(dropTargetRectangle)){
-							g.setColor(Color.GREEN);
-						}else{
-							g.setColor(origColor);
-						}
-						g.drawRect(dropTargetRectangle.x, dropTargetRectangle.y, dropTargetRectangle.width, dropTargetRectangle.height);
-					}
-					g.setColor(origColor);
-					g.setStroke(origStroke);
-				}
 			}	
 		}catch (Exception e){
 			handleException(e);
