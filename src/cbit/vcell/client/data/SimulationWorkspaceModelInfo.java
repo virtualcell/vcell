@@ -257,7 +257,7 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 				boolean bReserved = false;
 				Variable variable = mathDescription.getVariable(columnDescriptions[i].getName());
 				if(variable == null && columnDescriptions[i].getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
-					System.out.println(columnDescriptions[i]);
+//					System.out.println(columnDescriptions[i]);
 				}else if(variable == null && (ReservedVariable.TIME.getName().equals(columnDescriptions[i].getName()) ||
 						ReservedVariable.X.getName().equals(columnDescriptions[i].getName()) ||
 						ReservedVariable.Y.getName().equals(columnDescriptions[i].getName()) ||

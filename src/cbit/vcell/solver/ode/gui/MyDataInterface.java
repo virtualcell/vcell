@@ -19,7 +19,7 @@ public interface MyDataInterface {
 
 	ColumnDescription getColumnDescription(String columnName) throws ObjectNotFoundException;
 
-	ColumnDescription[] getXColumnDescriptions();
+	ColumnDescription[] getAllColumnDescriptions();
 	
 	ColumnDescription[] getFilteredColumnDescriptions();
 	

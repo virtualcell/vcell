@@ -76,7 +76,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JPanel ivjSensitivityParameterPanel = null;
 	private JLabel ivjXAxisLabel = null;
 	private JList ivjYAxisChoice = null;
-	private CollapsiblePanel ivjYAxisLabel = null;
+	private CollapsiblePanel filterPanel = null;
 	private JLabel ivjCurLabel = null;
 	private JSlider ivjSensitivityParameterSlider = null;
 	private JScrollPane ivjJScrollPaneYAxis = null;
@@ -110,7 +110,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			System.out.println("----- '"+evt.getPropertyName()+"' :: "+evt.getSource().getClass().getName());
+//			System.out.println("----- '"+evt.getPropertyName()+"' :: "+evt.getSource().getClass().getName());
 			
 			try{
 				if(evt.getPropertyName().equals("columnDescriptions")){
@@ -125,11 +125,11 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 					boolean bUnfilteredColumnsChanged = false;
 					if(!((oldMyDataInterface == null && newMyDataInterface == null) || (oldMyDataInterface == newMyDataInterface))){
 						if(((oldMyDataInterface == null && newMyDataInterface != null) || (oldMyDataInterface != null && newMyDataInterface == null))
-						|| (oldMyDataInterface != null && newMyDataInterface != null && oldMyDataInterface.getXColumnDescriptions().length != newMyDataInterface.getXColumnDescriptions().length)){
+						|| (oldMyDataInterface != null && newMyDataInterface != null && oldMyDataInterface.getAllColumnDescriptions().length != newMyDataInterface.getAllColumnDescriptions().length)){
 							bUnfilteredColumnsChanged = true;
 						}else{
-							ColumnDescription[] oldcolColumnDescriptions = oldMyDataInterface.getXColumnDescriptions();
-							ColumnDescription[] newcolColumnDescriptions = newMyDataInterface.getXColumnDescriptions();
+							ColumnDescription[] oldcolColumnDescriptions = oldMyDataInterface.getAllColumnDescriptions();
+							ColumnDescription[] newcolColumnDescriptions = newMyDataInterface.getAllColumnDescriptions();
 							for (int i = 0; i < newcolColumnDescriptions.length; i++) {
 								boolean bFound = false;
 								for (int j = 0; j < oldcolColumnDescriptions.length; j++) {
@@ -154,9 +154,9 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 					enableLogSensitivity();
 					initializeLogSensCheckBox();
 					if(evt.getOldValue() == null){
-						getYAxisLabel().expand(true);
+						getFilterPanel().expand(true);
 					}
-				}else if(evt.getSource() == getYAxisLabel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
+				}else if(evt.getSource() == getFilterPanel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
 					if(((Boolean)evt.getNewValue())){
 						showFilterSettings();
 					}else{
@@ -213,25 +213,6 @@ private void connEtoC11(MyDataInterface value) {
 		// user code begin {1}
 		// user code end
 		this.initializeLogSensCheckBox();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC9:  (odeSolverResultSet1.this --> ODESolverPlotSpecificationPanel.enableLogSensitivity(Lcbit.vcell.solver.ode.ODESolverResultSet;)V)
- * @param value cbit.vcell.solver.ode.ODESolverResultSet
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(MyDataInterface value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.enableLogSensitivity();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -396,7 +377,7 @@ private javax.swing.JPanel getJPanelSensitivity() {
 			constraintsLogSensCheckbox.gridwidth = 3;
 			constraintsLogSensCheckbox.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsLogSensCheckbox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelSensitivity().add(getLogSensCheckbox(), constraintsLogSensCheckbox);
+			ivjJPanelSensitivity.add(getLogSensCheckbox(), constraintsLogSensCheckbox);
 
 			java.awt.GridBagConstraints constraintsSensitivityParameterPanel = new java.awt.GridBagConstraints();
 			constraintsSensitivityParameterPanel.gridx = 0; constraintsSensitivityParameterPanel.gridy = 2;
@@ -405,14 +386,14 @@ private javax.swing.JPanel getJPanelSensitivity() {
 			constraintsSensitivityParameterPanel.weightx = 2.0;
 			constraintsSensitivityParameterPanel.weighty = 1.0;
 			constraintsSensitivityParameterPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelSensitivity().add(getSensitivityParameterPanel(), constraintsSensitivityParameterPanel);
+			ivjJPanelSensitivity.add(getSensitivityParameterPanel(), constraintsSensitivityParameterPanel);
 
 			java.awt.GridBagConstraints constraintsJLabelSensitivityParameter = new java.awt.GridBagConstraints();
 			constraintsJLabelSensitivityParameter.gridx = 0; constraintsJLabelSensitivityParameter.gridy = 1;
 			constraintsJLabelSensitivityParameter.gridwidth = 3;
 			constraintsJLabelSensitivityParameter.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJLabelSensitivityParameter.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelSensitivity().add(getJLabelSensitivityParameter(), constraintsJLabelSensitivityParameter);
+			ivjJPanelSensitivity.add(getJLabelSensitivityParameter(), constraintsJLabelSensitivityParameter);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -583,26 +564,26 @@ private javax.swing.JPanel getSensitivityParameterPanel() {
 
 			java.awt.GridBagConstraints constraintsMinLabel = new java.awt.GridBagConstraints();
 			constraintsMinLabel.gridx = 0; constraintsMinLabel.gridy = 1;
-			getSensitivityParameterPanel().add(getMinLabel(), constraintsMinLabel);
+			ivjSensitivityParameterPanel.add(getMinLabel(), constraintsMinLabel);
 
 			java.awt.GridBagConstraints constraintsMaxLabel = new java.awt.GridBagConstraints();
 			constraintsMaxLabel.gridx = 2; constraintsMaxLabel.gridy = 1;
 			constraintsMaxLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsMaxLabel.anchor = java.awt.GridBagConstraints.EAST;
-			getSensitivityParameterPanel().add(getMaxLabel(), constraintsMaxLabel);
+			ivjSensitivityParameterPanel.add(getMaxLabel(), constraintsMaxLabel);
 
 			java.awt.GridBagConstraints constraintsCurLabel = new java.awt.GridBagConstraints();
 			constraintsCurLabel.gridx = 1; constraintsCurLabel.gridy = 1;
 			constraintsCurLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsCurLabel.weightx = 1.0;
-			getSensitivityParameterPanel().add(getCurLabel(), constraintsCurLabel);
+			ivjSensitivityParameterPanel.add(getCurLabel(), constraintsCurLabel);
 
 			java.awt.GridBagConstraints constraintsSensitivityParameterSlider = new java.awt.GridBagConstraints();
 			constraintsSensitivityParameterSlider.gridx = 0; constraintsSensitivityParameterSlider.gridy = 0;
 			constraintsSensitivityParameterSlider.gridwidth = 3;
 			constraintsSensitivityParameterSlider.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsSensitivityParameterSlider.weightx = 1.0;
-			getSensitivityParameterPanel().add(getSensitivityParameterSlider(), constraintsSensitivityParameterSlider);
+			ivjSensitivityParameterPanel.add(getSensitivityParameterSlider(), constraintsSensitivityParameterSlider);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -745,11 +726,11 @@ private javax.swing.JList getYAxisChoice() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private CollapsiblePanel getYAxisLabel() {
-	if (ivjYAxisLabel == null) {
+private CollapsiblePanel getFilterPanel() {
+	if (filterPanel == null) {
 		try {
-			ivjYAxisLabel = new CollapsiblePanel("Display Options:",false);
-			ivjYAxisLabel.setName("YAxisLabel");
+			filterPanel = new CollapsiblePanel("Display Options:",false);
+			filterPanel.setName("filterPanel");
 //			ivjYAxisLabel.setText("Y Axis:");
 			// user code begin {1}
 			// user code end
@@ -759,7 +740,7 @@ private CollapsiblePanel getYAxisLabel() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjYAxisLabel;
+	return filterPanel;
 }
 
 /**
@@ -781,7 +762,7 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getYAxisLabel().addPropertyChangeListener(ivjEventHandler);
+	getFilterPanel().addPropertyChangeListener(ivjEventHandler);
 	getYAxisChoice().addListSelectionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getXAxisComboBox_frm().addItemListener(ivjEventHandler);
@@ -826,7 +807,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("ODESolverPlotSpecificationPanel");
-		setPreferredSize(new java.awt.Dimension(150, 600));
+		setPreferredSize(new Dimension(213, 600));
 		setLayout(new java.awt.GridBagLayout());
 		setSize(248, 604);
 		setMinimumSize(new java.awt.Dimension(125, 300));
@@ -836,24 +817,27 @@ private void initialize() {
 		constraintsXAxisLabel.gridx = 0; constraintsXAxisLabel.gridy = 0;
 		constraintsXAxisLabel.insets = new Insets(4, 4, 0, 4);
 		add(getXAxisLabel(), constraintsXAxisLabel);
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel.insets = new Insets(4, 4, 0, 4);
-		gbc_lblNewLabel.gridx = 0;
-		gbc_lblNewLabel.gridy = 2;
-		add(getLblNewLabel(), gbc_lblNewLabel);
+		
+		java.awt.GridBagConstraints constraintsXAxisComboBox = new java.awt.GridBagConstraints();
+		constraintsXAxisComboBox.gridx = 0; constraintsXAxisComboBox.gridy = 1;
+		constraintsXAxisComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsXAxisComboBox.weightx = 1.0;
+		constraintsXAxisComboBox.insets = new Insets(4, 4, 5, 4);
+		add(getXAxisComboBox_frm(), constraintsXAxisComboBox);
+
+		GridBagConstraints gbc_YAxisLabel = new GridBagConstraints();
+		gbc_YAxisLabel.anchor = GridBagConstraints.WEST;
+		gbc_YAxisLabel.insets = new Insets(4, 4, 0, 4);
+		gbc_YAxisLabel.gridx = 0;
+		gbc_YAxisLabel.gridy = 2;
+		add(getYAxisLabel(), gbc_YAxisLabel);
+		
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.insets = new Insets(4, 4, 5, 4);
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 3;
 		add(getPanel(), gbc_panel);
-
-		java.awt.GridBagConstraints constraintsJPanelSensitivity = new java.awt.GridBagConstraints();
-		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 5;
-		constraintsJPanelSensitivity.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanelSensitivity.weightx = 1.0;
-		add(getJPanelSensitivity(), constraintsJPanelSensitivity);
 
 		java.awt.GridBagConstraints constraintsJScrollPaneYAxis = new java.awt.GridBagConstraints();
 		constraintsJScrollPaneYAxis.gridx = 0; constraintsJScrollPaneYAxis.gridy = 4;
@@ -863,12 +847,13 @@ private void initialize() {
 		constraintsJScrollPaneYAxis.insets = new Insets(4, 4, 5, 4);
 		add(getJScrollPaneYAxis(), constraintsJScrollPaneYAxis);
 
-		java.awt.GridBagConstraints constraintsXAxisComboBox = new java.awt.GridBagConstraints();
-		constraintsXAxisComboBox.gridx = 0; constraintsXAxisComboBox.gridy = 1;
-		constraintsXAxisComboBox.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		constraintsXAxisComboBox.weightx = 1.0;
-		constraintsXAxisComboBox.insets = new Insets(4, 4, 5, 4);
-		add(getXAxisComboBox_frm(), constraintsXAxisComboBox);
+		java.awt.GridBagConstraints constraintsJPanelSensitivity = new java.awt.GridBagConstraints();
+		constraintsJPanelSensitivity.gridx = 0; constraintsJPanelSensitivity.gridy = 5;
+		constraintsJPanelSensitivity.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJPanelSensitivity.weightx = 1.0;
+		add(getJPanelSensitivity(), constraintsJPanelSensitivity);
+
+
 
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -1206,7 +1191,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	ArrayList<ColumnDescription> sensitivityColumnDescriptions = new ArrayList<ColumnDescription>();
 	ColumnDescription timeColumnDescription = null;
 	//find TIME columnDescription
-	ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getXColumnDescriptions();
+	ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getAllColumnDescriptions();
     for (int i = 0; i < columnDescriptions.length; i++) {
         if (columnDescriptions[i].getName().equals(ReservedVariable.TIME.getName())) {
         	timeColumnDescription = columnDescriptions[i];
@@ -1252,7 +1237,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	    getComboBoxModelX_frm().removeAllElements();
 	    if(!bMultiTrialData) {
 	       	// Don't put anything in X Axis, if the results of multiple trials are being displayed.
-	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getOdeSolverResultSet().getXColumnDescriptions()));
+	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getOdeSolverResultSet().getAllColumnDescriptions()));
 	    	sortColumnDescriptions(xColumnDescriptions);
 	    	if(timeColumnDescription != null){
 	    		getComboBoxModelX_frm().addElement(timeColumnDescription.getName());
@@ -1368,39 +1353,18 @@ private JPanel getPanel() {
 		gbl_panel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
-		GridBagConstraints gbc_ivjYAxisLabel = new GridBagConstraints();
-		gbc_ivjYAxisLabel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_ivjYAxisLabel.weightx = 1.0;
-		gbc_ivjYAxisLabel.gridx = 0;
-		gbc_ivjYAxisLabel.gridy = 0;
-		panel.add(getYAxisLabel(), gbc_ivjYAxisLabel);
-//		GridBagConstraints gbc_btnYFilter = new GridBagConstraints();
-//		gbc_btnYFilter.anchor = GridBagConstraints.EAST;
-//		gbc_btnYFilter.gridx = 1;
-//		gbc_btnYFilter.gridy = 0;
-//		panel.add(getBtnYFilter(), gbc_btnYFilter);
+		GridBagConstraints gbc_filterPanel = new GridBagConstraints();
+		gbc_filterPanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_filterPanel.weightx = 1.0;
+		gbc_filterPanel.gridx = 0;
+		gbc_filterPanel.gridy = 0;
+		panel.add(getFilterPanel(), gbc_filterPanel);
 	}
 	return panel;
 }
-//private JButton getBtnYFilter() {
-//	if (btnYFilter == null) {
-//		btnYFilter = new JButton("Filter...");
-//		btnYFilter.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				try {
-//					showFilterSettings();
-//				} catch (Exception e1) {
-//					e1.printStackTrace();
-//					DialogUtils.showErrorDialog(ODESolverPlotSpecificationPanel.this, e1.getMessage());
-//				}
-//			}
-//		});
-//	}
-//	return btnYFilter;
-//}
 
 private HashMap<JCheckBox, FilterCategoryType> filterSettings;
-private JLabel lblNewLabel;
+private JLabel yAxisJLabel;
 private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 	if(filterSettings == null){
 		filterSettings = new HashMap<JCheckBox, FilterCategoryType>();
@@ -1436,8 +1400,8 @@ private void showFilterSettings() {
 		getOdeSolverResultSet().getSupportedFilterCategories() != null &&
 		getOdeSolverResultSet().getSupportedFilterCategories().length > 0){
 		
-		getYAxisLabel().getContentPanel().removeAll();
-		getYAxisLabel().getContentPanel().setLayout(null);
+		getFilterPanel().getContentPanel().removeAll();
+		getFilterPanel().getContentPanel().setLayout(null);
 		HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
 		filterSettings = null;
 
@@ -1455,12 +1419,12 @@ private void showFilterSettings() {
 		}
 	}else{
 //		DialogUtils.showWarningDialog(this, "Cannot display filter, no filter categories set.");
-		getYAxisLabel().getContentPanel().setLayout(new BorderLayout());
-		getYAxisLabel().getContentPanel().add(new JLabel("No Filters"));
+		getFilterPanel().getContentPanel().setLayout(new BorderLayout());
+		getFilterPanel().getContentPanel().add(new JLabel("No Filters"));
 		return;
 	}
 	
-	JPanel filterPanel = getYAxisLabel().getContentPanel();//new JPanel();
+	JPanel filterPanel = getFilterPanel().getContentPanel();//new JPanel();
 	filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.Y_AXIS));
 //	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
@@ -1478,17 +1442,6 @@ private void showFilterSettings() {
 		sortedJCheckBoxes[i].setAlignmentX(0f);
 		filterPanel.add(sortedJCheckBoxes[i]);
 	}
-//	filterPanel.add(Box.createVerticalGlue());
-	
-//	DialogUtils.showComponentCloseDialog(this, filterPanel, "Choose displayed types:");
-	
-//	ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
-//	for(JCheckBox jCheckBox:filterSettings.keySet()){
-//		if(jCheckBox.isSelected()){
-//			selectedFilterCategories.add(filterSettings.get(jCheckBox));
-//		}
-//	}
-//	getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
 }
 
 private void processFilterSelection(){
@@ -1506,10 +1459,10 @@ private void processFilterSelection(){
 	}
 }
 
-	private JLabel getLblNewLabel() {
-		if (lblNewLabel == null) {
-			lblNewLabel = new JLabel("Y Axis:");
+	private JLabel getYAxisLabel() {
+		if (yAxisJLabel == null) {
+			yAxisJLabel = new JLabel("Y Axis:");
 		}
-		return lblNewLabel;
+		return yAxisJLabel;
 	}
 }

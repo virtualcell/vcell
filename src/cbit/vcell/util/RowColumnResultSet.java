@@ -49,7 +49,11 @@ public class RowColumnResultSet implements java.io.Serializable {
  */
 public RowColumnResultSet() {
 }
-
+public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet) {
+	this.fieldDataColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
+	this.fieldFunctionColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
+	this.fieldValues = new Vector<double[]>(copyThisRowColumnResultSet.fieldValues);
+}
 
 /**
  * SimpleODEData constructor comment.
