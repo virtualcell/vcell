@@ -297,6 +297,8 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.add(getLineDirectedButton(), getLineDirectedButton().getName());
 				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+				toolBar.add(getStructureButton(), getStructureButton().getName());
+				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getZoomInButton(), getZoomInButton().getName());
 				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
 				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
@@ -444,6 +446,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			//modeButtons.add(getLineButton());
 			modeButtons.add(getLineDirectedButton());
 			modeButtons.add(getLineCatalystButton());
+			modeButtons.add(getStructureButton());
 		}
 		return modeButtons;
 	}
@@ -470,6 +473,20 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return speciesButton;
 	}
 
+	private JToolBarToggleButton structureButton;
+	private JToolBarToggleButton getStructureButton() {
+		if (structureButton == null) {
+			try {
+				structureButton = createModeButton("StructureButton", "Structure Tool", 
+						Mode.STRUCTURE, loadIcon("/images/feature.gif"));
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return structureButton;
+	}
+
+	
 	private JToolBarToggleButton getFluxReactionButton() {
 		if (fluxReactionButton == null) {
 			try {
@@ -594,6 +611,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			modeButtonGroup.add(getSelectButton());
 			modeButtonGroup.add(getSpeciesButton());
 			modeButtonGroup.add(getFluxReactionButton());
+			modeButtonGroup.add(getStructureButton());
 			getReactionCartoonTool().setReactionCartoon(getReactionCartoon());
 			getReactionCartoonTool().setGraphPane(getGraphPane());
 			getReactionCartoonTool().setButtonGroup(modeButtonGroup);

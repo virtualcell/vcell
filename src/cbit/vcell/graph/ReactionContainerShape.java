@@ -14,7 +14,13 @@ package cbit.vcell.graph;
  *  October 2010
  */
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.util.ArrayList;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;
@@ -72,5 +78,37 @@ public class ReactionContainerShape extends ContainerShape {
 	public void refreshLabel() {
 		setLabel(getStructure().getName());
 	}
+	
+	private static final BasicStroke dropTargetRectangleStroke = new BasicStroke(2, BasicStroke.CAP_BUTT,BasicStroke.JOIN_BEVEL, 1, new float[] {10f}, 0);
+	private Boolean[] dropTargetEnable = new Boolean[2];
+	public void setDropTargetEnableLow(Boolean bDropTargetEnableLow){
+		dropTargetEnable[0] = bDropTargetEnableLow;
+	}
+	public void setDropTargetEnableHigh(Boolean bDropTargetEnableHigh){
+		dropTargetEnable[1] = bDropTargetEnableHigh;
+	}
+	@Override
+	public void paintSelf(Graphics2D g, int absPosX, int absPosY) {
+		super.paintSelf(g, absPosX, absPosY);
+		for (int i = 0; i < dropTargetEnable.length; i++) {
+			if(dropTargetEnable[i] != null){
+				Stroke origStroke = g.getStroke();
+				Color origColor = g.getColor();
+				g.setStroke(dropTargetRectangleStroke);
+				if(dropTargetEnable[i]){
+					g.setColor(Color.GREEN);
+				}
+				if(i==0){
+					g.drawRect(absPosX, absPosY, 10, getSpaceManager().getSize().height);
+				}else{
+					g.drawRect(absPosX+getWidth()-10, absPosY, 10, getSpaceManager().getSize().height);
+				}
+				g.setColor(origColor);
+				g.setStroke(origStroke);			
+			}
+		}
+
+	}
+
 
 }
