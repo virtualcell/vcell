@@ -18,6 +18,8 @@ import java.util.Vector;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.InsideVariable;
@@ -38,6 +40,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.util.ColumnDescription;
+import cbit.vcell.xml.XmlParseException;
 /**
  * This type was created in VisualAge.
  */
@@ -1155,5 +1158,28 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		entryMap.put(dsi.getName(), dsi);
 	}
 }
+
+public boolean isChombo() throws DataAccessException, IOException {
+	try {
+		return getDatasetControllerImpl().getIsChombo(datasetsIDList[0]);
+	} catch (DataAccessException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	} catch (FileNotFoundException e) {
+		e.printStackTrace(System.out);
+		throw e;
+	}
+}
+
+@Override
+public ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException {
+	throw new RuntimeException("MergedData.getChomboFiles() not yet implemented");
+}
+
+@Override
+public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccessException {
+	throw new RuntimeException("MergedData.getVCellSimFiles() not yet implemented");
+}
+
 
 }

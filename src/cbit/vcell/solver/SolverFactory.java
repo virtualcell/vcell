@@ -15,6 +15,8 @@ import java.io.File;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
 
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
@@ -28,6 +30,7 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.CombinedSundialsSolver;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
+import cbit.vcell.xml.XmlHelper;
 
 /**
  * The Abstract definition for the solver factory that creates
@@ -41,6 +44,18 @@ public class SolverFactory {
  */
 public static Solver createSolver(SessionLog sessionLog, File directory, SimulationTask simTask, boolean bMessaging) throws SolverException {
 	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
+
+	File simTaskFile = new File(directory,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");
+	if (!simTaskFile.exists()){
+		try {
+			String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
+			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFile.toString(), true);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+			throw new SolverException("unable to write SimulationTask file");
+		}
+	}
+
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
 	}

@@ -14,6 +14,8 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.client.data.OutputContext;
@@ -325,4 +327,38 @@ public DataSetTimeSeries getDataSetTimeSeries(User user, VCDataIdentifier vcdata
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
+
+public boolean isChombo(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getIsChombo(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+public ChomboFiles getChomboFiles(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getChomboFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+public VCellSimFiles getVCellSimFiles(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		return dataSetControllerImpl.getVCellSimFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
 }

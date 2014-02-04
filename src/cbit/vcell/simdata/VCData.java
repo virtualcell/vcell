@@ -9,17 +9,23 @@
  */
 
 package cbit.vcell.simdata;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.MathException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.XmlParseException;
 /**
  * This type was created in VisualAge.
  */
@@ -50,7 +56,7 @@ public abstract long getDataBlockTimeStamp(int dataType, double timepoint) throw
  */
 public abstract double[] getDataTimes() throws DataAccessException;
 
-
+public abstract boolean isChombo() throws DataAccessException, IOException;
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 5:16:06 PM)
@@ -199,5 +205,9 @@ double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.Spat
 
     return new double[] {min,max,mean,wmean,sum,wsum};
 }
+
+public abstract ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException;
+
+public abstract VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccessException;
 
 }

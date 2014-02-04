@@ -65,6 +65,8 @@ public class ResourceUtil {
 	private static File solversDirectory = null;
 	
 	public enum SolverExecutable {
+		VCellChombo2D("VCellChombo2D" + EXE_SUFFIX),
+		VCellChombo3D("VCellChombo3D" + EXE_SUFFIX),
 		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
 		SundialsOde("SundialsSolverStandalone" + EXE_SUFFIX),
 		Gibson("VCellStoch" + EXE_SUFFIX),
@@ -86,13 +88,26 @@ public class ResourceUtil {
 			if (bFirstTime || !exe.exists()) {
 				ResourceUtil.writeFileFromResource(res, exe);
 			}
-			if (this == Smoldyn || this == FiniteVolume) {
-				if (bWindows) {
-					String DLL_GLUT = b64bit ? "glut64.dll" : "glut32.dll";
-					String RES_DLL_GLUT = RES_PACKAGE + "/" + DLL_GLUT;
-					File file_glut_dll = new java.io.File(getSolversDirectory(), DLL_GLUT);
-					if (bWindows && (bFirstTime || !file_glut_dll.exists())) {
-						ResourceUtil.writeFileFromResource(RES_DLL_GLUT, file_glut_dll);
+			if (bWindows) {
+				ArrayList<String> requiredDlls = new ArrayList<String>();
+				if (this == Smoldyn || this == FiniteVolume) {
+					if (b64bit){
+						requiredDlls.add("glut64.dll");
+					}else{
+						requiredDlls.add("glut32.dll");
+					}
+				}
+				requiredDlls.add("cygwin1.dll");
+				requiredDlls.add("cyggcc_s-seh-1.dll");
+				requiredDlls.add("cygstdc++-6.dll");
+				requiredDlls.add("cyggfortran-3.dll");
+				requiredDlls.add("cygquadmath-0.dll");
+				
+				for (String dllName : requiredDlls){
+					String RES_DLL = RES_PACKAGE + "/" + dllName;
+					File file_dll = new java.io.File(getSolversDirectory(), dllName);
+					if (bFirstTime || !file_dll.exists()) {
+						ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
 					}
 				}
 			}
@@ -326,6 +341,11 @@ public class ResourceUtil {
 		} else if (solverDescription.isSpatialStochasticSolver()) {
 			File exe = SolverExecutable.Smoldyn.getExecutable();
 			System.getProperties().put(PropertyLoader.smoldynExecutableProperty, exe.getAbsolutePath());
+		} else if (solverDescription.isChomboSolver()) {
+			File exe2D = SolverExecutable.VCellChombo2D.getExecutable();
+			System.getProperties().put(PropertyLoader.VCellChomboExecutable2D, exe2D.getAbsolutePath());
+			File exe3D = SolverExecutable.VCellChombo3D.getExecutable();
+			System.getProperties().put(PropertyLoader.VCellChomboExecutable3D, exe3D.getAbsolutePath());
 		} 
 	}
 }

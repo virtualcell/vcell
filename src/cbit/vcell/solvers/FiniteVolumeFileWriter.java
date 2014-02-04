@@ -10,6 +10,7 @@
 
 package cbit.vcell.solvers;
 import java.beans.PropertyVetoException;
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1853,7 +1854,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		
 		DataOutputStream dos = null;
 		try {
-			dos = new DataOutputStream(new FileOutputStream(file));
+			dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 			for (double d : header) {
 				dos.writeDouble(d);			
 			}

@@ -423,7 +423,7 @@ public class CartesianMeshChombo extends CartesianMesh {
 			}
 		}
 		// set neighbors to membrane elements
-		if (chomboMesh.dimension == 2)
+		if (chomboMesh.dimension == 2 && chomboMesh.membraneElements!=null)
 		{
 			for (int i = 0; i < chomboMesh.membraneElements.length; ++ i)
 			{

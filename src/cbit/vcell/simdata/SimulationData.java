@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -42,44 +43,47 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
+import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.VCellSimFiles;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.server.DataOperation;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP;
-import cbit.vcell.client.server.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.client.server.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverUtilities;
@@ -89,6 +93,8 @@ import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
 import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 /**
  * This type was created in VisualAge.
  */
@@ -500,6 +506,7 @@ public class SimulationData extends VCData {
 	private VCDataIdentifier vcDataId = null;
 //	private File userDirectory = null;
 	
+	private int chomboFileIterationIndices[] = null;
 	private double dataTimes[] = null;
 	private String dataFilenames[] = null;
 	private String zipFilenames[] = null;
@@ -1720,6 +1727,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			dataFilenames = null;
 			zipFilenames = null;
 			dataTimes = null;
+			chomboFileIterationIndices = null;
 			logFileLastModified = lastModified;
 			logFileLength = length;
 		}	
@@ -1727,6 +1735,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		dataFilenames = null;
 		zipFilenames = null;
 		dataTimes = null;
+		chomboFileIterationIndices = null;
 		VCMongoMessage.sendTrace("SimulationData.readLog() log file not found <<EXIT-Exception>>");
 		throw new FileNotFoundException("log file "+logFile.getPath()+" not found");
 	}
@@ -1792,6 +1801,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		isODEData = false;
 		if (!( (bZipFormat2 && st.countTokens()%4 == 0) || (!bZipFormat2 && st.countTokens()%3 == 0))) {
 			dataTimes = null;
+			chomboFileIterationIndices = null;
 			dataFilenames = null;
 			zipFilenames = null;
 			throw new DataAccessException("SimResults.readLog(), tokens should be factor of 3 or 4, bad parsing");
@@ -1804,6 +1814,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		}else{
 			zipFilenames = null;
 		}
+		chomboFileIterationIndices = new int[numFiles];
 		dataTimes = new double[numFiles];
 		dataFilenames = new String[numFiles];
 		int index = 0;
@@ -1819,6 +1830,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			} else {
 				time = st.nextToken();
 			}
+			chomboFileIterationIndices[index] = Integer.parseInt(iteration);
 			dataTimes[index] = (new Double(time)).doubleValue();
 			dataFilenames[index] = (new File(filename)).getName();
 			index++;
@@ -1874,7 +1886,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	}
 }
 
-private boolean isChombo() throws FileNotFoundException{
+public boolean isChombo() throws FileNotFoundException{
 	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 }
 
@@ -2030,6 +2042,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 	dataFilenames = null;
 	zipFilenames = null;
 	dataTimes = null;
+	chomboFileIterationIndices = null;
 	annotatedFunctionList.removeAllElements();
 	mesh = null;
 	logFileLastModified = 0;
@@ -2203,4 +2216,70 @@ public File getLogFile(){
 public File getSmoldynOutputFile(int timeIndex){
 	return amplistorHelper.getSmoldynOutputFile(timeIndex);
 }
+
+@Override
+public ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException {
+	if (chomboFileIterationIndices==null){
+		throw new RuntimeException("SimulationData.chomboFileIterationIndices is null, can't process Chombo HDF5 files");
+	}
+	if (!(getVcDataId() instanceof VCSimulationDataIdentifier)){
+		throw new RuntimeException("SimulationData.getVcDataId() is not a VCSimulationDataIdentifier (type is "+getVcDataId().getClass().getName()+"), can't process chombo HDF5 files");
+	}
+	VCSimulationDataIdentifier vcDataID = (VCSimulationDataIdentifier)getVcDataId();
+
+	String expectedMeshfile = vcDataID.getID()+".mesh.hdf5";
+	File meshFile = amplistorHelper.getFile(expectedMeshfile);
+	
+	ChomboFiles chomboFiles = new ChomboFiles(vcDataID.getID(), vcDataID.getJobIndex(), meshFile);
+
+	String simtaskFilePath = vcDataID.getID()+"_0.simtask.xml";
+	File simtaskFile = amplistorHelper.getFile(simtaskFilePath);
+	String xmlString = FileUtils.readFileToString(simtaskFile);
+	SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
+	Enumeration<SubDomain> subdomainEnum = simTask.getSimulation().getMathDescription().getSubDomains();
+	while (subdomainEnum.hasMoreElements()){
+		SubDomain subDomain = subdomainEnum.nextElement();
+		if (subDomain instanceof CompartmentSubDomain){
+			for (int timeIndex : chomboFileIterationIndices){
+				String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol0.hdf5";
+				File file = amplistorHelper.getFile(expectedFile);
+				if (file.exists()){
+					chomboFiles.addDataFile(".feature_"+subDomain.getName(), timeIndex, file);
+				}
+			}
+		}else{
+			System.out.println("SimulationData.getChomboFiles() ignoring subDomain "+subDomain.getName()+" because compartment type "+subDomain.getClass().getSimpleName()+" not yet supported for Chombo export");
+		}
+	}
+	return chomboFiles;
+}
+
+@Override
+public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccessException {
+	File cartesianMeshFile = getMeshFile();
+	File meshMetricsFile = getMembraneMeshMetricsFile();
+	File subdomainFile = getSubdomainFile();
+	File logFile = getLogFile();
+	File postprocessingFile = getDataProcessingOutputSourceFileHDF5();
+	if (!(vcDataId instanceof VCSimulationDataIdentifier)){
+		throw new RuntimeException("cannot process vtk, vcDataId not "+VCSimulationDataIdentifier.class.getSimpleName());
+	}
+	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
+	VCellSimFiles vcellSimFiles = new VCellSimFiles(vcSimDataID.getSimulationKey().toString(),vcSimDataID.getJobIndex(),cartesianMeshFile, meshMetricsFile, subdomainFile, logFile, postprocessingFile);
+	refreshLogFile();
+	double[] times = getDataTimes();
+	for (int i=0;i<times.length;i++){
+		File pdeDataFile = getPDEDataFile(times[i]);
+		File zipFile = getPDEDataZipFile(times[i]);
+		vcellSimFiles.addDataFileEntry(zipFile, pdeDataFile, times[i]);
+	}
+	
+	return vcellSimFiles;
+}
+
+public VCDataIdentifier getVcDataId() {
+	return vcDataId;
+}
+
+
 }
