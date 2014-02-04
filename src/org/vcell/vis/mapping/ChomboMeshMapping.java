@@ -28,15 +28,8 @@ import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vismesh.VisSurfaceTriangle;
 import org.vcell.vis.vismesh.VisTetrahedron;
 import org.vcell.vis.vismesh.VisVoxel;
+import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkCell;
-import vtk.vtkDelaunay3D;
-import vtk.vtkIdList;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
-import vtk.vtkPolygon;
-import vtk.vtkTetra;
-import vtk.vtkUnstructuredGrid;
 
 public class ChomboMeshMapping {
 	
@@ -561,7 +554,7 @@ public class ChomboMeshMapping {
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p2, p1} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p4, p2} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p2, p4, p1} ));
-					VisTetrahedron[] delaunayTets = createTetrahedra(clippedPolyhedron, visMesh);
+					VisTetrahedron[] delaunayTets = VtkGridUtils.createTetrahedra(clippedPolyhedron, visMesh);
 			
 					for (VisTetrahedron tet : delaunayTets){
 						newPolyhedraList.add(tet);
@@ -575,65 +568,6 @@ public class ChomboMeshMapping {
 		} // for loop (orig polyhedra)
 		visMesh.getPolyhedra().clear();
 		visMesh.getPolyhedra().addAll(newPolyhedraList);
-	}
-	
-	private VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
-		vtkPolyData vtkpolydata = new vtkPolyData();
-		vtkPoints vtkpoints = new vtkPoints();
-		int polygonType = new vtkPolygon().GetCellType();
-		int[] uniquePointIndices = clippedPolyhedron.getPointIndices();
-		for (int point : uniquePointIndices){
-			VisPoint visPoint = visMesh.getPoints().get(point);
-			vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z);
-		}
-		vtkpolydata.Allocate(100, 100);
-		vtkpolydata.SetPoints(vtkpoints);
-		
-		for (PolyhedronFace face : clippedPolyhedron.getFaces()){
-			vtkIdList faceIdList = new vtkIdList();
-			for (int visPointIndex : face.getVertices()){
-				int vtkpointid = -1;
-				for (int i=0;i<uniquePointIndices.length;i++){
-					if (uniquePointIndices[i] == visPointIndex){
-						vtkpointid = i;
-					}
-				}
-				faceIdList.InsertNextId(vtkpointid);
-			}
-			vtkpolydata.InsertNextCell(polygonType, faceIdList);
-		}
-		
-		vtkDelaunay3D delaunayFilter = new vtkDelaunay3D();
-		delaunayFilter.SetInputData(vtkpolydata);
-		delaunayFilter.Update();
-		delaunayFilter.SetAlpha(0.1);
-		vtkUnstructuredGrid vtkgrid2 = delaunayFilter.GetOutput();
-		ArrayList<VisTetrahedron> visTets = new ArrayList<VisTetrahedron>();
-		int numTets = vtkgrid2.GetNumberOfCells();
-		if (numTets<1){
-			System.out.println("found no tets");
-		}
-//		System.out.println("numFaces = "+vtkpolydata.GetNumberOfCells()+", numTets = "+numTets);
-		for (int cellIndex=0; cellIndex<numTets; cellIndex++){
-			vtkCell cell = vtkgrid2.GetCell(cellIndex);
-			if (cell instanceof vtkTetra){
-				vtkTetra vtkTet = (vtkTetra)cell;
-				vtkIdList tetPointIds = vtkTet.GetPointIds();
-				//
-				// translate from vtkgrid pointids to visMesh point ids
-				//
-				int numPoints = tetPointIds.GetNumberOfIds();
-				int[] visPointIds = new int[numPoints];
-				for (int p=0; p<numPoints; p++){
-					visPointIds[p] = uniquePointIndices[tetPointIds.GetId(p)];
-				}
-				VisTetrahedron visTet = new VisTetrahedron(visPointIds, clippedPolyhedron.getLevel(), clippedPolyhedron.getBoxNumber(), clippedPolyhedron.getBoxIndex(), clippedPolyhedron.getFraction(), clippedPolyhedron.getRegionIndex());
-				visTets.add(visTet);
-			}else{
-				System.out.println("ChomboMeshMapping.createTetrahedra(): expecting a tet, found a "+cell.GetClassName());
-			}
-		}
-		return visTets.toArray(new VisTetrahedron[0]);
 	}
 	
 	private VisIrregularPolyhedron createClippedPolyhedron(ClippedVoxel clippedVoxel, VisMesh visMesh, VisVoxel oldVoxel){

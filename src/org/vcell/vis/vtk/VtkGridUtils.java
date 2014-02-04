@@ -2,9 +2,11 @@ package org.vcell.vis.vtk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
+import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
@@ -13,23 +15,32 @@ import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vismesh.VisTetrahedron;
 import org.vcell.vis.vismesh.VisVoxel;
 
+import vtk.vtkCell;
 import vtk.vtkCellData;
+import vtk.vtkDelaunay3D;
 import vtk.vtkDoubleArray;
 import vtk.vtkFieldData;
 import vtk.vtkFloatArray;
+import vtk.vtkGeometryFilter;
 import vtk.vtkIdList;
+import vtk.vtkIdTypeArray;
 import vtk.vtkLine;
 import vtk.vtkNativeLibrary;
+import vtk.vtkObjectBase;
+import vtk.vtkPointData;
 import vtk.vtkPoints;
+import vtk.vtkPolyData;
 import vtk.vtkPolygon;
 import vtk.vtkPolyhedron;
 import vtk.vtkQuad;
 import vtk.vtkTetra;
 import vtk.vtkTriangle;
 import vtk.vtkUnstructuredGrid;
+import vtk.vtkUnstructuredGridGeometryFilter;
 import vtk.vtkUnstructuredGridReader;
 import vtk.vtkUnstructuredGridWriter;
 import vtk.vtkVoxel;
+import vtk.vtkWindowedSincPolyDataFilter;
 import vtk.vtkXMLFileReadTester;
 import vtk.vtkXMLUnstructuredGridReader;
 import vtk.vtkXMLUnstructuredGridWriter;
@@ -45,6 +56,7 @@ public class VtkGridUtils {
 			e.printStackTrace(System.out);
 		}
 		vtkNativeLibrary.DisableOutputWindow(null);
+		vtkObjectBase.JAVA_OBJECT_MANAGER.getAutoGarbageCollector().SetAutoGarbageCollection(true);
 	}
 
 	public vtkUnstructuredGrid getVtkGrid(VisDomain visDomain) throws IOException{
@@ -215,6 +227,122 @@ public class VtkGridUtils {
 //		writeXML(vtkgrid,filename,true);
 //		writeLegacy(vtkgrid,filename,false);
 //		writeLegacy(vtkgrid,filename,true);
+	}
+
+	public static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
+			vtkPolyData vtkpolydata = new vtkPolyData();
+			vtkPoints vtkpoints = new vtkPoints();
+			int polygonType = new vtkPolygon().GetCellType();
+			int[] uniquePointIndices = clippedPolyhedron.getPointIndices();
+			for (int point : uniquePointIndices){
+				VisPoint visPoint = visMesh.getPoints().get(point);
+				vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z);
+			}
+			vtkpolydata.SetPoints(vtkpoints);
+			
+			for (PolyhedronFace face : clippedPolyhedron.getFaces()){
+				vtkIdList faceIdList = new vtkIdList();
+				for (int visPointIndex : face.getVertices()){
+					int vtkpointid = -1;
+					for (int i=0;i<uniquePointIndices.length;i++){
+						if (uniquePointIndices[i] == visPointIndex){
+							vtkpointid = i;
+						}
+					}
+					faceIdList.InsertNextId(vtkpointid);
+				}
+				vtkpolydata.InsertNextCell(polygonType, faceIdList);
+			}
+			
+			vtkDelaunay3D delaunayFilter = new vtkDelaunay3D();
+			delaunayFilter.SetInputData(vtkpolydata);
+			delaunayFilter.Update();
+			delaunayFilter.SetAlpha(0.1);
+			vtkUnstructuredGrid vtkgrid2 = delaunayFilter.GetOutput();
+			ArrayList<VisTetrahedron> visTets = new ArrayList<VisTetrahedron>();
+			int numTets = vtkgrid2.GetNumberOfCells();
+			if (numTets<1){
+				System.out.println("found no tets");
+			}
+	//		System.out.println("numFaces = "+vtkpolydata.GetNumberOfCells()+", numTets = "+numTets);
+			for (int cellIndex=0; cellIndex<numTets; cellIndex++){
+				vtkCell cell = vtkgrid2.GetCell(cellIndex);
+				if (cell instanceof vtkTetra){
+					vtkTetra vtkTet = (vtkTetra)cell;
+					vtkIdList tetPointIds = vtkTet.GetPointIds();
+					//
+					// translate from vtkgrid pointids to visMesh point ids
+					//
+					int numPoints = tetPointIds.GetNumberOfIds();
+					int[] visPointIds = new int[numPoints];
+					for (int p=0; p<numPoints; p++){
+						visPointIds[p] = uniquePointIndices[tetPointIds.GetId(p)];
+					}
+					VisTetrahedron visTet = new VisTetrahedron(visPointIds, clippedPolyhedron.getLevel(), clippedPolyhedron.getBoxNumber(), clippedPolyhedron.getBoxIndex(), clippedPolyhedron.getFraction(), clippedPolyhedron.getRegionIndex());
+					visTets.add(visTet);
+				}else{
+					System.out.println("ChomboMeshMapping.createTetrahedra(): expecting a tet, found a "+cell.GetClassName());
+				}
+			}
+			return visTets.toArray(new VisTetrahedron[0]);
+		}
+
+	public static vtkUnstructuredGrid smoothUnstructuredGridSurface(vtkUnstructuredGrid grid){
+		
+		vtkUnstructuredGridGeometryFilter ugGeometryFilter = new vtkUnstructuredGridGeometryFilter();
+		ugGeometryFilter.PassThroughPointIdsOn();
+		ugGeometryFilter.MergingOff();
+		ugGeometryFilter.SetInputData(grid);
+		ugGeometryFilter.Update();
+		vtkUnstructuredGrid surfaceUnstructuredGrid = ugGeometryFilter.GetOutput();
+		
+		{
+		vtkCellData cellData = surfaceUnstructuredGrid.GetCellData();
+		int numCellArrays = cellData.GetNumberOfArrays();
+		for (int i=0;i<numCellArrays;i++){
+			String cellArrayName = cellData.GetArrayName(i);
+			System.out.println("CellArray("+i+") \""+cellArrayName+"\"");
+		}
+		vtkPointData pointData = surfaceUnstructuredGrid.GetPointData();
+		int numPointArrays = pointData.GetNumberOfArrays();
+		for (int i=0;i<numPointArrays;i++){
+			String pointArrayName = pointData.GetArrayName(i);
+			System.out.println("PointArray("+i+") \""+pointArrayName+"\"");
+		}
+		}
+		
+		vtkGeometryFilter geometryFilter = new vtkGeometryFilter();
+		geometryFilter.SetInputData(surfaceUnstructuredGrid);
+		geometryFilter.Update();
+		vtkPolyData polyData = geometryFilter.GetOutput();
+		
+		vtkWindowedSincPolyDataFilter filter = new vtkWindowedSincPolyDataFilter();
+		filter.SetInputData(polyData);
+		filter.SetNumberOfIterations(15);
+		filter.BoundarySmoothingOff();
+		filter.FeatureEdgeSmoothingOff();
+		filter.SetFeatureAngle(120.0);
+		filter.SetPassBand(0.001);
+		filter.NonManifoldSmoothingOff();
+		filter.NormalizeCoordinatesOn();
+		filter.Update();
+		
+		vtkPolyData smoothedPolydata = filter.GetOutput();
+		
+		vtkPoints smoothedPoints = smoothedPolydata.GetPoints();
+		String originalPointsIdsName = ugGeometryFilter.GetOriginalPointIdsName();
+		
+		vtkPointData smoothedPointData = smoothedPolydata.GetPointData();
+		vtkIdTypeArray pointIdsArray = (vtkIdTypeArray)smoothedPointData.GetArray(originalPointsIdsName);
+		int pointsIdsArraySize = pointIdsArray.GetSize();
+		vtkPoints origPoints = grid.GetPoints();
+		for (int i=0;i<pointsIdsArraySize;i++){
+			int pointId = pointIdsArray.GetValue(i);
+			double[] smoothedPoint = smoothedPoints.GetPoint(i);
+			origPoints.SetPoint(pointId, smoothedPoint);
+		}
+	
+		return grid;
 	}
 
 }
