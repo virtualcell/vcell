@@ -1837,7 +1837,9 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		
 		assert Math.abs(origin.getX() - pointsX[0]) < 2e-8;
 		assert Math.abs(origin.getY() - pointsY[0]) < 2e-8;
-		assert Math.abs(origin.getZ() - pointsZ[0]) < 2e-8;
+		//Chombo 2D uses middle slice, so skip assert in that case
+		assert Math.abs(origin.getZ() - pointsZ[0]) < 2e-8 || bChomboSolver && resampledGeometry.getDimension() == 2 : "z not starting at origin";
+		
 		
 		double[] header = new double[headerNames.length];
 		int count = -1;
