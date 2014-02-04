@@ -9,21 +9,43 @@
  */
 
 package cbit.vcell.export.server;
-import java.util.*;
-import java.io.*;
-import java.rmi.*;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.rmi.RemoteException;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.chombo.ChomboDataset;
+import org.vcell.vis.io.ChomboFileReader;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.VCellSimFiles;
+import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
+import org.vcell.vis.mapping.ChomboMeshMapping;
+import org.vcell.vis.mapping.ChomboVtkFileWriter;
+import org.vcell.vis.vismesh.VisDataset;
+import org.vcell.vis.vismesh.VisDataset.VisDomain;
+import org.vcell.vis.vtk.VtkGridUtils;
 
-import cbit.vcell.math.VariableType;
-import cbit.vcell.simdata.*;
-import cbit.vcell.solvers.CartesianMesh;
+import vtk.vtkUnstructuredGrid;
 import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.AVS_UCD_Exporter;
-import cbit.vcell.export.nrrd.*;
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.export.nrrd.NrrdWriter;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSummaryDescriptor;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 12:53:34 PM)
@@ -49,7 +71,7 @@ public RasterExporter(ExportServiceImpl exportServiceImpl) {
 /**
  * This method was created in VisualAge.
  */
-private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs,FileDataContainerManager fileDataContainerManager) 
+private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager) 
 						throws RemoteException, DataAccessException, IOException {
 
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
@@ -225,7 +247,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 /**
  * This method was created in VisualAge.
  */
-public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) 
+public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) 
 						throws RemoteException, DataAccessException, IOException {
 	return exportPDEData(
 			outputContext,
@@ -422,8 +444,79 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 
 }
 
+public ExportOutput[] makeVTKUnstructuredData0(OutputContext outputContext,JobRequest jobRequest, User user,
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception{
+	String simID = exportSpecs.getVCDataIdentifier().getID();
+	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	boolean bChombo = dataServerImpl.isChombo(user, vcdID);
+	final File tmpDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.tempDirProperty));
+	if (bChombo){
+		return makeVTKUnstructuredData_Chombo(outputContext, jobRequest, user, dataServerImpl, exportSpecs, tmpDir, fileDataContainerManager);
+	}else{
+		return makeVTKUnstructuredData_VCell(outputContext, jobRequest, user, dataServerImpl, exportSpecs, tmpDir, fileDataContainerManager);
+	}
+}
+
+
+public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext,final JobRequest jobRequest, User user,
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, FileDataContainerManager fileDataContainerManager) throws Exception{
+	
+	String simID = exportSpecs.getVCDataIdentifier().getID();
+	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	VariableSpecs variableSpecs = exportSpecs.getVariableSpecs();
+	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
+	
+	ChomboFiles chomboFiles = dataServerImpl.getChomboFiles(user, vcdID);
+	ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
+	File[] vtkFiles = chomboVTKFileWriter.writeFiles(chomboFiles, tmpDir, new ChomboVtkFileWriter.ProgressListener() {
+		public void progress(double percentDone) {
+			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
+		}
+	});
+	
+	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
+	for (File file : vtkFiles){
+		String dataID = file.getName().replace(simID.toString(), "");
+		ExportOutput exportOut = new ExportOutput(true,".vtu",simID.toString(),dataID,fileDataContainerManager);
+		fileDataContainerManager.append(exportOut.getFileDataContainerID(), FileUtils.readByteArrayFromFile(file));
+		exportOutV.add(exportOut);				
+	}
+
+	ExportOutput[] exportOutputArr = exportOutV.toArray(new ExportOutput[0]);
+	return exportOutputArr;
+}
+
+
+public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,final JobRequest jobRequest, User user,
+		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, File tmpDir, FileDataContainerManager fileDataContainerManager) throws Exception{
+	
+	String simID = exportSpecs.getVCDataIdentifier().getID();
+	final VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	VariableSpecs variableSpecs = exportSpecs.getVariableSpecs();
+	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
+	
+	VCellSimFiles vcellFiles = dataServerImpl.getVCellSimFiles(user, vcdID);
+	CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
+	File[] vtkFiles = cartesianMeshVtkFileWriter.writeFiles(vcellFiles, tmpDir, new CartesianMeshVtkFileWriter.ProgressListener() {
+		public void progress(double percentDone) {
+			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
+		}
+	});
+	
+	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
+	for (File file : vtkFiles){
+		String dataID = file.getName().replace(simID.toString(), "");
+		ExportOutput exportOut = new ExportOutput(true,".vtu",simID.toString(),dataID,fileDataContainerManager);
+		fileDataContainerManager.append(exportOut.getFileDataContainerID(), FileUtils.readByteArrayFromFile(file));
+		exportOutV.add(exportOut);				
+	}
+
+	ExportOutput[] exportOutputArr = exportOutV.toArray(new ExportOutput[0]);
+	return exportOutputArr;
+}
+
 public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobRequest jobRequest, User user,
-		DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager)throws Exception{
+			DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) throws Exception{
 
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();

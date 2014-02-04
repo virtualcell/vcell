@@ -382,7 +382,7 @@ public MeshRegionSurfaces generateMeshRegionSurfaces(ClientTaskStatusSupport cli
 private Hashtable<SampledCurve, int[]> constructChomboCurves(int normalAxis, int slice)
 {
 	Hashtable<SampledCurve, int[]> curvesAndValues = null;
-	if (mesh.isChomboMesh())
+	if (mesh.isChomboMesh() && mesh.getMembraneElements()!=null)
 	{
 		CartesianMeshChombo chomboMesh = (CartesianMeshChombo)mesh;
 		curvesAndValues = new Hashtable<SampledCurve, int[]>();
