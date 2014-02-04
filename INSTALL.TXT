@@ -1,0 +1,20 @@
+Install instructions for test site.
+
+log into visitphineas as vcell (or another linux machine with svn and javac)
+
+> cd /share/apps/vcell2/deployed/test/vcellapi
+
+(Note: if this directory doesn't exist, create this directory and check out the latest version of VCellRest (svn://code.vcell.uchc.edu/vcell/branches/VCell_Rest))
+
+> cd /share/apps/vcell2/deployed/test/vcellapi/VCell_Rest
+
+> svn update
+
+> cd /share/apps/vcell2/deployed/test/configs
+
+> cp ../vcellapi/VCell_Rest/deployInfo/* .
+(copies vcellapi_compile, vcellapi_debug, vcellapi_run and vcellapi.include to this site's config directory) 
+
+> ./vcellapi_compile            // needs jdk 1.7
+
+> ./vcellapi_run 
