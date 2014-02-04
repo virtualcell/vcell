@@ -46,6 +46,7 @@ public class ChomboVtkFileWriter {
 				vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVtkGrid(visDomain);
 				File file = new File(destinationDirectory,chomboFiles.getCannonicalFilePrefix(visDomain.getName(),timeIndex)+".vtu");
 				vtkGridUtils.write(vtkgrid, file.getPath());
+				vtkgrid.Delete(); // if needed for garbage collection
 				files.add(file);
 				filesProcessed++;
 				if (progressListener!=null){

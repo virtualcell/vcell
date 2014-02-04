@@ -11,20 +11,14 @@ import org.vcell.vis.io.DataSet;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vismesh.VisDataset;
-import org.vcell.vis.vismesh.VisLine;
 import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkGeometryFilter;
-import vtk.vtkIdTypeArray;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
 import vtk.vtkUnstructuredGrid;
-import vtk.vtkUnstructuredGridGeometryFilter;
-import vtk.vtkWindowedSincPolyDataFilter;
+
 
 public class CartesianMeshVtkFileWriter {
 	
@@ -220,9 +214,11 @@ public class CartesianMeshVtkFileWriter {
 				VisDataset.VisDomain visDomain = new VisDataset.VisDomain(anyDomain,visMesh,visMeshData);
 				VtkGridUtils vtkGridUtils = new VtkGridUtils();
 				vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVtkGrid(visDomain);
-				vtkgrid = smoothUnstructuredGridSurface(vtkgrid);
+				vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
 				File file = new File(destinationDirectory,vcellFiles.getCannonicalFilePrefix(visDomain.getName(),timeIndex)+".vtu");
-				vtkGridUtils.write(vtkgrid, file.getPath());
+				vtkGridUtils.write(vtkgridSmoothed, file.getPath());
+				vtkgrid.Delete(); 			// is needed for garbage collection? 
+				vtkgridSmoothed.Delete();	// is needed for garbage collection?
 				files.add(file);
 				filesProcessed++;
 				if (progressListener!=null){
@@ -233,59 +229,6 @@ public class CartesianMeshVtkFileWriter {
 		}
 		return files.toArray(new File[0]);
 
-	}
-	
-	public static vtkUnstructuredGrid smoothUnstructuredGridSurface(vtkUnstructuredGrid grid){
-		
-		vtkUnstructuredGridGeometryFilter ugGeometryFilter = new vtkUnstructuredGridGeometryFilter();
-		ugGeometryFilter.PassThroughPointIdsOn();
-		ugGeometryFilter.MergingOff();
-		ugGeometryFilter.SetInputData(grid);
-		ugGeometryFilter.Update();
-		vtkUnstructuredGrid surfaceUnstructuredGrid = ugGeometryFilter.GetOutput();
-		
-		{
-		int numCellArrays = surfaceUnstructuredGrid.GetCellData().GetNumberOfArrays();
-		for (int i=0;i<numCellArrays;i++){
-			String cellArrayName = surfaceUnstructuredGrid.GetCellData().GetArrayName(i);
-			System.out.println("CellArray("+i+") \""+cellArrayName+"\"");
-		}
-		int numPointArrays = surfaceUnstructuredGrid.GetPointData().GetNumberOfArrays();
-		for (int i=0;i<numPointArrays;i++){
-			String pointArrayName = surfaceUnstructuredGrid.GetPointData().GetArrayName(i);
-			System.out.println("PointArray("+i+") \""+pointArrayName+"\"");
-		}
-		}
-		
-		vtkGeometryFilter geometryFilter = new vtkGeometryFilter();
-		geometryFilter.SetInputData(surfaceUnstructuredGrid);
-		geometryFilter.Update();
-		vtkPolyData polyData = geometryFilter.GetOutput();
-		
-		vtkWindowedSincPolyDataFilter filter = new vtkWindowedSincPolyDataFilter();
-		filter.SetInputData(polyData);
-		filter.SetNumberOfIterations(15);
-		filter.BoundarySmoothingOff();
-		filter.FeatureEdgeSmoothingOff();
-		filter.SetFeatureAngle(120.0);
-		filter.SetPassBand(0.001);
-		filter.NonManifoldSmoothingOff();
-		filter.NormalizeCoordinatesOn();
-		filter.Update();
-		
-		vtkPolyData smoothedPolydata = filter.GetOutput();
-		
-		vtkPoints smoothedPoints = smoothedPolydata.GetPoints();
-		String originalPointsIdsName = ugGeometryFilter.GetOriginalPointIdsName();
-		vtkIdTypeArray pointIdsArray = (vtkIdTypeArray)smoothedPolydata.GetPointData().GetArray(originalPointsIdsName);
-		int pointsIdsArraySize = pointIdsArray.GetSize();
-		for (int i=0;i<pointsIdsArraySize;i++){
-			int pointId = pointIdsArray.GetValue(i);
-			double[] smoothedPoint = smoothedPoints.GetPoint(i);
-			grid.GetPoints().SetPoint(pointId, smoothedPoint);
-		}
-
-		return grid;
 	}
 	
 	
