@@ -44,6 +44,7 @@ import vtk.vtkWindowedSincPolyDataFilter;
 import vtk.vtkXMLFileReadTester;
 import vtk.vtkXMLUnstructuredGridReader;
 import vtk.vtkXMLUnstructuredGridWriter;
+//import vtk.vtkXdmfWriter;
 
 public class VtkGridUtils {
 	
@@ -196,6 +197,15 @@ public class VtkGridUtils {
 		System.out.println("saved to XML file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
 	}
 	
+//	public void writeXDMF(vtkUnstructuredGrid vtkgrid, String filename){
+//		vtkXdmfWriter writer = new vtkXdmfWriter();
+//		writer.SetInputDataObject(vtkgrid);
+//		writer.SetFileName(filename);
+//		writer.Update();
+//		long length = new File(filename).length();
+//		System.out.println("saved to XDMF file: "+filename+", length="+length+" bytes");
+//	}
+//	
 	public vtkUnstructuredGrid read(String filename){
 		File file = new File(filename);
 		if (!file.exists()){
@@ -224,6 +234,7 @@ public class VtkGridUtils {
 
 	public void write(vtkUnstructuredGrid vtkgrid, String filename) {
 		writeXML(vtkgrid,filename,false);		// default
+		//writeXDMF(vtkgrid, filename);
 //		writeXML(vtkgrid,filename,true);
 //		writeLegacy(vtkgrid,filename,false);
 //		writeLegacy(vtkgrid,filename,true);
@@ -238,6 +249,7 @@ public class VtkGridUtils {
 				VisPoint visPoint = visMesh.getPoints().get(point);
 				vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z);
 			}
+			vtkpolydata.Allocate(100, 100);
 			vtkpolydata.SetPoints(vtkpoints);
 			
 			for (PolyhedronFace face : clippedPolyhedron.getFaces()){
