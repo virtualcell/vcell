@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyVetoException;
@@ -38,10 +39,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import javax.help.plaf.basic.BasicFavoritesNavigatorUI.AddAction;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.FocusManager;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
@@ -423,6 +434,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 		} else if (menuAction.equals(CartoonToolMiscActions.AddSpecies.MENU_ACTION)) {
 			if (shape instanceof ReactionContainerShape) {
+				getGraphModel().deselectShape(shape);
 //				showCreateSpeciesContextDialog(getGraphPane(),
 //						getReactionCartoon().getModel(),
 //						((ReactionContainerShape) shape).getStructure(), null);
@@ -442,6 +454,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		} else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)
 				|| menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)) {
 			try {
+				if(getGraphModel().getSelectedShape() instanceof ReactionContainerShape && menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)){
+					getModel().removeStructure(((ReactionContainerShape)getGraphModel().getSelectedShape()).getStructure());
+					return;
+				}
 				if (getSelectedReactionStepArray()!=null || getSelectedSpeciesContextArray()!=null) {
 					if(menuAction.equals(CartoonToolEditActions.Cut.MENU_ACTION)){
 						new VCellTransferable.ReactionSpeciesCopy(getSelectedSpeciesContextArray(), getSelectedReactionStepArray());
@@ -894,6 +910,110 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		int dy = endPointWorld.y - startPointWorld.y;
 		return dx*dx + dy*dy;
 	}
+	
+	private MouseAdapter myStopEditAdapter = new MouseAdapter() {
+		@Override
+		public void mouseExited(MouseEvent e) {
+			super.mouseExited(e);
+			if(ReactionCartoonTool.this.getGraphPane().getComponentCount() == 0){
+				return;
+			}
+			Component editcomponent = ReactionCartoonTool.this.getGraphPane().getComponent(0);
+			MouseEvent newEvent = 
+				SwingUtilities.convertMouseEvent(ReactionCartoonTool.this.getGraphPane(), e, editcomponent);
+
+			if(newEvent.getX() >= 0 && newEvent.getY() >= 0 && newEvent.getX() < (editcomponent.getWidth()) && newEvent.getY() < (editcomponent.getHeight())){
+				return;
+			}
+			stopEditing();
+		}
+	};
+	
+	private GraphListener myGraphListener = new GraphListener() {
+		@Override
+		public void graphChanged(GraphEvent event) {
+			stopEditing();
+		}
+	};
+	
+	private void stopEditing(){
+		getGraphPane().removeMouseListener(myStopEditAdapter);
+		getGraphModel().removeGraphListener(myGraphListener);
+		getGraphPane().requestFocus();
+		if(getGraphPane().getComponentCount() > 0){
+			getGraphPane().remove(0);
+		}
+		getGraphPane().validate();
+		getGraphPane().repaint();
+	}
+	private void editInPlace(final Shape selectedShape,Point worldPoint){
+		if(getGraphPane().getComponentCount() > 0){//remove any existing editor
+			getGraphPane().remove(0);
+		}
+		Rectangle labelOutline = null;
+		//What kind of thing is being edited
+		if(selectedShape instanceof ReactionContainerShape){
+			labelOutline = ((ReactionContainerShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
+			if(!labelOutline.contains(worldPoint)){
+				return;
+			}
+		}else if(selectedShape instanceof SpeciesContextShape){
+			labelOutline = ((SpeciesContextShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
+		}else if(selectedShape instanceof SimpleReactionShape){
+			labelOutline = ((SimpleReactionShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
+		}else if(selectedShape instanceof FluxReactionShape){
+			labelOutline = ((FluxReactionShape)selectedShape).getLabelOutline(selectedShape.getAbsX(),selectedShape.getAbsY());
+		}else{
+			return;
+		}
+		//Add press 'Enter' action, 'Escape' action, editor gets focus and mouse 'Exit' parent action
+		if(true){
+			final JTextField jTextField = new JTextField(selectedShape.getLabel());
+			jTextField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try{
+						//Type specific edit actions
+						if(selectedShape instanceof ReactionContainerShape){
+							((ReactionContainerShape)selectedShape).getStructure().setName(jTextField.getText());
+						}else if(selectedShape instanceof SpeciesContextShape){
+							((SpeciesContextShape)selectedShape).getSpeciesContext().setName(jTextField.getText());
+						}else if(selectedShape instanceof SimpleReactionShape){
+							((SimpleReactionShape)selectedShape).getReactionStep().setName(jTextField.getText());
+						}else if(selectedShape instanceof FluxReactionShape){
+							((FluxReactionShape)selectedShape).getReactionStep().setName(jTextField.getText());
+						}
+					}catch(Exception e2){
+						e2.printStackTrace();
+						DialogUtils.showErrorDialog(ReactionCartoonTool.this.getGraphPane(), e2.getMessage());
+					}
+					stopEditing();
+				}
+			});
+			ReactionCartoonTool.this.getGraphPane().removeMouseListener(myStopEditAdapter);//just to be sure
+			ReactionCartoonTool.this.getGraphPane().addMouseListener(myStopEditAdapter);
+			
+			getGraphModel().removeGraphListener(myGraphListener);
+			getGraphModel().addGraphListener(myGraphListener);
+			
+			InputMap im = jTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+	        ActionMap am = jTextField.getActionMap();
+	        im.put(KeyStroke.getKeyStroke("ESCAPE"), "cancelChange");
+	        am.put("cancelChange", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					stopEditing();
+				}
+			});
+	        GraphResizeManager grm = getGraphModel().getResizeManager();
+			jTextField.setBounds((int)grm.zoom(labelOutline.x),(int)grm.zoom(labelOutline.y),Math.max((int)grm.zoom(labelOutline.width+2),100), Math.max((int)grm.zoom(labelOutline.height+2),20));
+			getGraphPane().add(jTextField);
+			getGraphPane().validate();
+			jTextField.requestFocus();
+		}
+		return;
+
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent event) {
@@ -908,7 +1028,13 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			switch (mode) {
 			case SELECT: {
 				if (event.getClickCount() == 2) {
-					Shape selectedShape = getReactionCartoon().getSelectedShape();
+					final Shape selectedShape = getReactionCartoon().getSelectedShape();
+					if(	selectedShape instanceof ReactionContainerShape ||
+						selectedShape instanceof SpeciesContextShape ||
+						selectedShape instanceof SimpleReactionShape ||
+						selectedShape instanceof FluxReactionShape){
+						editInPlace(selectedShape,worldPoint);
+					}
 					if (selectedShape != null) {
 						menuAction(selectedShape, CartoonToolMiscActions.Properties.MENU_ACTION);
 					}
@@ -1024,18 +1150,26 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 	@Override
 	public void mouseDragged(MouseEvent event) {
+		if(getGraphPane().getComponentCount() > 0){
+			//we're editing, cancel
+			stopEditing();
+		}
 		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
 			return;
 		}
 		boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
 		boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
 		if(mode == Mode.SELECT && bStartRxContainerLabel){
+			if(dragStructTimer != null){
+				dragStructTimer.stop();
+			}
 			Point dragPointWorld = getGraphModel().getResizeManager().unzoom(event.getPoint());
 			RXContainerDropTargetInfo lastTrueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
 			lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(dragPointWorld);
 			RXContainerDropTargetInfo currentTrueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
-			if(!Compare.isEqualOrNull(lastTrueRXContainerDropTargetInfo, currentTrueRXContainerDropTargetInfo)){
-				activateDropTargetEnable(true);
+//			System.out.println(lastTrueRXContainerDropTargetInfo+" "+currentTrueRXContainerDropTargetInfo);
+			if(dragStructTimer != null || !Compare.isEqualOrNull(lastTrueRXContainerDropTargetInfo, currentTrueRXContainerDropTargetInfo)){
+				activateDropTargetEnable();
 				getGraphPane().repaint();
 			}
 			return;
@@ -1265,7 +1399,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
 			RXContainerDropTargetInfo currentTrueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
 			if(!Compare.isEqualOrNull(lastTrueRXContainerDropTargetInfo, currentTrueRXContainerDropTargetInfo)){
-				activateDropTargetEnable(false);
+				activateDropTargetEnable();
 				getGraphPane().repaint();
 			}
 			return;
@@ -1282,6 +1416,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				if(!getGraphPane().getCursor().equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))){
 					getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
+			}
+		}else{
+			if(!getGraphPane().getCursor().equals(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR))){
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 		}
 	}
@@ -1314,13 +1452,15 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			getModel().setDiagrams(newDiagramOrderList.toArray(new Diagram[0]));
 		    lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(new Point(-1,-1));
-		    resetDropTargets(false);
+		    resetDropTargets(false,mode == Mode.STRUCTURE);
 		    getGraphPane().repaint();
 		}catch(Exception e2){
 			e2.printStackTrace();
 			DialogUtils.showErrorDialog(getGraphPane(), "Error adding structure: "+e2.getMessage());
 		}
 	}
+	
+	private Timer dragStructTimer;
 	
 	@Override
 	public void mousePressed(MouseEvent event) {
@@ -1357,12 +1497,28 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if(startShape instanceof ReactionContainerShape){
+				if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
+					return;
+				}
 				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
 				bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
 				if(bStartRxContainerLabel){
 					lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
-					activateDropTargetEnable(true);
-					getGraphPane().repaint();					
+					//delay showing structure drag drop targets in case user action will turn into
+					//popup menu or name double-click
+					if(dragStructTimer != null){
+						dragStructTimer.stop();
+					}
+					dragStructTimer = new Timer(500, new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							
+							activateDropTargetEnable();
+							getGraphPane().repaint();
+						}
+					});
+					dragStructTimer.setRepeats(false);
+					dragStructTimer.start();
 				}
 			}
 			// Always select with MousePress
@@ -1453,7 +1609,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}			
 		}
-//		System.out.println("-----Starting to update selection...");
+//		System.out.println("-----Starting to update selection..."+pointWorld);
 		for(RXContainerDropTargetInfo rxcContainerDropTargetInfo:rxContainerDropTargetInfoMap.keySet()){
 			if(rxcContainerDropTargetInfo.absoluteRectangle.contains(pointWorld)){
 //				System.out.println(rxcContainerDropTargetInfo.dropShape.getLabel()+" "+rxcContainerDropTargetInfo.closestNeighborShape);
@@ -1465,22 +1621,22 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		return rxContainerDropTargetInfoMap;
 	}
 	
-	private void activateDropTargetEnable(boolean bExcludeNonActionDropTargets){
-		resetDropTargets(null);
+	private void activateDropTargetEnable(){
+		resetDropTargets(null,mode == Mode.STRUCTURE);
 		for(RXContainerDropTargetInfo rxContainerDropTargetInfo:lastRXContainerDropTargetInfoMap.keySet()){
-			if(bExcludeNonActionDropTargets && (startShape == rxContainerDropTargetInfo.dropShape || startShape == rxContainerDropTargetInfo.closestNeighborShape)){
+			if((mode != mode.STRUCTURE) && (startShape == rxContainerDropTargetInfo.dropShape || startShape == rxContainerDropTargetInfo.closestNeighborShape)){
 				continue;
 			}
 			boolean bSelected = lastRXContainerDropTargetInfoMap.get(rxContainerDropTargetInfo);
 			if(rxContainerDropTargetInfo.insertFlag != null){
 				if(rxContainerDropTargetInfo.insertFlag == RXContainerDropTargetInfo.INSERT_BEGINNING){
-					rxContainerDropTargetInfo.dropShape.setDropTargetEnableLow(bSelected);
+					rxContainerDropTargetInfo.dropShape.setDropTargetEnableLow(bSelected,mode == Mode.STRUCTURE);
 				}else if(rxContainerDropTargetInfo.insertFlag == RXContainerDropTargetInfo.INSERT_END){
-					rxContainerDropTargetInfo.dropShape.setDropTargetEnableHigh(bSelected);
+					rxContainerDropTargetInfo.dropShape.setDropTargetEnableHigh(bSelected,mode == Mode.STRUCTURE);
 				}
 			}else{
-				rxContainerDropTargetInfo.dropShape.setDropTargetEnableLow(bSelected);
-				rxContainerDropTargetInfo.closestNeighborShape.setDropTargetEnableHigh(bSelected);
+				rxContainerDropTargetInfo.dropShape.setDropTargetEnableLow(bSelected,mode == Mode.STRUCTURE);
+				rxContainerDropTargetInfo.closestNeighborShape.setDropTargetEnableHigh(bSelected,mode == Mode.STRUCTURE);
 			}
 		}
 	}
@@ -1489,6 +1645,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	public void mouseReleased(MouseEvent event) {
 		if(getReactionCartoon() == null){ return; }
 		try {
+			if(dragStructTimer != null){dragStructTimer.stop();}
 			endPointWorld = getReactionCartoon().getResizeManager().unzoom(event.getPoint());
 			Shape endShape = getReactionCartoon().pickWorld(endPointWorld);
 			// if mouse popupMenu event, popup menu
@@ -1500,8 +1657,12 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				return;
 			}
 			if(mode == Mode.SELECT && bStartRxContainerLabel){
-				resetDropTargets(null);
-				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				resetDropTargets(null,mode == Mode.STRUCTURE);
+				if(endShape != null && endShape instanceof ReactionContainerShape){
+					Rectangle labelOutlineRectangle = ((ReactionContainerShape)endShape).getLabelOutline(endShape.getAbsX(), endShape.getAbsY());
+					boolean bLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
+					getGraphPane().setCursor((bLabel?Cursor.getPredefinedCursor(Cursor.HAND_CURSOR):Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+				}
 				bStartRxContainerLabel = false;
 				RXContainerDropTargetInfo trueRXContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
 				lastRXContainerDropTargetInfoMap = null;
@@ -2365,7 +2526,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 		}
 		if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
-			if (shape instanceof ReactionStepShape
+			if (shape instanceof ReactionContainerShape || shape instanceof ReactionStepShape
 					|| shape instanceof ReactantShape
 					|| shape instanceof ProductShape
 					|| shape instanceof CatalystShape) {
@@ -2452,6 +2613,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 					return true;
 				}else{
+					return false;
+				}
+			}else if (menuAction.equals(CartoonToolEditActions.Delete.MENU_ACTION)) {
+				if(((ReactionContainerShape) shape).getStructureSuite().getStructures().size() == 1){
 					return false;
 				}
 			}
@@ -2543,11 +2708,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 //		getReactionCartoon().fireGraphChanged();
 	}
 
-	private void resetDropTargets(Boolean bDropTargetFlag){
+	private void resetDropTargets(Boolean bDropTargetFlag,Boolean bStructureMode){
 		Structure[] structures = getModel().getStructures();
 		for (int i = 0; i < structures.length; i++) {
-			((ReactionContainerShape)getGraphModel().getShapeFromModelObject(structures[i])).setDropTargetEnableLow(bDropTargetFlag);
-			((ReactionContainerShape)getGraphModel().getShapeFromModelObject(structures[i])).setDropTargetEnableHigh(bDropTargetFlag);
+			((ReactionContainerShape)getGraphModel().getShapeFromModelObject(structures[i])).setDropTargetEnableLow(bDropTargetFlag,bStructureMode);
+			((ReactionContainerShape)getGraphModel().getShapeFromModelObject(structures[i])).setDropTargetEnableHigh(bDropTargetFlag,bStructureMode);
 		}
 	}
 	
@@ -2560,7 +2725,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		if (getReactionCartoon() != null) {
 			getReactionCartoon().clearSelection();
 			//turn off all structure drop targets
-			resetDropTargets(null);
+			resetDropTargets(null,null);
 			getGraphPane().repaint();
 		}
 		this.mode = newMode;
@@ -2575,8 +2740,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				break;
 			}
 			case STRUCTURE:{
-				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-				resetDropTargets(false);
+				getGraphPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				resetDropTargets(false,true);
 				getGraphPane().repaint();
 				break;
 			}

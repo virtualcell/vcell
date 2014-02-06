@@ -13,6 +13,7 @@ package cbit.vcell.graph;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
@@ -39,9 +40,16 @@ public class SimpleReactionShape extends ReactionStepShape {
 		return (SimpleReaction) reactionStep;
 	}
 
+	private static int CIRCLE_DIMAETER = 9;
+	public Rectangle getLabelOutline( int absPosX, int absPosY){
+		int textX = absPosX + getSpaceManager().getSize().width / 2 - getLabelSize().width / 2;
+		int textY = absPosY + ((getSpaceManager().getSize().height-CIRCLE_DIMAETER) / 2) - getLabelSize().height / 2;
+		return new Rectangle(textX - 5, textY - getLabelSize().height + 3,
+				getLabelSize().width + 10, getLabelSize().height);
+	}
 	@Override
 	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
-		int circleDiameter = 9;
+		
 		// --- Added for relaxed topolgy
 		Color newBackgroundColor = backgroundColor;
 		if (getSimpleReaction().getKinetics().getKineticsDescription().isLumped()){
@@ -50,12 +58,12 @@ public class SimpleReactionShape extends ReactionStepShape {
 		// --- End Add for relaxed topolgy
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
-		int offsetX = (shapeWidth-circleDiameter) / 2;
-		int offsetY = (shapeHeight-circleDiameter) / 2;
+		int offsetX = (shapeWidth-CIRCLE_DIMAETER) / 2;
+		int offsetY = (shapeHeight-CIRCLE_DIMAETER) / 2;
 //		if (icon == null) {			// ----- removing for relaxed topolgy
 			icon = new Area();
 			//icon.add(new Area(new Ellipse2D.Double(offsetX, offsetY,circleDiameter,circleDiameter)));
-			icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,circleDiameter,circleDiameter,circleDiameter/2,circleDiameter/2)));
+			icon.add(new Area(new RoundRectangle2D.Double(offsetX, offsetY,CIRCLE_DIMAETER,CIRCLE_DIMAETER,CIRCLE_DIMAETER/2,CIRCLE_DIMAETER/2)));
 //		}							// ----- removing for relaxed topolgy
 		Area movedIcon = icon.createTransformedArea(
 			AffineTransform.getTranslateInstance(absPosX, absPosY));
@@ -72,8 +80,10 @@ public class SimpleReactionShape extends ReactionStepShape {
 			int textY = absPosY + offsetY - getLabelSize().height / 2;
 			if (getLabel() != null && getLabel().length() > 0) {
 				if (isSelected()) {
-					drawRaisedOutline(textX - 5, textY - getLabelSize().height + 3,
-							getLabelSize().width + 10, getLabelSize().height, g2D,
+					Rectangle outlineRectangle = getLabelOutline(absPosX, absPosY);
+					drawRaisedOutline(outlineRectangle.x, 
+							outlineRectangle.y,
+							outlineRectangle.width, outlineRectangle.height, g2D,
 							Color.white, Color.black, Color.black);
 				}
 				g2D.drawString(getLabel(), textX, textY);

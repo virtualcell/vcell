@@ -332,11 +332,7 @@ public class GraphPane extends JPanel implements GraphListener, MouseListener, S
 			return getToolTipText();
 		}
 		if(pickedShape instanceof ReactionContainerShape){
-			Rectangle labelOutlineRectangle = ((ReactionContainerShape)pickedShape).getLabelOutline(pickedShape.getAbsX(),pickedShape.getAbsY());
-			boolean bLabel = labelOutlineRectangle.contains(unzoomedMousePos.x, unzoomedMousePos.y);
-			if(bLabel){
-				return "drag to MOVE '"+pickedShape.getLabel()+"'";
-			}
+			return ((ReactionContainerShape)pickedShape).getSpecialToolTipText(unzoomedMousePos);
 		}
 		return pickedShape.getLabel();
 	}
