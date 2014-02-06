@@ -2236,6 +2236,9 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 	File simtaskFile = amplistorHelper.getFile(simtaskFilePath);
 	String xmlString = FileUtils.readFileToString(simtaskFile);
 	SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
+	if (simTask.getSimulation().getSolverTaskDescription().getChomboSolverSpec().isSaveChomboOutput()==false){
+		throw new RuntimeException("Export of Chombo simulations to VTK requires chombo data, select 'Chombo' data format in simulation solver options and rerun simulation.");
+	}
 	Enumeration<SubDomain> subdomainEnum = simTask.getSimulation().getMathDescription().getSubDomains();
 	while (subdomainEnum.hasMoreElements()){
 		SubDomain subDomain = subdomainEnum.nextElement();
@@ -2245,6 +2248,8 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 				File file = amplistorHelper.getFile(expectedFile);
 				if (file.exists()){
 					chomboFiles.addDataFile(".feature_"+subDomain.getName(), timeIndex, file);
+				}else{
+					System.out.println("can't find expected chombo file : "+file.getAbsolutePath());
 				}
 			}
 		}else{
