@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
@@ -95,6 +96,12 @@ public class SpeciesContextShape extends ElipseShape {
 		smallLabelPos.y = getLabelPos().y;		
 	}
 	
+	public Rectangle getLabelOutline( int absPosX, int absPosY){
+		return new Rectangle(getLabelPos().x + absPosX - 5, 
+		getLabelPos().y + absPosY - getLabelSize().height + 3,
+		getLabelSize().width + 10, getLabelSize().height);
+	}
+	
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		boolean isBound = false;
@@ -139,10 +146,11 @@ public class SpeciesContextShape extends ElipseShape {
 		// draw label
 		if (getLabel()!=null && getLabel().length()>0){
 			if(isSelected()){//clear background and outline to make selected label stand out
+				Rectangle outlineRectangle = getLabelOutline(absPosX, absPosY);
 				drawRaisedOutline(
-						getLabelPos().x + absPosX - 5, 
-						getLabelPos().y + absPosY - getLabelSize().height + 3,
-						getLabelSize().width + 10, getLabelSize().height, g, 
+						outlineRectangle.x, 
+						outlineRectangle.y,
+						outlineRectangle.width, outlineRectangle.height, g, 
 						Color.white, forgroundColor, Color.gray);
 			}
 			g.setColor(forgroundColor);
