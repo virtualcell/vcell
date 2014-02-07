@@ -1,5 +1,6 @@
 package org.vcell.vis.chombo;
 
+
 public class ChomboBox {
 	private final ChomboLevel chomboLevel;
 	private final int size;
@@ -69,18 +70,40 @@ public class ChomboBox {
 		//
         // create a new box which covers the same area on a different level (identified by the refinement scaling)
         //
-        int newMinX = minX * toRefinement / fromRefinement;
-        int newMaxX = (maxX + 1) * toRefinement / fromRefinement - 1;
-        int newMinY = minY * toRefinement / fromRefinement;
-        int newMaxY = (maxY + 1) * toRefinement / fromRefinement - 1;
-              //  print('boxSize orig (xmin,xmax,ymin,ymax) = ('+str(box.getMinX())+','+str(box.getMaxX())+','+str(box.getMinY())+','+str(box.getMaxY())+')')
-              //  print('boxSize adjusted (xmin,xmax,ymin,ymax) = ('+str(startX)+','+str(endX)+','+str(startY)+','+str(endY)+')')
-        if (dimension==2){
-        	return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,minZ,maxZ,dimension);
-        }else{
-            int newMinZ = minZ * toRefinement / fromRefinement;
-            int newMaxZ = (maxZ + 1) * toRefinement / fromRefinement - 1;
-            return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,newMinZ,newMaxZ,dimension);
-        }
+		if (fromRefinement == toRefinement){
+			return this;
+		}
+		double refinementFactor = 1.0*toRefinement/fromRefinement;
+		if (fromRefinement > toRefinement){
+			//
+			// from finer to coarser
+			//
+	        int newMinX = (int)Math.floor(minX * refinementFactor);
+	        int newMaxX = (int)Math.ceil(maxX * refinementFactor)-1;
+	        int newMinY = (int)Math.floor(minY * refinementFactor);
+	        int newMaxY = (int)Math.ceil(maxY * refinementFactor)-1;
+	        if (dimension==2){
+	        	return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,minZ,maxZ,dimension);
+	        }else{
+	            int newMinZ = (int)Math.floor(minZ * refinementFactor);
+	            int newMaxZ = (int)Math.ceil(maxZ * refinementFactor)-1;
+	            return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,newMinZ,newMaxZ,dimension);
+	        }
+		}else{
+			//
+			// from coarser to finer
+			//
+	        int newMinX = (int)Math.floor(minX * refinementFactor);
+	        int newMaxX = (int)Math.ceil(maxX * refinementFactor)+(((int)refinementFactor)-1);
+	        int newMinY = (int)Math.floor(minY * refinementFactor);
+	        int newMaxY = (int)Math.ceil(maxY * refinementFactor)+(((int)refinementFactor)-1);
+	        if (dimension==2){
+	        	return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,minZ,maxZ,dimension);
+	        }else{
+	            int newMinZ = (int)Math.floor(minZ * refinementFactor);
+	            int newMaxZ = (int)Math.ceil(maxZ * refinementFactor)+(((int)refinementFactor)-1);
+	            return new ChomboBox(chomboLevel,newMinX,newMaxX,newMinY,newMaxY,newMinZ,newMaxZ,dimension);
+	        }
+		}
 	}
 }
