@@ -610,6 +610,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					double outputTime = getTimeBounds().getEndingTime()/10;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
+				setErrorTolerance(ChomboSolverSpec.getDefaultEBChomboSemiImplicitErrorTolerance());
 			} else {
 				chomboSolverSpec = null;
 			}

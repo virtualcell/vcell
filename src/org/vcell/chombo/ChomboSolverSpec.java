@@ -16,6 +16,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.SolverUtilities;
 
 
@@ -396,5 +397,9 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			return;
 		}
 		this.bSaveChomboOutput = newValue;
+	}
+
+	public static ErrorTolerance getDefaultEBChomboSemiImplicitErrorTolerance() {
+		return new ErrorTolerance(1e-9, 1e-9);
 	}
 }
