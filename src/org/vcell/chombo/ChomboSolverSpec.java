@@ -400,6 +400,6 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	}
 
 	public static ErrorTolerance getDefaultEBChomboSemiImplicitErrorTolerance() {
-		return new ErrorTolerance(1e-9, 1e-9);
+		return new ErrorTolerance(1e-9, 1e-8);
 	}
 }
