@@ -280,7 +280,8 @@ public void refresh() {
 		return;
 	}
 	getErrorTolerancesLabel().setText("Error Tolerance");
-	if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()) {
+	if (solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver()
+			|| solverTaskDescription.getSolverDescription().isChomboSolver()) {
 		getAbsoluteErrorToleranceLabel().setEnabled(false);
 		getAbsoluteErrorToleranceTextField().setEnabled(false);
 		getAbsoluteErrorToleranceTextField().setText(null);
