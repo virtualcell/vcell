@@ -48,6 +48,8 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
+	System.out.println("-----vcell.installDir="+System.getProperty("vcell.installDir"));
+
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));
