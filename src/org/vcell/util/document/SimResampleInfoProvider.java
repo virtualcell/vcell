@@ -8,10 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field;
+package org.vcell.util.document;
 
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCDataIdentifier;
 
 
 public interface SimResampleInfoProvider extends VCDataIdentifier{

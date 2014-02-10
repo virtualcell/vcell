@@ -11,8 +11,8 @@
 package cbit.vcell.solver;
 
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimResampleInfoProvider;
 
-import cbit.vcell.field.SimResampleInfoProvider;
 
 /**
  * Temporary, to help SimulationData to deal with multiple simulation job datasets.

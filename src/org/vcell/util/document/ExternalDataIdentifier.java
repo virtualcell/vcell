@@ -13,7 +13,6 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.Matchable;
 
-import cbit.vcell.field.SimResampleInfoProvider;
 
 /**
  * Insert the type's description here.
