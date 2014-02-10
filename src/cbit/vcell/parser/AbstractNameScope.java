@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import cbit.vcell.model.ProxyParameter;
-
 /**
  * Insert the type's description here.
  * Creation date: (7/31/2003 3:10:31 PM)
@@ -429,7 +427,7 @@ public void findReferences(SymbolTableEntry symbolTableEntry, ArrayList<SymbolTa
 			//
 			// if bound to this symbol (or a proxy of this symbol), then add to the list
 			//
-			if (boundSTE == symbolTableEntry || ((boundSTE instanceof ProxyParameter) && ((ProxyParameter)boundSTE).getTarget() == symbolTableEntry)){
+			if (boundSTE == symbolTableEntry || ((boundSTE instanceof SymbolProxy) && ((SymbolProxy)boundSTE).getTarget() == symbolTableEntry)){
 				if (references.contains(localSTE)){
 					System.err.println("found duplicate referenced to "+localSTE.getClass().getName()+"("+localSTE.getName()+") when looking for references to ste "+symbolTableEntry.getName());
 					Thread.dumpStack();
