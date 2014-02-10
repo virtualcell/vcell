@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver;
 
-import cbit.vcell.field.SimResampleInfoProvider;
+import org.vcell.util.document.SimResampleInfoProvider;
 
 /**
  * Insert the type's description here.

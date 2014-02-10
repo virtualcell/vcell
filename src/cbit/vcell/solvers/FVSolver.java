@@ -23,11 +23,11 @@ import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.SimResampleInfoProvider;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.Variable;

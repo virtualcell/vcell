@@ -48,6 +48,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
@@ -65,7 +66,6 @@ import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataVal
 import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FieldFunctionDefinition;
