@@ -1,9 +1,8 @@
-package cbit.vcell.client.server;
+package cbit.vcell.simdata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -13,8 +12,8 @@ import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.gui.SourceDataInfo;
-import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
-import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 
 public class DataOperationResults implements Serializable{
 

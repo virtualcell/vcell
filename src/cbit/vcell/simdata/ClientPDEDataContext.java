@@ -15,8 +15,6 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
-import cbit.vcell.client.server.DataOperation;
-import cbit.vcell.client.server.DataOperationResults;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;

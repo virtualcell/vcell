@@ -72,7 +72,7 @@ import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;

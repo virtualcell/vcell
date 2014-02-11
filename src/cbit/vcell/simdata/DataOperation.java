@@ -1,4 +1,4 @@
-package cbit.vcell.client.server;
+package cbit.vcell.simdata;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.client.data.OutputContext;
-import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 
 public class DataOperation implements Serializable{
 	

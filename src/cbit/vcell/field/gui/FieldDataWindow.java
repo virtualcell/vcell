@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field;
+package cbit.vcell.field.gui;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

@@ -30,7 +30,6 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -339,33 +338,6 @@ public SpeciesContextSpec[] getSpeciesContextSpecs() {
 public SpeciesContextSpec getSpeciesContextSpecs(int index) {
 	return getSpeciesContextSpecs()[index];
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() throws Exception {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(VCMODL.ReactionContext+" {\n");
-
-	//
-	// write SpeciesContextSpecs
-	//
-	for (int i=0;i<fieldSpeciesContextSpecs.length;i++){
-		SpeciesContextSpec scs = fieldSpeciesContextSpecs[i];
-		buffer.append(scs.getVCML());
-	}
-	//
-	// write ReactionSpecs
-	//
-	for (int i=0;i<fieldReactionSpecs.length;i++){
-		buffer.append(fieldReactionSpecs[i].getVCML());
-	}
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
 
 /**
  * Accessor for the vetoPropertyChange field.

@@ -43,8 +43,8 @@ import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.field.FieldDataWindow;
+import cbit.vcell.field.gui.FieldDataGUIPanel;
+import cbit.vcell.field.gui.FieldDataWindow;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 10:58:42 AM)
