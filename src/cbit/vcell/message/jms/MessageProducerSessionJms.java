@@ -31,7 +31,6 @@ import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.mongodb.VCMongoMessage;
 
 public class MessageProducerSessionJms implements VCMessageSession {
 		
@@ -295,7 +294,9 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 		}
 
 		private void onException(JMSException e){
-			VCMongoMessage.sendException(e);
+			if (getDelegate()!=null){
+				getDelegate().onException(e);
+			}
 			e.printStackTrace(System.out);
 		}
 
