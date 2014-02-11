@@ -10,6 +10,8 @@
 
 package cbit.vcell.model;
 
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 import cbit.vcell.units.VCUnitDefinition;
@@ -57,7 +59,7 @@ public class Membrane extends Structure {
 	
 public Membrane(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
-	setName(name);
+	setName0(name);
 	fieldMembraneVoltage = new MembraneVoltage(getDefaultMembraneVoltageName(name));
 }
 
@@ -125,6 +127,16 @@ public int getDimension() {
 @Override
 public String getTypeName() {
 	return TYPE_NAME_MEMBRANE;
+}
+
+
+@Override
+public void setName(String name,boolean bFromGUI) throws PropertyVetoException {
+	setName0(name);
+	if(bFromGUI){
+		getStructureSize().setName(Structure.getDefaultStructureSizeName(name));
+		getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(name));
+	}
 }
 
 /*

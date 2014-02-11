@@ -190,6 +190,7 @@ private void initialize() {
 		label = new JLabel("Structure Name");
 		add(label, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -208,6 +209,7 @@ private void initialize() {
 		label = new JLabel("Size Variable Name");
 		add(label, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -225,6 +227,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(voltageLabel, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -234,6 +237,7 @@ private void initialize() {
 		add(voltageTextField, gbc);
 		
 		// electrophysiology
+		gbc = new java.awt.GridBagConstraints();
 		gridy++;
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
@@ -253,6 +257,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(positiveFeatureLabel, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -262,6 +267,7 @@ private void initialize() {
 		add(positiveFeatureComboBox, gbc);
 		
 		// negative (feature) voltage
+		gbc = new java.awt.GridBagConstraints();
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -270,6 +276,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(negativeFeatureLabel, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -461,11 +468,7 @@ private void changeName() {
 		return;
 	}
 	try {
-		structure.setName(newName);
-		structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(newName));
-		if (structure instanceof Membrane) {
-			((Membrane)structure).getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(newName));
-		}
+		structure.setName(newName,true);
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
 		DialogUtils.showErrorDialog(StructurePropertiesPanel.this, e1.getMessage());

@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.model;
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
@@ -17,13 +19,13 @@ public class Feature extends Structure
 {
 public Feature(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
-	setName(name);
+	setName0(name);
 }
 
 
 public Feature(String name) throws java.beans.PropertyVetoException {
 	super(null);
-	setName(name);
+	setName0(name);
 }
 
 
@@ -90,6 +92,15 @@ public int getDimension() {
 @Override
 public String getTypeName() {
 	return TYPE_NAME_FEATURE;
+}
+
+
+@Override
+public void setName(String name,boolean bFromGUI) throws PropertyVetoException{
+	setName0(name);
+	if(bFromGUI){
+		getStructureSize().setName(Structure.getDefaultStructureSizeName(name));
+	}
 }
 
 /* 

@@ -172,11 +172,7 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 					String inputValue = (String)value;
 					inputValue = inputValue.trim();
 					if (!inputValue.equals(structure.getName())) {
-						structure.setName(inputValue);
-						structure.getStructureSize().setName(Structure.getDefaultStructureSizeName(inputValue));
-						if (structure instanceof Membrane) {
-							((Membrane)structure).getMembraneVoltage().setName(Membrane.getDefaultMembraneVoltageName(inputValue));
-						}
+						structure.setName(inputValue,true);
 					}
 					break;
 				} 
@@ -189,16 +185,8 @@ public class BioModelEditorStructureTableModel extends BioModelEditorRightSideTa
 						return;
 					}
 					inputValue = inputValue.trim();
-					Feature parentFeature = null;
-					for (int i = getModel().getNumStructures() - 1; i >= 0; i --) {
-						if (getModel().getStructures()[i] instanceof Feature) {
-							parentFeature = (Feature) getModel().getStructures()[i];
-							break;
-						}
-					}
-					Feature feature = getModel().createFeature(parentFeature);
-					feature.setName(inputValue);
-					feature.getStructureSize().setName(Structure.getDefaultStructureSizeName(inputValue));
+					Feature feature = getModel().createFeature();
+					feature.setName(inputValue,true);
 					break;
 				} 
 				}

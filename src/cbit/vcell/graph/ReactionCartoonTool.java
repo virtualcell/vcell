@@ -92,6 +92,9 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.biomodel.ReactionPropertiesPanel;
+import cbit.vcell.client.desktop.biomodel.SpeciesPropertiesPanel;
+import cbit.vcell.client.desktop.biomodel.StructurePropertiesPanel;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -975,7 +978,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					try{
 						//Type specific edit actions
 						if(selectedShape instanceof ReactionContainerShape){
-							((ReactionContainerShape)selectedShape).getStructure().setName(jTextField.getText());
+							((ReactionContainerShape)selectedShape).getStructure().setName(jTextField.getText(),true);
 						}else if(selectedShape instanceof SpeciesContextShape){
 							((SpeciesContextShape)selectedShape).getSpeciesContext().setName(jTextField.getText());
 						}else if(selectedShape instanceof SimpleReactionShape){
@@ -1426,28 +1429,26 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	
 	private void addStructure(boolean bMembrane,RXContainerDropTargetInfo selectedContainerDropTargetInfo){
 		Integer insertFlag = selectedContainerDropTargetInfo.insertFlag;
-		ArrayList<Structure> structures =  new ArrayList<Structure>(ReactionCartoonTool.this.getReactionCartoon().getStructureSuite().getStructures());
 		try{
-			String myStructureName = (bMembrane?"m":"c")+"0";
-			while(ReactionCartoonTool.this.getModel().getStructure(myStructureName = TokenMangler.getNextEnumeratedToken(myStructureName)) != null){
-			}
 			Structure myStructure = null;
 			if(bMembrane){
-				myStructure = new Membrane(myStructureName);
+				myStructure = ReactionCartoonTool.this.getModel().createMembrane();
 			}else{
-				myStructure = new Feature(myStructureName);
-			}
+				myStructure = ReactionCartoonTool.this.getModel().createFeature();
+			}		
+			ArrayList<Structure> diagramStructures =  new ArrayList<Structure>(ReactionCartoonTool.this.getReactionCartoon().getStructureSuite().getStructures());
+			diagramStructures.remove(myStructure);
 			if(new Integer(RXContainerDropTargetInfo.INSERT_BEGINNING).equals(insertFlag)){
-				structures.add(0, myStructure);
+				diagramStructures.add(0, myStructure);
 			}else if(new Integer(RXContainerDropTargetInfo.INSERT_END).equals(insertFlag)){
-				structures.add(myStructure);
+				diagramStructures.add(myStructure);
 			}else{
-				structures.add(structures.indexOf(selectedContainerDropTargetInfo.dropShape.getStructure()),myStructure);
+				diagramStructures.add(diagramStructures.indexOf(selectedContainerDropTargetInfo.dropShape.getStructure()),myStructure);
 			}
 			((AllStructureSuite)getReactionCartoon().getStructureSuite()).setModelStructureOrder(true);
-			ReactionCartoonTool.this.getModel().setStructures(structures.toArray(new Structure[0]));
+//			ReactionCartoonTool.this.getModel().setStructures(structures.toArray(new Structure[0]));
 			ArrayList<Diagram> newDiagramOrderList = new ArrayList<Diagram>();
-			for(Structure structure:structures){
+			for(Structure structure:diagramStructures){
 				newDiagramOrderList.add(getModel().getDiagram(structure));
 			}
 			getModel().setDiagrams(newDiagramOrderList.toArray(new Diagram[0]));

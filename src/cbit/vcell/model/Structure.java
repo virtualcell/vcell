@@ -316,12 +316,13 @@ void setModel(Model newModel) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getName
  */
-public void setName(String name) throws java.beans.PropertyVetoException {
+protected void setName0(String name) throws java.beans.PropertyVetoException {
 	String oldValue = fieldName;
 	fireVetoableChange("name", oldValue, name);
 	fieldName = name;
 	firePropertyChange("name", oldValue, name);
 }
+public abstract void setName(String name,boolean bFromGUI) throws PropertyVetoException;
 /**
  * This method was created in VisualAge.
  * @param e java.beans.PropertyChangeEvent
