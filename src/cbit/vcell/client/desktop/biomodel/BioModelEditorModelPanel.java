@@ -618,15 +618,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		if (currentSelectedTable == speciesTable) {
 			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
 		} else if (currentSelectedTable == structuresTable) {
-			Feature parentFeature = null;
-			for (int i = bioModel.getModel().getNumStructures() - 1; i >= 0; i --) {
-				if (bioModel.getModel().getStructures()[i] instanceof Feature) {
-					parentFeature = (Feature)bioModel.getModel().getStructures()[i];
-					break;
-				}
-			}
 			try {
-				Feature feature = bioModel.getModel().createFeature(parentFeature);
+				Feature feature = bioModel.getModel().createFeature();
 				newObject = feature;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -654,13 +647,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == structuresTable) {
-//			Feature parentFeature = null;fsdf
-//			for (int i = bioModel.getModel().getNumStructures() - 1; i >= 0; i --) {
-//				if (bioModel.getModel().getStructures()[i] instanceof Feature) {
-//					parentFeature = (Feature)bioModel.getModel().getStructures()[i];
-//					break;
-//				}
-//			}
 			try {
 				Membrane membrane = bioModel.getModel().createMembrane();
 				newObject = membrane;

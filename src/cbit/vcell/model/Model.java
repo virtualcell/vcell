@@ -1340,7 +1340,7 @@ public ReservedSymbol[] getReservedSymbols() {
  * This method was created in VisualAge.
  * @return java.lang.String
  */
-public Feature createFeature(Feature parent) {
+public Feature createFeature() {
 	int count=0;
 	String featureName = null;
 	while (true) {

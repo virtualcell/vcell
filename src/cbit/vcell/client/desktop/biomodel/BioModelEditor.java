@@ -145,14 +145,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 					newObject = model.createSimpleReaction(model.getStructure(0));
 					break;
 				case STRUCTURES_NODE:
-					Feature parentFeature = null;
-					for (int i = model.getNumStructures() - 1; i >= 0; i --) {
-						if (model.getStructures()[i] instanceof Feature) {
-							parentFeature = (Feature) model.getStructures()[i];
-							break;
-						}
-					}
-					newObject = model.createFeature(parentFeature);
+					newObject = model.createFeature();
 					break;
 				case SPECIES_NODE:
 					newObject = model.createSpeciesContext(model.getStructure(0));
