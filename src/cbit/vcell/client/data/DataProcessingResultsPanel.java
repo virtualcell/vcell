@@ -65,18 +65,18 @@ import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.server.DataOperation;
-import cbit.vcell.client.server.DataOperationResults;
-import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputDataValues;
-import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {

@@ -147,13 +147,6 @@ public class VCML {
 	public final static String SensitivityParameter		= "SensitivityParameter";
 	public final static String TimeBounds				= "TimeBounds";
 	public final static String SolverDescription		= "SolverDescription";
-	public final static String ReactionSpec				= "ReactionStep";
-	public final static String ReactionMapping			= "ReactionMapping";
-	public final static String ReactionMappingIncluded	= "Included";
-	public final static String ReactionMappingExcluded	= "Excluded";
-	public final static String ReactionMappingFast		= "Fast";
-	public final static String ReactionMappingMolecularOnly	= "MolecularOnly";
-	public final static String ReactionMappingCurrentOnly	= "CurrentOnly";
 	
 	public final static String FastInvariant			= "FastInvariant";
 	public final static String FastRate					= "FastRate";

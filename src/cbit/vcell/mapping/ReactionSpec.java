@@ -14,12 +14,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.FluxReaction;
@@ -512,41 +509,6 @@ public ReactionStep getReactionStep() {
 	return reactionStep;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+VCML.ReactionSpec+" "+getReactionStep().getName()+" {\n");
-	switch (getReactionMapping()){
-		case EXCLUDED:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingExcluded+"\n");
-			break;
-		}
-		case INCLUDED:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingIncluded+"\n");
-			break;
-		}
-		case FAST:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingFast+"\n");
-			break;
-		}
-		case MOLECULAR_ONLY:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingMolecularOnly+"\n");
-			break;
-		}
-		case CURRENT_ONLY:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingCurrentOnly+"\n");
-			break;
-		}
-	}
-	buffer.append("\t}\n");
-	return buffer.toString();		
-}
-
-
 /**
  * Accessor for the vetoPropertyChange field.
  */
@@ -582,45 +544,6 @@ public boolean isExcluded() {
 public boolean isFast() {
 	return fieldReactionMapping == FAST;
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, DataAccessException {
-	
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}		
-		if (token.equalsIgnoreCase(VCML.ReactionMapping)){
-			String mappingType = tokens.nextToken();
-			if (mappingType.equalsIgnoreCase(VCML.ReactionMappingExcluded)){
-				fieldReactionMapping = EXCLUDED;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingIncluded)){
-				fieldReactionMapping = INCLUDED;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingFast)){
-				fieldReactionMapping = FAST;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingMolecularOnly)){
-				fieldReactionMapping = MOLECULAR_ONLY;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingCurrentOnly)){
-				fieldReactionMapping = CURRENT_ONLY;
-			}else{
-				throw new DataAccessException("unexpected reaction mapping "+mappingType);
-			}
-		}
-		throw new DataAccessException("unexpected identifier "+token);
-	}
-}
-
 
 /**
  * This method was created in VisualAge.

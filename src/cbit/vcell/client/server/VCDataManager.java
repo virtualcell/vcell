@@ -25,6 +25,8 @@ import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;

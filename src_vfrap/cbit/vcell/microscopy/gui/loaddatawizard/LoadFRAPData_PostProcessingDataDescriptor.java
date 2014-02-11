@@ -9,11 +9,6 @@ import org.vcell.wizard.WizardPanelDescriptor;
 import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.server.DataManager;
-import cbit.vcell.client.server.DataOperation;
-import cbit.vcell.client.server.DataOperationResults;
-import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
-import cbit.vcell.client.server.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
-import cbit.vcell.client.server.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
@@ -22,6 +17,11 @@ import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 
 public class LoadFRAPData_PostProcessingDataDescriptor extends WizardPanelDescriptor {
     public static final String IDENTIFIER = "LoadFRAPData_PostProcessingDataDescriptor";
