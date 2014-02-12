@@ -98,7 +98,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			nameScopes = new NameScope[geoContext.getStructureMappings().length + 
 										reactionContext.getSpeciesContextSpecs().length + 
 										reactionContext.getReactionSpecs().length + 
-										fieldElectricalStimuli.length];
+										fieldElectricalStimuli.length +
+										((fieldBioEvents!=null)?fieldBioEvents.length:0)];
 			for (int i = 0; i < geoContext.getStructureMappings().length; i++){
 				nameScopes[index++] = geoContext.getStructureMappings()[i].getNameScope();
 			}
