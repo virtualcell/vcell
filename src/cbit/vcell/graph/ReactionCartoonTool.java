@@ -2017,36 +2017,18 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			{
 				Feature startFeature = (Feature)startStructure;
 				Feature endFeature = (Feature)endStructure;
-				//flux from startFeature to endFeature
-				Membrane fluxMem = getModel().getStructureTopology().getMembrane(startFeature, endFeature);
-				if(fluxMem != null)
-				{
-					SpeciesContext speciesContext1 = getReactionCartoon().getModel().createSpeciesContext(startFeature);
-					Species fluxCarrier = speciesContext1.getSpecies();
-					SpeciesContext speciesContext2 = new SpeciesContext(fluxCarrier, endFeature);
-					getReactionCartoon().getModel().addSpeciesContext(speciesContext2);
-					FluxReaction flux = getReactionCartoon().getModel().createFluxReaction(fluxMem);
-					flux.setModel(getReactionCartoon().getModel());
-					getReactionCartoon().notifyChangeEvent();
-					positionShapeForObject(startFeature, speciesContext1, startPos);
-					positionShapeForObject(endFeature, speciesContext2, endPos);
-					positionShapeForObject(fluxMem, flux, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-					getGraphModel().clearSelection();
-					getGraphModel().select(flux);
-				}else{
-					SpeciesContext speciesContext1 = getReactionCartoon().getModel().createSpeciesContext(startStructure);
-					SpeciesContext speciesContext2 = getReactionCartoon().getModel().createSpeciesContext(endStructure);
-					SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startStructure);
-					reaction.addReactant(speciesContext1, 1);
-					reaction.addProduct(speciesContext2, 1);
-					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
-					getReactionCartoon().notifyChangeEvent();
-					positionShapeForObject(startStructure, speciesContext1, startPos);
-					positionShapeForObject(endStructure, speciesContext2, endPos);
-					positionShapeForObject(startStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
-					getGraphModel().clearSelection();
-					getGraphModel().select(reaction);
-				}
+				SpeciesContext speciesContext1 = getReactionCartoon().getModel().createSpeciesContext(startStructure);
+				SpeciesContext speciesContext2 = getReactionCartoon().getModel().createSpeciesContext(endStructure);
+				SimpleReaction reaction = getReactionCartoon().getModel().createSimpleReaction(startStructure);
+				reaction.addReactant(speciesContext1, 1);
+				reaction.addProduct(speciesContext2, 1);
+				reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+				getReactionCartoon().notifyChangeEvent();
+				positionShapeForObject(startStructure, speciesContext1, startPos);
+				positionShapeForObject(endStructure, speciesContext2, endPos);
+				positionShapeForObject(startStructure, reaction, new Point((startPos.x + endPos.x)/2, (startPos.y + endPos.y)/2));
+				getGraphModel().clearSelection();
+				getGraphModel().select(reaction);
 			}
 		    else if(endStructure instanceof Membrane && startStructure instanceof Membrane) 
 		    { 
@@ -2078,30 +2060,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		{
 			if(startStructure instanceof Feature && endStructure instanceof Feature)
 			{
-				Membrane fluxMem = structTopology.getMembrane((Feature)startStructure, (Feature)endStructure);
-				if(fluxMem != null)
-				{
-					// FeatureStart-speciesContext ==> FeatureEnd with membrane in between : find or create speciesContext(feature2) with same species; add flux reaction on fluxMembrane
-					Species fluxCarrier = speciesContextStart.getSpecies();
-					SpeciesContext speciesContextEnd = model.getSpeciesContext(fluxCarrier, endStructure);
-					if (speciesContextEnd == null){
-						speciesContextEnd = new SpeciesContext(fluxCarrier, endStructure);
-						model.addSpeciesContext(speciesContextEnd);
-						positionShapeForObject(endStructure, speciesContextEnd, endPos);
-					}
-					reactionStructure = fluxMem;
-					reaction = model.createFluxReaction(fluxMem);
-					reaction.setModel(model);
-				} else {
-					// FeatureStart-speciesContext ==> FeatureEnd with NO membrane in between : create lumped reaction in FeatureStart and pdt in FeatureEnd 
-					reactionStructure = startStructure;
-					reaction = model.createSimpleReaction(reactionStructure);
-					reaction.addReactant(speciesContextStart, 1);
-					SpeciesContext endSpeciesContext = model.createSpeciesContext(endStructure);
-					reaction.addProduct(endSpeciesContext,1);
-					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
-					positionShapeForObject(endStructure, endSpeciesContext, endPos);
-				}
+				// FeatureStart-speciesContext ==> FeatureEnd with NO membrane in between : create lumped reaction in FeatureStart and pdt in FeatureEnd 
+				reactionStructure = startStructure;
+				reaction = model.createSimpleReaction(reactionStructure);
+				reaction.addReactant(speciesContextStart, 1);
+				SpeciesContext endSpeciesContext = model.createSpeciesContext(endStructure);
+				reaction.addProduct(endSpeciesContext,1);
+				reaction.setKinetics(new GeneralLumpedKinetics(reaction));
+				positionShapeForObject(endStructure, endSpeciesContext, endPos);
 			}
 			else if (startStructure instanceof Feature && endStructure instanceof Membrane)
 			{
@@ -2179,27 +2145,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				// Feature ==> Feature-speciesContext 
 				Feature startFeature = (Feature)startStructure;
 				Feature endFeature = (Feature)endStructure;
-				Membrane fluxMem = model.getStructureTopology().getMembrane(startFeature, endFeature);
-				// Feature ==> feature-speciesContext with membrane in between : find or create a speciesContext in startFeature; create flux reaction in membrane
-				if(fluxMem != null)
-				{
-					Species fluxCarrier = speciesContextEnd.getSpecies();
-					SpeciesContext speciesContextStart = model.getSpeciesContext(fluxCarrier, startFeature);
-					if (speciesContextStart == null){
-						speciesContextStart = new SpeciesContext(fluxCarrier, startFeature);
-						model.addSpeciesContext(speciesContextStart);
-						positionShapeForObject(startFeature, speciesContextStart, endPos);
-					}
-					// create a flux reaction on fluxMem
-					reaction = model.createFluxReaction(fluxMem);
-					reaction.setModel(model);
-					reactionStructure = fluxMem;
-				} else {
-					// Feature ==> feature-speciesContext with no membrane between : create a 0th-order simpleReaction in startFeature with GeneralLumpedKinetics
-					reactionStructure = startStructure;
-					reaction = model.createSimpleReaction(reactionStructure);
-					reaction.setKinetics(new GeneralLumpedKinetics(reaction));
-				}
+				// Feature ==> feature-speciesContext with no membrane between : create a 0th-order simpleReaction in startFeature with GeneralLumpedKinetics
+				reactionStructure = startStructure;
+				reaction = model.createSimpleReaction(reactionStructure);
+				reaction.setKinetics(new GeneralLumpedKinetics(reaction));
 			}
 			else if (startStructure instanceof Feature && endStructure instanceof Membrane) 
 			{
