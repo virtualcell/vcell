@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Hashtable;
@@ -35,11 +37,13 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -219,6 +223,17 @@ protected void initialize() {
 		setLayout(new BorderLayout());
 		
 		getDatabaseSearchPanel().addActionListener(ivjEventHandler);
+		getDatabaseSearchPanel().addCollapsiblePropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if(evt.getSource() == getDatabaseSearchPanel() && evt.getPropertyName().equals(CollapsiblePanel.SEARCHPPANEL_EXPANDED)){
+					boolean bSearchPanelExpanded = (Boolean)evt.getNewValue();
+					if(!bSearchPanelExpanded){
+						search(true);
+					}
+				}
+			}
+		});
 		treeCellRenderer = createTreeCellRenderer();
 		treeModel = createTreeModel();
 		getJTree1().setModel(treeModel);
