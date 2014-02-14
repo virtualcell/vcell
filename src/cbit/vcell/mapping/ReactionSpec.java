@@ -49,7 +49,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 	
 	private ReactionSpecParameter[] fieldReactionSpecParameters = new ReactionSpecParameter[0];
 	private ReactionSpecNameScope nameScope = new ReactionSpecNameScope();
-	private transient SimulationContext fieldSimulationContext = null;
+	private final SimulationContext fieldSimulationContext;
 
 	
 	public static final int ROLE_NominalRate			= 0;
@@ -195,15 +195,23 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		}
 	}
 
-public ReactionSpec(ReactionSpec argReactionSpec) {
+public ReactionSpec(ReactionSpec argReactionSpec, SimulationContext simContext) {
+	if (simContext == null){
+		throw new IllegalArgumentException("simContext cannot be null in ReactionSpec");
+	}
 	setReactionStep(argReactionSpec.reactionStep);
 	this.fieldReactionMapping = argReactionSpec.fieldReactionMapping;
+	this.fieldSimulationContext = simContext;
 	refreshDependencies();
 }            
 
 
-public ReactionSpec(ReactionStep argReactionStep) {
-	setReactionStep(argReactionStep) ;
+public ReactionSpec(ReactionStep argReactionStep, SimulationContext simContext) {
+	if (simContext == null){
+		throw new IllegalArgumentException("simContext cannot be null in ReactionSpec");
+	}
+	setReactionStep(argReactionStep);
+	this.fieldSimulationContext = simContext;
 	refreshDependencies();
 }            
 
@@ -722,16 +730,6 @@ private void setReactionSpecParameters(ReactionSpecParameter[] reactionSpecParam
 void setReactionStep(ReactionStep rs) {
 	this.reactionStep = rs;	
 }
-
-
-/**
- * Sets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
- * @param simulationContext The new value for the property.
- */
-public void setSimulationContext(SimulationContext simulationContext) {
-	fieldSimulationContext = simulationContext;
-}
-
 
 /**
  * This method was created by a SmartGuide.
