@@ -56,7 +56,7 @@ ReactionContext(ReactionContext reactionContext, SimulationContext argSimulation
 	this.simContext = argSimulationContext;
 	fieldReactionSpecs = new ReactionSpec[reactionContext.fieldReactionSpecs.length];
 	for (int i = 0; i < reactionContext.fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i),argSimulationContext);
+		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i), argSimulationContext);
 	}
 	fieldSpeciesContextSpecs = new SpeciesContextSpec[reactionContext.fieldSpeciesContextSpecs.length];
 	for (int i = 0; i < reactionContext.fieldSpeciesContextSpecs.length; i++){
@@ -413,7 +413,6 @@ public void refreshDependencies() {
 	refreshSpeciesContextSpecBoundaryUnits(simContext.getGeometryContext().getStructureMappings());
 	for (int i=0;i<fieldReactionSpecs.length;i++){
 		fieldReactionSpecs[i].refreshDependencies();
-		fieldReactionSpecs[i].setSimulationContext(simContext);
 	}
 }
 
@@ -462,7 +461,7 @@ private void refreshReactionSpecs() throws java.beans.PropertyVetoException {
 	for (int i=0;i<reactionSteps.length;i++){
 		ReactionStep reactionStep = reactionSteps[i];
 		if (getReactionSpec(reactionStep) == null) {
-			ReactionSpec rSpec = new ReactionSpec(reactionStep, getSimulationContext());
+			ReactionSpec rSpec = new ReactionSpec(reactionStep, simContext);
 			reactionSpecList.add(rSpec);
 			bChanged = true;
 		}
