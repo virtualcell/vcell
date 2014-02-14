@@ -18,8 +18,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -190,6 +193,9 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
 		advancedOptions.add(dateLabel1);
 		advancedOptions.add(dateLabel2);
 		startDatePanel = new DatePanel();
+		Calendar cal = new GregorianCalendar();
+		cal.add(Calendar.DATE, -7);
+		startDatePanel.setCalendar(cal);
 		advancedOptions.add(startDatePanel);
 		endDatePanel = new DatePanel();
 		advancedOptions.add(endDatePanel);
@@ -318,4 +324,7 @@ public class DatabaseSearchPanel extends CollapsiblePanel {
             }          
         }
     }
+   public void addCollapsiblePropertyChangeListener(PropertyChangeListener listener){
+	   super.addPropertyChangeListener(listener);
+   }
 }
