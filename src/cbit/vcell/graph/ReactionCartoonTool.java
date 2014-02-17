@@ -1501,25 +1501,27 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
 					return;
 				}
-				Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
-				bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
-				if(bStartRxContainerLabel){
-					lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
-					//delay showing structure drag drop targets in case user action will turn into
-					//popup menu or name double-click
-					if(dragStructTimer != null){
-						dragStructTimer.stop();
-					}
-					dragStructTimer = new Timer(500, new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							
-							activateDropTargetEnable();
-							getGraphPane().repaint();
+				if(mode == Mode.SELECT){
+					Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
+					bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
+					if(bStartRxContainerLabel){
+						lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
+						//delay showing structure drag drop targets in case user action will turn into
+						//popup menu or name double-click
+						if(dragStructTimer != null){
+							dragStructTimer.stop();
 						}
-					});
-					dragStructTimer.setRepeats(false);
-					dragStructTimer.start();
+						dragStructTimer = new Timer(500, new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								
+								activateDropTargetEnable();
+								getGraphPane().repaint();
+							}
+						});
+						dragStructTimer.setRepeats(false);
+						dragStructTimer.start();
+					}
 				}
 			}
 			// Always select with MousePress
