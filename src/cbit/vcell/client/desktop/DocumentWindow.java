@@ -19,12 +19,9 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Hashtable;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -41,8 +38,6 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
 import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -135,6 +130,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem newHelpMenuItem = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
 	private JMenuItem ivjRunVFrapMenuItem = null;
+	private JMenuItem ivjRunVCellVisItMenuItem = null;
 	//Added Oct. 17th, 2007. To put a tool menu in 
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
@@ -221,6 +217,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC26(e);
 			if (e.getSource() == DocumentWindow.this.getRunVFrapItem()) 
 				startVirtualFRAP();
+			if (e.getSource() == DocumentWindow.this.getRunVCellVisItItem()) 
+				startVCellVisIt();
 			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem()) 
 				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
@@ -896,6 +894,15 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 private void startVirtualFRAP(){
 	VirtualFrapLoader.loadVFRAP(null, false,getWindowManager());
 }
+
+private void startVCellVisIt() {
+	try {
+		ResourceUtil.launchVisTool();
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(this, "failed to launch visTool, exception: "+e.getMessage());
+	}
+}
 /**
  * Return the tool menu.
  * @return javax.swing.JMenu
@@ -910,6 +917,8 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
+			toolMenu.add(new JSeparator());
+			toolMenu.add(getRunVCellVisItItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
 		} catch (Throwable ivjExc) {
@@ -1803,6 +1812,19 @@ private JMenuItem getRunVFrapItem() {
 	return ivjRunVFrapMenuItem;
 }
 
+private JMenuItem getRunVCellVisItItem() {
+	if (ivjRunVCellVisItMenuItem == null) {
+		try {
+			ivjRunVCellVisItMenuItem = new JMenuItem();
+			ivjRunVCellVisItMenuItem.setName("RunVCellVisItMenuItem");
+			ivjRunVCellVisItMenuItem.setText("Launch VisIt-based Visualization Tool");
+		} catch (Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjRunVCellVisItMenuItem;
+}
+
 /**
  * Return the Save_AsMenuItem property value.
  * @return javax.swing.JMenuItem
@@ -2215,6 +2237,7 @@ private void initConnections() throws java.lang.Exception {
 	getNewHelpMenuItem().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
 	getRunVFrapItem().addActionListener(ivjEventHandler);
+	getRunVCellVisItItem().addActionListener(ivjEventHandler);
 	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 	getPermissionsMenuItem().addActionListener(ivjEventHandler);

@@ -12,15 +12,15 @@ package cbit.vcell.resource;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.solver.SolverDescription;
@@ -250,6 +250,80 @@ public class ResourceUtil {
 			throw new RuntimeException("ResourceUtil::loadLibrary() : failed to write library " + libname + " (" + ex.getMessage() + "). Please try again.");
 		}		
 	}
+	
+	public static File getVCellInstall()
+	{
+		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.vcellInstallDir));
+		if (!installDirectory.exists() || !installDirectory.isDirectory()){
+			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");
+		}
+		return installDirectory;
+	}
+	
+	public static File getVisToolPythonScript()
+	{
+		File visToolScriptDir = new File(getVCellInstall(),"visTool");
+		File visToolScript = new File(visToolScriptDir, "visMainCLI.py");
+		return visToolScript;
+	}
+	
+	public static File getVisitExecutable()
+	{
+		if (bWindows){
+			return new File("C:\\Program Files\\LLNL\\VisIt 2.7.0\\visit.exe");
+		}else{
+			return new File("visit");
+		}
+	}
+
+	public static File getVisToolShellScript()
+	{
+		String vcellvisitScript = null;
+		if (bWindows){
+			vcellvisitScript = "vcellvisit.cmd";
+		}else{
+			vcellvisitScript = "vcellvisit.sh";
+		}
+		java.net.URL url = ResourceUtil.class.getResource(RES_PACKAGE + "/" + vcellvisitScript);
+		return new File(url.getFile());
+	}
+	
+	public static void launchVisTool() throws IOException, ExecutableException
+	{
+		File script = 				ResourceUtil.getVisToolShellScript();
+		File visMainCLI =           ResourceUtil.getVisToolPythonScript();
+		File visitExecutable = 		ResourceUtil.getVisitExecutable();
+		
+		if (!script.exists() || !script.isFile()){
+			throw new IOException("script not found, "+script.getAbsolutePath());
+		}
+		if (!visitExecutable.exists() || !visitExecutable.isFile()){
+			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
+		}
+		if (!visMainCLI.exists() || !visMainCLI.isFile()){
+			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
+		}
+		
+		System.out.println("Starting VCellVisIt as a sub-process");
+		
+		//
+		// get existing environment variables and add visit command and python script to it.
+		//
+		Map<String,String> envVariables = System.getenv();
+		ArrayList<String> envVarList = new ArrayList<String>();
+		for (String varname : envVariables.keySet()){
+			String value = envVariables.get(varname);
+			envVarList.add(varname+"="+value);
+		}
+		envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");
+		envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));
+		
+		Process process = Runtime.getRuntime().exec(
+				new String[] {"cmd", "/K", "start", script.getPath()}, 
+				envVarList.toArray(new String[0]));
+		
+		System.out.println("Started VCellVisIt");
+	}
 
 	public static File getVcellHome() 
 	{
@@ -273,7 +347,7 @@ public class ResourceUtil {
 			}
 		}
 		return solversDirectory;
-	}	
+	}
 	
 	public static void loadNativeSolverLibrary () {
 		try {
