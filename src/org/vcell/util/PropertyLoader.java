@@ -22,6 +22,7 @@ public class PropertyLoader {
 	
 	public static final String vcellServerIDProperty        = "vcell.server.id";
 	
+	public static final String vcellInstallDir				= "vcell.installDir";
 	public static final String tempDirProperty				= "vcell.tempdir";
 	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
@@ -131,6 +132,7 @@ public class PropertyLoader {
 	public static final String VCellChomboExecutable3D = "vcell.chombo.executable.3d";
 	
 	public static final String amplistorVCellUsersRootPath = "vcell.amplistor.usersDir.root";
+	
 	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
