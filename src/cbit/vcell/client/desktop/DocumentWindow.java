@@ -897,7 +897,7 @@ private void startVirtualFRAP(){
 
 private void startVCellVisIt() {
 	try {
-		ResourceUtil.launchVisTool();
+		ResourceUtil.launchVisTool(this);
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this, "failed to launch visTool, exception: "+e.getMessage());
