@@ -3,7 +3,7 @@ try:
     import visit
     import visit.evalfuncs
     import visit.frontend
-    import visQt
+    import visQt 
     import visit.pyside_support
     import visit.writescript
     print("visit imported without an exception")
@@ -38,8 +38,14 @@ class PlotWindow(QtGui.QWidget):
     def getRenderWindow(self):
         return self._rwin
         
-
-
+class SuppressWindow(QtCore.QObject):
+    def eventFilter(self, obj, evt):
+        if QtCore.QEvent.Show:
+            print "Ignoring show pick window event"
+            evt.ignore()
+            return True 
+        #all others return false since we won't be handling those events
+        return False
    
 class visContextVisit(visContextAbstract):
 
@@ -53,22 +59,35 @@ class visContextVisit(visContextAbstract):
         self._databaseName = None
         self._variable = None
 
+        self._defaultOperatorAxis = 0 # 0=x, 1=y, 2=z
+        self._defaultOperatorPercent = 50
+        self._defaultOperatorProject2d = False
+
         self._currentOperator = None  # None, "Slice", "Clip"
         self._currentPlot = None      # None, ("Pseudocolor", varName)
         self._operatorEnabled = False
-        self._operatorAxis = 0 # 0=x, 1=y, 2=z
-        self._operatorPercent = 50
-        self._operatorProject2d = False
+        self._operatorAxis = self._defaultOperatorAxis
+        self._operatorPercent = self._defaultOperatorPercent
+        self._operatorProject2d = self._defaultOperatorProject2d
  
         self._defaultPseudoColorAttributes = self._getDefaultPseudoColorAttributes()
         self._pseudocolorAttributes = self._defaultPseudoColorAttributes
 
         self._pickMode = 0     # 0 = pickMode off   1 = pickMode on
 
-        visit.SuppressMessages(2)
-        visit.SuppressQueryOutputOn()
+        #visit.SuppressMessages(2)
+        #visit.SuppressQueryOutputOn()
+        #visQt.QtGui.QDockWidget().setWidget(visit.pyside_support.GetOtherWindow("Pick"))
+        #pw = visit.pyside_support.GetOtherWindow("Pick")
+        #pw.installEventFilter(SuppressWindow())
+        #print(pw.__class__.__name__)
+        self._pickDockWidget = visQt.QtGui.QDockWidget()
+        self._pickDockWidget.setWidget(visit.pyside_support.GetOtherWindow("Pick")) 
 
 
+        self._infoWindowDockWidget = visQt.QtGui.QDockWidget()
+        self._infoWindowDockWidget.setWidget(visit.pyside_support.GetOtherWindow("Information")) 
+        self.setPickMode(1)
 
     def getRenderWindow(self, parent):
         return self._plotWindow
@@ -103,6 +122,7 @@ class visContextVisit(visContextAbstract):
         self._variable = None
         self._updateDisplay()
         
+        
     def getVariableNames(self):
         initialVarList = list()
         md = self._getMetaData()
@@ -131,7 +151,8 @@ class visContextVisit(visContextAbstract):
 
     def setPickMode(self, newMode):
         assert newMode in [0,1]
-        self._pickMode = newMode 
+        self._pickMode = newMode
+
 
     def resetPickLetter(self):
         visit.ResetPickLetter()
@@ -443,7 +464,7 @@ class visContextVisit(visContextAbstract):
         pickAttributes.blockPieceName = ""
         pickAttributes.groupPieceName = ""
         pickAttributes.showGlobalIds = 0
-        pickAttributes.showPickLetter = 1
+        pickAttributes.showPickLetter = 0  # 1 to show the letters
         pickAttributes.reusePickLetter = 0
         pickAttributes.meshCoordType = pickAttributes.XY  # XY, RZ, ZR
         pickAttributes.createSpreadsheet = 0
@@ -459,7 +480,22 @@ class visContextVisit(visContextAbstract):
         #print("Pick done. Data: "+str(visit.GetPickOutput()))
         pickOutputObject = visit.GetPickOutputObject()
         visit.SetWindowMode("navigate")
-        return ("Pick of "+str(self.getVariable())+" at point "+str(pickOutputObject['point'])+ " is: "+str(pickOutputObject[self.getVariable()]))
+        if pickOutputObject is not None:
+            return ("Pick of "+str(self.getVariable())+" at point "+str(pickOutputObject['point'])+ " is: "+str(pickOutputObject[self.getVariable()]))
+        else:
+            return ("No Data.  Click on plot for values.")
+
+    def getOtherWindow(self, windowName):
+        assert isinstance(windowName, basestring)
+        print("About to get window object named: "+str(windowName))
+        otherWindow = visit.pyside_support.GetOtherWindow(windowName)
+        otherWindow = visit.pyside_support.GetOtherWindow(windowName)
+        print(str(otherWindow))
+        return otherWindow
+
+    def getOtherWindowNames(self):
+        return visit.pyside_support.GetOtherWindowNames()
+
         
         
 def removeDupes(seq):
