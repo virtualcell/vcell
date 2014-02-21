@@ -10,14 +10,26 @@
 
 package org.vcell.util;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+
 
 /**
  * Insert the type's description here.
@@ -281,6 +293,31 @@ public static void main(String[] args) {
 		e.printStackTrace();
 	}
 	
+}
+
+public static File[] findFileByName(final String filename, File[] directories) throws FileNotFoundException{
+	//
+	// search in order of path directories and return first file which matches the filename
+	//
+	ArrayList<File> filesFound = new ArrayList<File>();
+	for (File dir : directories){
+		if (!dir.isDirectory()){
+			throw new FileNotFoundException("'"+dir.getAbsolutePath()+"' is not found or not a directory");
+		}
+		File[] files = dir.listFiles(new FileFilter() {	
+			@Override
+			public boolean accept(File pathname) {
+				if (pathname.getName().equals(filename)){
+					return true;
+				}
+				return false;
+			}
+		});
+		if (files!=null && files.length>0){
+			filesFound.addAll(Arrays.asList(files));
+		}
+	}
+	return filesFound.toArray(new File[filesFound.size()]);
 }
 
 }

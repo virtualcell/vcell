@@ -10,19 +10,33 @@
 
 package cbit.vcell.resource;
 
+import java.awt.Component;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+
+import javax.swing.JFileChooser;
 
 import org.vcell.util.ExecutableException;
+import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SimpleUserMessage;
+import org.vcell.util.gui.VCFileChooser;
 
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.solver.SolverDescription;
 
 public class ResourceUtil {
@@ -267,15 +281,34 @@ public class ResourceUtil {
 		return visToolScript;
 	}
 	
-	public static File getVisitExecutable()
+	public static File getVisitExecutable() throws FileNotFoundException
 	{
+		//
+		// check the system path first
+		//
+		String execuableName = "visit";
 		if (bWindows){
-			return new File("C:\\Program Files\\LLNL\\VisIt 2.7.0\\visit.exe");
-		}else{
-			return new File("visit");
+			execuableName += ".exe";
 		}
+		File[] visitExe = FileUtils.findFileByName(execuableName, ResourceUtil.getSystemPath());
+		if (visitExe!=null && visitExe.length>0){
+			return visitExe[0];
+		}
+		//
+		// not in path, look in common places
+		//
+		if (bWindows){
+			File programFiles = new File("C:\\Program Files");
+			if (programFiles.isDirectory()){
+				visitExe = FileUtils.findFileByName("visit.exe",FileUtils.getAllDirectories(programFiles));
+				if (visitExe != null && visitExe.length > 0){
+					return visitExe[0];
+				}
+			}
+		}
+		throw new FileNotFoundException("cannot find VisIt executable file");
 	}
-
+	
 	public static File getVisToolShellScript()
 	{
 		String vcellvisitScript = null;
@@ -288,16 +321,41 @@ public class ResourceUtil {
 		return new File(url.getFile());
 	}
 	
-	public static void launchVisTool() throws IOException, ExecutableException
+	public static void launchVisTool(Component parent) throws IOException, ExecutableException
 	{
 		File script = 				ResourceUtil.getVisToolShellScript();
 		File visMainCLI =           ResourceUtil.getVisToolPythonScript();
-		File visitExecutable = 		ResourceUtil.getVisitExecutable();
+		File visitExecutable = null;
+		
+		try {
+			visitExecutable = ResourceUtil.getVisitExecutable();
+		} catch (FileNotFoundException e){
+			String retcode = DialogUtils.showOKCancelWarningDialog(parent, "VisIt executable not found", "if VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again");
+			if (!retcode.equals(SimpleUserMessage.OPTION_OK)){
+				return;
+			}
+			//
+			// ask user for file location
+			//
+			VCFileChooser fileChooser = new VCFileChooser(getVCellInstall());
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
+			fileChooser.setDialogTitle("Choose VisIt executable file");
+			if (fileChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) {
+				// user didn't choose save
+				throw UserCancelException.CANCEL_FILE_SELECTION;
+			} else {
+				File selectedFile = fileChooser.getSelectedFile();
+				if (selectedFile.exists()) {
+					visitExecutable = selectedFile;
+				}
+			}
+		}
 		
 		if (!script.exists() || !script.isFile()){
 			throw new IOException("script not found, "+script.getAbsolutePath());
 		}
-		if (!visitExecutable.exists() || !visitExecutable.isFile()){
+		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
 			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
 		}
 		if (!visMainCLI.exists() || !visMainCLI.isFile()){
@@ -421,5 +479,29 @@ public class ResourceUtil {
 			File exe3D = SolverExecutable.VCellChombo3D.getExecutable();
 			System.getProperties().put(PropertyLoader.VCellChomboExecutable3D, exe3D.getAbsolutePath());
 		} 
+	}
+
+	public static File[] getSystemPath(){
+		String PATH = System.getenv("PATH");
+		if (PATH==null || PATH.length() == 0){
+			throw new RuntimeException("PATH environment variable not set");
+		}
+		ArrayList<File> directories = new ArrayList<File>();
+		final String delimiter;
+		if (bWindows){
+			delimiter = ";";
+		}else{
+			delimiter = ":";
+		}
+		StringTokenizer tokens = new StringTokenizer(PATH, delimiter);
+		while (tokens.hasMoreTokens()){
+			File dir = new File(tokens.nextToken());
+			if (dir.exists() && dir.isDirectory()){
+				directories.add(dir);
+			}else{
+				System.err.println("directory '"+dir.getAbsolutePath()+"' in system path is not found");
+			}
+		}
+		return directories.toArray(new File[0]);
 	}
 }
