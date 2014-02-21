@@ -50,6 +50,18 @@ class MouseEventFilter(QtCore.QObject):
         return super(MouseEventFilter,self).eventFilter(obj, event)
 
 
+#class HidePickWindow(QtCore.QObject):
+    
+#    def eventFilter(self, obj, evt):
+#        if QtCore.QEvent.Show:
+#            print "Ignoring show pick window event"
+#            evt.ignore()
+#            return True 
+#        #all others return false since we won't be handling those events
+#        return False
+
+
+
 class VCellPysideApp(QtGui.QMainWindow):
 
     def __init__(self, vis):
@@ -238,8 +250,19 @@ class VCellPysideApp(QtGui.QMainWindow):
         print("About to install mouse filter")
         
         self._vis.getBareRenderWindow().centralWidget().installEventFilter(self._mouseEventFilter)
-        #renderWindow.installEventFilter(self._mouseEventFilter)
-        print(str(dir(self._mouseEventFilter)))
+        ##renderWindow.installEventFilter(self._mouseEventFilter)
+        #print(str(dir(self._mouseEventFilter)))
+        #print("Other window names = ")
+        #print(str(self._vis.getOtherWindowNames()))
+        #pickWindow = self._vis.getOtherWindow("Pick")
+        #print("Pick window class name supposedly is:")
+        #print(str(pickWindow.__class__.__name__))
+        #hpw = HidePickWindow()
+        #print("dir(hpw))=")
+        #print(str(dir(hpw)))
+        #pickWindow.installEventFilter(hpw)
+        
+
 
  
     def _onMouseButtonPressedForPick(self,pos, size):
@@ -286,6 +309,8 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._timeSlider.setMinimum(0)
             self._timeSlider.setMaximum(len(times)-1)
             self._timeLabel.setText("0.0")
+
+
 
     def _getStatusBar(self):
         return self._statusBar
