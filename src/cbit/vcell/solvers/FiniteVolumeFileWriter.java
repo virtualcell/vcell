@@ -717,7 +717,14 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 				volSubDomain.getBoundaryConditionZm(),
 				volSubDomain.getBoundaryConditionZp()
 		};
-		writeBoundaryValues(bctypes, pde, VariableDomain.VARIABLEDOMAIN_VOLUME);
+		if (bChomboSolver)
+		{
+			writeChomboBoundaryValues(bctypes, pde, VariableDomain.VARIABLEDOMAIN_VOLUME);
+		}
+		else
+		{
+			writeBoundaryValues(bctypes, pde, VariableDomain.VARIABLEDOMAIN_VOLUME);
+		}
 	}	
 
 //	if (simulation.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
@@ -2070,4 +2077,49 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		}		
 		return newExps;
 	}
+	
+	private void writeChomboBoundaryValues(BoundaryConditionType[] bctypes, PdeEquation pde, VariableDomain variableDomain) throws ExpressionException {
+		int dimension = resampledGeometry.getDimension();
+		
+		String[] bctitles = new String[]{"BOUNDARY_XM", "BOUNDARY_XP", "BOUNDARY_YM", "BOUNDARY_YP", "BOUNDARY_ZM", "BOUNDARY_ZP"};
+		Expression[] bcs = new Expression[] {
+			pde.getBoundaryXm(),
+			pde.getBoundaryXp(),
+			pde.getBoundaryYm(),
+			pde.getBoundaryYp(),
+			pde.getBoundaryZm(),
+			pde.getBoundaryZp()
+		};
+		
+		for (int i = 0; i < 2 * dimension; i ++) {		 
+			Expression valueExp = null;
+			if (bcs[i] == null) { // not defined by user
+				if (bctypes[i].isDIRICHLET()){		
+					valueExp = pde.getInitialExpression();   // use initial condition for VALUE
+				} else {
+					valueExp = new Expression("0.0");        // user 0 for FLUX
+				}
+			} else { // defined by user
+				if (bctypes[i].isDIRICHLET())
+				{
+					valueExp = bcs[i];
+				}
+				else if (bctypes[i].isNEUMANN())
+				{
+					// for EBChombo operators, flux is replaced by flux/D because the operator multiplies by D
+					valueExp = Expression.div(bcs[i], pde.getDiffusionExpression());
+					if (i % 2 == 0)
+					{
+					  // for EBChombo operators, the flux is defined in the inward direction, i.e. change sign for xm,ym,zm
+						valueExp = Expression.negate(valueExp);
+					}
+				}
+				
+			}
+			if (valueExp != null) {
+				printWriter.println(bctitles[i] + " " + subsituteExpression(valueExp, variableDomain).infix() + ";");
+			}
+		}
+	}
+
 }
