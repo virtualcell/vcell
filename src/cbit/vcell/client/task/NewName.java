@@ -98,7 +98,6 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				break;
 			}
 		}
-	document.setName(newDocumentName);
 	hashTable.put("newName", newDocumentName);
 }
 
