@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.JTable;
+
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Catalysis;
 import org.vcell.pathway.CellularLocationVocabulary;
@@ -46,7 +47,6 @@ import org.vcell.pathway.RnaRegion;
 import org.vcell.pathway.SmallMolecule;
 import org.vcell.pathway.UnificationXref;
 import org.vcell.pathway.Xref;
-import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.relationship.AnnotationMapping;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -162,51 +162,58 @@ lookupEntities.remove(entity);
 }
 
 private void lookupFormalName(final int tableRow){
-final String FORMAL_NAMES_KEY = "FORMAL_NAMES_KEY";
-final Entity entity = (Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject;
-AsynchClientTask initLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
-	@Override
-	public void run(Hashtable<String, Object> hashTable) throws Exception {
-		if(!lookupContains(entity)){
-			lookupAdd(entity);
-		}
-		refreshInterface();
-	}
-};
-AsynchClientTask lookupTask = new AsynchClientTask("looking...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false) {
-	@Override
-	public void run(Hashtable<String, Object> hashTable) throws Exception {
-		ArrayList<Xref> xrefArrList = entity.getxRef();
-		ArrayList<String> formalNames = AnnotationMapping.getNameRef(xrefArrList, null);
-		if(formalNames != null && formalNames.size() > 0){
-			hashTable.put(FORMAL_NAMES_KEY, formalNames);
-		}
-	}
-};
-AsynchClientTask finishLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false) {
-	@Override
-	public void run(Hashtable<String, Object> hashTable) throws Exception {
-		try{
-			ArrayList<String> formalNames = (ArrayList<String>)hashTable.get(FORMAL_NAMES_KEY);
-			if(formalNames != null){
-				entity.setFormalNames(formalNames);
-			}else if(entity.getxRef() != null && entity.getxRef().size() > 0){
-				String str = "";
-				for (int i = 0; i < ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getxRef().size(); i++) {
-					str+= (i>0?"\n":"")+entity.getxRef().get(i).getDb()+":"+entity.getxRef().get(i).getId();
-				}
-				throw new Exception("Formal name lookup not implemented using:\n"+str);
-			}else{
-				throw new Exception("No cross-references available to lookup formal name");
+	final String FORMAL_NAMES_KEY = "FORMAL_NAMES_KEY";
+	final Entity entity = (Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject;
+	AsynchClientTask initLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(!lookupContains(entity)){
+				lookupAdd(entity);
 			}
-		}finally{
-			lookupRemove(entity);
-			refreshInterface();
-			table.setRowSelectionInterval(tableRow, tableRow);
+			BioPaxObject current = BioPaxObjectPropertiesPanel.this.bioPaxObject;
+			if (current == entity) {
+				refreshInterface();
+			}
 		}
-	}
-};
-ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {initLookupTask,lookupTask,finishLookupTask}, null, false, false, false, null, false);
+	};
+	AsynchClientTask lookupTask = new AsynchClientTask("looking...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			ArrayList<Xref> xrefArrList = entity.getxRef();
+			ArrayList<String> formalNames = AnnotationMapping.getNameRef(xrefArrList, null);
+			if(formalNames != null && formalNames.size() > 0){
+				hashTable.put(FORMAL_NAMES_KEY, formalNames);
+			}
+		}
+	};
+	AsynchClientTask finishLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try{
+				@SuppressWarnings("unchecked")
+				ArrayList<String> formalNames = (ArrayList<String>)hashTable.get(FORMAL_NAMES_KEY);
+				if(formalNames != null){
+					entity.setFormalNames(formalNames);
+				}else if(entity.getxRef() != null && entity.getxRef().size() > 0){
+					String str = "";
+					for (int i = 0; i < entity.getxRef().size(); i++) {
+						str+= (i>0?"\n":"")+entity.getxRef().get(i).getDb()+":"+entity.getxRef().get(i).getId();
+					}
+					throw new Exception("Formal name lookup not implemented using:\n"+str);
+				}else{
+					throw new Exception("No cross-references available to lookup formal name");
+				}
+			}finally{
+				lookupRemove(entity);
+				BioPaxObject current = BioPaxObjectPropertiesPanel.this.bioPaxObject;
+				if (current == entity) {
+					refreshInterface();
+					table.setRowSelectionInterval(tableRow, tableRow);
+				}
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {initLookupTask,lookupTask,finishLookupTask}, null, false, false, false, null, false);
 
 }
 
