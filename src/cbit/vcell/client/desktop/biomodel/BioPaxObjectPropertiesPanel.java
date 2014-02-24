@@ -186,7 +186,7 @@ private void lookupFormalName(final int tableRow){
 			}
 		}
 	};
-	AsynchClientTask finishLookupTask = new AsynchClientTask("init lookup...",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false) {
+	AsynchClientTask finishLookupTask = new AsynchClientTask("formal name lookup complete",AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try{
