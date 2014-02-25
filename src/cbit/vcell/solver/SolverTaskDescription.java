@@ -75,7 +75,7 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	addPropertyChangeListener(this);
 	setSimulation(simulation);
 	try {
-		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
+		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation.getMathDescription()));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -101,7 +101,7 @@ public SolverTaskDescription(Simulation simulation) {
 	addPropertyChangeListener(this);
 	setSimulation(simulation);
 	try {
-		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation));
+		setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation.getMathDescription()));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -610,7 +610,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					double outputTime = getTimeBounds().getEndingTime()/10;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
-				setErrorTolerance(ChomboSolverSpec.getDefaultEBChomboSemiImplicitErrorTolerance());
 			} else {
 				chomboSolverSpec = null;
 			}

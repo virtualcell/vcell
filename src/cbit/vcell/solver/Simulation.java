@@ -12,6 +12,7 @@ package cbit.vcell.solver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -346,11 +347,11 @@ public boolean getIsDirty() {
 
 /**
  * Gets the isSpatial property (boolean) value.
- * @return The isSpatial property value.
- * @see #setIsSpatial
+ * @return {@link #fieldMathDescription#isSpatial()} 
  */
 public boolean isSpatial() {
-	return getMathDescription().getGeometry().getDimension() > 0;
+	assert fieldMathDescription != null ;
+	return fieldMathDescription.isSpatial(); 
 }
 
 
@@ -387,13 +388,13 @@ public boolean checkValid() {
 		for (SolverFeature sf : missingFeatures) {
 			text += sf.getName() + "\n";
 		}
-		SolverDescription[] goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures().toArray(new SolverFeature[0]));
-		if (goodSolvers != null && goodSolvers.length > 0) {
+		Collection<SolverDescription >goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures());
+		assert goodSolvers != null;
+		if (!goodSolvers.isEmpty()) {
 			text += "\nPlease choose one of the solvers : \n";
 			for (SolverDescription sd : goodSolvers) {
 				text += sd.getDisplayLabel() + "\n";
 			}
-
 		}
 		setWarning(text);	
 		return false;

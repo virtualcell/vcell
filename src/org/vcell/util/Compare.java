@@ -86,6 +86,20 @@ public class Compare {
 
 
 /**
+ * compatibility method for enums
+ *  calls {@link Enum#equals(Object)}
+ * @param e1 one enum (not null)
+ * @param e2 another enum (not null)
+ * @return true if they're the same
+ * @throws IllegalArgumentException if either null
+ */
+public static <T extends Enum<?> >boolean isEqual(T e1, T e2) {
+	if (e1==null || e2==null){
+		throw new IllegalArgumentException("null argument " + e1 + " and/or " + e2) ;
+	}
+	return e1.equals(e2);
+}
+/**
  * @return boolean
  * @param v1 double[]
  * @param v2 double[]

@@ -202,7 +202,7 @@ public class SBMLExporter {
 
 	static
 	{
-		ResourceUtil.loadlibSbmlLibray();
+		ResourceUtil.loadNativeLibraries();
 	}
 
 	/**

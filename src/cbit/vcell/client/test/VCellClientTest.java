@@ -48,8 +48,6 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	System.out.println("-----vcell.installDir="+PropertyLoader.getProperty(PropertyLoader.vcellInstallDir, ""));
-
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));
@@ -127,10 +125,53 @@ public static void main(java.lang.String[] args) {
 		}else{
 			VCMongoMessage.enabled = false;
 		}
+		try {
+			ResourceUtil.loadNativeLibraries();
+		}
+		catch (Throwable e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
+			System.exit(1);
+		}
+		
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
+		
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of VCellApplication");
 		exception.printStackTrace(System.out);
 	}
 }
+
+/*
+static final String JLP = "java.library.path";
+static final String PATH = "PATH"; 
+private static void fixTheDarnsPaths( ) {
+	/*
+    String sp ="d:\\workspace\\vcellTrunk\\nativelibs\\win64\\";
+	System.setProperty(JLP, sp);
+	Properties props = System.getProperties();
+	String currentPath = props.getProperty(PATH);
+	String pathSep = props.getProperty("path.separator");
+	assert pathSep != null : "no path sep???";
+	String newPath = currentPath + pathSep + sp;
+	 props.setProperty(PATH,newPath);
+	
+	 
+	try {
+		Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+		fieldSysPath.setAccessible( true );
+		Object fsp = fieldSysPath.get(null);
+		fieldSysPath.set( null, null );
+	} catch (Exception ex) {
+		System.err.println("erro hacking library path");
+	}
+	String lname = PropertyLoader.getProperty("H5_LIBRARY_NAME_PROPERTY_KEY",null);
+	if (lname != null) {
+		System.load(lname);
+	}
+	
+}
+*/
+
+
 }

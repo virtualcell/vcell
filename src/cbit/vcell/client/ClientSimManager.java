@@ -22,8 +22,6 @@ import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JInternalFrame;
-
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.BeanUtils;
@@ -471,7 +469,9 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			File smoldynExe = ResourceUtil.SolverExecutable.Smoldyn.getExecutable();
+			File exes[] = ResourceUtil.getExes(SolverDescription.Smoldyn);
+			assert exes.length == 1 : "one and only one smoldyn solver expected";
+			File smoldynExe = exes[0];
 	
 			Simulation simulation = new TempSimulation(originalSimulation, false);
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);

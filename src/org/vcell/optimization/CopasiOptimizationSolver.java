@@ -45,7 +45,7 @@ import cbit.vcell.util.RowColumnResultSet;
 
 public class CopasiOptimizationSolver {	
 	static {
-		ResourceUtil.loadCopasiSolverLibrary();
+		ResourceUtil.loadNativeLibraries();
 	}
 	private static final String DataType_int = "int";
 	private static final String DataType_float = "float";

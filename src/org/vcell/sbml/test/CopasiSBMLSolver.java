@@ -53,8 +53,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 	static
 	{
 		try {
-			// System.loadLibrary("sbmlj");
-			ResourceUtil.loadlibSbmlLibray();
+			ResourceUtil.loadNativeLibraries();
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}

@@ -231,7 +231,7 @@ public class SBMLImporter {
 	}
 	static
 	{
-		ResourceUtil.loadlibSbmlLibray();
+		ResourceUtil.loadNativeLibraries();
 	}
 
 	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean isSpatial) {

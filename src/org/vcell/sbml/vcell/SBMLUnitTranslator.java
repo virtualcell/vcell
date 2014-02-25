@@ -314,7 +314,7 @@ public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSyst
 		throw new RuntimeException("SBMl string is empty, cannot add unit definitions to SBML model.");
 	}
 	
-	ResourceUtil.loadlibSbmlLibray();
+	ResourceUtil.loadNativeLibraries();
 
 	// create a libsbml (sbml) model object, create sbml unitDefinitions for the units above, add to model.
 	SBMLReader sbmlReader = new SBMLReader();

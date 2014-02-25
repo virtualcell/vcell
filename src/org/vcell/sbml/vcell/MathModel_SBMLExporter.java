@@ -80,7 +80,7 @@ import cbit.vcell.xml.XMLSource;
 public class MathModel_SBMLExporter {
 	static
 	{
-		ResourceUtil.loadlibSbmlLibray();
+		ResourceUtil.loadNativeLibraries();
 	}
 
 /**

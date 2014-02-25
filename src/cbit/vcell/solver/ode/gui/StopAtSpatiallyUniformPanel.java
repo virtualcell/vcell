@@ -202,7 +202,7 @@ private void refresh() {
 		return;
 	}
 	
-	if (!solverTaskDescription.getSolverDescription().supports(new SolverFeature[]{SolverFeature.Feature_StopAtSpatiallyUniform})) {
+	if (!solverTaskDescription.getSolverDescription().supports(SolverFeature.Feature_StopAtSpatiallyUniform)) {
 		setVisible(false);
 		return;
 	}
