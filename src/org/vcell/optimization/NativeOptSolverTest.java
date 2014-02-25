@@ -23,7 +23,7 @@ public class NativeOptSolverTest {
 	 */
 	public static void main(String[] args) {
 		try {
-			ResourceUtil.loadNativeSolverLibrary();
+			ResourceUtil.loadNativeLibraries();
 			String optProblemXML = getXMLString("..\\numerics\\OptStandalone2\\test9.xml");
 			OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 			NativeOptSolver nativeOptSolver = new NativeOptSolver();

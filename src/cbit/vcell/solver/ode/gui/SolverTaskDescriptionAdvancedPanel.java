@@ -279,6 +279,7 @@ private void connPtoP7SetTarget() {
  * @see #setSolverTaskDescription
  new javax.swing.DefaultComboBoxModel()
  */
+@SuppressWarnings("unchecked")
 private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDescription newSolverTaskDescription) {
 	if (fieldSolverComboBoxModel == null) {
 		fieldSolverComboBoxModel = new javax.swing.DefaultComboBoxModel();
@@ -293,9 +294,8 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
 		MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
-		SolverDescription[] solverDescriptions = SolverDescription.getSupportingSolverDescriptions(mathDescription);		
-		for (int i = 0; i < solverDescriptions.length; i++) {
-			fieldSolverComboBoxModel.addElement(solverDescriptions[i].getDisplayLabel());
+		for (SolverDescription sd : SolverDescription.getSupportingSolverDescriptions(mathDescription)) {
+			fieldSolverComboBoxModel.addElement(sd.getDisplayLabel());
 		}
 	}
 	//

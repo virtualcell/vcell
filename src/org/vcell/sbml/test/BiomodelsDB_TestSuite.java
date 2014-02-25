@@ -90,7 +90,7 @@ public class BiomodelsDB_TestSuite {
 			 */
 			
 			File reportFile = new File(outDir,"report.xml");
-			ResourceUtil.loadlibSbmlLibray();
+			ResourceUtil.loadNativeLibraries();
 
 			BioModelsWebServicesServiceLocator locator = new BioModelsWebServicesServiceLocator();
 			BioModelsWebServices service = locator.getBioModelsWebServices();

@@ -225,7 +225,7 @@ private void refresh() {
 	}
 	SolverDescription solverDesc = solverTaskDescription.getSolverDescription();
 	
-	if (solverDesc.supports(new SolverFeature[]{SolverFeature.Feature_DataProcessingInstructions})) {
+	if (solverDesc.supports(SolverFeature.Feature_DataProcessingInstructions)) {
 		setVisible(true);
 		DataProcessingInstructions dpi = solverTaskDescription.getSimulation().getDataProcessingInstructions();
 		if (dpi != null) {

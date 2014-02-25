@@ -13,12 +13,13 @@ package cbit.vcell.solver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import org.vcell.util.Matchable;
-
-import cbit.vcell.math.MathDescription;
 
 /**
  * Insert the type's description here.
@@ -26,10 +27,93 @@ import cbit.vcell.math.MathDescription;
  * @author: Jim Schaff
  * Stochastic description is added on 12th July 2006.
  */
-@SuppressWarnings("serial")
-public class SolverDescription implements java.io.Serializable, org.vcell.util.Matchable {
-	private int type;
-	
+public enum SolverDescription {
+	   ForwardEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Forward Euler 1st","Forward Euler (First Order, Fixed Time Step)","Forward Euler (First Order, Fixed Time Step)",
+	      SolverLongDesc.FORWARD_EULER, 1,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_JVMRequired},
+	      null), 
+	      
+	   RungeKutta2(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 2nd","Runge-Kutta (Second Order, Fixed Time Step)","Runge-Kutta (Second Order, Fixed Time Step)",
+	      SolverLongDesc.RUNGE_KUTTA2, 2,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
+	      null), 
+	      
+	   RungeKutta4(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 4th","Runge-Kutta (Fourth Order, Fixed Time Step)","Runge-Kutta (Fourth Order, Fixed Time Step)",
+	      SolverLongDesc.RUNGE_KUTTA4, 4,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
+	      null), 
+	      
+	   RungeKuttaFehlberg(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Runge-Kutta-Fehlberg","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
+	      SolverLongDesc.RUNGE_KUTTA_FEHLBERG, 4,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
+	      null), 
+	      
+	   AdamsMoulton(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Adams-Moulton 5th","Adams-Moulton (Fifth Order, Fixed Time Step)","Adams-Moulton (Fifth Order, Fixed Time Step)",
+	      SolverLongDesc.ADAMS_MOULTON, 5,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
+	      null), 
+	      
+	   IDA(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "IDA","IDA (Variable Order, Variable Time Step, ODE/DAE)","IDA (Variable Order, Variable Time Step, ODE/DAE)",
+	      SolverLongDesc.IDA, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
+	      SolverExecutable.SundialsOde), 
+	      
+	   FiniteVolume(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit Compiled","Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)","Finite Volume, Regular Grid",
+	      SolverLongDesc.FINITE_VOLUME, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtSpatiallyUniform},
+	      SolverExecutable.FiniteVolume), 
+	      
+	   StochGibson(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson","Gibson (Next Reaction Stochastic Method)","Gibson (Next Reaction Stochastic Method)",
+	      SolverLongDesc.STOCH_GIBSON, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
+	      SolverExecutable.Gibson), 
+	      
+	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
+	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
+	      SolverExecutable.Hybrid_EM), 
+	      
+	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
+	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
+	      SolverExecutable.Hybrid_Mil), 
+	      
+	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
+	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
+	      SolverExecutable.Hybrid_Mil_Adaptive), 
+	      
+	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
+	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
+	      SolverExecutable.SundialsOde), 
+	      
+	   FiniteVolumeStandalone(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit","Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)","Finite Volume Standalone, Regular Grid",
+	      SolverLongDesc.FINITE_VOLUME_STANDALONE, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Stochastic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
+	      SolverExecutable.FiniteVolume), 
+	      
+	   CombinedSundials(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Combined IDA/CVODE","Combined Stiff Solver (IDA/CVODE)","Combined Stiff Solver (IDA/CVODE)",
+	      SolverLongDesc.COMBINED_SUNDIALS, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events}, 
+	      SolverExecutable.SundialsOde), 
+	      
+      SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
+	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
+	      SolverExecutable.FiniteVolume), 
+	      
+	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
+	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_DataProcessingInstructions},
+	      SolverExecutable.Smoldyn), 
+	      
+	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step)","Chombo Standalone",
+	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.DEFAULT,
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_DirichletAtMembraneBoundary},
+	      SolverExecutable.VCellChombo), 
+      ;
+
 	public enum SolverFeature {
 		Feature_NonSpatial("NonSpatial"),
 		Feature_Spatial("Spatial"),
@@ -51,8 +135,8 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 		Feature_GradientSourceTerm("Gradient Source Term"),
 		Feature_PostProcessingBlock("Post Processing"),
 		Feature_DirichletAtMembraneBoundary("Dirichlet (Value) Boundary Condition at Membrane");
-				
-		private String name;
+
+		private final String name;
 		private SolverFeature(String name) {
 			this.name = name;
 		}
@@ -60,1033 +144,402 @@ public class SolverDescription implements java.io.Serializable, org.vcell.util.M
 			return name;
 		}
 	}
-	public static SolverFeature[] OdeFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic
-	};
-	public static SolverFeature[] OdeFastSystemFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
-	};
-	public static SolverFeature[] PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeature[] {
-		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic
-	};
-	public static SolverFeature[] PdeFeatureSetWithDirichletAtMembrane = new SolverFeature[] {
-		SolverFeature.Feature_DirichletAtMembraneBoundary
-	};
-	public static SolverFeature[] PdeFastSystemFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem
-	};
-	public static SolverFeature[] NonSpatialStochasticFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic
-	};
-	public static SolverFeature[] DiscontinutiesFeatureSet = new SolverFeature[] {
+
+	/*
+	 * Spatial solvers
+	 */
+	public static final Collection<SolverFeature> SpatialHybridFeatureSet = new SolverFeatureSet (  
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Deterministic,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isSpatialHybrid(); }},
+		FiniteVolumeStandalone,50);
+	
+	public static final Collection<SolverFeature> SpatialStochasticFeatureSet = new SolverFeatureSet ( 
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+			return desc.isSpatialStoch() && !desc.isSpatialHybrid(); }},
+		Smoldyn,40);
+	
+	public static final Collection<SolverFeature> PdeFastSystemFeatureSet = new SolverFeatureSet ( 
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+			return desc.isSpatial() && !desc.isSpatialHybrid() && desc.hasFastSystems( ) && !desc.isSpatialStoch(); }},
+		FiniteVolumeStandalone,30);
+	
+	public static final Collection<SolverFeature> PdeFeatureSetWithDirichletAtMembrane =  new SolverFeatureSet(
+		SolverFeature.Feature_DirichletAtMembraneBoundary,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
+			return s.isSpatial() &&  !s.isSpatialHybrid( )  && s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+		Chombo,20);
+		
+	public static final Collection<SolverFeature> PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet(
+		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
+			return s.isSpatial() && !s.isSpatialHybrid() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+		SundialsPDE,10);
+	
+	/*
+	 * Non-spatial solvers
+	 */
+	public static final Collection<SolverFeature> NonSpatialStochasticFeatureSet = new SolverFeatureSet ( 
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isNonSpatialStoch(); }},
+		StochGibson,100);
+	
+	public static final Collection<SolverFeature> OdeFeatureSet =  new SolverFeatureSet(
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+			return !desc.isSpatial() && !desc.hasFastSystems() && !desc.isNonSpatialStoch(); }},
+		CombinedSundials,10);
+		
+	public static final Collection<SolverFeature> OdeFastSystemFeatureSet =  new SolverFeatureSet(
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+			return !desc.isSpatial() && desc.hasFastSystems() && !desc.isNonSpatialStoch(); }},
+		CombinedSundials,10);
+	
+	//this one is not like the others
+	public static final Collection<SolverFeature> DiscontinutiesFeatureSet = Arrays.asList(new SolverFeature[]{  
 		SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities
-	};
-	public static SolverFeature[] SpatialStochasticFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic
-	};
-	public static SolverFeature[] SpatialHybridFeatureSet = new SolverFeature[] {
-		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Deterministic
-	};
+	});
 	
-	private static final int TYPE_FORWARD_EULER = 0;
-	private static final int TYPE_RUNGE_KUTTA2 = 1;
-	private static final int TYPE_RUNGE_KUTTA4 = 2;
-	private static final int TYPE_RUNGE_KUTTA_FEHLBERG = 3;
-	private static final int TYPE_ADAMS_MOULTON = 4;
-	private static final int TYPE_IDA = 5;
-	private static final int TYPE_FINITE_VOLUME = 6;
-	private static final int TYPE_STOCH_GIBSON = 7;
-	private static final int TYPE_HYBRID_EM = 8;
-	private static final int TYPE_HYBRID_MIL = 9;
-	private static final int TYPE_HYBRID_MIL_Adaptive = 10; //added adaptive milstein solver on July 12, 2007
-	private static final int TYPE_CVODE = 11;
-	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
-	private static final int TYPE_COMBINED_IDA_CVODE = 13;
-	private static final int TYPE_SUNDIALS_PDE = 14;
-	private static final int TYPE_SMOLDYN = 15;
-	private static final int TYPE_CHOMBO = 16;
-	private static final int NUM_SOLVERS = 17;
+	/**
+	 * explicit boolean for readability
+	 */
+	private static enum TimeSpecCreated {
+		UNIFORM, DEFAULT
+	}
 	
-	public static final SolverDescription ForwardEuler			= new SolverDescription(TYPE_FORWARD_EULER);
-	public static final SolverDescription RungeKutta2			= new SolverDescription(TYPE_RUNGE_KUTTA2);
-	public static final SolverDescription RungeKutta4			= new SolverDescription(TYPE_RUNGE_KUTTA4);
-	public static final SolverDescription RungeKuttaFehlberg	= new SolverDescription(TYPE_RUNGE_KUTTA_FEHLBERG);
-	public static final SolverDescription AdamsMoulton			= new SolverDescription(TYPE_ADAMS_MOULTON);
-	public static final SolverDescription IDA					= new SolverDescription(TYPE_IDA);
-	public static final SolverDescription FiniteVolume			= new SolverDescription(TYPE_FINITE_VOLUME);
-	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
-	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
-	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
-	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
-	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
-	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
-	public static final SolverDescription CombinedSundials		= new SolverDescription(TYPE_COMBINED_IDA_CVODE);
-	public static final SolverDescription SundialsPDE			= new SolverDescription(TYPE_SUNDIALS_PDE);
-	public static final SolverDescription Smoldyn			= new SolverDescription(TYPE_SMOLDYN);
-	public static final SolverDescription Chombo = new SolverDescription(TYPE_CHOMBO);
+	/**
+	 * explicit boolean for readability
+	 */
+	private static enum TimeStep {
+		CONSTANT,
+		VARIABLE
+	}
+	
+	/**
+	 * explicit boolean for readability
+	 */
+	private static enum ErrorTol {
+		NO,
+		YES
+	}
+	/**
+	 * implements {@link #supports(OutputTimeSpec)}
+	 */
+	private enum SupportedTimeSpec {
+		DEFAULT_EXPLICIT_UNIFORM(true,true,true),
+		DEFAULT_UNIFORM(true,false,true),
+		UNIFORM(false,false,true),
+		DEFAULT(true,false,false),
+		;
+		final boolean def;
+		final boolean explicit;
+		final boolean uniform;
+		SupportedTimeSpec(boolean def, boolean explicit, boolean uniform) {
+			this.def = def;
+			this.explicit = explicit;
+			this.uniform = uniform;
+		}
+		
+		boolean supports(OutputTimeSpec outputTimeSpec) {
+			return (def && outputTimeSpec.isDefault() )
+				|| (explicit && outputTimeSpec.isExplicit() )
+				|| (uniform  && outputTimeSpec.isUniform( ) );
+		}
+	}
 
-	private static SolverDescription[] AllSolverDescriptions = new SolverDescription[] {
-		ForwardEuler,
-		RungeKutta2,
-		RungeKutta4,
-		RungeKuttaFehlberg,
-		AdamsMoulton,
-		IDA,
-		FiniteVolume,
-		StochGibson,
-		HybridEuler,
-		HybridMilstein,
-		HybridMilAdaptive,
-		CVODE,
-		FiniteVolumeStandalone,
-		CombinedSundials,
-		SundialsPDE,
-		Smoldyn,
-		Chombo,
-	};
+	private final boolean variableTimeStep;
+	private final boolean errorTolerance; 
+	private final TimeSpecCreated timeSpecType; 
+	private final String shortDisplayLabel; 
+	private final String displayLabel; 
+	private final String databaseName; 
+	private final String fullDescription; 
+	private final int timeOrder; 
+	private final SupportedTimeSpec supportedTimeSpec; 
+	private final Set<SolverFeature> supportedFeatures;
+	private final SolverExecutable solverExecutable;
 	
-	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
-	
-	private static final String[] DATABASE_NAME = {
-		"Forward Euler (First Order, Fixed Time Step)",
-		"Runge-Kutta (Second Order, Fixed Time Step)",
-		"Runge-Kutta (Fourth Order, Fixed Time Step)",
-		"Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
-		"Adams-Moulton (Fifth Order, Fixed Time Step)",
-		"IDA (Variable Order, Variable Time Step, ODE/DAE)",
-		"Finite Volume, Regular Grid",
-		"Gibson (Next Reaction Stochastic Method)",
-		"Hybrid (Gibson + Euler-Maruyama Method)",
-		"Hybrid (Gibson + Milstein Method)",
-		"Hybrid (Adaptive Gibson + Milstein Method)",
-		"CVODE (Variable Order, Variable Time Step)",
-		"Finite Volume Standalone, Regular Grid",
-		"Combined Stiff Solver (IDA/CVODE)",
-		"Sundials Stiff PDE Solver (Variable Time Step)",
-		"Smoldyn (Spatial Stochastic Simulator)",
-		"Chombo Standalone",
-	};
-	private static final String[] DISPLAY_LABEL = {
-		"Forward Euler (First Order, Fixed Time Step)",
-		"Runge-Kutta (Second Order, Fixed Time Step)",
-		"Runge-Kutta (Fourth Order, Fixed Time Step)",
-		"Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
-		"Adams-Moulton (Fifth Order, Fixed Time Step)",
-		"IDA (Variable Order, Variable Time Step, ODE/DAE)",
-		"Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)",
-		"Gibson (Next Reaction Stochastic Method)",
-		"Hybrid (Gibson + Euler-Maruyama Method)",
-		"Hybrid (Gibson + Milstein Method)",
-		"Hybrid (Adaptive Gibson + Milstein Method)",
-		"CVODE (Variable Order, Variable Time Step)",
-		"Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)",
-		"Combined Stiff Solver (IDA/CVODE)",
-		"Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)",
-		"Smoldyn (Spatial Stochastic Simulator)",
-		"EBChombo, Semi-Implicit (Fixed Time Step)",
-	};
-	
-	private static final String[] SHORT_DISPLAY_LABEL = {
-		"Forward Euler 1st",
-		"Runge-Kutta 2nd",
-		"Runge-Kutta 4th",
-		"Runge-Kutta-Fehlberg",
-		"Adams-Moulton 5th",
-		"IDA",
-		"Semi-Implicit Compiled",
-		"Gibson",
-		"Gibson + Euler-Maruyama",
-		"Gibson + Milstein",
-		"Adaptive Gibson + Milstein",
-		"CVODE",
-		"Semi-Implicit",
-		"Combined IDA/CVODE",
-		"Fully-Implicit",
-		"Smoldyn",
-		"EBChombo",
-	};
-	
-	private static String Description_Start_Time = "<b>Starting Time</b>";
-	private static String Description_End_Time = "<b>Ending Time</b>";
-	private static String Description_TimeStep = "<b>Time Step</b>";
-	private static String Description_TimeStep_Default = "<b>Default:</b> the time step to numerically solve ODEs/PDEs.";
-	private static String Description_TimeStep_Min = "<b>Minimum:</b> the minimum time stepsize that the solver should attempt to use.";
-	private static String Description_TimeStep_Max = "<b>Maximum:</b> the maxmum time stepsize that the solver should attempt to use.";
-	private static String Description_ErrorTolerance = "<b>Error Tolerance</b>";
-	private static String Description_ErrorTolerance_Abs = "<b>Absolute:</b> the solver adjusts the stepsize in such a way " +
-			"as to keep the absolute error in a step less than absolute tolerance.";
-	private static String Description_ErrorTolerance_Rel = "<b>Relative:</b> the solver adjusts the stepsize in such a way " +
-			"as to keep the fractional error in a step less than relative tolerance.";
-	private static String Description_ErrorTolerance_LinearSolverRel = "<b>Linear Solver Tolerance:</b> the tolerance used to test for " +
-			"convergence of the iteration. The iteration is considered to have converged when the size of residual is less than or " +
-			"equal to the tolerance.";
-	private static String Description_OutputOptions = "<b>Output Options</b>";
-	private static String Description_OutputOptions_KeepEvery_ODE = "<b>Keep Every <i>N</i> / At Most <i>M</i>: </b> based on solver's " +
-			"internal time step, saves solution at every <i>N</i><sup>th</sup> time step but at most <i>M</i> saved time points. " +
-			"If exceeds <i>M</i> saved time points, attempts to remove nearly colinear saved time points.";
-	private static String Description_OutputOptions_KeepEvery_PDE = "<b>Keep Every <i>N</i> / At Most <i>M</i>: </b> based on solver's " +
-			"internal time step, saves solution at every <i>N</i><sup>th</sup> time step and terminates if exceeds <i>M</i> saved time points.";
-	private static String Description_OutputOptions_KeepEvery_Gibson = "<b>Keep Every <i>N</i>:</b> based on solver's " +
-			"internal time step, saves solution at every <i>N</i><sup>th</sup> time step.";
-	private static String Description_OutputOptions_OutputInterval = "<b>Output Interval:</b> uniformly sampled time points.";
-	private static String Description_OutputOptions_OutputTimes = "<b>Output Times:</b> explicit output time points.";
-	
-	private static final String Description_Stochastic_MSR_TOLERANCE = "<b>MSR Tolerance:</b> maximum allowed effect of executing multiple " +
-			"slow reactions per numerical integration of the SDEs.";
-	private static final String Description_Stochastic_LAMBDA = "<b>Lambda:</b> minimum rate of reaction required for approximation to a " +
-			"continuous Markov process.";
-	private static final String Description_Stochastic_EPSILON = "<b>Epsilon:</b> minimum number of molecules both reactant and product " +
-			"species required for approximation as a continuous Markov process.";
-	private static final String Description_Stochastic_NUMBER_OF_TRIALS = "<b>Number of Trials:</b> the number of multiple trials.";
-	private static final String Description_Stochastic_CUSTOMIZED_SEED = "<b>Customized Seed:</b> a user specified number, which is used to " +
-			"produce a series of uniformly distributed random numbers.";
-	private static final String Description_Stochastic_RANDOM_SEED = "<b>Random Seed:</b> a random number generated by PC time, which is used to " +
-			"produce a series of uniformly distributed random numbers.";
-	private static final String Description_Stochastic_SDE_TOLERANCE = "<b>SDE Tolerance:</b> maximum allowed value of the drift and diffusion errors.";
-	private static final String Description_Stochastic_DEFAULT_TIME_STEP = "<b>Default:</b> the maximum time step of the SDE numerical integrator.";
-	private static final String Description_Stochastic_DEFAULT_TIME_STEP_Adaptive = "<b>Default:</b> the initial time step of the SDE numerical integrator. " +
-			"It may be set for adaptive methods to decrease memory requirements.";
-	private static String Description_StochasticOptions = "<b>Stochastic Options</b>";
-	private static String Description_MaxBoxSize = "<b>Max Box Size:</b> Maximum grid length in any direction. 0 means no limit.";
-	private static String Description_FillRatio = "<b>Fill Ratio:</b> Measure of how efficiently tagged cells will be covered.";
-	
-	private static final String Description_PARAMETERS_TO_BE_SET = "<p><u><b>Input Parameters:<b></u>";
-	private static final String Description_REFERENCES = "<u><b>References:<b></u>";
-	
-	private static final String[] FULL_DESCRIPTIONS = {
-		// Forward Euler (First Order, Fixed Time Step)
-		"<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_FORWARD_EULER] + "</h3></center>" +
-		"Forward Euler method is a fixed time step mehtod to solve ordinary differential equations. "+
-		Description_PARAMETERS_TO_BE_SET +
-		"<ul>"+
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_TimeStep_Default + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_OutputOptions +
- 			"<ul>" +
- 			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
- 			"</ul></li>"
-		+ "</ul>"
-	     +"</html>",
-		// Runge-Kutta (Second Order, Fixed Time Step)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_RUNGE_KUTTA2] + "</h3></center>" +
-		"The Runge Kutta methods provide further systematic improvement in the spirit of the modified Euler method. " +
-		"Second order fixed time step method is also called the midpoint method."+
-		 Description_PARAMETERS_TO_BE_SET+
-			"<ul>"+
-			"<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
-			"<li>" + Description_OutputOptions +
-	 			"<ul>" +
-	 			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
-	 			"</ul></li>"
-			+ "</ul>"
-	     +"</html>",
-	     // Runge-Kutta (Fourth Order, Fixed Time Step)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_RUNGE_KUTTA4] + "</h3></center>" +
-	     "The Runge Kutta methods provide further systematic improvement in the spirit of the modified Euler method. " +
-	     "the fourth order Runge Kutta method does four function evaluations per step to give a method with fourth order accuracy. It is a fixed time step method."+
-			Description_PARAMETERS_TO_BE_SET +
-			"<ul>"+
-			"<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
-			"<li>" + Description_OutputOptions +
-	 			"<ul>" +
-	 			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
-	 			"</ul></li>"
-			+ "</ul>"
-	     +"</html>",
-	     // Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_RUNGE_KUTTA_FEHLBERG] + "</h3></center>" +
-	     "The Runge-Kutta-Fehlberg integrator is primarily designed to solve non-stiff and " +
-	     "mildly stiff differential equations when derivative evaluations are inexpensive. It should generally " +
-	     "not be used when the user is demanding high accuracy. It is a variable time step method."+
-		 Description_PARAMETERS_TO_BE_SET+
-		 "<ul>"+
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_TimeStep_Min + "</li>"+
-			"<li>" + Description_TimeStep_Max + "</li>"+
-			"</ul></li>"+
-		"<li>" + Description_ErrorTolerance +
-			"<ul>"+
-			"<li>" + Description_ErrorTolerance_Abs + "</li>"+
-			"<li>" + Description_ErrorTolerance_Rel + "</li>"+
-			"</ul></li>"+
-		"<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
-			"</ul></li>"
-			+ "</ul>"
-	     +"</html>",
-	     // Adams-Moulton (Fifth Order, Fixed Time Step)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_ADAMS_MOULTON] + "</h3></center>" +
-	     "The methods such as Foward Euler, Runge-Kutta etc. are called single-step methods because they use only the information from one previous point to compute the successive point. Adams-Moulton methods are explicit linear multistep methods that depend on multiple previous solution points to generate a new approximate solution point. It is a fixed time step method.\n\n"+
-		 Description_PARAMETERS_TO_BE_SET+
-		 "<ul>"+
-			"<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
-			"<li>" + Description_OutputOptions +
-	 			"<ul>" +
-	 			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
-	 			"</ul></li>"
-			+ "</ul>"
-	     +"</html>",
-	     // IDA (Variable Order, Variable Time Step, ODE/DAE)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_IDA] + "</h3></center>" +
-	     "IDA addresses systems of differential-algebraic equations (DAEs), and uses Backward Differentiation Formula methods. ODEs are a subset of DAEs, therefore IDA may be used for solving ODEs. \n\n"+
-	     Description_PARAMETERS_TO_BE_SET +
-		 "<ul>"+
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_TimeStep_Max + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_ErrorTolerance +
-			"<ul>"+
-			"<li>" + Description_ErrorTolerance_Abs + "</li>"+
-			"<li>" + Description_ErrorTolerance_Rel + "</li>"+
-			"</ul></li>"+
-		"<li>" + Description_OutputOptions +
- 			"<ul>" +
- 			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
- 			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
- 			"<li>" + Description_OutputOptions_OutputTimes + "</li>" +
- 			"</ul></li>"
-	     +"</ul>" +
-	     "</html>",
-	     // Finite Volume, Regular Grid
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_FINITE_VOLUME] + "</h3></center>" +
-	     "The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.\n\n"+
-	     Description_PARAMETERS_TO_BE_SET +
-	     "<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
-		     "<li>" + Description_ErrorTolerance_LinearSolverRel + "</li>" +
-		     "<li>" + Description_OutputOptions +
-		     	"<ul>" +
-	  			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-	  			"</ul></li>"
-	  		 + "</ul>"
-	     +"</html>",
-	     // Gibson (Next Reaction Stochastic Method)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_STOCH_GIBSON] + "</h3></center>" +
-	     "Gibson-Bruck is an improved exact stochastic method based on Gllespie's SSA. It uses only a single random " +
-	     "number per simulation event and takes time proportional to the logarithm of the number of reactions. Better " +
-	     "performance is also acheived by utilizing a dependency graph and an indexed priority queue."+
-	     Description_PARAMETERS_TO_BE_SET +
-	     "<ul>" +
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_StochasticOptions + 
-			"<ul>" +
-			"<li>" + Description_Stochastic_RANDOM_SEED+ "</li>"+
-			"<li>" + Description_Stochastic_CUSTOMIZED_SEED+ "</li>"+
-			"<li>" + Description_Stochastic_NUMBER_OF_TRIALS+ "</li>"+
-			"</ul></li>" +
-		"<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_KeepEvery_Gibson + "</li>" +
-			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-			"</ul></li>" +
-         "</ul>" +
-         Description_REFERENCES+
-         "<ul>" +         
-         "<li>M.A.Gibson and J.Bruck,'Efficient Exact Stochastic Simulation of Chemical Systems with Many Species and " +
-         "Many Channels', J. Phys. Chem. 104, 1876(2000).</li>" +
-         "</ul>"
-	     +"</html>",	     
-		 // Hybrid (Gibson + Euler-Maruyama Method)
-         "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_HYBRID_EM] + "</h3></center>" +
-         "This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and " +
-         "approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and " +
-         "accurately describes the slow dynamics using the Gibson algorithm. Fixed time step Euler-Maruyama is used " +
-         "for approximate numerical solution of CLE."+
-         Description_PARAMETERS_TO_BE_SET +
- 		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_Stochastic_DEFAULT_TIME_STEP + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_StochasticOptions + 
-			"<ul>" +			
-			"<li>" + Description_Stochastic_RANDOM_SEED+"</li>" +
-			"<li>" + Description_Stochastic_CUSTOMIZED_SEED+"</li>" +
-			"<li>" + Description_Stochastic_NUMBER_OF_TRIALS+"</li>" +
-			"<li>" + Description_Stochastic_EPSILON+"</li>" +
-			"<li>" + Description_Stochastic_LAMBDA+"</li>" +
-			"<li>" + Description_Stochastic_MSR_TOLERANCE+"</li>" +
-			"</ul></li>" +
-		"<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-			"</ul></li>" +
-		"</ul>" +
-         Description_REFERENCES+
-         "<ul>" +         
-         "<li>H.Salis and Y.Kaznessis,'Accurate hybrid stochastic simulation of a system of coupled chemical or biochemical reactions', " +
-         	"J. Chem. Phys. 122, 054103(2005).</li>"+
-         "<li>H.Salis, V. Sotiropoulos and Y. Kaznessis,'Multiscale Hy3S: Hybrid stochastic simulation for supercomputers', " +
-         "	BMC Bioinformatics 7:93(2006).</li>"
-         +"</ul>"
-	     +"</html>",
-		 // Hybrid (Gibson + Milstein Method)
-         "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_HYBRID_MIL] + "</h3></center>" +
-         "This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and " +
-         "approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes " +
-         "the slow dynamics using the Gibson algorithm. Fixed time step Milstein is used for approximate numerical solution of CLE.\n\n"+
-         Description_PARAMETERS_TO_BE_SET +
- 		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_Stochastic_DEFAULT_TIME_STEP + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_StochasticOptions + 
-			"<ul>" +			
-			"<li>" + Description_Stochastic_RANDOM_SEED + "</li>" +
-			"<li>" + Description_Stochastic_CUSTOMIZED_SEED+ "</li>" +
-			"<li>" + Description_Stochastic_NUMBER_OF_TRIALS+"</li>" +
-			"<li>" + Description_Stochastic_EPSILON+"</li>" +
-			"<li>" + Description_Stochastic_LAMBDA+"</li>" +
-			"<li>" + Description_Stochastic_MSR_TOLERANCE+"</li>" +
-			"</ul></li>" +
-	     "<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-			"</ul></li>" +
-		"</ul>" +			
-		Description_REFERENCES+
-		"<ul>" +
-         "<li>H.Salis and Y.Kaznessis,'Accurate hybrid stochastic simulation of a system of coupled " +
-         	"chemical or biochemical reactions', J. Chem. Phys. 122, 054103(2005).</li>"+
-         "<li>H.Salis, V. Sotiropoulos and Y. Kaznessis,'Multiscale Hy3S: Hybrid stochastic simulation for supercomputers', BMC Bioinformatics 7:93(2006).</li>"
-	     +"</html>",         
-	     // Hybrid (Adaptive Gibson + Milstein Method)
-         "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_HYBRID_MIL_Adaptive] + "</h3></center>" +
-         "This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates " +
-         "the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes " +
-         "the slow dynamics using the Gibson algorithm. Adaptive time step Milstein is used for approximate numerical solution of CLE."+
-         Description_PARAMETERS_TO_BE_SET +
- 		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_Stochastic_DEFAULT_TIME_STEP_Adaptive + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_StochasticOptions + 
-			"<ul>" +
-			"<li>" + Description_Stochastic_RANDOM_SEED+"</li>" +
-			"<li>" + Description_Stochastic_CUSTOMIZED_SEED+"</li>" +
-			"<li>" + Description_Stochastic_NUMBER_OF_TRIALS+"</li>" +
-			"<li>" + Description_Stochastic_EPSILON+"</li>" +
-			"<li>" + Description_Stochastic_LAMBDA+"</li>" +
-			"<li>" + Description_Stochastic_MSR_TOLERANCE+"</li>" +
-			"<li>" + Description_Stochastic_SDE_TOLERANCE+"</li>" +
-			"</ul></li>" +
-	     "<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-			"</ul></li>" +
-		"</ul>" +						
-		Description_REFERENCES+
-		"<ul>" +
-         "<li>H.Salis and Y.Kaznessis,'Accurate hybrid stochastic simulation of a system of coupled chemical or biochemical " +
-         	"reactions', J. Chem. Phys. 122, 054103(2005).</li>"+
-         "<li>H.Salis, V. Sotiropoulos and Y. Kaznessis,'Multiscale Hy3S: Hybrid stochastic simulation for supercomputers', " +
-         	"BMC Bioinformatics 7:93(2006).</li>" +
-         "</ul>"
-	     +"</html>",         
-	     // CVODE (Variable Order, Variable Time Step)
-         "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_CVODE] + "</h3></center>" +
-         "CVODE is used for solving initial value problems for ordinary differential equations. It solves both stiff and nonstiff " +
-         "systems, using variable-coefficient Adams and BDF methods. In the stiff case, options for treating the Jacobian of the system " +
-         "include dense and band matrix solvers, and a preconditioned Krylov (iterative) solver. In the highly modular organization of CVODE, " +
-         "the core integrator module is independent of the linear system solvers, and all operations on N-vectors are isolated in a module of vector kernels."+
-         Description_PARAMETERS_TO_BE_SET +
- 		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_TimeStep_Max + "</li>" +
-			"</ul></li>"+
-		"<li>" + Description_ErrorTolerance +
-			"<ul>"+
-			"<li>" + Description_ErrorTolerance_Abs + "</li>"+
-			"<li>" + Description_ErrorTolerance_Rel + "</li>"+
-			"</ul></li>"+
-	     "<li>" + Description_OutputOptions +
-			"<ul>" +
-			"<li>" + Description_OutputOptions_KeepEvery_ODE + "</li>" +
-			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-			"<li>" + Description_OutputOptions_OutputTimes + "</li>" +
-			"</ul></li>"
-		 + "</ul>"
-	     +"</html>",
-	     // Finite Volume Standalone, Regular Grid
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_FINITE_VOLUME_STANDALONE] + "</h3></center>" +
-	     "This is our interpreted standalone version of the finite volume method. It is a little slower but gives better error messages." +
-	     "The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization " +
-	     "equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete " +
-	     "places on a meshed geometry."+
-	     Description_PARAMETERS_TO_BE_SET +
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_TimeStep +
-			"<ul>"+
-			"<li>" + Description_TimeStep_Default + "</li>" +
-			"</ul></li>"+
-	     "<li>" + Description_ErrorTolerance_LinearSolverRel + "</li>" +
-	     "<li>" + Description_OutputOptions +
-	     	"<ul>" +
-  			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-  			"</ul></li>"
-  		 + "</ul>"	
-	     +"</html>",
-	     // Combined Stiff Solver (IDA/CVODE)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_COMBINED_IDA_CVODE] + "</h3></center>"
-	     + "This chooses between IDA and CVODE depending on the problem to be solved. <br>" 
-	     + "<ul>" 
-	     + "<li><b>CVODE</b> is used for ordinary differential equation (ODE) systems;</li>" 
-	     + "<li><b>IDA</b> is used for differential-algebraic equation (DAE) systems.</li>" 
-	     + "</ul>" 
-	     + "VCell models with fast reactions (i.e. fast systems) are DAE systems. "
-	     +"</html>",
-	     // Stiff PDE Solver (Variable Time Step)
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_SUNDIALS_PDE] + "</h3></center>"
-	     + "This is our fully implicit, adaptive time step finite volume method. The finite volume method " 
-	     + "represents partial differential equations as algebraic discretization equations which exactly preserves conservation laws. " 
-	     + "Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.\n\n"
-	     + "This method employs Sundials stiff solver CVODE for time stepping (method of lines). " 
-	     + "Please note that relative and absolute tolerances affect the accuracy of time descritization only, therefore spatial discritization " 
-	     + "is the only significant source of solution error." +
-	     Description_PARAMETERS_TO_BE_SET +
-	     "<ul>" +
-		"<li>" + Description_Start_Time + "</li>"+
-		"<li>" + Description_End_Time + "</li>"+
-		"<li>" + Description_ErrorTolerance +
-			"<ul>"+
-			"<li>" + Description_ErrorTolerance_Abs + "</li>"+
-			"<li>" + Description_ErrorTolerance_Rel + "</li>"+
-			"</ul></li>" +
-		"<li>" + Description_OutputOptions +
-	     		"<ul>" +
-	     		"<li>" + Description_OutputOptions_KeepEvery_PDE + "</li>" +
-	     		"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-	     		"</ul></li>"
-	     + "</ul>"
-	     +"</html>",
-	     // Smoldyn (Spatial Stochastic Simulator)
-	     "<html>" +
-	     "Smoldyn is a computer program for cell-scale biochemical simulations. " +
-	     "It simulates each molecule of interest individually to capture natural stochasticity " +
-	     "and for nanometer-scale spatial resolution. It treats other molecules implicity, " +
-	     "so it can simulate tens of thousands of molecules over several minutes of real time. " +
-	     "Simulated molecules diffuse, react, are confined by surfaces, and bind to membranes " +
-	     "much as they would in a real biological system."
-	     + "</html>",
-	     // Chombo
-	     "<html>"
-	     + "<center><h3>" + DISPLAY_LABEL[TYPE_CHOMBO] + "</h3></center>" +
-	     "Chombo provides a set of tools for implementing finite difference methods for the solution of " +
-	     "partial differential equations on block-structured adaptively refined rectangular grids. Both elliptic " +
-	     "and time-dependent modules are included. Chombo supports calculations in complex geometries with both " +
-	     "embedded boundaries and mapped grids, and Chombo also supports particle methods. Most parallel platforms " +
-	     "are supported, and cross-platform self-describing file formats are included."
-	     + Description_PARAMETERS_TO_BE_SET +
-			"<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
-		     "<li>" + Description_MaxBoxSize + "</li>" +
-		     "<li>" + Description_FillRatio + "</li>" +
-		     "<li>" + Description_OutputOptions +
-		     	"<ul>" +
-	  			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-	  			"</ul></li>"
-	  		 + "</ul>"	
-	     + "</html>",
-	};
-	
-	// for all sundials solvers, the time order is variable from 1 to 5, we choose an intermediate order of 3
-	// as a compromise for accuracy during stiff and non stiff time stepping 
-	private static final int[] timeOrder = {		
-		1,   // TYPE_FORWARD_EULER
-		2,	// TYPE_RUNGE_KUTTA2
-		4,	// TYPE_RUNGE_KUTTA4
-		4,	// TYPE_RUNGE_KUTTA_FEHLBERG
-		5,	// TYPE_ADAMS_MOULTON
-		3,	// TYPE_IDA
-		1,	// TYPE_FINITE_VOLUME
-		1,	// TYPE_STOCH_GIBSON
-		1,	// TYPE_Hybrid_Euler
-		1,	// TYPE_Hybrid_Milstein
-		1,	// TYPE_HYBRID_MIL_Adaptive
-		3,	// TYPE_CVODE
-		1,	// TYPE_FINITE_VOLUME_STANDALONE
-		3,	// TYPE_COMBINED_IDA_CVODE
-		3,	// TYPE_SUNDIALS_PDE
-		1,	// TYPE_SMOLDYN
-		1,  // Chombo
-	};
+	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
+			String shortDisplayLabel,
+			String displayLabel, String databaseName,
+			String fullDescription, int timeOrder, SupportedTimeSpec sts,
+			SolverFeature[] fset,
+			SolverExecutable se) {
 
-/**
- * SolverDescription constructor comment.
- */
-private SolverDescription(int argSolverType) {
-	this.type = argSolverType;
-}
+		variableTimeStep = (ts == TimeStep.VARIABLE);
+		errorTolerance = ( et == ErrorTol.YES);
+		timeSpecType = tst;
+		this.shortDisplayLabel = shortDisplayLabel;
+		this.displayLabel = displayLabel;
+		this.databaseName = databaseName;
+		this.fullDescription = subFullDescription(fullDescription,displayLabel);
+		this.timeOrder = timeOrder;
+		supportedTimeSpec = sts;
+		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
+		solverExecutable = se;
+	}
 
+	public SolverExecutable getSolverExecutable() {
+		return solverExecutable;
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2001 9:27:14 PM)
- * @return boolean
- * @param obj cbit.util.Matchable
- */
-public boolean compareEqual(Matchable obj) {
-	return equals(obj);
-}
+	public String getShortDisplayLabel() {
+		return shortDisplayLabel;
+	}
 
+	public String getDisplayLabel() {
+		return displayLabel;
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (9/8/2005 11:27:58 AM)
- * @return cbit.vcell.solver.OutputTimeSpec
- * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
- */
-public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
-{
-	switch (type) {
-	    case TYPE_STOCH_GIBSON:
-		case TYPE_HYBRID_EM:
-		case TYPE_HYBRID_MIL:
-		case TYPE_HYBRID_MIL_Adaptive:
-		case TYPE_SMOLDYN:
-		case TYPE_SUNDIALS_PDE:	{
+	public String getDatabaseName() {
+		return databaseName;
+	}
+
+	public String getFullDescription() {
+		return fullDescription;
+	}
+	
+	/**
+	 * replace DISPLAY_LABEL_TOKEN with displayName
+	 * @param full not null
+	 * @param displayName null
+	 * @throws AssertionError
+	 */
+	private static String subFullDescription(String full, String displayName) {
+		assert full != null;
+		assert full != displayName;
+		return full.replace("DISPLAY_LABEL_TOKEN", displayName);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (9/8/2005 11:27:58 AM)
+	 * @return cbit.vcell.solver.OutputTimeSpec
+	 * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
+	 */
+	public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
+	{
+		switch (timeSpecType) {
+		case UNIFORM:
 			return new UniformOutputTimeSpec(0.05);
-		}
-		default:	
+		case DEFAULT:
 			return new DefaultOutputTimeSpec();
+		default:
+			throw new IllegalStateException("no time spec for " + timeSpecType);
+		}
 	}
-}
 
+	//package access for JUnit testing
+	static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
+	private static final Map<String,SolverDescription> displayNameMap = new HashMap<String, SolverDescription>();
+	private static final Map<String,SolverDescription> dbNameMap = new HashMap<String, SolverDescription>();
+	//load up the maps
+	static {
+		for (SolverDescription sd : SolverDescription.values()) {
+			displayNameMap.put(sd.displayLabel, sd);
+			dbNameMap.put(sd.databaseName, sd);
+		}
+		//backward compatibility special case
+		dbNameMap.put(ALTERNATE_CVODE_Description,CVODE);
+	}
+	
+	/**
+	 * lookup name in given map
+	 * @param map not null
+	 * @param name may be null
+	 * @return null if name null, SolverDescription otherwise
+	 * @throws IllegalArgumentException if invalid name
+	 */
+	private static SolverDescription mapLookup(Map<String,SolverDescription> map, String name) {
+		if (name != null) {
+			SolverDescription sd = map.get(name);
+			if (sd != null) {
+				return sd;
+			}
+			throw new IllegalArgumentException("unexpected solver name '"+name+"'");
+		}
+		return null;
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 3:53:20 PM)
- * @return boolean
- * @param object java.lang.Object
- */
-public boolean equals(Object object) {
-	if (object instanceof SolverDescription){
-		if (((SolverDescription)object).type == type){
+	/**
+	 * lookup by database name
+	 * @return null if solverNamename null, SolverDescription otherwise
+	 * @throws IllegalArgumentException if invalid name
+	*/
+	public static SolverDescription fromDatabaseName(String solverName) {
+		return mapLookup(dbNameMap,solverName);
+	}
+
+	/**
+	 * lookup by display name
+	 * @return null if solverNamename null, SolverDescription otherwise
+	 * @throws IllegalArgumentException if invalid name
+	*/
+	public static SolverDescription fromDisplayLabel(String label) {
+		return mapLookup(displayNameMap,label);
+	}
+
+	public boolean hasVariableTimestep() {
+		return variableTimeStep; 
+	}
+
+	public boolean hasErrorTolerance() {
+		return errorTolerance; 
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (4/23/01 4:49:19 PM)
+	 * @return boolean
+	 */
+	public boolean isJavaSolver() {
+		return supportedFeatures.contains(SolverFeature.Feature_JVMRequired);
+	}
+
+	/**
+	 * Check whether the solver is stochastic solver or not.
+	 * Creation date: (7/18/2006 5:08:30 PM)
+	 * @return boolean
+	 */
+	public boolean isNonSpatialStochasticSolver() {
+		return supportedFeatures.containsAll(NonSpatialStochasticFeatureSet);
+	}
+
+	public boolean isGibsonSolver(){
+		return this == StochGibson;
+	}
+
+	public boolean isSpatialStochasticSolver() {
+		return supportedFeatures.containsAll(SpatialStochasticFeatureSet);
+	}
+
+	public boolean supports(OutputTimeSpec outputTimeSpec) {
+		return supportedTimeSpec.supports(outputTimeSpec);
+	}
+
+	public boolean isSundialsSolver() {
+		switch (this) {
+		case CVODE:
+		case IDA:
+		case CombinedSundials:
+		case SundialsPDE:
 			return true;
-		}
-	}
-	return false;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 4:46:28 PM)
- * @return cbit.vcell.solver.SolverDescription
- * @param solverName java.lang.String
- */
-public static SolverDescription fromDatabaseName(String solverName) {
-	if (solverName == null) return null;
-	if (solverName.equals(ALTERNATE_CVODE_Description)) {
-		return CVODE;
-	}
-	for (int i=0;i<NUM_SOLVERS;i++){
-		if (DATABASE_NAME[i].equals(solverName)){
-			return new SolverDescription(i);
-		}
-	}
-	throw new IllegalArgumentException("unexpected solver name '"+solverName+"'");
-}
-
-public static SolverDescription fromDisplayLabel(String label) {
-	if (label == null) return null;
-	for (int i=0;i<NUM_SOLVERS;i++){
-		if (DISPLAY_LABEL[i].equals(label)){
-			return new SolverDescription(i);
-		}
-	}
-	throw new IllegalArgumentException("unexpected solver '"+label+"'");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 4:34:35 PM)
- * @return java.lang.String
- */
-public String getDatabaseName() {
-	return DATABASE_NAME[type];
-}
-
-public String getDisplayLabel() {
-	return DISPLAY_LABEL[type];
-}
-
-public String getShortDisplayLabel() {
-	return SHORT_DISPLAY_LABEL[type];
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 3:54:43 PM)
- * @return int
- */
-public int hashCode() {
-	return type;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/12/2001 11:10:59 AM)
- * @return boolean
- */
-public boolean hasVariableTimestep() {
-	switch (type) {
-		case TYPE_IDA:
-		case TYPE_RUNGE_KUTTA_FEHLBERG:
-		case TYPE_CVODE:
-		case TYPE_COMBINED_IDA_CVODE:
-		case TYPE_STOCH_GIBSON:
-		case TYPE_HYBRID_MIL_Adaptive:
-		case TYPE_SUNDIALS_PDE: {
-			return true;
-		}
-		default: {
+		default:
 			return false;
 		}
 	}
-}
 
-public boolean hasErrorTolerance() {
-	switch (type) {
-		case TYPE_IDA:
-		case TYPE_RUNGE_KUTTA_FEHLBERG:
-		case TYPE_CVODE:
-		case TYPE_COMBINED_IDA_CVODE:
-		case TYPE_SUNDIALS_PDE: {
+	public boolean isSemiImplicitPdeSolver() {
+		switch (this) {
+		case FiniteVolume:
+		case FiniteVolumeStandalone:
 			return true;
-		}
-		default: {
+		default:
 			return false;
 		}
 	}
-}
 
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 4:49:19 PM)
- * @return boolean
- */
-public boolean isJavaSolver() {
-	Set<SolverFeature> set = getSupportedFeatures();
-	return set.contains(SolverFeature.Feature_JVMRequired);
-}
-
-/**
- * Check whether the solver is stochastic solver or not.
- * Creation date: (7/18/2006 5:08:30 PM)
- * @return boolean
- */
-public boolean isNonSpatialStochasticSolver() {
-	return getSupportedFeatures().containsAll(Arrays.asList(NonSpatialStochasticFeatureSet));
-}
-
-public boolean isGibsonSolver(){
-	return type == TYPE_STOCH_GIBSON;
-}
-
-public boolean isSpatialStochasticSolver() {
-	return getSupportedFeatures().containsAll(Arrays.asList(SpatialStochasticFeatureSet));
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (9/8/2005 11:23:54 AM)
- * @return boolean
- * @param outputTimeSpec cbit.vcell.solver.OutputTimeSpec
- */
-public boolean supports(OutputTimeSpec outputTimeSpec) {
-	switch (type) {
-		case TYPE_IDA: 
-		case TYPE_CVODE:
-		case TYPE_COMBINED_IDA_CVODE: {
-			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
-		}
-		case TYPE_STOCH_GIBSON:
-		case TYPE_FINITE_VOLUME:
-		case TYPE_FINITE_VOLUME_STANDALONE: 
-		case TYPE_SUNDIALS_PDE: {
-			return (outputTimeSpec.isDefault() || outputTimeSpec.isUniform());
-		}
-		case TYPE_SMOLDYN:
-		case TYPE_HYBRID_EM:
-		case TYPE_HYBRID_MIL:
-		case TYPE_HYBRID_MIL_Adaptive: 
-		case TYPE_CHOMBO:
-		{
-			return outputTimeSpec.isUniform();
-		}
-		default: {
-			return (outputTimeSpec.isDefault());
-		}
-	}
-}
-
-public boolean isSundialsSolver() {
-	return type == TYPE_CVODE || type == TYPE_IDA || type == TYPE_COMBINED_IDA_CVODE || type == TYPE_SUNDIALS_PDE;
-}
-
-public boolean isSemiImplicitPdeSolver() {
-	return type == TYPE_FINITE_VOLUME || type == TYPE_FINITE_VOLUME_STANDALONE;
-}
-
-public String getFullDescription() {
-	return FULL_DESCRIPTIONS[type];
-}
-
-public static SolverDescription[] getSolverDescriptions(SolverFeature[] desiredSolverFeatures){
-	ArrayList<SolverDescription> solvers = new ArrayList<SolverDescription>();
-	for (SolverDescription sd : AllSolverDescriptions){
-		Set<SolverFeature> features = sd.getSupportedFeatures();
-		boolean bContainsAll = true;
-		for (SolverFeature feature : desiredSolverFeatures) {
-			if (!features.contains(feature)){
-				bContainsAll = false;
-				break;
+	public static Collection<SolverDescription> getSolverDescriptions(Collection<SolverFeature> set){
+		ArrayList<SolverDescription> solvers = new ArrayList<SolverDescription>();
+		for (SolverDescription sd : values( )) {
+			if (sd.supports(set)) {
+				solvers.add(sd);
 			}
 		}
-		if (bContainsAll) {
-			solvers.add(sd);
-		}
+		return solvers;
 	}
-	return solvers.toArray(new SolverDescription[0]);
-}
 
-public int getTimeOrder() {
-	return timeOrder[type];
-}
+	public int getTimeOrder() {
+		return timeOrder;
+	}
 
-public boolean supports(SolverFeature[] features) {
-	Set<SolverFeature> set = getSupportedFeatures();
-	return set.containsAll(Arrays.asList(features));
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/23/01 3:52:28 PM)
- * @return java.lang.String
- */
-public String toString() {
-	return "SolverDescription@" + Integer.toHexString(hashCode()) + "(" + getDisplayLabel() + ")";
-}
-
-public Set<SolverFeature> getSupportedFeatures() {
-	Set<SolverFeature> featureSet = new HashSet<SolverFeature>();
+	/**
+	 * contains all features in collection? XXXX
+	 */
+	public boolean supports(Collection<SolverFeature> features) {
+		return supportedFeatures.containsAll(features);
+	}
 	
-	switch (type) {
-	case TYPE_FORWARD_EULER:
-		featureSet.add(SolverFeature.Feature_NonSpatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_FastSystem);
-		featureSet.add(SolverFeature.Feature_JVMRequired);
-		break;
-		
-	case TYPE_RUNGE_KUTTA2:
-	case TYPE_RUNGE_KUTTA4:
-	case TYPE_RUNGE_KUTTA_FEHLBERG:
-	case TYPE_ADAMS_MOULTON:
-		featureSet.add(SolverFeature.Feature_NonSpatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_JVMRequired);
-		break;
+	/**
+	 * contains this particular feature?
+	 */
+	public boolean supports(SolverFeature feature) {
+		return supportedFeatures.contains(feature);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (4/23/01 3:52:28 PM)
+	 * @return java.lang.String
+	 */
+	/*
+	public String toString() {
+		return "SolverDescription@" + Integer.toHexString(ordinal()) + "(" + getDisplayLabel() + ")";
+	}
+	*/
+
+	/**
+	 * @return read-only set of supported features
+	 */
+	public Set<SolverFeature> getSupportedFeatures() {
+		return Collections.unmodifiableSet(supportedFeatures);
+	}
 	
-	case TYPE_CVODE:
-		featureSet.add(SolverFeature.Feature_NonSpatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
-		featureSet.add(SolverFeature.Feature_StopAtGeneralDiscontinuities);
-		featureSet.add(SolverFeature.Feature_Events);
-		break;
-		
-	case TYPE_IDA:
-	case TYPE_COMBINED_IDA_CVODE:
-		featureSet.add(SolverFeature.Feature_NonSpatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_FastSystem);
-		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
-		featureSet.add(SolverFeature.Feature_StopAtGeneralDiscontinuities);
-		featureSet.add(SolverFeature.Feature_Events);
-		break;
-
-	case TYPE_STOCH_GIBSON:
-	case TYPE_HYBRID_EM:
-	case TYPE_HYBRID_MIL:
-	case TYPE_HYBRID_MIL_Adaptive:
-		featureSet.add(SolverFeature.Feature_NonSpatial);
-		featureSet.add(SolverFeature.Feature_Stochastic);
-		break;
-		
-	case TYPE_FINITE_VOLUME:
-		featureSet.add(SolverFeature.Feature_Spatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_FastSystem);
-		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
-		break;
-		
-	case TYPE_FINITE_VOLUME_STANDALONE:
-		featureSet.add(SolverFeature.Feature_Spatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_FastSystem);
-		featureSet.add(SolverFeature.Feature_RandomVariables);
-		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
-		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
-		featureSet.add(SolverFeature.Feature_PSF);
-		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
-		featureSet.add(SolverFeature.Feature_SerialParameterScans);
-		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
-		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
-		featureSet.add(SolverFeature.Feature_Stochastic);
-		featureSet.add(SolverFeature.Feature_PostProcessingBlock);
-		break;
-		
-	case TYPE_SUNDIALS_PDE:
-		featureSet.add(SolverFeature.Feature_Spatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_StopAtTimeDiscontinuities);
-		featureSet.add(SolverFeature.Feature_RandomVariables);
-		featureSet.add(SolverFeature.Feature_StopAtSpatiallyUniform);
-		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
-		featureSet.add(SolverFeature.Feature_PSF);
-		featureSet.add(SolverFeature.Feature_SerialParameterScans);
-		featureSet.add(SolverFeature.Feature_VolumeRegionEquations);
-		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
-		featureSet.add(SolverFeature.Feature_GradientSourceTerm);
-		featureSet.add(SolverFeature.Feature_PostProcessingBlock);
-		break;
-		
-	case TYPE_SMOLDYN:
-		featureSet.add(SolverFeature.Feature_Spatial);
-		featureSet.add(SolverFeature.Feature_Stochastic);
-		featureSet.add(SolverFeature.Feature_PeriodicBoundaryCondition);
-		featureSet.add(SolverFeature.Feature_DataProcessingInstructions);
-		break;	
-	case TYPE_CHOMBO:
-		featureSet.add(SolverFeature.Feature_Spatial);
-		featureSet.add(SolverFeature.Feature_Deterministic);
-		featureSet.add(SolverFeature.Feature_DirichletAtMembraneBoundary);
-		featureSet.add(SolverFeature.Feature_RegionSizeFunctions);
-		break;
-	}
-	return featureSet;
-}
-
-public static SolverDescription getDefaultSolverDescription(Simulation simulation) {
-	MathDescription mathDescription = simulation.getMathDescription();
-	if (simulation.isSpatial())	{
-		if (mathDescription.isSpatialHybrid()) {
-			return SolverDescription.FiniteVolumeStandalone;
-		} else if (mathDescription.isSpatialStoch()) {
-			return SolverDescription.Smoldyn;
-		} else if (mathDescription.hasFastSystems()) {
-			return SolverDescription.FiniteVolumeStandalone;
-		} else if (mathDescription.hasDirichletAtMembrane()) {
-			return SolverDescription.Chombo;
-		} else {
-			return SolverDescription.SundialsPDE;
-		}
-	} else {
-		if (mathDescription.isNonSpatialStoch()) {
-			return SolverDescription.StochGibson;
-		}
-		else {
-			return SolverDescription.CombinedSundials;
-		}
-	}
-}
-
-public static SolverDescription[] getSupportingSolverDescriptions(MathDescription mathDescription) {
-	if (mathDescription.isSpatial()) {
-		if (mathDescription.isSpatialHybrid()) {
-			return SolverDescription.getSolverDescriptions(SolverDescription.SpatialHybridFeatureSet);
-		} else if (mathDescription.isSpatialStoch()) {
-			return SolverDescription.getSolverDescriptions(SolverDescription.SpatialStochasticFeatureSet);
-		} else {
-			if (mathDescription.hasFastSystems()) { // PDE with FastSystem
-				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFastSystemFeatureSet);
-			} else if (mathDescription.hasDirichletAtMembrane()) { 
-				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithDirichletAtMembrane);
-			} else {
-				return SolverDescription.getSolverDescriptions(SolverDescription.PdeFeatureSetWithoutDirichletAtMembrane);
+	/**
+	 * get solvers which support math description 
+	 * @param mathDescription
+	 * @return non-empty collection
+	 * @throws IllegalStateException if mathDescription has invalid state
+	 * @throws UnsupportedOperationException if state not supported 
+	 */
+	public static Collection<SolverDescription> getSupportingSolverDescriptions(SolverSelector mathDescription) {
+		SolverSelector.Checker.validate(mathDescription);
+		Collection<SolverDescription> solvers = new HashSet<SolverDescription>( );
+		for (SolverFeatureSet sfs : SolverFeatureSet.getSets()) {
+			if (sfs.supports(mathDescription)) {
+				solvers.addAll(getSolverDescriptions(sfs));
 			}
 		}
-	} else if (mathDescription.isNonSpatialStoch()) {
-		return SolverDescription.getSolverDescriptions(SolverDescription.NonSpatialStochasticFeatureSet);
-	} else {
-		if (mathDescription.hasFastSystems()) { // ODE with FastSystem
-			return SolverDescription.getSolverDescriptions(SolverDescription.OdeFastSystemFeatureSet);
-		} else {
-			return SolverDescription.getSolverDescriptions(SolverDescription.OdeFeatureSet);
+		if (!solvers.isEmpty( )) {
+			return solvers; 
 		}
+		throw new UnsupportedOperationException("Can't get descriptions for " + SolverSelector.Explain.describe(mathDescription) );
 	}
-}
+	
+	/**
+	 * default solver for math description
+	 * @param mathDescription
+	 * @return non null SolverDescription
+	 * @throws IllegalStateException if mathDescription has invalid state
+	 */
+	public static SolverDescription getDefaultSolverDescription(SolverSelector mathDescription) {
+		SolverSelector.Checker.validate(mathDescription);
+		SolverFeatureSet best = null;
+		for (SolverFeatureSet sfs : SolverFeatureSet.getSets()) {
+			if (sfs.supports(mathDescription)) {
+				best = SolverFeatureSet.getHigherSolverPriority(best, sfs);
+			}
+		}
+		if (best != null) {
+			return best.getDefaultSolver();
+		}
+		throw new UnsupportedOperationException("Can't get default solver for " + mathDescription);
+	}
+	
+	public boolean isChomboSolver() 
+	{
+		return this == Chombo; 
+	}
 
-public boolean isChomboSolver() 
-{
-	return type == TYPE_CHOMBO;
-}
+	/**
+	 * backward compatiblity
+	 * @param other
+	 * @return true if they'[re the same
+	 */
+	public boolean compareEqual(SolverDescription other) {
+		return this == other; 
+	}
 
-
-//public static void main(String[] args) {
-//	for (int i = 16; i < NUM_SOLVERS; i ++) {
-//		org.vcell.util.gui.DialogUtils.showInfoDialog(null, FULL_DESCRIPTIONS[i]);
-//	}
-//}
 }

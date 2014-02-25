@@ -19,7 +19,7 @@ import cbit.vcell.resource.ResourceUtil;
  */
 public class NativeOptSolver {
 	static {
-		ResourceUtil.loadNativeSolverLibrary();
+		ResourceUtil.loadNativeLibraries();
 	}
 
 	

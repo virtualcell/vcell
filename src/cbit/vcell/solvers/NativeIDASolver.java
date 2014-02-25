@@ -19,7 +19,7 @@ import cbit.vcell.resource.ResourceUtil;
  */
 public class NativeIDASolver {
 	static {
-		ResourceUtil.loadNativeSolverLibrary();
+		ResourceUtil.loadNativeLibraries();
     }
 
 	private boolean bStopRequested = false;

@@ -23,7 +23,7 @@ import org.vcell.util.FileUtils;
  * @author: Fei Gao
  */
 public class BNGUtils {
-	private final static String EXE_SUFFIX = ResourceUtil.bWindows ? ".exe" : (ResourceUtil.bMacPpc ? "_ppc" : "");
+	private final static String EXE_SUFFIX = ResourceUtil.bWindows ? ".exe" : "";
 	private final static String EXE_BNG = "BNG2" + EXE_SUFFIX;
 	private final static String RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
 	private final static String DLL_CYGWIN = "cygwin1.dll";
