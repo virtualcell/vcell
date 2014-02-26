@@ -1,5 +1,7 @@
 package cbit.vcell.util;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -8,6 +10,8 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
+
+import org.vcell.util.FileUtils;
 
 /**
  * class to load native libraries. Requires external class to set
@@ -53,22 +57,12 @@ public class NativeLoader {
 		}
 	}
 	
-	/**
-	 * set native library directory for this OS
-	 * @param nativeLibraryDirectory
-	 */
-	public static void setNativeLibraryDirectory(String nativeLibraryDirectory) {
-		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
-	}
 
 	/**
 	 * file separator for os
 	 */
 	private final static String FILESEP = System.getProperty("file.separator");
-	/**
-	 * path separator for os
-	 */
-	private final static String PATHSEP = System.getProperty("path.separator");
+	
 	/**
 	 * our preferences key
 	 */
@@ -86,7 +80,6 @@ public class NativeLoader {
 	 */
 	private final static String MAC_REGEX = ".*jnlib";
 	
-	//temp, for development
 	private static String nativeLibraryDirectory  = null;
 	
 	private static String systemLibRegex = null;
@@ -115,15 +108,50 @@ public class NativeLoader {
 	 * last recorded load error, for messaging
 	 */
 	private List<Error> failErrors = null;
+	
+	private final String NATIVE_PATH_PROP = "java.library.path";
 
-	public NativeLoader() {
+	public NativeLoader() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		if (nativeLibraryDirectory == null) {
 			throw new IllegalStateException(getClass( ).getName() + " created before native library location set");
 		}
 		if (systemLibRegex == null) {
 			throw new IllegalStateException(getClass( ).getName() + " created before os type set"); 
 		}
+		//verify on system path, in case other code searches for it (e.g. H5)
+		boolean found = false;
+		File nativeDir = new File(nativeLibraryDirectory);
+		String jlp = System.getProperty(NATIVE_PATH_PROP);
+		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp));
+		for (File f: files) {
+			System.err.println(f.getAbsolutePath());
+			if (nativeDir.equals(f)) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			files.add(nativeDir);
+			String newPath = FileUtils.pathJoinFiles(files);
+			System.setProperty(NATIVE_PATH_PROP,newPath);
+			 
+			Field fieldSysPath;
+			fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+			fieldSysPath.setAccessible( true );
+			fieldSysPath.set( null, null );
+		}
+		
 	}
+	
+	/**
+	 * set native library directory for this OS
+	 * @param nativeLibraryDirectory
+	 */
+	public static void setNativeLibraryDirectory(String nativeLibraryDirectory) {
+		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
+		
+	}
+	
 
 	/**
 	 * attempt to load all libraries in nativelibs directory.
@@ -134,7 +162,7 @@ public class NativeLoader {
 	 */
 	public void loadNativeLibraries( ) throws Error {
 		assert FILESEP != null : "bad file sep";
-		assert PATHSEP != null : "bad path sep";
+		assert FileUtils.PATHSEP != null : "bad path sep";
 		loadMap( );
 		loadListFromPreferences();
 		Iterator<String> iter = storedLoadOrder.iterator();
@@ -226,10 +254,8 @@ public class NativeLoader {
 	 */
 	private void loadListFromPreferences( ) {
 		String depsBlob = pref.get(PREFS_KEY, "");
-		String split[] = depsBlob.split(PATHSEP);
-		for (String s : split) {
-			storedLoadOrder.add(s);
-		}
+		Collection<String> paths = FileUtils.splitPathString(depsBlob);
+		storedLoadOrder.addAll(paths);
 		listDirty = false;
 	}
 
@@ -237,16 +263,7 @@ public class NativeLoader {
 	 * store loadOrder list to user preferences
 	 */
 	private void storeListToPreferences( ) {
-		String depsBlob = "";
-		Iterator<String> iter = storedLoadOrder.iterator();
-		if (iter.hasNext()) {
-			//no separator for first one
-			depsBlob = iter.next( );
-			while(iter.hasNext()) {
-				depsBlob += PATHSEP + iter.next( ); 
-			}
-		}
-		
+		String depsBlob = FileUtils.pathJoinStrings(storedLoadOrder);
 		pref.put(PREFS_KEY, depsBlob);
 		listDirty = false;
 	}
@@ -259,6 +276,7 @@ public class NativeLoader {
 		String fullpath = dirPath + FILESEP + lib;
 		try {
 			System.load(fullpath);
+			System.err.println("loaded " + lib);
 			return true;
 		}
 		catch (Error e) {
