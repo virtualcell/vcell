@@ -142,36 +142,4 @@ public static void main(java.lang.String[] args) {
 	}
 }
 
-/*
-static final String JLP = "java.library.path";
-static final String PATH = "PATH"; 
-private static void fixTheDarnsPaths( ) {
-	/*
-    String sp ="d:\\workspace\\vcellTrunk\\nativelibs\\win64\\";
-	System.setProperty(JLP, sp);
-	Properties props = System.getProperties();
-	String currentPath = props.getProperty(PATH);
-	String pathSep = props.getProperty("path.separator");
-	assert pathSep != null : "no path sep???";
-	String newPath = currentPath + pathSep + sp;
-	 props.setProperty(PATH,newPath);
-	
-	 
-	try {
-		Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
-		fieldSysPath.setAccessible( true );
-		Object fsp = fieldSysPath.get(null);
-		fieldSysPath.set( null, null );
-	} catch (Exception ex) {
-		System.err.println("erro hacking library path");
-	}
-	String lname = PropertyLoader.getProperty("H5_LIBRARY_NAME_PROPERTY_KEY",null);
-	if (lname != null) {
-		System.load(lname);
-	}
-	
-}
-*/
-
-
 }
