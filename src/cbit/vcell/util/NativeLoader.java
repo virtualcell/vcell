@@ -118,13 +118,13 @@ public class NativeLoader {
 		if (systemLibRegex == null) {
 			throw new IllegalStateException(getClass( ).getName() + " created before os type set"); 
 		}
-		//verify on system path, in case other code searches for it (e.g. H5)
+		//verify on system native lib path, in case other code searches for it (e.g. H5)
 		boolean found = false;
 		File nativeDir = new File(nativeLibraryDirectory);
 		String jlp = System.getProperty(NATIVE_PATH_PROP);
 		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp));
 		for (File f: files) {
-			System.err.println(f.getAbsolutePath());
+			//System.err.println(f.getAbsolutePath());
 			if (nativeDir.equals(f)) {
 				found = true;
 				break;
@@ -276,7 +276,6 @@ public class NativeLoader {
 		String fullpath = dirPath + FILESEP + lib;
 		try {
 			System.load(fullpath);
-			System.err.println("loaded " + lib);
 			return true;
 		}
 		catch (Error e) {
