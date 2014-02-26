@@ -14,13 +14,6 @@ import javax.swing.SwingUtilities;
 
 public class VCellThreadChecker {
 	
-	private static final ThreadLocal<Boolean> cpuSuppressed = new ThreadLocal<Boolean>() {
-		@Override
-		protected Boolean initialValue() {
-			return false; 
-		}
-	};
-	
 	public interface GUIThreadChecker {
 		public boolean isEventDispatchThread();
 	}
@@ -56,25 +49,11 @@ public class VCellThreadChecker {
 		}
 	}
 	
-	/**
-	 * turn off cpu intensive warning ... should be followed by {@link #resetCpuIntensive()} in finally block
-	 */
-	public static void suppressCpuIntensive( ) {
-		cpuSuppressed.set(true);
-	}
-	
-	/**
-	 * restore cpu intensive
-	 */
-	public static void resetCpuIntensive( ) {
-		cpuSuppressed.set(false);
-	}
-	
 	public static void checkCpuIntensiveInvocation() {
 		if (guiThreadChecker == null){
 			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
 			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread() && !cpuSuppressed.get()) {
+		}else if (guiThreadChecker.isEventDispatchThread()) {
 			System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
 			Thread.dumpStack();
 		}
