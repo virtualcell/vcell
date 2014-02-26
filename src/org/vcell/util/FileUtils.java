@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 
 
@@ -37,6 +39,11 @@ import java.util.Random;
  * @author: Ion Moraru
  */
 public final class FileUtils {
+	/**
+	 * path separator for os
+	 */
+	public final static String PATHSEP = System.getProperty("path.separator");
+	
 	private static Random rand = new Random(System.currentTimeMillis());
 /**
 * Convienence method to copy a file from a source to a destination.
@@ -188,7 +195,12 @@ public static File getRelativePath(File sourceDir, File targetFile, boolean bAll
 	return new File(prefix + targetPath);
 }
 
-public static File[] getAllDirectories(File rootDir) {
+/**
+ * return all directories, recursively
+ * @param rootDir
+ * @return all subdirectories
+ */
+public static Collection<File> getAllDirectoriesCollection(File rootDir) {
 	ArrayList<File> allDirectories = new ArrayList<File>();
 	for (File file : rootDir.listFiles()){
 		if (file.exists() && file.isDirectory()){
@@ -196,6 +208,15 @@ public static File[] getAllDirectories(File rootDir) {
 			allDirectories.addAll(Arrays.asList(getAllDirectories(file)));
 		}
 	}
+	return allDirectories;
+}
+/**
+ * return all directories, recursively (array version)
+ * @param rootDir
+ * @return all subdirectories
+ */
+public static File[] getAllDirectories(File rootDir) {
+	Collection<File> allDirectories = getAllDirectoriesCollection(rootDir);
 	return allDirectories.toArray(new File[allDirectories.size()]);
 }
 
@@ -295,7 +316,15 @@ public static void main(String[] args) {
 	
 }
 
-public static File[] findFileByName(final String filename, File[] directories) throws FileNotFoundException{
+
+/**
+ * find filename in collection of directories
+ * @param filename
+ * @param directories
+ * @return matching files
+ * @throws FileNotFoundException if entry in directories is not a valid directory
+ */
+public static Collection<File> findFileByName(final String filename, Collection<File> directories) throws FileNotFoundException{
 	//
 	// search in order of path directories and return first file which matches the filename
 	//
@@ -317,7 +346,103 @@ public static File[] findFileByName(final String filename, File[] directories) t
 			filesFound.addAll(Arrays.asList(files));
 		}
 	}
+	return filesFound;
+}
+
+/**
+ * find filename in collection of directories (array interface)
+ * @param filename
+ * @param directories
+ * @return matching files
+ * @throws FileNotFoundException if entry in directories is not a valid directory
+ */
+public static File[] findFileByName(final String filename, File[] directories) throws FileNotFoundException{
+	Collection<File> filesFound = findFileByName(filename, Arrays.asList(directories));
 	return filesFound.toArray(new File[filesFound.size()]);
+}
+
+/**
+ * split operating system separated path into component strings 
+ * @param input non-null string
+ * @return collection of strings 
+ * @throws IllegalArgumentException if input null 
+ */
+public static Collection<String> splitPathString(String input) {
+	if (input != null) {
+		ArrayList<String> rval = new ArrayList<String>();
+		String split[] = input.split(FileUtils.PATHSEP);
+		for (String s : split) {
+			rval.add(s);
+		}
+		return rval;
+	}
+	throw new IllegalArgumentException("null input to splitPathString");
+}
+
+/**
+ * join collection of strings into into operating system path separator String
+ * @param input
+ * @return String with input elements separated by path
+ * @throws IllegalArgumentException if input null 
+ */
+public static String pathJoinStrings(Collection<String> input) {
+	if (input != null) {
+		String depsBlob = "";
+		Iterator<String> iter = input.iterator();
+		if (iter.hasNext()) {
+			//no separator for first one
+			depsBlob = iter.next( );
+			while(iter.hasNext()) {
+				depsBlob += FileUtils.PATHSEP + iter.next( ); 
+			}
+		}
+		return depsBlob;
+	}
+	throw new IllegalArgumentException("null input to splitPathString");
+}
+/**
+ * join collection of File into into operating system path separator String
+ * @param input
+ * @return String with input elements separated by path
+ * @throws IllegalArgumentException if input null 
+ */
+public static String pathJoinFiles(Collection<File> input) {
+	return pathJoinStrings(toStrings(input));
+	
+}
+
+/**
+ * convert collection of Strings to Files
+ * @param input 
+ * @return Collection of Files
+ * @throws IllegalArgumentException if input null 
+ */
+public static Collection<File> toFiles(Collection<String> input) {
+	if (input != null) {
+		Collection<File> rval = new ArrayList<File>();
+		for (String fname :input) {
+			rval.add(new File(fname));
+		}
+		return rval;
+	}
+	throw new IllegalArgumentException("null input to splitPathString");
+}
+
+/**
+ * convert collection of Files to Strings
+ * @param input 
+ * @return Collection of absolute paths 
+ * @throws IllegalArgumentException if input null 
+ */
+public static Collection<String> toStrings(Collection<File> input) {
+	if (input != null) {
+		Collection<String> rval = new ArrayList<String>();
+		for (File file:input) {
+			rval.add(file.getAbsolutePath());
+		}
+		return rval;
+	}
+	throw new IllegalArgumentException("null input to splitPathString");
 }
 
 }

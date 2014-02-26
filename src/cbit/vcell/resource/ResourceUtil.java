@@ -10,28 +10,23 @@
 
 package cbit.vcell.resource;
 
-import java.awt.Component;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
+import java.util.prefs.Preferences;
 
-import javax.swing.JFileChooser;
 
-import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.SimpleUserMessage;
-import org.vcell.util.gui.VCFileChooser;
-
-import com.ibm.icu.util.StringTokenizer;
 
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverExecutable;
@@ -52,6 +47,7 @@ public class ResourceUtil {
 
 
 	private final static String osname_prefix;
+	public final static String EXE_BIT_SUFFIX;
 	public final static String EXE_SUFFIX;
 	public final static String NATIVELIB_SUFFIX;
 	public final static String RES_PACKAGE; 
@@ -66,19 +62,20 @@ public class ResourceUtil {
 		}
 		if (bWindows) {
 			osname_prefix = "win";
-			EXE_SUFFIX = BIT_SUFFIX + ".exe";
+			EXE_SUFFIX = ".exe";
 			NativeLoader.setOsType(NativeLoader.OsType.WINDOWS);
 		} else if (bMac) {
 			osname_prefix = "mac";
-			EXE_SUFFIX = BIT_SUFFIX;
+			EXE_SUFFIX = "";
 			NativeLoader.setOsType(NativeLoader.OsType.MAC);
 		} else if (bLinux) {
 			osname_prefix = "linux";
-			EXE_SUFFIX = BIT_SUFFIX;
+			EXE_SUFFIX = "";
 			NativeLoader.setOsType(NativeLoader.OsType.LINUX);
 		} else {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
 		}
+	    EXE_BIT_SUFFIX = BIT_SUFFIX + EXE_SUFFIX;
 		NATIVE_LIB_DIR =   osname_prefix + (b64bit ? "64" : "32");
 		RES_PACKAGE = "/cbit/vcell/resource/" + NATIVE_LIB_DIR; 
 		NATIVELIB_SUFFIX = BIT_SUFFIX;
@@ -102,7 +99,7 @@ public class ResourceUtil {
 	 * @throws IOException
 	 */
 	private static File loadExecutable(String basename) throws IOException {
-		String name = basename + EXE_SUFFIX;
+		String name = basename + EXE_BIT_SUFFIX;
 		String res = RES_PACKAGE + "/" + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
 		if (!exe.exists()) {
@@ -162,9 +159,14 @@ public class ResourceUtil {
 			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
 			String nativeDir = iRoot + "/nativelibs/" + NATIVE_LIB_DIR;
 			NativeLoader.setNativeLibraryDirectory(nativeDir);
-			NativeLoader nl = new NativeLoader();
-			nl.loadNativeLibraries();
+			try {
+				NativeLoader nl = new NativeLoader();
+				nl.loadNativeLibraries();
 			}
+			catch (Exception e) {
+				throw new Error("Error setting up native libraries ",e);
+			}
+		}
 		nativeLoaded = true;
 	}
 
@@ -309,7 +311,7 @@ public class ResourceUtil {
 		}
 		throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");
 	}
-
+	
 	/**
 	 * calls {@link #getExes(SolverConfig)} if solver requires executables,
 	 * no-op otherwise
@@ -322,11 +324,117 @@ public class ResourceUtil {
 			getExes(solverDescription);
 		}
 	}
-	//HERE
+
+	public static File getVCellInstall()
+	{
+		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot));
+		if (!installDirectory.exists() || !installDirectory.isDirectory()){			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");		}		return installDirectory;	}
 	
-		public static File getVCellInstall()//HERE
-		{
-   		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot));
-    		if (!installDirectory.exists() || !installDirectory.isDirectory()){    			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");    		}    		return installDirectory;    	}    	    	public static File getVisToolPythonScript()    	{    		File visToolScriptDir = new File(getVCellInstall(),"visTool");    		File visToolScript = new File(visToolScriptDir, "visMainCLI.py");    		return visToolScript;    	}    	    	public static File getVisitExecutable() throws FileNotFoundException    	{    		//    		// check the system path first    		//    		String execuableName = "visit";    		if (bWindows){    			execuableName += ".exe";    		}    		File[] visitExe = FileUtils.findFileByName(execuableName, ResourceUtil.getSystemPath());    		if (visitExe!=null && visitExe.length>0){    			return visitExe[0];    		}    		//    		// not in path, look in common places    		//    		if (bWindows){    			File programFiles = new File("C:\\Program Files");    			if (programFiles.isDirectory()){    				visitExe = FileUtils.findFileByName("visit.exe",FileUtils.getAllDirectories(programFiles));    				if (visitExe != null && visitExe.length > 0){    					return visitExe[0];    				}    			}    		}    		throw new FileNotFoundException("cannot find VisIt executable file");    	}    	    	public static File getVisToolShellScript()    	{    		String vcellvisitScript = null;    		if (bWindows){    			vcellvisitScript = "vcellvisit.cmd";    		}else{    			vcellvisitScript = "vcellvisit.sh";    		}    		java.net.URL url = ResourceUtil.class.getResource(RES_PACKAGE + "/" + vcellvisitScript);    		return new File(url.getFile());    	}    	    	public static void launchVisTool(Component parent) throws IOException, ExecutableException    	{    		File script = 				ResourceUtil.getVisToolShellScript();    		File visMainCLI =           ResourceUtil.getVisToolPythonScript();    		File visitExecutable = null;    		    		try {    			visitExecutable = ResourceUtil.getVisitExecutable();    		} catch (FileNotFoundException e){    			String retcode = DialogUtils.showOKCancelWarningDialog(parent, "VisIt executable not found", "if VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again");    			if (!retcode.equals(SimpleUserMessage.OPTION_OK)){    				return;    			}    			//    			// ask user for file location    			//    			VCFileChooser fileChooser = new VCFileChooser(getVCellInstall());    			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);    			fileChooser.setMultiSelectionEnabled(false);    			fileChooser.setDialogTitle("Choose VisIt executable file");    			if (fileChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION) {    				// user didn't choose save    				throw UserCancelException.CANCEL_FILE_SELECTION;    			} else {    				File selectedFile = fileChooser.getSelectedFile();    				if (selectedFile.exists()) {    					visitExecutable = selectedFile;    				}    			}    		}    		    		if (!script.exists() || !script.isFile()){    			throw new IOException("script not found, "+script.getAbsolutePath());    		}    		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){    			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());    		}    		if (!visMainCLI.exists() || !visMainCLI.isFile()){    			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());    		}    		    		System.out.println("Starting VCellVisIt as a sub-process");    		    		//    		// get existing environment variables and add visit command and python script to it.    		//    		Map<String,String> envVariables = System.getenv();    		ArrayList<String> envVarList = new ArrayList<String>();    		for (String varname : envVariables.keySet()){    			String value = envVariables.get(varname);    			envVarList.add(varname+"="+value);    		}    		envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");    		envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));    		    		Process process = Runtime.getRuntime().exec(    				new String[] {"cmd", "/K", "start", script.getPath()},     				envVarList.toArray(new String[0]));    		    		System.out.println("Started VCellVisIt");    	}
-    	    public static File[] getSystemPath(){    		String PATH = System.getenv("PATH");    		if (PATH==null || PATH.length() == 0){    			throw new RuntimeException("PATH environment variable not set");    		}    		ArrayList<File> directories = new ArrayList<File>();    		final String delimiter;    		if (bWindows){    			delimiter = ";";    		}else{    			delimiter = ":";    		}    		StringTokenizer tokens = new StringTokenizer(PATH, delimiter);    		while (tokens.hasMoreTokens()){    			File dir = new File(tokens.nextToken());    			if (dir.exists() && dir.isDirectory()){    				directories.add(dir);    			}else{    				System.err.println("directory '"+dir.getAbsolutePath()+"' in system path is not found");    			}    		}    		return directories.toArray(new File[0]);    	}
+	/**
+	 * class which can help find executable via some means
+	 */
+	public interface ExecutableFinder {
+		File find(String executableName);
+	}
+	/**
+	 * get executable based on name; will try stored values, common program names and optional finder 
+	 * @param name
+	 * @param useBitSuffix whether to use VCell rules for naming executable
+	 * @param efinder extra steps to find executable, may be null
+	 * @return executable file if it can be found
+	 * @throws FileNotFoundException if it can't
+	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException	{		String executableName = name;
+		if (useBitSuffix) {
+			executableName += EXE_BIT_SUFFIX;
+		}
+		else {
+			executableName += EXE_SUFFIX;
+		}
+		if (ExeCache.isCached(executableName)) {
+			return ExeCache.get(executableName);
+		}
+		//		// check the system path first		//
+		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
+		if (!exes.isEmpty()) {
+			return ExeCache.store(executableName, exes.iterator().next());
+		}
+		//		// not in path, look in common places		//		if (bWindows){
+			//use set to eliminate duplicates
+			Set<String> searchDirs = new HashSet<String>( );
+			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
+			for (String e : envs) {
+				String d = System.getenv(e);
+				if (d != null) {
+					searchDirs.add(d);
+				}
+			}
+			for (String pf :searchDirs) {
+				File programFiles = new File(pf);				if (programFiles.isDirectory()){					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));					if (!exes.isEmpty()) {
+						return ExeCache.store(executableName, exes.iterator().next());
+					}
+				}
+			}		}
+		if (efinder != null) {
+			File f = efinder.find(executableName);
+			if (f != null) {
+				return ExeCache.store(executableName, f);
+			}
+		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
+	 * @return system path directories
+	 * @throws RuntimeException if PATH environmental not set
+	 */	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
+		return FileUtils.toFiles(FileUtils.splitPathString(PATH));
+	}
+
+	/**
+	 * store and retrieve executable locations in user preferences
+	 * make separate class to isolate implementation and to have distinct preferences
+	 */
+	private static class ExeCache {
+		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
+		private static Map<String,File>  cache = new HashMap<String, File>( );
+
+		static boolean isCached(String name) {
+			if (cache.containsKey(name)) {
+				return true;
+			}
+			String stored = prefs.get(name,null);
+			if (stored != null) {
+				File f = new File(stored);
+				if (f.canExecute()) {
+					cache.put(name, f);
+					return true;
+				}
+				//stored value is bad, so clear it
+				prefs.remove(name);
+			}
+			return false;
+		}
+
+		/**
+		 * get cached executable; call {@link #isCached(String)} to verify in cache
+		 * before calling
+		 * @param name
+		 * @return executable
+		 * @throws IllegalStateException if name not cached
+		 */
+		static File get(String name) {
+			if (!isCached(name)) {
+				throw new IllegalStateException(name + " not cached");
+			}
+			return cache.get(name);
+		}
+
+		/**
+		 * cache newly found file
+		 * @param name
+		 * @param f
+		 * @return f
+		 */
+		static File store(String name, File f) {
+			cache.put(name, f);
+			prefs.put(name, f.getAbsolutePath());
+			return f;
+		}
+	}
 }
