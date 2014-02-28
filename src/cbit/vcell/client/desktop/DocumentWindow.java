@@ -265,11 +265,11 @@ private void cascadeWindows() {
  */
 private void closeWindow() {
 	try {
-		VCellThreadChecker.suppressCpuIntensive();
+		//VCellThreadChecker.suppressCpuIntensive();
 		getWindowManager().closeWindow();
 	}
 	finally {
-		VCellThreadChecker.resetCpuIntensive();
+		//VCellThreadChecker.resetCpuIntensive();
 	}
 }
 
