@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Random;
 
 
 /**
@@ -44,9 +43,8 @@ public final class FileUtils {
 	 */
 	public final static String PATHSEP = System.getProperty("path.separator");
 	
-	private static Random rand = new Random(System.currentTimeMillis());
 /**
-* Convienence method to copy a file from a source to a destination.
+* Convenience method to copy a file from a source to a destination.
 * Overwrite is prevented, and the last modified is kept, 4k buffer used.
 *
 * @throws IOException
@@ -117,26 +115,6 @@ public static void copyFile(File sourceFile, File destFile, boolean overwrite, b
         }
     }
 }
-/**
-* Convienence method to copy a file from a source to a destination.
-* Overwrite is prevented, and the last modified is kept, 4k buffer used.
-*
-* @throws IOException
-*/
-public static void copyFile(String sourceFile, String destFile) throws IOException {
-	copyFile(new File(sourceFile), new File(destFile), false, true, 4 * 1024);
-}
-public static File createTempFile(String prefix, String suffix, File parentDir) {
-
-    File result = null;
-    java.text.DecimalFormat fmt = new java.text.DecimalFormat("#####");
-    synchronized (rand) {
-        do {
-            result = new File(parentDir, prefix + fmt.format(rand.nextInt()) + suffix);
-        } while (result.exists());
-    }
-    return result;
-}
 
 /**
  * Insert the method's description here.
@@ -167,32 +145,6 @@ public static String readFileToString(File file) throws IOException {
 	}
 
 	return stringBuffer.toString();
-}
-
-public static File getRelativePath(File sourceDir, File targetFile, boolean bAllowAbsolutePaths) throws IOException {
-//	System.out.println("sourceDir = "+sourceDir.getPath());
-//	System.out.println("targetFile = "+targetFile.getPath());
-	File originalSourceDir = sourceDir;
-	int counter = 0;
-	while (sourceDir!=null && !targetFile.getPath().startsWith(sourceDir.getPath())){
-		sourceDir = sourceDir.getParentFile();
-		counter++;
-	}
-	if (sourceDir==null){
-		if (bAllowAbsolutePaths){
-			return targetFile;
-		}else{
-			throw new IOException("cannot find relative path between '"+originalSourceDir.getPath()+"' and '"+targetFile.getPath()); 
-		}
-	}
-	String sourcePath = sourceDir.getPath();
-	String targetPath = targetFile.getPath().replace(sourcePath,"");
-	String prefix = "."+File.separator;
-	for (int i=0;i<counter;i++){
-		prefix = prefix + ".."+File.separator;
-//		targetPath = targetPath.substring(targetPath.indexOf(File.separator));
-	}
-	return new File(prefix + targetPath);
 }
 
 /**
@@ -297,26 +249,6 @@ public static byte[] readByteArrayFromFile(File inputFile)throws IOException  {
     return inputFileByteArrayBuffer;
 }
 
-public static void main(String[] args) {
-	try {
-		String inputString = "3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914564856692346034861045432664821339360726024914127372458700660631558817488152092096282925409171536436789259036001133053054882046652138414695194151160943305727036575959195309218611738193261179310511854807446237996274956735188575272489122793818301194912\n";
-		System.out.println("We're feeding in: "+inputString);
-		byte[] data = inputString.getBytes("ISO-8859-1");
-		File file = File.createTempFile("TestTempFile", ".tmp");
-		System.out.println("Temp file location being created = "+file.getAbsolutePath());
-		writeByteArrayToFile(data, file);
-		System.out.println("Done writing.  Now will read it back.");
-		byte[] bytes = readByteArrayFromFile(file);
-		String readBackString = new String(bytes);
-		System.out.println("We got back: "+readBackString);
-		System.out.println("Comparing the input and output yields: "+inputString.equals(readBackString));
-	} catch (Exception e) {
-		e.printStackTrace();
-	}
-	
-}
-
-
 /**
  * find filename in collection of directories
  * @param filename
@@ -349,24 +281,6 @@ public static Collection<File> findFileByName(final String filename, Collection<
 	return filesFound;
 }
 
-/**
- * find filename in collection of directories (array interface)
- * @param filename
- * @param directories
- * @return matching files
- * @throws FileNotFoundException if entry in directories is not a valid directory
- */
-public static File[] findFileByName(final String filename, File[] directories) throws FileNotFoundException{
-	Collection<File> filesFound = findFileByName(filename, Arrays.asList(directories));
-	return filesFound.toArray(new File[filesFound.size()]);
-}
-
-/**
- * split operating system separated path into component strings 
- * @param input non-null string
- * @return collection of strings 
- * @throws IllegalArgumentException if input null 
- */
 public static Collection<String> splitPathString(String input) {
 	if (input != null) {
 		ArrayList<String> rval = new ArrayList<String>();
@@ -412,16 +326,21 @@ public static String pathJoinFiles(Collection<File> input) {
 }
 
 /**
- * convert collection of Strings to Files
+ * convert collection of Strings to Files. Optionally verify Strings are valid files, and omit from
+ * return collection if not
  * @param input 
- * @return Collection of Files
+ * @param validate if true, check Strings to make sure valid files; 
+ * @return Collection of Files corresponding to input Strings
  * @throws IllegalArgumentException if input null 
  */
-public static Collection<File> toFiles(Collection<String> input) {
+public static Collection<File> toFiles(Collection<String> input, boolean validate) {
 	if (input != null) {
 		Collection<File> rval = new ArrayList<File>();
 		for (String fname :input) {
-			rval.add(new File(fname));
+			File f = new File(fname);
+			if (!validate || f.exists()) {
+				rval.add(f);
+			}
 		}
 		return rval;
 	}

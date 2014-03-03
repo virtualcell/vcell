@@ -122,7 +122,7 @@ public class NativeLoader {
 		boolean found = false;
 		File nativeDir = new File(nativeLibraryDirectory);
 		String jlp = System.getProperty(NATIVE_PATH_PROP);
-		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp));
+		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp), true);
 		for (File f: files) {
 			//System.err.println(f.getAbsolutePath());
 			if (nativeDir.equals(f)) {

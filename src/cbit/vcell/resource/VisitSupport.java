@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.ExecutableException;
@@ -30,7 +31,7 @@ public class VisitSupport {
 		return new File(url.getFile());
 	}
 
-	public static void launchVisTool(Component parent) throws IOException, ExecutableException
+	public static <E> void launchVisTool(Component parent) throws IOException, ExecutableException
 	{
 		File script = 				getVisToolShellScript();
 		File visMainCLI =           getVisToolPythonScript();
@@ -66,12 +67,36 @@ public class VisitSupport {
 		envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");
 		envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));
 		
+		/*
 		@SuppressWarnings("unused")
 		Process process = Runtime.getRuntime().exec(
 				new String[] {"cmd", "/K", "start", script.getPath()}, 
 				envVarList.toArray(new String[0]));
 		
 		System.out.println("Started VCellVisIt");
+		*/
+		List<String> cmds = new ArrayList<String>();
+		cmds.add(visitExecutable.getAbsolutePath());
+		cmds.add("-cli");
+		cmds.add("-ufile");
+		cmds.add(script.getAbsolutePath());
+		ProcessBuilder pb = new ProcessBuilder(cmds);
+		final Process p = pb.start();
+		Runnable mon = new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					System.err.println("waiting for visit");
+					p.waitFor();
+					int rcode = p.exitValue();
+					System.err.println("visit exit code " + rcode);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		new Thread(mon).start();
 	}
 
 }
