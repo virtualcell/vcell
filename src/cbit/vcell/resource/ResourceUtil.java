@@ -22,7 +22,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
 
 
 import org.vcell.util.FileUtils;
@@ -383,14 +385,14 @@ public class ResourceUtil {
 	 * @return system path directories
 	 * @throws RuntimeException if PATH environmental not set
 	 */	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
-		return FileUtils.toFiles(FileUtils.splitPathString(PATH));
+		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
 	}
 
 	/**
 	 * store and retrieve executable locations in user preferences
 	 * make separate class to isolate implementation and to have distinct preferences
 	 */
-	private static class ExeCache {
+	static class ExeCache { //package level access for testing
 		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
 		private static Map<String,File>  cache = new HashMap<String, File>( );
 
@@ -435,6 +437,14 @@ public class ResourceUtil {
 			cache.put(name, f);
 			prefs.put(name, f.getAbsolutePath());
 			return f;
+		}
+		
+		/**
+		 * remove stored locations from cache
+		 * @throws BackingStoreException 
+		 */
+		static void forgetExecutableLocations( ) throws BackingStoreException {
+			prefs.clear();
 		}
 	}
 }

@@ -16,7 +16,7 @@ import cbit.vcell.resource.VisitSupport;
 
 public class GraphExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
-	@Test
+	//@Test
 	public void testDialog( ) throws FileNotFoundException {
 		ExecutableFinderDialog gef = new ExecutableFinderDialog(new JFrame( ), "find the moving boundary executable, okay?");
 		 File f = ResourceUtil.getExecutable(TEST_EXE, false,gef);
@@ -33,9 +33,10 @@ public class GraphExecutableFinderTest {
 	}
 	
 	@Test
-	public void vtest( ) throws HeadlessException, IOException, ExecutableException {
+	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException {
 		VisitSupport.launchVisTool(new JFrame( ));
-		
+		//kill Junit around for a bit
+		Thread.sleep(1000000);
 	}
 
 }
