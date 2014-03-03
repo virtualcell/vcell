@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import cbit.vcell.resource.ResourceUtil;
 
+@SuppressWarnings("unused")
 public class ResourceUtilTest {
 	
 	public static String TEST_DIR  = "d:/test";
@@ -20,10 +21,8 @@ public class ResourceUtilTest {
 		 System.out.println(f.getAbsolutePath());
 	}
 	
-	@After
+	//@After uncomment to remove stored executable locations
 	public void clearStored( ) throws BackingStoreException {
 		ResourceUtil.ExeCache.forgetExecutableLocations( );
 	}
-	
-
 }

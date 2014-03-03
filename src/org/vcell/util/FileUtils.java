@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-
 /**
  * Insert the type's description here.
  * Creation date: (10/10/2002 11:57:56 AM)
@@ -52,6 +51,7 @@ public final class FileUtils {
 public static void copyFile(File sourceFile, File destFile) throws IOException {
 	copyFile(sourceFile, destFile, false, true, 4 * 1024);
 }
+
 /**
 * Method to copy a file from a source to a
 * destination specifying if

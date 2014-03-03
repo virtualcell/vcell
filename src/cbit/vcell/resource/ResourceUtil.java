@@ -384,7 +384,7 @@ public class ResourceUtil {
 		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
 	 * @return system path directories
 	 * @throws RuntimeException if PATH environmental not set
-	 */	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
+	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
 		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
 	}
 

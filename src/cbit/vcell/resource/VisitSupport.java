@@ -44,7 +44,7 @@ public class VisitSupport {
 		visitExecutable = ResourceUtil.getExecutable(vname,false,gef);
 		
 		if (!script.exists() || !script.isFile()){
-			throw new IOException("script not found, "+script.getAbsolutePath());
+			throw new IOException("script not found, "+script.getAbsolutePath()); 
 		}
 		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
 			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());

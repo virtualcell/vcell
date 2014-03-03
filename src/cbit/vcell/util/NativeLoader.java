@@ -140,7 +140,6 @@ public class NativeLoader {
 			fieldSysPath.setAccessible( true );
 			fieldSysPath.set( null, null );
 		}
-		
 	}
 	
 	/**
@@ -151,7 +150,6 @@ public class NativeLoader {
 		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
 		
 	}
-	
 
 	/**
 	 * attempt to load all libraries in nativelibs directory.

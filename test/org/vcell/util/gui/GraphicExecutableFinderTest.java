@@ -14,7 +14,7 @@ import org.vcell.util.ExecutableException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;
 
-public class GraphExecutableFinderTest {
+public class GraphicExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	//@Test
 	public void testDialog( ) throws FileNotFoundException {
