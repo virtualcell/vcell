@@ -67,14 +67,13 @@ public class VisitSupport {
 		envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");
 		envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));
 		
-		/*
 		@SuppressWarnings("unused")
 		Process process = Runtime.getRuntime().exec(
 				new String[] {"cmd", "/K", "start", script.getPath()}, 
 				envVarList.toArray(new String[0]));
 		
 		System.out.println("Started VCellVisIt");
-		*/
+		/*
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(visitExecutable.getAbsolutePath());
 		cmds.add("-cli");
@@ -97,6 +96,7 @@ public class VisitSupport {
 			}
 		};
 		new Thread(mon).start();
+		*/
 	}
 
 }
