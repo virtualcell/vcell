@@ -23,7 +23,8 @@ common_siteTmpDir=${common_siteRootDir}/tmp
 common_siteLibDir=${common_siteRootDir}/lib
 export LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
-common_jre=java
+common_jre=${common_vcellInstallDir}/java/current/bin/java
+
 common_jvm_jars=GENERATED
 
 #--------------------------------------
