@@ -14,6 +14,13 @@ import javax.swing.SwingUtilities;
 
 public class VCellThreadChecker {
 	
+	private static final ThreadLocal<Integer> cpuSuppressed = new ThreadLocal<Integer>() {
+		@Override
+		protected Integer initialValue() {
+			return 0; 
+		}
+	};
+	
 	public interface GUIThreadChecker {
 		public boolean isEventDispatchThread();
 	}
@@ -53,9 +60,29 @@ public class VCellThreadChecker {
 		if (guiThreadChecker == null){
 			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
 			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread()) {
+		}else if (guiThreadChecker.isEventDispatchThread() && cpuSuppressed.get() == 0) {
 			System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
 			Thread.dumpStack();
+		}
+	}
+	
+	/**
+	 * try-with-resources compatible object to increment / decrement suppression count
+	 * e.g. try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
+	 *  ...
+	 *  }
+	 */
+	public static class SuppressIntensive implements AutoCloseable {
+		
+		public SuppressIntensive() {
+			int oneMore = cpuSuppressed.get( ) + 1;
+			cpuSuppressed.set(oneMore);
+		}
+
+		@Override
+		public void close() {
+			int oneLess = cpuSuppressed.get( ) - 1;
+			cpuSuppressed.set(oneLess);
 		}
 	}
 }
