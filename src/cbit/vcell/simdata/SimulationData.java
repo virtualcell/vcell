@@ -2234,6 +2234,9 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 
 	String simtaskFilePath = vcDataID.getID()+"_0.simtask.xml";
 	File simtaskFile = amplistorHelper.getFile(simtaskFilePath);
+	if (!simtaskFile.exists()){
+		throw new RuntimeException("Chombo dataset mission .simtask.xml file, please rerun");
+	}
 	String xmlString = FileUtils.readFileToString(simtaskFile);
 	SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
 	if (simTask.getSimulation().getSolverTaskDescription().getChomboSolverSpec().isSaveChomboOutput()==false){
