@@ -39,7 +39,6 @@ import javax.swing.UIManager;
 
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -264,13 +263,7 @@ private void cascadeWindows() {
  * Comment
  */
 private void closeWindow() {
-	try {
-		//VCellThreadChecker.suppressCpuIntensive();
 		getWindowManager().closeWindow();
-	}
-	finally {
-		//VCellThreadChecker.resetCpuIntensive();
-	}
 }
 
 
