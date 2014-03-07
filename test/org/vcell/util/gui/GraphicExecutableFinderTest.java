@@ -5,6 +5,7 @@ import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import javax.swing.JFrame;
 
@@ -33,7 +34,7 @@ public class GraphicExecutableFinderTest {
 	}
 	
 	@Test
-	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException {
+	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException, URISyntaxException {
 		VisitSupport.launchVisTool(new JFrame( ));
 		//kill Junit around for a bit
 		Thread.sleep(1000000);

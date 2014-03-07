@@ -3,6 +3,7 @@ package cbit.vcell.resource;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class VisitSupport {
 		return visToolScript;
 	}
 
-	public static File getVisToolShellScript()
+	public static File getVisToolShellScript() throws URISyntaxException
 	{
 		String vcellvisitScript = null;
 		if (ResourceUtil.bWindows){
@@ -28,10 +29,10 @@ public class VisitSupport {
 			vcellvisitScript = "vcellvisit.sh";
 		}
 		java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + vcellvisitScript);
-		return new File(url.getFile());
+		return new File(url.toURI());
 	}
 
-	public static <E> void launchVisTool(Component parent) throws IOException, ExecutableException
+	public static <E> void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException
 	{
 		File script = 				getVisToolShellScript();
 		File visMainCLI =           getVisToolPythonScript();
