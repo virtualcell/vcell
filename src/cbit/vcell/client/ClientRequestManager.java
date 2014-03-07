@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -63,7 +62,6 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -157,7 +155,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.geometry.surface.StlReader;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -1067,50 +1064,51 @@ public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceF
 		BufferedWriter stlBufferedWriter = null;
 		File tempstlFile = File.createTempFile("salk",".stl");
 		try{
-			BufferedReader salkBufferedReader = new BufferedReader(new FileReader(surfaceFile));
-			String line;
-			ArrayList<double[]> vertList = new ArrayList<double[]>();
-			//read vertices
-			while((line = salkBufferedReader.readLine()) != null){
-				StringTokenizer st = new StringTokenizer(line," ");
-				String firstToken = st.nextToken();
-				int vertIndex = Integer.parseInt(st.nextToken());
-				if(firstToken.equals("Vertex")){
-					vertList.add(new double[] {Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken())});
-					if(vertList.size() != vertIndex){//numbering starts at 1
-						throw new Exception("Index not match position in list");
+			try (BufferedReader salkBufferedReader = new BufferedReader(new FileReader(surfaceFile))) {
+				String line;
+				ArrayList<double[]> vertList = new ArrayList<double[]>();
+				//read vertices
+				while((line = salkBufferedReader.readLine()) != null){
+					StringTokenizer st = new StringTokenizer(line," ");
+					String firstToken = st.nextToken();
+					int vertIndex = Integer.parseInt(st.nextToken());
+					if(firstToken.equals("Vertex")){
+						vertList.add(new double[] {Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken())});
+						if(vertList.size() != vertIndex){//numbering starts at 1
+							throw new Exception("Index not match position in list");
+						}
+					}else if(firstToken.equals("Face")){
+						break;//read all vertices
+					}else{
+						return null;
 					}
-				}else if(firstToken.equals("Face")){
-					break;//read all vertices
-				}else{
-					return null;
 				}
+				stlBufferedWriter = new BufferedWriter(new FileWriter(tempstlFile));
+				stlBufferedWriter.write("solid VCell salk convert\n");
+				//read faces
+				do{
+					stlBufferedWriter.write("facet normal 0 0 0\n");
+					stlBufferedWriter.write("outer loop\n");
+					StringTokenizer st = new StringTokenizer(line," ");
+					String firstToken = st.nextToken();
+					Integer.parseInt(st.nextToken());//ignore index token
+					if(firstToken.equals("Face")){
+						for (int i = 0; i < 3; i++) {
+							int vertListIndex = Integer.parseInt(st.nextToken())-1;
+							double[] vertCoordinatges = vertList.get(vertListIndex);
+							stlBufferedWriter.write("vertex "+vertCoordinatges[0]+" "+vertCoordinatges[1]+" "+vertCoordinatges[2]+"\n");//indexes start at 1, not 0
+						}
+					}else{
+						throw new Exception("Expecting token 'Face' but got "+firstToken);
+					}
+					stlBufferedWriter.write("endloop\n");
+					stlBufferedWriter.write("endfacet\n");
+				}while((line = salkBufferedReader.readLine()) != null);
+				stlBufferedWriter.write("endsolid VCell salk convert\n");
+
+				stlBufferedWriter.close();
+				surfaceCollection = StlReader.readStl(tempstlFile);
 			}
-			stlBufferedWriter = new BufferedWriter(new FileWriter(tempstlFile));
-			stlBufferedWriter.write("solid VCell salk convert\n");
-			//read faces
-			do{
-				stlBufferedWriter.write("facet normal 0 0 0\n");
-				stlBufferedWriter.write("outer loop\n");
-				StringTokenizer st = new StringTokenizer(line," ");
-				String firstToken = st.nextToken();
-				Integer.parseInt(st.nextToken());//ignore index token
-				if(firstToken.equals("Face")){
-					for (int i = 0; i < 3; i++) {
-						int vertListIndex = Integer.parseInt(st.nextToken())-1;
-						double[] vertCoordinatges = vertList.get(vertListIndex);
-						stlBufferedWriter.write("vertex "+vertCoordinatges[0]+" "+vertCoordinatges[1]+" "+vertCoordinatges[2]+"\n");//indexes start at 1, not 0
-					}
-				}else{
-					throw new Exception("Expecting token 'Face' but got "+firstToken);
-				}
-				stlBufferedWriter.write("endloop\n");
-				stlBufferedWriter.write("endfacet\n");
-			}while((line = salkBufferedReader.readLine()) != null);
-			stlBufferedWriter.write("endsolid VCell salk convert\n");
-			
-			stlBufferedWriter.close();
-			surfaceCollection = StlReader.readStl(tempstlFile);
 		}catch(Exception e){
 			//we couldn't read this for some reason
 			e.printStackTrace();
@@ -1193,9 +1191,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 
 						DataInputStream dis = null;
 						try{
-							BufferedInputStream bis = new BufferedInputStream(new FileInputStream(imageFile));
-							bis = new BufferedInputStream(new FileInputStream(imageFile));
-							dis = new DataInputStream(bis);
+							dis = new DataInputStream(new BufferedInputStream(new FileInputStream(imageFile)));
 							int xsize = 1;
 							int ysize = 1;
 							int zsize = 1;
@@ -1207,6 +1203,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 							int dimension = -1;
 							//read header lines
 							while(true){
+								@SuppressWarnings("deprecation")
 								String line = dis.readLine();
 								if(line == null || line.length() == 0){
 									break;
@@ -1259,6 +1256,7 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 									encoding = NRRDENCODING.valueOf(stringTokenizer.nextToken().toUpperCase());
 								}
 							}
+							BufferedInputStream bis = null; 
 							if(encoding == NRRDENCODING.GZIP){
 								dis.close();
 								bis = new BufferedInputStream(new FileInputStream(imageFile));
@@ -2189,6 +2187,7 @@ public static void downloadExportedData(final Component requester, final UserPre
  * Creation date: (5/21/2004 4:20:47 AM)
  */
 public void exitApplication() {
+	try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 	if (!bExiting) {
 		// close all windows - this will run checks
 		boolean closedAllWindows = closeAllWindows(true);
@@ -2211,6 +2210,7 @@ public void exitApplication() {
 	} else {
 		// simply exit in this case
 		System.exit(0);
+	}
 	}
 }
 
