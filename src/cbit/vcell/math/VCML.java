@@ -227,4 +227,5 @@ public class VCML {
 	public final static String RefineRatio = "RefineRatio";		
 	public final static String SaveVCellOutput = "SaveVCellOutput";		
 	public final static String SaveChomboOutput = "SaveChomboOutput";		
+	public final static String TagsGrow = "TagsGrow";		
 }

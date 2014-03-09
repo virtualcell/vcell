@@ -13,14 +13,18 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 
 public class RefinementLevel implements Serializable, Matchable {
+	public final static int defaultTagsGrow = 2;
+	private final static int noTagsGrow = 0;
 	private int refineRatio = 2;
 	private Expression roiExpression = null;
+	private int tagsGrow = defaultTagsGrow;
 	
 	public RefinementLevel() {
 	}
 	
-	public RefinementLevel(int ratio, String roi) throws ExpressionException {
+	public RefinementLevel(int ratio, int tagsGrow, String roi) throws ExpressionException {
 		refineRatio  = ratio;
+		this.tagsGrow = tagsGrow;
 		setRoiExpression(roi);
 	}
 	
@@ -30,6 +34,7 @@ public class RefinementLevel implements Serializable, Matchable {
 
 	public RefinementLevel(RefinementLevel rl) {
 		refineRatio = rl.refineRatio;
+		tagsGrow = rl.tagsGrow;
 		if (rl.roiExpression != null)
 		{
 			roiExpression = new Expression(rl.roiExpression);
@@ -54,6 +59,7 @@ public class RefinementLevel implements Serializable, Matchable {
 
 		buffer.append(VCML.RefinementLevel + " " + VCML.BeginBlock + "\n");
 		buffer.append(VCML.RefineRatio + " " + refineRatio + "\n");
+		buffer.append(VCML.TagsGrow + " " + tagsGrow + "\n");
 		if (roiExpression != null)
 		{
 			buffer.append("\t" + VCML.ROIExpression + " " + roiExpression.infix() + ";\n");
@@ -90,6 +96,10 @@ public class RefinementLevel implements Serializable, Matchable {
 					token = tokens.nextToken();
 					refineRatio = Integer.parseInt(token);
 				}
+				else if (token.equalsIgnoreCase(VCML.TagsGrow)) {
+					token = tokens.nextToken();
+					tagsGrow = Integer.parseInt(token);
+				}
 				else if (token.equalsIgnoreCase(VCML.ROIExpression))
 				{
 					token = tokens.readToSemicolon();
@@ -125,6 +135,10 @@ public class RefinementLevel implements Serializable, Matchable {
 		{
 			return false;
 		}
+		if (tagsGrow != rl.tagsGrow)
+		{
+			return false;
+		}
 		return true;
 	}
 	public Expression getRoiExpression() {
@@ -143,5 +157,20 @@ public class RefinementLevel implements Serializable, Matchable {
 			}
 		}
 		this.roiExpression = exp;
+	}
+		
+	public void enableTagsGrow(boolean bEnabled)
+	{
+		tagsGrow = bEnabled ? defaultTagsGrow : noTagsGrow;
+	}
+	
+	public boolean isTagsGrowEnabled()
+	{
+		return tagsGrow == defaultTagsGrow;
+	}
+	
+	public int getTagsGrow()
+	{
+		return tagsGrow;
 	}
 }

@@ -607,6 +607,7 @@ public class XMLTags {
   public final static String MeshRefinementTag = "MeshRefinement";
   public final static String RefinementLevelTag = "RefinementLevel";
   public final static String RefineRatioAttrTag = "RefineRatio";
+  public final static String TagsGrowAttrTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
 	
 }
