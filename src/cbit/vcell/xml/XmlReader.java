@@ -6256,13 +6256,19 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 				List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
 				for (Element levelElement : levelElementList) {
 					String ratio = levelElement.getAttributeValue(XMLTags.RefineRatioAttrTag);
+					String tagsGrowStr = levelElement.getAttributeValue(XMLTags.TagsGrowAttrTag);
+					int tagsGrow = RefinementLevel.defaultTagsGrow;
+					if (tagsGrowStr != null)
+					{
+						tagsGrow = Integer.parseInt(tagsGrowStr);
+					}
 					Element roi = levelElement.getChild(XMLTags.ROIExpressionTag, vcNamespace);
 					String roiExp = null;
 					if (roi != null)
 					{
 						roiExp = roi.getText();
 					}
-					RefinementLevel rfl = new RefinementLevel(Integer.parseInt(ratio), roiExp);
+					RefinementLevel rfl = new RefinementLevel(Integer.parseInt(ratio), tagsGrow, roiExp);
 					refineLevelList.add(rfl);
 				}
 			}

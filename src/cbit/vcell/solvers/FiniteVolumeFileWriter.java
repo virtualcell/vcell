@@ -235,6 +235,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		MAX_BOX_SIZE,
 		RELATIVE_TOLERANCE,
 		VIEW_LEVEL,
+		TAGS_GROW,
 		SAVE_VCELL_OUTPUT,
 		SAVE_CHOMBO_OUTPUT,
 		SUBDOMAINS,
@@ -2038,13 +2039,18 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.SAVE_CHOMBO_OUTPUT + " " + chomboSolverSpec.isSaveChomboOutput());
 		int numLevels = chomboSolverSpec.getNumRefinementLevels();
 		printWriter.println(FVInputFileKeyword.REFINEMENTS + " " + (numLevels + 1));
-		RefinementLevel rfl  = null;
 		for (int i = 0; i < numLevels; i ++) {		
-			rfl = chomboSolverSpec.getRefinementLevel(i);
+			RefinementLevel rfl = chomboSolverSpec.getRefinementLevel(i);
 			printWriter.println(rfl.getRefineRatio() 
 					+ (rfl.getRoiExpression() == null ? "" : " " + rfl.getRoiExpression().infix()  +";"));
 		}
 		printWriter.println("2"); // write last refinement ratio, fake	
+		printWriter.print(FVInputFileKeyword.TAGS_GROW);
+		for (int i = 0; i < numLevels; i ++) {		
+			RefinementLevel rfl = chomboSolverSpec.getRefinementLevel(i);
+			printWriter.print(" " + rfl.getTagsGrow());
+		}
+		printWriter.println(" 2"); // write last tags grow, fake	
 		
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
 		printWriter.println();

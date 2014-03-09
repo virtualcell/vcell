@@ -4201,6 +4201,7 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 			RefinementLevel rfl = param.getRefinementLevel(i);
 			Element levelElement = new Element(XMLTags.RefinementLevelTag);
 			levelElement.setAttribute(XMLTags.RefineRatioAttrTag, String.valueOf(rfl.getRefineRatio()));
+			levelElement.setAttribute(XMLTags.TagsGrowAttrTag, String.valueOf(rfl.getTagsGrow()));
 			if (rfl.getRoiExpression() != null)
 			{
 				Element roi = new Element(XMLTags.ROIExpressionTag);

@@ -109,7 +109,7 @@ public enum SolverDescription {
 	      SolverExecutable.Smoldyn), 
 	      
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step)","Chombo Standalone",
-	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.DEFAULT,
+	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_DirichletAtMembraneBoundary},
 	      SolverExecutable.VCellChombo), 
       ;
