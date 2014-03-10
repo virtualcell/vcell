@@ -19,6 +19,10 @@ package cbit.vcell.export;
  * @author: Ben Ramot
  */
 public class CSV {
+	/**
+	 * flag value for end of file on reading file
+	 */
+	private boolean endOfFile = false;
 /**
  * CSV constructor comment.
  */
@@ -75,18 +79,25 @@ private void flushString(java.io.BufferedWriter bufferedWriter) {
  * @param inputStream java.io.InputStream
  */
 public cbit.vcell.util.RowColumnResultSet importFrom(java.io.Reader reader) throws Exception {
+	endOfFile = false;
 	java.io.BufferedReader bufferedReader = new java.io.BufferedReader(reader);
 	cbit.vcell.util.RowColumnResultSet data = new cbit.vcell.util.RowColumnResultSet();
 	
-	String[] stringTokens;
 	double[] doubleTokens;
 
 	String firstLine = bufferedReader.readLine();//to read in column names.
 	//to read in first row of data to get an idea of data length(used for parsing column names).
-	doubleTokens = nextdoubles(bufferedReader);
+	do {
+		doubleTokens = nextdoubles(bufferedReader);
+	}
+	while (!endOfFile && doubleTokens == null);
+	
+	if (doubleTokens == null) {
+		throw new RuntimeException("No values found in CSV file. Please see help for required format.");
+	}
 	
 	//setup column names from header line
-	stringTokens = readColumnNames(firstLine, doubleTokens.length);
+	String stringTokens[] = readColumnNames(firstLine, doubleTokens.length);
 		
 	for (int i = 0; i < stringTokens.length; i++){
 		data.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(stringTokens[i]));
@@ -142,9 +153,12 @@ private String nextLine(java.io.BufferedReader bufferedReader) {
 private String[] nextStrings(java.io.BufferedReader bufferedReader) throws Exception{
 	try {
 		String s = nextLine(bufferedReader);
+		if (s == null) {
+			endOfFile = true;
+		}
 		
 		//check if end of file
-		if ((s==null) || (s.equals(""))) { return null; }
+		if (endOfFile || (s.equals(""))) { return null; }
 		
 		java.util.StringTokenizer tokenizer = new java.util.StringTokenizer(s, ",\t ");
 
