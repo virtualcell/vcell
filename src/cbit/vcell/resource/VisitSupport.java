@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.vcell.util.ExecutableException;
@@ -32,7 +31,7 @@ public class VisitSupport {
 		return new File(url.toURI());
 	}
 
-	public static <E> void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException
+	public static void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException
 	{
 		File script = 				getVisToolShellScript();
 		File visMainCLI =           getVisToolPythonScript();
