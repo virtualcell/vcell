@@ -68,6 +68,7 @@ public class CachedDataBaseReferenceReader {
 		if (r != null) {
 			return r;
 		}
+		r = new CachedDataBaseReferenceReader();
 		dbReader = new SoftReference<CachedDataBaseReferenceReader>(r);
 		return r;
 	}
