@@ -398,33 +398,41 @@ private void readHdf5SolutionMetaData(InputStream is) throws Exception
 		solFile.open();
 		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
 		Group rootGroup = (Group)rootNode.getUserObject();
-		Group solGroup = (Group)rootGroup.getMemberList().get(0);
+		List<HObject> solGroups = rootGroup.getMemberList();
 
-		List<HObject> memberList = solGroup.getMemberList();
-		for (HObject member : memberList)
+		for (HObject memberGroup : solGroups)
 		{
-			if (!(member instanceof Dataset)){
-				continue;
-			}
-			Dataset dataset = (Dataset)member;
-			String dsname = dataset.getName();
-			int vt = -1;
-			String domain = null;
-			List<Attribute> solAttrList = dataset.getMetadata();
-			for (Attribute attr : solAttrList)
+			if (memberGroup instanceof Group && memberGroup.getName().equals("solution"))
 			{
-				String attrName = attr.getName();
-				if(attrName.equals("variable type")){
-					Object obj = attr.getValue();
-					vt = ((int[])obj)[0];
-				} else if (attrName.equals("domain")) {
-					Object obj = attr.getValue();
-					domain = ((String[])obj)[0];
+				Group solGroup = (Group) memberGroup;
+				List<HObject> memberList = solGroup.getMemberList();
+				for (HObject member : memberList)
+				{
+					if (!(member instanceof Dataset)){
+						continue;
+					}
+					Dataset dataset = (Dataset)member;
+					String dsname = dataset.getName();
+					int vt = -1;
+					String domain = null;
+					List<Attribute> solAttrList = dataset.getMetadata();
+					for (Attribute attr : solAttrList)
+					{
+						String attrName = attr.getName();
+						if(attrName.equals("variable type")){
+							Object obj = attr.getValue();
+							vt = ((int[])obj)[0];
+						} else if (attrName.equals("domain")) {
+							Object obj = attr.getValue();
+							domain = ((String[])obj)[0];
+						}
+					}
+					long[] dims = dataset.getDims();
+					String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
+					dataBlockList.addElement(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
 				}
+				break;
 			}
-			long[] dims = dataset.getDims();
-			String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
-			dataBlockList.addElement(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
 		}
 	} finally {
 		try {
