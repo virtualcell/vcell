@@ -68,8 +68,6 @@ public class CachedDataBaseReferenceReader {
 		if (r != null) {
 			return r;
 		}
-		System.out.println("creating new CachedDataBaseReferenceReader");
-		r = new CachedDataBaseReferenceReader();
 		dbReader = new SoftReference<CachedDataBaseReferenceReader>(r);
 		return r;
 	}
