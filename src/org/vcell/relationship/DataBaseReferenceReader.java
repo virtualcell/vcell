@@ -62,7 +62,6 @@ public class DataBaseReferenceReader {
 	public static final String InterproDBName = "interpro";
 	public static final String Interpro_EntryTag	= "interpro";
 	public static final String Interpro_NameTag = "name";
-	private static final String dataBaseName = UniprotDBName;
 	private static final String format = "uniprotxml";
 	private static final String style = "default";
 	private static final String GO_URL_prefix = "http://www.ebi.ac.uk/QuickGO/GTerm?id=GO:";
