@@ -221,25 +221,26 @@ public class AnnotationMapping {
 	}
 	
 	public static ArrayList<String> getNameRef(ArrayList<Xref> xRef, String entryName){
+		CachedDataBaseReferenceReader dbReader = CachedDataBaseReferenceReader.getCachedReader();
 		ArrayList<String> names = new ArrayList<String>();
 		for(Xref xref : xRef){
 			try {
 //				System.out.println(xref.getDb() + "***" + xref.getId());
 				if(xref.getDb().toLowerCase().equals("uniprot")){
-					String name = DataBaseReferenceReader.getMoleculeDataBaseReference(xref.getId());
+					String name = dbReader.getMoleculeDataBaseReference(xref.getId());
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("interpro")){
-					String name = DataBaseReferenceReader.getMoleculeDataBaseReference("interpro", xref.getId());
+					String name = dbReader.getMoleculeDataBaseReference("interpro", xref.getId());
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("obo.chebi")){
 					String id = xref.getId().substring(6);
-					String name = DataBaseReferenceReader.getChEBIName(id);
+					String name = dbReader.getChEBIName(id);
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}else if(xref.getDb().toLowerCase().equals("gene_ontology")){
-					String name = DataBaseReferenceReader.getGOTerm(xref.getId());
+					String name = dbReader.getGOTerm(xref.getId());
 					if(name != null)names.add(name);
 //					System.out.println(xref.getId() + ">>>>>>>"+ name);
 				}
@@ -279,6 +280,8 @@ public class AnnotationMapping {
 				e.printStackTrace();
 			} catch (DataAccessException e) {
 				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
