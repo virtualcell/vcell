@@ -63,14 +63,31 @@ public class CachedDataBaseReferenceReader {
 		
 	}
 
+	/**
+	 * return reference to new or existing cached reader. Return value should only be assigned to local (method) variables
+	 * to prevent a hard reference locking in memory
+	 * @return new or existing reader
+	 */
 	public static CachedDataBaseReferenceReader getCachedReader( ) {
 		CachedDataBaseReferenceReader r = dbReader.get();
 		if (r != null) {
 			return r;
 		}
-		r = new CachedDataBaseReferenceReader();
-		dbReader = new SoftReference<CachedDataBaseReferenceReader>(r);
+		//use synchronized section for thread safety
+		synchronized(dbReader) {
+			r = dbReader.get();
+			if (r != null) {
+				return r;
+			}
+			r = new CachedDataBaseReferenceReader();
+			dbReader = new SoftReference<CachedDataBaseReferenceReader>(r);
+		}
 		return r;
+	}
+	
+	//package level for unit testing
+	static void clearExisting( ) {
+		dbReader = new SoftReference<CachedDataBaseReferenceReader>(null);
 	}
 
 	/** 
