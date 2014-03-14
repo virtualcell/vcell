@@ -13,6 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+
+import cbit.vcell.resource.ResourceUtil;
 
 /**
  * Insert the type's description here.
@@ -28,7 +31,6 @@ public class Executable {
 	private ExecutableStatus status = null;
 	private long timeoutMS = 0;
 	private File workingDir = null;
-	private String[] execEnvVars = null;
 	
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -98,12 +100,13 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 		setOutputString("");
 		setErrorString("");
 		setExitValue(null);
+		ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
+		ResourceUtil.setEnvForOperatingSystem(pb.environment());
+		pb.directory(workingDir);
 		// start the process
-		if(workingDir == null && execEnvVars == null){
-			setProcess(Runtime.getRuntime().exec(command));
-		}else{
-			setProcess(Runtime.getRuntime().exec(command,execEnvVars,workingDir));
-		}
+		Process p = pb.start();
+		setProcess(p);
+		
 		// monitor the process; blocking call
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
@@ -440,11 +443,4 @@ public void setWorkingDir(File workingDir) {
 	this.workingDir = workingDir;
 }
 
-public String[] getExecEnvVars() {
-	return execEnvVars;
-}
-
-public void setExecEnvVars(String[] execEnvVars) {
-	this.execEnvVars = execEnvVars;
-}
 }

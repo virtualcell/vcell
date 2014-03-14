@@ -120,30 +120,33 @@ public class ResourceUtil {
 		if (!exe.exists()) {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
+		ArrayList<String> requiredLibraries = new ArrayList<String>();
 		if (bWindows) {
-			ArrayList<String> requiredDlls = new ArrayList<String>();
 			if (b64bit){
-				requiredDlls.add("glut64.dll");
+				requiredLibraries.add("glut64.dll");
 			}else{
-				requiredDlls.add("glut32.dll");
+				requiredLibraries.add("glut32.dll");
 			}
 
 			if (sl == SpecialLicense.CYGWIN) {
-				requiredDlls.add("cyggcc_s-seh-1.dll");
-				requiredDlls.add("cygstdc++-6.dll");
-				requiredDlls.add("cyggfortran-3.dll");
-				requiredDlls.add("cygquadmath-0.dll");
-				requiredDlls.add("cygwin1.dll");
+				requiredLibraries.add("cyggcc_s-seh-1.dll");
+				requiredLibraries.add("cygstdc++-6.dll");
+				requiredLibraries.add("cyggfortran-3.dll");
+				requiredLibraries.add("cygquadmath-0.dll");
+				requiredLibraries.add("cygwin1.dll");
 			}
-			for (String dllName : requiredDlls){
-				String RES_DLL = RES_PACKAGE + "/" + dllName;
-				File file_dll = new java.io.File(getSolversDirectory(), dllName);
-				if (!librariesLoaded.contains(file_dll)) {
-					if (!file_dll.exists()) {
-						ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
-					}
-					librariesLoaded.add(file_dll);
+		}
+		else {
+			requiredLibraries.add("libgfortran.so.3");
+		}
+		for (String dllName : requiredLibraries){
+			String RES_DLL = RES_PACKAGE + "/" + dllName;
+			File file_dll = new java.io.File(getSolversDirectory(), dllName);
+			if (!librariesLoaded.contains(file_dll)) {
+				if (!file_dll.exists()) {
+					ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
 				}
+			librariesLoaded.add(file_dll);
 			}
 		}
 		return exe;
@@ -449,6 +452,25 @@ public class ResourceUtil {
 	 * @throws RuntimeException if PATH environmental not set
 	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
 		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
+	}
+	
+	/**
+	 * add system specific environment settings
+	 * @param envs
+	 */
+	public static void setEnvForOperatingSystem(Map<String,String> env) {
+		if (bLinux) {
+			final String LIBPATH="LD_LIBRARY_PATH";
+			String existing = env.get(LIBPATH);
+			if (existing == null) {
+				env.put(LIBPATH,getSolversDirectory().getAbsolutePath());
+				return;
+			}
+			else {
+				existing += FileUtils.PATHSEP + getSolversDirectory().getAbsolutePath(); 
+				env.put(LIBPATH,existing);
+			}
+		}
 	}
 
 	/**
