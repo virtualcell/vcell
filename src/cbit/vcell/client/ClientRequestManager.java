@@ -2633,14 +2633,6 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
 	}
 	
-	AsynchClientTask task0 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if (! inNewWindow) {
-				// request was to replace the document in an existing window
-				getMdiManager().blockWindow(requester.getManagerID());
-			}
-		}
-	};
 	AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2699,7 +2691,10 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			if (doc instanceof BioModel) {
 				BioModel bioModel = (BioModel) doc;
 				try{
+					long start = System.currentTimeMillis();
 					bioModel.getVCMetaData().createBioPaxObjects(bioModel);
+					long end = System.currentTimeMillis();
+					System.err.println("biopax took " + (end - start) + "milliseconds");
 				}catch(Exception e){
 					e.printStackTrace();
 				}
@@ -2739,7 +2734,21 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			}
 		}		
 	};
-	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task0, task1, task2}, false);
+	AsynchClientTask tasklist[] = null;
+	if (inNewWindow) {
+		AsynchClientTask task0 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+					// request was to replace the document in an existing window
+					getMdiManager().blockWindow(requester.getManagerID());
+			}
+		};
+		tasklist = new AsynchClientTask[]{task0, task1, task2};
+	}
+	else {
+		tasklist = new AsynchClientTask[]{task1, task2};
+	}
+	assert tasklist != null;
+	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), tasklist, false);
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
