@@ -87,7 +87,7 @@ public class NativeLoader {
 	/**
 	 * preferences to use
 	 */
-	private Preferences pref = Preferences.systemNodeForPackage(NativeLoader.class);
+	private Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
 	/**
 	 * map of files in native lib directory
 	 */
@@ -313,7 +313,7 @@ public class NativeLoader {
 		try {
 			boolean clean = true; //set true to reload from scratch
 			if (clean) {
-				Preferences pref = Preferences.systemNodeForPackage(NativeLoader.class);
+				Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
 				pref.remove(PREFS_KEY);
 			}
 			
