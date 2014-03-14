@@ -84,6 +84,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class ClientSimManager implements java.beans.PropertyChangeListener {
 	
+@SuppressWarnings("serial")
 public class LocalVCSimulationDataIdentifier extends VCSimulationDataIdentifier implements LocalVCDataIdentifier {
 
 	private File localSimDir = null;
