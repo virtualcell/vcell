@@ -35,6 +35,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SimpleUserMessage;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
@@ -579,6 +580,17 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 			Simulation simulation = new TempSimulation(originalSimulation, false);
 			StdoutSessionLog log = new StdoutSessionLog("Quick run");
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+			SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
+			if (!ResourceUtil.isLicensed(solverDescription.specialLicense)) {
+				String r = DialogUtils.showOKCancelWarningDialog(getDocumentWindowManager().getComponent(),"License acceptance required",
+						solverDescription.specialLicense.licenseText);
+				if (SimpleUserMessage.OPTION_CANCEL.equals(r)) {
+					throw new UserCancelException("no license");
+				}
+				else {
+					ResourceUtil.acceptLicense(solverDescription.specialLicense);
+				}
+			}
 			Solver solver = createQuickRunSolver(log, localSimDataDir, simTask);
 			if (solver == null) {
 				throw new RuntimeException("null solver");

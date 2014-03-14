@@ -16,21 +16,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-
-
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverDescription.SpecialLicense;
 import cbit.vcell.solver.SolverExecutable;
 import cbit.vcell.util.NativeLoader;
 
@@ -57,6 +58,14 @@ public class ResourceUtil {
 	 * name of native library directory (leaf only)
 	 */
 	public final static String NATIVE_LIB_DIR; 
+	/**
+	 * has the user accepted special license? 
+	 */
+	private static Boolean specialLicenseAccepted[] = new Boolean[SpecialLicense.size];
+	/**
+	 * preferences key prefix 
+	 */
+	private static final String LICENSE_ACCEPTED = "licenseAccepted";
 	static {
 		String BIT_SUFFIX = "";
 		if (b64bit) {
@@ -92,45 +101,99 @@ public class ResourceUtil {
 
 	private static File solversDirectory = null;
 
-	private static boolean windowsDllsLoaded = false;
+	private static List<File>  librariesLoaded = new ArrayList<File>();
 	private static boolean nativeLoaded = false; 
 	/**
 	 * @param basename name of executable without path or os specific extension
+	 * @param sl special license, may be null 
 	 * @param firstLoad is the first exe loaded?
 	 * @return executable
-	 * @throws IOException
+	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
 	 */
-	private static File loadExecutable(String basename) throws IOException {
+	private static File loadExecutable(String basename, SpecialLicense sl) throws IOException {
+		if (!isLicensed(sl)) {
+			throw new UnsupportedOperationException("Unable to run " + basename + " because " + sl.toString( ) + " software license not accepted.");
+		}
 		String name = basename + EXE_BIT_SUFFIX;
 		String res = RES_PACKAGE + "/" + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
 		if (!exe.exists()) {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
-		if (bWindows && !windowsDllsLoaded) {
-			String requiredDlls[] = {
-					null, //slot for glut dll
-					"cyggcc_s-seh-1.dll",
-					"cygstdc++-6.dll",
-					"cyggfortran-3.dll",
-					"cygquadmath-0.dll"
-			};
+		if (bWindows) {
+			ArrayList<String> requiredDlls = new ArrayList<String>();
 			if (b64bit){
-				requiredDlls[0] = "glut64.dll";
+				requiredDlls.add("glut64.dll");
 			}else{
-				requiredDlls[0] = "glut32.dll";
+				requiredDlls.add("glut32.dll");
 			}
 
+			if (sl == SpecialLicense.CYGWIN) {
+				requiredDlls.add("cyggcc_s-seh-1.dll");
+				requiredDlls.add("cygstdc++-6.dll");
+				requiredDlls.add("cyggfortran-3.dll");
+				requiredDlls.add("cygquadmath-0.dll");
+				requiredDlls.add("cygwin1.dll");
+			}
 			for (String dllName : requiredDlls){
 				String RES_DLL = RES_PACKAGE + "/" + dllName;
 				File file_dll = new java.io.File(getSolversDirectory(), dllName);
-				if (!file_dll.exists()) {
-					ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
+				if (!librariesLoaded.contains(file_dll)) {
+					if (!file_dll.exists()) {
+						ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
+					}
+					librariesLoaded.add(file_dll);
 				}
 			}
-			windowsDllsLoaded = true;
 		}
 		return exe;
+	}
+	
+	/**
+	 * determine if licensed is required and user has accepted 
+	 * @return true if has
+	 */
+	public static boolean isLicensed(SpecialLicense license) {
+		if (license == null) {
+			return true;
+		}
+		//change to case statement if additional licenses added
+		if (license == SpecialLicense.CYGWIN) {
+			if (!bWindows) {
+				return true;
+			}
+		}
+			
+		int index = license.ordinal();
+		if (specialLicenseAccepted[index] == null) {
+			Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
+			specialLicenseAccepted[index] = uprefs.getBoolean(LICENSE_ACCEPTED + license.name(),false);
+		}
+		return specialLicenseAccepted[index];
+	}
+	
+	/**
+	 * 
+	 * @param license
+	 * @throws IllegalArgumentException if license null
+	 */
+	public static void acceptLicense(SpecialLicense license) {
+		if (license == null) {
+			throw new IllegalArgumentException("null license object");
+		}
+		int index = license.ordinal();
+		specialLicenseAccepted[index] = true; 
+		Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
+		uprefs.putBoolean(LICENSE_ACCEPTED + license.name(),true);
+	}
+	
+	//for junit testing
+	static void clearLicense(SpecialLicense license) {
+		assert license != null;
+		int index = license.ordinal();
+		specialLicenseAccepted[index] = null; 
+		Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
+		uprefs.remove(LICENSE_ACCEPTED + license.name());
 	}
 
 	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
@@ -304,7 +367,7 @@ public class ResourceUtil {
 			File files[] = new File[nameInfos.length];
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = loadExecutable(ni.exeName);
+				File exe = loadExecutable(ni.exeName, sd.specialLicense);
 				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
 				files[i] = exe; 
 			}

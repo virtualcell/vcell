@@ -14,6 +14,7 @@ package org.vcell.util;
  * Creation date: (6/1/2004 12:05:40 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class UserCancelException extends RuntimeException {
 	public static final UserCancelException CANCEL_NEW_NAME = new UserCancelException("User canceled when prompted for a new name");
 	public static final UserCancelException WARN_UNABLE_CHECK = new UserCancelException("User canceled on warning: unable to check for changes");
@@ -31,7 +32,7 @@ public class UserCancelException extends RuntimeException {
  * UserCancelException constructor comment.
  * @param s java.lang.String
  */
-private UserCancelException(String s) {
+public UserCancelException(String s) {
 	super(s);
 }
 public static UserCancelException createCustomUserCancelException(String message){
