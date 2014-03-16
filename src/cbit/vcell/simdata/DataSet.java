@@ -554,6 +554,10 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 				{
 					String varPath = Hdf5Utils.getVolVarExtrapolatedValuesPath(varName);
 					HObject solObj = FileFormat.findObject(solFile, varPath);
+					if (solObj == null)
+					{
+						throw new IOException("Extrapolated values for variable '" + varName + "' does not exist in the results.");
+					}
 					if (solObj instanceof Dataset)
 					{
 						Dataset dataset = (Dataset)solObj;
