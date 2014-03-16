@@ -2289,5 +2289,40 @@ public VCDataIdentifier getVcDataId() {
 	return vcDataId;
 }
 
+	public synchronized SimDataBlock getChomboExtrapolatedValues(String varName, double time) throws DataAccessException, IOException 
+	{
+		refreshLogFile();	
+				
+		File pdeFile = getPDEDataFile(time);
+		if (pdeFile==null){
+			return null;
+		}
+		DataSet dataSet = new DataSet();
+		File zipFile = null;
+		
+		try  {
+			zipFile = getPDEDataZipFile(time);
+		} catch (DataAccessException ex) {
+			zipFile = null;
+		}
+		
+		try {
+			dataSet.read(pdeFile, zipFile);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			throw new DataAccessException("data at time="+time+" read error",ex);
+		}
+			
+		long lastModified = getLastModified(pdeFile, zipFile);
+		DataSetIdentifier dsi = getDataSetIdentifier(varName);
+		if (dsi == null) {
+			throw new DataAccessException("data not found for variable " + varName);
+		}
+		final String varNameInDataSet = dsi.getQualifiedName();
+		double data[] = DataSet.readChomboExtrapolatedValues(varNameInDataSet, pdeFile, zipFile);
+		VariableType variableType = VariableType.MEMBRANE;
+		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
+		return data == null ? null : new SimDataBlock(pdeDataInfo,data,variableType);
+	}
 
 }
