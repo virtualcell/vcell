@@ -155,7 +155,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 			int numRefinementLevels = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
 			if (columnIndex == COLUMN_Level)
 			{
-				return rowIndex + 1;
+				return numRefinementLevels == 0 ? "" : rowIndex + 1;
 			}
 			if (numRefinementLevels == 0 || rowIndex >= numRefinementLevels)
 			{

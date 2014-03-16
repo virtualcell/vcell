@@ -88,6 +88,7 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -215,6 +216,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 	private File primaryRootDirectory =  null;
 	private File secondaryRootDirectory =  null;
 	private Cachetable cacheTable0 = null;
+	private Cachetable chomboExtrapolatedValuesCache = null;
 	private Vector<DataJobListener> aDataJobListener = null;
 	//
 	public static class SpatialStatsInfo {
@@ -1751,7 +1753,10 @@ private SimDataBlock evaluateFunction(
 						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);
 					} else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
 						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);
-					} else {
+					} else if (mesh.isChomboMesh()){
+						args[TXYZ_OFFSET + j] = getChomboExtrapolatedValues(vcdID, dsi.getName(), time).getData()[i];
+					}
+					else {
 						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,dsi.getDomain(), i,simDataHolder,false);
 					}
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)) {
@@ -4277,4 +4282,58 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 	return simData.getVCellSimFiles();
 }
 
+	private SimDataBlock getChomboExtrapolatedValues(VCDataIdentifier vcdID, String varName, double time) throws DataAccessException
+	{
+		final String methodName = "DataSetControllerImpl.getSimDataBlock(" + varName + ", " + time + ")";
+		VCMongoMessage.sendTrace(methodName + " <<ENTER>>");
+
+		try {
+			//
+			// check if already cached for non-function variables
+			//
+			VCData vcData = getVCData(vcdID);
+			if (vcData == null || !(vcData instanceof SimulationData))
+			{
+				return null;
+			}
+			SimulationData simData = (SimulationData)vcData;
+			VCMongoMessage.sendTrace(methodName + " got VCData");
+			long dataBlockTimeStamp = simData.getDataBlockTimeStamp(PDE_DATA, time);
+			VCMongoMessage.sendTrace(methodName + " got dataBlockTimeStamp");
+			PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(), vcdID.getID(),varName,time,dataBlockTimeStamp);
+			SimDataBlock simDataBlock = null;
+			if (dataCachingEnabled && chomboExtrapolatedValuesCache == null)
+			{
+				chomboExtrapolatedValuesCache = new Cachetable(MessageConstants.MINUTE_IN_MS * 10);
+			}
+			simDataBlock = chomboExtrapolatedValuesCache.get(pdeDataInfo);
+			if (simDataBlock == null) {
+				VCMongoMessage.sendTrace(methodName + " read chombo extrapolated values");
+				simDataBlock = simData.getChomboExtrapolatedValues(varName, time);
+				if (simDataBlock != null && dataCachingEnabled) {
+					if(chomboExtrapolatedValuesCache != null){
+						try {
+							chomboExtrapolatedValuesCache.put(pdeDataInfo,simDataBlock);
+						} catch (CacheException e) {
+							// if can't cache the data, it is ok
+							e.printStackTrace();
+						}
+					}
+				}
+			}				
+			
+			if (simDataBlock != null) {
+				VCMongoMessage.sendTrace(methodName + "  <<EXIT-Success>>");
+				return simDataBlock;
+			}
+			
+			String msg = "failure reading "+varName+" at t="+time+" for "+vcdID.getOwner().getName()+"'s "+vcdID.getID();
+			log.alert(methodName +msg);
+			throw new DataAccessException(msg);			
+		} catch (Exception e){
+			log.exception(e);
+			VCMongoMessage.sendTrace(methodName + "  <<EXIT-Exception>>");
+			throw new DataAccessException(e.getMessage());
+		}
+	}
 }
