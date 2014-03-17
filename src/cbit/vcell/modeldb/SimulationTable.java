@@ -307,7 +307,8 @@ public SimulationRep getSimulationRep(ResultSet rset) throws IllegalArgumentExce
 	try {
 		solverTaskDescription = new SolverTaskDescription(new CommentStringTokenizer(taskDesc));
 	} catch (DataAccessException e) {
-		e.printStackTrace();
+		System.out.println("SimulationTable:getSimulationRep(): failed to parse solver task description, exception=["+e.getMessage()+"]::\n[[["+taskDesc+"]]]\n");
+//		e.printStackTrace();
 	}
 
 	CommentStringTokenizer mathOverridesTokenizer = getMathOverridesTokenizer(rset);

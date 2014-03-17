@@ -38,6 +38,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		LOCALCOMPUTE ("LclC"),   // local pde and ode
 		SERVERMANAGER ("ServerManager"),
 		TESTING_SERVICE ("TestingService"),
+		API ("Api"), 
 		RMI ("Rmi"), 
 		MASTER ("Master");
 		
