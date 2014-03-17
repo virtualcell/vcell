@@ -30,7 +30,9 @@ jmxargs=
 
 jvmprop="-Xmx${vcellservice_memoryMB}M -Dvcell.propertyfile=${common_propertyfile}"
 
-arguments="$*"
+keystorepassword=$1
+
+arguments="${vcellapi_keystorepath} ${keystorepassword} ${vcellapi_javascriptdir} ${common_logdir}"
 
 vcellapi_cp="${vcellapi_jars}:${vcellapi_root}/bin:${vcellapi_root}/resources"
 
@@ -40,9 +42,8 @@ classpath="${vcellapi_cp}:${common_jvm_jars}"
 #
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
-#nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} & 
 echo ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
-${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
+nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} &
 
-#exit 0
+exit 0
 

@@ -15,6 +15,8 @@ log into visitphineas as vcell (or another linux machine with svn and javac)
 > cp ../vcellapi/VCell_Rest/deployInfo/* .
 (copies vcellapi_compile, vcellapi_debug, vcellapi_run and vcellapi.include to this site's config directory) 
 
+chmod +x *
+
 > ./vcellapi_compile            // needs jdk 1.7
 
 > ./vcellapi_run 

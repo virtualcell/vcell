@@ -7,6 +7,9 @@
 #--------------------------------------
 vcellapi_root="${common_siteRootDir}/vcellapi/VCell_Rest"
 
+vcellapi_keystorepath="${vcellapi_root}/keys/keystore.jks"
+vcellapi_javascriptdir="${vcellapi_root}/docroot"
+
 vcellapi_jars="${vcellapi_root}/lib/serializer.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/xalan.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/xercesImpl.jar"

@@ -1,6 +1,7 @@
 package org.vcell.rest;
 
 import java.io.File;
+import java.util.Date;
 
 import org.restlet.Client;
 import org.restlet.Server;
@@ -15,6 +16,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCellServerID;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -24,6 +26,10 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+import cbit.vcell.message.server.ManageUtils;
+import cbit.vcell.message.server.ServiceInstanceStatus;
+import cbit.vcell.message.server.ServiceProvider;
+import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -41,73 +47,80 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			if (args.length!=3){
-				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir");
+			if (args.length!=4){
+				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir)");
 				System.exit(1);
 			}
-			String keystorePath = args[0];
+			File keystorePath = new File(args[0]);
+			if (!keystorePath.isFile()){
+				throw new RuntimeException("keystorePath '"+args[0]+"' file not found");
+			}
 			String keystorePassword = args[1];
 			File javascriptDir = new File(args[2]);
 			if (!javascriptDir.isDirectory()){
-				throw new RuntimeException("expecting a directory");
+				throw new RuntimeException("javascriptDir '"+args[2]+"' is not a directory");
 			}
+
+			PropertyLoader.loadProperties();
+			
+			//
+			// Redirect output to the logfile (append if exists)
+			//
+			String logdir = args[3];
+			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.API, 1, ManageUtils.getHostName(), new Date(), true);
+			ServiceProvider.initLog(serviceInstanceStatus, logdir);
 			
 		    System.out.println("connecting to database");
 
 			VCMessagingService vcMessagingService = null;
 			RestDatabaseService restDatabaseService = null;
 			UserVerifier userVerifier = null;
-			try {
-				PropertyLoader.loadProperties();
-				final SessionLog log = new StdoutSessionLog("VCellWebApi");
-				KeyFactory keyFactory = new OracleKeyFactory();
-				DbDriver.setKeyFactory(keyFactory);
-				ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-				DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-				LocalAdminDbServer localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
-				AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+
+			final SessionLog log = new StdoutSessionLog("VCellWebApi");
+			KeyFactory keyFactory = new OracleKeyFactory();
+			DbDriver.setKeyFactory(keyFactory);
+			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
+			LocalAdminDbServer localAdminDbServer = new LocalAdminDbServer(conFactory, keyFactory, log);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
+			
+			vcMessagingService = VCMessagingService.createInstance(new VCMessagingDelegate() {
 				
-				vcMessagingService = VCMessagingService.createInstance(new VCMessagingDelegate() {
-					
-					@Override
-					public void onTraceEvent(String string) {
-						System.out.println("Trace: "+string);
-					}
-					
-					@Override
-					public void onRpcRequestSent(VCRpcRequest vcRpcRequest, UserLoginInfo userLoginInfo, VCMessage vcRpcRequestMessage) {
-						System.out.println("request sent:");
-					}
-					
-					@Override
-					public void onRpcRequestProcessed(VCRpcRequest vcRpcRequest, VCMessage rpcVCMessage) {
-						System.out.println("request processed:");
-					}
-					
-					@Override
-					public void onMessageSent(VCMessage message, VCDestination desintation) {
-						System.out.println("message sent:");
-					}
-					
-					@Override
-					public void onMessageReceived(VCMessage vcMessage, VCDestination vcDestination) {
-						System.out.println("message received");
-					}
-					
-					@Override
-					public void onException(Exception e) {
-						System.out.println("Exception: "+e.getMessage());
-						e.printStackTrace();
-					}
-				});
-								
-				restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
+				@Override
+				public void onTraceEvent(String string) {
+					System.out.println("Trace: "+string);
+				}
 				
-				userVerifier = new UserVerifier(adminDbTopLevel);
+				@Override
+				public void onRpcRequestSent(VCRpcRequest vcRpcRequest, UserLoginInfo userLoginInfo, VCMessage vcRpcRequestMessage) {
+					System.out.println("request sent:");
+				}
 				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+				@Override
+				public void onRpcRequestProcessed(VCRpcRequest vcRpcRequest, VCMessage rpcVCMessage) {
+					System.out.println("request processed:");
+				}
+				
+				@Override
+				public void onMessageSent(VCMessage message, VCDestination desintation) {
+					System.out.println("message sent:");
+				}
+				
+				@Override
+				public void onMessageReceived(VCMessage vcMessage, VCDestination vcDestination) {
+					System.out.println("message received");
+				}
+				
+				@Override
+				public void onException(Exception e) {
+					System.out.println("Exception: "+e.getMessage());
+					e.printStackTrace();
+				}
+			});
+							
+			restDatabaseService = new RestDatabaseService(databaseServerImpl, localAdminDbServer, vcMessagingService, log);
+			
+			userVerifier = new UserVerifier(adminDbTopLevel);
 
 			VCMongoMessage.enabled=true;
 			VCMongoMessage.serviceStartup(ServiceName.unknown, new Integer(8080), args);
@@ -127,7 +140,7 @@ public class VCellApiMain {
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
-			parameters.add("keystorePath", keystorePath);
+			parameters.add("keystorePath", keystorePath.toString());
 			parameters.add("keystorePassword", keystorePassword);
 			parameters.add("keystoreType", "JKS");
 			parameters.add("keyPassword", keystorePassword);
