@@ -10,7 +10,6 @@
 
 package cbit.vcell.server;
 
-import java.awt.Component;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Hashtable;
@@ -27,13 +26,9 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.gui.DialogUtils;
-
-import com.sun.jmx.snmp.UserAcl;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -51,10 +46,10 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.desktop.LoginPanel;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 
+@SuppressWarnings("serial")
 public class UserRegistrationOP implements Serializable{
 	
 //	public static final String USERREGOP_NEWREGISTER = "USERREGOP_NEWREGISTER";
@@ -239,7 +234,7 @@ public class UserRegistrationOP implements Serializable{
 		
 		final RegistrationProvider finalRegistrationProvider = registrationProvider;
 		final String ORIGINAL_USER_INFO_HOLDER = "originalUserInfoHolder";
-		final String DIGESTED_USERIDS_KEY = "DIGESTED_USERIDS_KEY";
+		//final String DIGESTED_USERIDS_KEY = "DIGESTED_USERIDS_KEY";
 		AsynchClientTask gatherInfoTask = new AsynchClientTask("gathering user info for updating", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
