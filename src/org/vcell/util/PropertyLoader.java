@@ -139,7 +139,7 @@ public class PropertyLoader {
 	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",RequiredFor.NOT,ValueType.GEN);
 	public static final String installationRoot = record("vcell.installDir",RequiredFor.BOTH,ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
-
+	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);
 
 	/**
 	 * under which context(s) are we running? 

@@ -50,6 +50,9 @@ public class VCellClientTest {
  */
 public static void main(java.lang.String[] args) {
 	Logging.init( );
+	if (!ResourceUtil.isRunningInDebugger()) {
+		Logging.captureStandardOutAndError("vcellrun.log");
+	}
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));
