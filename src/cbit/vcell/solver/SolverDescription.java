@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import cbit.vcell.resource.SpecialLicense;
+
 
 /**
  * Insert the type's description here.
@@ -249,22 +251,6 @@ public enum SolverDescription {
 		}
 	}
 	
-	public enum SpecialLicense {
-		CYGWIN("Cygwin runtime provided under GNU General Public License v3 will be installed."); 
-		/**
-		 * number of enums
-		 */
-		public static final int size = values( ).length;
-		/**
-		 * license text 
-		 */
-		public final String licenseText;
-
-		private SpecialLicense(String licenseText) {
-			this.licenseText = licenseText;
-		}
-	}
-
 	private final boolean variableTimeStep;
 	private final boolean errorTolerance; 
 	private final TimeSpecCreated timeSpecType; 

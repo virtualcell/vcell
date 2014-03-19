@@ -583,8 +583,9 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
 			SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 			if (!ResourceUtil.isLicensed(solverDescription.specialLicense)) {
+				String licenseText = ResourceUtil.getLicenseText(solverDescription.specialLicense);
 				String r = DialogUtils.showOKCancelWarningDialog(getDocumentWindowManager().getComponent(),"License acceptance required",
-						solverDescription.specialLicense.licenseText);
+						licenseText);
 				if (SimpleUserMessage.OPTION_CANCEL.equals(r)) {
 					throw new UserCancelException("no license");
 				}

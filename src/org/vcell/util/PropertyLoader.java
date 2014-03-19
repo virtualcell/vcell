@@ -70,7 +70,7 @@ public class PropertyLoader {
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",RequiredFor.NOT,ValueType.GEN);
 	public static final String bioformatsClasspath			= record("vcell.bioformatsClasspath",RequiredFor.NOT,ValueType.GEN);
-	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",RequiredFor.NOT,ValueType.GEN);
+	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",RequiredFor.NOT,ValueType.URL);
 
 	//
 	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",RequiredFor.NOT,ValueType.GEN);
@@ -138,6 +138,7 @@ public class PropertyLoader {
 
 	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",RequiredFor.NOT,ValueType.GEN);
 	public static final String installationRoot = record("vcell.installDir",RequiredFor.BOTH,ValueType.DIR);
+	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
 
 
 	/**
@@ -219,12 +220,13 @@ public class PropertyLoader {
 		 */
 		EXE,
 		/**
-		 * a file
-		 */
-		INT
-		/**
 		 * integer number (not necessary Integer class, could be Long, e.g.)
+		 */ 
+		INT,
+		/**
+		 * url
 		 */
+		 URL
 	}
 
 	/**
@@ -573,6 +575,8 @@ public class PropertyLoader {
 			} catch (NumberFormatException e) {
 				report.append(entry.getKey() + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n"); 
 			}
+		case URL:
+			//not going to make trip web to verify at this point
 		}
 	}
 }
