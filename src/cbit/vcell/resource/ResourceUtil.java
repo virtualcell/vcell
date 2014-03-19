@@ -16,6 +16,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,7 +35,6 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverDescription.SpecialLicense;
 import cbit.vcell.solver.SolverExecutable;
 import cbit.vcell.util.NativeLoader;
 
@@ -114,32 +117,32 @@ public class ResourceUtil {
 		if (!isLicensed(sl)) {
 			throw new UnsupportedOperationException("Unable to run " + basename + " because " + sl.toString( ) + " software license not accepted.");
 		}
+		loadLicensedLibraries(sl);
 		String name = basename + EXE_BIT_SUFFIX;
 		String res = RES_PACKAGE + "/" + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
 		if (!exe.exists()) {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
-		ArrayList<String> requiredLibraries = new ArrayList<String>();
+		ArrayList<String> fromResourceLibraries = new ArrayList<String>();
 		if (bWindows) {
 			if (b64bit){
-				requiredLibraries.add("glut64.dll");
+				fromResourceLibraries.add("glut64.dll");
 			}else{
-				requiredLibraries.add("glut32.dll");
+				fromResourceLibraries.add("glut32.dll");
 			}
 
 			if (sl == SpecialLicense.CYGWIN) {
-				requiredLibraries.add("cyggcc_s-seh-1.dll");
-				requiredLibraries.add("cygstdc++-6.dll");
-				requiredLibraries.add("cyggfortran-3.dll");
-				requiredLibraries.add("cygquadmath-0.dll");
-				requiredLibraries.add("cygwin1.dll");
+				fromResourceLibraries.add("cyggcc_s-seh-1.dll");
+				fromResourceLibraries.add("cygstdc++-6.dll");
+				fromResourceLibraries.add("cyggfortran-3.dll");
+				fromResourceLibraries.add("cygquadmath-0.dll");
 			}
 		}
 		else {
-			requiredLibraries.add("libgfortran.so.3");
+			fromResourceLibraries.add("libgfortran.so.3");
 		}
-		for (String dllName : requiredLibraries){
+		for (String dllName : fromResourceLibraries){
 			String RES_DLL = RES_PACKAGE + "/" + dllName;
 			File file_dll = new java.io.File(getSolversDirectory(), dllName);
 			if (!librariesLoaded.contains(file_dll)) {
@@ -188,6 +191,65 @@ public class ResourceUtil {
 		specialLicenseAccepted[index] = true; 
 		Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
 		uprefs.putBoolean(LICENSE_ACCEPTED + license.name(),true);
+	}
+	
+	/**
+	 * download license file from Internet
+	 * @param license
+	 * @return license text from internet or default text if that fails 
+	 */
+	public static String getLicenseText(SpecialLicense license) {
+		try {
+			String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
+			urlS += license.category.name() + '/' + NATIVE_LIB_DIR + '/' + license.filename;
+			URL url = new URL(urlS);
+			try (InputStreamReader is = new InputStreamReader(url.openStream())) {
+				try (java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A")) {
+					return s.next(); 
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return license.licenseText; 
+
+	}
+	static {
+		if (SpecialLicense.size != 1) {
+			//if a new license is added, we need to update the routine below
+			throw new Error("Update ResourceUtil.loadLicensedLibraries");
+		}
+	}
+	
+	/**
+	 * download files required for license from Internet
+	 * @param license
+	 * @throws Exception
+	 */
+	static void loadLicensedLibraries(SpecialLicense license) throws IOException {
+		//per "You aren't gonna need it" we'll just do Cygwin for now
+		if (license != null) {
+			assert license == SpecialLicense.CYGWIN;
+		}
+		String libraryName = "cygwin1.dll";
+		File cygwinDll = new java.io.File(getSolversDirectory(), libraryName);
+		if (!librariesLoaded.contains(cygwinDll)) {
+			if (!cygwinDll.exists()) {
+				String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
+				urlS += license.category.name() + '/' + NATIVE_LIB_DIR + '/' + libraryName; 
+				URL url = new URL(urlS);
+				ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+				try (FileOutputStream fos = new FileOutputStream(cygwinDll)) {
+					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				}
+			}
+			librariesLoaded.add(cygwinDll) ;
+			return;
+		}
+		
+		
+		
 	}
 	
 	//for junit testing
@@ -532,4 +594,5 @@ public class ResourceUtil {
 			prefs.clear();
 		}
 	}
+	
 }
