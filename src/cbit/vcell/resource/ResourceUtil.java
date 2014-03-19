@@ -106,7 +106,152 @@ public class ResourceUtil {
 
 	private static List<File>  librariesLoaded = new ArrayList<File>();
 	private static boolean nativeLoaded = false; 
+	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
+		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+	
 	/**
+	 * class which can help find executable via some means
+	 */
+	public interface ExecutableFinder {
+		File find(String executableName);
+	}
+	/**
+	 * get executable based on name; will try stored values, common program names and optional finder 
+	 * @param name
+	 * @param useBitSuffix whether to use VCell rules for naming executable
+	 * @param efinder extra steps to find executable, may be null
+	 * @return executable file if it can be found
+	 * @throws FileNotFoundException if it can't
+	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException	{		String executableName = name;
+		if (useBitSuffix) {
+			executableName += EXE_BIT_SUFFIX;
+		}
+		else {
+			executableName += EXE_SUFFIX;
+		}
+		if (ExeCache.isCached(executableName)) {
+			return ExeCache.get(executableName);
+		}
+		//		// check the system path first		//
+		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
+		if (!exes.isEmpty()) {
+			return ExeCache.store(executableName, exes.iterator().next());
+		}
+		//		// not in path, look in common places		//		if (bWindows){
+			//use set to eliminate duplicates
+			Set<String> searchDirs = new HashSet<String>( );
+			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
+			for (String e : envs) {
+				String d = System.getenv(e);
+				if (d != null) {
+					searchDirs.add(d);
+				}
+			}
+			for (String pf :searchDirs) {
+				File programFiles = new File(pf);				if (programFiles.isDirectory()){					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));					if (!exes.isEmpty()) {
+						return ExeCache.store(executableName, exes.iterator().next());
+					}
+				}
+			}		}
+		if (efinder != null) {
+			File f = efinder.find(executableName);
+			if (f != null) {
+				return ExeCache.store(executableName, f);
+			}
+		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
+	 * @return system path directories
+	 * @throws RuntimeException if PATH environmental not set
+	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
+		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
+	}
+	
+	/**
+	 * add system specific environment settings
+	 * @param envs
+	 */
+	public static void setEnvForOperatingSystem(Map<String,String> env) {
+		if (bLinux) {
+			final String LIBPATH="LD_LIBRARY_PATH";
+			String existing = env.get(LIBPATH);
+			if (existing == null) {
+				env.put(LIBPATH,getSolversDirectory().getAbsolutePath());
+				return;
+			}
+			else {
+				existing += FileUtils.PATHSEP + getSolversDirectory().getAbsolutePath(); 
+				env.put(LIBPATH,existing);
+			}
+		}
+	}
+	
+	/**
+	 * is application running inside a debugger?
+	 * @return true if it is
+	 */
+	public static boolean isRunningInDebugger( ) {
+		return IS_DEBUG;
+	}
+
+	/**
+	 * store and retrieve executable locations in user preferences
+	 * make separate class to isolate implementation and to have distinct preferences
+	 */
+	static class ExeCache { //package level access for testing
+		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
+		private static Map<String,File>  cache = new HashMap<String, File>( );
+
+		static boolean isCached(String name) {
+			if (cache.containsKey(name)) {
+				return true;
+			}
+			String stored = prefs.get(name,null);
+			if (stored != null) {
+				File f = new File(stored);
+				if (f.canExecute()) {
+					cache.put(name, f);
+					return true;
+				}
+				//stored value is bad, so clear it
+				prefs.remove(name);
+			}
+			return false;
+		}
+
+		/**
+		 * get cached executable; call {@link #isCached(String)} to verify in cache
+		 * before calling
+		 * @param name
+		 * @return executable
+		 * @throws IllegalStateException if name not cached
+		 */
+		static File get(String name) {
+			if (!isCached(name)) {
+				throw new IllegalStateException(name + " not cached");
+			}
+			return cache.get(name);
+		}
+
+		/**
+		 * cache newly found file
+		 * @param name
+		 * @param f
+		 * @return f
+		 */
+		static File store(String name, File f) {
+			cache.put(name, f);
+			prefs.put(name, f.getAbsolutePath());
+			return f;
+		}
+		
+		/**
+		 * remove stored locations from cache
+		 * @throws BackingStoreException 
+		 */
+		static void forgetExecutableLocations( ) throws BackingStoreException {
+			prefs.clear();
+		}
+	
+	}	/**
 	 * @param basename name of executable without path or os specific extension
 	 * @param sl special license, may be null 
 	 * @param firstLoad is the first exe loaded?
@@ -459,140 +604,5 @@ public class ResourceUtil {
 	{
 		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot));
 		if (!installDirectory.exists() || !installDirectory.isDirectory()){			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");		}		return installDirectory;	}
-	
-	/**
-	 * class which can help find executable via some means
-	 */
-	public interface ExecutableFinder {
-		File find(String executableName);
-	}
-	/**
-	 * get executable based on name; will try stored values, common program names and optional finder 
-	 * @param name
-	 * @param useBitSuffix whether to use VCell rules for naming executable
-	 * @param efinder extra steps to find executable, may be null
-	 * @return executable file if it can be found
-	 * @throws FileNotFoundException if it can't
-	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException	{		String executableName = name;
-		if (useBitSuffix) {
-			executableName += EXE_BIT_SUFFIX;
-		}
-		else {
-			executableName += EXE_SUFFIX;
-		}
-		if (ExeCache.isCached(executableName)) {
-			return ExeCache.get(executableName);
-		}
-		//		// check the system path first		//
-		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
-		if (!exes.isEmpty()) {
-			return ExeCache.store(executableName, exes.iterator().next());
-		}
-		//		// not in path, look in common places		//		if (bWindows){
-			//use set to eliminate duplicates
-			Set<String> searchDirs = new HashSet<String>( );
-			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
-			for (String e : envs) {
-				String d = System.getenv(e);
-				if (d != null) {
-					searchDirs.add(d);
-				}
-			}
-			for (String pf :searchDirs) {
-				File programFiles = new File(pf);				if (programFiles.isDirectory()){					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));					if (!exes.isEmpty()) {
-						return ExeCache.store(executableName, exes.iterator().next());
-					}
-				}
-			}		}
-		if (efinder != null) {
-			File f = efinder.find(executableName);
-			if (f != null) {
-				return ExeCache.store(executableName, f);
-			}
-		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
-	 * @return system path directories
-	 * @throws RuntimeException if PATH environmental not set
-	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
-		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
-	}
-	
-	/**
-	 * add system specific environment settings
-	 * @param envs
-	 */
-	public static void setEnvForOperatingSystem(Map<String,String> env) {
-		if (bLinux) {
-			final String LIBPATH="LD_LIBRARY_PATH";
-			String existing = env.get(LIBPATH);
-			if (existing == null) {
-				env.put(LIBPATH,getSolversDirectory().getAbsolutePath());
-				return;
-			}
-			else {
-				existing += FileUtils.PATHSEP + getSolversDirectory().getAbsolutePath(); 
-				env.put(LIBPATH,existing);
-			}
-		}
-	}
-
-	/**
-	 * store and retrieve executable locations in user preferences
-	 * make separate class to isolate implementation and to have distinct preferences
-	 */
-	static class ExeCache { //package level access for testing
-		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
-		private static Map<String,File>  cache = new HashMap<String, File>( );
-
-		static boolean isCached(String name) {
-			if (cache.containsKey(name)) {
-				return true;
-			}
-			String stored = prefs.get(name,null);
-			if (stored != null) {
-				File f = new File(stored);
-				if (f.canExecute()) {
-					cache.put(name, f);
-					return true;
-				}
-				//stored value is bad, so clear it
-				prefs.remove(name);
-			}
-			return false;
-		}
-
-		/**
-		 * get cached executable; call {@link #isCached(String)} to verify in cache
-		 * before calling
-		 * @param name
-		 * @return executable
-		 * @throws IllegalStateException if name not cached
-		 */
-		static File get(String name) {
-			if (!isCached(name)) {
-				throw new IllegalStateException(name + " not cached");
-			}
-			return cache.get(name);
-		}
-
-		/**
-		 * cache newly found file
-		 * @param name
-		 * @param f
-		 * @return f
-		 */
-		static File store(String name, File f) {
-			cache.put(name, f);
-			prefs.put(name, f.getAbsolutePath());
-			return f;
-		}
-		
-		/**
-		 * remove stored locations from cache
-		 * @throws BackingStoreException 
-		 */
-		static void forgetExecutableLocations( ) throws BackingStoreException {
-			prefs.clear();
-		}
-	}
 	
 }
