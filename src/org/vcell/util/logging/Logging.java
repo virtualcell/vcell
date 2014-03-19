@@ -48,19 +48,30 @@ public class Logging {
 	public static void init() {
 	}
 	
-	public static void captureStandardOutAndError(String filename) {
-		boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.FALSE.toString()));
-		try {
-			FileOutputStream fos = new FileOutputStream(filename);
-			PrintStream output =  new  PrintStream(fos, autoflush);
-			System.setOut(output);
-			System.setErr(output);
-			Runtime.getRuntime().addShutdownHook(new FlushOnExit(output));
-		} catch (Exception e) {
-			e.printStackTrace();
+	/**
+	 * redirect standard err and out to filename; if autoflush property not set add shutdown hook
+	 * @param filename
+	 * @throws IllegalArgumentException if filename null
+	 */
+	public static void captureStandardOutAndError(String filename) throws IllegalArgumentException {
+		if (filename != null) {
+			boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.FALSE.toString()));
+			try {
+				FileOutputStream fos = new FileOutputStream(filename);
+				PrintStream output =  new  PrintStream(fos, autoflush);
+				System.setOut(output);
+				System.setErr(output);
+				if (!autoflush) {
+					Runtime.getRuntime().addShutdownHook(new FlushOnExit(output));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return;
 		}
+		throw new IllegalArgumentException("null filename passed");
 	}
-	
+
 	private static class FlushOnExit extends Thread {
 		final PrintStream printStream;
 		@Override
@@ -69,10 +80,7 @@ public class Logging {
 		}
 
 		public FlushOnExit(PrintStream printStream) {
-			super();
 			this.printStream = printStream;
 		}
-
 	}
-
 }
