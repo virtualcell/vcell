@@ -146,7 +146,7 @@ public class VCellApiMain {
 			Client clapClient = component.getClients().add(Protocol.CLAP);
 			
 	        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
-	        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.dbPassword.toCharArray())); 
+	        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword).toCharArray())); 
 	        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
 	        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
 	        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
