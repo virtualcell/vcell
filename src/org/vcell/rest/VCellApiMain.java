@@ -3,6 +3,13 @@ package org.vcell.rest;
 import java.io.File;
 import java.util.Date;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
+import javax.xml.bind.DatatypeConverter;
+
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -41,7 +48,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
 public class VCellApiMain {
-
 	  /**
 	 * @param args
 	 */
@@ -138,6 +144,12 @@ public class VCellApiMain {
 //			Client httpClient = component.getClients().add(Protocol.HTTP);
 			Client httpClient = component.getClients().add(Protocol.FILE);
 			Client clapClient = component.getClients().add(Protocol.CLAP);
+			
+	        SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
+	        SecretKey key = kf.generateSecret(new PBEKeySpec(PropertyLoader.dbPassword.toCharArray())); 
+	        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
+	        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(new byte[] {32,11,55,121,01,42,89,11}, 20)); 
+	        keystorePassword = new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(keystorePassword))); 
 			Server httpsServer = component.getServers().add(Protocol.HTTPS,8080);
 			Series<Parameter> parameters = httpsServer.getContext().getParameters();
 			parameters.add("keystorePath", keystorePath.toString());
