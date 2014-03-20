@@ -38,7 +38,7 @@ nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${
 
 #record pid of service
 echo -n "$! " >${common_logdir}/servicepid
-hostname >${common_logdir}/servicepid
+hostname >>${common_logdir}/servicepid
 
 exit 0
 
