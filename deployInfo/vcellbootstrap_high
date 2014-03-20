@@ -35,5 +35,9 @@ arguments="${bootstrap_rmihost} ${bootstrap_high_rmiport} messaging ${common_log
 #
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
 
+#record pid of service 
+echo -n "$! " >${common_logdir}/highpid
+hostname >>${common_logdir}/highpid
+
 exit 0
 

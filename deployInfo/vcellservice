@@ -2,7 +2,8 @@
 
 #
 # include common variable definitions
-#
+#:w
+
 DIR=${0%/*}
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . $DIR/vcell.include
@@ -34,6 +35,10 @@ arguments="123 ${common_logdir} ${common_batchSystemType}"
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${vcellservice_mainclass} ${arguments} &
+
+#record pid of service
+echo -n "$! " >${common_logdir}/servicepid
+hostname >${common_logdir}/servicepid
 
 exit 0
 

@@ -35,5 +35,8 @@ arguments="${bootstrap_rmihost} ${bootstrap_http_rmiport} messaging ${common_log
 #
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${bootstrap_mainclass} ${arguments} &
 
+#record pid of service 
+echo -n "$! ">${common_logdir}/httppid
+hostname >>${common_logdir}/httppid
 exit 0
 
