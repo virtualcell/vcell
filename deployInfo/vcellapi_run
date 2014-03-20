@@ -40,7 +40,7 @@ classpath="${vcellapi_cp}:${common_jvm_jars}"
 #
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
-echo ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
+#echo ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} 
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${classpath} ${jvmprop} ${vcellapi_mainclass} ${arguments} &
 
 exit 0
