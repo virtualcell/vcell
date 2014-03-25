@@ -23,7 +23,7 @@ common_siteTmpDir=${common_siteRootDir}/tmp
 common_siteLibDir=${common_siteRootDir}/lib
 export LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
-common_jre=java
+common_jre=${common_vcellInstallDir}/java/current/bin/java
 common_jvm_jars=GENERATED
 
 #--------------------------------------
@@ -41,13 +41,14 @@ bootstrap_memoryMB=800
 #--------------------------------------
 bootstrap_http_rmiport=GENERATED
 bootstrap_http_jmxport=GENERATED
+bootstrap_http_processLabel=${common_site}-rmi-http
 
 #--------------------------------------
 # rmi bootstrap services (high port) "vcellbootstrap_high"
 #--------------------------------------
 bootstrap_high_rmiport=GENERATED
 bootstrap_high_jmxport=GENERATED
-
+bootstrap_high_processLabel=${common_site}-rmi-high
 
 #--------------------------------------
 # vcell service "vcellservice"
@@ -55,8 +56,9 @@ bootstrap_high_jmxport=GENERATED
 vcellservice_mainclass=GENERATED
 vcellservice_jmxhost=GENERATED
 vcellservice_jmxport=GENERATED
+vcellservice_processLabel=${common_site}-master
 
-vcellservice_memoryMB=5000
+vcellservice_memoryGB=15
 
 #--------------------------------------
 # solver preProcessor "JavaPreprocessor64"
@@ -76,3 +78,8 @@ postprocessor_memoryMB=5000
 javasolver_mainclass=GENERATED
 javasolver_memoryMB=1000
 
+#--------------------------------------
+# result set crawler
+#--------------------------------------
+resultset_crawler_mainclass=GENERATED
+resultset_crawler_memoryMB=3000
