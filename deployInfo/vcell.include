@@ -58,7 +58,7 @@ vcellservice_jmxhost=GENERATED
 vcellservice_jmxport=GENERATED
 vcellservice_processLabel=${common_site}-master
 
-vcellservice_memoryMB=5000
+vcellservice_memoryGB=5
 
 #--------------------------------------
 # solver preProcessor "JavaPreprocessor64"
