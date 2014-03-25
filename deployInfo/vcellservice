@@ -2,7 +2,7 @@
 
 #
 # include common variable definitions
-#:w
+#
 
 DIR=${0%/*}
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
