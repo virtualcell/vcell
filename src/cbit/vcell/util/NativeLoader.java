@@ -78,7 +78,7 @@ public class NativeLoader {
 	/**
 	 * regex for Mac OS X shared libraries
 	 */
-	private final static String MAC_REGEX = ".*jnlib";
+	private final static String MAC_REGEX = ".*[jni|dy]lib";
 	
 	private static String nativeLibraryDirectory  = null;
 	
@@ -277,6 +277,7 @@ public class NativeLoader {
 			return true;
 		}
 		catch (Error e) {
+			System.err.println(new File (fullpath).getAbsolutePath());
 			if (isFailErrors()) {
 				recordError(e);
 			}
