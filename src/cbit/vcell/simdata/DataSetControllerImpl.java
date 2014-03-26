@@ -1749,15 +1749,28 @@ private SimDataBlock evaluateFunction(
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
 				if (simDataHolder.getVariableType().equals(VariableType.VOLUME)) {
-					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
-						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);
-					} else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
-						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);
-					} else if (mesh.isChomboMesh()){
-						args[TXYZ_OFFSET + j] = getChomboExtrapolatedValues(vcdID, dsi.getName(), time).getData()[i];
+					if (mesh.isChomboMesh())
+					{
+						String varName = dsi.getName();
+						if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX))
+						{
+							varName = varName.substring(0, varName.lastIndexOf(InsideVariable.INSIDE_VARIABLE_SUFFIX));
+						}
+						else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX))
+						{
+							varName = varName.substring(0, varName.lastIndexOf(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX));
+						}
+						args[TXYZ_OFFSET + j] = getChomboExtrapolatedValues(vcdID, varName, time).getData()[i];
 					}
-					else {
-						args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,dsi.getDomain(), i,simDataHolder,false);
+					else
+					{
+						if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
+							args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);
+						} else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){
+							args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);
+						} else {
+							args[TXYZ_OFFSET + j] = interpolateVolDataValToMemb(mesh,dsi.getDomain(), i,simDataHolder,false);
+						}
 					}
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION)) {
 					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
