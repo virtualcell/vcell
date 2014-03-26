@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
-import javax.swing.JOptionPane;
-
 import org.vcell.util.FileUtils;
 
 /**
@@ -67,6 +65,11 @@ public class NativeLoader {
 	 * our preferences key
 	 */
 	private final static String PREFS_KEY = "nativeLibs" ;
+	/*
+	 * our preferences key
+	 */
+	private final static String NUM_PREFS = "nativeLibPrefCount";
+	/**
 	/**
 	 * regex for linux shared libraries
 	 */
@@ -251,9 +254,12 @@ public class NativeLoader {
 	 * load {@link #storedLoadOrder} list from user preferences
 	 */
 	private void loadListFromPreferences( ) {
-		String depsBlob = pref.get(PREFS_KEY, "");
-		Collection<String> paths = FileUtils.splitPathString(depsBlob);
-		storedLoadOrder.addAll(paths);
+		final int count = pref.getInt(NUM_PREFS, 0);
+		for (int i = 0; i < count;i++) {
+			String depsBlob = pref.get(PREFS_KEY + i, "");
+			Collection<String> paths = FileUtils.splitPathString(depsBlob);
+			storedLoadOrder.addAll(paths);
+		}
 		listDirty = false;
 	}
 
@@ -262,7 +268,17 @@ public class NativeLoader {
 	 */
 	private void storeListToPreferences( ) {
 		String depsBlob = FileUtils.pathJoinStrings(storedLoadOrder);
-		pref.put(PREFS_KEY, depsBlob);
+		//split blob into appropriately sized chunks
+		int blobCount = 0;
+		while (depsBlob.length() > Preferences.MAX_VALUE_LENGTH) {
+			int sep = depsBlob.lastIndexOf(FileUtils.PATHSEP, Preferences.MAX_VALUE_LENGTH); 
+			String chunk = depsBlob.substring(0, sep);
+			pref.put(PREFS_KEY + blobCount++,chunk);
+			depsBlob = depsBlob.substring(sep + 1);
+		}
+		
+		pref.put(PREFS_KEY + blobCount++, depsBlob);
+		pref.put(NUM_PREFS,Integer.toString(blobCount));
 		listDirty = false;
 	}
 	/**
@@ -277,7 +293,7 @@ public class NativeLoader {
 			return true;
 		}
 		catch (Error e) {
-			System.err.println(new File (fullpath).getAbsolutePath());
+			//System.err.println(new File (fullpath).getAbsolutePath());
 			if (isFailErrors()) {
 				recordError(e);
 			}
@@ -309,32 +325,14 @@ public class NativeLoader {
 		assert failErrors != null : "logic error";
 		failErrors.add(e);
 	}
-
-	public static void main(String[] args) {
-		try {
-			boolean clean = true; //set true to reload from scratch
-			if (clean) {
-				Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
-				pref.remove(PREFS_KEY);
-			}
-			
-			Runtime r = Runtime.getRuntime();
-			long startTime = System.nanoTime();
-			NativeLoader nl = new NativeLoader();
-			long memBefore = r.totalMemory();
-			JOptionPane.showConfirmDialog(null,"Ready to load?");
-			nl.loadNativeLibraries();
-			JOptionPane.showConfirmDialog(null,"Ready to proceed?");
-			long memAfter = r.totalMemory();
-			long endTime = System.nanoTime();
-			double took = endTime - startTime;
-			took /= 1e9;
-			double incr = memAfter - memBefore;
-			System.out.println("took " + took + " seconds");
-			System.out.println("memory usage increased " + incr);
+	
+	static void clean( ) {
+		Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
+		final int count = pref.getInt(NUM_PREFS, 1000);
+		for (int i = 0; i < count; i++) {
+			pref.remove(PREFS_KEY + i);
 		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		pref.remove(PREFS_KEY);
+		pref.remove(NUM_PREFS);
 	}
 }
