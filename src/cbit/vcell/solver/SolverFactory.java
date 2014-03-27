@@ -46,7 +46,7 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
 
 	File simTaskFile = new File(directory,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");
-	if (!simTaskFile.exists()){
+	if (directory.exists() && !simTaskFile.exists()){
 		try {
 			String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
 			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFile.toString(), true);
