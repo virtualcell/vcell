@@ -34,7 +34,7 @@ bootstrap_mainclass=GENERATED
 bootstrap_policyfile=${common_siteCfgDir}/java.policy
 bootstrap_rmihost=GENERATED
 bootstrap_jmxhost=${bootstrap_rmihost}
-bootstrap_memoryMB=800
+bootstrap_memoryGB=1
 
 #--------------------------------------
 # rmi bootstrap services (http port) "vcellbootstrap_http"
