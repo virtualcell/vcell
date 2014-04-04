@@ -9,6 +9,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -26,6 +27,8 @@ import org.vcell.rest.common.SimDataValuesRepresentation;
 import org.vcell.rest.common.SimDataValuesResource;
 import org.vcell.rest.common.SimDataVariableValuesRepresentation;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.simdata.DataSetTimeSeries;
@@ -173,12 +176,14 @@ public class SimDataValuesServerResource extends AbstractServerResource implemen
 				DataSetTimeSeries dataSetTimeSeries = restDatabaseService.getDataSetTimeSeries(this,vcellUser);
 				SimDataValuesRepresentation simDataRepresentation = new SimDataValuesRepresentation(dataSetTimeSeries);
 				return simDataRepresentation;
-			} catch (DataAccessException e) {
+			} catch (PermissionException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve simulation data from VCell datastore : "+e.getMessage());
-			} catch (SQLException e) {
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized to stop simulation");
+			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve simulation metadata from VCell database : "+e.getMessage());
+				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
+			} catch (Exception e){
+				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 			}
 //		}
 	}

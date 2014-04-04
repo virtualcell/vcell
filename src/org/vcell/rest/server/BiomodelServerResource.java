@@ -9,6 +9,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
@@ -24,6 +25,8 @@ import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
@@ -130,12 +133,14 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 				BioModelRep bioModelRep = restDatabaseService.query(this,vcellUser);
 				BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 				return biomodelRep;
-			} catch (DataAccessException e) {
+			} catch (PermissionException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
-			} catch (SQLException e) {
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
+			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
+				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
+			} catch (Exception e){
+				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 			}
 //		}
 	}

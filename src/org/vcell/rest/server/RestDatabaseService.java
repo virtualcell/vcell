@@ -10,6 +10,7 @@ import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.GroupAccess;
@@ -57,16 +58,16 @@ public class RestDatabaseService {
 		this.log = log;
 	}
 	
-	public SimulationRep startSimulation(BiomodelSimulationStartServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+	public SimulationRep startSimulation(BiomodelSimulationStartServerResource resource, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
 		if (simRep == null){
-			throw new DataAccessException("Simulation with key "+simKey+" not found");
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
 		}
 		User owner = simRep.getOwner();
 		if (!owner.compareEqual(vcellUser)){
-			throw new DataAccessException("not authorized to start simulation");
+			throw new PermissionException("not authorized to start simulation");
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
@@ -86,16 +87,16 @@ public class RestDatabaseService {
 		}
 	}
 
-	public SimulationRep stopSimulation(BiomodelSimulationStopServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+	public SimulationRep stopSimulation(BiomodelSimulationStopServerResource resource, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
 		if (simRep == null){
-			throw new DataAccessException("Simulation with key "+simKey+" not found");
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
 		}
 		User owner = simRep.getOwner();
 		if (!owner.compareEqual(vcellUser)){
-			throw new DataAccessException("not authorized to stop simulation");
+			throw new PermissionException("not authorized to stop simulation");
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
@@ -115,7 +116,7 @@ public class RestDatabaseService {
 		}
 	}
 
-	public DataSetMetadata getDataSetMetadata(SimDataServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+	public DataSetMetadata getDataSetMetadata(SimDataServerResource resource, User vcellUser) throws ObjectNotFoundException, DataAccessException, SQLException{
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -124,7 +125,7 @@ public class RestDatabaseService {
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
 		if (simRep == null){
-			throw new DataAccessException("Simulation with key "+simKey+" not found");
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
 		}
 		User owner = simRep.getOwner();
 		int jobIndex = 0;
@@ -140,7 +141,7 @@ public class RestDatabaseService {
 		}
 	}
 
-	public DataSetTimeSeries getDataSetTimeSeries(SimDataValuesServerResource resource, User vcellUser) throws DataAccessException, SQLException{
+	public DataSetTimeSeries getDataSetTimeSeries(SimDataValuesServerResource resource, User vcellUser) throws DataAccessException, ObjectNotFoundException, SQLException{
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -150,7 +151,7 @@ public class RestDatabaseService {
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
 		if (simRep == null){
-			throw new DataAccessException("Simulation with key "+simKey+" not found");
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
 		}
 		int jobIndex = Integer.parseInt(jobIndexString);
 		String variableNames[] = null; // TODO: pass in variables names from the query parameters.
@@ -329,7 +330,7 @@ public class RestDatabaseService {
 	   	return bioModelReps;
 	}
 	
-	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -369,7 +370,7 @@ public class RestDatabaseService {
 			
 		}
 		if (bioModelReps==null || bioModelReps.length!=1){
-			throw new RuntimeException("failed to get biomodel");
+			throw new ObjectNotFoundException("failed to get biomodel");
 		}
 		return bioModelReps[0];
 	}

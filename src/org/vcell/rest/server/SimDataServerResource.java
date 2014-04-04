@@ -9,6 +9,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -25,6 +26,8 @@ import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimDataRepresentation;
 import org.vcell.rest.common.SimDataResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.SimulationRep;
@@ -137,12 +140,14 @@ public class SimDataServerResource extends AbstractServerResource implements Sim
 				SimulationRep simRep = restDatabaseService.getSimulationRep(dataSetMetadata.getSimKey());
 				SimDataRepresentation simDataRepresentation = new SimDataRepresentation(dataSetMetadata,simRep.getScanCount());
 				return simDataRepresentation;
-			} catch (DataAccessException e) {
+			} catch (PermissionException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve simulation data from VCell datastore : "+e.getMessage());
-			} catch (SQLException e) {
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
+			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve simulation metadata from VCell database : "+e.getMessage());
+				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation metadata not found");
+			} catch (Exception e){
+				throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 			}
 //		}
 	}

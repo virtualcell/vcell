@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
 import org.restlet.ext.wadl.ParameterStyle;
@@ -19,6 +20,8 @@ import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelSimulationStopResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.SimulationRep;
@@ -87,13 +90,15 @@ public class BiomodelSimulationStopServerResource extends AbstractServerResource
 					"&"+SimulationTasksServerResource.PARAM_START_ROW+"=1"+
 					"&"+SimulationTasksServerResource.PARAM_MAX_ROWS+"="+Integer.toString(simRep.getScanCount()*4));
 			return representation;
-		} catch (DataAccessException e) {
+		} catch (PermissionException e) {
 			e.printStackTrace();
-		} catch (SQLException e) {
+			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized to stop simulation");
+		} catch (ObjectNotFoundException e) {
 			e.printStackTrace();
+			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "simulation not found");
+		} catch (Exception e){
+			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 		}
-		Representation representation = new StringRepresentation("simulation stop failed",MediaType.TEXT_PLAIN);
-		return representation;
 	}
 
 
