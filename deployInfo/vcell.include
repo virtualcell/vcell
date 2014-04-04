@@ -34,7 +34,7 @@ bootstrap_mainclass=GENERATED
 bootstrap_policyfile=${common_siteCfgDir}/java.policy
 bootstrap_rmihost=GENERATED
 bootstrap_jmxhost=${bootstrap_rmihost}
-bootstrap_memoryMB=800
+bootstrap_memoryGB=1
 
 #--------------------------------------
 # rmi bootstrap services (http port) "vcellbootstrap_http"
@@ -59,7 +59,6 @@ vcellservice_jmxport=GENERATED
 vcellservice_processLabel=${common_site}-master
 
 vcellservice_memoryGB=15
-vcellservice_memoryMB=5000
 
 #--------------------------------------
 # solver preProcessor "JavaPreprocessor64"
