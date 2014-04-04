@@ -57,7 +57,7 @@ public class BiomodelSimulationStartServerResource extends AbstractServerResourc
 
 	@Override
 	protected void describePost(MethodInfo info) {
-		super.describeGet(info);
+		super.describePost(info);
 		RequestInfo requestInfo = new RequestInfo();
         List<ParameterInfo> parameterInfos = new ArrayList<ParameterInfo>();
         parameterInfos.add(new ParameterInfo(VCellApiApplication.BIOMODELID,false,"string",ParameterStyle.TEMPLATE,"VCell biomodel id"));
