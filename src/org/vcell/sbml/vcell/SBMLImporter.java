@@ -30,8 +30,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.libsbml.ASTNode;
@@ -233,6 +236,37 @@ public class SBMLImporter {
 	{
 		ResourceUtil.loadNativeLibraries();
 	}
+	
+	/**
+	 * helper class for {@link SBMLImporter#addGeometry()}
+	 * sort by ordinal number of sort data, descending
+	 */
+	private static class CSGObjectSorter implements Comparable<CSGObjectSorter>{
+		final CSGObject cSGObject;
+		final Integer ordinal;
+		final Integer tiebreak;
+		static int tieBreakInit = 0;
+		public CSGObjectSorter(CSGObject cSGObject, int ordinal) {
+			this.cSGObject = cSGObject;
+			this.ordinal = ordinal;
+			tiebreak = tieBreakInit++;
+		}
+		
+		/**
+		 * reverse semantics of sort by multiplying ordinal compare to by -1
+		 */
+		@Override
+		public int compareTo(CSGObjectSorter o) {
+			final int ordCompare = ordinal.compareTo(o.ordinal);
+			if (ordCompare == 0 && this != o) {
+				assert tiebreak.compareTo(o.tiebreak) != 0;
+				return tiebreak.compareTo(o.tiebreak);
+			}
+			return -1 * ordCompare; 
+		}
+	}
+	
+	private static Logger lg = Logger.getLogger(SBMLImporter.class);
 
 	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean isSpatial) {
 		super();
@@ -1408,109 +1442,120 @@ private void substituteGlobalParamRulesInPlace(Expression sbmlExpr, boolean bRep
 //	}
 //}
 
+/**
+ * parse SBML file into biomodel 
+ * logs errors to log4j if present in source document
+ * @return new Biomodel
+ */
 public BioModel getBioModel() {
 	// Read SBML model into libSBML SBMLDocument and create an SBML model
 	SBMLReader reader = new SBMLReader();
 	SBMLDocument document = reader.readSBML(sbmlFileName);
-	
+
 	long numProblems = document.getNumErrors();
-	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
 	System.out.println("\n\nSBML Import Error Report");
 	OStringStream oStrStream = new OStringStream();
 	document.printErrors(oStrStream);
-	System.out.println(oStrStream.str());
-	
-	sbmlModel = document.getModel();
-	
-	if (sbmlModel == null) {
-		throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str());
+	if (numProblems > 0 && lg.isEnabledFor(Level.WARN)) {
+		lg.warn("Num problems in original SBML document : " + numProblems);
+		lg.warn(oStrStream.str());
 	}
-	
-	// Convert SBML Model to VCell model
-	// An SBML model will correspond to a simcontext - which needs a Model and a Geometry
-	// SBML handles only nonspatial geometries at this time, hence creating a non-spatial default geometry
-	String modelName = sbmlModel.getId();
-	if (modelName == null || modelName.trim().equals("")) {
-		modelName = sbmlModel.getName();
-	} 
-	// if sbml 'model' didn't have either id or name set, use a default name, say 'newModel'
-	if (modelName == null || modelName.trim().equals("")) {
-		modelName = "newModel";
-	} 
-	
-	// get namespace based on SBML model level and version to use in SBMLAnnotationUtil
-	this.level = sbmlModel.getLevel();
-	this.version = sbmlModel.getVersion();
-	XMLNamespaces nss = document.getNamespaces();
-	String namespaceStr = nss.getURI();
 
-	// SBML annotation
-	sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, namespaceStr);
-	
 	try {
-		// create SBML unit system to pass into VCModel
-		Model vcModel;
+		sbmlModel = document.getModel();
+
+		if (sbmlModel == null) {
+			throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str());
+		}
+
+		// Convert SBML Model to VCell model
+		// An SBML model will correspond to a simcontext - which needs a Model and a Geometry
+		// SBML handles only nonspatial geometries at this time, hence creating a non-spatial default geometry
+		String modelName = sbmlModel.getId();
+		if (modelName == null || modelName.trim().equals("")) {
+			modelName = sbmlModel.getName();
+		} 
+		// if sbml 'model' didn't have either id or name set, use a default name, say 'newModel'
+		if (modelName == null || modelName.trim().equals("")) {
+			modelName = "newModel";
+		} 
+
+		// get namespace based on SBML model level and version to use in SBMLAnnotationUtil
+		this.level = sbmlModel.getLevel();
+		this.version = sbmlModel.getVersion();
+		XMLNamespaces nss = document.getNamespaces();
+		String namespaceStr = nss.getURI();
+
+		// SBML annotation
+		sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, namespaceStr);
+
 		try {
-			vcModel = new Model(modelName, createSBMLUnitSystemForVCModel());
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Inconsistent unit system. Cannot import SBML model into VCell");
-		}
-		Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
-		simContext = new SimulationContext(vcModel, geometry);
-		simContext.setName(simContext.getModel().getName());
-//		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
-	} catch (PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Could not create simulation context corresponding to the input SBML model");
-	} 
-	translateSBMLModel();
-
-	try {
-		// **** TEMPORARY BLOCK - to name the biomodel with proper name, rather than model id
-		String biomodelName = sbmlModel.getName();
-		// if name is not set, use id
-		if ((biomodelName == null) || biomodelName.trim().equals("")) {
-			biomodelName = sbmlModel.getId();
-		}
-		// if id is not set, use a default, say, 'newModel'
-		if ((biomodelName == null) || biomodelName.trim().equals("")) {
-			biomodelName = "newBioModel";
-		}
-		vcBioModel.setName(biomodelName);
-		// **** end - TEMPORARY BLOCK
-		
-		// bioModel.setName(modelName);
-		vcBioModel.setModel(simContext.getModel());
-		vcBioModel.setSimulationContexts(new SimulationContext[] {simContext});			
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Could not create Biomodel");
-	}
-	
-	sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
-	sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
-
-	vcBioModel.refreshDependencies();
-	
-	Issue warningIssues[] = (Issue[])BeanUtils.getArray(localIssueList,Issue.class);
-	if (warningIssues!=null && warningIssues.length>0){
-		StringBuffer messageBuffer = new StringBuffer("Issues encountered during SBML Import:\n");
-		int issueCount=0;
-		for (int i = 0; i < warningIssues.length; i++){
-			if (warningIssues[i].getSeverity()==Issue.SEVERITY_WARNING || warningIssues[i].getSeverity()==Issue.SEVERITY_INFO){
-				messageBuffer.append(warningIssues[i].getCategory()+" "+warningIssues[i].getSeverityName()+" : "+warningIssues[i].getMessage()+"\n");
-				issueCount++;
-			}
-		}
-		if (issueCount>0){
+			// create SBML unit system to pass into VCModel
+			Model vcModel;
 			try {
-				logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS, messageBuffer.toString());
+				vcModel = new Model(modelName, createSBMLUnitSystemForVCModel());
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
+				throw new RuntimeException("Inconsistent unit system. Cannot import SBML model into VCell");
 			}
-			// PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+			Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
+			simContext = new SimulationContext(vcModel, geometry);
+			simContext.setName(simContext.getModel().getName());
+			//		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Could not create simulation context corresponding to the input SBML model");
+		} 
+		translateSBMLModel();
+
+		try {
+			// **** TEMPORARY BLOCK - to name the biomodel with proper name, rather than model id
+			String biomodelName = sbmlModel.getName();
+			// if name is not set, use id
+			if ((biomodelName == null) || biomodelName.trim().equals("")) {
+				biomodelName = sbmlModel.getId();
+			}
+			// if id is not set, use a default, say, 'newModel'
+			if ((biomodelName == null) || biomodelName.trim().equals("")) {
+				biomodelName = "newBioModel";
+			}
+			vcBioModel.setName(biomodelName);
+			// **** end - TEMPORARY BLOCK
+
+			// bioModel.setName(modelName);
+			vcBioModel.setModel(simContext.getModel());
+			vcBioModel.setSimulationContexts(new SimulationContext[] {simContext});			
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Could not create Biomodel");
 		}
+
+		sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
+		sbmlAnnotationUtil.readNotes(vcBioModel, sbmlModel);
+
+		vcBioModel.refreshDependencies();
+
+		Issue warningIssues[] = (Issue[])BeanUtils.getArray(localIssueList,Issue.class);
+		if (warningIssues!=null && warningIssues.length>0){
+			StringBuffer messageBuffer = new StringBuffer("Issues encountered during SBML Import:\n");
+			int issueCount=0;
+			for (int i = 0; i < warningIssues.length; i++){
+				if (warningIssues[i].getSeverity()==Issue.SEVERITY_WARNING || warningIssues[i].getSeverity()==Issue.SEVERITY_INFO){
+					messageBuffer.append(warningIssues[i].getCategory()+" "+warningIssues[i].getSeverityName()+" : "+warningIssues[i].getMessage()+"\n");
+					issueCount++;
+				}
+			}
+			if (issueCount>0){
+				try {
+					logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS, messageBuffer.toString());
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
+				}
+				// PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+			}
+		}
+	} catch (Exception e) {
+		throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str(),e);
 	}
 
 	return vcBioModel;
@@ -2673,20 +2718,25 @@ protected void addGeometry() {
 		if (selectedGeometryDefinition == csGeometry) {
 			ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCSGObjects();
 			int numCSGObjects = (int)csGeometry.getNumCSGObjects();
-			ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
-			int index = 0;
+			//ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
+			Set<CSGObjectSorter> sortingTree = new TreeSet<SBMLImporter.CSGObjectSorter>();
 			for (int kk = 0; kk < numCSGObjects;kk++) {
 				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
-				index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
+				int index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
 				// indx = n - (ordinal+1) : we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
 				// insert vcCSGObj at position 'indx' in arraylist 
 				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
 				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
-				vcCSGSubVolumes.add(index, vcellCSGObject);
+				//vcCSGSubVolumes.add(index, vcellCSGObject);
+				sortingTree.add(new CSGObjectSorter(vcellCSGObject, index));
 			}
-			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes.toArray(new CSGObject[numCSGObjects]));
+			CSGObject vcCSGSubVolumes []= new CSGObject[sortingTree.size()];
+			int i = 0;
+			for (CSGObjectSorter o : sortingTree) {
+				vcCSGSubVolumes[i++] = o.cSGObject;
+			}
+			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 		}
-
 		
 		// Call geom.geomSurfDesc.updateAll() to automatically generate surface classes.
 //		vcGsd.updateAll();
