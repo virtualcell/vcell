@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Level;
@@ -243,12 +243,9 @@ public class SBMLImporter {
 	private static class CSGObjectSorter implements Comparable<CSGObjectSorter>{
 		final CSGObject cSGObject;
 		final Integer ordinal;
-		final Integer tiebreak;
-		static int tieBreakInit = 0;
 		public CSGObjectSorter(CSGObject cSGObject, int ordinal) {
 			this.cSGObject = cSGObject;
 			this.ordinal = ordinal;
-			tiebreak = tieBreakInit++;
 		}
 		
 		/**
@@ -256,12 +253,7 @@ public class SBMLImporter {
 		 */
 		@Override
 		public int compareTo(CSGObjectSorter o) {
-			final int ordCompare = ordinal.compareTo(o.ordinal);
-			if (ordCompare == 0 && this != o) {
-				assert tiebreak.compareTo(o.tiebreak) != 0;
-				return tiebreak.compareTo(o.tiebreak);
-			}
-			return -1 * ordCompare; 
+			return -1 * ordinal.compareTo(o.ordinal);
 		}
 	}
 	
@@ -2724,7 +2716,7 @@ protected void addGeometry() {
 			ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCSGObjects();
 			int numCSGObjects = (int)csGeometry.getNumCSGObjects();
 			//ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
-			Set<CSGObjectSorter> sortingTree = new TreeSet<SBMLImporter.CSGObjectSorter>();
+			PriorityQueue<CSGObjectSorter> csgQueue = new PriorityQueue<CSGObjectSorter>(); 
 			for (int kk = 0; kk < numCSGObjects;kk++) {
 				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
 				int index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
@@ -2733,13 +2725,14 @@ protected void addGeometry() {
 				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
 				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
 				//vcCSGSubVolumes.add(index, vcellCSGObject);
-				sortingTree.add(new CSGObjectSorter(vcellCSGObject, index));
+				csgQueue.add(new CSGObjectSorter(vcellCSGObject, index));
 			}
-			CSGObject vcCSGSubVolumes []= new CSGObject[sortingTree.size()];
-			int i = 0;
-			for (CSGObjectSorter o : sortingTree) {
-				vcCSGSubVolumes[i++] = o.cSGObject;
+			assert csgQueue.size() == numCSGObjects;
+			CSGObject vcCSGSubVolumes []= new CSGObject[numCSGObjects];
+			for (int i = 0; i < numCSGObjects; i++) {
+				vcCSGSubVolumes[i] = csgQueue.poll().cSGObject; 
 			}
+			assert csgQueue.isEmpty(); //no leftovers!
 			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 		}
 		
