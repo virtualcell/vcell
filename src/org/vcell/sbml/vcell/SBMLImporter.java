@@ -163,7 +163,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
@@ -175,7 +174,7 @@ import cbit.vcell.xml.XMLTags;
 public class SBMLImporter {
 
 	private long level = 2;
-	private long version = 3;
+	//private long version = 3;
 	
 	private String sbmlFileName = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
@@ -1254,6 +1253,7 @@ private void setSpeciesInitialConditions() {
  *		Substitute 0.0 for compartmentSizeParam in rateExpr. If the value doesn't evaluate to 0.0, it is not valid for the same reason above.
  **/
 
+/* pending delete? gcw 4/2014
 private Expression removeCompartmentScaleFactorInRxnRateExpr(Expression rateExpr, String compartmentSizeParamName, String rxnName) throws Exception {
 	Expression diffExpr = rateExpr.differentiate(compartmentSizeParamName).flatten();
 	if (diffExpr.hasSymbol(compartmentSizeParamName)) {
@@ -1272,6 +1272,7 @@ private Expression removeCompartmentScaleFactorInRxnRateExpr(Expression rateExpr
 
 	return expr1;
 }
+*/
 
 
 /**
@@ -1482,7 +1483,7 @@ public BioModel getBioModel() {
 
 		// get namespace based on SBML model level and version to use in SBMLAnnotationUtil
 		this.level = sbmlModel.getLevel();
-		this.version = sbmlModel.getVersion();
+		//this.version = sbmlModel.getVersion();
 		XMLNamespaces nss = document.getNamespaces();
 		String namespaceStr = nss.getURI();
 
@@ -1573,6 +1574,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 		return ModelUnitSystem.createDefaultVCModelUnitSystem();
 	}
 	
+	@SuppressWarnings("serial")
 	VCUnitSystem tempVCUnitSystem = new VCUnitSystem() {};
 	HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
 	// add base SI unit identifiers (as defined in SBML spec) to hash 
@@ -1852,7 +1854,7 @@ private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, Specie
     }
 	
 	if (sbmlRxn.isSetKineticLaw()){
-		String rxnName = sbmlRxn.getId();
+		//String rxnName = sbmlRxn.getId();
 		KineticLaw kLaw = sbmlRxn.getKineticLaw();
 		Expression kRateExp = getExpressionFromFormula(kLaw.getMath());
 		String[] symbols = kRateExp.getSymbols();
@@ -1911,6 +1913,7 @@ private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, Specie
 /**
  *  getSpatialDimentionBuiltInName : 
  */
+/* pending delete? gcw 4/2014
 private String getSpatialDimensionBuiltInName(int dimension) {
 	String name = null;
 	switch (dimension) {
@@ -1933,7 +1936,7 @@ private String getSpatialDimensionBuiltInName(int dimension) {
 	}
 	return name;
 }
-
+*/
 
 /**
  *  getValueFromRuleOrFunctionDefinition : 
@@ -1954,6 +1957,7 @@ private Expression getValueFromAssignmentRule(String paramName)  {
 	return null;
 }
 
+/* pending delete? gcw 4/2014
 private boolean varHasRateRule(String paramName)  {
 	// Check if param name has an assignment rule associated with it
 	int numRateRules = rateRulesHash.size();
@@ -1965,6 +1969,7 @@ private boolean varHasRateRule(String paramName)  {
 	}
 	return false;
 }
+*/
 /**
  * checkForUnsupportedVCellFeatures:
  * 
