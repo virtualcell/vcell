@@ -28,7 +28,7 @@ jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.ssl=false"
 jmxargs="${jmxargs} -Djava.rmi.server.hostname=${vcellservice_jmxhost}"
 jmxargs=
 
-jvmprop="-Xmx${vcellservice_memoryMB}M -Dvcell.propertyfile=${common_propertyfile}"
+jvmprop="-Xmx${vcellapi_memoryGB}G -Dvcell.propertyfile=${common_propertyfile}"
 
 arguments="${vcellapi_keystorepath} ${vcellapi_keystorepswd} ${vcellapi_javascriptdir} ${common_logdir}"
 

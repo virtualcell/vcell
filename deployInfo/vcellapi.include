@@ -114,3 +114,7 @@ vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.xstream.jar
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.vcell.rest.auth.jar"
 vcellapi_jars="${vcellapi_jars}:${vcellapi_root}/lib/org.restlet.ext.cyrpto.jar"
 
+#--------------------------------------------------------------
+# vcell api specific setttings
+#--------------------------------------------------------------
+vcellapi_memoryGB=2
