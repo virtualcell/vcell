@@ -4,7 +4,6 @@ import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.vcell.util.BigString;
@@ -23,14 +22,11 @@ import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.BioModelVisitor;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -316,21 +312,22 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 			File keyFile = new File(args[3]);
 			if (keyFile.exists()){
 				System.out.println("using key file '"+args[3]+"'");
-				java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(keyFile));
-				int sizeIncludeFile = (int)keyFile.length();
-				char keyFileBuffer[] = new char[sizeIncludeFile];
-				int count = reader.read(keyFileBuffer);
-				String keyBuffer = new String(keyFileBuffer,0,count);
-				StringTokenizer tokens = new StringTokenizer(keyBuffer);
-				HashSet<KeyValue> keyHash = new HashSet<KeyValue>();
-				while (tokens.hasMoreTokens()) {
-					String token = tokens.nextToken();
-					keyHash.add(new KeyValue(token));
-				}
-				if (args[2].equals("-include")){
-					includeHash = keyHash;
-				}else if (args[2].equals("-exclude")){
-					excludeHash = keyHash;
+				try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(keyFile))) {
+					int sizeIncludeFile = (int)keyFile.length();
+					char keyFileBuffer[] = new char[sizeIncludeFile];
+					int count = reader.read(keyFileBuffer);
+					String keyBuffer = new String(keyFileBuffer,0,count);
+					StringTokenizer tokens = new StringTokenizer(keyBuffer);
+					HashSet<KeyValue> keyHash = new HashSet<KeyValue>();
+					while (tokens.hasMoreTokens()) {
+						String token = tokens.nextToken();
+						keyHash.add(new KeyValue(token));
+					}
+					if (args[2].equals("-include")){
+						includeHash = keyHash;
+					}else if (args[2].equals("-exclude")){
+						excludeHash = keyHash;
+					}
 				}
 			}
 		} else if (args.length==3){
