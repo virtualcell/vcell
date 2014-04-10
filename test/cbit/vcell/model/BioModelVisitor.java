@@ -1,10 +1,13 @@
 package cbit.vcell.model;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.junit.Test;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -17,18 +20,22 @@ import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 
 public class BioModelVisitor implements VCDatabaseVisitor {
+	/**
+	 * user key to use for tests
+	 */
+	private final static String USER_KEY = VCDatabaseScanner.ALL_USERS;
+	/**
+	 * output file name
+	 */
+	private final static String OUTPUT = "regen.txt";
 	
 	private Hashtable<KeyValue, BioModelInfo> bioModelInfoHash = new Hashtable<KeyValue, BioModelInfo>();
 	private HashSet<KeyValue> unparsedBioModels = new HashSet<KeyValue>();
 	
 	public boolean filterBioModel(BioModelInfo bioModelInfo) {
-		if (true){
 			bioModelInfoHash.put(bioModelInfo.getVersion().getVersionKey(), bioModelInfo);
 			unparsedBioModels.add(bioModelInfo.getVersion().getVersionKey());
 			return true;
-		}else{
-			return false;
-		}
 	}
 
 	public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
@@ -78,6 +85,23 @@ public class BioModelVisitor implements VCDatabaseVisitor {
 			System.err.println("out of "+visitor.bioModelInfoHash.size()+" bioModels, "+visitor.unparsedBioModels.size()+" could not be read");
 			System.err.flush();
 		}
+	}
+	
+	@Test
+	public void tryit( ) throws IOException {
+		PropertyLoader.loadProperties();
+		String args[] = {USER_KEY,OUTPUT};
+		BioModelVisitor visitor = new BioModelVisitor();
+		boolean bAbortOnDataAccessException = false;
+		try{
+			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);
+		}catch(Exception e){
+			e.printStackTrace(System.err);
+		}finally{
+			System.err.println("out of "+visitor.bioModelInfoHash.size()+" bioModels, "+visitor.unparsedBioModels.size()+" could not be read");
+			System.err.flush();
+		}
+		
 	}
 
 }
