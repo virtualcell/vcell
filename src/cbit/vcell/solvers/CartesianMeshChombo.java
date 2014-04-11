@@ -611,4 +611,22 @@ public class CartesianMeshChombo extends CartesianMesh {
 		}
 		return null;
 	}
+
+	@Override
+	public Coordinate getCoordinate(CoordinateIndex coordIndex) {
+		double x = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS);
+		if (getSizeX() > 1){
+			x = (coordIndex.x + 0.5) * extent.getX()/getSizeX() + origin.getX();
+		}
+		double y = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS);
+		if (getSizeY() > 1){
+			y = (coordIndex.y + 0.5) * extent.getY()/getSizeY() + origin.getY();
+		}
+		double z = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS);
+		if (getSizeZ() > 1){
+			z = (coordIndex.z + 0.5) * extent.getZ()/getSizeZ() + origin.getZ();
+		}
+		return (new Coordinate(x, y, z));
+	}
+
 }
