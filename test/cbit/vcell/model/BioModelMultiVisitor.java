@@ -19,7 +19,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 
-public class BioModelVisitor implements VCDatabaseVisitor {
+public class BioModelMultiVisitor implements VCDatabaseVisitor {
 	/**
 	 * user key to use for tests
 	 */
@@ -75,7 +75,7 @@ public class BioModelVisitor implements VCDatabaseVisitor {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BioModelVisitor visitor = new BioModelVisitor();
+		BioModelMultiVisitor visitor = new BioModelMultiVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
 			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);
@@ -91,7 +91,7 @@ public class BioModelVisitor implements VCDatabaseVisitor {
 	public void tryit( ) throws IOException {
 		PropertyLoader.loadProperties();
 		String args[] = {USER_KEY,OUTPUT};
-		BioModelVisitor visitor = new BioModelVisitor();
+		BioModelMultiVisitor visitor = new BioModelMultiVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
 			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);
