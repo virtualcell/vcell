@@ -1,6 +1,8 @@
 package cbit.vcell.modeldb;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -26,6 +28,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.VCMultiBioVisitor;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
@@ -35,6 +38,10 @@ import cbit.vcell.xml.XmlParseException;
  * @author: Jim Schaff
  */
 public class VCDatabaseScanner {
+	/**
+	 * special user id meaning all users
+	 */
+	public static final String ALL_USERS = "-all";
 	private DatabaseServerImpl dbServerImpl = null;
 	private SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
@@ -58,6 +65,27 @@ public static VCDatabaseScanner createDatabaseScanner() throws Exception{
 }
 
 /**
+ * copy constructor
+ * @param rhs
+ * @throws Exception
+ */
+public VCDatabaseScanner(VCDatabaseScanner rhs) throws Exception{
+	dbServerImpl = rhs.dbServerImpl;
+	log = rhs.log;
+	localAdminDbServer = rhs.localAdminDbServer;
+	allUsers = rhs.allUsers;
+}
+
+/**
+ * default constructor
+ * same code as {@link #createDatabaseScanner()}
+ * @throws Exception
+ */
+public VCDatabaseScanner() throws Exception{
+	this(createDatabaseScanner());
+}
+
+/**
  * ResultSetCrawler constructor comment.
  * @throws RemoteException 
  */
@@ -78,6 +106,10 @@ public User[] getAllUsers() throws DataAccessException{
 	return allUsers;
 }
 
+public User getUser(String userName) throws DataAccessException{
+	User u = localAdminDbServer.getUser(userName);
+	return u; 
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
@@ -258,6 +290,67 @@ public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 	}
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (2/2/01 3:40:29 PM)
+ * @throws DataAccessException 
+ * @throws XmlParseException 
+ */
+public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer, User users[], boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	assert users != null;
+	try
+	{
+		PrintWriter printWriter = new PrintWriter(writer);
+		//start visiting models and writing log
+		printWriter.println("Start scanning bio-models......");
+		printWriter.println("\n");
+
+		for (int i=0;i<users.length;i++)
+		{
+			User user = users[i];
+			BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
+			for (int j = 0; j < bioModelInfos.length; j++){
+				if (!databaseVisitor.filterBioModel(bioModelInfos[j])){
+					continue;
+				}
+				try {
+					BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
+					BioModel storedModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+					storedModel.refreshDependencies();
+					databaseVisitor.setBioModel(storedModel, printWriter);
+					printWriter.println("---- " + (j+1) + " ----> " + storedModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
+					for (BioModel bioModel: databaseVisitor) {
+						SimulationContext[] simContexts = bioModel.getSimulationContexts();
+						for (SimulationContext sc : simContexts) {
+							try {
+								MathDescription oldMathDescription = sc.getMathDescription();
+								MathDescription newMathDescription = sc.createNewMathMapping().getMathDescription();
+								printWriter.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
+								MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
+								printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
+							} catch (Exception e) {
+								printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
+								// e.printStackTrace();
+							}
+						}
+					}
+				}catch (Exception e2){
+					log.exception(e2);
+					printWriter.println("======= " + e2.getMessage());
+					if (bAbortOnDataAccessException){
+						throw e2;
+					}
+				}
+			}
+		}
+		
+		printWriter.close();
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+	}
+}
+
 public static void scanGeometries(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
 	scanDbObjects(VersionableType.Geometry, args, visitor, bAbortOnDataAccessException);
 }
@@ -274,7 +367,7 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 	try {
 				
 		if ((args.length<2 || args.length>4)){
-			System.out.println("Usage: VCDatabaseScanner (-all | userid) (logfileName | -) [(-include includefile) | (-exclude excludefile) | biomodelkey]");
+			System.out.println("Usage: VCDatabaseScanner (" + ALL_USERS + "| userid) (logfileName | -) [(-include includefile) | (-exclude excludefile) | biomodelkey]");
 			System.out.println("     where 'logfileSpec'\t\t\ta filename or '-' for STDOUT");
 			System.out.println("     and '-include' to test biomodel keys from includefile");
 			System.out.println("     and '-include' to test all biomodel keys except from excludefile");
@@ -290,7 +383,7 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 		java.util.Vector<User> userList = new java.util.Vector<User>();
 		User[] allUsers = databaseScanner.getAllUsers();
 		for (int i=0;i<allUsers.length;i++){
-			if (args[0].equals("-all") || allUsers[i].getName().equals(args[0])){
+			if (args[0].equals(ALL_USERS) || allUsers[i].getName().equals(args[0])){
 				userList.add(allUsers[i]);
 			}
 		}
