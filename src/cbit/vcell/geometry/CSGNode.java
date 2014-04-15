@@ -11,10 +11,13 @@
 package cbit.vcell.geometry;
 
 import java.io.Serializable;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public abstract class CSGNode implements Matchable, Serializable {
 	private String name;	
 	protected CSGNode(String name) {
@@ -22,7 +25,7 @@ public abstract class CSGNode implements Matchable, Serializable {
 	}
 	
 	public abstract boolean isInside(Vect3d point);
-	public abstract CSGNode cloneTree();
+	public abstract CSGNode clone();
 
 	public final String getName() {
 		return name;

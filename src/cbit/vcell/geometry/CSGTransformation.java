@@ -13,6 +13,7 @@ package cbit.vcell.geometry;
 import cbit.vcell.render.Affine;
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public abstract class CSGTransformation extends CSGNode {
 	private Affine forwardTransform = null;
 	private Affine inverseTransform = null;
@@ -41,7 +42,7 @@ public abstract class CSGTransformation extends CSGNode {
 	CSGTransformation(CSGTransformation csgTransformation){
 		this(csgTransformation.getName(), new Affine(csgTransformation.forwardTransform), new Affine(csgTransformation.inverseTransform));
 		if (csgTransformation.getChild() != null) {
-			setChild(csgTransformation.getChild().cloneTree());
+			setChild(csgTransformation.getChild().clone());
 		}
 	}
 		

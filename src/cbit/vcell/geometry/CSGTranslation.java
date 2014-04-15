@@ -16,6 +16,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.render.Affine;
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public class CSGTranslation extends CSGTransformation {
 	
 	public Vect3d translation = null;
@@ -59,7 +60,7 @@ public class CSGTranslation extends CSGTransformation {
 	}
 	
 	@Override
-	public CSGNode cloneTree() {
+	public CSGNode clone() {
 		return new CSGTranslation(this);
 	}
 
