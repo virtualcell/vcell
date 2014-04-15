@@ -186,7 +186,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         self.setCentralWidget(centralwidget)
 
-        menuBar = QtGui.QMenuBar(self);
+        menuBar = QtGui.QMenuBar();
         menuBar.setObjectName("menuBar")
         menuBar.setGeometry(0, 0, 1030, 20);
         menuFile = QtGui.QMenu(menuBar)
