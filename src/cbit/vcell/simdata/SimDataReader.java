@@ -24,6 +24,9 @@ import ncsa.hdf.object.HObject;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.OutsideVariable;
+
 
 /**
  * Insert the type's description here.
@@ -136,12 +139,34 @@ private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exc
 	
 		for(int k = 0; k < varNames.length; ++ k) {
 			try {
-				String varPath = Hdf5Utils.getVarSolutionPath(varNames[k]);
-				HObject solObj = FileFormat.findObject(solFile, varPath);
-				if (solObj instanceof Dataset) {
-					Dataset dataset = (Dataset)solObj;
-				
-					double[] sol = (double[]) dataset.read();
+				boolean bExtrapolatedValue = false;
+				String varName = varNames[k];
+				if (varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX))
+				{
+					bExtrapolatedValue = true;
+					varName = varName.substring(0, varName.lastIndexOf(InsideVariable.INSIDE_VARIABLE_SUFFIX));
+				}
+				else if (varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX))
+				{
+					bExtrapolatedValue = true;
+					varName = varName.substring(0, varName.lastIndexOf(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX));
+				}
+				double[] sol = null;
+				if (bExtrapolatedValue)
+				{
+					sol = DataSet.readChomboExtrapolatedValues(varName, solFile);
+				}
+				else
+				{
+					String varPath = Hdf5Utils.getVarSolutionPath(varNames[k]);
+					HObject solObj = FileFormat.findObject(solFile, varPath);
+					if (solObj instanceof Dataset) {
+						Dataset dataset = (Dataset)solObj;
+						sol = (double[]) dataset.read();
+					}
+				}
+				if (sol != null)
+				{
 					for(int l = 0;l < varIndexes[k].length; ++ l) {
 						int idx = varIndexes[k][l];					
 						double val =  sol[idx];					
