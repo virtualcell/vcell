@@ -143,16 +143,24 @@ public class SimulationDispatcher extends ServiceProvider {
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
 						for (WaitingJob waitingJob : waitingJobs){
 							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
-							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
-							KeyValue simKey = vcSimID.getSimulationKey();
-							Simulation sim = tempSimulationMap.get(simKey);
-							if (sim==null){
-								sim = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
-								tempSimulationMap.put(simKey, sim);
+							try {
+								VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
+								KeyValue simKey = vcSimID.getSimulationKey();
+								Simulation sim = tempSimulationMap.get(simKey);
+								if (sim==null){
+									sim = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
+									tempSimulationMap.put(simKey, sim);
+								}
+								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
+								bDispatchedAnyJobs = true;
+							} catch (Exception ex) {
+								String errorMessage = "Job " + jobStatus + " failed due to exception " + ex.getMessage();
+								//create an exception just for messaging --
+								Exception messageException = new RuntimeException(errorMessage,ex);
+								log.exception(messageException);
+								VCMongoMessage.sendException(messageException);
+								simDispatcherEngine.onSystemAbort(jobStatus, ex.getMessage(), simulationDatabase, dispatcherQueueSession, log);
 							}
-							simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
-							bDispatchedAnyJobs = true;
-							
 							Thread.yield();
 						}
 					}
