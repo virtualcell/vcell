@@ -15,6 +15,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public class CSGPseudoPrimitive extends CSGNode {
 	private String csgObjectName = null;
 	private CSGObject csgObject = null;
@@ -53,7 +54,7 @@ public class CSGPseudoPrimitive extends CSGNode {
 	}
 
 	@Override
-	public CSGNode cloneTree() {
+	public CSGNode clone() {
 		return new CSGPseudoPrimitive(this);
 	}
 

@@ -16,6 +16,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.render.Affine;
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public class CSGRotation extends CSGTransformation {
 	
 	private Vect3d axis = null;
@@ -66,7 +67,7 @@ public class CSGRotation extends CSGTransformation {
 	}
 
 	@Override
-	public CSGNode cloneTree() {
+	public CSGNode clone() {
 		return new CSGRotation(this);
 	}
 	

@@ -25,12 +25,11 @@ public class CSGObject extends SubVolume {
 	
 	public CSGObject(KeyValue key, String name, int handle) {
 		super(key, name, handle);
-		// TODO Auto-generated constructor stub
 	}
 
 	public CSGObject(CSGObject csgObj) {
 		super(csgObj.getKey(),csgObj.getName(), csgObj.getHandle());
-		setRoot(root.cloneTree());
+		root = csgObj.root.clone();
 	}
 
 	public boolean compareEqual(Matchable obj) {

@@ -14,6 +14,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public class CSGPrimitive extends CSGNode {
 	// all objects fit in unit cube of (-1,-1,-1) to (1,1,1)
 	public static enum PrimitiveType {
@@ -51,7 +52,7 @@ public class CSGPrimitive extends CSGNode {
 	}
 	
 	@Override
-	public CSGNode cloneTree() {
+	public CSGNode clone() {
 		return new CSGPrimitive(this);
 	}
 	

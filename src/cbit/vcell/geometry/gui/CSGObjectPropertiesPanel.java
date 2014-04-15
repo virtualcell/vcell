@@ -807,7 +807,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 
 	private void updateCSGObject(final Object objectToBeSelected) {
 		if (csgObject.getRoot() != null) {
-			csgObject.setRoot(csgObject.getRoot().cloneTree());
+			csgObject.setRoot(csgObject.getRoot().clone());
 		}
 		AsynchClientTask task1 = new AsynchClientTask("regenerating geometry", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override

@@ -17,6 +17,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
+@SuppressWarnings("serial")
 public class CSGSetOperator extends CSGNode {
 	
 	public static enum OperatorType {
@@ -37,7 +38,7 @@ public class CSGSetOperator extends CSGNode {
 	public CSGSetOperator(CSGSetOperator csgSetOperator){
 		this(csgSetOperator.getName(), csgSetOperator.opType);
 		for (CSGNode child : csgSetOperator.children){
-			children.add(child.cloneTree());
+			children.add(child.clone());
 		}
 	}
 	
@@ -62,7 +63,7 @@ public class CSGSetOperator extends CSGNode {
 	}
 
 	@Override
-	public CSGNode cloneTree() {
+	public CSGNode clone() {
 		return new CSGSetOperator(this);
 	}
 	
