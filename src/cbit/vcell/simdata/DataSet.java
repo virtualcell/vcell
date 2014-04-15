@@ -540,7 +540,7 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 }
 
 	static double[] readChomboExtrapolatedValues(String varName, File pdeFile, File zipFile) throws IOException {
-		double data[] = null;
+		double[] data = null;
 		if (zipFile != null && isChombo(zipFile)) {
 			File tempFile = null;
 			FileFormat solFile = null;
@@ -550,20 +550,7 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 				solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
 				solFile.open();
-				if (varName != null)
-				{
-					String varPath = Hdf5Utils.getVolVarExtrapolatedValuesPath(varName);
-					HObject solObj = FileFormat.findObject(solFile, varPath);
-					if (solObj == null)
-					{
-						throw new IOException("Extrapolated values for variable '" + varName + "' does not exist in the results.");
-					}
-					if (solObj instanceof Dataset)
-					{
-						Dataset dataset = (Dataset)solObj;
-						return (double[]) dataset.read();
-					}
-				}
+				data = readChomboExtrapolatedValues(varName, solFile);
 			} catch(Exception e) {
 				throw new IOException(e.getMessage(), e);
 			} finally {
@@ -579,6 +566,25 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 				} catch(Exception e) {
 					// ignore
 				}
+			}
+		}
+		return data;
+	}
+	
+	static double[] readChomboExtrapolatedValues(String varName, FileFormat solFile) throws Exception {
+		double data[] = null;
+		if (varName != null)
+		{
+			String varPath = Hdf5Utils.getVolVarExtrapolatedValuesPath(varName);
+			HObject solObj = FileFormat.findObject(solFile, varPath);
+			if (solObj == null)
+			{
+				throw new IOException("Extrapolated values for variable '" + varName + "' does not exist in the results.");
+			}
+			if (solObj instanceof Dataset)
+			{
+				Dataset dataset = (Dataset)solObj;
+				return (double[]) dataset.read();
 			}
 		}
 		return data;

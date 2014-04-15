@@ -2511,27 +2511,47 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 			for (int j = 0; j < varIndex - TXYZ_OFFSET; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				if (dsi.getVariableType().equals(VariableType.VOLUME)){
-					if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){		
-						int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
-						varNames[j]=dsi.getName();
-						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-						varIndexes[i][j] = volInsideIndex;
-						inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
-					}else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
-						int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
-						varNames[j]=dsi.getName();
-						simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
-						varIndexes[i][j] = volOutsideIndex;
-						outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
-					} else {	
-						varNames[j]=dsi.getName();
-						simFileVarNames[j] = dsi.getName();
-						if(isDomainInside(mesh, dsi.getDomain(), dataIndexes[i])){
-							inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
-							varIndexes[i][j] = inside_near_far_indexes[i][j].volIndexNear;
-						}else{
-							outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
-							varIndexes[i][j] = outside_near_far_indexes[i][j].volIndexNear;
+					if (mesh.isChomboMesh())
+					{
+						// don't do any varname modifications here,
+						// because chombo needs this info to decide
+						// which data set to read, extrapolate values or solution.
+						// if varname doesn't have _INSIDE or _OUTSIDE
+						// add _INSIDE to varname to indicate it needs to read extrapolated values
+						String varName = dsi.getName();
+						if (!varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX) && !varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX))
+						{
+							varName += InsideVariable.INSIDE_VARIABLE_SUFFIX;
+							// add this new varname to the list if it's not already there
+							getVCData(vcdID).getEntry(varName); 
+						}
+						simFileVarNames[j] = varName;
+						varIndexes[i][j] = dataIndexes[i];
+					}
+					else
+					{
+						if (dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){		
+							int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
+							varNames[j]=dsi.getName();
+							simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+							varIndexes[i][j] = volInsideIndex;
+							inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
+						}else if (dsi.getName().endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX)){					
+							int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
+							varNames[j]=dsi.getName();
+							simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
+							varIndexes[i][j] = volOutsideIndex;
+							outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
+						} else {	
+							varNames[j]=dsi.getName();
+							simFileVarNames[j] = dsi.getName();
+							if(isDomainInside(mesh, dsi.getDomain(), dataIndexes[i])){
+								inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
+								varIndexes[i][j] = inside_near_far_indexes[i][j].volIndexNear;
+							}else{
+								outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dsi.getDomain(), dataIndexes[i], false);
+								varIndexes[i][j] = outside_near_far_indexes[i][j].volIndexNear;
+							}
 						}
 					}
 				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){					
