@@ -154,6 +154,14 @@ public class SimulationDispatcherEngine {
 	}
 
 
+	/**
+	 * system is aborting this job (as opposed to the user)
+	 * @param jobStatus existing (pre failure) status
+	 * @param failureMessage
+	 * @param simulationDatabase
+	 * @param session
+	 * @param log
+	 */
 	public void onSystemAbort(SimulationJobStatus jobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) {
 		try {
 			KeyValue simKey = jobStatus.getVCSimulationIdentifier().getSimulationKey();
