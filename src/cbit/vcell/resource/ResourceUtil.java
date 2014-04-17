@@ -284,7 +284,7 @@ public class ResourceUtil {
 				fromResourceLibraries.add("cygquadmath-0.dll");
 			}
 		}
-		else {
+		else if (bLinux) {
 			fromResourceLibraries.add("libgfortran.so.3");
 		}
 		for (String dllName : fromResourceLibraries){
@@ -373,6 +373,9 @@ public class ResourceUtil {
 	 * @throws Exception
 	 */
 	static void loadLicensedLibraries(SpecialLicense license) throws IOException {
+		if (license == null) {
+			return;
+		}
 		//per "You aren't gonna need it" we'll just do Cygwin for now
 		if (license != null) {
 			assert license == SpecialLicense.CYGWIN;
