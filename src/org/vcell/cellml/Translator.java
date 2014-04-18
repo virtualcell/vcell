@@ -14,6 +14,7 @@ import cbit.util.xml.XmlUtil;
 
 import org.jdom.Document;
 import org.jdom.Element; 
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter; 
 import org.vcell.util.document.VCDocument;
 
@@ -64,11 +65,11 @@ public abstract class Translator {
 		if ( (printedDoc.equals("source") && sRoot == null) ||
 			 (printedDoc.equals("target") && tRoot == null) )
 		    throw new IllegalStateException ("Nothing to print.");
-	    XMLOutputter xmlOut = new XMLOutputter("   ");
-	    xmlOut.setNewlines(true);
+	    XMLOutputter xmlOut = new XMLOutputter();
+	    // xmlOut.setNewlines(true);
 	  	try {
 		  	if (printedDoc.equals("source")) {
-			  	xmlOut.setTrimAllWhite(true);
+		    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
 		        xmlOut.output(sRoot, outStream);		        
 		  	} else { 
 		        xmlOut.output(tRoot, outStream);

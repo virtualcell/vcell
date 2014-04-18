@@ -165,7 +165,7 @@ private static Element getMatchingElementGeneric(Element root, String reName, St
    private static Element getParent(Element e, int hier) {
 
 	   for (int i = 0; i < hier; i++)
-			e = e.getParent();
+			e = e.getParentElement();
 			
 		return e; 
    }
@@ -175,10 +175,10 @@ private static Element getMatchingElementGeneric(Element root, String reName, St
    private String getPathToRoot(Element e) {
 
 	   StringBuffer buf = new StringBuffer();
-	   Element temp = e.getParent();
+	   Element temp = e.getParentElement();
 	   while (temp != null) {
 		   buf.insert(0, temp.getName() + "[@Name='" +  temp.getAttributeValue(XMLTags.NameTag) + "']" + "/");
-	       temp = temp.getParent();
+	       temp = temp.getParentElement();
 	   }
 	   buf.append(e.getName() + "[@Name='" + e.getAttributeValue(XMLTags.NameTag) + "']");
 	   

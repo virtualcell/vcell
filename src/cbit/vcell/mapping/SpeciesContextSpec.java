@@ -242,6 +242,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		public int getRole() {
 			return fieldParameterRole;
 		}
+		
+		public SpeciesContext getSpeciesContext() {
+			return SpeciesContextSpec.this.getSpeciesContext();
+		}
 	}
 	
 	public class SpeciesContextSpecProxyParameter extends ProxyParameter {

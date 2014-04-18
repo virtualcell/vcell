@@ -252,7 +252,12 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		public int getRole() {
 			return fieldParameterRole;
 		}
+		
+		public Structure getStructure() {
+			return StructureMapping.this.getStructure();
+		}
 	}
+	
 	private Structure structure = null;
 	private GeometryClass geometryClass = null;
 	private StructureMappingNameScope nameScope = new StructureMappingNameScope();

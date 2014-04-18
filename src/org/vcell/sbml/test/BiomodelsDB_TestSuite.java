@@ -46,8 +46,7 @@ public class BiomodelsDB_TestSuite {
 	private static void write(Document doc, File file) throws IOException{
 		PrintWriter reportFileWriter = new PrintWriter(file);
 		XMLOutputter outputter = new XMLOutputter();
-		outputter.setNewlines(true);
-		outputter.setLineSeparator("\n");
+		outputter.getFormat().setLineSeparator("\n");
 		outputter.output(doc, reportFileWriter);
 		reportFileWriter.flush();
 		reportFileWriter.close();

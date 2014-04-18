@@ -395,7 +395,7 @@ public class PathwayReader {
 						controlledVocabulary.getxRef().add(addObjectXref(childElement1));
 						return true;
 					}else if (childElement1.getName().equals("TERM")){
-						String prefix = element.getParent().getName();
+						String prefix = ((Element)element.getParent()).getName();
 						if(prefix.equals("")){
 							controlledVocabulary.getTerm().add(childElement1.getTextTrim());
 						}else{

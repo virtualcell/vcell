@@ -264,7 +264,7 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 			OptRunResultSet optRunResultSet = null;
 			List<String> paramNames = new ArrayList<String>();
 			List<Double> paramValues = new ArrayList<Double>();
-			if(paramListElement != null && paramListElement.hasChildren())
+			if(paramListElement != null && !paramListElement.getChildren().isEmpty())
 			{
 				List<Element> paramElements = paramListElement.getChildren(OptimizationParameterTag, ns);
 				if(paramElements != null)

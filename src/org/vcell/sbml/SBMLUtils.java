@@ -27,6 +27,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import cbit.vcell.model.Model.ReservedSymbol;
@@ -121,9 +122,12 @@ public abstract class SBMLUtils {
 	}
 
 	public static String xmlToString(Element root,boolean bTrimAllWhiteSpace) {
-		XMLOutputter xmlOut = new XMLOutputter("   ");
-	    xmlOut.setNewlines(true);
-		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
+		XMLOutputter xmlOut = new XMLOutputter();
+	    // xmlOut.setNewlines(true);
+	    if (bTrimAllWhiteSpace) {
+	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
+	    } 
+
 		return xmlOut.outputString(root);		        
 	}
 

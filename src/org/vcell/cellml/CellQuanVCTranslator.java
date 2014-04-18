@@ -198,7 +198,7 @@ public class CellQuanVCTranslator extends Translator {
     private Function addFunction(Element temp, Element comp, String mangledName) {
  	    String expStr = null;
 		Expression exp = null;
-		Element parent = temp.getParent();
+		Element parent = (Element) temp.getParent();
 		Element sibling = parent.getChild(MathMLTags.APPLY, mathns);   
 		if (sibling == null) {                          //check if its value is assigned to another variable (i.e. A = B)
 			@SuppressWarnings("unchecked")
@@ -301,10 +301,10 @@ public class CellQuanVCTranslator extends Translator {
 		}
 		if (stoich != null) {
 			//Can only imply the function if a variable_ref with a role of "rate" exists
-			JDOMTreeWalker reactionWalker = new JDOMTreeWalker(varRef.getParent(), new ElementFilter(CELLMLTags.ROLE));
+			JDOMTreeWalker reactionWalker = new JDOMTreeWalker((Element)varRef.getParent(), new ElementFilter(CELLMLTags.ROLE));
 			Element rateRole = reactionWalker.getMatchingElement(CELLMLTags.role, sAttNamespace, CELLMLTags.rateRole);
 			if (rateRole != null) {
-				String rateVarName = rateRole.getParent().getAttributeValue(CELLMLTags.variable, sAttNamespace);
+				String rateVarName = ((Element)rateRole.getParent()).getAttributeValue(CELLMLTags.variable, sAttNamespace);
 				StringBuffer formula = new StringBuffer("(");
 				if (roleAtt.equals(CELLMLTags.productRole))
 					formula.append("-(");
@@ -335,7 +335,7 @@ public class CellQuanVCTranslator extends Translator {
 		String firstKey, secondKey;
 		while (walker.hasNext()) {
 	    	temp = (Element)walker.next();
-	    	firstKey = temp.getParent().getAttributeValue(CELLMLTags.name, sAttNamespace);
+	    	firstKey = ((Element)temp.getParent()).getAttributeValue(CELLMLTags.name, sAttNamespace);
 	    	secondKey = temp.getAttributeValue(CELLMLTags.name, sAttNamespace);
 	    	nm.add(firstKey, secondKey); 
 		}
@@ -437,7 +437,7 @@ public class CellQuanVCTranslator extends Translator {
 		JDOMTreeWalker walker = new JDOMTreeWalker(comp, new ElementFilter(CELLMLTags.ROLE));
 		Element temp = walker.getMatchingElement(CELLMLTags.delta_variable, sAttNamespace, varName);
 		if (temp != null) {
-			return temp.getParent();
+			return (Element) temp.getParent();
 		} else {
 			return null;
 		}

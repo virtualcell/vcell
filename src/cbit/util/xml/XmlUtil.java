@@ -13,6 +13,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import java.io.BufferedInputStream;
@@ -242,23 +243,29 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 	
 	public static void writeXmlToStream(Element root, boolean bTrimAllWhiteSpace, OutputStream outStream) throws IOException
 	{
-		XMLOutputter xmlOut = new XMLOutputter("   ");
-	    xmlOut.setNewlines(true);
-		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);
+		XMLOutputter xmlOut = new XMLOutputter();
+	    // default newline in jdom 1.1.3 is '\r\n' : xmlOut.setNewlines(true);
+	    if (bTrimAllWhiteSpace) {
+	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
+	    } 
 		xmlOut.output(root, outStream);
 	}
 	
 	public static String xmlToString(Element root,boolean bTrimAllWhiteSpace) {
-		XMLOutputter xmlOut = new XMLOutputter("   ");
-	    xmlOut.setNewlines(true);
-		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
+		XMLOutputter xmlOut = new XMLOutputter();
+	    // default newline in jdom 1.1.3 is '\r\n' :  xmlOut.setNewlines(true);
+	    if (bTrimAllWhiteSpace) {
+	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
+	    } 
 		return xmlOut.outputString(root);		        
 	}
 
 	public static String xmlToString(Document xmlDoc, boolean bTrimAllWhiteSpace) {
-		XMLOutputter xmlOut = new XMLOutputter("   ");
-	    xmlOut.setNewlines(true);
-		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
+		XMLOutputter xmlOut = new XMLOutputter();
+		// default newline in jdom 1.1.3 is '\r\n' : xmlOut.setNewlines(true);
+	    if (bTrimAllWhiteSpace) {
+	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
+	    } 
 		return xmlOut.outputString(xmlDoc);		        
 	}
 }

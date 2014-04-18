@@ -68,7 +68,7 @@ public class PathwayXMLHelper {
 			}else{
 				buffer.insert(0,element.getName()+"/");
 			}
-			element = element.getParent();
+			element = (Element) element.getParent();
 		}
 		return buffer.toString();
 	}

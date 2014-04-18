@@ -35,8 +35,9 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_SBML_24	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version4>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_31_CORE = new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level3,Version1> Core (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_31_SPATIAL = new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level3,Version1> Spatial <Version1> (.xml .sbml)");
-	public static final FileFilter FILE_FILTER_SMOLDYN_INPUT = new ExtensionFilter(new String[] {".smoldynInput", ".txt"},"Smoldyn Input Files (.smoldynInput .txt)");
+	public static final FileFilter FILE_FILTER_SEDML    = new ExtensionFilter(new String[] {".xml",".sedml"},"SEDML format <Level1,Version2>  (.xml .sedml)");
 	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(new String[] {".xml",".cellml"},	"CELLML format (*.xml .cellml)");
+	public static final FileFilter FILE_FILTER_SMOLDYN_INPUT = new ExtensionFilter(new String[] {".smoldynInput", ".txt"},"Smoldyn Input Files (.smoldynInput .txt)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
 	public static final FileFilter FILE_FILTER_PLY		= new ExtensionFilter(".ply", 	"Stanford Polygon Format(*.ply)");
