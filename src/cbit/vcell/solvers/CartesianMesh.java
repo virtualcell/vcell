@@ -64,7 +64,7 @@ public class CartesianMesh implements Serializable, Matchable {
 	/**
 	 * set from SVN Revision
 	 */
-	private static final long serialVersionUID = Serial.serialFromSVNRevision(("$Rev: 1")); 
+	private static final long serialVersionUID = Serial.serialFromSVNRevision(("$Rev$")); 
 
 
 	protected static class MembraneMeshMetrics {
