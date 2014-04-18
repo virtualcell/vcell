@@ -1879,7 +1879,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 	    String zDim = param.getAttributeValue(XMLTags.NumSamplesZAttrTag);
 		if (cutoffStr == null || xDim == null || yDim == null || zDim == null) {
 			throw new XmlParseException("Attributes for element Surface Description not properly set, under geometry: " +
-										param.getParent().getAttributeValue(XMLTags.NameAttrTag));
+										((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
 		}
 		try {
 			ISize isize = new ISize(Integer.parseInt(xDim), Integer.parseInt(yDim), Integer.parseInt(zDim));
@@ -1897,7 +1897,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 				String subvolumeRef = temp.getAttributeValue(XMLTags.SubVolumeAttrTag);
 				if (regionID == null || name == null || subvolumeRef == null) {
 					throw new XmlParseException("Attributes for element Volume Region not properly set, under geometry: " +
-											param.getParent().getAttributeValue(XMLTags.NameAttrTag));
+											((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
 				}
 				SubVolume subvolume = geom.getGeometrySpec().getSubVolume(subvolumeRef);
 				if (subvolume == null) {
@@ -1922,13 +1922,13 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 				String name = temp.getAttributeValue(XMLTags.NameAttrTag);
 				if (volRegion_1 == null || volRegion_2 == null || name == null) {
 					throw new XmlParseException("Attributes for element Membrane Region not properly set, under geometry: " +
-											param.getParent().getAttributeValue(XMLTags.NameAttrTag));
+											((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
 				}
 				VolumeGeometricRegion region1 = getAdjacentVolumeRegion(regions, volRegion_1);
 				VolumeGeometricRegion region2 = getAdjacentVolumeRegion(regions, volRegion_2);
 				if (region1 == null || region2 == null) {
 					throw new XmlParseException("Element Membrane Region refernces invalid volume regions, under geometry: " +
-											param.getParent().getAttributeValue(XMLTags.NameAttrTag));
+											((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
 				}
 				double size = -1;
 				VCUnitDefinition unit = null;
@@ -1952,7 +1952,7 @@ public Geometry getGeometry(Element param) throws XmlParseException {
 			}
 		} catch (Exception e) {
 			System.err.println("Unable to read geometry surface description from XML, for geometry: " +
-								param.getParent().getAttributeValue(XMLTags.NameAttrTag));
+								((Element) param.getParent()).getAttributeValue(XMLTags.NameAttrTag));
 			e.printStackTrace();
 		}
 	    
@@ -2018,7 +2018,7 @@ private ImageSubVolume getImageSubVolume(Element param) throws XmlParseException
 	int imagePixelValue = Integer.parseInt( param.getAttributeValue(XMLTags.ImagePixelValueTag) );
  
 	//Get the PixelClass from image (image should be a sibling of this subVolume element)
-	Element imageElement = param.getParent().getChild(XMLTags.ImageTag, vcNamespace);
+	Element imageElement = ((Element) param.getParent()).getChild(XMLTags.ImageTag, vcNamespace);
 	if (imageElement==null){
 		throw new XmlParseException("image not found in geometry corresponding to ImageSubVolume");
 	}

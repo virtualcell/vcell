@@ -408,7 +408,7 @@ public class VCMLComparator {
 			if (attVal != null) {
 				buf.append(e.getName() + ": " +  attVal + "/");
 			}
-			e = e.getParent();
+			e = (Element) e.getParent();
 		}
 
 		return buf.toString();

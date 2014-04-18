@@ -100,7 +100,7 @@ private VCUnitTranslator() { super(); }
 		}
 		if (totalUnit != null) {
 			String unitName = source.getAttributeValue(CELLMLTags.name, sAttNamespace);
-			String ownerName = source.getParent().getAttributeValue(CELLMLTags.name, sAttNamespace);
+			String ownerName = ((Element) source.getParent()).getAttributeValue(CELLMLTags.name, sAttNamespace);
 			storeCellMLUnit(ownerName, unitName, totalUnit);
 		}
 		
@@ -242,7 +242,7 @@ private VCUnitTranslator() { super(); }
 		TransCellMLUnits tunits = (TransCellMLUnits)cellmlUnits.get(ownerName);
 		//if not found at component level, see if its defined at model level.
 		if (tunits == null && owner.getName().equals(CELLMLTags.COMPONENT)) {
-			tunits = (TransCellMLUnits)cellmlUnits.get(owner.getParent().getAttributeValue(CELLMLTags.name, sAttNamespace));
+			tunits = (TransCellMLUnits)cellmlUnits.get(((Element) owner.getParent()).getAttributeValue(CELLMLTags.name, sAttNamespace));
 		}
 		if (tunits == null) {
 			return null;
@@ -302,7 +302,7 @@ private VCUnitTranslator() { super(); }
 				unit = unitDB.get(kind);
 				uName = UnitName.newUnitName(kind); 
 			} else {
-				Element owner = cellUnit.getParent().getParent();
+				Element owner = (Element) cellUnit.getParent().getParent();
 				String ownerName = owner.getAttributeValue(CELLMLTags.name, sAttNamespace);
 				//check if already added.
 				VCUnitDefinition unitDef = getMatchingCellMLUnitDef(owner, sAttNamespace, kind, vcUnitSystem);

@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.Parent;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.id.URIUtil;
@@ -55,9 +56,17 @@ public class RDFXMLContext {
 		if(StringUtil.isEmpty(baseURI)) {
 			baseURI = element.getAttributeValue("base", Namespace.XML_NAMESPACE);
 			if(StringUtil.isEmpty(baseURI)) {
-				Element parent = element.getParent();
+				Parent parent = element.getParent();
+				// This change from previous version needed to be made since JDOM 1.1.3 api is slightly different from JDOM 1.0.
+				// in JDOM 1.1.3, element.getParent() returns Parent not Element (as in JDOM 1.0). Parent interface is implemented by Document and Element.
+				// If element.getParent() returns an element, recursively call this method. 
+				// At the root level, element.getParent() returns Document, which is non-null, assign defaultBaseURI to 'baseURI'.
 				if(parent != null) {
-					baseURI = getBaseURI(parent);
+					if (parent instanceof Element) {
+						baseURI = getBaseURI((Element)parent);
+					} else {
+						baseURI = defaultBaseURI;
+					}
 				} else {
 					baseURI = defaultBaseURI;
 				}

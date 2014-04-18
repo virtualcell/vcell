@@ -9,12 +9,17 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/libKiSAO.jar"/>
+	<classpathentry kind="lib" path="lib/jdom.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-contrib.jar"/>
+	<classpathentry kind="lib" path="lib/jaxen-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/xom-1.2.1.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
- 	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
@@ -46,7 +51,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/thirdParty.jar" sourcepath="lib/vcellClientThirdParty.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jai_codec.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jai_core.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdom_1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/js.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/script-js.jar"/>
@@ -77,5 +81,7 @@
 	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sshj-0.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/jlibsedml.jar"/>
+	<classpathentry kind="lib" path="lib/jmathml.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

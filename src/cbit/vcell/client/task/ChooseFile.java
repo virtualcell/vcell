@@ -102,6 +102,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_CORE);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
@@ -144,6 +145,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SEDML && !n.endsWith(".sedml")) {
+				selectedFile = new File(selectedFileName + ".sedml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
@@ -155,7 +158,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			} 
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
-			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
+			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML) || fileFilter.equals(FileFilters.FILE_FILTER_SEDML)) {
 				// nothing more to do in this case
 				resetPreferredFilePath(selectedFile, userPreferences);
 				return selectedFile;
