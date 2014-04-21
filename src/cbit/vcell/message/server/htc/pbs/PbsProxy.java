@@ -137,19 +137,17 @@ public final class PbsProxy extends HtcProxy {
 			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
 
 			sw.append("# Generated without file template. assuming /bin/bash shell\n");
-			sw.append("#PBS -N " + jobName+"\n");
+			sw.append("#PBS -N " + jobName+"\n"); //name of the job
 			sw.append("#PBS -l mem=" + (int)(memSize + JOB_MEM_OVERHEAD_MB) + "mb\n");
 			String pbsQueueName = PropertyLoader.getProperty(PropertyLoader.htcBatchSystemQueue,null);
 			if (pbsQueueName!=null && pbsQueueName.trim().length()>0){
 				sw.append("#PBS -q "+pbsQueueName+"\n");
 			}
-			sw.append("#PBS -m a\n");
-			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
-			sw.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
-			sw.append("#PBS -j oe\n");
-//			sw.append("#PBS -k oe\n");
-			sw.append("#PBS -r n\n");
-			sw.append("#PBS -l nice=10\n");
+			sw.append("#PBS -m a\n"); //send email on abort
+			sw.append("#PBS -M schaff@neuron.uchc.edu\n"); //to jim
+			sw.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n"); //stdout goes here
+			sw.append("#PBS -j oe\n"); //redirect standard error to standard out
+			sw.append("#PBS -r n\n"); //don't restart if it dies
 
 			String htcSubmissionScriptIncludeFileName = PropertyLoader.getProperty(PropertyLoader.htcSubScriptIncludeFile, null);
 			if (htcSubmissionScriptIncludeFileName!=null) {
