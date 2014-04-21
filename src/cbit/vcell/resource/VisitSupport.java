@@ -1,7 +1,9 @@
 package cbit.vcell.resource;
 
 import java.awt.Component;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -72,15 +74,26 @@ public class VisitSupport {
 			System.out.println(varname+"="+value);
 		}
 		
-		String visitCommandString = "visitcmd="+visitExecutable.getPath().replace("\"", "");
-		//System.out.println("Visit Command String = "+visitCommandString);
-		envVarList.add(visitCommandString);
+		String visitCommandString = visitExecutable.getPath().replace("\"", "");
+		
+		System.out.println("Visit Command String = "+visitCommandString);
+		//envVarList.add(visitCommandString);
 		if (lg.isInfoEnabled()) {
 			lg.info("visitcmd="+visitExecutable.getPath().replace("\"", ""));
 		}
-		envVarList.add("pythonscript="+visMainCLI.getPath());
+		//envVarList.add("pythonscript="+visMainCLI.getPath());
+		String pythonScriptString = visMainCLI.getPath();
+		System.out.println("Python script = "+pythonScriptString);
+		File scriptFile = File.createTempFile("VCellVisitLaunch", "command");
+
+		scriptFile.setExecutable(true);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
+	
+		writer.write(visitCommandString+" -cli -uifile "+pythonScriptString+"\n");
+		writer.close();
+		
 		Runtime.getRuntime().exec(
-				new String[] {"open", "-a", "Terminal.app", starterScript.getAbsolutePath(), script.getAbsolutePath()},
+				new String[] {"open", "-a", "Terminal.app", scriptFile.getAbsolutePath() },
 				envVarList.toArray(new String[0]));
 		if (lg.isInfoEnabled()) {
 			lg.info("Started VCellVisIt");
