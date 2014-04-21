@@ -38,17 +38,12 @@ public class VisitSupport {
 		return new File(url.toURI());
 	}
 
-	public static File getMacOSVisToolShellStartScript() throws URISyntaxException {
-		java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + "startvcellvisit.sh");
-		return new File(url.toURI());
-	}
 
 	private static void launchVisToolMac(Component parent) throws IOException, URISyntaxException {
 		
 		File visMainCLI = getVisToolPythonScript();
 		File visitExecutable = null;
-		File script = getVisToolShellScript();
-		File starterScript = getMacOSVisToolShellStartScript();
+
 		String vname = "visit";
 		
 		ExecutableFinderDialog gef = new ExecutableFinderDialog(parent, visitUserMessage); 
@@ -84,7 +79,7 @@ public class VisitSupport {
 		//envVarList.add("pythonscript="+visMainCLI.getPath());
 		String pythonScriptString = visMainCLI.getPath();
 		System.out.println("Python script = "+pythonScriptString);
-		File scriptFile = File.createTempFile("VCellVisitLaunch", "command");
+		File scriptFile = File.createTempFile("VCellVisitLaunch", ".command");
 
 		scriptFile.setExecutable(true);
 		BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
