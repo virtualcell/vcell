@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Function;
@@ -50,6 +51,7 @@ public class RowColumnResultSet implements java.io.Serializable {
 	
 	private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
 	private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null; 
+	private static final Logger lg = Logger.getLogger(RowColumnResultSet.class);
 
 /**
  *  construct empty, add columns via {@link #addDataColumn(ColumnDescription)} et. al. after creation 
@@ -273,8 +275,10 @@ public int findColumn(String columnName) {
 	for (int i = 0; i < getColumnDescriptionsCount(); i++) {
 		if (columnName.equals(getColumnDescriptions(i).getName())) return (i);
 	}
-//	System.out.println("ODEIntegratorResultSet.findColumn() COULD NOT FIND : " + columnName);
-	return (-1);
+	if (lg.isDebugEnabled()) {
+		lg.debug("ODEIntegratorResultSet.findColumn() COULD NOT FIND : " + columnName);
+	}
+	return -1;
 }
 
 
@@ -450,10 +454,14 @@ private boolean isCorner(int t, double a[], double b[], double c[], double scale
             double ratio = (b_minus_a_y*b_minus_a_y + b_minus_a_t_2)/
 						(c_minus_b_y*c_minus_b_y + c_minus_b_t_2);
 			if (ratio < minSquaredRatio || ratio > maxSquaredRatio){
-//System.out.println("corner with ratio = "+ratio+" at b[t]="+b[t]+", a["+i+"]="+a[i]+", b["+i+"]="+b[i]+", c["+i+"]="+c[i]);
+				if (lg.isDebugEnabled()) {
+					lg.debug("corner with ratio = "+ratio+" at b[t]="+b[t]+", a["+i+"]="+a[i]+", b["+i+"]="+b[i]+", c["+i+"]="+c[i]);
+				}
 				return true;
 			}
-//System.out.println("NOT A CORNER with ratio = "+ratio+" at b[t]="+b[t]+", a["+i+"]="+a[i]+", b["+i+"]="+b[i]+", c["+i+"]="+c[i]);
+			if (lg.isDebugEnabled()) {
+				lg.debug("NOT A CORNER with ratio = "+ratio+" at b[t]="+b[t]+", a["+i+"]="+a[i]+", b["+i+"]="+b[i]+", c["+i+"]="+c[i]);
+			}
         }
     }
     return false;
@@ -524,7 +532,9 @@ public synchronized void trimRows(int maxRowCount) {
 	if (maxRowCount > getRowCount() - 1) {
 		return; //nothing to do
 	}
-System.out.println("rowCount="+getRowCount());
+	if (lg.isInfoEnabled()) {
+		lg.info("rowCount="+getRowCount());
+	}
 	if (maxRowCount <= 0) {
 		throw new IllegalArgumentException("must keep at least one row");
 	}
@@ -550,7 +560,9 @@ System.out.println("rowCount="+getRowCount());
 		if (scale[i] == 0){
 			scale[i] = 1;
 		}
-System.out.println("scale["+i+"] = "+scale[i]);
+		if (lg.isInfoEnabled()) {
+			lg.info("scale["+i+"] = "+scale[i]);
+		}
 	}
 	double threshold = 0.01;
 	double minSquaredRatio = 0.1*0.1;
@@ -559,14 +571,14 @@ System.out.println("scale["+i+"] = "+scale[i]);
 	final boolean haveT = t >= 0;
 	final double TOLERANCE = 0.1;
 	LinkedList<double[]> linkedList = new LinkedList<double[]>(fieldValues);
-	while (haveT && maxRowCount<linkedList.size() && threshold<TOLERANCE){
+	while (maxRowCount<linkedList.size() && threshold<TOLERANCE){
 		ListIterator<double[]> iter = linkedList.listIterator(0);
 		double a[] = iter.next();
 		double b[] = iter.next();
 		double c[] = null;
 		while (iter.hasNext()) {
 			c = iter.next();
-			if (calculateErrorFactor(t,a,b,c,scale)<threshold && !isCorner(t,a,b,c,scale,minSquaredRatio,maxSquaredRatio)){
+			if (haveT && calculateErrorFactor(t,a,b,c,scale)<threshold && !isCorner(t,a,b,c,scale,minSquaredRatio,maxSquaredRatio)){
 				iter.previous();
 				iter.previous();
 				iter.remove();
@@ -584,7 +596,9 @@ System.out.println("scale["+i+"] = "+scale[i]);
 				break;
 			}
 		}
-		System.out.println("threshold = "+threshold+", size = "+linkedList.size());
+		if (lg.isInfoEnabled()) {
+			lg.info("threshold = "+threshold+", size = "+linkedList.size());
+		}
 		threshold += 0.01;
 	}
 	if (linkedList.size()>maxRowCount){
