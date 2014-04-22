@@ -203,7 +203,8 @@ public class SEDMLExporter {
 						}
 						// create Algorithm and sedmlSimulation (UniformtimeCourse)
 						SolverDescription vcSolverDesc = simTaskDesc.getSolverDescription();
-						String kiSAOIdStr = getKiSAOIdFromSimulation(vcSolverDesc);
+//						String kiSAOIdStr = getKiSAOIdFromSimulation(vcSolverDesc);
+						String kiSAOIdStr = vcSolverDesc.getKisao();
 						Algorithm sedmlAlgorithm = new Algorithm(kiSAOIdStr);
 						TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
 						double startingTime = vcSimTimeBounds.getStartingTime();
