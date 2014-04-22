@@ -262,16 +262,16 @@ public String getVCML(int spatialDimension) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCML.MembraneSubDomain+" "+insideCompartment.getName()+" "+outsideCompartment.getName()+" {\n");
 	if (spatialDimension>=1){
-		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension>=2){
-		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryYm+"\t "+boundaryConditionTypeYm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryYp+"\t "+boundaryConditionTypeYp.boundaryTypeStringValue()+"\n");
 	}
 	if (spatialDimension==3){
-		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.toString()+"\n");
-		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.toString()+"\n");
+		buffer.append("\t"+VCML.BoundaryZm+"\t "+boundaryConditionTypeZm.boundaryTypeStringValue()+"\n");
+		buffer.append("\t"+VCML.BoundaryZp+"\t "+boundaryConditionTypeZp.boundaryTypeStringValue()+"\n");
 	}
 	Enumeration<Equation> enum1 = getEquations();
 	while (enum1.hasMoreElements()){
