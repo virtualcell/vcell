@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
+import cbit.vcell.server.UserLoginInfo;
+import cbit.vcell.server.UserLoginInfo.DigestedPassword;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
