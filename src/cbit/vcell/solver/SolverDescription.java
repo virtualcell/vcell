@@ -73,17 +73,17 @@ public enum SolverDescription {
 	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
 	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_EM, null, "KISAO:0000261"), 
+	      SolverExecutable.Hybrid_EM, null, "KISAO:0000352"), 
 	      
 	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil, null, "KISAO:0000287"), 
+	      SolverExecutable.Hybrid_Mil, null, "KISAO:0000352"), 
 	      
 	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil_Adaptive, null, "KISAO:0000097"), 
+	      SolverExecutable.Hybrid_Mil_Adaptive, null, "KISAO:0000352"), 
 	      
 	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
 	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
@@ -103,7 +103,7 @@ public enum SolverDescription {
       SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
 	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000000"), 
+	      SolverExecutable.FiniteVolume, null, "KISAO:0000285"), 
 	      
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
@@ -113,7 +113,7 @@ public enum SolverDescription {
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step)","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_DirichletAtMembraneBoundary},
-	      SolverExecutable.VCellChombo, SpecialLicense.CYGWIN, "KISAO:0000000"), 
+	      SolverExecutable.VCellChombo, SpecialLicense.CYGWIN, "KISAO:0000285"), 
       ;
 
 	public enum SolverFeature {
