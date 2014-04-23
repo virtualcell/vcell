@@ -196,7 +196,7 @@ public class SEDMLExporter {
 						if (simContext.getGeometry().getDimension() == 0 && simContext.isStoch()) {
 							long numOfTrials = simTaskDesc.getStochOpt().getNumOfTrials();
 							if (numOfTrials > 1) {
-								String msg = "\n\t" + simContextName + " : non-spatial stochastic application with histogram option, ";
+								String msg = "\n\t" + simContextName + " ( " + vcSimulation.getName() + " ) : export of non-spatial stochastic simulation with histogram option to SEDML not supported at this time.";
 								sedmlNotesStr += msg;
 								continue;
 							}
@@ -601,8 +601,8 @@ public class SEDMLExporter {
 							}
 						}
 					} // end - for 'sims'
-				} else {
-					String msg = "\n\t" + simContextName + " : spatial stochastic application, ";
+				} else {			// end if (!(simContext.getGeometry().getDimension() > 0 && simContext.isStoch()))
+					String msg = "\n\t" + simContextName + " : export of spatial stochastic (Smoldyn solver) applications to SEDML not supported at this time.";
 					sedmlNotesStr += msg;
 				} // end : if-else simContext is not spatial stochastic
 				simContextCnt++;
@@ -612,7 +612,7 @@ public class SEDMLExporter {
         	
         	// if sedmlNotesStr is not null, there were some applications that could not be exported to SEDML (eg., spatial stochastic). Create a notes element and add it to sedml Model.
         	if (sedmlNotesStr.length() > 0) {
-	        	sedmlNotesStr = "\n\tThe following applications in the VCell model were not exported to VCell : " + sedmlNotesStr + "\n\nExport of spatial stochsatic (Smoldyn solver) applications to SEDML not supported at this time.";
+	        	sedmlNotesStr = "\n\tThe following applications in the VCell model were not exported to VCell : " + sedmlNotesStr;
 	        	sedmlModel.addNote(createNotesElement(sedmlNotesStr));
         	}
 			
