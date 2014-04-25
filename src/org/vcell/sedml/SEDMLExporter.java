@@ -503,11 +503,13 @@ public class SEDMLExporter {
 
 						// add one dataGenerator for 'time' for entire SEDML model.
 						// (using the id of the first task in model for 'taskRef' field of var since 
-						DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME);
+						String timeDataGenPrefix = DATAGENERATOR_TIME_NAME + "_" + taskRef;
+						DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(timeDataGenPrefix);
 		        		if (timeDataGen == null) {
-							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL, DATAGENERATOR_TIME_SYMBOL, sedmlModel.getTasks().get(0).getId(), VariableSymbol.TIME);
+//							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL, DATAGENERATOR_TIME_SYMBOL, sedmlModel.getTasks().get(0).getId(), VariableSymbol.TIME);
+							org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
 							ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL);
-							timeDataGen = new DataGenerator(DATAGENERATOR_TIME_NAME, DATAGENERATOR_TIME_NAME, math);
+							timeDataGen = new DataGenerator(timeDataGenPrefix, timeDataGenPrefix, math);
 							timeDataGen.addVariable(timeVar);
 							sedmlModel.addDataGenerator(timeDataGen);
 							dataGeneratorsOfSim.add(timeDataGen);
@@ -585,7 +587,7 @@ public class SEDMLExporter {
 								Plot2D sedmlPlot2d = new Plot2D(plot2dId, simContext.getName() + "plots");
 								sedmlPlot2d.addNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 								List<DataGenerator> dataGenerators = sedmlModel.getDataGenerators();
-								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME).getId();
+								String xDataRef = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef).getId();
 								// add a curve for each dataGenerator in SEDML model
 								int curveCnt = 0;
 								for (DataGenerator dataGenerator : dataGeneratorsOfSim) {
