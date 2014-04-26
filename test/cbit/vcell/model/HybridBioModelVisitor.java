@@ -27,8 +27,8 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	/**
 	 * user key to use for tests
 	 */
-	private final static String USER_KEY = "gerardw" ;
-	//private final static String USER_KEY = VCDatabaseScanner.ALL_USERS;
+	//private final static String USER_KEY = "gerardw" ;
+	private final static String USER_KEY = VCDatabaseScanner.ALL_USERS;
 	/**
 	 * output file name
 	 */
@@ -47,11 +47,11 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	 */
 	public boolean filterBioModel(BioModelInfo bioModelInfo) {
 		VCellSoftwareVersion sv = bioModelInfo.getSoftwareVersion();
+		//only look at 5.0, 5.1 stored models
 		final boolean recentEnough = ( sv.getMajorVersion() == 5 ); 
-		if (!recentEnough) {
-			System.out.println("skipping old (v" + sv.getMajorVersion() + ")" + bioModelInfo.toString());
-		}
-		return recentEnough;
+		//don't look at 5.3 models
+		final boolean oldEnough = ( sv.getMinorVersion() < 3);
+		return recentEnough && oldEnough;
 	}
 
 	/**
@@ -196,7 +196,8 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 			else {
 				users = scanner.getAllUsers();
 			}
-			scanner.multiScanBioModels(visitor, w, users, bAbortOnDataAccessException);
+			//scanner.multiScanBioModels(visitor, w, users, bAbortOnDataAccessException);
+			scanner.keyScanBioModels(visitor, w, users, bAbortOnDataAccessException);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{
