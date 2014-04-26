@@ -85,4 +85,14 @@ public int hashCode() {
 public String toString() {
 	return value.toString();
 }
+
+/**
+ * return as long
+ * @return long equivalent
+ */
+public long longValue( ) {
+	return value.longValue();
+
+}
+
 }
