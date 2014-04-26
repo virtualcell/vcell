@@ -16,7 +16,6 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
@@ -177,7 +176,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	@SuppressWarnings("unused")
 	@Test
 	public void tryit( ) throws IOException {
-		Logging.init();
+		//Logging.init();
 		PropertyLoader.loadProperties();
 		//String args[] = {USER_KEY,OUTPUT};
 		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
