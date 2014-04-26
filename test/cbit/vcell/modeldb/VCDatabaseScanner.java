@@ -12,6 +12,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -48,13 +49,29 @@ public class VCDatabaseScanner {
 	private User[] allUsers = null;
 
 	
+
+	/**
+	 * create scanner with Session logging to standard out
+	 * @return new scanner
+	 * @throws Exception
+	 */
 public static VCDatabaseScanner createDatabaseScanner() throws Exception{
+	return createDatabaseScanner(new org.vcell.util.StdoutSessionLog("Admin"));
+}
+
+/**
+ * create database scanner with specified log
+ * @param log
+ * @return new scanner 
+ * @throws Exception
+ */
+public static VCDatabaseScanner createDatabaseScanner(SessionLog log) throws Exception{
+	
 	new PropertyLoader();
 		
 	DatabasePolicySQL.bSilent = true;
 	DatabasePolicySQL.bAllowAdministrativeAccess = true;
 	
-	org.vcell.util.SessionLog log = new org.vcell.util.StdoutSessionLog("Admin");
 	cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 	DbDriver.setKeyFactory(keyFactory);
@@ -83,6 +100,15 @@ public VCDatabaseScanner(VCDatabaseScanner rhs) throws Exception{
  */
 public VCDatabaseScanner() throws Exception{
 	this(createDatabaseScanner());
+}
+
+/**
+ * constructor with specified log
+ * same code as {@link #createDatabaseScanner()}
+ * @throws Exception
+ */
+public VCDatabaseScanner(SessionLog log) throws Exception{
+	this(createDatabaseScanner(log));
 }
 
 /**
@@ -126,6 +152,9 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 		logFilePrintStream.println("Start scanning bio-models......");
 		logFilePrintStream.println("\n");
 		
+		//adapter for verifyMathDescriptionsUnchanged
+		PrintWriter logFilePrintWriter = new PrintWriter(logFilePrintStream);
+		
 		for (int i=0;i<users.length;i++)
 		{
 			User user = users[i];
@@ -152,19 +181,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 					bioModel.refreshDependencies();
 					logFilePrintStream.println("---- " + (j+1) + " ----> " + bioModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
 					databaseVisitor.visitBioModel(bioModel,logFilePrintStream);
-					SimulationContext[] simContexts = bioModel.getSimulationContexts();
-					for (SimulationContext sc : simContexts) {
-						try {
-							MathDescription oldMathDescription = sc.getMathDescription();
-							MathDescription newMathDescription = sc.createNewMathMapping().getMathDescription();
-							logFilePrintStream.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
-							MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
-							logFilePrintStream.println("\t " + mathCompareResults.toDatabaseStatus());
-						} catch (Exception e) {
-							logFilePrintStream.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
-							// e.printStackTrace();
-						}
-					}
+					verifyMathDescriptionsUnchanged(bioModel, logFilePrintWriter);
 				}catch (Exception e2){
 					log.exception(e2);
 					logFilePrintStream.println("======= " + e2.getMessage());
@@ -179,6 +196,25 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 	}catch(Exception e)
 	{
 		System.err.println("error writing to log file.");
+	}
+}
+
+/**
+ * generate new math description, compare with old, log status
+ * @param biomodel
+ */
+private void verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
+	SimulationContext[] simContexts = bioModel.getSimulationContexts();
+	for (SimulationContext sc : simContexts) {
+		try {
+			MathDescription oldMathDescription = sc.getMathDescription();
+			MathDescription newMathDescription = sc.createNewMathMapping().getMathDescription();
+			printWriter.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
+			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
+			printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
+		} catch (Exception e) {
+			printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
+		}
 	}
 }
 
@@ -310,27 +346,28 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 			User user = users[i];
 			BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
 			for (int j = 0; j < bioModelInfos.length; j++){
-				if (!databaseVisitor.filterBioModel(bioModelInfos[j])){
+				BioModelInfo bmi = bioModelInfos[j];
+				if (!databaseVisitor.filterBioModel(bmi)) {
 					continue;
 				}
 				try {
-					BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
+					BigString bioModelXML = dbServerImpl.getBioModelXML(user, bmi.getVersion().getVersionKey());
 					BioModel storedModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-					storedModel.refreshDependencies();
-					databaseVisitor.setBioModel(storedModel, printWriter);
-					printWriter.println("---- " + (j+1) + " ----> " + storedModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
-					for (BioModel bioModel: databaseVisitor) {
-						SimulationContext[] simContexts = bioModel.getSimulationContexts();
-						for (SimulationContext sc : simContexts) {
-							try {
-								MathDescription oldMathDescription = sc.getMathDescription();
-								MathDescription newMathDescription = sc.createNewMathMapping().getMathDescription();
-								printWriter.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
-								MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
-								printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
-							} catch (Exception e) {
-								printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
-								// e.printStackTrace();
+					System.out.println(storedModel.getName( ));
+					if (databaseVisitor.filterBioModel(storedModel)) {
+						storedModel.refreshDependencies();
+						verifyMathDescriptionsUnchanged(storedModel,printWriter);
+						databaseVisitor.setBioModel(storedModel, printWriter);
+						printWriter.println("---- " + (j+1) + " ----> " + storedModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
+						for (BioModel bioModel: databaseVisitor) {
+							SimulationContext[] simContexts = bioModel.getSimulationContexts();
+							for (SimulationContext sc : simContexts) {
+								try {
+									sc.createNewMathMapping().getMathDescription();
+								} catch (Exception e) {
+									printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
+									// e.printStackTrace();
+								}
 							}
 						}
 					}
