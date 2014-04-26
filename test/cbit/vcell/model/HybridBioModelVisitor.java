@@ -11,6 +11,7 @@ import java.util.List;
 import javax.help.UnsupportedOperationException;
 
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.BioModelInfo;
@@ -203,7 +204,10 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		}finally{
 			System.err.flush();
 		}
-		
+	}
+	
+	public static void main(String[] args) throws Exception {
+		JUnitCore.main(HybridBioModelVisitor.class.getName());
 	}
 
 }
