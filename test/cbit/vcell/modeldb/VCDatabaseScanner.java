@@ -4,6 +4,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
@@ -45,6 +47,7 @@ public class VCDatabaseScanner {
 	private DatabaseServerImpl dbServerImpl = null;
 	private SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
+	private ConnectionFactory connFactory;
 	private User[] allUsers = null;
 
 	
@@ -90,6 +93,7 @@ public VCDatabaseScanner(VCDatabaseScanner rhs) throws Exception{
 	log = rhs.log;
 	localAdminDbServer = rhs.localAdminDbServer;
 	allUsers = rhs.allUsers;
+	connFactory = rhs.connFactory;
 }
 
 /**
@@ -115,6 +119,7 @@ public VCDatabaseScanner(SessionLog log) throws Exception{
  * @throws RemoteException 
  */
 private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) throws DataAccessException, SQLException, RemoteException {
+	this.connFactory = argConFactory;
 	this.log = argSessionLog;
 	this.localAdminDbServer = new LocalAdminDbServer(argConFactory, argKeyFactory, argSessionLog);
 	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory,argSessionLog);
@@ -370,6 +375,55 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 							}
 						}
 					}
+				}catch (Exception e2){
+					log.exception(e2);
+					printWriter.println("======= " + e2.getMessage());
+					if (bAbortOnDataAccessException){
+						throw e2;
+					}
+				}
+			}
+		}
+		
+		printWriter.close();
+	}catch(Exception e)
+	{
+		e.printStackTrace();
+	}
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/2/01 3:40:29 PM)
+ * @throws DataAccessException 
+ * @throws XmlParseException 
+ */
+public void keyScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer, User users[], boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	assert users != null;
+	try
+	{
+		PrintWriter printWriter = new PrintWriter(writer);
+		//start visiting models and writing log
+		printWriter.println("Start scanning bio-models......");
+		printWriter.println("\n");
+		Object lock = new Object();
+		Connection conn = connFactory.getConnection(lock);
+		PreparedStatement ps = conn.prepareStatement("insert into gerard.models_to_scan(user_id,model_id) values(?,?)");
+
+		for (int i=0;i<users.length;i++)
+		{
+			User user = users[i];
+			BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
+			for (int j = 0; j < bioModelInfos.length; j++){
+				BioModelInfo bmi = bioModelInfos[j];
+				if (!databaseVisitor.filterBioModel(bmi)) {
+					continue;
+				}
+				try {
+					KeyValue vk = bmi.getVersion().getVersionKey();
+					ps.setLong(1,user.getID().longValue());
+					ps.setLong(2,vk.longValue());
+					ps.execute( );
 				}catch (Exception e2){
 					log.exception(e2);
 					printWriter.println("======= " + e2.getMessage());
