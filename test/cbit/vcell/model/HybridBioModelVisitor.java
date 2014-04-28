@@ -1,5 +1,6 @@
 package cbit.vcell.model;
 
+import java.awt.GraphicsEnvironment;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -96,8 +97,10 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 				applications.add(sc);
 			}
 		}
-		assert !applications.isEmpty();
-		moreStates = true;
+		moreStates = !applications.isEmpty();
+		if (!moreStates) {
+			System.err.println(bioModel.getName() + " "  + bioModel.getModel().getKey() + " no spatial stochastic?");
+		}
 		currentAppIndex = -1;
 		incrementApp();
 	}
@@ -163,6 +166,9 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		 */
 		@Override
 		public boolean hasNext() {
+			if (!moreStates) {
+				return false;
+			}
 			nextState( );
 			return moreStates; 
 		}
@@ -217,14 +223,16 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	@Test
 	public void batchLoad( ) throws IOException {
 		//Logging.init();
+		if (!GraphicsEnvironment.isHeadless()) {
+			throw new Error ("set headless (java.awt.headless=true");
+		}
 		PropertyLoader.loadProperties();
 		//String args[] = {USER_KEY,OUTPUT};
 		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
 			BatchTester scanner = new BatchTester(new NullSessionLog()); 
-			Writer w = new FileWriter(OUTPUT);
-			scanner.batchScanBioModels(visitor, w, "gerard.models_to_scan" ,3);
+			scanner.batchScanBioModels(visitor, "gerard.models_to_scan", 10);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{

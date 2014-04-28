@@ -1,5 +1,7 @@
 package cbit.vcell.modeldb;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
@@ -104,11 +106,16 @@ public class BatchTester extends VCDatabaseScanner {
 				}
 			}
 
-	public void batchScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer, String statusTable, int chunkSize)
-			throws DataAccessException, XmlParseException, SQLException {
+	public void batchScanBioModels(VCMultiBioVisitor databaseVisitor, String statusTable, int chunkSize)
+			throws DataAccessException, XmlParseException, SQLException, IOException {
 				String processHostId = ManagementFactory.getRuntimeMXBean().getName();
+				String filename = processHostId + ".txt";
+				
+				FileWriter writer = new FileWriter(filename);
+				PrintWriter printWriter = new PrintWriter(writer);
 				Connection conn = connFactory.getConnection(null);
-				System.err.println(conn.getAutoCommit());
+				conn.setAutoCommit(true);
+				printWriter.println("reserving slots");
 				try (Statement statement = conn.createStatement()) {
 					String query = "Update "  + statusTable + " set scan_process = '" + processHostId 
 							+ "' where scanned = 0 and scan_process is null and rownum <= "
@@ -118,6 +125,7 @@ public class BatchTester extends VCDatabaseScanner {
 						throw new Error("logic / SQL bad");
 					}
 				}
+				printWriter.println("finding  ours");
 				ArrayList<ModelIdent> models = new ArrayList<BatchTester.ModelIdent>();
 				try (Statement statement = conn.createStatement()) {
 					String query = "Select id, user_id, model_id from " + statusTable +
@@ -126,13 +134,12 @@ public class BatchTester extends VCDatabaseScanner {
 					while (rs.next( )) {
 						ModelIdent mi = new ModelIdent(rs);
 						models.add(mi);
-						System.err.println(mi.statusId);
+						printWriter.println("claiming " + mi.statusId);
 					}
 				}
 		
 				try
 				{
-					PrintWriter printWriter = new PrintWriter(writer);
 					//start visiting models and writing log
 					printWriter.println("Start scanning bio-models......");
 					printWriter.println("\n");
@@ -165,7 +172,8 @@ public class BatchTester extends VCDatabaseScanner {
 						}catch (Exception e2){
 							log.exception(e2);
 							goodModel = false;
-							//printWriter.println("======= " + e2.getMessage());
+							printWriter.println("failed " + modelIdent.statusId);
+							e2.printStackTrace(printWriter);
 						}
 						ps.setInt(1,boolAsInt(goodModel));
 						ps.setLong(2,modelIdent.statusId);
@@ -180,11 +188,11 @@ public class BatchTester extends VCDatabaseScanner {
 						
 					}
 
-					printWriter.close();
 				}catch(Exception e)
 				{
-					e.printStackTrace();
+					e.printStackTrace(printWriter);
 				}
+				printWriter.close();
 	}
 	
 	private int boolAsInt(boolean b) {
