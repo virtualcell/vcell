@@ -2,6 +2,8 @@ package cbit.vcell.modeldb;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.management.ManagementFactory;
@@ -108,6 +110,9 @@ public class BatchTester extends VCDatabaseScanner {
 
 	public void batchScanBioModels(VCMultiBioVisitor databaseVisitor, String statusTable, int chunkSize)
 			throws DataAccessException, XmlParseException, SQLException, IOException {
+		PrintStream current = System.out;
+		System.setOut(new PrintStream(new NullStream()));
+		try {
 				String processHostId = ManagementFactory.getRuntimeMXBean().getName();
 				String filename = processHostId + ".txt";
 				
@@ -123,6 +128,11 @@ public class BatchTester extends VCDatabaseScanner {
 					int uCount = statement.executeUpdate(query);
 					if (uCount > chunkSize) {
 						throw new Error("logic / SQL bad");
+					}
+					if (uCount == 0) {
+						printWriter.println("No models to scan, exiting");
+						System.exit(100);
+						
 					}
 				}
 				printWriter.println("finding  ours");
@@ -143,7 +153,7 @@ public class BatchTester extends VCDatabaseScanner {
 					//start visiting models and writing log
 					printWriter.println("Start scanning bio-models......");
 					printWriter.println("\n");
-					PreparedStatement ps = conn.prepareStatement("Update " + statusTable + " set scanned = 1, good = ? where id = ?");
+					PreparedStatement ps = conn.prepareStatement("Update " + statusTable + " set scanned = 1, good = ? , scan_process = null where id = ?");
 					for (ModelIdent modelIdent : models) {
 						boolean goodModel;
 						try {
@@ -193,6 +203,10 @@ public class BatchTester extends VCDatabaseScanner {
 					e.printStackTrace(printWriter);
 				}
 				printWriter.close();
+		}
+		finally {
+			System.setOut(current);
+		}
 	}
 	
 	private int boolAsInt(boolean b) {
@@ -209,7 +223,14 @@ public class BatchTester extends VCDatabaseScanner {
 			modelId = rs.getLong(MODEL_ID);
 			
 		}
-		
+	}
+	
+	private static class NullStream extends OutputStream {
+
+		@Override
+		public void write(int ignore) throws IOException {
+			
+		}
 		
 	}
 	

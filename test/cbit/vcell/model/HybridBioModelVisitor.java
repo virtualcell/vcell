@@ -27,6 +27,7 @@ import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.solver.Simulation;
 
 public class HybridBioModelVisitor implements VCMultiBioVisitor { 
+	
 	/**
 	 * user key to use for tests
 	 */
@@ -232,7 +233,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		boolean bAbortOnDataAccessException = false;
 		try{
 			BatchTester scanner = new BatchTester(new NullSessionLog()); 
-			scanner.batchScanBioModels(visitor, "gerard.models_to_scan", 10);
+			scanner.batchScanBioModels(visitor, "gerard.models_to_scan", 5);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{
