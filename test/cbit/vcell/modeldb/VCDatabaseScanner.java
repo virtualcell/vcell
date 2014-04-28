@@ -215,6 +215,9 @@ protected boolean verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter
 			printWriter.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
 			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
 			printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
+			if (!mathCompareResults.isEquivalent()) {
+				return false;
+			}
 		} catch (Exception e) {
 			printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
 			allGood = false;
