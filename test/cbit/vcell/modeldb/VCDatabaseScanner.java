@@ -4,8 +4,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.rmi.RemoteException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
@@ -44,10 +42,10 @@ public class VCDatabaseScanner {
 	 * special user id meaning all users
 	 */
 	public static final String ALL_USERS = "-all";
-	private DatabaseServerImpl dbServerImpl = null;
-	private SessionLog log = null;
+	protected DatabaseServerImpl dbServerImpl = null;
+	protected SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
-	private ConnectionFactory connFactory;
+	protected ConnectionFactory connFactory;
 	private User[] allUsers = null;
 
 	
@@ -207,8 +205,9 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
  * generate new math description, compare with old, log status
  * @param biomodel
  */
-private void verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
+protected boolean verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
 	SimulationContext[] simContexts = bioModel.getSimulationContexts();
+	boolean allGood = true;
 	for (SimulationContext sc : simContexts) {
 		try {
 			MathDescription oldMathDescription = sc.getMathDescription();
@@ -218,8 +217,10 @@ private void verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter prin
 			printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
 		} catch (Exception e) {
 			printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
+			allGood = false;
 		}
 	}
+	return allGood;
 }
 
 /**
@@ -375,55 +376,6 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 							}
 						}
 					}
-				}catch (Exception e2){
-					log.exception(e2);
-					printWriter.println("======= " + e2.getMessage());
-					if (bAbortOnDataAccessException){
-						throw e2;
-					}
-				}
-			}
-		}
-		
-		printWriter.close();
-	}catch(Exception e)
-	{
-		e.printStackTrace();
-	}
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (2/2/01 3:40:29 PM)
- * @throws DataAccessException 
- * @throws XmlParseException 
- */
-public void keyScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer, User users[], boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
-	assert users != null;
-	try
-	{
-		PrintWriter printWriter = new PrintWriter(writer);
-		//start visiting models and writing log
-		printWriter.println("Start scanning bio-models......");
-		printWriter.println("\n");
-		Object lock = new Object();
-		Connection conn = connFactory.getConnection(lock);
-		PreparedStatement ps = conn.prepareStatement("insert into gerard.models_to_scan(user_id,model_id) values(?,?)");
-
-		for (int i=0;i<users.length;i++)
-		{
-			User user = users[i];
-			BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
-			for (int j = 0; j < bioModelInfos.length; j++){
-				BioModelInfo bmi = bioModelInfos[j];
-				if (!databaseVisitor.filterBioModel(bmi)) {
-					continue;
-				}
-				try {
-					KeyValue vk = bmi.getVersion().getVersionKey();
-					ps.setLong(1,user.getID().longValue());
-					ps.setLong(2,vk.longValue());
-					ps.execute( );
 				}catch (Exception e2){
 					log.exception(e2);
 					printWriter.println("======= " + e2.getMessage());
