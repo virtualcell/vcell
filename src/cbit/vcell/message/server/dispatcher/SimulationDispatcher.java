@@ -265,7 +265,7 @@ public class SimulationDispatcher extends ServiceProvider {
 								killJob = true;
 							}else{
 								long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
-								if (elapsedTimeMS > MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS){
+								if (elapsedTimeMS > MessageConstants.INTERVAL_HTCJOBKILL_DONE_TIMEOUT_MS){
 									killJob = true;
 								}
 							}
@@ -304,8 +304,18 @@ public class SimulationDispatcher extends ServiceProvider {
 				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
 				long timeSinceLastUpdateMS = currentTimeMS - activeJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
 				
-				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS + messageFlushTimeMS));
+				//
+				// fail any active jobs
+				//
+				boolean bTimedOutSimulation = (schedulerStatus.isRunning() || schedulerStatus.isDispatched()) && (timeSinceLastUpdateMS > (MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_DISPATCHED_RUNNING_TIMEOUT_MS + messageFlushTimeMS));
 
+				//
+				// fail any queued jobs
+				//
+				if (schedulerStatus.isQueued() && (timeSinceLastUpdateMS > MessageConstants.INTERVAL_SIMULATIONJOBSTATUS_QUEUED_TIMEOUT_MS + messageFlushTimeMS)){
+					bTimedOutSimulation = true;
+				}
+				
 				boolean bUnreferencedSimulation = unreferencedSimKeys.contains(activeJobStatus.getVCSimulationIdentifier().getSimulationKey());
 				
 				if (bTimedOutSimulation || bUnreferencedSimulation){

@@ -54,10 +54,14 @@ public interface MessageConstants {
 	public static final int SECOND_IN_MS = 1000; // in milliseconds
 	public static final int MINUTE_IN_S = 60;
 	public static final int MINUTE_IN_MS = MINUTE_IN_S * SECOND_IN_MS; // in milliseconds
+	public static final int HOUR_IN_MINUTES = 60;
+	public static final int HOUR_IN_MS = HOUR_IN_MINUTES * MINUTE_IN_MS; // in milliseconds
 
 	public static final long INTERVAL_PING_SERVER_MS = 5 * MINUTE_IN_MS; // in milliseconds
 	public static final long INTERVAL_SERVER_FAIL_MS = 10 * MINUTE_IN_MS; // in milliseconds
-	public static final long INTERVAL_SIMULATIONJOBSTATUS_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
+	public static final long INTERVAL_HTCJOBKILL_DONE_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
+	public static final long INTERVAL_SIMULATIONJOBSTATUS_DISPATCHED_RUNNING_TIMEOUT_MS = 10 * MINUTE_IN_MS; // in milliseconds
+	public static final long INTERVAL_SIMULATIONJOBSTATUS_QUEUED_TIMEOUT_MS = 24 * HOUR_IN_MS; // in milliseconds
 	public static final long INTERVAL_PROGRESS_MESSAGE_MS = 5 * SECOND_IN_MS;
 	
 	public static final int PREFETCH_LIMIT_CLIENT_TOPIC = 1000;

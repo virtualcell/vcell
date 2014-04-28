@@ -535,7 +535,7 @@ public class SimulationStateMachine {
 			SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_SIMULATIONJOB);
 			SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
 			newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
-					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.QUEUED,taskID,
+					oldSimulationJobStatus.getSubmitDate(),SchedulerStatus.DISPATCHED,taskID,
 					SimulationMessage.MESSAGE_JOB_DISPATCHED,
 					newQueueStatus,newSimExeStatus);
 			
