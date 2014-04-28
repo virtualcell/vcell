@@ -14,6 +14,7 @@ import java.io.Serializable;
 
 import org.vcell.util.PropertyLoader;
 
+@SuppressWarnings("serial")
 public class VCellSoftwareVersion implements Serializable {
 	
 	public static enum VCellSite {
@@ -28,6 +29,9 @@ public class VCellSoftwareVersion implements Serializable {
 	private VCellSite vcellSite = VCellSite.unknown;
 	private String buildNumber = "";
 	private String versionNumber = "";
+	private int majorVersion  = -1;
+	private int minorVersion = -1;
+	private int buildInt = -1; 
 
 	private VCellSoftwareVersion(String softwareVersionString){
 		this.softwareVersionString = softwareVersionString;
@@ -54,7 +58,14 @@ public class VCellSoftwareVersion implements Serializable {
 				
 				if (!stk.nextToken().equalsIgnoreCase("build")) throw new RuntimeException("Expecting 'build'");
 				buildNumber = stk.nextToken();
-				
+				buildInt = safeParse(buildNumber);
+				int dot = versionNumber.indexOf('.');
+				if (dot >= 0) {
+					String major = versionNumber.substring(0, dot);
+					String minor = versionNumber.substring(++dot);
+					majorVersion = safeParse(major);
+					minorVersion = safeParse(minor);
+				}
 			} catch (Exception exc) {
 				// deliberately ignored to reduce clutter (10K's of "unknown" versions in database).
 				vcellSite = VCellSite.unknown;
@@ -63,6 +74,26 @@ public class VCellSoftwareVersion implements Serializable {
 			}
 		}
 	}
+
+	/**
+	 * return value of in, if parseable
+	 * @param in
+	 * @return value of in or -1 if null or number a valid integer
+	 */
+	private static int safeParse(String in) {
+		if (in != null) {
+			try {
+				return Integer.parseInt(in);
+			}
+			catch (NumberFormatException nfe) {
+				return -1;
+			}
+		}
+		return -1;
+	}
+	
+
+
 	
 	public static VCellSoftwareVersion fromString(String softwareVersion) {
 		return new VCellSoftwareVersion(softwareVersion);
@@ -103,6 +134,18 @@ public class VCellSoftwareVersion implements Serializable {
 
 	public String getBuildNumber() {
 		return buildNumber;
+	}
+
+	public int getMajorVersion() {
+		return majorVersion;
+	}
+
+	public int getMinorVersion() {
+		return minorVersion;
+	}
+
+	public int getBuildInt() {
+		return buildInt;
 	}
 
 }
