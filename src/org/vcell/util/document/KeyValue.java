@@ -10,6 +10,8 @@
 
 package org.vcell.util.document;
 
+import java.math.BigDecimal;
+
 import org.vcell.util.Matchable;
 /**
  * This class is Immutable (must stay immutable).
@@ -33,6 +35,14 @@ public KeyValue(java.math.BigDecimal key) throws IllegalArgumentException {
 		throw new IllegalArgumentException("key is null");
 	}
 	this.value = key;
+}
+
+/**
+ * create from long
+ * @param key
+ */
+public KeyValue(long key) {
+	this.value = new BigDecimal(key);
 }
 /**
  * This method was created in VisualAge.
