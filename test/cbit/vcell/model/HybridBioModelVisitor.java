@@ -21,6 +21,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.solver.Simulation;
 
@@ -34,6 +35,12 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	 * output file name
 	 */
 	private final static String OUTPUT = "regen.txt";
+	
+	/**
+	 * name of status table to use
+	 */
+	private final static String STATUS_TABLE = "gerard.models_to_scan";
+
 	
 	private BioModel currentModel = null;
 	private List<SimulationContext> applications = new ArrayList<SimulationContext>();
@@ -175,7 +182,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	}
 
 	@SuppressWarnings("unused")
-	@Test
+	//@Test
 	public void tryit( ) throws IOException {
 		//Logging.init();
 		PropertyLoader.loadProperties();
@@ -183,7 +190,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
 		boolean bAbortOnDataAccessException = false;
 		try{
-			VCDatabaseScanner scanner = new VCDatabaseScanner(new NullSessionLog()); 
+			BatchTester scanner = new BatchTester(new NullSessionLog()); 
 			Writer w = new FileWriter(OUTPUT);
 			User[] users = null; 
 			if (USER_KEY != VCDatabaseScanner.ALL_USERS) { 
@@ -198,7 +205,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 				users = scanner.getAllUsers();
 			}
 			//scanner.multiScanBioModels(visitor, w, users, bAbortOnDataAccessException);
-			scanner.keyScanBioModels(visitor, w, users, bAbortOnDataAccessException);
+			scanner.keyScanBioModels(visitor, w, users, bAbortOnDataAccessException, STATUS_TABLE);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{
@@ -206,6 +213,25 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		}
 	}
 	
+	@SuppressWarnings("unused")
+	@Test
+	public void batchLoad( ) throws IOException {
+		//Logging.init();
+		PropertyLoader.loadProperties();
+		//String args[] = {USER_KEY,OUTPUT};
+		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
+		boolean bAbortOnDataAccessException = false;
+		try{
+			BatchTester scanner = new BatchTester(new NullSessionLog()); 
+			Writer w = new FileWriter(OUTPUT);
+			scanner.batchScanBioModels(visitor, w, "gerard.models_to_scan" ,3);
+		}catch(Exception e){
+			e.printStackTrace(System.err);
+		}finally{
+			System.err.flush();
+		}
+	}
+
 	public static void main(String[] args) throws Exception {
 		JUnitCore.main(HybridBioModelVisitor.class.getName());
 	}
