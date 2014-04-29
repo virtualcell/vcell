@@ -383,7 +383,7 @@ public boolean isRunning() {
 public Object[] toObjects() {	
 	return new Object[] {(bioModelLink!=null)?("BM \""+bioModelLink.bioModelName+"\", APP \""+bioModelLink.simContextName+"\", SIM \""+simname+"\""):((mathModelLink!=null)?("MM \""+mathModelLink.mathModelName+"\", SIM \""+simname+"\""):("")), userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(),getScanCount(),  
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getDisplayLabel(), 		
-		getStatusMessage()+" <"+getSchedulerStatus().getDescription()+">", getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
+		"<"+getSchedulerStatus().getDescription()+"> "+getStatusMessage(), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate(),
 		elapsedTime, new Long(getMeshSize())};
 }
 
