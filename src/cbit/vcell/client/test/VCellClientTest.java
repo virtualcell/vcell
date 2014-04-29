@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
@@ -45,12 +46,13 @@ public class VCellClientTest {
 		return vcellClient;
 	}
 	
+	
 /**
  * Starts the application.
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	Logging.init( );
+	Logging.init(ResourceUtil.getVcellHome());
 	if (!ResourceUtil.isRunningInDebugger()) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
@@ -133,9 +135,15 @@ public static void main(java.lang.String[] args) {
 			VCMongoMessage.enabled = false;
 		}
 		try {
-			long tstart_ms = System.currentTimeMillis();
+			long tstart_ms = 0; 
+			Logger lg = Logger.getLogger(VCellClientTest.class);
+			if (lg.isInfoEnabled()) {
+				tstart_ms = System.currentTimeMillis();
+			}
 			ResourceUtil.loadNativeLibraries();
-			System.out.println("loading libraries: elapsed time = "+((System.currentTimeMillis()-tstart_ms)/1000.0)+" seconds");
+			if (lg.isInfoEnabled()) {
+				lg.info("loading libraries: elapsed time = "+((System.currentTimeMillis()-tstart_ms)/1000.0)+" seconds");
+			}
 		}
 		catch (Throwable e) {
 			e.printStackTrace();
