@@ -1,5 +1,6 @@
 package org.vcell.util.logging;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -53,12 +54,13 @@ public class Logging {
 	 * @param filename
 	 * @throws IllegalArgumentException if filename null
 	 */
-	public static void captureStandardOutAndError(String filename) throws IllegalArgumentException {
-		if (filename != null) {
+	public static void captureStandardOutAndError(File logFile) throws IllegalArgumentException {
+		if (logFile != null) {
 			boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.FALSE.toString()));
 			try {
-				FileOutputStream fos = new FileOutputStream(filename);
-				PrintStream output =  new  PrintStream(fos, autoflush);
+				FileOutputStream fos = new FileOutputStream(logFile);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+				PrintStream output =  new  PrintStream(bos, autoflush);
 				System.setOut(output);
 				System.setErr(output);
 				if (!autoflush) {
@@ -77,6 +79,7 @@ public class Logging {
 		@Override
 		public void run() {
 			printStream.flush();
+			printStream.close();
 		}
 
 		public FlushOnExit(PrintStream printStream) {
