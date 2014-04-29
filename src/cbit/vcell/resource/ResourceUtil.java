@@ -154,6 +154,12 @@ public class ResourceUtil {
 					}
 				}
 			}		}
+		if (bMac){
+			File macVisApp = new File("/Applications/VisIt.app");
+			if (macVisApp.canRead() && (new File(macVisApp, "/Contents/Resources/bin/visit")).canExecute()) {
+				return macVisApp;
+			}
+		}
 		if (efinder != null) {
 			File f = efinder.find(executableName);
 			if (f != null) {
