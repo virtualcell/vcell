@@ -154,11 +154,17 @@ public static String readFileToString(File file) throws IOException {
  */
 public static Collection<File> getAllDirectoriesCollection(File rootDir) {
 	ArrayList<File> allDirectories = new ArrayList<File>();
-	for (File file : rootDir.listFiles()){
-		if (file.exists() && file.isDirectory()){
-			allDirectories.add(file);
-			allDirectories.addAll(Arrays.asList(getAllDirectories(file)));
-		}
+	if (rootDir.canRead()){
+		
+		File[] files = rootDir.listFiles();
+        if (files!=null){
+			for (File file : rootDir.listFiles()){
+				if (file.exists() && file.isDirectory() && file.canRead()){
+					allDirectories.add(file);
+					allDirectories.addAll(Arrays.asList(getAllDirectories(file)));
+				}
+			}
+        }
 	}
 	return allDirectories;
 }
