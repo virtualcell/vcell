@@ -21,6 +21,7 @@ import org.jdom.Document;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
@@ -51,7 +52,8 @@ public class VCellClientTest {
 public static void main(java.lang.String[] args) {
 	Logging.init( );
 	if (!ResourceUtil.isRunningInDebugger()) {
-		Logging.captureStandardOutAndError("vcellrun.log");
+		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
+		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
@@ -131,7 +133,9 @@ public static void main(java.lang.String[] args) {
 			VCMongoMessage.enabled = false;
 		}
 		try {
+			long tstart_ms = System.currentTimeMillis();
 			ResourceUtil.loadNativeLibraries();
+			System.out.println("loading libraries: elapsed time = "+((System.currentTimeMillis()-tstart_ms)/1000.0)+" seconds");
 		}
 		catch (Throwable e) {
 			e.printStackTrace();

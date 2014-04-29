@@ -101,6 +101,7 @@ public class ResourceUtil {
 	private static File vcellHome = null;
 	private static File localSimDir = null;
 	private static File localRootDir = null;
+	private static File logDir = null;
 
 	private static File solversDirectory = null;
 
@@ -481,6 +482,19 @@ public class ResourceUtil {
 		}
 
 		return localRootDir; 
+	}
+
+	public static File getLogDir()
+	{
+		if(logDir == null)
+		{
+			logDir = new File(getVcellHome(), "logs");
+			if (!logDir.exists()) {
+				logDir.mkdirs();
+			}
+		}
+
+		return logDir; 
 	}
 
 	public static File getLocalSimDir(String userSubDirName)
