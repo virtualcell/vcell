@@ -51,8 +51,8 @@ public class Logging {
 	
 	/**
 	 * redirect standard err and out to filename; if autoflush property not set add shutdown hook
-	 * @param filename
-	 * @throws IllegalArgumentException if filename null
+	 * @param logFile 
+	 * @throws IllegalArgumentException if logFile null
 	 */
 	public static void captureStandardOutAndError(File logFile) throws IllegalArgumentException {
 		if (logFile != null) {
