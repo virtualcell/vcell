@@ -41,12 +41,30 @@ public class Logging {
 			PropertyConfigurator.configure(def);
 		}
 	}
+	
 
 	/**
 	 * 
 	 * force loading of class to invoke static initialization code
 	 */
 	public static void init() {
+	}
+	
+	/**
+	 * init, look for  {@link #PROP_FILE} in specified directory
+	 * or current directory if null 
+	 * @param secondaryDir may be null (no op)
+	 */
+	public static void init(File secondaryDir) {
+		if (secondaryDir != null) {
+			File initFile = new File(secondaryDir,PROP_FILE);
+			if (initFile.exists()) {
+				PropertyConfigurator.configure(PROP_FILE);
+				if (lg.isInfoEnabled())
+					lg.info("logger initialized from file  "
+							+ initFile.getAbsolutePath());
+			}
+		}
 	}
 	
 	/**
