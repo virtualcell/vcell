@@ -1,0 +1,37 @@
+Warning: In D:\Developer\VTK6.0.0\Filters\Core\vtkDelaunay3D.cxx, line 487
+vtkDelaunay3D (000000001C9CE340): 1 degenerate triangles encountered, mesh quality suspect
+
+
+Warning: In D:\Developer\VTK6.0.0\Filters\Core\vtkDelaunay3D.cxx, line 487
+vtkDelaunay3D (000000001B551B50): 1 degenerate triangles encountered, mesh quality suspect
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 272
+vtkWin32OpenGLRenderWindow (0000000018838250): wglMakeCurrent failed in MakeCurrent(), error: The requested resource is in use.
+
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 272
+vtkWin32OpenGLRenderWindow (0000000018838250): wglMakeCurrent failed in MakeCurrent(), error: The requested resource is in use.
+
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 272
+vtkWin32OpenGLRenderWindow (0000000018838250): wglMakeCurrent failed in MakeCurrent(), error: The requested resource is in use.
+
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 272
+vtkWin32OpenGLRenderWindow (0000000018838250): wglMakeCurrent failed in MakeCurrent(), error: The requested resource is in use.
+
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 272
+vtkWin32OpenGLRenderWindow (0000000018838250): wglMakeCurrent failed in MakeCurrent(), error: The requested resource is in use.
+
+
+
+ERROR: In D:\Developer\VTK6.0.0\Rendering\OpenGL\vtkWin32OpenGLRenderWindow.cxx, line 128
+vtkWin32OpenGLRenderWindow (0000000018838250): wglDeleteContext failed in Clean(), error: 170
+
+

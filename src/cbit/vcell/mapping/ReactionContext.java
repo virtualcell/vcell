@@ -407,7 +407,6 @@ public void refreshDependencies() {
 	//fieldModel.refreshDependencies();
 
 	for (int i=0;i<fieldSpeciesContextSpecs.length;i++){
-		fieldSpeciesContextSpecs[i].setSimulationContext(simContext);
 		fieldSpeciesContextSpecs[i].refreshDependencies();
 	}
 	refreshSpeciesContextSpecBoundaryUnits(simContext.getGeometryContext().getStructureMappings());
@@ -700,6 +699,11 @@ public void setReactionSpecs(ReactionSpec[] reactionSpecs) throws java.beans.Pro
 	ReactionSpec[] oldValue = fieldReactionSpecs;
 	fireVetoableChange("reactionSpecs", oldValue, reactionSpecs);
 	fieldReactionSpecs = reactionSpecs;
+	for (int i = 0; i < fieldReactionSpecs.length; i++){
+		if (fieldReactionSpecs[i].getSimulationContext() != simContext){
+			throw new RuntimeException("Internal Exception: reactionSpec has the wrong simContext in ReactionContext.setReactionSpecs()");
+		}
+	}
 	firePropertyChange("reactionSpecs", oldValue, reactionSpecs);
 }
 
@@ -725,15 +729,14 @@ public void setReactionSpecs(int index, ReactionSpec reactionSpecs) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSpeciesContextSpecs
  */
-public void setSpeciesContextSpecs(SpeciesContextSpec[] speciesContextSpecs) throws java.beans.PropertyVetoException {
+private void setSpeciesContextSpecs(SpeciesContextSpec[] speciesContextSpecs) throws java.beans.PropertyVetoException {
 	SpeciesContextSpec[] oldValue = fieldSpeciesContextSpecs;
 	fireVetoableChange("speciesContextSpecs", oldValue, speciesContextSpecs);
-	for (int i = 0; i < oldValue.length; i++){
-		oldValue[i].simulationContext = null;
-	}
 	fieldSpeciesContextSpecs = speciesContextSpecs;
 	for (int i = 0; i < fieldSpeciesContextSpecs.length; i++){
-		fieldSpeciesContextSpecs[i].simulationContext = simContext;
+		if (fieldSpeciesContextSpecs[i].getSimulationContext() != simContext){
+			throw new RuntimeException("Internal Exception: speciesContextSpec has the wrong simContext in ReactionContext.setSpeciesContextSpecs()");
+		}
 	}
 	firePropertyChange("speciesContextSpecs", oldValue, speciesContextSpecs);
 }
