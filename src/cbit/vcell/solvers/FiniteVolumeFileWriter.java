@@ -972,6 +972,10 @@ private void getDiscontinuityTimes(Vector<Discontinuity> discontinuities, TreeSe
 		rfexp.bindExpression(simSymbolTable);
 		rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
 		String[] symbols = rfexp.getSymbols();
+		if (symbols == null){
+			continue;
+		}
+		
 		boolean bHasT = false;
 		for (String symbol : symbols) {
 			if (symbol.equals(ReservedVariable.TIME.getName())) {
