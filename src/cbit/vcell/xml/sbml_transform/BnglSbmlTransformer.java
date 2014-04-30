@@ -53,7 +53,9 @@ public class BnglSbmlTransformer {
 		String [] fileNames = bngOutput.getBNGFilenames();
 		for( int i = 0; i < fileNames.length; ++i ) {
 			String fn = fileNames[i];
-			
+			if (fn==null) {
+				continue;
+			}
 			if( fn.endsWith(XML_SUFFIX) ) {
 				sbml = bngOutput.getBNGFileContent(i);
 			}
