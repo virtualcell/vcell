@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
 <jardesc>
-    <jar path="C:/VCell_Alpha/lib/vtk.jar"/>
-    <options buildIfNeeded="false" compress="true" descriptionLocation="/VCell/vcellAll.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="true" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <jar path="VCell_Admin_Scripts/Fei/Deploy/jar/TEST/vcellAll_5.3_test_01.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VCell_5.3/vcellAll.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
     <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
     <selectedProjects/>
     <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
@@ -10,37 +10,57 @@
             <packagesToUnSeal/>
         </sealing>
     </manifest>
-    <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <file path="/VCell/vcell_test.properties"/>
-        <file path="/VCell/.project"/>
-        <file path="/VCell/resourceWindows.jardesc"/>
-        <file path="/VCell/trace"/>
-        <file path="/VCell/generatedVCML.xml"/>
-        <file path="/VCell/resourceMac_ppc.jardesc"/>
-        <file path="/VCell/resourceWindows_x64.jardesc"/>
-        <file path="/VCell/readme.txt"/>
-        <file path="/VCell/dependencies.csv"/>
-        <file path="/VCell/vcell_localClient.properties"/>
-        <javaElement handleIdentifier="=VCell/src"/>
-        <file path="/VCell/install.txt"/>
-        <file path="/VCell/vtkError.txt"/>
-        <file path="/VCell/resourceMac_x64.jardesc"/>
-        <file path="/VCell/visitlog.py"/>
-        <file path="/VCell/convertSmoldyn.py"/>
-        <file path="/VCell/vcellAll.jardesc"/>
-        <file path="/VCell/nativelibWindows.jardesc"/>
-        <file path="/VCell/vcell_test2_server.properties"/>
-        <file path="/VCell/resourceMac.jardesc"/>
-        <file path="/VCell/BioModel1_spatial.vcml"/>
-        <file path="/VCell/vcell_test2_windowsPaths.properties"/>
-        <file path="/VCell/hs_err_pid6576.log"/>
-        <file path="/VCell/license.txt"/>
-        <file path="/VCell/BioModel1_spatial.xml"/>
-        <file path="/VCell/nativelibWindows_x64.jardesc"/>
-        <file path="/VCell/cell1.xml"/>
-        <file path="/VCell/resourceLinux.jardesc"/>
-        <file path="/VCell/.classpath"/>
-        <file path="/VCell/resourceLinux_x64.jardesc"/>
-        <file path="/VCell/generatedSBML.xml"/>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.PropertiesPanes"/>
+        <file path="/VCell_5.3/resources/data_exporter_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.metacyc"/>
+        <javaElement handleIdentifier="=VCell_5.3/src_vfrap"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sybil.images.biopax"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.old.sgmp"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbo"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_7"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_1"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_6.PathwayObjects"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sybil.images.files"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.old.sabio"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;images"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.sabio"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sybil"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.ParameterEstimation"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Protocols"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_5"/>
+        <file path="/VCell_5.3/resources/zoom.gif"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Geometry"/>
+        <file path="/VCell_5.3/resources/planet.gif"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Specifications"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;icons"/>
+        <file path="/VCell_5.3/resources/pan.gif"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sybil.images.edit"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_6"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Simulations"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_4"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.uome"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_6.PathwayDiagram"/>
+        <file path="/VCell_5.3/resources/bioModelsNetInfo.xml"/>
+        <file path="/VCell_5.3/resources/thirdpartylicenses.txt"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sbpax3.examples.sgmp"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.JavaHelpSearch"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.originalImages"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_6.BiopaxSummary"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.image"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources_vfrap"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.Appendix"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;sybil.images.layout"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Nonspatial"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_2"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3.Simulations.Results.Spatial"/>
+        <javaElement handleIdentifier="=VCell_5.3/resources&lt;vcellDoc.topics.chapter_3"/>
+        <file path="/VCell_5.3/resources/data_sets_20x20.gif"/>
+        <javaElement handleIdentifier="=VCell_5.3/src"/>
     </selectedElements>
 </jardesc>

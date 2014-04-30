@@ -604,9 +604,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
 //			}
 //			else{
-//				if(model.getMembranes().size() > 0)
-//					location = structTopology.getOutsideFeature(model.getMembranes().get(0)).getName();
-//				else
+				if(model.getMembranes().size() > 0)
+					location = structTopology.getOutsideFeature(model.getMembranes().get(0)).getName();
+				else
 					location = model.getStructures()[0].getName(); 
 //			}
 			conversionTableRow.setLocation(location);
@@ -621,9 +621,9 @@ public class BioModelEditorConversionTableModel extends VCellSortTableModel<Conv
 //				location = ((PhysicalEntity)bpObject).getCellularLocation().getTerm().get(0);
 //			}
 //			else{
-//				if(model.getMembranes().size() > 0)
-//					location = structTopology.getInsideFeature(model.getMembranes().get(0)).getName();
-//				else
+				if(model.getMembranes().size() > 0)
+					location = structTopology.getInsideFeature(model.getMembranes().get(0)).getName();
+				else
 					location = model.getStructures()[0].getName(); 
 //			}
 			conversionTableRow.setLocation(location);

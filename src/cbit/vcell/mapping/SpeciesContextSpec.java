@@ -71,14 +71,21 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			return SpeciesContextSpec.this.getSpeciesContext().getName()+"_scs";
 		}
 		public NameScope getParent() {
-			return SpeciesContextSpec.this.simulationContext.getNameScope();
+			if (SpeciesContextSpec.this.simulationContext != null){
+				return SpeciesContextSpec.this.simulationContext.getNameScope();
+			}else{
+				return null;
+			}
 		}
 		public ScopedSymbolTable getScopedSymbolTable() {
 			return SpeciesContextSpec.this;
 		}
 		@Override
 		public String getPathDescription() {
-			return "App("+simulationContext.getName()+") / Species("+getSpeciesContext().getName()+")";
+			if (simulationContext != null){
+				return "App("+simulationContext.getName()+") / Species("+getSpeciesContext().getName()+")";
+			}
+			return null;
 		}
 		@Override
 		public NamescopeType getNamescopeType() {
@@ -336,7 +343,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 	private SpeciesContextSpecParameter[] fieldParameters = null;
 	private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private final SimulationContext simulationContext;
+	protected transient SimulationContext simulationContext = null;
 	private SpeciesContextSpecNameScope nameScope = new SpeciesContextSpecNameScope();
 	public static final int ROLE_InitialConcentration	= 0;
 	public static final int ROLE_DiffusionRate			= 1;
@@ -1291,6 +1298,16 @@ private void setProxyParameters(SpeciesContextSpecProxyParameter[] proxyParamete
 
 
 /**
+ * Insert the method's description here.
+ * Creation date: (4/23/2004 7:25:49 AM)
+ * @param newSimulationContext cbit.vcell.mapping.SimulationContext
+ */
+public void setSimulationContext(SimulationContext newSimulationContext) {
+	simulationContext = newSimulationContext;
+}
+
+
+/**
  * @param sc cbit.vcell.model.SpeciesContext
  */
 void setSpeciesContextReference(SpeciesContext sc) throws MappingException {
@@ -1438,7 +1455,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 }
 
 public boolean hasTransport() {
-	if (isConstant() || isWellMixed() 
+	if (isConstant() || isWellMixed() || simulationContext == null 
 			|| simulationContext.getGeometry() == null || simulationContext.getGeometry().getDimension() == 0) {
 		return false;
 	}

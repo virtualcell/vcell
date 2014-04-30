@@ -694,9 +694,4 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		getNameScope().getExternalEntries(entryMap);		
 	}
-
-
-	public SimulationContext getSimulationContext() {
-		return fieldSimulationContext;
-	}
 }
