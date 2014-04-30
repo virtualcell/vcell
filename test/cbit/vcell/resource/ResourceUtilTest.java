@@ -17,7 +17,7 @@ public class ResourceUtilTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	
 	//@Test
-	public void findTest() throws FileNotFoundException {
+	public void findTest() throws FileNotFoundException, BackingStoreException {
 		 File f = ResourceUtil.getExecutable(TEST_EXE, false,null);
 		 System.out.println(f.getAbsolutePath());
 	}
@@ -46,5 +46,15 @@ public class ResourceUtilTest {
 	@Test
 	public void runningDebug( ) {
 		System.out.println("Running debug is " + ResourceUtil.isRunningInDebugger());
+	}
+	
+	public static void main (String args[]){
+		try {
+			ResourceUtil.ExeCache.forgetExecutableLocations( );
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Cleared");
 	}
 }
