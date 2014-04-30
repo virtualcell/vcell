@@ -2722,7 +2722,7 @@ protected void addGeometry() {
 				int index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
 				// indx = n - (ordinal+1) : we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
 				// insert vcCSGObj at position 'indx' in arraylist 
-				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getSpatialId(), kk);
+				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), kk);
 				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
 				//vcCSGSubVolumes.add(index, vcellCSGObject);
 				csgQueue.add(new CSGObjectSorter(vcellCSGObject, index));

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version 0.4-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="0.4">
+   <BioModel Name="BioModel1">
+      <Model Name="unnamed">
+         <Feature Name="c0" />
+         <Diagram Name="c0" Structure="c0" />
+         <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+      </Model>
+      <SimulationSpec Name="Application0" Stochastic="false" UseConcentration="true" CharacteristicSize="0.10403160765672961">
+         <Geometry Name="Geometry2" Dimension="3">
+            <Extent X="10.0" Y="10.0" Z="10.0" />
+            <Origin X="0.0" Y="0.0" Z="0.0" />
+            <SubVolume Name="subdomain1" Handle="1" Type="CSGObject">
+               <CSGSetOperator Name="union0" CSGSetOperatorType="UNION">
+                  <CSGPrimitive Name="sphere0" CSGPrimitiveType="SPHERE" />
+                  <CSGPrimitive Name="sphere1" CSGPrimitiveType="SPHERE" />
+               </CSGSetOperator>
+            </SubVolume>
+            <SubVolume Name="subdomain0" Handle="0" Type="CSGObject">
+               <CSGTranslation Name="translation" CSGTranslationX="5.0" CSGTranslationY="5.0" CSGTranslationZ="5.0">
+                  <CSGScale Name="scale" CSGScaleX="10.0" CSGScaleY="10.0" CSGScaleZ="10.0">
+                     <CSGPrimitive Name="cube" CSGPrimitiveType="CUBE" />
+                  </CSGScale>
+               </CSGTranslation>
+            </SubVolume>
+            <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" />
+            <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+               <VolumeRegion Name="subdomain10" RegionID="0" SubVolume="subdomain1" Size="0.5211250000000001" Unit="um3" />
+               <VolumeRegion Name="subdomain01" RegionID="1" SubVolume="subdomain0" Size="999.478875" Unit="um3" />
+               <MembraneRegion Name="membrane_subdomain10_subdomain01" VolumeRegion1="subdomain01" VolumeRegion2="subdomain10" Size="1.5333165636723938" Unit="um2" />
+            </SurfaceDescription>
+         </Geometry>
+         <GeometryContext>
+            <FeatureMapping Feature="c0" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+               <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+            </FeatureMapping>
+         </GeometryContext>
+         <ReactionContext />
+         <MicroscopeMeasurement Name="fluor">
+            <ConvolutionKernel Type="ProjectionZKernel" />
+         </MicroscopeMeasurement>
+      </SimulationSpec>
+      <pathwayModel>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+      </pathwayModel>
+      <relationshipModel>
+         <RMNS version="3.0" />
+      </relationshipModel>
+      <vcmetadata>
+         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+         <nonrdfAnnotationList />
+         <uriBindingList />
+      </vcmetadata>
+   </BioModel>
+</vcml>
+

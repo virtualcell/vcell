@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" xmlns:req="http://www.sbml.org/sbml/level3/version1/requiredElements/version1" xmlns:spatial="http://www.sbml.org/sbml/level3/version1/spatial/version1" level="3" req:required="true" spatial:required="true" version="1">
+   <model id="CellOrganizer2_0" name="CellOrganizer2_0nuc">
+      <listOfUnitDefinitions>
+         <unitDefinition id="substance">
+            <listOfUnits>
+               <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+         <unitDefinition id="volume">
+            <listOfUnits>
+               <unit exponent="3" kind="metre" multiplier="1e-6" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+         <unitDefinition id="area">
+            <listOfUnits>
+               <unit exponent="2" kind="metre" multiplier="1" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+         <unitDefinition id="length">
+            <listOfUnits>
+               <unit exponent="1" kind="metre" multiplier="1" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+         <unitDefinition id="time">
+            <listOfUnits>
+               <unit exponent="1" kind="second" multiplier="60" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+         <unitDefinition id="nmol">
+            <listOfUnits>
+               <unit exponent="1" kind="mole" multiplier="1e-09" scale="0"/>
+            </listOfUnits>
+         </unitDefinition>
+      </listOfUnitDefinitions>
+      <listOfCompartments>
+         <compartment constant="true" id="nucleoli" metaid="136141959010012300776388142006927922115687230977788021" name="nucleoli" size="50000" spatialDimensions="3" units="m">
+            <spatial:compartment spatial:compartment="nucleoli" spatial:domainType="subdomain0" spatial:spatialId="subdomain0nucleoli" spatial:unitSize="1"/>
+         </compartment>
+      </listOfCompartments>
+      <listOfParameters>
+         <parameter id="x" req:coreHaseAlternateMath="false" req:mathOverridden="spatial" value="0">
+            <spatial:spatialSymbolReference spatial:spatialId="x" spatial:type="coordinateComponent"/>
+         </parameter>
+         <parameter id="y" req:coreHaseAlternateMath="false" req:mathOverridden="spatial" value="0">
+            <spatial:spatialSymbolReference spatial:spatialId="y" spatial:type="coordinateComponent"/>
+         </parameter>
+         <parameter id="z" req:coreHaseAlternateMath="false" req:mathOverridden="spatial" value="0">
+            <spatial:spatialSymbolReference spatial:spatialId="z" spatial:type="coordinateComponent"/>
+         </parameter>
+      </listOfParameters>
+      <spatial:geometry spatial:coordinateSystem="Cartesian">
+         <spatial:listOfCoordinateComponents>
+            <spatial:coordinateComponent spatial:componentType="cartesianX" spatial:index="0" spatial:sbmlUnit="m" spatial:spatialId="x">
+               <spatial:boundaryMin spatial:spatialId="Xmin" spatial:value="-10"/>
+               <spatial:boundaryMax spatial:spatialId="Xmax" spatial:value="10"/>
+            </spatial:coordinateComponent>
+            <spatial:coordinateComponent spatial:componentType="cartesianY" spatial:index="1" spatial:sbmlUnit="m" spatial:spatialId="y">
+               <spatial:boundaryMin spatial:spatialId="Ymin" spatial:value="-10"/>
+               <spatial:boundaryMax spatial:spatialId="Ymax" spatial:value="10"/>
+            </spatial:coordinateComponent>
+            <spatial:coordinateComponent spatial:componentType="cartesianZ" spatial:index="2" spatial:sbmlUnit="m" spatial:spatialId="z">
+               <spatial:boundaryMin spatial:spatialId="Zmin" spatial:value="-10"/>
+               <spatial:boundaryMax spatial:spatialId="Zmax" spatial:value="10"/>
+            </spatial:coordinateComponent>
+         </spatial:listOfCoordinateComponents>
+         <spatial:listOfDomainTypes>
+            <spatial:domainType spatial:spatialDimensions="3" spatial:spatialId="subdomain0"/>
+            <spatial:domainType spatial:spatialDimensions="3" spatial:spatialId="subdomain1"/>
+         </spatial:listOfDomainTypes>
+         <spatial:listOfDomains>
+            <spatial:domain spatial:domainType="subdomain1" spatial:spatialId="subdomain1_000">
+               <spatial:listOfInteriorPoints>
+                  <spatial:interiorPoint spatial:coord1="0" spatial:coord2="0" spatial:coord3="0"/>
+               </spatial:listOfInteriorPoints>
+            </spatial:domain>
+           <spatial:domain spatial:domainType="subdomain0" spatial:spatialId="subdomain0_000">
+               <spatial:listOfInteriorPoints>
+                  <spatial:interiorPoint spatial:coord1="15.5" spatial:coord2="14.8333" spatial:coord3="0.68"/>
+               </spatial:listOfInteriorPoints>
+            </spatial:domain>
+         </spatial:listOfDomains>
+         <spatial:listOfGeometryDefinitions>
+            <spatial:csGeometry spatial:spatialId="CSG_Geometry1">
+ 	          <spatial:csgObject spatial:spatialId="subdomain1_000" spatial:domainType="subdomain1" spatial:ordinal="0">
+                <spatial:csgSetOperator spatial:spatialId="union0" spatial:operationType="UNION">
+                <spatial:listOfCSGNodes>
+  	                <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="5" spatial:translateY="5" spatial:translateZ="5">
+	                   <spatial:csgScale spatial:spatialId="scale" spatial:scaleX="10" spatial:scaleY="10" spatial:scaleZ="10">
+	                     <spatial:csgPrimitive spatial:spatialId="cube" spatial:primitiveType="SOLID_CUBE"/>
+	                   </spatial:csgScale>
+	                 </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15.5" spatial:translateY="14.8333" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="1.3" spatial:scaleY="0.55" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.61695" spatial:rotateAxisY="0.60341" spatial:rotateAxisZ="2.2798" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.1667" spatial:translateY="8.5" spatial:translateZ="0.36">
+                        <spatial:csgScale spatial:scaleX="0.3" spatial:scaleY="0.4" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.4744" spatial:rotateAxisY="1.524" spatial:rotateAxisZ="1.4303" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16.8333" spatial:translateY="7.5" spatial:translateZ="0.76">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.0456" spatial:rotateAxisY="1.5048" spatial:rotateAxisZ="0.86325" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16.8333" spatial:translateY="15" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="0.45" spatial:scaleY="0.55" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.9583" spatial:rotateAxisY="0.49819" spatial:rotateAxisZ="-0.85718" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.3333" spatial:translateY="15" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="1.75" spatial:scaleY="0.5" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.8234" spatial:rotateAxisY="0.38575" spatial:rotateAxisZ="-2.6586" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13" spatial:translateY="7.1667" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.45" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.10924" spatial:rotateAxisY="0.94622" spatial:rotateAxisZ="-1.6258" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.6667" spatial:translateY="12" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.5" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.6947" spatial:rotateAxisY="0.30023" spatial:rotateAxisZ="2.6292" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17.3333" spatial:translateY="9.1667" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.65" spatial:scaleY="0.75" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.9668" spatial:rotateAxisY="0.80821" spatial:rotateAxisZ="-2.1844" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16.8333" spatial:translateY="9.5" spatial:translateZ="0.6">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.2374" spatial:rotateAxisY="0.57734" spatial:rotateAxisZ="1.3709" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21" spatial:translateY="10.5" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="1.6" spatial:scaleY="0.7" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.9438" spatial:rotateAxisY="0.494" spatial:rotateAxisZ="0.86554" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.5" spatial:translateY="8.1667" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.5" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.5064" spatial:rotateAxisY="0.0023421" spatial:rotateAxisZ="0.095226" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16" spatial:translateY="14.6667" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.2" spatial:scaleY="0.75" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.14544" spatial:rotateAxisY="1.3805" spatial:rotateAxisZ="1.1686" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.5" spatial:translateY="13.1667" spatial:translateZ="0.16">
+                        <spatial:csgScale spatial:scaleX="0.45" spatial:scaleY="0.45" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.93613" spatial:rotateAxisY="1.3601" spatial:rotateAxisZ="-1.2202" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="19.1667" spatial:translateY="10.1667" spatial:translateZ="0.76">
+                        <spatial:csgScale spatial:scaleX="0.75" spatial:scaleY="0.5" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.19334" spatial:rotateAxisY="0.92581" spatial:rotateAxisZ="3.1042" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="20.3333" spatial:translateY="10.3333" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="0.95" spatial:scaleY="0.75" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.6786" spatial:rotateAxisY="0.44904" spatial:rotateAxisZ="-2.5996" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.3333" spatial:translateY="14.1667" spatial:translateZ="0.76">
+                        <spatial:csgScale spatial:scaleX="0.8" spatial:scaleY="0.7" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.4505" spatial:rotateAxisY="0.3564" spatial:rotateAxisZ="1.5964" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.1667" spatial:translateY="7.3333" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="1.6" spatial:scaleY="0.5" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.84" spatial:rotateAxisY="1.0855" spatial:rotateAxisZ="0.17867" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.6667" spatial:translateY="12.5" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.75" spatial:scaleY="0.7" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.5726" spatial:rotateAxisY="1.3118" spatial:rotateAxisZ="0.91259" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.6667" spatial:translateY="14.5" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="1" spatial:scaleY="0.65" spatial:scaleZ="0.4" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="3.0872" spatial:rotateAxisY="0.26415" spatial:rotateAxisZ="1.983" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.8333" spatial:translateY="10.5" spatial:translateZ="0.44">
+                        <spatial:csgScale spatial:scaleX="1.65" spatial:scaleY="0.5" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.32086" spatial:rotateAxisY="0.43294" spatial:rotateAxisZ="0.0066776" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.6667" spatial:translateY="8.8333" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.55" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.5886" spatial:rotateAxisY="1.529" spatial:rotateAxisZ="2.8006" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.5" spatial:translateY="8.6667" spatial:translateZ="0.36">
+                        <spatial:csgScale spatial:scaleX="2.3" spatial:scaleY="0.7" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.2921" spatial:rotateAxisY="0.19605" spatial:rotateAxisZ="-0.72365" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="9.5" spatial:translateY="10.3333" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="0.5" spatial:scaleY="0.6" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.79586" spatial:rotateAxisY="1.3401" spatial:rotateAxisZ="-0.84287" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17.6667" spatial:translateY="17.6667" spatial:translateZ="0.16">
+                        <spatial:csgScale spatial:scaleX="0.3" spatial:scaleY="0.4" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.052899" spatial:rotateAxisY="0.17088" spatial:rotateAxisZ="-2.7072" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.6667" spatial:translateY="11.8333" spatial:translateZ="0.16">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.4326" spatial:rotateAxisY="1.4611" spatial:rotateAxisZ="-1.6822" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13.6667" spatial:translateY="6" spatial:translateZ="0.36">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.45" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.2401" spatial:rotateAxisY="0.069844" spatial:rotateAxisZ="2.0745" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="20.6667" spatial:translateY="13" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.4" spatial:scaleY="0.7" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.91713" spatial:rotateAxisY="0.91745" spatial:rotateAxisZ="2.3736" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15" spatial:translateY="10.5" spatial:translateZ="0.76">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.5" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.9421" spatial:rotateAxisY="0.067842" spatial:rotateAxisZ="-1.7697" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13.1667" spatial:translateY="15.3333" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="0.9" spatial:scaleY="0.7" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.5101" spatial:rotateAxisY="0.26459" spatial:rotateAxisZ="1.1424" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.3333" spatial:translateY="14.5" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.45" spatial:scaleY="0.45" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.5886" spatial:rotateAxisY="1.4828" spatial:rotateAxisZ="-1.0262" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="23.5" spatial:translateY="13.1667" spatial:translateZ="0.6">
+                        <spatial:csgScale spatial:scaleX="1.45" spatial:scaleY="0.65" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.7442" spatial:rotateAxisY="1.1397" spatial:rotateAxisZ="2.3186" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21.3333" spatial:translateY="12.5" spatial:translateZ="0.76">
+                        <spatial:csgScale spatial:scaleX="0.45" spatial:scaleY="0.4" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="3.0135" spatial:rotateAxisY="0.49397" spatial:rotateAxisZ="0.088888" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13" spatial:translateY="13.3333" spatial:translateZ="0.72">
+                        <spatial:csgScale spatial:scaleX="0.5" spatial:scaleY="0.55" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.46052" spatial:rotateAxisY="0.11648" spatial:rotateAxisZ="-2.0118" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17.5" spatial:translateY="15.3333" spatial:translateZ="0.64">
+                        <spatial:csgScale spatial:scaleX="0.9" spatial:scaleY="0.6" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.071018" spatial:rotateAxisY="1.1824" spatial:rotateAxisZ="-2.6958" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="23.3333" spatial:translateY="8.6667" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.9" spatial:scaleY="0.65" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.3392" spatial:rotateAxisY="0.33882" spatial:rotateAxisZ="2.4652" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="8.5" spatial:translateY="13" spatial:translateZ="0.28">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.45" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.5989" spatial:rotateAxisY="0.6778" spatial:rotateAxisZ="-0.61539" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16.5" spatial:translateY="12.6667" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="1.3" spatial:scaleY="0.6" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.8683" spatial:rotateAxisY="0.40341" spatial:rotateAxisZ="1.6037" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12" spatial:translateY="12" spatial:translateZ="1">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.04744" spatial:rotateAxisY="1.3371" spatial:rotateAxisZ="2.6513" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21.3333" spatial:translateY="15.1667" spatial:translateZ="0.4">
+                        <spatial:csgScale spatial:scaleX="0.95" spatial:scaleY="0.6" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.4813" spatial:rotateAxisY="1.4179" spatial:rotateAxisZ="-1.1017" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15.8333" spatial:translateY="11.8333" spatial:translateZ="0.32">
+                        <spatial:csgScale spatial:scaleX="1.1" spatial:scaleY="0.7" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.77031" spatial:rotateAxisY="0.20914" spatial:rotateAxisZ="0.49952" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21.1667" spatial:translateY="9.8333" spatial:translateZ="0.92">
+                        <spatial:csgScale spatial:scaleX="0.65" spatial:scaleY="0.5" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.27073" spatial:rotateAxisY="0.080751" spatial:rotateAxisZ="-0.79048" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15.5" spatial:translateY="6.6667" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="1.55" spatial:scaleY="0.6" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.86975" spatial:rotateAxisY="0.91314" spatial:rotateAxisZ="-1.0112" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.6667" spatial:translateY="10.5" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.6" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.398" spatial:rotateAxisY="0.78207" spatial:rotateAxisZ="2.1819" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="20.3333" spatial:translateY="9.5" spatial:translateZ="0.6">
+                        <spatial:csgScale spatial:scaleX="0.95" spatial:scaleY="0.65" spatial:scaleZ="0.4" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.8486" spatial:rotateAxisY="1.3739" spatial:rotateAxisZ="-1.018" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="23.1667" spatial:translateY="9.3333" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.5" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.6545" spatial:rotateAxisY="1.4788" spatial:rotateAxisZ="0.44954" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="23.1667" spatial:translateY="10.8333" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.45" spatial:scaleY="0.55" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.76962" spatial:rotateAxisY="1.2758" spatial:rotateAxisZ="2.1576" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17" spatial:translateY="10.5" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="1.75" spatial:scaleY="0.75" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.13973" spatial:rotateAxisY="0.78883" spatial:rotateAxisZ="0.74715" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.8333" spatial:translateY="10.5" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="0.95" spatial:scaleY="0.7" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.1173" spatial:rotateAxisY="0.31133" spatial:rotateAxisZ="2.1388" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13" spatial:translateY="11.1667" spatial:translateZ="0.72">
+                        <spatial:csgScale spatial:scaleX="0.8" spatial:scaleY="0.65" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.7086" spatial:rotateAxisY="0.46695" spatial:rotateAxisZ="-1.0285" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="25.3333" spatial:translateY="11.1667" spatial:translateZ="0.44">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.45" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.3944" spatial:rotateAxisY="1.3084" spatial:rotateAxisZ="2.3911" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21.1667" spatial:translateY="11.5" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="1.05" spatial:scaleY="0.7" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.2194" spatial:rotateAxisY="0.22795" spatial:rotateAxisZ="-2.563" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13" spatial:translateY="12" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="1" spatial:scaleY="0.55" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.60363" spatial:rotateAxisY="0.73205" spatial:rotateAxisZ="-2.8977" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="9.8333" spatial:translateY="10.1667" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.65" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.8905" spatial:rotateAxisY="0.80189" spatial:rotateAxisZ="-1.371" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="14.6667" spatial:translateY="14.8333" spatial:translateZ="0.4">
+                        <spatial:csgScale spatial:scaleX="1.55" spatial:scaleY="0.65" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.8673" spatial:rotateAxisY="0.90417" spatial:rotateAxisZ="0.87759" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="14.5" spatial:translateY="7.5" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.024" spatial:rotateAxisY="0.2067" spatial:rotateAxisZ="2.1685" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="16.1667" spatial:translateY="6.3333" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.6" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.54339" spatial:rotateAxisY="0.043467" spatial:rotateAxisZ="1.6003" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.6667" spatial:translateY="14.8333" spatial:translateZ="0.72">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.6" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.2314" spatial:rotateAxisY="0.34884" spatial:rotateAxisZ="-2.0748" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="14.3333" spatial:translateY="13.6667" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.45" spatial:scaleY="0.45" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.787" spatial:rotateAxisY="0.26688" spatial:rotateAxisZ="0.24548" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.6667" spatial:translateY="9.8333" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="1.55" spatial:scaleY="0.8" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.0268" spatial:rotateAxisY="0.7854" spatial:rotateAxisZ="2.0551" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.8333" spatial:translateY="7.8333" spatial:translateZ="0.84">
+                        <spatial:csgScale spatial:scaleX="0.5" spatial:scaleY="0.55" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.8014" spatial:rotateAxisY="1.3834" spatial:rotateAxisZ="-1.1538" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10" spatial:translateY="13.1667" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="1.75" spatial:scaleY="0.7" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="0.92842" spatial:rotateAxisY="0.21079" spatial:rotateAxisZ="1.1903" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.8333" spatial:translateY="13.6667" spatial:translateZ="0.88">
+                        <spatial:csgScale spatial:scaleX="0.3" spatial:scaleY="0.45" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.36824" spatial:rotateAxisY="1.3078" spatial:rotateAxisZ="-2.0362" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="21.6667" spatial:translateY="13" spatial:translateZ="0.6">
+                        <spatial:csgScale spatial:scaleX="1.05" spatial:scaleY="0.7" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.2359" spatial:rotateAxisY="0.98586" spatial:rotateAxisZ="-2.3043" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15.6667" spatial:translateY="14" spatial:translateZ="0.88">
+                        <spatial:csgScale spatial:scaleX="0.5" spatial:scaleY="0.6" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="3.0173" spatial:rotateAxisY="0.54469" spatial:rotateAxisZ="2.2441" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="23.1667" spatial:translateY="12.5" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="1" spatial:scaleY="0.65" spatial:scaleZ="0.4" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.7621" spatial:rotateAxisY="0.29483" spatial:rotateAxisZ="0.33984" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="15.3333" spatial:translateY="13.8333" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.05" spatial:scaleY="0.65" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-3.0703" spatial:rotateAxisY="0.61815" spatial:rotateAxisZ="-1.9429" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="13.5" spatial:translateY="10" spatial:translateZ="0.68">
+                        <spatial:csgScale spatial:scaleX="0.7" spatial:scaleY="0.55" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.2594" spatial:rotateAxisY="0.62282" spatial:rotateAxisZ="0.70609" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.3333" spatial:translateY="15.6667" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.5" spatial:scaleY="0.6" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.0807" spatial:rotateAxisY="0.77643" spatial:rotateAxisZ="2.9158" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="12.8333" spatial:translateY="8" spatial:translateZ="0.52">
+                        <spatial:csgScale spatial:scaleX="1.15" spatial:scaleY="0.65" spatial:scaleZ="0.16" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.32514" spatial:rotateAxisY="1.3035" spatial:rotateAxisZ="-2.0143" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.1667" spatial:translateY="11.8333" spatial:translateZ="0.88">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.4" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.8476" spatial:rotateAxisY="0.15979" spatial:rotateAxisZ="-1.8378" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11.1667" spatial:translateY="15.3333" spatial:translateZ="0.48">
+                        <spatial:csgScale spatial:scaleX="1.5" spatial:scaleY="0.65" spatial:scaleZ="0.2" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-1.5115" spatial:rotateAxisY="1.0538" spatial:rotateAxisZ="-1.916" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17.8333" spatial:translateY="12.5" spatial:translateZ="0.72">
+                        <spatial:csgScale spatial:scaleX="0.4" spatial:scaleY="0.35" spatial:scaleZ="0.24" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="3.0622" spatial:rotateAxisY="0.30819" spatial:rotateAxisZ="2.0638" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="10.6667" spatial:translateY="15" spatial:translateZ="0.44">
+                        <spatial:csgScale spatial:scaleX="1.55" spatial:scaleY="0.6" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.50952" spatial:rotateAxisY="0.47493" spatial:rotateAxisZ="-0.58821" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="14.5" spatial:translateY="10.8333" spatial:translateZ="0.6">
+                        <spatial:csgScale spatial:scaleX="0.6" spatial:scaleY="0.45" spatial:scaleZ="0.32" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-2.403" spatial:rotateAxisY="0.80728" spatial:rotateAxisZ="-0.65048" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="11" spatial:translateY="10.3333" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.75" spatial:scaleY="0.45" spatial:scaleZ="0.28" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="2.3095" spatial:rotateAxisY="0.63095" spatial:rotateAxisZ="2.0364" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="17.5" spatial:translateY="7.6667" spatial:translateZ="0.56">
+                        <spatial:csgScale spatial:scaleX="0.7" spatial:scaleY="0.45" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="1.2237" spatial:rotateAxisY="0.33902" spatial:rotateAxisZ="1.9587" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+                     <spatial:csgTranslation spatial:spatialId="translation" spatial:translateX="18.6667" spatial:translateY="11.1667" spatial:translateZ="0.8">
+                        <spatial:csgScale spatial:scaleX="0.55" spatial:scaleY="0.55" spatial:scaleZ="0.36" spatial:spatialId="scale">
+                           <spatial:csgRotation spatial:rotateAxisX="-0.56548" spatial:rotateAxisY="0.29994" spatial:rotateAxisZ="-0.70783" spatial:spatialId="rotation">
+                              <spatial:csgPrimitive spatial:primitiveType="SOLID_SPHERE" spatial:spatialId="sphere"/>
+                           </spatial:csgRotation>
+                        </spatial:csgScale>
+                     </spatial:csgTranslation>
+               </spatial:listOfCSGNodes>
+               </spatial:csgSetOperator>
+               </spatial:csgObject>
+            </spatial:csGeometry>
+         </spatial:listOfGeometryDefinitions>
+      </spatial:geometry>
+   </model>
+</sbml>

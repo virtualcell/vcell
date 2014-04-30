@@ -337,11 +337,11 @@ public class PathwayMapping {
 			// add the existed speciesContext objects or new speciesContext objects to reaction participant list
 			if(ctr.participantType().equals("Reactant")){
 				if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
-					rplist.add(new Reactant(null,(SimpleReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
+					rplist.add(new Reactant(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
 				}
 			}else if(ctr.participantType().equals("Product")){
 				if (reactionStep instanceof SimpleReaction || reactionStep instanceof FluxReaction) {
-					rplist.add(new Product(null,(SimpleReaction) reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
+					rplist.add(new Product(null,reactionStep, bioModel.getModel().getSpeciesContext(safeId), stoich));
 				}
 			}		// we do not add catalysts
 		}
