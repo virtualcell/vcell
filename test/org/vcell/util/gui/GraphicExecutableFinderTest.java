@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.prefs.BackingStoreException;
 
 import javax.swing.JFrame;
 
@@ -18,7 +19,7 @@ import cbit.vcell.resource.VisitSupport;
 public class GraphicExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	//@Test
-	public void testDialog( ) throws FileNotFoundException {
+	public void testDialog( ) throws FileNotFoundException, BackingStoreException {
 		ExecutableFinderDialog gef = new ExecutableFinderDialog(new JFrame( ), "find the moving boundary executable, okay?");
 		 File f = ResourceUtil.getExecutable(TEST_EXE, false,gef);
 		 System.out.println(f.getAbsolutePath());
@@ -34,7 +35,7 @@ public class GraphicExecutableFinderTest {
 	}
 	
 	@Test
-	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException, URISyntaxException {
+	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException, URISyntaxException, BackingStoreException {
 		VisitSupport.launchVisTool(new JFrame( ));
 		//kill Junit around for a bit
 		Thread.sleep(1000000);
