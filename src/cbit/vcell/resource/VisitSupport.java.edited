@@ -1,16 +1,18 @@
 package cbit.vcell.resource;
 
 import java.awt.Component;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.prefs.BackingStoreException;
 
+<<<<<<< .mine
+import org.apache.commons.discovery.tools.ResourceUtils;
+=======
 import org.apache.log4j.Logger;
+>>>>>>> .r14984
 import org.vcell.util.ExecutableException;
 import org.vcell.util.gui.ExecutableFinderDialog;
 
@@ -39,12 +41,54 @@ public class VisitSupport {
 		return new File(url.toURI());
 	}
 
+<<<<<<< .mine
 
-	private static void launchVisToolMac(Component parent) throws IOException, URISyntaxException, BackingStoreException {
+	private static void launchVisToolMac(Component parent) throws IOException {
+		
+		File visMainCLI =           getVisToolPythonScript();
+		File visitExecutable = null;
+		String vname = "visit";
+		
+		String msg = "If VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
+		ExecutableFinderDialog gef = new ExecutableFinderDialog(parent, msg); 
+		visitExecutable = ResourceUtil.getExecutable(vname,false,gef);
+		
+		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
+			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
+		}
+		if (!visMainCLI.exists() || !visMainCLI.isFile()){
+			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
+		}
+		
+		Process process = Runtime.getRuntime().exec(
+				new String[] {visitExecutable.getAbsolutePath(), "-cli", "-uifile", visMainCLI.getAbsolutePath()});
+		
+		System.out.println("Started VCellVisIt");
+		
+	}
+	
+	public static void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException
+	{
+		
+		if (ResourceUtil.bMac) {
+			launchVisToolMac(parent);
+		}
+		File script = 				getVisToolShellScript();
+		File visMainCLI =           getVisToolPythonScript();
+		File visitExecutable = null;
+=======
+	public static File getMacOSVisToolShellStartScript() throws URISyntaxException {
+		java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + "startvcellvisit.sh");
+		return new File(url.toURI());
+	}
+
+	private static void launchVisToolMac(Component parent) throws IOException, URISyntaxException {
+>>>>>>> .r14984
 		
 		File visMainCLI = getVisToolPythonScript();
 		File visitExecutable = null;
-
+		File script = getVisToolShellScript();
+		File starterScript = getMacOSVisToolShellStartScript();
 		String vname = "visit";
 		
 		ExecutableFinderDialog gef = new ExecutableFinderDialog(parent, visitUserMessage); 
@@ -59,6 +103,10 @@ public class VisitSupport {
 			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
 		}
 		
+		
+		
+
+		
 		//
 		// get existing environment variables and add visit command and python script to it.
 		//
@@ -70,33 +118,22 @@ public class VisitSupport {
 			System.out.println(varname+"="+value);
 		}
 		
-		String visitCommandString = visitExecutable.getPath().replace("\"", "");
-		
-		System.out.println("Visit Command String = "+visitCommandString);
-		//envVarList.add(visitCommandString);
+		String visitCommandString = "visitcmd="+visitExecutable.getPath().replace("\"", "");
+		//System.out.println("Visit Command String = "+visitCommandString);
+		envVarList.add(visitCommandString);
 		if (lg.isInfoEnabled()) {
 			lg.info("visitcmd="+visitExecutable.getPath().replace("\"", ""));
 		}
-		//envVarList.add("pythonscript="+visMainCLI.getPath());
-		String pythonScriptString = visMainCLI.getPath();
-		System.out.println("Python script = "+pythonScriptString);
-		File scriptFile = File.createTempFile("VCellVisitLaunch", ".command");
-
-		scriptFile.setExecutable(true);
-		BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
-	
-		writer.write(visitCommandString+" -cli -uifile "+pythonScriptString+"\n");
-		writer.close();
-		
+		envVarList.add("pythonscript="+visMainCLI.getPath());
 		Runtime.getRuntime().exec(
-				new String[] {"open", "-a", "Terminal.app", scriptFile.getAbsolutePath() },
+				new String[] {"open", "-a", "Terminal.app", starterScript.getAbsolutePath(), script.getAbsolutePath()},
 				envVarList.toArray(new String[0]));
 		if (lg.isInfoEnabled()) {
 			lg.info("Started VCellVisIt");
 		}
 	}
 	
-	public static void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException, BackingStoreException
+	public static void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException
 	{
 		
 		if (ResourceUtil.bMac) {

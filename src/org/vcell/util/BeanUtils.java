@@ -69,6 +69,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.resource.ResourceUtil;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -837,7 +838,11 @@ public final class BeanUtils {
 			return;
 		}
 		String subject = "VCell Error Report from " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String content = BeanUtils.getStackTrace(exception);
+		String content = BeanUtils.getStackTrace(exception)+"\n";
+		String platform = "Running under Java major version: ONE point "+ ResourceUtil.getJavaVersion().toString()+".  Specifically: Java "+(System.getProperty("java.version"))+
+			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
+			" of the "+(System.getProperty("os.name"))+" operating system";
+		content = content + platform;
 
 		try {
 			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);

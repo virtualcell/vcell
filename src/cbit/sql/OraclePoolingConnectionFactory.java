@@ -137,7 +137,6 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 	}
 	if (conn == null) {
 		throw new SQLException("Cannot get a connection to the database. This could be caused by\n" +
-				"1. Max connection limit has reached. No connections are available.\n" +
 				"2. there is a problem with database server.\n" +
 				"3. there is a problem with network.\n");
 	}

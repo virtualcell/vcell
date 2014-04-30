@@ -123,7 +123,8 @@ public class ResourceUtil {
 	 * @param efinder extra steps to find executable, may be null
 	 * @return executable file if it can be found
 	 * @throws FileNotFoundException if it can't
-	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException	{		String executableName = name;
+	 * @throws BackingStoreException 
+	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException, BackingStoreException	{		String executableName = name;
 		if (useBitSuffix) {
 			executableName += EXE_BIT_SUFFIX;
 		}
@@ -207,9 +208,12 @@ public class ResourceUtil {
 		private static Preferences prefs = Preferences.userNodeForPackage(ExeCache.class);
 		private static Map<String,File>  cache = new HashMap<String, File>( );
 
-		static boolean isCached(String name) {
+		static boolean isCached(String name) throws BackingStoreException {
 			if (cache.containsKey(name)) {
-				return true;
+				if (cache.get(name).canRead()){
+					return true;
+				}
+				System.out.println("ExeCache thought it knew the location of executable "+name+" but it isn't readable at location: "+cache.get(name).getAbsolutePath());
 			}
 			String stored = prefs.get(name,null);
 			if (stored != null) {
@@ -219,7 +223,9 @@ public class ResourceUtil {
 					return true;
 				}
 				//stored value is bad, so clear it
+				System.out.println("Clearing "+name+" from the ExeCache");
 				prefs.remove(name);
+				prefs.flush();
 			}
 			return false;
 		}
@@ -229,9 +235,10 @@ public class ResourceUtil {
 		 * before calling
 		 * @param name
 		 * @return executable
+		 * @throws BackingStoreException 
 		 * @throws IllegalStateException if name not cached
 		 */
-		static File get(String name) {
+		static File get(String name) throws BackingStoreException {
 			if (!isCached(name)) {
 				throw new IllegalStateException(name + " not cached");
 			}
