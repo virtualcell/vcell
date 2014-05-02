@@ -520,7 +520,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			for (int i = 0; i < mappedSMs.length; i++) {
 				if (mappedSMs[i] instanceof FeatureMapping){
 					if (mappedFM!=null){
-						System.out.println("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
+						lg.warn("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
 					}
 					mappedFM = (FeatureMapping)mappedSMs[i];
 				}
@@ -946,13 +946,15 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	
 
 	if (!mathDesc.isValid()){
-		System.out.println(mathDesc.getVCML_database());
+		lg.warn(mathDesc.getVCML_database());
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-System.out.println(mathDesc.getVCML());
-System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+	if (lg.isDebugEnabled()) {
+		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		System.out.println(mathDesc.getVCML());
+		System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+	}
 }
 
 /**
