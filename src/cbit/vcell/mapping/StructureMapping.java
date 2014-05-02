@@ -23,6 +23,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.Historical;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
@@ -270,7 +271,6 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private transient NameScope parentNameScope = null;
 	public static final int ROLE_SurfaceToVolumeRatio	= 0;
 	public static final int ROLE_VolumeFraction			= 1;
 	public static final int ROLE_SpecificCapacitance	= 2;
@@ -641,7 +641,7 @@ public StructureMappingParameter getSizeParameter() {
 	return getParameterFromRole(ROLE_Size);
 }
 
-@Deprecated
+@Historical
 public Expression getNullSizeParameterValue() {
 	return new Expression(1.0);
 }
