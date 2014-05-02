@@ -139,7 +139,7 @@ public class VisitSupport {
 			
 			@SuppressWarnings("unused")
 			Process process = Runtime.getRuntime().exec(
-					new String[] {"cmd", "/C", "start", script.getPath()}, 
+					new String[] {"cmd", "/K", "start", script.getCanonicalPath()}, 
 					envVarList.toArray(new String[0]));
 			if (lg.isInfoEnabled()) {
 				lg.info("Started VCellVisIt");
