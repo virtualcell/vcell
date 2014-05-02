@@ -15,6 +15,8 @@ import java.beans.*;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+
+import cbit.vcell.Historical;
 import cbit.vcell.biomodel.meta.Identifiable;
 
 @SuppressWarnings("serial")
@@ -172,7 +174,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * @return The speciesReference property value.
  * @see #setSpeciesReference
  */
-@Deprecated
+@Historical
 public String getAnnotation() {
 	return fieldAnnotation;
 }
