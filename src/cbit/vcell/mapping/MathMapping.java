@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -114,6 +115,7 @@ import cbit.vcell.units.VCUnitException;
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
+ * 		capacitances must not be overridden and must be constant (used as literals in KVL)
  */
 public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 	private static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
@@ -181,7 +183,9 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 	
 	protected Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
 	private HashMap<String, Integer> localNameCountHash = new HashMap<String, Integer>();
+	protected static final Logger lg = Logger.getLogger(MathMapping.class);
 
+	@SuppressWarnings("serial")
 	public class MathMappingNameScope extends BioNameScope {
 		private NameScope nameScopes[] = null;
 		public MathMappingNameScope(){
@@ -232,6 +236,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class MathMappingParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
@@ -335,6 +340,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 
 
 		}
+	@SuppressWarnings("serial")
 	public class KFluxParameter extends MathMappingParameter {
 
 		private StructureMapping sourceStructureMapping = null;
@@ -355,6 +361,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 		}
 
 	}
+	@SuppressWarnings("serial")
 	public class UnitFactorParameter extends MathMappingParameter {
 
 		protected UnitFactorParameter(String argName, Expression argExpression, VCUnitDefinition argVCUnitDefinition) {
@@ -362,6 +369,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	public class ProbabilityParameter extends MathMappingParameter {
 		
 		private ReactionSpec fieldReactionSpec = null;
@@ -377,6 +385,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 
 	}
 	
+	@SuppressWarnings("serial")
 	public class SpeciesConcentrationParameter extends MathMappingParameter {
 		private SpeciesContextSpec speciesContextSpec = null;
 		
@@ -390,6 +399,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 		}
 	}
 	
+	@SuppressWarnings("serial")
 	public class SpeciesCountParameter extends MathMappingParameter {
 		private SpeciesContextSpec speciesContextSpec = null;
 		
@@ -403,21 +413,19 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class EventAssignmentOrRateRuleInitParameter extends MathMappingParameter {
 		protected EventAssignmentOrRateRuleInitParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			super(argName,argExpression,argRole,argVCUnitDefinition,null);
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public class RateRuleRateParameter extends MathMappingParameter {
 		protected RateRuleRateParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			super(argName,argExpression,argRole,argVCUnitDefinition,null);
 		}
 	}
-
-	static {
-		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
-	};
 
 /**
  * This method was created in VisualAge.
@@ -789,6 +797,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 }
 
 
+/* dead 5/2/14 gcw
 private static Expression getRelativeSizeExpression(SimulationContext simulationContext, StructureMapping surfaceStructureMapping, StructureMapping volumeStructureMapping) throws ExpressionException {
 	if (surfaceStructureMapping == volumeStructureMapping){
 		return new Expression(1.0);
@@ -807,6 +816,7 @@ private static Expression getRelativeSizeExpression(SimulationContext simulation
 	//	exp.bindExpression(simulationContext);
 	return exp;
 }
+*/
 
 
 /**
@@ -1472,7 +1482,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
-	Structure structures[] = simContext.getGeometryContext().getModel().getStructures();
+	//Structure structures[] = 
+			simContext.getGeometryContext().getModel().getStructures();
 //	for (int i = 0; i < structures.length; i++){
 //		StructureMapping sm = simContext.getGeometryContext().getStructureMapping(structures[i]);
 //		if (sm==null || (sm.getGeometryClass() == null)){
@@ -2249,7 +2260,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		for (int i = 0; i < mappedSMs.length; i++) {
 			if (mappedSMs[i] instanceof FeatureMapping){
 				if (mappedFM!=null){
-					System.out.println("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
+					lg.warn("WARNING:::: MathMapping.refreshMathDescription() ... assigning boundary condition types not unique");
 				}
 				mappedFM = (FeatureMapping)mappedSMs[i];
 			}
@@ -2356,7 +2367,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 			subDomain.setFastSystem(fastSystem);
 			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
+			//FastSystemAnalyzer fs_analyzer = 
+				new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create ode's for voltages to be calculated on unresolved membranes mapped to this subVolume
@@ -2601,7 +2613,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 			memSubDomain.setFastSystem(fastSystem);
 			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
+			//FastSystemAnalyzer fs_analyzer = 
+				new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create Membrane-region equations for potential of this resolved membrane
