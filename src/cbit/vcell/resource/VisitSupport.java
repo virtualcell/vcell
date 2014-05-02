@@ -137,9 +137,11 @@ public class VisitSupport {
 			envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");
 			envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));
 			
+			System.out.println(script.getCanonicalPath());
+			
 			@SuppressWarnings("unused")
 			Process process = Runtime.getRuntime().exec(
-					new String[] {"cmd", "/K", "start", script.getCanonicalPath()}, 
+					new String[] {"cmd", "\"" , "/K", "start", script.getCanonicalPath(),"\""}, 
 					envVarList.toArray(new String[0]));
 			if (lg.isInfoEnabled()) {
 				lg.info("Started VCellVisIt");
