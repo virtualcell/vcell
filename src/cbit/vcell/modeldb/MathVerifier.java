@@ -37,6 +37,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.Field;
 import cbit.sql.KeyFactory;
@@ -59,7 +60,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -540,7 +541,7 @@ private void checkMathForBioModel(BigString bioModelXMLFromDB,BioModel bioModelF
 			//
 			boolean bApplicationHasData = false;
 			for (int l = 0; l < modelSimsFromDB.length; l++){
-				SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+				SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
 				if (simulationStatus != null && simulationStatus.getHasData()){
 					bApplicationHasData = true;
 				}
@@ -1184,7 +1185,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					//
 					boolean bApplicationHasData = false;
 					for (int l = 0; l < modelSimsFromDB.length; l++){
-						SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+						SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
 						if (simulationStatus != null && simulationStatus.getHasData()){
 							bApplicationHasData = true;
 						}
@@ -1457,7 +1458,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     //
         			boolean bApplicationHasData = false;
         			for (int l = 0; l < modelSimsFromDB.length; l++){
-        				SimulationStatus simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
+        				SimulationStatusPersistent simulationStatus = dbServerImpl.getSimulationStatus(modelSimsFromDB[l].getKey());
         				if (simulationStatus != null && simulationStatus.getHasData()){
         					bApplicationHasData = true;
         				}

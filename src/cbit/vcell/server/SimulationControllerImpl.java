@@ -19,6 +19,7 @@ import javax.swing.event.EventListenerList;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -50,6 +51,7 @@ import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.LocalSolverController;
 
 /**
@@ -361,6 +363,14 @@ public void stopSimulation(Simulation simulation) throws FileNotFoundException, 
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
 	simulationDispatcherEngine.onStopRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulationDatabase, vcMessageSession, adminSessionLog);
 	vcMessageSession.deliverAll();
+}
+
+public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws ObjectNotFoundException, DataAccessException {
+	return simulationDatabase.getSimulationStatus(simKeys);
+}
+
+public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
+	return simulationDatabase.getSimulationStatus(simulationKey);
 }
 
 }

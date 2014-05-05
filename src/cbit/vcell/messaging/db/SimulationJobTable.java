@@ -19,13 +19,13 @@ import org.vcell.util.document.VCellServerID;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.message.server.htc.HtcJobID;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SimulationQueueID;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
-import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class SimulationJobTable extends Table {
@@ -73,7 +73,7 @@ private SimulationJobTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLException {
+public SimulationJobStatusPersistent getSimulationJobStatus(ResultSet rset) throws SQLException {
 	//serverid
 	String serID = rset.getString(this.serverID.toString());
 	if (rset.wasNull()) {
@@ -97,7 +97,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	//statusMsg
 	String parsedStatusMsg = TokenMangler.getSQLRestoredString(rset.getString(statusMsg.toString()));
 	
-	SimulationMessage simulationMessage = SimulationMessage.fromSerialized(parsedSchedulerStatus,parsedStatusMsg);
+	SimulationMessagePersistent simulationMessage = SimulationMessagePersistent.fromSerialized(parsedSchedulerStatus,parsedStatusMsg);
 	//
 	// read queue stuff
 	//
@@ -113,9 +113,9 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	if (rset.wasNull()) {
 		parsedQueueID = -1;
 	}
-	SimulationJobStatus.SimulationQueueID simulationQueueID = SimulationJobStatus.SimulationQueueID.fromDatabaseNumber(parsedQueueID);
+	SimulationJobStatusPersistent.SimulationQueueID simulationQueueID = SimulationJobStatusPersistent.SimulationQueueID.fromDatabaseNumber(parsedQueueID);
 	
-	SimulationQueueEntryStatus simQueueEntryStatus = new SimulationQueueEntryStatus(parsedQueuedDate,parsedQueuePriority,simulationQueueID);	
+	SimulationQueueEntryStatusPersistent simQueueEntryStatus = new SimulationQueueEntryStatusPersistent(parsedQueuedDate,parsedQueuePriority,simulationQueueID);	
 	
 	//
 	// read solver stuff
@@ -137,13 +137,13 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 		parsedHtcJobID = HtcJobID.fromDatabase(htcJobIDString);
 	}
 	
-	SimulationExecutionStatus simExeStatus = new SimulationExecutionStatus(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);
+	SimulationExecutionStatusPersistent simExeStatus = new SimulationExecutionStatusPersistent(parsedStartDate, parsedComputeHost, parsedLatestUpdateDate, parsedEndDate,parsedHasData != null, parsedHtcJobID);
 
 	VCSimulationIdentifier parsedVCSimID = new VCSimulationIdentifier(parsedSimKey,owner);
 	//jobIndex
 	int parsedJobIndex = rset.getInt(jobIndex.toString());
 
-	SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getServerID(serID), parsedVCSimID, parsedJobIndex, parsedSubmitDate,parsedSchedulerStatus,parsedTaskID, simulationMessage, simQueueEntryStatus, simExeStatus);
+	SimulationJobStatusPersistent simulationJobStatus = new SimulationJobStatusPersistent(VCellServerID.getServerID(serID), parsedVCSimID, parsedJobIndex, parsedSubmitDate,parsedSchedulerStatus,parsedTaskID, simulationMessage, simQueueEntryStatus, simExeStatus);
 	//sysDate
 	java.util.Date parsedSysDate = rset.getTimestamp(DatabaseConstants.SYSDATE_COLUMN_NAME);
 	if (!rset.wasNull()) {
@@ -160,7 +160,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
+public String getSQLUpdateList(SimulationJobStatusPersistent simulationJobStatus){
 
 	StringBuffer buffer = new StringBuffer();
 
@@ -182,7 +182,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//
 	// queue info
 	//
-	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
+	SimulationQueueEntryStatusPersistent simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
 	//queueDate
 	buffer.append(queueDate + "=");
 	if (simQueueEntryStatus != null && simQueueEntryStatus.getQueueDate() != null){
@@ -204,7 +204,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//queueID
 	buffer.append(queueID + "=");
 	if (simQueueEntryStatus != null){
-		SimulationJobStatus.SimulationQueueID simQueueID = simQueueEntryStatus.getQueueID();
+		SimulationJobStatusPersistent.SimulationQueueID simQueueID = simQueueEntryStatus.getQueueID();
 		if (simQueueID!=null){
 			buffer.append(simQueueEntryStatus.getQueueID().getDatabaseNumber() + ",");
 		}else{
@@ -217,7 +217,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
 	//
 	// execution status
 	//
-	SimulationExecutionStatus simExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();	
+	SimulationExecutionStatusPersistent simExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();	
 	//startDate
 	buffer.append(startDate + "=");
 	if (simExecutionStatus != null && simExecutionStatus.getStartDate() != null){
@@ -288,7 +288,7 @@ public String getSQLUpdateList(SimulationJobStatus simulationJobStatus){
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobStatus) {
+public String getSQLValueList(KeyValue key, SimulationJobStatusPersistent simulationJobStatus) {
 
 	StringBuffer buffer = new StringBuffer();
 	
@@ -312,7 +312,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	buffer.append("'" + TokenMangler.getSQLEscapedString(message, 4000) + "',");
 	
 	// queue stuff
-	SimulationQueueEntryStatus simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
+	SimulationQueueEntryStatusPersistent simQueueEntryStatus = simulationJobStatus.getSimulationQueueEntryStatus();
 	//queueDate
 	if (simulationJobStatus.getSchedulerStatus().inQueue()) {
 		buffer.append("sysdate,");
@@ -334,7 +334,7 @@ public String getSQLValueList(KeyValue key, SimulationJobStatus simulationJobSta
 	}
 	
 	// execution stuff
-	SimulationExecutionStatus simExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();
+	SimulationExecutionStatusPersistent simExecutionStatus = simulationJobStatus.getSimulationExecutionStatus();
 	if (simExecutionStatus == null){
 		buffer.append("null,null,sysdate,null,null,");
 	} else {

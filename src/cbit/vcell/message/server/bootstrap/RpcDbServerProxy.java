@@ -26,7 +26,7 @@ import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 /**
  * Insert the type's description here.
@@ -376,8 +376,8 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.d
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
-	return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{simulationKeys});
+public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+	return (SimulationStatusPersistent[])rpc("getSimulationStatus",new Object[]{simulationKeys});
 }
 
 
@@ -388,8 +388,8 @@ public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue s
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
-	return (SimulationStatus)rpc("getSimulationStatus",new Object[]{simulationKey});
+public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+	return (SimulationStatusPersistent)rpc("getSimulationStatus",new Object[]{simulationKey});
 }
 
 

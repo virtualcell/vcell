@@ -32,14 +32,14 @@ import cbit.sql.ConnectionFactory;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.messaging.db.ServiceStatusDbDriver;
-import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 /**
  * This type was created in VisualAge.
@@ -86,12 +86,12 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,b
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:14:40 PM)
  */
-SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
-	SimulationJobStatus[] jobStatusArray = jobDB.getActiveJobs(con, serverID);
+SimulationJobStatusPersistent[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
+	SimulationJobStatusPersistent[] jobStatusArray = jobDB.getActiveJobs(con, serverID);
 	return jobStatusArray;
 }
 
-public SimulationJobStatus[] getActiveJobs(VCellServerID serverID, boolean bEnableRetry) throws java.sql.SQLException {
+public SimulationJobStatusPersistent[] getActiveJobs(VCellServerID serverID, boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -159,12 +159,12 @@ public Set<KeyValue> getUnreferencedSimulations(boolean bEnableRetry) throws jav
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus jobStatus = getSimulationJobStatus(con, simKey, jobIndex, taskID);
+		SimulationJobStatusPersistent jobStatus = getSimulationJobStatus(con, simKey, jobIndex, taskID);
 		return jobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -188,12 +188,12 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus[] jobStatus = getSimulationJobStatusArray(con, simKey);
+		SimulationJobStatusPersistent[] jobStatus = getSimulationJobStatusArray(con, simKey);
 		return jobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -217,12 +217,12 @@ public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, boolea
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus[] jobStatus = getSimulationJobStatusArray(con, simKey, jobIndex);
+		SimulationJobStatusPersistent[] jobStatus = getSimulationJobStatusArray(con, simKey, jobIndex);
 		return jobStatus;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -245,7 +245,7 @@ public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jo
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int startRow, int maxNumRows, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
+public java.util.List<SimpleJobStatusPersistent> getSimulationJobStatus(String conditions, int startRow, int maxNumRows, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -270,8 +270,8 @@ public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions,
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:08:22 PM)
  */
-SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID) throws SQLException {
-	SimulationJobStatus jobStatus = jobDB.getSimulationJobStatus(con,simKey,jobIndex,taskID,false);
+SimulationJobStatusPersistent getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID) throws SQLException {
+	SimulationJobStatusPersistent jobStatus = jobDB.getSimulationJobStatus(con,simKey,jobIndex,taskID,false);
 	return jobStatus;
 }
 
@@ -280,8 +280,8 @@ SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int 
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:08:22 PM)
  */
-SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey) throws SQLException {
-	SimulationJobStatus[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,false);
+SimulationJobStatusPersistent[] getSimulationJobStatusArray(Connection con, KeyValue simKey) throws SQLException {
+	SimulationJobStatusPersistent[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,false);
 	return jobStatus;
 }
 
@@ -289,8 +289,8 @@ SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKe
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:08:22 PM)
  */
-SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex) throws SQLException {
-	SimulationJobStatus[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,jobIndex,false);
+SimulationJobStatusPersistent[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex) throws SQLException {
+	SimulationJobStatusPersistent[] jobStatus = jobDB.getSimulationJobStatusArray(con,simKey,jobIndex,false);
 	return jobStatus;
 }
 
@@ -302,7 +302,7 @@ SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKe
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bActiveOnly, User owner) throws java.sql.SQLException, DataAccessException {
+SimulationJobStatusPersistent[] getSimulationJobStatus(Connection con, boolean bActiveOnly, User owner) throws java.sql.SQLException, DataAccessException {
 	return jobDB.getSimulationJobStatus(con,bActiveOnly,owner);
 }
 
@@ -314,7 +314,7 @@ SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bActiveOnly
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, User owner, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnly, User owner, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -342,15 +342,15 @@ SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, User owner, bo
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus[] jobStatuses = jobDB.getSimulationJobStatus(con,simulationKeys);
-		SimulationStatus[] simStatuses = new SimulationStatus[simulationKeys.length];
+		SimulationJobStatusPersistent[] jobStatuses = jobDB.getSimulationJobStatus(con,simulationKeys);
+		SimulationStatusPersistent[] simStatuses = new SimulationStatusPersistent[simulationKeys.length];
 		for (int i = 0; i < simulationKeys.length; i++){
-			Vector<SimulationJobStatus> v = new Vector<SimulationJobStatus>();
+			Vector<SimulationJobStatusPersistent> v = new Vector<SimulationJobStatusPersistent>();
 			for (int j = 0; j < jobStatuses.length; j++){
 				if(jobStatuses[j].getVCSimulationIdentifier().getSimulationKey().equals(simulationKeys[i])) {
 					v.add(jobStatuses[j]);
@@ -359,7 +359,7 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnabl
 			if (v.isEmpty()) {
 				simStatuses[i] = null;
 			} else {
-				simStatuses[i] = new SimulationStatus((SimulationJobStatus[])org.vcell.util.BeanUtils.getArray(v, SimulationJobStatus.class));
+				simStatuses[i] = new SimulationStatusPersistent((SimulationJobStatusPersistent[])org.vcell.util.BeanUtils.getArray(v, SimulationJobStatusPersistent.class));
 			}
 		}
 		return simStatuses;
@@ -385,14 +385,14 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnabl
  * @param bActiveOnly boolean
  * @param owner cbit.vcell.server.User
  */
-SimulationStatus getSimulationStatus(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
+SimulationStatusPersistent getSimulationStatus(KeyValue simKey, boolean bEnableRetry) throws java.sql.SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		SimulationJobStatus[] jobStatuses = jobDB.getSimulationJobStatus(con,simKey);
+		SimulationJobStatusPersistent[] jobStatuses = jobDB.getSimulationJobStatus(con,simKey);
 		if (jobStatuses.length > 0) {
-			return new SimulationStatus(jobStatuses);
+			return new SimulationStatusPersistent(jobStatuses);
 		} else {
 			return null;
 		}
@@ -693,7 +693,7 @@ UserInfo[] getUserInfos(boolean bEnableRetry)
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
+public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException, UpdateSynchronizationException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -723,7 +723,7 @@ public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus, b
  * Insert the method's description here.
  * Creation date: (10/3/2005 3:33:09 PM)
  */
-void insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException, UpdateSynchronizationException {
+void insertSimulationJobStatus(Connection con, SimulationJobStatusPersistent simulationJobStatus) throws SQLException, UpdateSynchronizationException {
 	jobDB.insertSimulationJobStatus(con,simulationJobStatus, DbDriver.getNewKey(con));
 	VCMongoMessage.sendSimJobStatusInsert(simulationJobStatus);
 }
@@ -774,7 +774,7 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
+public void updateSimulationJobStatus(SimulationJobStatusPersistent newSimulationJobStatus, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -805,7 +805,7 @@ public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:20:41 PM)
  */
-void updateSimulationJobStatus(Connection con, SimulationJobStatus newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
+void updateSimulationJobStatus(Connection con, SimulationJobStatusPersistent newSimulationJobStatus) throws SQLException, UpdateSynchronizationException {
 	jobDB.updateSimulationJobStatus(con,newSimulationJobStatus);
 	VCMongoMessage.sendSimJobStatusUpdate(newSimulationJobStatus);
 }

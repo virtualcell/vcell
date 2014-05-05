@@ -15,7 +15,6 @@ import java.io.Serializable;
 import org.vcell.util.Compare;
 
 import cbit.vcell.message.server.htc.HtcJobID;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 
 public class SimulationMessage implements Serializable {
 	
@@ -125,54 +124,6 @@ public class SimulationMessage implements Serializable {
 			message = message.replace('\r', ' ');
 			message = message.replace('\n', ' ');
 			message = message.replace('\'', ' ');
-		}
-	}
-	
-
-	public static SimulationMessage fromSerialized(SchedulerStatus schedulerStatus, String serializedMessage){
-		
-		SimulationMessage simulationMessage = fromSerializedMessage(serializedMessage);
-		if (simulationMessage != null) {
-			return simulationMessage;
-		}
-		
-		if (schedulerStatus == SchedulerStatus.WAITING){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_WAITING;
-			}
-			return new SimulationMessage(DetailedState.JOB_WAITING, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.QUEUED){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_QUEUED;
-			}
-			return new SimulationMessage(DetailedState.JOB_QUEUED, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.DISPATCHED){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_DISPATCHED;
-			}
-			return new SimulationMessage(DetailedState.JOB_DISPATCHED, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.RUNNING){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_RUNNING_UNKNOWN;
-			}
-			return new SimulationMessage(DetailedState.JOB_RUNNING, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.COMPLETED){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_COMPLETED;
-			}
-			return new SimulationMessage(DetailedState.JOB_COMPLETED, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.STOPPED){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_STOPPED;
-			}
-			return new SimulationMessage(DetailedState.JOB_STOPPED, serializedMessage);
-		}else if (schedulerStatus == SchedulerStatus.FAILED){
-			if (serializedMessage == null) {
-				return MESSAGE_JOB_FAILED_UNKNOWN;
-			}
-			return new SimulationMessage(DetailedState.JOB_FAILED, serializedMessage);
-		}else{
-			throw new RuntimeException("unexpected scheduler status : " + schedulerStatus);
 		}
 	}
 

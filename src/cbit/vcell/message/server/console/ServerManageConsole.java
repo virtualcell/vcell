@@ -86,7 +86,7 @@ import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
-import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
@@ -2173,8 +2173,8 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 
 
 
-public SimpleJobStatus getReturnedSimulationJobStatus(int selectedRow) {	
-	return (SimpleJobStatus)((JobTableModel)getQueryResultTable().getModel()).getValueAt(selectedRow);
+public SimpleJobStatusPersistent getReturnedSimulationJobStatus(int selectedRow) {	
+	return (SimpleJobStatusPersistent)((JobTableModel)getQueryResultTable().getModel()).getValueAt(selectedRow);
 }
 
 /**
@@ -2315,7 +2315,7 @@ private void query() {
 	}
 	
 	try {
-		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), 1, -1, true);
+		List<SimpleJobStatusPersistent> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), 1, -1, true);
 		getNumResultsLabel().setText("" + resultList.size());
 		getNumSelectedLabel().setText("0");
 		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);
@@ -2405,7 +2405,7 @@ private void submitSelectedButton_ActionPerformed(ActionEvent e) {
 	if (response.equals(SUBMIT_JOBS_OPTION)){
 		for (int i = 0; i < srows.length; i++) {
 			int selectedRow = srows[i];
-			SimpleJobStatus jobStatus = getReturnedSimulationJobStatus(selectedRow);
+			SimpleJobStatusPersistent jobStatus = getReturnedSimulationJobStatus(selectedRow);
 			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
 			if (jobStatus.isDone()) {
 				log.print("Submitting job (" + (i+1) + " of " + srows.length + ") : " + statusString);
@@ -2430,7 +2430,7 @@ private void stopSelectedButton_ActionPerformed(ActionEvent e) {
 	if (response.equals(STOP_JOBS_OPTION)){
 		for (int i = 0; i < srows.length; i++) {
 			int selectedRow = srows[i];
-			SimpleJobStatus jobStatus = getReturnedSimulationJobStatus(selectedRow);
+			SimpleJobStatusPersistent jobStatus = getReturnedSimulationJobStatus(selectedRow);
 			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
 			if (!jobStatus.isDone()) {
 				log.print("Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString);	

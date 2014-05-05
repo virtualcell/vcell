@@ -49,7 +49,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -1337,7 +1337,7 @@ roundtripTimer += l2 - l1;
 					//
 					if (bMathematicallyEquivalent){
 						VCSimulationIdentifier vcSimulationIdentifier = databaseSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-						SimulationStatus simStatus = dbServer.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+						SimulationStatusPersistent simStatus = dbServer.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 						if (simStatus==null || !simStatus.getHasData()){
 							bMathematicallyEquivalent = false;
 						}
@@ -1905,7 +1905,7 @@ public String saveMathModel(QueryHashtable dbc, User user, String mathModelXML, 
 					//
 					if (bSimMathematicallyEquivalent){
 						VCSimulationIdentifier vcSimulationIdentifier = databaseSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-						SimulationStatus simStatus = dbServer.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+						SimulationStatusPersistent simStatus = dbServer.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 						if (simStatus==null || !simStatus.getHasData()){
 							bSimMathematicallyEquivalent = false;
 						}
