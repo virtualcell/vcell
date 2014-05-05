@@ -21,13 +21,16 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SimulationMessage.DetailedState;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -439,6 +442,23 @@ public final class VCMongoMessage {
 		}
 	}
 
+	public static void sendSimJobStatusInsert(SimulationJobStatusPersistent newSimulationJobStatus) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_simJobStatusInsert);
+
+			addObject(dbObject,newSimulationJobStatus);
+			
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+
 	public static void sendSimJobStatusInsert(SimulationJobStatus newSimulationJobStatus) {
 		if (!enabled){
 			return;
@@ -457,6 +477,23 @@ public final class VCMongoMessage {
 	}
 
 	public static void sendSimJobStatusUpdate(SimulationJobStatus newSimulationJobStatus) {
+		if (!enabled){
+			return;
+		}
+		try {
+			BasicDBObject dbObject = new BasicDBObject();
+
+			addHeader(dbObject,MongoMessage_msgtype_simJobStatusUpdate);
+
+			addObject(dbObject,newSimulationJobStatus);
+				
+			VCMongoDbDriver.getInstance().addMessage(new VCMongoMessage(dbObject));
+		} catch (Exception e){
+			VCMongoDbDriver.getInstance().getSessionLog().exception(e);
+		}
+	}
+		
+	public static void sendSimJobStatusUpdate(SimulationJobStatusPersistent newSimulationJobStatus) {
 		if (!enabled){
 			return;
 		}
@@ -860,7 +897,48 @@ public final class VCMongoMessage {
 		addObject(dbObject,newSimulationJobStatus.getSimulationQueueEntryStatus());
 	}
 	
+	private static void addObject(BasicDBObject dbObject, SimulationJobStatusPersistent newSimulationJobStatus){
+		dbObject.put(MongoMessage_simId,newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString());
+		dbObject.put(MongoMessage_taskId, newSimulationJobStatus.getTaskID());
+		dbObject.put(MongoMessage_jobIndex, newSimulationJobStatus.getJobIndex());
+		dbObject.put(MongoMessage_schedulerStatus, newSimulationJobStatus.getSchedulerStatus().getDescription());
+		dbObject.put(MongoMessage_serverId, newSimulationJobStatus.getServerID().toString());
+		if (newSimulationJobStatus.getTimeDateStamp()!=null){
+			dbObject.put(MongoMessage_simJobStatusTimeStamp,newSimulationJobStatus.getTimeDateStamp().getTime());
+			dbObject.put(MongoMessage_simJobStatusTimeStampNice,newSimulationJobStatus.getTimeDateStamp().toString());
+		}
+
+		addObject(dbObject,newSimulationJobStatus.getSimulationExecutionStatus());
+
+		addObject(dbObject,newSimulationJobStatus.getSimulationMessage());
+
+		addObject(dbObject,newSimulationJobStatus.getSimulationQueueEntryStatus());
+	}
+	
 	private static void addObject(BasicDBObject dbObject, SimulationExecutionStatus simExeStatus){
+		if (simExeStatus==null){
+			return;
+		}
+		dbObject.put(MongoMessage_computeHost, simExeStatus.getComputeHost());
+		dbObject.put(MongoMessage_hasData, simExeStatus.hasData());
+		if (simExeStatus.getEndDate()!=null){
+			dbObject.put(MongoMessage_endTime, simExeStatus.getEndDate().getTime());
+			dbObject.put(MongoMessage_endTimeNice, simExeStatus.getEndDate().toString());
+		}
+		if (simExeStatus.getStartDate()!=null){
+			dbObject.put(MongoMessage_startTime, simExeStatus.getStartDate().getTime());
+			dbObject.put(MongoMessage_startTimeNice, simExeStatus.getStartDate().toString());
+		}
+		if (simExeStatus.getLatestUpdateDate()!=null){
+			dbObject.put(MongoMessage_latestUpdateTime, simExeStatus.getLatestUpdateDate().getTime());
+			dbObject.put(MongoMessage_latestUpdateTimeNice, simExeStatus.getLatestUpdateDate().toString());
+		}
+		if (simExeStatus.getHtcJobID()!=null){
+			dbObject.put(MongoMessage_htcJobID, simExeStatus.getHtcJobID().toDatabase());
+		}
+	}
+	
+	private static void addObject(BasicDBObject dbObject, SimulationExecutionStatusPersistent simExeStatus){
 		if (simExeStatus==null){
 			return;
 		}
@@ -887,7 +965,19 @@ public final class VCMongoMessage {
 		if (simMessage==null){
 			return;
 		}
-		DetailedState detailedState = simMessage.getDetailedState();
+		SimulationMessage.DetailedState detailedState = simMessage.getDetailedState();
+		dbObject.put(MongoMessage_simMessageState,detailedState.name());
+		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
+		if (simMessage.getHtcJobId()!=null){
+			dbObject.put(MongoMessage_htcJobID,simMessage.getHtcJobId().toDatabase());
+		}
+	}
+
+	private static void addObject(BasicDBObject dbObject, SimulationMessagePersistent simMessage){
+		if (simMessage==null){
+			return;
+		}
+		SimulationMessagePersistent.DetailedState detailedState = simMessage.getDetailedState();
 		dbObject.put(MongoMessage_simMessageState,detailedState.name());
 		dbObject.put(MongoMessage_simMessageMsg,simMessage.getDisplayMessage());
 		if (simMessage.getHtcJobId()!=null){
@@ -896,6 +986,18 @@ public final class VCMongoMessage {
 	}
 
 	private static void addObject(BasicDBObject dbObject, SimulationQueueEntryStatus simQueueEntryStatus){
+		if (simQueueEntryStatus==null){
+			return;
+		}
+		if (simQueueEntryStatus.getQueueDate()!=null){
+			dbObject.put(MongoMessage_simQueueEntryDate,simQueueEntryStatus.getQueueDate().getTime());
+			dbObject.put(MongoMessage_simQueueEntryDateNice,simQueueEntryStatus.getQueueDate().toString());
+		}
+		dbObject.put(MongoMessage_simQueueEntryId,simQueueEntryStatus.getQueueID().name());
+		dbObject.put(MongoMessage_simQueueEntryPriority,simQueueEntryStatus.getQueuePriority());
+	}
+
+	private static void addObject(BasicDBObject dbObject, SimulationQueueEntryStatusPersistent simQueueEntryStatus){
 		if (simQueueEntryStatus==null){
 			return;
 		}

@@ -31,7 +31,7 @@ import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 
 /**
@@ -625,10 +625,10 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.d
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKeys+")");
-		SimulationStatus simulationStatus[] = dbServerProxy.getSimulationStatus(simulationKeys);
+		SimulationStatusPersistent simulationStatus[] = dbServerProxy.getSimulationStatus(simulationKeys);
 		return simulationStatus;
 	} catch (DataAccessException e) {
 		log.exception(e);
@@ -647,10 +647,10 @@ public SimulationStatus[] getSimulationStatus(org.vcell.util.document.KeyValue s
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKey+")");
-		SimulationStatus simulationStatus = dbServerProxy.getSimulationStatus(simulationKey);
+		SimulationStatusPersistent simulationStatus = dbServerProxy.getSimulationStatus(simulationKey);
 		return simulationStatus;
 	} catch (DataAccessException e) {
 		log.exception(e);

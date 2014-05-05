@@ -38,10 +38,10 @@ import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
@@ -298,9 +298,9 @@ public class VCComprehensiveStatistics {
 						modelStat.count_model ++;								
 						boolean bHasCompletedSim = false;
 						for (Simulation sim : mathModel.getSimulations()) {
-							SimulationStatus ss = dbServerImpl.getSimulationStatus(sim.getKey());
+							SimulationStatusPersistent ss = dbServerImpl.getSimulationStatus(sim.getKey());
 							for (int scan = 0; scan < sim.getScanCount(); scan ++) {
-								SimulationJobStatus jobStatus = ss.getJobStatus(scan);
+								SimulationJobStatusPersistent jobStatus = ss.getJobStatus(scan);
 								if (jobStatus != null) {
 									if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 										bHasCompletedSim = true;
@@ -437,10 +437,10 @@ public class VCComprehensiveStatistics {
 						}
 						boolean bHasCompletedSim = false;
 						for (Simulation sim : bioModel.getSimulations()) {
-							SimulationStatus ss = dbServerImpl.getSimulationStatus(sim.getKey());
+							SimulationStatusPersistent ss = dbServerImpl.getSimulationStatus(sim.getKey());
 							if (ss != null) {
 								for (int scan = 0; scan < sim.getScanCount(); scan ++) {
-									SimulationJobStatus jobStatus = ss.getJobStatus(scan);
+									SimulationJobStatusPersistent jobStatus = ss.getJobStatus(scan);
 									if (jobStatus != null) {
 										if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 											bHasCompletedSim = true;

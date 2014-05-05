@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.server;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.*;
@@ -276,7 +276,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue reactio
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException, RemoteException;
+SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException, RemoteException;
 
 
 /**
@@ -285,7 +285,7 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAcc
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException;
+SimulationStatusPersistent getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException;
 
 
 /**

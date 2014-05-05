@@ -11,7 +11,7 @@
 package cbit.vcell.message.server.console;
 import javax.swing.BorderFactory;
 
-import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 
 /**
  * Insert the type's description here.
@@ -52,7 +52,7 @@ public class SimulationJobStatusDetailDialog extends javax.swing.JDialog {
 	private javax.swing.JTextArea ivjSolverDescTextArea = null;
 	private javax.swing.JButton ivjResubmitButton = null;
 	private javax.swing.JButton ivjStopButton = null;
-	private SimpleJobStatus jobStatus = null;
+	private SimpleJobStatusPersistent jobStatus = null;
 	private ServerManageConsole smConsole = null;
 	private javax.swing.JPanel ivjJPanel12 = null;
 	private javax.swing.JPanel ivjJPanel13 = null;

@@ -2,7 +2,6 @@ package cbit.vcell.server;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
@@ -30,11 +29,6 @@ public class SimulationTaskID {
 		this.simKey = simulationInfo.getSimulationVersion().getVersionKey();
 		this.jobIndex = jobIndex;
 		this.taskID = taskID;
-	}
-	public SimulationTaskID(SimulationJobStatus simulationJobStatus) {
-		this.simKey = simulationJobStatus.getVCSimulationIdentifier().getSimulationKey();
-		this.jobIndex = simulationJobStatus.getJobIndex();
-		this.taskID = simulationJobStatus.getTaskID();
 	}
 	@Override
 	public boolean equals(Object obj){

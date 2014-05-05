@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -17,6 +16,7 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 public interface SimulationDatabase {
 
@@ -39,5 +39,9 @@ public interface SimulationDatabase {
 	public User getUser(String username) throws DataAccessException, SQLException;
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException;
+
+	public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws ObjectNotFoundException, DataAccessException;
+
+	public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException;
 
 }

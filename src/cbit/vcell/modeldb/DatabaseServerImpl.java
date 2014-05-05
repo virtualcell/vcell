@@ -55,7 +55,7 @@ import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -655,7 +655,7 @@ public ServerDocumentManager getServerDocumentManager() {
 /**
  * getVersionInfo method comment.
  */
-public SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKeys+")");
 		return adminDbTop.getSimulationStatus(simulationKeys,true);
@@ -670,7 +670,7 @@ public SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws 
 /**
  * getVersionInfo method comment.
  */
-public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getSimulationStatus(simulationKey="+simulationKey+")");
 		return adminDbTop.getSimulationStatus(simulationKey,true);

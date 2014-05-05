@@ -11,12 +11,14 @@
 package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.
@@ -98,6 +100,28 @@ public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationSca
 public void stopSimulation(VCSimulationIdentifier vcSimID) {
 	try {
 		rpcNoWait("stopSimulation",new Object[]{vcSimID});
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+@Override
+public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
+	try {
+		return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{simKeys});
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+@Override
+public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
+	try {
+		return (SimulationStatus)rpc("getSimulationStatus",new Object[]{simulationKey});
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());

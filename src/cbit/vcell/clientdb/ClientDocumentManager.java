@@ -1457,11 +1457,11 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
 	}else{
 		SimulationStatus simulationStatus = null;
 		try {
-			simulationStatus = sessionManager.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+			simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 		}catch (RemoteException e){
 			handleRemoteException(e);
 			try {
-				simulationStatus = sessionManager.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+				simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 			}catch (RemoteException e2){
 				handleRemoteException(e2);
 				throw new DataAccessException("SimulationStatus inquiry for '"+vcSimulationIdentifier+"' failed\n"+e2.getMessage());
@@ -2046,11 +2046,11 @@ private void preloadSimulationStatus(KeyValue[] simKeys) {
 		try {
 			SimulationStatus[] simulationStatusArray = null;
 			try {
-				simulationStatusArray = sessionManager.getUserMetaDbServer().getSimulationStatus(simKeys);
+				simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
 			}catch (RemoteException e){
 				handleRemoteException(e);
 				try {
-					simulationStatusArray = sessionManager.getUserMetaDbServer().getSimulationStatus(simKeys);
+					simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
 				}catch (RemoteException e2){
 					handleRemoteException(e2);
 				}

@@ -14,6 +14,7 @@ import org.vcell.util.DataAccessException;
 
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.server.SimulationController;
 
 /**
  * Insert the type's description here.
@@ -37,4 +38,6 @@ org.vcell.util.document.User getUser();
  * @return cbit.vcell.server.UserMetaDbServer
  */
 cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws org.vcell.util.DataAccessException;
+
+SimulationController getSimulationController() throws org.vcell.util.DataAccessException;
 }

@@ -23,8 +23,8 @@ import org.vcell.util.document.UserLoginInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 
@@ -69,7 +69,7 @@ public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) 
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException {
+public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatusArray(simKey,jobIndex,true);
 	}catch (Throwable e){
@@ -78,7 +78,7 @@ public SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jo
 	}
 }
 
-public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException {
+public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(simKey,jobIndex,taskID,true);
 	}catch (Throwable e){
@@ -90,7 +90,7 @@ public SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex,
 /**
  * getSimulationJobStatus method comment.
  */
-public List<SimpleJobStatus> getSimulationJobStatus(java.lang.String conditions, int startRow, int maxNumRows) throws DataAccessException {
+public List<SimpleJobStatusPersistent> getSimulationJobStatus(java.lang.String conditions, int startRow, int maxNumRows) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(conditions, startRow, maxNumRows, true);
 	}catch (Throwable e){
@@ -108,7 +108,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(java.lang.String conditions,
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, org.vcell.util.document.User userOnly) throws DataAccessException {
+public SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnly, org.vcell.util.document.User userOnly) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(bActiveOnly,userOnly,true);
 	}catch (Throwable e){
@@ -193,7 +193,7 @@ public UserInfo[] getUserInfos() throws DataAccessException {
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException {
+public void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus) throws DataAccessException, UpdateSynchronizationException {
 	try {
 		adminDbTop.insertSimulationJobStatus(simulationJobStatus,true);
 	}catch (UpdateSynchronizationException ex){
@@ -231,7 +231,7 @@ public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) thr
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-public void updateSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException {
+public void updateSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus) throws DataAccessException {
 	try {
 		adminDbTop.updateSimulationJobStatus(simulationJobStatus,true);
 	} catch (Throwable e){

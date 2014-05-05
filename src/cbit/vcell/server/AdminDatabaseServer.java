@@ -18,8 +18,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 
 /**
@@ -38,12 +38,12 @@ ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws 
  * @exception java.rmi.RemoteException The exception description.
  */
 
-SimulationJobStatus[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException;
+SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simKey, int jobIndex) throws DataAccessException;
 
-SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException;
+SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException;
 
 
-java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int startRow, int maxNumRows) throws DataAccessException;
+java.util.List<SimpleJobStatusPersistent> getSimulationJobStatus(String conditions, int startRow, int maxNumRows) throws DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:33:54 PM)
@@ -52,7 +52,7 @@ java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, int st
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, User userOnly) throws DataAccessException;
+SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnly, User userOnly) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
@@ -95,7 +95,7 @@ UserInfo[] getUserInfos() throws DataAccessException;
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
+void insertSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
@@ -110,7 +110,7 @@ org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo
  * @param simulationJobStatus cbit.vcell.solvers.SimulationJobStatus
  * @exception java.rmi.RemoteException The exception description.
  */
-void updateSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
+void updateSimulationJobStatus(SimulationJobStatusPersistent simulationJobStatus) throws DataAccessException, UpdateSynchronizationException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User

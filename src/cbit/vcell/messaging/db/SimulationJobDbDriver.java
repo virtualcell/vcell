@@ -25,9 +25,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
-import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent.BioModelLink;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent.MathModelLink;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
@@ -86,7 +86,7 @@ private int executeUpdate(Connection con, String sql) throws SQLException {
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
+public SimulationJobStatusPersistent[] getActiveJobs(Connection con, VCellServerID serverID) throws SQLException {
 	String sql = "SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName()+".*," + simTable.ownerRef.getQualifiedColName() 
 			+ "," + userTable.userid.getQualifiedColName() 
 			+ " FROM " + jobTable.getTableName() + "," + simTable.getTableName() + "," + userTable.getTableName()
@@ -111,18 +111,18 @@ public SimulationJobStatus[] getActiveJobs(Connection con, VCellServerID serverI
 		
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
+	java.util.List<SimulationJobStatusPersistent> simJobStatusList = new java.util.ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
 			simJobStatusList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
 	
-	return (SimulationJobStatus[])simJobStatusList.toArray(new SimulationJobStatus[0]);
+	return (SimulationJobStatusPersistent[])simJobStatusList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 /**
@@ -193,7 +193,7 @@ public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue simulationKeys[]) throws SQLException {
+public SimulationJobStatusPersistent[] getSimulationJobStatus(Connection con, KeyValue simulationKeys[]) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(bActiveOnly=" + bActiveOnly + ", owner=" + owner);	
 	String sql = new String(standardJobStatusSQL);
 
@@ -208,18 +208,18 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
 			
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
+	java.util.List<SimulationJobStatusPersistent> simJobStatusList = new java.util.ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
 			simJobStatusList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
 	
-	return (SimulationJobStatus[])simJobStatusList.toArray(new SimulationJobStatus[0]);
+	return (SimulationJobStatusPersistent[])simJobStatusList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 
@@ -229,14 +229,14 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue simKey) throws SQLException {
+public SimulationJobStatusPersistent[] getSimulationJobStatus(Connection con, KeyValue simKey) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
 		
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	List<SimulationJobStatus> simJobStatuses = new java.util.ArrayList<SimulationJobStatus>();
+	List<SimulationJobStatusPersistent> simJobStatuses = new java.util.ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -245,7 +245,7 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
 	} finally {
 		stmt.close();
 	}
-	return (SimulationJobStatus[])simJobStatuses.toArray(new SimulationJobStatus[0]);
+	return (SimulationJobStatusPersistent[])simJobStatuses.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 
@@ -255,7 +255,7 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID, boolean lockRowForUpdate) throws SQLException {
+public SimulationJobStatusPersistent getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex, int taskID, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
@@ -267,7 +267,7 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
 	}
 //	log.print(sql);
 	Statement stmt = con.createStatement();
-	SimulationJobStatus simJobStatus = null;
+	SimulationJobStatusPersistent simJobStatus = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		if (rset.next()) {
@@ -286,7 +286,7 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, boolean lockRowForUpdate) throws SQLException {
+public SimulationJobStatusPersistent[] getSimulationJobStatusArray(Connection con, KeyValue simKey, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
@@ -296,17 +296,17 @@ public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValu
 	}
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	ArrayList<SimulationJobStatus> simulationJobStatusArrayList = new ArrayList<SimulationJobStatus>();
+	ArrayList<SimulationJobStatusPersistent> simulationJobStatusArrayList = new ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
 			simulationJobStatusArrayList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
-	return simulationJobStatusArrayList.toArray(new SimulationJobStatus[0]);
+	return simulationJobStatusArrayList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 
@@ -316,7 +316,7 @@ public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValu
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex, boolean lockRowForUpdate) throws SQLException {
+public SimulationJobStatusPersistent[] getSimulationJobStatusArray(Connection con, KeyValue simKey, int jobIndex, boolean lockRowForUpdate) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(SimKey="+simKey+")");
 	String sql = new String(standardJobStatusSQL);	
 	sql += " AND " + simTable.id.getQualifiedColName() + " = " + simKey;
@@ -327,17 +327,17 @@ public SimulationJobStatus[] getSimulationJobStatusArray(Connection con, KeyValu
 	}
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	ArrayList<SimulationJobStatus> simulationJobStatusArrayList = new ArrayList<SimulationJobStatus>();
+	ArrayList<SimulationJobStatusPersistent> simulationJobStatusArrayList = new ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
 			simulationJobStatusArrayList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
-	return simulationJobStatusArrayList.toArray(new SimulationJobStatus[0]);
+	return simulationJobStatusArrayList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 
@@ -383,7 +383,7 @@ simid		bmlink																																								mmlink
 
 
  */
-public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException, DataAccessException {	
+public List<SimpleJobStatusPersistent> getSimulationJobStatus(Connection con, String conditions, int startRow, int maxNumRows) throws java.sql.SQLException, DataAccessException {	
 	
 	BioModelSimulationLinkTable bioSimLinkTable = BioModelSimulationLinkTable.table;
 	MathModelSimulationLinkTable mathSimLinkTable = MathModelSimulationLinkTable.table;
@@ -465,9 +465,9 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 	
 	System.out.println(sql);
 	
-	List<SimpleJobStatus> resultList = new ArrayList<SimpleJobStatus>();
+	List<SimpleJobStatusPersistent> resultList = new ArrayList<SimpleJobStatusPersistent>();
 	Statement stmt = con.createStatement();	
-	SimulationJobStatus simJobStatus = null;
+	SimulationJobStatusPersistent simJobStatus = null;
 	cbit.vcell.solver.SolverTaskDescription std = null;
 	String username = null;
 	try {
@@ -521,7 +521,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
 					scanCount *= element.getSpec().getNumValues();
 				}
 			}
-			resultList.add(new SimpleJobStatus(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, scanCount, bioModelLink, mathModelLink));
+			resultList.add(new SimpleJobStatusPersistent(simname, username, simJobStatus, std, meshSizeX, meshSizeY, meshSizeZ, scanCount, bioModelLink, mathModelLink));
 		} 
 	} finally {
 		stmt.close();		
@@ -537,7 +537,7 @@ public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String condi
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bActiveOnly, User owner) throws SQLException {
+public SimulationJobStatusPersistent[] getSimulationJobStatus(Connection con, boolean bActiveOnly, User owner) throws SQLException {
 	//log.print("SchedulerDbDriver.getSimulationJobStatus(bActiveOnly=" + bActiveOnly + ", owner=" + owner);	
 	String sql = new String(standardJobStatusSQL);
 
@@ -555,18 +555,18 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bAct
 			
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
+	java.util.List<SimulationJobStatusPersistent> simJobStatusList = new java.util.ArrayList<SimulationJobStatusPersistent>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
-			SimulationJobStatus simJobStatus = jobTable.getSimulationJobStatus(rset);
+			SimulationJobStatusPersistent simJobStatus = jobTable.getSimulationJobStatus(rset);
 			simJobStatusList.add(simJobStatus);
 		}
 	} finally {
 		stmt.close();
 	}
 	
-	return (SimulationJobStatus[])simJobStatusList.toArray(new SimulationJobStatus[0]);
+	return (SimulationJobStatusPersistent[])simJobStatusList.toArray(new SimulationJobStatusPersistent[0]);
 }
 
 
@@ -602,7 +602,7 @@ public User getUserFromSimulationKey(Connection con, KeyValue simKey) throws SQL
 /**
  * addModel method comment.
  */
-public void insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus, KeyValue key) throws SQLException {
+public void insertSimulationJobStatus(Connection con, SimulationJobStatusPersistent simulationJobStatus, KeyValue key) throws SQLException {
 	if (simulationJobStatus == null){
 		throw new IllegalArgumentException("simulationJobStatus cannot be null");
 	}
@@ -621,7 +621,7 @@ public void insertSimulationJobStatus(Connection con, SimulationJobStatus simula
  * @param userid java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public void updateSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws SQLException {
+public void updateSimulationJobStatus(Connection con, SimulationJobStatusPersistent simulationJobStatus) throws SQLException {
 	if (simulationJobStatus == null || con == null){
 		throw new IllegalArgumentException("Improper parameters for updateSimulationJobStatus()");
 	}

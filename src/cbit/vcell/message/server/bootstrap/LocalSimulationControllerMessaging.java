@@ -9,11 +9,16 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
+import java.rmi.RemoteException;
+
+import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.
@@ -52,5 +57,19 @@ public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationSca
 public void stopSimulation(VCSimulationIdentifier vcSimID) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
 	simServerProxy.stopSimulation(vcSimID);
+}
+
+
+@Override
+public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException, RemoteException {
+	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simKeys + ")");
+	return simServerProxy.getSimulationStatus(simKeys);
+}
+
+
+@Override
+public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, RemoteException {
+	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simulationKey + ")");
+	return simServerProxy.getSimulationStatus(simulationKey);
 }
 }

@@ -21,11 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-
 import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
@@ -37,7 +33,6 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
@@ -48,13 +43,12 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -317,7 +311,7 @@ public class HybridSolverTester {
 			VCellBootstrap vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
 			vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
 		}
-		SimulationStatus simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+		SimulationStatusPersistent simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 		System.out.println("initial status="+simulationStatus);
 		if(simulationStatus!=null && simulationStatus.isRunning()/*!simulationStatus.isNeverRan() && !simulationStatus.isCompleted()*/){
 			throw new Exception("Sim in unexpected state "+simulationStatus);
@@ -336,7 +330,7 @@ public class HybridSolverTester {
 				throw new Exception("Sim finished too fast or took too long to start");
 			}
 		}
-		SimulationStatus lastSimStatus = simulationStatus;
+		SimulationStatusPersistent lastSimStatus = simulationStatus;
 		while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
 			Thread.sleep(3000);
 			simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());

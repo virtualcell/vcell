@@ -11,10 +11,12 @@
 package cbit.vcell.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/01 12:55:29 PM)
@@ -68,6 +70,30 @@ public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+@Override
+public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
+	sessionLog.print("LocalSimulationController.getSimulationStatus(simKeys="+simKeys+")");
+	try {
+		return simulationControllerImpl.getSimulationStatus(simKeys);
+	}catch (Exception e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+@Override
+public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
+	sessionLog.print("LocalSimulationController.getSimulationStatus(simKey="+simulationKey+")");
+	try {
+		return simulationControllerImpl.getSimulationStatus(simulationKey);
+	}catch (Exception e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}

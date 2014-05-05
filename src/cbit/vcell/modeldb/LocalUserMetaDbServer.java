@@ -47,7 +47,7 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 
 /**
  * This type was created in VisualAge.
@@ -360,7 +360,7 @@ public ReactionStepInfo[] getReactionStepInfos(KeyValue reactionStepKeys[]) thro
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException {
+public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[]) throws DataAccessException {
 	return dbServerImpl.getSimulationStatus(simulationKeys);
 }
 
@@ -371,7 +371,7 @@ public SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[]) throws 
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent getSimulationStatus(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
 	return dbServerImpl.getSimulationStatus(simulationKey);
 }
 
