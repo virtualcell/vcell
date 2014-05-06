@@ -42,6 +42,37 @@ public final class FileUtils {
 	 */
 	public final static String PATHSEP = System.getProperty("path.separator");
 	
+	
+/**
+* Convenience method to copy a directory from a source to a destination.
+* Overwrite is allowed, and the last modified is kept, 4k buffer used.
+*
+* @throws IOException
+* @author Ed Boyce
+*/
+public static void copyDirectory(File sourceDir, File destDir) throws IOException {
+	if (!(sourceDir.isDirectory())){
+		throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Source dir: "+sourceDir.getCanonicalPath());
+	}
+	if ((destDir.exists()) && !(destDir.isDirectory())) {
+		throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Destination dir: "+destDir.getCanonicalPath());
+	}
+	if (!destDir.exists()) {
+		if (!destDir.mkdir()) {
+			throw new IOException("Failed to create directory "+destDir.getCanonicalPath());
+		}
+	}
+	if (!destDir.canWrite()) {
+		throw new IOException("Cannot write directory "+destDir.getCanonicalPath());
+	}
+	File[] sourceFiles = sourceDir.listFiles();
+	for (int i=0; i<sourceFiles.length; i++){
+		copyFile(sourceFiles[i], new File(destDir,sourceFiles[i].getName()), true, true, 4*1024);
+	}
+		
+	
+}
+	
 /**
 * Convenience method to copy a file from a source to a destination.
 * Overwrite is prevented, and the last modified is kept, 4k buffer used.

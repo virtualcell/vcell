@@ -12,6 +12,9 @@ import java.util.prefs.BackingStoreException;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
+import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.ExecutableFinderDialog;
 
 public class VisitSupport {
@@ -134,14 +137,32 @@ public class VisitSupport {
 				String value = envVariables.get(varname);
 				envVarList.add(varname+"="+value);
 			}
-			envVarList.add("visitcmd=\""+visitExecutable.getPath()+"\"");
-			envVarList.add("pythonscript="+visMainCLI.getPath().replace("\\", "/"));
 			
-			System.out.println(script.getCanonicalPath());
+			String siteName = ResourceUtil.getSiteName();
+			File vcellHomeVisFolder = new File(new File(ResourceUtil.getVcellHome(), "Vis"),siteName);
+			if (!vcellHomeVisFolder.exists()){
+				if (!vcellHomeVisFolder.mkdirs()){
+					throw new IOException("Cannot create directory "+vcellHomeVisFolder.getCanonicalPath());
+				}
+			}
+			FileUtils.copyDirectory(visMainCLI.getParentFile(), vcellHomeVisFolder);
+			File vcellHomeVisMainCLI=new File(vcellHomeVisFolder, visMainCLI.getName());
+
+			vcellHomeVisMainCLI.setExecutable(true);
 			
-			@SuppressWarnings("unused")
+			
+			envVarList.add("visitcmd="+visitExecutable.getPath());
+			envVarList.add("pythonscript="+vcellHomeVisMainCLI.getPath().replace("\\", "/"));
+			//envVarList.add("pythonscript="+visMainCLI.toURI().toASCIIString());
+			String st = "\""+script.getCanonicalPath()+"\"";
+			System.out.println(st);
+			
+
+			
+			String[] cmdStringArray = new String[] {"cmd", "/K", "start", "\""+"\"", st};
+			@SuppressWarnings("unused")			
 			Process process = Runtime.getRuntime().exec(
-					new String[] {"cmd", "\"" , "/K", "start", script.getCanonicalPath(),"\""}, 
+					cmdStringArray, 
 					envVarList.toArray(new String[0]));
 			if (lg.isInfoEnabled()) {
 				lg.info("Started VCellVisIt");

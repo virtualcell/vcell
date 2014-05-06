@@ -33,6 +33,7 @@ import java.util.prefs.Preferences;
 
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverExecutable;
@@ -634,5 +635,10 @@ public class ResourceUtil {
 	{
 		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot));
 		if (!installDirectory.exists() || !installDirectory.isDirectory()){			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");		}		return installDirectory;	}
-	
+
+	public static String getSiteName() {
+		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
+	}
+
+
 }
