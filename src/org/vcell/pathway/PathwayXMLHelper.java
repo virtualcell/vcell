@@ -13,7 +13,9 @@ package org.vcell.pathway;
 import java.util.Hashtable;
 
 import org.jdom.Attribute;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Parent;
 
 public class PathwayXMLHelper {
 
@@ -68,7 +70,14 @@ public class PathwayXMLHelper {
 			}else{
 				buffer.insert(0,element.getName()+"/");
 			}
-			element = (Element) element.getParent();
+			Parent parent = element.getParent();
+			if(parent instanceof Element) {
+				element = (Element)parent;
+			} else if (parent instanceof Document){
+				return buffer.toString();
+			}  else {
+				return buffer.toString();
+			}
 		}
 		return buffer.toString();
 	}
