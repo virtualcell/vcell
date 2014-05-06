@@ -25,6 +25,7 @@ import org.jlibsedml.RepeatedTask;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
 import org.jlibsedml.SetValue;
+import org.jlibsedml.SubTask;
 import org.jlibsedml.Task;
 import org.jlibsedml.UniformRange;
 import org.jlibsedml.UniformTimeCourse;
@@ -113,8 +114,8 @@ public class SEDMLExporter {
 			
 			// invoke the SEDMLEXporter
 			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
-			String sedmlStr = sedmlExporter.getSEDMLFile();
 			String absolutePath = "c:\\dan\\SEDML";
+			String sedmlStr = sedmlExporter.getSEDMLFile();
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
@@ -176,10 +177,11 @@ public class SEDMLExporter {
 					} else {
 						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
 					}
-					String sbmlFilePathStr = usrHomeDirPath+ "\\" + bioModelName + "_" + simContextName + ".xml";
-					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStr, true);
+					String sbmlFilePathStrAbsolute = usrHomeDirPath+ "\\" + bioModelName + "_" + simContextName + ".xml";
+					String sbmlFilePathStrRelative = "../" + bioModelName + "_" + simContextName + ".xml";
+					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
-					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStr));
+					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStrRelative));
 		
 					// required for mathOverrides, if any
 					MathMapping mathMapping = simContext.createNewMathMapping();
@@ -288,10 +290,19 @@ public class SEDMLExporter {
 								sedmlModel.addTask(sedmlTask);
 								taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
-								// only parameters with scans : only add 1 RepeatedTask
+								// only parameters with scans : only add 1 Task and 1 RepeatedTask
+								String taskId = "task_" + simContextCnt + "_" + simCount;
+								Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
+								sedmlModel.addTask(sedmlTask);
+
 								String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
-								RepeatedTask t = new RepeatedTask(repeatedTaskId, repeatedTaskId, false, "blank");
-								taskRef = repeatedTaskId;
+								// TODO: temporary solution - we use as range here the first range
+								String scn = scannedConstantsNames[0];
+								String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
+								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rId);
+								taskRef = repeatedTaskId;	// to be used later to add dataGenerators - in our case it has to be the repeated task
+								SubTask subTask = new SubTask("0", taskId);
+								rt.addSubtask(subTask);
 								
 								for (String scannedConstName : scannedConstantsNames) {
 									ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
@@ -305,7 +316,7 @@ public class SEDMLExporter {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
 													constantArraySpec.getMaxValue(), constantArraySpec.getNumValues());
-											t.addRange(r);
+											rt.addRange(r);
 										} else {
 											// ----- Vector Range
 											cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
@@ -315,22 +326,25 @@ public class SEDMLExporter {
 												values.add(Double.parseDouble(value));
 											}
 											r = new VectorRange(rangeId, values);
-											t.addRange(r);
+											rt.addRange(r);
 										}
 										
+										// list of Changes
 										SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, scannedConstName);
 										XPathTarget target = getTargetXPath(ste);
-										ASTNode math1 = new ASTCi(scannedConstName);
+										//ASTNode math1 = new ASTCi(r.getId());		// was scannedConstName
+										ASTNode math1 = Libsedml.parseFormulaString(r.getId());
 										SetValue setValue = new SetValue(target, r.getId(), simContextId);
 										setValue.setMath(math1);
-										t.addChange(setValue);
+										rt.addChange(setValue);
 									} else {
 										throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
 									}
 								}
-								sedmlModel.addTask(t);
+								sedmlModel.addTask(rt);
+								
+								
 							} else {
-
 								// both scanned and simple parameters : create new model with change for each simple override; add RepeatedTask
 								
 								// create new model with change for each unscanned parameter that has override
@@ -339,10 +353,22 @@ public class SEDMLExporter {
 								Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, simContextId);
 								overrideCount++;
 
+								String taskId = "task_" + simContextCnt + "_" + simCount;
+								Task sedmlTask = new Task(taskId, taskId, overriddenSimContextId, utcSim.getId());
+								sedmlModel.addTask(sedmlTask);
+
 								// scanned parameters
 								String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
-								RepeatedTask t = new RepeatedTask(repeatedTaskId, repeatedTaskId, false, "blank");
-								taskRef = repeatedTaskId;
+								// TODO: temporary solution - we use as range here the first range
+								String scn = scannedConstantsNames[0];
+								String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
+								RepeatedTask rt = new RepeatedTask(repeatedTaskId, repeatedTaskId, true, rId);
+								taskRef = repeatedTaskId;	// to be used later to add dataGenerators - in our case it has to be the repeated task
+								SubTask subTask = new SubTask("0", taskId);
+								rt.addSubtask(subTask);
+								//String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
+								//RepeatedTask t = new RepeatedTask(repeatedTaskId, repeatedTaskId, false, "blank");
+								//taskRef = repeatedTaskId;
 								for (String scannedConstName : scannedConstantsNames) {
 									ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 									String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
@@ -355,7 +381,7 @@ public class SEDMLExporter {
 											// ------ Uniform Range
 											r = new UniformRange(rangeId, constantArraySpec.getMinValue(), 
 													constantArraySpec.getMaxValue(), constantArraySpec.getNumValues());
-											t.addRange(r);
+											rt.addRange(r);
 										} else {
 											// ----- Vector Range
 											cbit.vcell.math.Constant[] cs = constantArraySpec.getConstants();
@@ -365,7 +391,7 @@ public class SEDMLExporter {
 												values.add(Double.parseDouble(value));
 											}
 											r = new VectorRange(rangeId, values);
-											t.addRange(r);
+											rt.addRange(r);
 										}
 										
 										// use scannedParamHash to store rangeId for that param, since it might be needed if unscanned param has a scanned param in expr.
@@ -380,44 +406,12 @@ public class SEDMLExporter {
 										ASTNode math1 = new ASTCi(scannedConstName);
 										SetValue setValue1 = new SetValue(target1, r.getId(), sedModel.getId());
 										setValue1.setMath(math1);
-										t.addChange(setValue1);
+										rt.addChange(setValue1);
 									} else {
 										throw new RuntimeException("No scan ranges found for scanned parameter : '" + scannedConstName + "'.");
 									}
 								}
-
 								// for unscanned parameter overrides
-/*
-    TODO: WE SHOULDN'T HAVE A RANGE REFERENCE FIELD FOR SetValue AT ALL 
-    <setValue target="/sbml/model/listOfParameters/parameter[@id='w']" range="current" modelReference="model1" >
-    for CCC = AAA + BBB we should have:
-    
-    <functionalRange id="AAA_range" index="index">        // range for variable AAA with id=AAA_range
-        <listOfVariables>
-            <variable id="AAA" name="AAA" target="/sbml/model/listOfParameters/parameter[@id='AAA']" />
-        </listOfVariables>
-        <function>
-            <math>
-                <ci> AAA </ci>
-            </math>
-        </function>
-    </functionalRange>
-    
-    <functionalRange id="BBB_range" index="index">        // // range for variable BBB with id=BBB_range
-        .....
-    </functionalRange>
-    
-    <setValue target="/sbml/model/listOfParameters/parameter[@id='CCC']" modelReference="model1" >
-        <math>
-            <apply>
-              <plus />
-              <ci> AAA_range </ci>        // <<<<<< use the names of the range for each variable !!!!
-              <ci> BBB_range </ci>
-            </apply>        
-        </math>
-    </setValue>
-</listOfChanges>
-*/
 								for (String unscannedParamName : unscannedParamHash.values()) {
 									SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
 									Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
@@ -447,7 +441,7 @@ public class SEDMLExporter {
 											String rangeId = scannedParamHash.get(scannedParamNameInUnscannedParamExp);
 											SetValue setValue = new SetValue(target, rangeId, sedModel.getId());	// @TODO: we have no range??
 											setValue.setMath(math);
-											t.addChange(setValue);
+											rt.addChange(setValue);
 										} else {
 											// non-numeric expression : add 'computeChange' to modified model
 											XPathTarget targetXpath = getTargetXPath(ste);
@@ -492,7 +486,7 @@ public class SEDMLExporter {
 									}
 								}
 								sedmlModel.addModel(sedModel);
-								sedmlModel.addTask(t);
+								sedmlModel.addTask(rt);
 							}
 						} else {						// no math overrides, add basic task.
 							String taskId = "task_" + simContextCnt + "_" + simCount;
