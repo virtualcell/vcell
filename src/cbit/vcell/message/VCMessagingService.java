@@ -6,6 +6,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
+import cbit.vcell.message.jms.activeMQ.VCMessagingServiceEmbedded;
 
 public abstract class VCMessagingService {
 	
@@ -51,6 +52,13 @@ public abstract class VCMessagingService {
 		}
 		messagingService.delegate = messagingDelegate;
 		messagingService.init(false);
+		return messagingService;
+	}
+	
+	public static VCMessagingService createEmbeddedInstance(VCMessagingDelegate messagingDelegate) throws VCMessagingException{
+		VCMessagingService messagingService = new VCMessagingServiceEmbedded();
+		messagingService.delegate = messagingDelegate;
+		messagingService.init(true);
 		return messagingService;
 	}
 	
