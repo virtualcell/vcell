@@ -1,5 +1,6 @@
 package org.vcell.sedml;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.util.FileUtils;
 import org.vcell.util.TokenMangler;
 
 import com.sun.swing.internal.plaf.basic.resources.basic_zh_HK;
@@ -89,6 +91,7 @@ public class SEDMLExporter {
 	private int sedmlVersion = 1;
 	private  SedML sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
+	private ArrayList<String> sbmlFilePathStrAbsoluteList = new ArrayList<String>();
 
 	private static String DATAGENERATOR_TIME_NAME = "time";
 	private static String DATAGENERATOR_TIME_SYMBOL = "t";
@@ -115,7 +118,7 @@ public class SEDMLExporter {
 			// invoke the SEDMLEXporter
 			SEDMLExporter sedmlExporter = new SEDMLExporter(bioModel, 1, 1);
 			String absolutePath = "c:\\dan\\SEDML";
-			String sedmlStr = sedmlExporter.getSEDMLFile();
+			String sedmlStr = sedmlExporter.getSEDMLFile(absolutePath);
 //			String absolutePath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			String outputName = absolutePath+ "\\" + TokenMangler.mangleToSName(bioModel.getName()) + ".sedml";
 			XmlUtil.writeXMLStringToFile(sedmlStr, outputName, true);
@@ -128,28 +131,29 @@ public class SEDMLExporter {
 		}
 	}
 	
-	public String getSEDMLFile() {
+	public String getSEDMLFile(String sPath) {
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
 		SEDMLDocument sedmlDocument = new SEDMLDocument();
 
 		sedmlModel = sedmlDocument.getSedMLModel();
 
-		translateBioModelToSedML();
+		translateBioModelToSedML(sPath);
 
 		// write SEDML document into SEDML writer, so that the SEDML str can be retrieved
 		return sedmlDocument.writeDocumentToString();
 	}
 
 
-	private void translateBioModelToSedML() {
+	private void translateBioModelToSedML(String savePath) {
+		sbmlFilePathStrAbsoluteList.clear();
 		// models
 		try {
 			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
 			cbit.vcell.model.Model vcModel = vcBioModel.getModel();
 			String sbmlLanguageURN = SUPPORTED_LANGUAGE.SBML_GENERIC.getURN();	// "urn:sedml:language:sbml";
 			String bioModelName = TokenMangler.mangleToSName(vcBioModel.getName());
-			String usrHomeDirPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
+			//String usrHomeDirPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			SBMLSupport sbmlSupport = new SBMLSupport();		// to get Xpath string for variables.
 			int simContextCnt = 0;	// for model count, task subcount
 			int varCount = 0;		// for dtaGenerator count.
@@ -177,9 +181,10 @@ public class SEDMLExporter {
 					} else {
 						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
 					}
-					String sbmlFilePathStrAbsolute = usrHomeDirPath+ "\\" + bioModelName + "_" + simContextName + ".xml";
+					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + simContextName + ".xml";
 					String sbmlFilePathStrRelative = "../" + bioModelName + "_" + simContextName + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
+					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrAbsolute);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
 					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStrRelative));
 		
@@ -277,7 +282,7 @@ public class SEDMLExporter {
 													computeChange.addParameter(sedmlParameter);
 												}
 											} else {
-												throw new RuntimeException("Sybol '" + symbol + "' used in expression for '" + unscannedParamName + "' not found in model.");
+												throw new RuntimeException("Symbol '" + symbol + "' used in expression for '" + unscannedParamName + "' not found in model.");
 											}
 										}
 										sedModel.addChange(computeChange);
@@ -285,17 +290,17 @@ public class SEDMLExporter {
 								}
 								sedmlModel.addModel(sedModel);
 
-								String taskId = "task_" + simContextCnt + "_" + simCount;
+								String taskId = "tsk_" + simContextCnt + "_" + simCount;
 								Task sedmlTask = new Task(taskId, taskId, sedModel.getId(), utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 								taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).
 							} else if (!scannedParamHash.isEmpty() && unscannedParamHash.isEmpty()) {
 								// only parameters with scans : only add 1 Task and 1 RepeatedTask
-								String taskId = "task_" + simContextCnt + "_" + simCount;
+								String taskId = "tsk_" + simContextCnt + "_" + simCount;
 								Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
-								String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
+								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
 								// TODO: temporary solution - we use as range here the first range
 								String scn = scannedConstantsNames[0];
 								String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
@@ -353,12 +358,12 @@ public class SEDMLExporter {
 								Model sedModel = new Model(overriddenSimContextId, overriddenSimContextName, sbmlLanguageURN, simContextId);
 								overrideCount++;
 
-								String taskId = "task_" + simContextCnt + "_" + simCount;
+								String taskId = "tsk_" + simContextCnt + "_" + simCount;
 								Task sedmlTask = new Task(taskId, taskId, overriddenSimContextId, utcSim.getId());
 								sedmlModel.addTask(sedmlTask);
 
 								// scanned parameters
-								String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
+								String repeatedTaskId = "repTsk_" + simContextCnt + "_" + simCount;
 								// TODO: temporary solution - we use as range here the first range
 								String scn = scannedConstantsNames[0];
 								String rId = "range_" + simContextCnt + "_" + simCount + "_" + scn;
@@ -366,9 +371,6 @@ public class SEDMLExporter {
 								taskRef = repeatedTaskId;	// to be used later to add dataGenerators - in our case it has to be the repeated task
 								SubTask subTask = new SubTask("0", taskId);
 								rt.addSubtask(subTask);
-								//String repeatedTaskId = "repeatedTask_" + simContextCnt + "_" + simCount;
-								//RepeatedTask t = new RepeatedTask(repeatedTaskId, repeatedTaskId, false, "blank");
-								//taskRef = repeatedTaskId;
 								for (String scannedConstName : scannedConstantsNames) {
 									ConstantArraySpec constantArraySpec = mathOverrides.getConstantArraySpec(scannedConstName);
 									String rangeId = "range_" + simContextCnt + "_" + simCount + "_" + scannedConstName;
@@ -489,7 +491,7 @@ public class SEDMLExporter {
 								sedmlModel.addTask(rt);
 							}
 						} else {						// no math overrides, add basic task.
-							String taskId = "task_" + simContextCnt + "_" + simCount;
+							String taskId = "tsk_" + simContextCnt + "_" + simCount;
 							Task sedmlTask = new Task(taskId, taskId, simContextId, utcSim.getId());
 							sedmlModel.addTask(sedmlTask);
 							taskRef = taskId;		// to be used later to add dataGenerators : one set of DGs per model (simContext).

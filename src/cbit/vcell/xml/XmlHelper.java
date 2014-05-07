@@ -961,17 +961,17 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 }
 
 
-public static String exportSedML(VCDocument vcDoc, int level, int version) throws XmlParseException {
-	if (vcDoc == null) {
-        throw new XmlParseException("Cannot export NULL document to SEDML.");
-    } 
-	if (vcDoc instanceof BioModel) {
-		SEDMLExporter sedmlExporter = new SEDMLExporter((BioModel)vcDoc, level, version);
-		return sedmlExporter.getSEDMLFile();
-	} else{
-		throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SedML export");
-	}
-}
+//public static String exportSedML(VCDocument vcDoc, int level, int version, String file) throws XmlParseException {
+//	if (vcDoc == null) {
+//        throw new XmlParseException("Cannot export NULL document to SEDML.");
+//    } 
+//	if (vcDoc instanceof BioModel) {
+//		SEDMLExporter sedmlExporter = new SEDMLExporter((BioModel)vcDoc, level, version);
+//		return sedmlExporter.getSEDMLFile(file);
+//	} else{
+//		throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SedML export");
+//	}
+//}
 
 
 
