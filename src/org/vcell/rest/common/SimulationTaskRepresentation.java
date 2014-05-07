@@ -1,10 +1,10 @@
 package org.vcell.rest.common;
 
-import cbit.vcell.messaging.db.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
-import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
-import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent.BioModelLink;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent.MathModelLink;
+import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 
 public class SimulationTaskRepresentation {
 	
@@ -146,13 +146,13 @@ public class SimulationTaskRepresentation {
 
 
 
-	public SimulationTaskRepresentation(SimulationJobStatus simJobStatus, int scanCount){
+	public SimulationTaskRepresentation(SimulationJobStatusPersistent simJobStatus, int scanCount){
 		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
 		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
 		this.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
 		this.jobIndex = simJobStatus.getJobIndex();
 		this.taskId = simJobStatus.getTaskID();
-		SimulationExecutionStatus simulationExecutionStatus = simJobStatus.getSimulationExecutionStatus();
+		SimulationExecutionStatusPersistent simulationExecutionStatus = simJobStatus.getSimulationExecutionStatus();
 		if (simulationExecutionStatus!=null && simulationExecutionStatus.getHtcJobID()!=null){
 			this.htcJobId = simulationExecutionStatus.getHtcJobID().toDatabase();
 		}
@@ -172,7 +172,7 @@ public class SimulationTaskRepresentation {
 		this.hasData = simJobStatus.hasData();
 	}
 
-	public SimulationTaskRepresentation(SimpleJobStatus simJobStatus) {
+	public SimulationTaskRepresentation(SimpleJobStatusPersistent simJobStatus) {
 		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
 		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
 		this.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();

@@ -24,7 +24,7 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
-import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.BioModelRep;
@@ -479,7 +479,7 @@ public class RestDatabaseService {
 		}
 	}
 
-    public List<SimpleJobStatus> query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+    public List<SimpleJobStatusPersistent> query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -625,9 +625,9 @@ public class RestDatabaseService {
     	
     	if (statusConditions.size()==0){
     		// no status conditions wanted ... nothing to query
-    		return new ArrayList<SimpleJobStatus>();
+    		return new ArrayList<SimpleJobStatusPersistent>();
     	}else{
-	   		List<SimpleJobStatus> resultList = localAdminDbServer.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows);
+	   		List<SimpleJobStatusPersistent> resultList = localAdminDbServer.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows);
 	   		return resultList;
     	}
     }
