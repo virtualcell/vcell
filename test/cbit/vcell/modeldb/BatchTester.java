@@ -52,14 +52,17 @@ public class BatchTester extends VCDatabaseScanner {
 	 * database column name 
 	 */
 	public final String GOOD = "good";
+	/**
+	 * database column name 
+	 */
+	public final String RAN_LONG = "ran_long";
 
 	public BatchTester(SessionLog log) throws Exception {
 		super(log);
 	}
 
 	/**
-	 * Insert the method's description here.
-	 * Creation date: (2/2/01 3:40:29 PM)
+	 * scan biomodels for further processing, put into database table if criteria met
 	 * @throws DataAccessException 
 	 * @throws XmlParseException 
 	 */
@@ -115,9 +118,8 @@ public class BatchTester extends VCDatabaseScanner {
 		try {
 				String processHostId = ManagementFactory.getRuntimeMXBean().getName();
 				String filename = processHostId + ".txt";
-				
 				FileWriter writer = new FileWriter(filename);
-				PrintWriter printWriter = new PrintWriter(writer);
+				PrintWriter printWriter = new PrintWriter(writer, true); //autoflush
 				Connection conn = connFactory.getConnection(null);
 				conn.setAutoCommit(true);
 				printWriter.println("reserving slots");
@@ -155,37 +157,48 @@ public class BatchTester extends VCDatabaseScanner {
 					printWriter.println("\n");
 					PreparedStatement ps = conn.prepareStatement("Update " + statusTable + " set scanned = 1, good = ? , scan_process = null where id = ?");
 					for (ModelIdent modelIdent : models) {
+						ScanStatus scanStatus = ScanStatus.PASS;
 						boolean goodModel;
 						try {
 							User user = new User("", new KeyValue(modelIdent.userId));
 							KeyValue modelKey = new KeyValue(modelIdent.modelId);
 							BigString bioModelXML = dbServerImpl.getBioModelXML(user,modelKey);
 							BioModel storedModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-							storedModel.refreshDependencies();
-							goodModel = verifyMathDescriptionsUnchanged(storedModel,printWriter);
-							if (goodModel) {
-								databaseVisitor.setBioModel(storedModel, printWriter);
-								for (BioModel bioModel: databaseVisitor) {
-									SimulationContext[] simContexts = bioModel.getSimulationContexts();
-									for (SimulationContext sc : simContexts) {
-										//try {
-										sc.createNewMathMapping().getMathDescription();
-										/*
+							if (databaseVisitor.filterBioModel(storedModel)) {
+								storedModel.refreshDependencies();
+								goodModel = verifyMathDescriptionsUnchanged(storedModel,printWriter);
+								if (goodModel) {
+									printWriter.println("Model for " + modelIdent.statusId + " good");
+									databaseVisitor.setBioModel(storedModel, printWriter);
+									for (BioModel bioModel: databaseVisitor) {
+										SimulationContext[] simContexts = bioModel.getSimulationContexts();
+										for (SimulationContext sc : simContexts) {
+											//try {
+											//long start = System.currentTimeMillis();
+											sc.createNewMathMapping().getMathDescription();
+											//long end = System.currentTimeMillis();
+											//printWriter.println("mapping took " + (end - start)/1000.0 + " sec ");
+											/*
 									} catch (Exception e) {
 										//printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
 										// e.printStackTrace();
 									}
-										 */
+											 */
+										}
 									}
 								}
 							}
+							else {
+								scanStatus = ScanStatus.FILTERED;
+							}
 						}catch (Exception e2){
 							log.exception(e2);
+							scanStatus = ScanStatus.FAIL;
 							goodModel = false;
 							printWriter.println("failed " + modelIdent.statusId);
 							e2.printStackTrace(printWriter);
 						}
-						ps.setInt(1,boolAsInt(goodModel));
+						ps.setInt(1,scanStatus.code);
 						ps.setLong(2,modelIdent.statusId);
 						boolean estat = ps.execute();
 						if (estat) {
@@ -195,7 +208,6 @@ public class BatchTester extends VCDatabaseScanner {
 						if (uc != 1) {
 							throw new Error("logic / sql ");
 						}
-						
 					}
 
 				}catch(Exception e)
@@ -209,9 +221,11 @@ public class BatchTester extends VCDatabaseScanner {
 		}
 	}
 	
+	/*
 	private int boolAsInt(boolean b) {
 		return b ? 1: 0;
 	}
+	*/
 	
 	private static class ModelIdent {
 		private final long statusId;
@@ -225,7 +239,11 @@ public class BatchTester extends VCDatabaseScanner {
 		}
 	}
 	
-	private static class NullStream extends OutputStream {
+	/**
+	 * OutputStream which just dumps (ignores) output
+	 *
+	 */
+	public static class NullStream extends OutputStream {
 
 		@Override
 		public void write(int ignore) throws IOException {
@@ -234,5 +252,41 @@ public class BatchTester extends VCDatabaseScanner {
 		
 	}
 	
+	private static class WatchDog implements Runnable{
+		final Thread target;
+		Thread monitorThread = null;
+		int secondsToWait = 0;
+		
+		public WatchDog(Thread target) {
+			super();
+			this.target = target;
+		}
+		
+		/**
+		 * 
+		 * @param seconds
+		 */
+		public synchronized void killAfter(int seconds) {
+			if (monitorThread != null) {
+				monitorThread.interrupt();
+			}
+			secondsToWait = seconds;
+			monitorThread = new Thread(this,"Watchdog monitor");
+			monitorThread.start();
+		}
+
+		@Override
+		public void run() {
+			try {
+				if (secondsToWait > 0) {
+					Thread.sleep(secondsToWait * 1000);
+					target.interrupt();
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+
+	}
 
 }
+	
