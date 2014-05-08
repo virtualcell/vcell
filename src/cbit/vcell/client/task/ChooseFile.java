@@ -145,8 +145,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SEDML && !n.endsWith(".sedml")) {
-				selectedFile = new File(selectedFileName + ".sedml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SEDML) {
+				if((!n.endsWith(".sedml") && (!n.endsWith(".sedx")))) {
+					selectedFile = new File(selectedFileName + ".sedml");
+				}
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {

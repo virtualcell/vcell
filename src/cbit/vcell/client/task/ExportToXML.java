@@ -20,7 +20,9 @@ import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
+import org.vcell.sedml.SEDMLExporter;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
+import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.FileFilters;
 
@@ -42,6 +44,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 
 /**
  * Insert the type's description here.
@@ -215,8 +218,35 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					// export the entire biomodel to a SEDML file (for now, only non-spatial,non-stochastic applns)
 					int sedmlLevel = 1;
 					int sedmlVersion = 1;
-					resultString = XmlHelper.exportSedML(bioModel, sedmlLevel, sedmlVersion);
-					XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+					String sPath = FileUtils.getFullPathNoEndSeparator(exportFile.getAbsolutePath());
+					String sFile = FileUtils.getBaseName(exportFile.getAbsolutePath());
+					String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
+					
+					SEDMLExporter sedmlExporter = null;
+					if (bioModel instanceof BioModel) {
+						sedmlExporter = new SEDMLExporter(bioModel, sedmlLevel, sedmlVersion);
+						resultString = sedmlExporter.getSEDMLFile(sPath);
+					} else {
+						throw new RuntimeException("unsupported Document Type " + bioModel.getClass().getName() + " for SedML export");
+					}
+					if(sExt.equals("sedx")) {
+						sedmlExporter.createManifest(sPath, sFile);
+						String sedmlFileName = sPath + FileUtils.WINDOWS_SEPARATOR + sFile + ".sedml";
+						//File sedmlFile = new File(sedmlFileName);
+						XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
+						
+						// create the archive
+						
+//						if(resultString != null){
+//							FileWriter fileWriter = new java.io.FileWriter(exportFile);
+//							fileWriter.write(resultString);
+//							fileWriter.flush();
+//							fileWriter.close();
+//						}
+						return;
+					} else {
+						XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
+					}
 				}
 			} else {
 				// if format is VCML, get it from biomodel.

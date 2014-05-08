@@ -9,7 +9,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jdom.Element;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+//import org.jdom.Element;
 import org.jlibsedml.Algorithm;
 import org.jlibsedml.ChangeAttribute;
 import org.jlibsedml.ComputeChange;
@@ -182,9 +195,9 @@ public class SEDMLExporter {
 						sbmlString = XmlHelper.exportSBML(vcBioModel, 2, 4, 0, false, simContext, null);
 					}
 					String sbmlFilePathStrAbsolute = savePath + FileUtils.WINDOWS_SEPARATOR + bioModelName + "_" + simContextName + ".xml";
-					String sbmlFilePathStrRelative = "../" + bioModelName + "_" + simContextName + ".xml";
+					String sbmlFilePathStrRelative = "./" + bioModelName + "_" + simContextName + ".xml";
 					XmlUtil.writeXMLStringToFile(sbmlString, sbmlFilePathStrAbsolute, true);
-					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrAbsolute);
+					sbmlFilePathStrAbsoluteList.add(sbmlFilePathStrRelative);
 			        String simContextId = TokenMangler.mangleToSName(simContextName);
 					sedmlModel.addModel(new Model(simContextId, simContextName, sbmlLanguageURN, sbmlFilePathStrRelative));
 		
@@ -665,7 +678,7 @@ public class SEDMLExporter {
 
 	private Notes createNotesElement(String notesStr) {
 		// create some xhtml. E.g.,
-		Element para = new Element("p");
+		org.jdom.Element para = new org.jdom.Element("p");
 		para.setText(notesStr);
 		// create a notes element
 		Notes note = new Notes(para);
@@ -883,6 +896,80 @@ public class SEDMLExporter {
 		return mathNode;
 //		return mathNode.deepCopy();
 	}
+	
+	
+	
+	
+	public void createManifest(String savePath, String fileName) {
+		
+		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
+		final String manifestFormat = "http://identifiers.org/combine.specifications/omex-manifest";	 
+		final String sbmlFormat = "http://identifiers.org/combine.specifications/sbml";	 
+		final String sedmlFormat = "http://identifiers.org/combine.specifications/sed-ml";	 
+			
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+	 
+			// root elements
+			Document doc = docBuilder.newDocument();
+			Element rootElement = doc.createElement("omexManifest");
+			doc.appendChild(rootElement);
+			rootElement.setAttribute("xmlns", xmlnsAttribute);
+			
+			// Content elements
+			Element content = doc.createElement("content");
+			rootElement.appendChild(content);
+			content.setAttribute("location", "./manifest.xml");
+			content.setAttribute("format", manifestFormat);
+			
+			for (String s : sbmlFilePathStrAbsoluteList) {
+				content = doc.createElement("content");
+				rootElement.appendChild(content);
+				content.setAttribute("location", s);
+				content.setAttribute("format", sbmlFormat);
+			}
+			
+			content = doc.createElement("content");
+			rootElement.appendChild(content);
+			content.setAttribute("location", "./" + fileName + ".sedml");
+			content.setAttribute("format", sedmlFormat);
+			content.setAttribute("master", "true");
+
+			
+//			Element staff = doc.createElement("staff");
+//			rootElement.appendChild(staff);
+//			// set attribute to staff element
+//			Attr attr = doc.createAttribute("id");
+//			attr.setValue("1");
+//			staff.setAttributeNode(attr);
+//	 
+//			// firstname elements
+//			Element firstname = doc.createElement("firstname");
+//			firstname.appendChild(doc.createTextNode("yong"));
+//			staff.appendChild(firstname);
+//	 
+//			// salary elements
+//			Element salary = doc.createElement("salary");
+//			salary.appendChild(doc.createTextNode("100000"));
+//			staff.appendChild(salary);
+	 
+			// write the content into xml file
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(new File(savePath + FileUtils.WINDOWS_SEPARATOR + "manifest.xml"));
+	 
+			// Output to console for testing
+			// StreamResult result = new StreamResult(System.out);
+			transformer.transform(source, result);
+		  } catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+		  } catch (TransformerException tfe) {
+			tfe.printStackTrace();
+		  }
+		}
+
 	
 	private void dummy() {
 //		// ------ Functional Range
