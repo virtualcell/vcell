@@ -21,7 +21,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -32,12 +31,13 @@ import cbit.vcell.client.GuiConstants;
 import cbit.vcell.server.UserRegistrationOP.NewPasswordUserInfo;
 
 
+@SuppressWarnings("serial")
 public class RegistrationPanel extends JPanel {
 	
 	//http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm
 	public static final String[] COUNTRY_LIST = new String[] {
 		"UNITED STATES",
-		"AFGHANISTAN", "ÅLAND ISLANDS", "ALBANIA","ALGERIA","AMERICAN SAMOA",
+		"AFGHANISTAN", "â„«LAND ISLANDS", "ALBANIA","ALGERIA","AMERICAN SAMOA",
 		"ANDORRA","ANGOLA","ANGUILLA","ANTARCTICA","ANTIGUA AND BARBUDA",
 		"ARGENTINA","ARMENIA","ARUBA","AUSTRALIA","AUSTRIA",
 		"AZERBAIJAN","BAHAMAS","BAHRAIN","BANGLADESH","BARBADOS",
@@ -96,7 +96,7 @@ public class RegistrationPanel extends JPanel {
 	private JTextField textFieldFirstName = new JTextField();
 	private JTextField textFieldTitle = new JTextField();
 	private JTextField textFieldOrganization = new JTextField();
-	final JComboBox comboBoxCountry = new JComboBox(COUNTRY_LIST);
+	final JComboBox<String> comboBoxCountry = new JComboBox<String>(COUNTRY_LIST);
 	private JCheckBox checkBoxNoEmail = new JCheckBox();
 
 	public RegistrationPanel() {
