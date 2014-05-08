@@ -33,11 +33,11 @@ import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCMessagingService.VCMessagingDelegate;
+import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
@@ -139,7 +139,6 @@ public class VCellApiMain {
 			//Server httpServer = component.getServers().add(Protocol.HTTP, 80);
 			//Server httpsServer = component.getServers().add(Protocol.HTTPS, 443);
 			
-			
 //			Client httpsClient = component.getClients().add(Protocol.HTTPS);
 //			Client httpClient = component.getClients().add(Protocol.HTTP);
 			Client httpClient = component.getClients().add(Protocol.FILE);
@@ -156,7 +155,17 @@ public class VCellApiMain {
 			parameters.add("keystorePassword", keystorePassword);
 			parameters.add("keystoreType", "JKS");
 			parameters.add("keyPassword", keystorePassword);
-			
+			parameters.add("disabledCipherSuites",
+					"SSL_RSA_WITH_3DES_EDE_CBC_SHA "
+					+ "SSL_DHE_RSA_WITH_DES_CBC_SHA "
+					+ "SSL_DHE_DSS_WITH_DES_CBC_SHA");
+			parameters.add("enabledCipherSuites",
+					"TLS_DHE_DSS_WITH_AES_128_CBC_SHA "
+					+ "TLS_DHE_RSA_WITH_AES_128_CBC_SHA "
+					+ "TLS_RSA_WITH_AES_128_CBC_SHA "
+					+ "TLS_DHE_DSS_WITH_AES_256_CBC_SHA "
+					+ "TLS_DHE_RSA_WITH_AES_256_CBC_SHA "
+					+ "TLS_RSA_WITH_AES_256_CBC_SHA");
 			
 			Configuration templateConfiguration = new Configuration();
 			templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
