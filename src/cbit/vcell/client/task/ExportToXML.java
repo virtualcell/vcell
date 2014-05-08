@@ -232,17 +232,10 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					if(sExt.equals("sedx")) {
 						sedmlExporter.createManifest(sPath, sFile);
 						String sedmlFileName = sPath + FileUtils.WINDOWS_SEPARATOR + sFile + ".sedml";
-						//File sedmlFile = new File(sedmlFileName);
 						XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
-						
-						// create the archive
-						
-//						if(resultString != null){
-//							FileWriter fileWriter = new java.io.FileWriter(exportFile);
-//							fileWriter.write(resultString);
-//							fileWriter.flush();
-//							fileWriter.close();
-//						}
+						sedmlExporter.addSedmlFileToList(sFile + ".sedml");
+						sedmlExporter.addSedmlFileToList("manifest.xml");
+						sedmlExporter.createZipArchive(sPath, sFile);
 						return;
 					} else {
 						XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);

@@ -407,6 +407,8 @@ public static final int NOT_FOUND = -1;
 public static final char UNIX_SEPARATOR = '/';
 public static final char WINDOWS_SEPARATOR = '\\';
 public static final char EXTENSION_SEPARATOR = '.';
+public static final String UNIX_CURRENT_FOLDER_SEPARATOR = "./";
+public static final String WINDOWS_CURRENT_FOLDER_SEPARATOR = ".\\";
 
 public static String getFullPath(final String filename) {
     return doGetFullPath(filename, true);
@@ -556,23 +558,5 @@ public static String getPrefix(final String filename) {
 private static boolean isSeparator(final char ch) {
     return ch == UNIX_SEPARATOR || ch == WINDOWS_SEPARATOR;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
