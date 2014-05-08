@@ -1,6 +1,10 @@
 package org.vcell.sedml;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +12,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -223,7 +230,7 @@ public class SEDMLExporter {
 						}
 						// create Algorithm and sedmlSimulation (UniformtimeCourse)
 						SolverDescription vcSolverDesc = simTaskDesc.getSolverDescription();
-//						String kiSAOIdStr = getKiSAOIdFromSimulation(vcSolverDesc);
+//						String kiSAOIdStr = getKiSAOIdFromSimulation(vcSolverDesc);	// old way of doing it, going directly to the web site
 						String kiSAOIdStr = vcSolverDesc.getKisao();
 						Algorithm sedmlAlgorithm = new Algorithm(kiSAOIdStr);
 						TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
@@ -897,9 +904,6 @@ public class SEDMLExporter {
 //		return mathNode.deepCopy();
 	}
 	
-	
-	
-	
 	public void createManifest(String savePath, String fileName) {
 		
 		final String xmlnsAttribute = "http://identifiers.org/combine.specifications/omex-manifest";	 
@@ -958,7 +962,8 @@ public class SEDMLExporter {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(new File(savePath + FileUtils.WINDOWS_SEPARATOR + "manifest.xml"));
+			String manifestAbsolutePathName = savePath + FileUtils.WINDOWS_SEPARATOR + "manifest.xml";
+			StreamResult result = new StreamResult(new File(manifestAbsolutePathName));
 	 
 			// Output to console for testing
 			// StreamResult result = new StreamResult(System.out);
@@ -968,9 +973,50 @@ public class SEDMLExporter {
 		  } catch (TransformerException tfe) {
 			tfe.printStackTrace();
 		  }
+	}
+	public void addSedmlFileToList(String sedmlFileName) {
+		if(sedmlFileName != null && !sedmlFileName.isEmpty()) {
+			sbmlFilePathStrAbsoluteList.add(sedmlFileName);
 		}
-
+	}
 	
+	// we know exactly which files we need to archive: those in sbmlFilePathStrAbsoluteList
+	// each file is deleted after being added to archive
+	private final int BUFFER = 2048;
+    public boolean createZipArchive(String srcFolder, String sFileName) {
+    try {
+    	BufferedInputStream origin = null;
+    	FileOutputStream    dest = new FileOutputStream(new File(srcFolder + FileUtils.WINDOWS_SEPARATOR + sFileName + ".sedx"));
+    	ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+    	byte data[] = new byte[BUFFER];
+    	
+		for (String sd : sbmlFilePathStrAbsoluteList) {
+			if(sd.startsWith(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR)) {
+				int pos = sd.indexOf(FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR) + FileUtils.UNIX_CURRENT_FOLDER_SEPARATOR.length();
+				sd = sd.substring(pos);
+			}
+    		File f = new File(srcFolder + FileUtils.WINDOWS_SEPARATOR + sd);
+   			FileInputStream fi = new FileInputStream(f);
+   			origin = new BufferedInputStream(fi, BUFFER);
+   			ZipEntry entry = new ZipEntry(sd);
+   			out.putNextEntry(entry);
+   			int count;
+   			while ((count = origin.read(data, 0, BUFFER)) != -1) {
+   				out.write(data, 0, count);
+   				out.flush();
+   			}
+   			fi.close();
+   			f.delete();
+    	}
+    	origin.close();
+    	out.flush();
+    	out.close();
+    } catch (Exception e) {
+    	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
+    }
+    return true;
+}
+
 	private void dummy() {
 //		// ------ Functional Range
 //		r = new FunctionalRange(rangeId, "-1");
@@ -1009,6 +1055,7 @@ public class SEDMLExporter {
 //		t.addRange(r);
 
 	}
+
 }
 
 
