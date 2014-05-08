@@ -1,8 +1,8 @@
 package cbit.vcell.server.test;
-/*©
+/*C
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
-©*/
+*/
 import java.io.File;
 
 import org.vcell.util.document.BioModelInfo;
