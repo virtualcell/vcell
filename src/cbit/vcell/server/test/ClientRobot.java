@@ -7,12 +7,10 @@ import java.io.File;
 
 import org.vcell.util.document.BioModelInfo;
 
-import cbit.vcell.model.*;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:00:56 PM)
@@ -108,6 +106,7 @@ private void setManagerManager(cbit.vcell.client.server.ClientServerManager argM
 	
 	this.managerManager = argManagerManager;
 	
+	@SuppressWarnings("unused")
 	DocumentManager documentManager = null;
 	if (managerManager!=null){
 		documentManager = managerManager.getDocumentManager();
