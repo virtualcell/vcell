@@ -17,8 +17,10 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.jdom.Attribute;
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.Parent;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
 
@@ -408,9 +410,15 @@ public class VCMLComparator {
 			if (attVal != null) {
 				buf.append(e.getName() + ": " +  attVal + "/");
 			}
-			e = (Element) e.getParent();
+			Parent parent = e.getParent();
+			if(parent instanceof Element) {
+				e = (Element)parent;
+			} else if (parent instanceof Document){
+				return buf.toString();	// we reached the root already
+			}  else {
+				return buf.toString();	// this should not happen, anyway we return what we've got so far
+			}
 		}
-
 		return buf.toString();
 	}
 }
