@@ -56,6 +56,10 @@ public class BatchTester extends VCDatabaseScanner {
 	 * database column name 
 	 */
 	public final String RAN_LONG = "ran_long";
+	/**
+	 * database column name 
+	 */
+	public final String EXCEPTION = "exception";
 
 	public BatchTester(SessionLog log) throws Exception {
 		super(log);
@@ -155,10 +159,13 @@ public class BatchTester extends VCDatabaseScanner {
 					//start visiting models and writing log
 					printWriter.println("Start scanning bio-models......");
 					printWriter.println("\n");
-					PreparedStatement ps = conn.prepareStatement("Update " + statusTable + " set scanned = 1, good = ? , scan_process = null where id = ?");
+					PreparedStatement ps = conn.prepareStatement(
+							"Update " + statusTable 
+							+ " set scanned = 1, good = ? , exception_type = ?, exception = ?, scan_process = null where id = ?");
 					for (ModelIdent modelIdent : models) {
 						ScanStatus scanStatus = ScanStatus.PASS;
-						boolean goodModel;
+						String exceptionMessage = null;
+						String exceptionClass = null;
 						try {
 							User user = new User("", new KeyValue(modelIdent.userId));
 							KeyValue modelKey = new KeyValue(modelIdent.modelId);
@@ -166,7 +173,7 @@ public class BatchTester extends VCDatabaseScanner {
 							BioModel storedModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 							if (databaseVisitor.filterBioModel(storedModel)) {
 								storedModel.refreshDependencies();
-								goodModel = verifyMathDescriptionsUnchanged(storedModel,printWriter);
+								boolean goodModel = verifyMathDescriptionsUnchanged(storedModel,printWriter);
 								if (goodModel) {
 									printWriter.println("Model for " + modelIdent.statusId + " good");
 									databaseVisitor.setBioModel(storedModel, printWriter);
@@ -187,19 +194,25 @@ public class BatchTester extends VCDatabaseScanner {
 										}
 									}
 								}
+								else {
+									throw new MathRegenFail();
+								}
 							}
 							else {
 								scanStatus = ScanStatus.FILTERED;
 							}
-						}catch (Exception e2){
-							log.exception(e2);
+						}catch (Exception e){
+							log.exception(e);
 							scanStatus = ScanStatus.FAIL;
-							goodModel = false;
+							exceptionClass = e.getClass().getName();
+							exceptionMessage = e.getMessage();
 							printWriter.println("failed " + modelIdent.statusId);
-							e2.printStackTrace(printWriter);
+							e.printStackTrace(printWriter);
 						}
 						ps.setInt(1,scanStatus.code);
-						ps.setLong(2,modelIdent.statusId);
+						ps.setString(2,exceptionClass);
+						ps.setString(3,exceptionMessage);
+						ps.setLong(4,modelIdent.statusId);
 						boolean estat = ps.execute();
 						if (estat) {
 							throw new Error("logic");
@@ -252,6 +265,14 @@ public class BatchTester extends VCDatabaseScanner {
 		
 	}
 	
+	@SuppressWarnings("serial")
+	private static class MathRegenFail extends RuntimeException {
+		public MathRegenFail() {
+			super("Math regeneration of stored model failed");
+		}
+	}
+	
+	@SuppressWarnings("unused")
 	private static class WatchDog implements Runnable{
 		final Thread target;
 		Thread monitorThread = null;
@@ -285,8 +306,79 @@ public class BatchTester extends VCDatabaseScanner {
 			} catch (InterruptedException e) {
 			}
 		}
-
 	}
-
 }
+/*
+ * --------------------------------------------------------
+--  DDL for Table MODELS_TO_SCAN
+--------------------------------------------------------
+
+  CREATE TABLE "GERARD"."MODELS_TO_SCAN" 
+   (	"USER_ID" NUMBER DEFAULT 0, 
+	"MODEL_ID" NUMBER, 
+	"SCANNED" NUMBER(1,0) DEFAULT 0, 
+	"GOOD" NUMBER(1,0) DEFAULT 0, 
+	"ID" NUMBER(38,0), 
+	"SCAN_PROCESS" VARCHAR2(60 BYTE), 
+	"RAN_LONG" NUMBER(1,0) DEFAULT 0, 
+	"EXCEPTION" VARCHAR2(2000 BYTE), 
+	"EXCEPTION_TYPE" VARCHAR2(60 BYTE)
+   ) ;
+ 
+
+   COMMENT ON COLUMN "GERARD"."MODELS_TO_SCAN"."USER_ID" IS 'user id in VC_USERINFO';
+ 
+   COMMENT ON COLUMN "GERARD"."MODELS_TO_SCAN"."MODEL_ID" IS 'biomodel id';
+ 
+   COMMENT ON COLUMN "GERARD"."MODELS_TO_SCAN"."SCANNED" IS 'has this model been scanned for correctness?';
+ 
+   COMMENT ON COLUMN "GERARD"."MODELS_TO_SCAN"."GOOD" IS 'scan was good';
+ 
+   COMMENT ON COLUMN "GERARD"."MODELS_TO_SCAN"."RAN_LONG" IS 'flag indicating java process ran a long time trying to process';
+--------------------------------------------------------
+--  DDL for Index MODELS_TO_SCAN_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "GERARD"."MODELS_TO_SCAN_PK" ON "GERARD"."MODELS_TO_SCAN" ("ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index MODELS_TO_SCAN_INDEX1
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "GERARD"."MODELS_TO_SCAN_INDEX1" ON "GERARD"."MODELS_TO_SCAN" ("MODEL_ID") 
+  ;
+--------------------------------------------------------
+--  Constraints for Table MODELS_TO_SCAN
+--------------------------------------------------------
+
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" ADD CONSTRAINT "MODELS_TO_SCAN_PK" PRIMARY KEY ("ID") ENABLE;
+ 
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" MODIFY ("MODEL_ID" NOT NULL ENABLE);
+ 
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" MODIFY ("SCANNED" NOT NULL ENABLE);
+ 
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" MODIFY ("GOOD" NOT NULL ENABLE);
+ 
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" MODIFY ("ID" NOT NULL ENABLE);
+ 
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" MODIFY ("RAN_LONG" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table MODELS_TO_SCAN
+--------------------------------------------------------
+
+  ALTER TABLE "GERARD"."MODELS_TO_SCAN" ADD CONSTRAINT "VALID_GOOD_CODE" FOREIGN KEY ("GOOD")
+	  REFERENCES "GERARD"."SCAN_STATUS" ("CODE") ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger MODELS_TO_SCAN_PK
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "GERARD"."MODELS_TO_SCAN_PK" 
+BEFORE INSERT ON MODELS_TO_SCAN 
+for each row
+BEGIN
+  :NEW.ID := MODELS_TO_SCAN_SEQ.NEXTVAL;
+END;
+/
+ALTER TRIGGER "GERARD"."MODELS_TO_SCAN_PK" ENABLE;
+*/
 	
