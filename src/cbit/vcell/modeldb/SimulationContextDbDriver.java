@@ -1164,4 +1164,36 @@ public SimContextRep[] getSimContextReps(Connection con, KeyValue startingSimCon
 }
 
 
+public SimContextRep getSimContextRep(Connection con, KeyValue simContextKey)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	String sql = simContextTable.getPreparedStatement_SimContextRep();
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+
+	//System.out.println(sql);
+	simContextTable.setPreparedStatement_SimContextRep(stmt, simContextKey);
+
+	ArrayList<SimContextRep> simContextReps = new ArrayList<SimContextRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			SimContextRep simContextRep = simContextTable.getSimContextRep(rset);
+			simContextReps.add(simContextRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	if (simContextReps.size()==0){
+		return null;
+	}else if (simContextReps.size()==1){
+		return simContextReps.get(0);
+	}else{
+		throw new DataAccessException("more than one simContextRep found for SimContextKey="+simContextKey);
+	}
+}
+
+
 }

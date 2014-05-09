@@ -376,5 +376,37 @@ public SimulationRep[] getSimulationReps(Connection con, KeyValue startingSimKey
 }
 
 
+public SimulationRep getSimulationRep(Connection con, KeyValue simKey)
+		throws SQLException, DataAccessException, ObjectNotFoundException {
+	String sql = simTable.getPreparedStatement_SimulationRep();
+	
+	PreparedStatement stmt = con.prepareStatement(sql);
+
+	//System.out.println(sql);
+	simTable.setPreparedStatement_SimulationRep(stmt, simKey);
+
+	ArrayList<SimulationRep> simulationReps = new ArrayList<SimulationRep>();
+	try {
+		ResultSet rset = stmt.executeQuery();
+
+		//showMetaData(rset);
+
+		while (rset.next()) {
+			SimulationRep simulationRep = simTable.getSimulationRep(rset);
+			simulationReps.add(simulationRep);
+		}
+	} finally {
+		stmt.close(); // Release resources include resultset
+	}
+	if (simulationReps.size()==1){
+		return simulationReps.get(0);
+	}else if (simulationReps.size()==0){
+		return null;
+	}else{
+		throw new RuntimeException("expected 0 or 1 simulationReps for simKey="+simKey);
+	}
+}
+
+
 
 }
