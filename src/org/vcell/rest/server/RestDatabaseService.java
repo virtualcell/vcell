@@ -45,9 +45,7 @@ public class RestDatabaseService {
 	private DatabaseServerImpl databaseServerImpl = null;
 	private LocalAdminDbServer localAdminDbServer = null;
 	ConcurrentHashMap<KeyValue, SimContextRep> scMap = new ConcurrentHashMap<KeyValue, SimContextRep>();
-	KeyValue mostRecentSimContextKey = new KeyValue("0");
 	ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
-	KeyValue mostRecentSimulationKey = new KeyValue("0");
 	VCMessagingService vcMessagingService = null;
 	SessionLog log = null;
 
@@ -430,25 +428,16 @@ public class RestDatabaseService {
 		SimContextRep simContextRep = scMap.get(key);
 		if (simContextRep!=null){
 			return simContextRep;
-		}else if (key.compareTo(mostRecentSimContextKey)>0){
-			int maxRows = 100000;
-			while (true){
-				SimContextRep[] simContextReps = databaseServerImpl.getSimContextReps(mostRecentSimContextKey, maxRows);
-				for (SimContextRep simContextRep2 : simContextReps) {
-					if (mostRecentSimContextKey==null || mostRecentSimContextKey.compareTo(simContextRep2.getScKey())<0){
-						mostRecentSimContextKey = simContextRep2.getScKey();
-					}
-					scMap.put(simContextRep2.getScKey(), simContextRep2);
-				}
-				if (simContextReps.length<maxRows){
-					break;
-				}
-			}
-			
-			return scMap.get(key);
 		}else{
-			System.out.println("couldn't find application key = " + key + " number of cached applications is " + scMap.size());
-			return null;
+			System.out.println("getting simulation context rep for scKey = "+key);
+			simContextRep = databaseServerImpl.getSimContextRep(key);
+			if (simContextRep!=null){
+				System.out.println("found simulation context key = " + key + " number of cached simContexts is " + simMap.size());
+				scMap.put(key, simContextRep);
+			}else{
+				System.out.println("couldn't find simulation key = " + key);
+			}
+			return simContextRep;
 		}
 	}
 	
@@ -457,25 +446,16 @@ public class RestDatabaseService {
 		SimulationRep simulationRep = simMap.get(key);
 		if (simulationRep!=null){
 			return simulationRep;
-		}else if (key.compareTo(mostRecentSimulationKey)>0){
-			int maxRows = 100000;
-			while (true){
-				SimulationRep[] simulationReps = databaseServerImpl.getSimulationReps(mostRecentSimulationKey, maxRows);
-				for (SimulationRep simulationRep2 : simulationReps) {
-					if (mostRecentSimulationKey==null || mostRecentSimulationKey.compareTo(simulationRep2.getKey())<0){
-						mostRecentSimulationKey = simulationRep2.getKey();
-					}
-					simMap.put(simulationRep2.getKey(), simulationRep2);
-				}
-				if (simulationReps.length<maxRows){
-					break;
-				}
-			}
-			
-			return simMap.get(key);
 		}else{
-			System.out.println("couldn't find simulation key = " + key + " number of cached simulations is " + simMap.size() + " max simKey is " + mostRecentSimulationKey);
-			return null;
+			System.out.println("getting simulation rep for simKey = "+key);
+			simulationRep = databaseServerImpl.getSimulationRep(key);
+			if (simulationRep!=null){
+				System.out.println("found simulation key = " + key + " number of cached simulations is " + simMap.size());
+				simMap.put(key, simulationRep);
+			}else{
+				System.out.println("couldn't find simulation key = " + key);
+			}
+			return simulationRep;
 		}
 	}
 
