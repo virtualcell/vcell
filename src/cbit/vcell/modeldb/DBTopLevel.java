@@ -2001,6 +2001,32 @@ public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int num
 	}
 }
 
+public SimContextRep getSimContextRep(KeyValue simContextKey, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimContextRep simContextRep = simContextDB.getSimContextRep(con,simContextKey);
+		return simContextRep;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimContextRep(simContextKey, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -2018,6 +2044,32 @@ public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows, b
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return getSimulationReps(startingSimKey, numRows, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		SimulationRep simulationRep = simulationDB.getSimulationRep(con,simKey);
+		return simulationRep;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationRep(simKey, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

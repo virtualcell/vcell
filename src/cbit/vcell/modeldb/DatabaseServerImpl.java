@@ -326,8 +326,16 @@ public SimContextRep[] getSimContextReps(KeyValue startingSimContextKey, int num
 	return dbTop.getSimContextReps(startingSimContextKey, numRows, true);
 }
 
+public SimContextRep getSimContextRep(KeyValue simContextKey) throws DataAccessException, SQLException {
+	return dbTop.getSimContextRep(simContextKey, true);
+}
+
 public SimulationRep[] getSimulationReps(KeyValue startingSimKey, int numRows) throws DataAccessException, SQLException {
 	return dbTop.getSimulationReps(startingSimKey, numRows, true);
+}
+
+public SimulationRep getSimulationRep(KeyValue simKey) throws DataAccessException, SQLException {
+	return dbTop.getSimulationRep(simKey, true);
 }
 
 

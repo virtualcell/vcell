@@ -365,13 +365,34 @@ public String getPreparedStatement_SimContextReps(){
 
 	String orderByClause = "order by "+scTable.versionDate.getQualifiedColName()+" ASC";
 
-	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql =  
 		"select * from "+
 		"(" + subquery + " " + orderByClause + ") "+
 		"where rownum <= ?";
 	
-	System.out.println(sql);
+	//System.out.println(sql);
+	return sql;
+}
+
+public String getPreparedStatement_SimContextRep(){
+
+	SimContextTable scTable = SimContextTable.table;
+	UserTable userTable = UserTable.table;
+	
+	String sql = 			
+		"select " +
+		    scTable.id.getQualifiedColName()+", "+
+		    scTable.name.getQualifiedColName()+", "+
+		    scTable.versionBranchID.getQualifiedColName()+", "+
+		    scTable.ownerRef.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+", "+
+		    scTable.mathRef.getQualifiedColName()+" "+
+		
+		"from "+scTable.getTableName()+", "+userTable.getTableName()+" "+
+		"where "+scTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
+		"and "+scTable.id.getQualifiedColName() + " = ?";
+
+	//System.out.println(sql);
 	return sql;
 }
 
@@ -383,6 +404,15 @@ public void setPreparedStatement_SimContextReps(PreparedStatement stmt, KeyValue
 	}
 	stmt.setBigDecimal(1, minSimContextKey);
 	stmt.setInt(2, numRows);
+}
+
+
+public void setPreparedStatement_SimContextRep(PreparedStatement stmt, KeyValue simContextKeyValue) throws SQLException{
+	BigDecimal simContextKey = new BigDecimal(0);
+	if (simContextKeyValue!=null){
+		simContextKey = new BigDecimal(simContextKeyValue.toString());
+	}
+	stmt.setBigDecimal(1, simContextKey);
 }
 
 

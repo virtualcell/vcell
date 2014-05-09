@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.util.BeanUtils;
@@ -272,13 +273,37 @@ public String getPreparedStatement_SimulationReps(){
 
 	String orderByClause = "order by "+simTable.versionDate.getQualifiedColName()+" ASC";
 
-	// query guarantees authorized access to biomodels based on the supplied User authentication.
 	String sql =  
 		"select * from "+
 		"(" + subquery + " " + orderByClause + ") "+
 		"where rownum <= ?";
 	
-	System.out.println(sql);
+	//System.out.println(sql);
+	return sql;
+}
+
+public String getPreparedStatement_SimulationRep(){
+
+	SimulationTable simTable = SimulationTable.table;
+	UserTable userTable = UserTable.table;
+	
+	String sql = 			
+		"select " +
+		    simTable.id.getQualifiedColName()+", "+
+		    simTable.name.getQualifiedColName()+", "+
+		    simTable.versionBranchID.getQualifiedColName()+", "+
+		    simTable.ownerRef.getQualifiedColName()+", "+
+		    UserTable.table.userid.getQualifiedColName()+", "+
+		    simTable.mathRef.getQualifiedColName()+", "+
+		    simTable.taskDescription.getQualifiedColName()+", "+
+		    simTable.mathOverridesLarge.getUnqualifiedColName()+", "+
+		    simTable.mathOverridesSmall.getUnqualifiedColName()+" "+
+		
+		"from "+simTable.getTableName()+", "+userTable.getTableName()+" "+
+		"where "+simTable.ownerRef.getQualifiedColName()+" = "+userTable.id.getQualifiedColName()+" "+
+		"and "+simTable.id.getQualifiedColName() + " = ?";
+
+	//System.out.println(sql);
 	return sql;
 }
 
@@ -290,6 +315,15 @@ public void setPreparedStatement_SimulationReps(PreparedStatement stmt, KeyValue
 	}
 	stmt.setBigDecimal(1, minSimKey);
 	stmt.setInt(2, numRows);
+}
+
+
+public void setPreparedStatement_SimulationRep(PreparedStatement stmt, KeyValue simKeyValue) throws SQLException{
+	BigDecimal simKey = new BigDecimal(0);
+	if (simKeyValue!=null){
+		simKey = new BigDecimal(simKeyValue.toString());
+	}
+	stmt.setBigDecimal(1, simKey);
 }
 
 
