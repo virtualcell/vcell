@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,6 +27,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 
 public class HybridBioModelVisitor implements VCMultiBioVisitor { 
 	
@@ -42,6 +45,11 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	 * name of status table to use
 	 */
 	private final static String STATUS_TABLE = "gerard.models_to_scan";
+	
+	/**
+	 * maximum number of species to toggle for evaluating force continuous toggling
+	 */
+	private static final int MAX_NUMBER_SPECIES_TO_TOGGLE = 10;
 
 	
 	private BioModel currentModel = null;
@@ -49,7 +57,9 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	private int currentAppIndex;
 	private SpeciesContextSpec[] currentSpeciesContext;
 	private boolean[] toggledForceContinuous;
+	private int speciesIndexes[]  = new int [MAX_NUMBER_SPECIES_TO_TOGGLE];
 	private boolean moreStates;
+	private PrintWriter statusWriter;
 	
 	
 	/**
@@ -65,12 +75,20 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	}
 
 	/**
-	 * return true if any solver is spatial stochastic
+	 * return true if any solver is 3D spatial stochastic
 	 */
 	@Override
 	public boolean filterBioModel(BioModel bioModel) {
-		Simulation[] sims = bioModel.getSimulations();
-		return isSpatialStoch(sims);
+		SimulationContext[] ctxs = bioModel.getSimulationContexts();
+		for (SimulationContext sc : ctxs) {
+			if (is3D(sc)) {
+				Simulation[] sims = sc.getSimulations();
+				if (isSpatialStoch(sims)) {
+					return true;
+				}
+			}
+		}
+		return false; 
 	}
 	
 	/**
@@ -80,30 +98,58 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	 */
 	private static boolean isSpatialStoch(Simulation[] sims) {
 		for (Simulation s: sims) {
-			if (s.getSolverTaskDescription().getSolverDescription().isSpatialStochasticSolver()) {
+			SolverDescription sd = s.getSolverTaskDescription().getSolverDescription();
+			if (sd.isSpatialStochasticSolver()) {
+				
 				return true;
 			}
 		}
 		return false;
 	}
 	
+	/**
+	 * see if is 3D Applcation
+	 * @param sc
+	 * @return true if is
+	 */
+	private static boolean is3D(SimulationContext sc) {
+		return sc.getGeometry().getDimension() == 3;
+	}
+	
 
 	public void setBioModel(BioModel bioModel, PrintWriter pw) {
 		currentModel = bioModel;
 		applications.clear( );
+		statusWriter = pw;
 		SimulationContext[] scs = currentModel.getSimulationContexts();
 		
 		for (SimulationContext sc : scs) {
-			if (isSpatialStoch(sc.getSimulations())) {
+			if (is3D(sc) && isSpatialStoch(sc.getSimulations())) {
 				applications.add(sc);
 			}
 		}
 		moreStates = !applications.isEmpty();
 		if (!moreStates) {
-			System.err.println(bioModel.getName() + " "  + bioModel.getModel().getKey() + " no spatial stochastic?");
+			throw new IllegalArgumentException(bioModel.getName() + " "  + bioModel.getModel().getKey() + " no spatial stochastic?");
 		}
 		currentAppIndex = -1;
 		incrementApp();
+	}
+	
+	/**
+	 * randomly assign a portion of a sequence into an array. Sequence is [0 ... (available - 1)]
+	 * @param target where to store results must not be null
+	 * @param available conceptual space from which to assign values
+	 */
+	private static void randomlyAssign(int[] target, int available) {
+		ArrayList<Integer> avail = new ArrayList<Integer>(available);
+		for (int i = 0; i < available; i++) {
+			avail.add(i);
+		}
+		Collections.shuffle(avail);
+		for (int i = 0; i < target.length; i++) {
+			target[i] = avail.get(i);
+		}
 	}
 	
 	/**
@@ -114,7 +160,18 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		if (++currentAppIndex < applications.size()) {
 			SimulationContext app = applications.get(currentAppIndex);
 			currentSpeciesContext = app.getReactionContext().getSpeciesContextSpecs();
-			toggledForceContinuous = new boolean[currentSpeciesContext.length];
+			if (currentSpeciesContext.length < MAX_NUMBER_SPECIES_TO_TOGGLE) {
+				toggledForceContinuous = new boolean[currentSpeciesContext.length];
+				for (int i  = 0;  i < MAX_NUMBER_SPECIES_TO_TOGGLE; ++i) {
+					speciesIndexes[i] = i;
+				}
+
+			}
+			else {
+				toggledForceContinuous = new boolean[MAX_NUMBER_SPECIES_TO_TOGGLE];
+				randomlyAssign(speciesIndexes,currentSpeciesContext.length);
+			}
+			statusWriter.println("incremented app, setting " + toggledForceContinuous.length + " force continuous toggles");
 			return;
 		}
 		moreStates = false;
@@ -126,7 +183,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 	private void nextState( ) {
 		for (int i = 0; i < toggledForceContinuous.length;i++){ 
 			if (!toggledForceContinuous[i]) {
-				toggle(currentSpeciesContext[i]);
+				toggle(currentSpeciesContext[speciesIndexes[i]]);
 				toggledForceContinuous[i] = true;
 				for (int r = 0; r < i; r++) {
 					toggledForceContinuous[r] = false;
@@ -190,7 +247,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 
 	@SuppressWarnings("unused")
 	//@Test
-	public void tryit( ) throws IOException {
+	public void populateDatabaseTable( ) throws IOException {
 		//Logging.init();
 		PropertyLoader.loadProperties();
 		//String args[] = {USER_KEY,OUTPUT};
@@ -211,7 +268,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 			else {
 				users = scanner.getAllUsers();
 			}
-			//scanner.multiScanBioModels(visitor, w, users, bAbortOnDataAccessException);
+			//scanner.keyScanBioModels(visitor, w, users, bAbortOnDataAccessException, STATUS_TABLE);
 			scanner.keyScanBioModels(visitor, w, users, bAbortOnDataAccessException, STATUS_TABLE);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
@@ -227,17 +284,26 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		if (!GraphicsEnvironment.isHeadless()) {
 			throw new Error ("set headless (java.awt.headless=true");
 		}
+		try{
 		PropertyLoader.loadProperties();
 		//String args[] = {USER_KEY,OUTPUT};
 		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
 		boolean bAbortOnDataAccessException = false;
-		try{
 			BatchTester scanner = new BatchTester(new NullSessionLog()); 
 			scanner.batchScanBioModels(visitor, "gerard.models_to_scan", 5);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{
 			System.err.flush();
+		}
+	}
+	
+	//@Test
+	public void rAssignTest( ) {
+		int sample[] = new int[5];
+		for (int i = 0; i < 20 ;i++) {
+			randomlyAssign(sample, 10);
+			System.out.println(Arrays.toString(sample));
 		}
 	}
 
