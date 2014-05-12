@@ -35,6 +35,7 @@ public class CartesianMeshVtkFileWriter {
 		//
 		CartesianMeshFileReader reader = new CartesianMeshFileReader();
 		CartesianMesh mesh = reader.readFromFiles(vcellFiles);
+		final int numVolumeElements = mesh.getSize().getXYZ();
 		final int numVolumeRegions = mesh.getNumVolumeRegions();
 		final int numMembraneRegions = mesh.getNumMembraneRegions();
 		
@@ -196,7 +197,7 @@ public class CartesianMeshVtkFileWriter {
 								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
 									domainData[domainIndex] = globalData[volumeRegionIndices[domainIndex]];
 								}
-							}else if (globalData.length == numCells){
+							}else if (globalData.length == numCells || globalData.length == numVolumeElements){
 								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
 									domainData[domainIndex] = globalData[globalIndices[domainIndex]];
 								}
