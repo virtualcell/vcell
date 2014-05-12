@@ -1,8 +1,10 @@
 package cbit.vcell.modeldb;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -115,20 +117,24 @@ public class BatchTester extends VCDatabaseScanner {
 				}
 			}
 
+	@SuppressWarnings("static-access")
 	public void batchScanBioModels(VCMultiBioVisitor databaseVisitor, String statusTable, int chunkSize)
 			throws DataAccessException, XmlParseException, SQLException, IOException {
 		PrintStream current = System.out;
-		System.setOut(new PrintStream(new NullStream()));
+		//System.setOut(new PrintStream(new NullStream()));
 		try {
 				String processHostId = ManagementFactory.getRuntimeMXBean().getName();
 				String filename = processHostId + ".txt";
-				FileWriter writer = new FileWriter(filename);
+				FileOutputStream fos = new FileOutputStream(filename);
+				System.setOut(new PrintStream(fos));
+				OutputStreamWriter writer = new OutputStreamWriter(fos);
 				PrintWriter printWriter = new PrintWriter(writer, true); //autoflush
 				Connection conn = connFactory.getConnection(null);
 				conn.setAutoCommit(true);
 				printWriter.println("reserving slots");
 				try (Statement statement = conn.createStatement()) {
 					String query = "Update "  + statusTable + " set scan_process = '" + processHostId 
+							+ "', log_file = '" + filename
 							+ "' where scanned = 0 and scan_process is null and rownum <= "
 							+ chunkSize;
 					int uCount = statement.executeUpdate(query);
@@ -169,7 +175,24 @@ public class BatchTester extends VCDatabaseScanner {
 						try {
 							User user = new User("", new KeyValue(modelIdent.userId));
 							KeyValue modelKey = new KeyValue(modelIdent.modelId);
-							BigString bioModelXML = dbServerImpl.getBioModelXML(user,modelKey);
+							BigString bioModelXML = null; 
+							long dbSleepTime = 10; //seconds
+							while (bioModelXML == null) {
+							 
+								try {
+									bioModelXML = dbServerImpl.getBioModelXML(user,modelKey);
+								} catch (DataAccessException dae) {
+									Throwable cause = dae.getCause();
+									if (cause instanceof  oracle.ucp.UniversalConnectionPoolException) {
+										printWriter.println("No db connection for  " + modelIdent.statusId + ", sleeping " + dbSleepTime + " seconds");
+										Thread.currentThread().sleep(dbSleepTime * 1000); 
+										dbSleepTime *= 1.5; //wait a little longer next time
+									}
+									else {
+										throw dae; //other exception, just rethrow
+									}
+								}
+							}
 							BioModel storedModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 							if (databaseVisitor.filterBioModel(storedModel)) {
 								storedModel.refreshDependencies();
