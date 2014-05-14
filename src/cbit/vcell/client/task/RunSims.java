@@ -40,6 +40,7 @@ import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
@@ -262,9 +263,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					//
 					// translate to common ancestral simulation (oldest mathematically equivalent simulation)
 					//
-					jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
+					SimulationStatus simulationStatus = jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
 					// updateStatus
-					clientSimManager.updateStatusFromStartRequest(sim, false, null);
+					clientSimManager.updateStatusFromStartRequest(sim, simulationStatus);
 				} else {
 					// this should really not happen...
 					throw new RuntimeException(">>>>>>>>>> trying to run an unsaved simulation...");
@@ -282,8 +283,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		while (en.hasMoreElements()) {
 			Simulation sim = en.nextElement();
 			Throwable exc = (Throwable)failures.get(sim);
-			// updateStatus
-			clientSimManager.updateStatusFromStartRequest(sim, true, exc.getMessage());
+//			// updateStatus
+//			SimulationStatus simulationStatus = clientSimManager.updateStatusFromStartRequest(sim, true, exc.getMessage());
 			// notify user
 			PopupGenerator.showErrorDialog(documentWindowManager, "Failed to start simulation'"+sim.getName()+"'\n"+exc.getMessage());
 		}

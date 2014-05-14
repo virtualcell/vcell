@@ -171,17 +171,18 @@ public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) thr
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/4/2004 3:22:42 PM)
+ * @Override
  */
-public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws DataAccessException {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws DataAccessException {
 	try {
-		getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
+		SimulationStatus simulationStatus = getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
+		return simulationStatus;
 	} catch (RemoteException rexc) {
 		handleRemoteException(rexc);
 		// once more before we fail
 		try {
-			getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
+			SimulationStatus simulationStatus = getClientServerManager().getSimulationController().startSimulation(vcSimulationIdentifier, numSimulationScanJobs);
+			return simulationStatus;
 		} catch (RemoteException rexc2) {
 			handleRemoteException(rexc2);
 			throw new DataAccessException("Start simulation '"+vcSimulationIdentifier+"' failed\n"+rexc2.getMessage());
@@ -194,14 +195,16 @@ public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int n
  * Insert the method's description here.
  * Creation date: (6/4/2004 3:22:42 PM)
  */
-public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
+public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
 	try {
-		getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
+		SimulationStatus simulationStatus = getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
+		return simulationStatus;
 	} catch (RemoteException rexc) {
 		handleRemoteException(rexc);
 		// once more before we fail
 		try {
-			getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
+			SimulationStatus simulationStatus = getClientServerManager().getSimulationController().stopSimulation(vcSimulationIdentifier);
+			return simulationStatus;
 		} catch (RemoteException rexc2) {
 			handleRemoteException(rexc2);
 			throw new DataAccessException("Stop simulation '"+vcSimulationIdentifier+"' failed\n"+rexc2.getMessage());

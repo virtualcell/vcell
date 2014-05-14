@@ -433,10 +433,9 @@ void updateStatusFromServer(Simulation simulation) {
  * Creation date: (6/2/2004 3:01:29 AM)
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void updateStatusFromStartRequest(final Simulation simulation, boolean failed, String failureMessage) {
+public void updateStatusFromStartRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from start request worker thread
-	SimulationStatus newStatus = failed ? SimulationStatus.newStartRequestFailure(failureMessage, simulation.getScanCount()) : SimulationStatus.newStartRequest(simulation.getScanCount());
-	simHash.setSimulationStatus(simulation,newStatus);
+	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
 }
@@ -447,11 +446,9 @@ public void updateStatusFromStartRequest(final Simulation simulation, boolean fa
  * Creation date: (6/2/2004 3:01:29 AM)
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void updateStatusFromStopRequest(final Simulation simulation) {
+public void updateStatusFromStopRequest(final Simulation simulation, SimulationStatus newStatusFromServer) {
 	// asynchronous call - from stop request worker thread
-	SimulationStatus currentStatus = getSimulationStatus(simulation);
-	SimulationStatus newStatus = SimulationStatus.newStopRequest(currentStatus);
-	simHash.setSimulationStatus(simulation,newStatus);
+	simHash.setSimulationStatus(simulation,newStatusFromServer);
 	int simIndex = getSimWorkspace().getSimulationIndex(simulation);
 	getSimWorkspace().firePropertyChange(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS, new Integer(-1), new Integer(simIndex));
 }

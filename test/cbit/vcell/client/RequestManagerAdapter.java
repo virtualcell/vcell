@@ -98,9 +98,9 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void revertToSaved(DocumentWindowManager documentWindowManager) {}
 	@Override
-	public void runSimulation(SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException {}
+	public SimulationStatus runSimulation(SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException { return null;}
 	@Override
-	public void runSimulations(ClientSimManager clientSimManager,Simulation[] simulations) {}
+	public void runSimulations(ClientSimManager clientSimManager,Simulation[] simulations) { }
 	@Override
 	public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {}
 	@Override
@@ -118,7 +118,7 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void startExport(OutputContext outputContext,TopLevelWindowManager windowManager, ExportSpecs exportSpecs) {}
 	@Override
-	public void stopSimulations(ClientSimManager clientSimManager,Simulation[] simulations) {}
+	public void stopSimulations(ClientSimManager clientSimManager,Simulation[] simulations) { }
 	@Override
 	public void updateStatusNow() {}
 	@Override

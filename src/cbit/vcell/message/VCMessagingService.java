@@ -55,8 +55,8 @@ public abstract class VCMessagingService {
 		return messagingService;
 	}
 	
-	public static VCMessagingService createEmbeddedInstance(VCMessagingDelegate messagingDelegate) throws VCMessagingException{
-		VCMessagingService messagingService = new VCMessagingServiceEmbedded();
+	public static VCMessagingServiceEmbedded createEmbeddedInstance(VCMessagingDelegate messagingDelegate) throws VCMessagingException{
+		VCMessagingServiceEmbedded messagingService = new VCMessagingServiceEmbedded();
 		messagingService.delegate = messagingDelegate;
 		messagingService.init(true);
 		return messagingService;
