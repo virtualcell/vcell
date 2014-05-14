@@ -42,11 +42,12 @@ protected LocalSimulationController(User user, SimulationControllerImpl simulati
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) {
 	sessionLog.print("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.startSimulation(simulation,sessionLog);
+		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 	}catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -61,11 +62,12 @@ public void startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int n
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
+public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimulationIdentifier) {
 	sessionLog.print("LocalSimulationController.getSolverStatus(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.stopSimulation(simulation);
+		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 	}catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());

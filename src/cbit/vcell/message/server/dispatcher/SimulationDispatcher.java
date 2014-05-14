@@ -23,6 +23,7 @@ import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -44,6 +45,7 @@ import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
+import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
@@ -53,6 +55,7 @@ import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.message.server.bootstrap.SimulationService;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
@@ -77,6 +80,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.AbstractSolver;
 
 /**
@@ -91,6 +95,7 @@ public class SimulationDispatcher extends ServiceProvider {
 	private SimulationDatabase simulationDatabase = null;
 	private VCQueueConsumer workerEventConsumer = null;
 	private VCQueueConsumer simRequestConsumer = null;
+	private VCRpcMessageHandler rpcMessageHandler = null;
 	
 	private SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
@@ -100,6 +105,67 @@ public class SimulationDispatcher extends ServiceProvider {
 	private VCMessageSession simMonitorThreadSession = null;
 	
 	private HtcProxy htcProxy = null;
+	
+	public class SimulationServiceImpl implements SimulationService {
+		
+		@Override
+		public SimulationStatus stopSimulation(User user, VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
+			try {
+				simDispatcherEngine.onStopRequest(vcSimulationIdentifier, user, simulationDatabase, dispatcherQueueSession, log);
+			} catch (VCMessagingException | SQLException e) {
+				e.printStackTrace();
+				throw new DataAccessException(e.getMessage(),e);
+			}
+			return simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+		}
+		
+		@Override
+		public SimulationStatus startSimulation(User user, VCSimulationIdentifier vcSimulationIdentifier,int numSimulationScanJobs) throws DataAccessException {
+			try {
+				simDispatcherEngine.onStartRequest(vcSimulationIdentifier, user, numSimulationScanJobs, simulationDatabase, dispatcherQueueSession, dispatcherQueueSession, log);
+			} catch (VCMessagingException | SQLException e1) {
+				e1.printStackTrace();
+				throw new DataAccessException(e1.getMessage(),e1);
+			}
+
+			// wake up dispatcher thread
+			if (dispatchThread!=null){
+				try {
+					synchronized (dispatchThread.notifyObject){
+						dispatchThread.notifyObject.notify();
+					}
+				}catch (IllegalMonitorStateException e){
+					e.printStackTrace();
+				}
+			}
+			return simulationDatabase.getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+		}
+		
+		@Override
+		public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) throws DataAccessException {
+			SimulationStatus simStatus = simulationDatabase.getSimulationStatus(simulationKey);
+			if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+				return simStatus;
+			}else{
+				throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simulationKey);
+			}
+		}
+		
+		@Override
+		public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) throws DataAccessException {
+			SimulationStatus[] simStatusArray = simulationDatabase.getSimulationStatus(simKeys);
+			for (SimulationStatus simStatus : simStatusArray){
+				if (simStatus!=null){
+					if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+						continue;
+					}
+					throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simStatus.getVCSimulationIdentifier().getSimulationKey());
+				}
+			}
+			return simStatusArray;
+		}
+	};
+
 
 	public class DispatchThread extends Thread {
 
@@ -370,14 +436,13 @@ public class SimulationDispatcher extends ServiceProvider {
 		//
 		// set up consumer for Simulation Request (non-blocking RPC) messages
 		//
-		QueueListener simRequestListener = new QueueListener() {
-			public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
-				onSimRequestMessage(vcMessage, session);	
-			}
-		};
+		SimulationService simServiceImpl = new SimulationServiceImpl();
+		
 		VCMessageSelector simRequestSelector = null;
 		threadName = "Sim Request Consumer";
-		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, simRequestListener, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
+		this.rpcMessageHandler = new VCRpcMessageHandler(simServiceImpl, VCellQueue.SimReqQueue, log);
+		
+		simRequestConsumer = new VCQueueConsumer(VCellQueue.SimReqQueue, rpcMessageHandler, simRequestSelector, threadName, MessageConstants.PREFETCH_LIMIT_SIM_REQUEST);
 		vcMessagingService.addMessageConsumer(simRequestConsumer);
 		
 		this.dispatcherQueueSession = vcMessagingService.createProducerSession();
@@ -437,6 +502,8 @@ public class SimulationDispatcher extends ServiceProvider {
 				
 				simDispatcherEngine.onStopRequest(vcSimID, user, simulationDatabase, session, log);
 
+			} else {
+				System.out.println("************************************************* * * * * * * * * * * * ignoring message "+request.getMethodName());
 			}
 		} catch (Exception e) {
 			log.exception(e);

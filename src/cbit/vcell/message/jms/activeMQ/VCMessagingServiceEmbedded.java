@@ -1,7 +1,5 @@
 package cbit.vcell.message.jms.activeMQ;
 
-import java.net.URI;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -10,8 +8,6 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.message.VCDestination;
 import cbit.vcell.message.VCMessageSelector;
@@ -32,7 +28,7 @@ public class VCMessagingServiceEmbedded extends VCMessagingServiceJms {
 	}
 	
 	@Override
-	protected void init(boolean bStartBroker) throws VCMessagingException {
+	public void init(boolean bStartBroker) throws VCMessagingException {
 		if (bStartBroker){
 			this.broker = new BrokerService();
 			this.broker.setPersistent(false);

@@ -2766,7 +2766,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 			return;
 		}
 		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo, vcMessaging_rpcProducerSession, log);
-		simProxy.startSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());		
+		simProxy.startSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
@@ -3019,7 +3019,7 @@ public void stopSimulation(String userid, KeyValue simKey) {
 			return;
 		}
 		RpcSimServerProxy simProxy = new RpcSimServerProxy(userLoginInfo,vcMessaging_rpcProducerSession,log);
-		simProxy.stopSimulation(sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
+		simProxy.stopSimulation(user,sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier());		
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Resubmitting simulation failed:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}

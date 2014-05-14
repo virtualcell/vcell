@@ -2972,11 +2972,10 @@ public void revertToSaved(DocumentWindowManager documentWindowManager) {
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void runSimulation(final SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException{
+public SimulationStatus runSimulation(final SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException{
 
-	getClientServerManager().
-		getJobManager().
-			startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(), numSimulationScanJobs);
+	SimulationStatus simStatus = getClientServerManager().getJobManager().startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(), numSimulationScanJobs);
+	return simStatus;
 }		
 
 
@@ -3002,7 +3001,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 		} else {
 			// user canceled, just show existing document
 			getMdiManager().showWindow(documentWindowManager.getManagerID());
-			return;
+			throw new UserCancelException("user canceled");
 		}
 	}
 
@@ -3396,9 +3395,9 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 							// check for running once more... directly from job status
 							SimulationStatus serverSimulationStatus = getServerSimulationStatus(simInfo);
 							if (serverSimulationStatus != null && serverSimulationStatus.numberOfJobsDone() < simulations[i].getScanCount()) {
-								getClientServerManager().getJobManager().stopSimulation(simInfo.getAuthoritativeVCSimulationIdentifier());
+								SimulationStatus simStatus = getClientServerManager().getJobManager().stopSimulation(simInfo.getAuthoritativeVCSimulationIdentifier());
 								// updateStatus
-								clientSimManager.updateStatusFromStopRequest(simulations[i]);
+								clientSimManager.updateStatusFromStopRequest(simulations[i],simStatus);
 							}
 						} else {
 							// this should really not happen...

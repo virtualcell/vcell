@@ -12,11 +12,13 @@ package cbit.vcell.message.server.bootstrap;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
+import cbit.vcell.server.SimulationController;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
@@ -28,7 +30,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  * stateless database service for any user (should be thread safe ... reentrant)
  *
  */
-public class RpcSimServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.SimulationController {
+public class RpcSimServerProxy extends AbstractRpcServerProxy implements SimulationService {
 /**
  * DataServerProxy constructor comment.
  */
@@ -59,33 +61,12 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 
 
 /**
- * Insert the method's description here.
- * Creation date: (12/5/2001 9:39:03 PM)
- * @return java.lang.Object
- * @param methodName java.lang.String
- * @param args java.lang.Object[]
- * @exception java.lang.Exception The exception description.
- */
-private void rpcNoWait(String methodName, Object[] args) throws DataAccessException {
-	try {
-		rpc(ServiceType.DISPATCH, methodName, args, false);
-	} catch (DataAccessException ex) {
-		log.exception(ex);
-		throw ex;
-	} catch (Exception e){
-		log.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
-
-/**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
+public SimulationStatus startSimulation(User user, VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
 	try {
-		rpcNoWait("startSimulation",new Object[]{vcSimID, new Integer(numSimulationScanJobs)});
+		return (SimulationStatus)rpc("startSimulation",new Object[]{user, vcSimID, new Integer(numSimulationScanJobs)});
 	}catch (DataAccessException e){
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -97,9 +78,9 @@ public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationSca
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(VCSimulationIdentifier vcSimID) {
+public SimulationStatus stopSimulation(User user, VCSimulationIdentifier vcSimID) {
 	try {
-		rpcNoWait("stopSimulation",new Object[]{vcSimID});
+		return (SimulationStatus)rpc("stopSimulation",new Object[]{user, vcSimID});
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -108,9 +89,9 @@ public void stopSimulation(VCSimulationIdentifier vcSimID) {
 
 
 @Override
-public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException {
+public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) throws DataAccessException {
 	try {
-		return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{simKeys});
+		return (SimulationStatus[])rpc("getSimulationStatus",new Object[]{user, simKeys});
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -119,9 +100,9 @@ public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAcc
 
 
 @Override
-public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException {
+public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) throws DataAccessException {
 	try {
-		return (SimulationStatus)rpc("getSimulationStatus",new Object[]{simulationKey});
+		return (SimulationStatus)rpc("getSimulationStatus",new Object[]{user, simulationKey});
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());

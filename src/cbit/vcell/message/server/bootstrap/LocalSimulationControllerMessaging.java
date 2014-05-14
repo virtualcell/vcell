@@ -44,9 +44,9 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessage
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
-	simServerProxy.startSimulation(vcSimID,numSimulationScanJobs);
+	return simServerProxy.startSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID,numSimulationScanJobs);
 }
 
 
@@ -54,22 +54,22 @@ public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationSca
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(VCSimulationIdentifier vcSimID) {
+public SimulationStatus stopSimulation(VCSimulationIdentifier vcSimID) {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
-	simServerProxy.stopSimulation(vcSimID);
+	return simServerProxy.stopSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID);
 }
 
 
 @Override
 public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAccessException, RemoteException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simKeys + ")");
-	return simServerProxy.getSimulationStatus(simKeys);
+	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simKeys);
 }
 
 
 @Override
 public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, RemoteException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.getSimulationStatus(" + simulationKey + ")");
-	return simServerProxy.getSimulationStatus(simulationKey);
+	return simServerProxy.getSimulationStatus(simServerProxy.userLoginInfo.getUser(),simulationKey);
 }
 }
