@@ -219,7 +219,7 @@ public class CartesianMeshVtkFileWriter {
 				File file = new File(destinationDirectory,vcellFiles.getCannonicalFilePrefix(visDomain.getName(),timeIndex)+".vtu");
 				vtkGridUtils.write(vtkgridSmoothed, file.getPath());
 				vtkgrid.Delete(); 			// is needed for garbage collection? 
-				vtkgridSmoothed.Delete();	// is needed for garbage collection?
+				//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
 				files.add(file);
 				filesProcessed++;
 				if (progressListener!=null){
