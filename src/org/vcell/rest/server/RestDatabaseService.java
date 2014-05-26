@@ -78,7 +78,7 @@ public class RestDatabaseService {
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
-			rpcSimServerProxy.startSimulation(vcSimID, simRep.getScanCount());
+			rpcSimServerProxy.startSimulation(vcellUser, vcSimID, simRep.getScanCount());
 			return simRep;
 		}finally{
 			rpcSession.close();
@@ -107,7 +107,7 @@ public class RestDatabaseService {
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
-			rpcSimServerProxy.stopSimulation(vcSimID);
+			rpcSimServerProxy.stopSimulation(vcellUser, vcSimID);
 			return simRep;
 		}finally{
 			rpcSession.close();
