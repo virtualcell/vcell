@@ -195,7 +195,7 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
 	final File visitSmoldynScriptTempDir =
 		new File(PropertyLoader.getRequiredProperty(
-				PropertyLoader.tempDirProperty));
+				PropertyLoader.systemTempDirProperty));
 
 	//-----Get all data (from archive if necessary)
 	SimulationData simData = new SimulationData(vcdID,

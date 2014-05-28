@@ -25,10 +25,10 @@ public class PropertyLoader {
 	public static final String ADMINISTRATOR_ID = "2";
 
 	public static final String propertyFileProperty			= "vcell.propertyfile";
+	public static final String systemTempDirProperty		= "java.io.tmpdir";		// overridden in server launch scripts to ${common_siteRootDir}/tmp
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",RequiredFor.NOT,ValueType.GEN);
 
-	public static final String tempDirProperty				= record("vcell.tempdir",RequiredFor.NOT,ValueType.DIR);
 	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",RequiredFor.NOT,ValueType.DIR);
 	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",RequiredFor.NOT,ValueType.DIR);
 
