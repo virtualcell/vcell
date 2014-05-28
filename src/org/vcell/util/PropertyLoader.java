@@ -19,10 +19,10 @@ public class PropertyLoader {
 	public static final String ADMINISTRATOR_ID = "2";
 	
 	public static final String propertyFileProperty			= "vcell.propertyfile";
+	public static final String systemTempDirProperty		= "java.io.tmpdir";		// overridden in server launch scripts to ${common_siteRootDir}/tmp
 	
 	public static final String vcellServerIDProperty        = "vcell.server.id";
 	
-	public static final String tempDirProperty				= "vcell.tempdir";
 	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	
@@ -132,7 +132,6 @@ public class PropertyLoader {
 	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
-		tempDirProperty,
 		primarySimDataDirProperty,
 		secondarySimDataDirProperty,
 		
