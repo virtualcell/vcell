@@ -449,7 +449,7 @@ public ExportOutput[] makeVTKUnstructuredData0(OutputContext outputContext,JobRe
 	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	boolean bChombo = dataServerImpl.isChombo(user, vcdID);
-	final File tmpDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.tempDirProperty));
+	final File tmpDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.systemTempDirProperty));
 	if (bChombo){
 		return makeVTKUnstructuredData_Chombo(outputContext, jobRequest, user, dataServerImpl, exportSpecs, tmpDir, fileDataContainerManager);
 	}else{
