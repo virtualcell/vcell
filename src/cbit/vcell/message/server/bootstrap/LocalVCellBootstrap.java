@@ -225,7 +225,7 @@ public static void main(java.lang.String[] args) {
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, log);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, false, log);
 		LocalVCellBootstrap localVCellBootstrap = new LocalVCellBootstrap(host+":"+rmiPort,adminDbServer,vcMessagingService,simulationDatabase, rmiPort);
 
 		//

@@ -60,6 +60,12 @@ public class CommandServiceSsh extends CommandService {
 			System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
 			System.out.println("Command: exit = " + commandOutput.getExitStatus());
 			
+			if (commandOutput.getExitStatus()==null){
+				System.out.println("Command: exit error message: "+command.getExitErrorMessage());
+				System.out.println("Command: exit signal: "+command.getExitSignal());
+				System.out.println("Command: exit was core dumped: "+command.getExitWasCoreDumped());
+			}
+			
 			boolean bReturnCodeAllowable = false;
 			for (int returnCode : allowableReturnCodes){
 				if (commandOutput.getExitStatus()!=null && returnCode == commandOutput.getExitStatus().intValue()){

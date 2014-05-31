@@ -14,6 +14,8 @@ import java.rmi.RemoteException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -39,4 +41,6 @@ public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws DataAcc
 
 
 public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessException, RemoteException;
+
+public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException, RemoteException;
 }

@@ -9,12 +9,12 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
@@ -40,4 +40,6 @@ public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) thr
 
 
 public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) throws DataAccessException;
+
+public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException;
 }

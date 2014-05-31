@@ -245,17 +245,38 @@ public SimulationJobStatusPersistent[] getSimulationJobStatusArray(KeyValue simK
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List<SimpleJobStatusPersistent> getSimulationJobStatus(String conditions, int startRow, int maxNumRows, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
+public java.util.List<SimpleJobStatusPersistent> getSimpleJobStatus(String conditions, int startRow, int maxNumRows, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return jobDB.getSimulationJobStatus(con, conditions, startRow, maxNumRows);
+		return jobDB.getSimpleJobStatus(con, conditions, startRow, maxNumRows);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getSimulationJobStatus(conditions,startRow,maxNumRows,false);
+			return getSimpleJobStatus(conditions,startRow,maxNumRows,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
+
+
+public java.util.List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec, boolean bEnableRetry) throws SQLException, DataAccessException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return jobDB.getSimpleJobStatus(con, simStatusQuerySpec);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimpleJobStatus(simStatusQuerySpec,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -1033,5 +1054,4 @@ public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) t
 		conFactory.release(con,lock);
 	}
 }
-
 }

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -86,11 +87,13 @@ import cbit.vcell.message.server.ServiceStatus;
 import cbit.vcell.message.server.ServiceStatus.ServiceStatusType;
 import cbit.vcell.message.server.bootstrap.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
-import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.message.server.dispatcher.SimulationDatabase;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellBootstrap;
@@ -148,7 +151,8 @@ public class ServerManageConsole extends JFrame {
 	private JCheckBox ivjQueryAllStatusCheck = null;
 	private JButton ivjQueryGoButton = null;
 	private JButton ivjQueryResetButton = null;
-	private AdminDBTopLevel adminDbTop = null;
+	private final AdminDBTopLevel adminDbTop;
+	private final DatabaseServerImpl dbServerImpl;
 	private List<JCheckBox> statusChecks = new ArrayList<JCheckBox>();
 	private JCheckBox ivjQueryStartDateCheck = null;
 	private JCheckBox ivjQuerySubmitDateCheck = null;
@@ -290,10 +294,11 @@ public class ServerManageConsole extends JFrame {
 /**
  * ServerManageConsole constructor comment.
  */
-public ServerManageConsole(VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTopLevel, SessionLog log) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
+public ServerManageConsole(VCMessagingService vcMessagingService, AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl, SessionLog log) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
 	super();
 	this.vcMessagingService = vcMessagingService;
 	this.adminDbTop = adminDbTopLevel;
+	this.dbServerImpl = dbServerImpl;
 	this.log = log;
 	initialize();
 }
@@ -2109,9 +2114,10 @@ public static void main(java.lang.String[] args) {
 		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();	
 		DbDriver.setKeyFactory(keyFactory);
 		ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
+		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory,keyFactory,log);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory,log);
 
-		ServerManageConsole aServerManageConsole = new ServerManageConsole(vcMessagingService, adminDbTopLevel,log);
+		ServerManageConsole aServerManageConsole = new ServerManageConsole(vcMessagingService, adminDbTopLevel, databaseServerImpl, log);
 		aServerManageConsole.reconnect();
 
 		aServerManageConsole.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -2173,8 +2179,8 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 
 
 
-public SimpleJobStatusPersistent getReturnedSimulationJobStatus(int selectedRow) {	
-	return (SimpleJobStatusPersistent)((JobTableModel)getQueryResultTable().getModel()).getValueAt(selectedRow);
+public SimpleJobStatus getReturnedSimulationJobStatus(int selectedRow) {	
+	return (SimpleJobStatus)((JobTableModel)getQueryResultTable().getModel()).getValueAt(selectedRow);
 }
 
 /**
@@ -2205,17 +2211,19 @@ private void pingAll(int waitingTimeSec) {
  */
 private void query() {	
 	boolean bOtherConditions = false;
-	
+
 	getRemoveFromListButton().setEnabled(false);
 	getSubmitSelectedButton().setEnabled(false);
 	getStopSelectedButton().setEnabled(false);
-	StringBuffer conditions = new StringBuffer();
+	
+	SimpleJobStatusQuerySpec querySpec = new SimpleJobStatusQuerySpec();
+	querySpec.maxRows = 1000;
 	String text = getQuerySimField().getText();
 	if (text != null && text.trim().length() > 0) {
 		try {
 			bOtherConditions = true;
-			int simID = Integer.parseInt(text);
-			conditions.append(SimulationJobTable.table.simRef.getQualifiedColName() + "=" + simID);
+			long simID = Long.parseLong(text);
+			querySpec.simId = simID;
 		} catch (NumberFormatException ex) {
 		}
 	}
@@ -2223,85 +2231,50 @@ private void query() {
 	text = getQueryHostField().getText();
 	if (text != null && text.trim().length() > 0) {
 		bOtherConditions = true;
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("lower(" + SimulationJobTable.table.computeHost.getQualifiedColName() + ")='" + text.toLowerCase() + "'");
+		querySpec.computeHost = text.toLowerCase();
 	}
 
 	text = getQueryServerIDField().getText();
 	if (text != null && text.trim().length() > 0) {
 		bOtherConditions = true;
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("lower(" + SimulationJobTable.table.serverID.getQualifiedColName() + ")='" + text.toLowerCase() + "'");
+		querySpec.serverId = text.toLowerCase();
 	}
 		
 	text = getQueryUserField().getText();
 	if (text != null && text.trim().length() > 0) {
 		bOtherConditions = true;
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append(UserTable.table.userid.getQualifiedColName() + "='" + text + "'");
+		querySpec.userid = text;
 	}
 
 	StringBuffer status = new StringBuffer();
-	int index = 0;	
-	if (!getQueryAllStatusCheck().isSelected()) {
-		Iterator<JCheckBox> iter = statusChecks.iterator();
-		for (; iter.hasNext() ; index ++) {
-			JCheckBox box = iter.next();	
-			if (box.isSelected()) {
-				if (status.length() > 0) {
-					status.append(" OR ");
-				}					
-				status.append(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + index);		
-			}
-		}			
-	}
-
-	if (status.length() > 0) {
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("(" + status + ")");
-	}
+	int index = 0;
+	boolean  bAllStatus = getQueryAllStatusCheck().isSelected();
+	querySpec.waiting = bAllStatus || getQueryWaitingCheck().isSelected();
+	querySpec.queued = bAllStatus || getQueryQueuedCheck().isSelected();
+	querySpec.dispatched = bAllStatus || getQueryDispatchedCheck().isSelected();
+	querySpec.running = bAllStatus || getQueryRunningCheck().isSelected();
+	querySpec.completed = bAllStatus || getQueryCompletedCheck().isSelected();
+	querySpec.stopped = bAllStatus || getQueryStoppedCheck().isSelected();
+	querySpec.failed = bAllStatus || getQueryFailedCheck().isSelected();
 
 	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.US);
 	
 	if (getQuerySubmitDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = df.format(getQuerySubmitFromDate().getDate());
-		String d2 = df.format(getQuerySubmitToDate().getDate());
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("(" + SimulationJobTable.table.submitDate.getQualifiedColName() 
-			+ " BETWEEN to_date('" + d1 + " 00:00:00', 'mm/dd/yyyy HH24:MI:SS') AND to_date('" + d2 + " 23:59:59', 'mm/dd/yyyy HH24:MI:SS'))");		
+		querySpec.submitLowMS = getQuerySubmitFromDate().getDate().getTime();                            // first second of day low time
+		querySpec.submitHighMS = getQuerySubmitToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1; // last second of dat high time
 	}
 	
 	if (getQueryStartDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = df.format(getQueryStartFromDate().getDate());
-		String d2 = df.format(getQueryStartToDate().getDate());
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("(" + SimulationJobTable.table.startDate.getQualifiedColName() 
-			+ " BETWEEN to_date('" + d1 + "00:00:00', 'mm/dd/yyyy HH24:MI:SS') AND to_date('" + d2 + " 23:59:59', 'mm/dd/yyyy HH24:MI:SS'))");		
+		querySpec.startLowMS = getQueryStartFromDate().getDate().getTime();                            // first second of day low time
+		querySpec.startHighMS = getQueryStartToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1; // last second of dat high time
 	}
 		
 	if (getQueryEndDateCheck().isSelected()) {
 		bOtherConditions = true;
-		String d1 = df.format(getQueryEndFromDate().getDate());
-		String d2 = df.format(getQueryEndToDate().getDate());
-		if (conditions.length() > 0) {
-			conditions.append(" AND ");
-		}
-		conditions.append("(" + SimulationJobTable.table.endDate.getQualifiedColName() 
-			+ " BETWEEN to_date('" + d1 + "00:00:00', 'mm/dd/yyyy HH24:MI:SS') AND to_date('" + d2 + " 23:59:59', 'mm/dd/yyyy HH24:MI:SS'))");		
+		querySpec.endLowMS = getQueryEndFromDate().getDate().getTime();                            // first second of day low time
+		querySpec.endHighMS = getQueryEndToDate().getDate().getTime()+TimeUnit.DAYS.toMillis(1)-1; // last second of dat high time
 	}
 	
 	if (getQueryCompletedCheck().isSelected() && !bOtherConditions) {
@@ -2315,10 +2288,11 @@ private void query() {
 	}
 	
 	try {
-		List<SimpleJobStatusPersistent> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), 1, -1, true);
-		getNumResultsLabel().setText("" + resultList.size());
+		SimulationDatabase simDatabase = new SimulationDatabaseDirect(adminDbTop, dbServerImpl, false, log);
+		SimpleJobStatus[] resultList = simDatabase.getSimpleJobStatus(null,querySpec);
+		getNumResultsLabel().setText("" + resultList.length);
 		getNumSelectedLabel().setText("0");
-		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);
+		((JobTableModel)getQueryResultTable().getModel()).setData(Arrays.asList(resultList));
 	} catch (Exception ex) {
 		getNumResultsLabel().setText("Query failed, please try again!");
 		((JobTableModel)getQueryResultTable().getModel()).setData(null);
@@ -2405,11 +2379,11 @@ private void submitSelectedButton_ActionPerformed(ActionEvent e) {
 	if (response.equals(SUBMIT_JOBS_OPTION)){
 		for (int i = 0; i < srows.length; i++) {
 			int selectedRow = srows[i];
-			SimpleJobStatusPersistent jobStatus = getReturnedSimulationJobStatus(selectedRow);
-			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
-			if (jobStatus.isDone()) {
+			SimpleJobStatus simpleJobStatus = getReturnedSimulationJobStatus(selectedRow);
+			String statusString = "["+ simpleJobStatus.simulationMetadata.vcSimID + ", " + simpleJobStatus.jobStatus.getSchedulerStatus().getDescription() + "]";
+			if (simpleJobStatus.jobStatus.getSchedulerStatus().isDone()) {
 				log.print("Submitting job (" + (i+1) + " of " + srows.length + ") : " + statusString);
-				resubmitSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+				resubmitSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 			} else {
 				log.print("Submitting job ("+(i+1)+" of "+srows.length+") : " + statusString + ", is still running, skipping...");
 			}
@@ -2430,11 +2404,11 @@ private void stopSelectedButton_ActionPerformed(ActionEvent e) {
 	if (response.equals(STOP_JOBS_OPTION)){
 		for (int i = 0; i < srows.length; i++) {
 			int selectedRow = srows[i];
-			SimpleJobStatusPersistent jobStatus = getReturnedSimulationJobStatus(selectedRow);
-			String statusString = "["+ jobStatus.getVCSimulationIdentifier() + ", " + jobStatus.getStatusMessage() + "]";
-			if (!jobStatus.isDone()) {
+			SimpleJobStatus simpleJobStatus = getReturnedSimulationJobStatus(selectedRow);
+			String statusString = "["+ simpleJobStatus.simulationMetadata.vcSimID + ", " + simpleJobStatus.jobStatus.getSchedulerStatus().getDescription() + "]";
+			if (!simpleJobStatus.jobStatus.getSchedulerStatus().isDone()) {
 				log.print("Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString);	
-				stopSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+				stopSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 			} else {
 				log.print("***Stopping job ("+(i+1)+" of "+srows.length+") : "+statusString + ", is already finished, skipping");
 			}

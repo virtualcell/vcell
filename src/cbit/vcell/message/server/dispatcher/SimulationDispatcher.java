@@ -9,33 +9,23 @@
  */
 
 package cbit.vcell.message.server.dispatcher;
-import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.rmi.event.WorkerEvent;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.vcell.message.RollbackException;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSelector;
@@ -46,42 +36,27 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.VCRpcMessageHandler;
-import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
-import cbit.vcell.message.server.ManageUtils;
-import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.message.server.ServiceInstanceStatus;
 import cbit.vcell.message.server.ServiceProvider;
-import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.message.server.bootstrap.SimulationService;
-import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandServiceLocal;
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.WaitingJob;
 import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobID;
-import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
-import cbit.vcell.message.server.htc.pbs.PbsProxy;
-import cbit.vcell.message.server.htc.sge.SgeProxy;
-import cbit.vcell.message.server.jmx.VCellServiceMXBean;
-import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.solvers.AbstractSolver;
 
 /**
  * Insert the type's description here.
@@ -163,6 +138,20 @@ public class SimulationDispatcher extends ServiceProvider {
 				}
 			}
 			return simStatusArray;
+		}
+		
+		@Override
+		public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException {
+			SimpleJobStatus[] simpleJobStatusArray = simulationDatabase.getSimpleJobStatus(user,simJobStatusQuerySpec);
+			for (SimpleJobStatus simStatus : simpleJobStatusArray){
+				if (simStatus!=null){
+					if (simStatus.simulationMetadata.vcSimID.getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+						continue;
+					}
+					throw new PermissionException("User "+user.getName()+" doesn't have access to simulation "+simStatus.simulationMetadata.vcSimID.getSimulationKey());
+				}
+			}
+			return simpleJobStatusArray;
 		}
 	};
 
@@ -459,57 +448,6 @@ public class SimulationDispatcher extends ServiceProvider {
 
 
 
-	/**
-	 * @param vcMessage
-	 * @param session
-	 */
-	private void onSimRequestMessage(VCMessage vcMessage, VCMessageSession session) {
-		try {
-			Object objectContent = vcMessage.getObjectContent();
-			if (objectContent==null){
-				return;
-			}
-
-			if (!(objectContent instanceof VCRpcRequest)) {
-				return;
-			}
-
-			VCRpcRequest request = (VCRpcRequest)objectContent;
-
-			User user = request.getUser();
-
-			if (request.getMethodName().equals(METHOD_NAME_STARTSIMULATION)) {
-
-				VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
-				Integer numSimulationScanJobs = (Integer)request.getArguments()[1];
-				
-				simDispatcherEngine.onStartRequest(vcSimID, user, numSimulationScanJobs.intValue(), simulationDatabase, session, dispatcherQueueSession, log);
-
-				// wake up dispatcher thread
-				if (dispatchThread!=null){
-					try {
-						synchronized (dispatchThread.notifyObject){
-							dispatchThread.notifyObject.notify();
-						}
-					}catch (IllegalMonitorStateException e){
-						e.printStackTrace();
-					}
-				}
-
-			} else if (request.getMethodName().equals(METHOD_NAME_STOPSIMULATION)) {
-
-				VCSimulationIdentifier vcSimID = (VCSimulationIdentifier)request.getArguments()[0];
-				
-				simDispatcherEngine.onStopRequest(vcSimID, user, simulationDatabase, session, log);
-
-			} else {
-				System.out.println("************************************************* * * * * * * * * * * * ignoring message "+request.getMethodName());
-			}
-		} catch (Exception e) {
-			log.exception(e);
-		}
-	}
-
 
 	/**
 	 * @param vcMessage
@@ -539,83 +477,6 @@ public class SimulationDispatcher extends ServiceProvider {
 
 		} catch (Exception ex) {
 			log.exception(ex);
-		}
-	}
-
-
-	/**
-	 * Starts the application.
-	 * @param args an array of command-line arguments
-	 */
-	public static void main(java.lang.String[] args) {
-		if (args.length != 3 && args.length != 6) {
-			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
-			System.exit(1);
-		}
-
-		try {
-			PropertyLoader.loadProperties();		
-
-			int serviceOrdinal = Integer.parseInt(args[0]);
-			String logdir = null;
-			if (args.length > 1) {
-				logdir = args[1];
-			}
-			
-			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
-			CommandService commandService = null;
-			if (args.length==6){
-				String pbsHost = args[3];
-				String pbsUser = args[4];
-				String pbsPswd = args[5];
-				commandService = new CommandServiceSsh(pbsHost,pbsUser,pbsPswd);
-				AbstractSolver.bMakeUserDirs = false; // can't make user directories, they are remote.
-			}else{
-				commandService = new CommandServiceLocal();
-			}
-			HtcProxy htcProxy = null;
-			switch(batchSystemType){
-				case PBS:{
-					htcProxy = new PbsProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-					break;
-				}
-				case SGE:{
-					htcProxy = new SgeProxy(commandService, PropertyLoader.getRequiredProperty(PropertyLoader.htcUser));
-					break;
-				}
-				default: {
-					throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
-				}
-			}
-			
-			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
-
-			//
-			// JMX registration
-			//
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 			
-			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
-					ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
-			
-			initLog(serviceInstanceStatus, logdir);
-
-			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
-
-			KeyFactory keyFactory = new OracleKeyFactory();
-			DbDriver.setKeyFactory(keyFactory);
-			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
-			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
-			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl,log);
-
-			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
-
-			SimulationDispatcher simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, serviceInstanceStatus, simulationDatabase, log, false);
-			simulationDispatcher.init();
-		} catch (Throwable e) {
-			e.printStackTrace(System.out);
 		}
 	}
 

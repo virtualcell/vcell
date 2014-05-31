@@ -18,7 +18,8 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
-import cbit.vcell.server.SimulationController;
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 
@@ -103,6 +104,16 @@ public SimulationStatus[] getSimulationStatus(User user, KeyValue[] simKeys) thr
 public SimulationStatus getSimulationStatus(User user, KeyValue simulationKey) throws DataAccessException {
 	try {
 		return (SimulationStatus)rpc("getSimulationStatus",new Object[]{user, simulationKey});
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+@Override
+public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simJobStatusQuerySpec) throws DataAccessException {
+	try {
+		return (SimpleJobStatus[])rpc("getSimpleJobStatus",new Object[]{user, simJobStatusQuerySpec});
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
