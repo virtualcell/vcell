@@ -1,51 +1,56 @@
 package org.vcell.rest.common;
 
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent.BioModelLink;
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent.MathModelLink;
-import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
+import cbit.vcell.messaging.db.BioModelLink;
+import cbit.vcell.messaging.db.MathModelLink;
+import cbit.vcell.messaging.db.RunningStateInfo;
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.WaitingStateInfo;
 
 public class SimulationTaskRepresentation {
 	
 	public String simKey;
 	
-	public String simName;
+	public final String simName;
 	
-	public String userName;
+	public final String userName;
 
-	public String userKey;
+	public final String userKey;
 
-	public String htcJobId;
+	public final String htcJobId;
 
-	public String status;
+	public final String status;
 
-	public long startdate;
+	public final long submitdate;
 
-	public int jobIndex;
+	public final long startdate;
 
-	public int taskId;
+	public final long enddate;
 
-	public String message;
+	public final int jobIndex;
+
+	public final int taskId;
+
+	public final String message;
 	
-	public String site;
+	public final String site;
 	
-	public String computeHost;
+	public final String computeHost;
 	
-	public String schedulerStatus;
+	public final String schedulerStatus;
 	
-	public boolean hasData;
+	public final boolean hasData;
 	
-	public int scanCount;
+	public final int scanCount;
 	
-	public MathModelLink mathModelLink;
+	public final double progress;
 	
-	public BioModelLink bioModelLink;
+	public final int myQueueOrdinal;
 	
-	public SimulationTaskRepresentation(){
-		
-	}
+	public final int globalQueueOrdinal;
 	
+	public final MathModelLink mathModelLink;
+	
+	public final BioModelLink bioModelLink;
 	
 	
 	public String getSimKey() {
@@ -84,10 +89,19 @@ public class SimulationTaskRepresentation {
 
 
 
+	public long getSubmitdate() {
+		return submitdate;
+	}
+
+
 	public long getStartdate() {
 		return startdate;
 	}
 
+
+	public long getEnddate() {
+		return enddate;
+	}
 
 
 	public int getJobIndex() {
@@ -133,6 +147,14 @@ public class SimulationTaskRepresentation {
 	public int getScanCount(){
 		return scanCount;
 	}
+	
+	public int getMyQueueOrdinal(){
+		return myQueueOrdinal;
+	}
+	
+	public int getGlobalQueueOrdinal(){
+		return globalQueueOrdinal;
+	}
 
 	public MathModelLink getMathModelLink(){
 		return mathModelLink;
@@ -145,59 +167,73 @@ public class SimulationTaskRepresentation {
 	}
 
 
-
-	public SimulationTaskRepresentation(SimulationJobStatusPersistent simJobStatus, int scanCount){
-		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
-		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
-		this.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
-		this.jobIndex = simJobStatus.getJobIndex();
-		this.taskId = simJobStatus.getTaskID();
-		SimulationExecutionStatusPersistent simulationExecutionStatus = simJobStatus.getSimulationExecutionStatus();
-		if (simulationExecutionStatus!=null && simulationExecutionStatus.getHtcJobID()!=null){
-			this.htcJobId = simulationExecutionStatus.getHtcJobID().toDatabase();
+	public SimulationTaskRepresentation(SimpleJobStatus simJobStatus) {
+		this.simKey = simJobStatus.simulationMetadata.vcSimID.getSimulationKey().toString();
+		this.userName = simJobStatus.simulationMetadata.vcSimID.getOwner().getName();
+		this.userKey = simJobStatus.simulationMetadata.vcSimID.getOwner().getID().toString();
+		this.jobIndex = simJobStatus.jobStatus.getJobIndex();
+		this.taskId = simJobStatus.jobStatus.getTaskID();
+		this.schedulerStatus = simJobStatus.jobStatus.getSchedulerStatus().getDescription();
+		this.htcJobId = (simJobStatus.jobStatus.getSimulationExecutionStatus().getHtcJobID()!=null)?(simJobStatus.jobStatus.getSimulationExecutionStatus().getHtcJobID().toDatabase()):(null);
+		this.status = simJobStatus.jobStatus.getSchedulerStatus().getDescription();
+		if (simJobStatus.jobStatus.getSubmitDate()!=null){
+			this.submitdate = simJobStatus.jobStatus.getSubmitDate().getTime();
+		}else{
+			this.submitdate = 0;
 		}
-		this.status = simJobStatus.getSchedulerStatus().getDescription();
-		if (simJobStatus.getStartDate()!=null){
-			this.startdate = simJobStatus.getStartDate().getTime();
+		if (simJobStatus.jobStatus.getStartDate()!=null){
+			this.startdate = simJobStatus.jobStatus.getStartDate().getTime();
+		}else{
+			this.startdate = 0;
 		}
-		if (simJobStatus.getSimulationMessage()!=null){
-			this.message = simJobStatus.getSimulationMessage().getDisplayMessage();
+		if (simJobStatus.jobStatus.getEndDate()!=null){
+			this.enddate = simJobStatus.jobStatus.getEndDate().getTime();
+		}else{
+			this.enddate = 0;
 		}
-		if (simJobStatus.getServerID()!=null){
-			this.site = simJobStatus.getServerID().toCamelCase();
+		if (simJobStatus.jobStatus.getSimulationMessage()!=null){
+			this.message = simJobStatus.jobStatus.getSimulationMessage().getDisplayMessage();
+		}else{
+			this.message = null;
 		}
-		if (simJobStatus.getComputeHost()!=null){
-			this.computeHost = simJobStatus.getComputeHost();
+		if (simJobStatus.jobStatus.getServerID()!=null){
+			this.site = simJobStatus.jobStatus.getServerID().toString();
+		}else{
+			this.site = null;
 		}
-		this.hasData = simJobStatus.hasData();
-	}
-
-	public SimulationTaskRepresentation(SimpleJobStatusPersistent simJobStatus) {
-		this.simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
-		this.userName = simJobStatus.getVCSimulationIdentifier().getOwner().getName();
-		this.userKey = simJobStatus.getVCSimulationIdentifier().getOwner().getID().toString();
-		this.jobIndex = simJobStatus.getJobIndex();
-		this.taskId = simJobStatus.getTaskID();
-		this.schedulerStatus = simJobStatus.getSchedulerStatus().getDescription();
-		this.htcJobId = (simJobStatus.getHtcJobID()!=null)?(simJobStatus.getHtcJobID().toDatabase()):(null);
-		this.status = simJobStatus.getSchedulerStatus().getDescription();
-		if (simJobStatus.getStartDate()!=null){
-			this.startdate = simJobStatus.getStartDate().getTime();
+		if (simJobStatus.jobStatus.getComputeHost()!=null){
+			this.computeHost = simJobStatus.jobStatus.getComputeHost();
+		}else{
+			this.computeHost = null;
 		}
-		if (simJobStatus.getStatusMessage()!=null){
-			this.message = simJobStatus.getStatusMessage();
+		this.hasData = simJobStatus.jobStatus.hasData();
+		this.scanCount = simJobStatus.simulationMetadata.scanCount;
+		this.simName = simJobStatus.simulationMetadata.simname;
+		if (simJobStatus.simulationDocumentLink instanceof BioModelLink){
+			this.bioModelLink = (BioModelLink)simJobStatus.simulationDocumentLink;
+		}else{
+			this.bioModelLink = null;
 		}
-		if (simJobStatus.getServerID()!=null){
-			this.site = simJobStatus.getServerID();
+		if (simJobStatus.simulationDocumentLink instanceof MathModelLink){
+			this.mathModelLink = (MathModelLink)simJobStatus.simulationDocumentLink;
+		}else{
+			this.mathModelLink = null;
 		}
-		if (simJobStatus.getComputeHost()!=null){
-			this.computeHost = simJobStatus.getComputeHost();
+		if (simJobStatus.stateInfo instanceof WaitingStateInfo){
+			WaitingStateInfo waitingStateInfo = (WaitingStateInfo)simJobStatus.stateInfo;
+			this.myQueueOrdinal = waitingStateInfo.myQueueOrdinal;
+			this.globalQueueOrdinal = waitingStateInfo.globalQueueOrdinal;
+		}else{
+			this.myQueueOrdinal = -1;
+			this.globalQueueOrdinal = -1;
 		}
-		this.hasData = simJobStatus.hasData();
-		this.scanCount = simJobStatus.getScanCount();
-		this.simName = simJobStatus.getSimName();
-		this.bioModelLink = simJobStatus.getBioModelLink();
-		this.mathModelLink = simJobStatus.getMathModelLink();
+		if (simJobStatus.stateInfo instanceof RunningStateInfo){
+			RunningStateInfo runningStateInfo = (RunningStateInfo)simJobStatus.stateInfo;
+			this.progress = runningStateInfo.progress;
+		}else{
+			this.progress = -1.0;
+		}
+		
 	}
 	
 }

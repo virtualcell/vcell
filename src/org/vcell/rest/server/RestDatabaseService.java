@@ -3,7 +3,6 @@ package org.vcell.rest.server;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
@@ -24,15 +23,14 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
-import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.modeldb.SimContextRep;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.simdata.DataSetMetadata;
@@ -459,157 +457,64 @@ public class RestDatabaseService {
 		}
 	}
 
-    public List<SimpleJobStatusPersistent> query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+    public SimpleJobStatus[] query(SimulationTasksServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
 		String userID = vcellUser.getName();
-		Long simid = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SIM_ID);
-		Long jobid = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_JOB_ID);
-		Long taskid = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_TASK_ID);
-		String computeHost = resource.getQueryValue(SimulationTasksServerResource.PARAM_COMPUTE_HOST);
-		String serverID = resource.getQueryValue(SimulationTasksServerResource.PARAM_SERVER_ID);
+		SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
+		simQuerySpec.userid = userID;
+		simQuerySpec.simId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SIM_ID);
+		simQuerySpec.jobId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_JOB_ID);
+		simQuerySpec.taskId = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_TASK_ID);
+		simQuerySpec.computeHost = resource.getQueryValue(SimulationTasksServerResource.PARAM_COMPUTE_HOST);
+		simQuerySpec.serverId = resource.getQueryValue(SimulationTasksServerResource.PARAM_SERVER_ID);
 		String hasData = resource.getQueryValue(SimulationTasksServerResource.PARAM_HAS_DATA);
-		boolean statusWaiting = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_WAITING,false);
-		boolean statusQueued = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_QUEUED,false);
-		boolean statusDispatched = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_DISPATCHED,false);
-		boolean statusRunning = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_RUNNING,false);
-		boolean statusCompleted = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_COMPLETED,false);
-		boolean statusFailed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_FAILED,false);
-		boolean statusStopped = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_STOPPED,false);
-		Long submitLow = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_LOW);
-		Long submitHigh = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_HIGH);
-		Long startLow = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_LOW);
-		Long startHigh = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_HIGH);
-		Long endLow = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_LOW);
-		Long endHigh = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_HIGH);
+		if (hasData!=null && hasData.equals("yes")){
+			simQuerySpec.hasData = true;
+		}else if (hasData!=null && hasData.equals("no")){
+			simQuerySpec.hasData = false;
+		}else{
+			simQuerySpec.hasData = null;
+		}
+		simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_WAITING,false);
+		simQuerySpec.queued = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_QUEUED,false);
+		simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_DISPATCHED,false);
+		simQuerySpec.running = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_RUNNING,false);
+		simQuerySpec.completed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_COMPLETED,false);
+		simQuerySpec.failed = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_FAILED,false);
+		simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationTasksServerResource.PARAM_STATUS_STOPPED,false);
+		simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_LOW);
+		simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_SUBMIT_HIGH);
+		simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_LOW);
+		simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_HIGH);
+		simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_LOW);
+		simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_END_HIGH);
 		Long startRowParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_START_ROW);
-		int startRow = 1; // default
+		simQuerySpec.startRow = 1; // default
 		if (startRowParam!=null){
-			startRow = startRowParam.intValue();
+			simQuerySpec.startRow = startRowParam.intValue();
 		}
 		Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
-		int maxRows = 10; // default
+		simQuerySpec.maxRows = 10; // default
 		if (maxRowsParam!=null){
-			maxRows = maxRowsParam.intValue();
+			simQuerySpec.maxRows = maxRowsParam.intValue();
 		}
-    	ArrayList<String> conditions = new ArrayList<String>();
-    	
-    	if (simid!=null){
-   			conditions.add(SimulationJobTable.table.simRef.getQualifiedColName() + "=" + simid);
-     	}
-
-    	if (jobid!=null){
-   			conditions.add(SimulationJobTable.table.jobIndex.getQualifiedColName() + "=" + jobid);
-     	}
-
-    	if (taskid!=null){
-   			conditions.add(SimulationJobTable.table.taskID.getQualifiedColName() + "=" + taskid);
-     	}
-
-    	if (computeHost != null && computeHost.length()>0){
-     		conditions.add("lower(" + SimulationJobTable.table.computeHost.getQualifiedColName() + ")='" + computeHost.toLowerCase() + "'");
-    	}
-
-    	if (serverID!=null && serverID.length()>0){
-    		conditions.add("lower(" + SimulationJobTable.table.serverID.getQualifiedColName() + ")='" + serverID + "'");
-    	}
-    	
-    	if (hasData!=null){
-    		if (hasData.equalsIgnoreCase("yes") || hasData.equalsIgnoreCase("y") || hasData.equalsIgnoreCase("true") || hasData.equalsIgnoreCase("t")){
-    			// return only records that have data
-    			conditions.add("lower(" + SimulationJobTable.table.hasData.getQualifiedColName() + ")='y'");
-    		} else if (hasData.equalsIgnoreCase("no") || hasData.equalsIgnoreCase("n") || hasData.equalsIgnoreCase("false") || hasData.equalsIgnoreCase("f")){
-    			// return only records that don't have data
-    			conditions.add(SimulationJobTable.table.hasData.getQualifiedColName() + " is null");
-    		}
-    	} // else all records.
-    	
-    	if (userID!=null && userID.length()>0){
-    		conditions.add(UserTable.table.userid.getQualifiedColName() + "='" + userID + "'");
-    	}
-
-/**
- * 		w = WAITING(0,"waiting"),
- *		q = QUEUED(1,"queued"),
- *		d = DISPATCHED(2,"dispatched"),
- *		r = RUNNING(3,"running"),
- *		c = COMPLETED(4,"completed"),
- *		s = STOPPED(5,"stopped"),
- *		f = FAILED(6,"failed");
- *
- */
-    	ArrayList<String> statusConditions = new ArrayList<String>();
-    	if (statusWaiting){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.WAITING.getDatabaseNumber());
-    	}
-    	if (statusQueued){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.QUEUED.getDatabaseNumber());
-    	}
-    	if (statusDispatched){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.DISPATCHED.getDatabaseNumber());
-    	}
-    	if (statusRunning){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.RUNNING.getDatabaseNumber());
-    	}
-    	if (statusCompleted){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.COMPLETED.getDatabaseNumber());
-    	}
-    	if (statusStopped){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.STOPPED.getDatabaseNumber());
-    	}
-    	if (statusFailed){
-    		statusConditions.add(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + SchedulerStatus.FAILED.getDatabaseNumber());
-    	}
-    	if (statusConditions.size()>0){
-	       	StringBuffer statusConditionsBuffer = new StringBuffer();
-	    	for (String statusCondition : statusConditions) {
-	    		if (statusConditionsBuffer.length() > 0) {
-	    			statusConditionsBuffer.append(" OR ");
-	    		}
-	    		statusConditionsBuffer.append(statusCondition);
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			try {
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new DataAccessException(e.getMessage());
 			}
-     		conditions.add("(" + statusConditionsBuffer + ")");
-    	}
-     	
-    	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
-    	
-    	if (submitLow != null){
-    		conditions.add("(" + SimulationJobTable.table.submitDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(submitLow)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (submitHigh != null){
-    		conditions.add("(" + SimulationJobTable.table.submitDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(submitHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (startLow != null){
-    		conditions.add("(" + SimulationJobTable.table.startDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(startLow)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (startHigh != null){
-    		conditions.add("(" + SimulationJobTable.table.startDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(startHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (endLow != null){
-    		conditions.add("(" + SimulationJobTable.table.endDate.getQualifiedColName() + " >= to_date('" + df.format(new Date(endLow)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-    	if (endHigh != null){
-    		conditions.add("(" + SimulationJobTable.table.endDate.getQualifiedColName() + " <= to_date('" + df.format(new Date(endHigh)) + "', 'mm/dd/yyyy HH24:MI:SS'))");		
-    	}
-
-//    	conditions.add("(" + "rownum" + " <= " + maxNumRows + ")");
-    	
-    	StringBuffer conditionsBuffer = new StringBuffer();
-    	for (String condition : conditions) {
-    		if (conditionsBuffer.length() > 0) {
-    			conditionsBuffer.append(" AND ");
-    		}
-			conditionsBuffer.append(condition);
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
+			return simpleJobStatusArray;
+		}finally{
+			rpcSession.close();
 		}
-    	
-    	if (statusConditions.size()==0){
-    		// no status conditions wanted ... nothing to query
-    		return new ArrayList<SimpleJobStatusPersistent>();
-    	}else{
-	   		List<SimpleJobStatusPersistent> resultList = localAdminDbServer.getSimulationJobStatus(conditionsBuffer.toString(), startRow, maxRows);
-	   		return resultList;
-    	}
     }
 
 	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {

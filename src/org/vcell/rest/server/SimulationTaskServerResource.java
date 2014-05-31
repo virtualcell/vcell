@@ -65,9 +65,10 @@ public class SimulationTaskServerResource extends WadlServerResource implements 
 		VCellApiApplication application = ((VCellApiApplication)getApplication());
 		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.prohibitInvalidCredentials);
 
-		SimulationTaskRepresentation sim = new SimulationTaskRepresentation();
-		sim.simKey="123";
-		return sim;
+//		SimulationTaskRepresentation sim = new SimulationTaskRepresentation();
+//		sim.simKey="123";
+//		return sim;
+		return null;
 	}
 
 

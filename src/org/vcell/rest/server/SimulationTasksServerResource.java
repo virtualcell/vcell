@@ -28,7 +28,7 @@ import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 
 import com.google.gson.Gson;
 
@@ -185,8 +185,8 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 			ArrayList<SimulationTaskRepresentation> simTaskReps = new ArrayList<SimulationTaskRepresentation>();
 			RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
 			try {
-				List<SimpleJobStatusPersistent> simJobStatusList = restDatabaseService.query(this, vcellUser);
-				for (SimpleJobStatusPersistent simpleJobStatus : simJobStatusList) {
+				SimpleJobStatus[] simJobStatusList = restDatabaseService.query(this, vcellUser);
+				for (SimpleJobStatus simpleJobStatus : simJobStatusList) {
 					SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
 					simTaskReps.add(simTaskRep);
 				}

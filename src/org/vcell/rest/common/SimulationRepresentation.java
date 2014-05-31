@@ -2,8 +2,8 @@ package org.vcell.rest.common;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.messaging.db.SimpleJobStatus.BioModelLink;
-import cbit.vcell.messaging.db.SimpleJobStatus.MathModelLink;
+import cbit.vcell.messaging.db.BioModelLink;
+import cbit.vcell.messaging.db.MathModelLink;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
