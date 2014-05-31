@@ -131,7 +131,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		exportDataServer.stopService();
 		htcSimulationWorker.stopService();
 	}
-
+	
 
 	/**
 	 * Starts the application.
@@ -203,7 +203,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory, log);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory, log);
-			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl,log);
+			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true, log);
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 

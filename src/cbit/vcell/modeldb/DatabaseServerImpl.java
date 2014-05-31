@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BigString;
@@ -42,6 +43,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -672,6 +675,17 @@ public SimulationStatusPersistent[] getSimulationStatus(KeyValue simulationKeys[
 		throw new DataAccessException(e.getMessage());
 	}
 
+}
+
+
+public List<SimpleJobStatusPersistent> getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException {
+	try {
+		log.print("DatabaseServerImpl.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
+		return adminDbTop.getSimpleJobStatus(simStatusQuerySpec,true);
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
 }
 
 

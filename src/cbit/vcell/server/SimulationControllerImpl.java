@@ -42,9 +42,11 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationMessage;
@@ -371,6 +373,10 @@ public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws ObjectN
 
 public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
 	return simulationDatabase.getSimulationStatus(simulationKey);
+}
+
+public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
+	return simulationDatabase.getSimpleJobStatus(localVCellConnection.getUserLoginInfo().getUser(), simStatusQuerySpec);
 }
 
 }

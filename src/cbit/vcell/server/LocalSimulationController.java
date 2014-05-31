@@ -9,11 +9,15 @@
  */
 
 package cbit.vcell.server;
+import java.rmi.RemoteException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -100,4 +104,17 @@ public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataA
 		throw new RuntimeException(e.getMessage());
 	}
 }
+
+
+@Override
+public SimpleJobStatus[] getSimpleJobStatus(SimpleJobStatusQuerySpec simStatusQuerySpec) throws DataAccessException, RemoteException {
+	sessionLog.print("LocalSimulationController.getSimulationStatus(simStatusQuerySpec="+simStatusQuerySpec+")");
+	try {
+		return simulationControllerImpl.getSimpleJobStatus(simStatusQuerySpec);
+	}catch (Exception e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
 }

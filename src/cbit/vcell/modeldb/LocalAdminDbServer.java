@@ -92,7 +92,7 @@ public SimulationJobStatusPersistent getSimulationJobStatus(KeyValue simKey, int
  */
 public List<SimpleJobStatusPersistent> getSimulationJobStatus(java.lang.String conditions, int startRow, int maxNumRows) throws DataAccessException {
 	try {
-		return adminDbTop.getSimulationJobStatus(conditions, startRow, maxNumRows, true);
+		return adminDbTop.getSimpleJobStatus(conditions, startRow, maxNumRows, true);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure getting SimulationJobStatus");

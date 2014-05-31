@@ -24,25 +24,29 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
+import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SimulationQueueID;
-import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.messaging.db.StateInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.SimulationMessage;
+import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
@@ -53,10 +57,113 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	private SessionLog log = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
 	private Map<String, User> userMap = Collections.synchronizedMap(new HashMap<String, User>());
+	private SimpleJobStatusCache cache = null;
+	
+	public static class SimJobStatusKey {
+		public final KeyValue simId;
+		public final int jobIndex;
+		public final int taskId;
+		private final String hashString;
+		private final int hashCode;
+	
+		public SimJobStatusKey(KeyValue simId, int jobIndex, int taskId){
+			this.simId = simId;
+			this.jobIndex = jobIndex;
+			this.taskId = taskId;
+			this.hashString = simId.toString() + ":"+jobIndex+":"+taskId;
+			this.hashCode = this.hashString.hashCode();
+		}
+		@Override
+		public int hashCode(){
+			return hashCode;
+		}
+		@Override
+		public boolean equals(Object obj){
+			if (obj instanceof SimJobStatusKey){
+				return ((SimJobStatusKey)obj).hashString.equals(hashString);
+			}
+			return false;
+		}
+		@Override
+		public String toString(){
+			return hashString;
+		}
+		public KeyValue getSimKey(){
+			return simId;
+		}
+		public int getJobIndex(){
+			return jobIndex;
+		}
+		public int getTaskId(){
+			return taskId;
+		}
+	}
+	
+	private static class SimStatusCacheEntry {
+		public final SimulationJobStatus jobStatus;
+		public final StateInfo stateInfo;
+		public final long lastupdate;
+		
+		public SimStatusCacheEntry(SimulationJobStatus jobStatus, StateInfo stateInfo) {
+			super();
+			this.jobStatus = jobStatus;
+			this.stateInfo = stateInfo;
+			this.lastupdate = System.currentTimeMillis();
+		}
+	}
 
-	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, SessionLog log){
+	private interface SimpleJobStatusCache {
+		SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey);
+		SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey, SimStatusCacheEntry simStatusCacheEntry);
+	}
+	
+	private static class SimpleJobStatusCache_DONT_CACHE implements SimpleJobStatusCache {
+		private HashMap<SimJobStatusKey, SimStatusCacheEntry> map = new HashMap<SimJobStatusKey,SimStatusCacheEntry>();
+		
+		public SimpleJobStatusCache_DONT_CACHE() {
+		}
+
+		@Override
+		public SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey) {
+			return null; // map.get(simJobStatusKey);
+		}
+
+		@Override
+		public SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey,	SimStatusCacheEntry simStatusCacheEntry) {
+			return map.put(simJobStatusKey,simStatusCacheEntry);
+		}
+		
+	};
+
+	
+	public static class SimpleJobStatusCacheMultithread implements SimpleJobStatusCache {
+		private HashMap<SimJobStatusKey, SimStatusCacheEntry> map = new HashMap<SimJobStatusKey,SimStatusCacheEntry>();
+		
+		public SimpleJobStatusCacheMultithread(){
+			
+		}
+
+		@Override
+		public SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey) {
+			return map.get(simJobStatusKey);
+		}
+
+		@Override
+		public SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey,	SimStatusCacheEntry simStatusCacheEntry) {
+			return map.put(simJobStatusKey,simStatusCacheEntry);
+		}
+		
+	};
+
+	
+	public SimulationDatabaseDirect(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl databaseServerImpl, boolean bCache, SessionLog log){
 		this.databaseServerImpl = databaseServerImpl;
 		this.adminDbTopLevel = adminDbTopLevel;
+		if (bCache){
+			this.cache = new SimpleJobStatusCacheMultithread();
+		}else{
+			this.cache = new SimpleJobStatusCache_DONT_CACHE();
+		}
 		this.log = log;
 	}
 
@@ -65,35 +172,50 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		SimulationJobStatusPersistent[] simJobStatusArray = adminDbTopLevel.getSimulationJobStatusArray(simKey, jobIndex, true);
 		if (simJobStatusArray.length == 0){
 			return null;
-		}else if (simJobStatusArray.length == 1){
-			return getSimulationJobStatusTransient(simJobStatusArray[0]);
 		}
-		SimulationJobStatusPersistent latestSimJobStatus = simJobStatusArray[0];
+		int latestTaskID = simJobStatusArray[0].getTaskID();
 		for (SimulationJobStatusPersistent simJobStatus : simJobStatusArray){
-			if (latestSimJobStatus.getTaskID() < simJobStatus.getTaskID()){
-				latestSimJobStatus = simJobStatus;
+			if (latestTaskID < simJobStatus.getTaskID()){
+				latestTaskID = simJobStatus.getTaskID();
 			}
 		}
-		return getSimulationJobStatusTransient(latestSimJobStatus);
+		return getSimulationJobStatus(simKey, jobIndex, latestTaskID);
 	}
 
 	SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, int taskID) throws DataAccessException, SQLException {
-		SimulationJobStatusPersistent simJobStatusDb = adminDbTopLevel.getSimulationJobStatus(simKey, jobIndex, taskID, true);
-		return getSimulationJobStatusTransient(simJobStatusDb);
+		SimJobStatusKey key = new SimJobStatusKey(simKey, jobIndex, taskID);
+		SimStatusCacheEntry simStatusCacheEntry = cache.get(key);
+		if (simStatusCacheEntry!=null){
+			return simStatusCacheEntry.jobStatus;
+		}else{
+			SimulationJobStatusPersistent simJobStatusPersistent = adminDbTopLevel.getSimulationJobStatus(simKey, jobIndex, taskID, true);
+			SimulationJobStatus simulationJobStatus = translateToSimulationJobStatusTransient(simJobStatusPersistent);
+			cache.put(key, new SimStatusCacheEntry(simulationJobStatus,null));
+			return simulationJobStatus;
+		}
 	}
 
 	@Override
 	public void insertSimulationJobStatus(SimulationJobStatus simulationJobStatus) throws DataAccessException, SQLException{
-		SimulationJobStatusPersistent simulationJobStatusDb = getSimulationJobStatusPersistent(simulationJobStatus);
+		SimulationJobStatusPersistent simulationJobStatusDb = translateToSimulationJobStatusPersistent(simulationJobStatus);
 		adminDbTopLevel.insertSimulationJobStatus(simulationJobStatusDb,true);
+		SimJobStatusKey key = new SimJobStatusKey(simulationJobStatus.getVCSimulationIdentifier().getSimulationKey(),simulationJobStatus.getJobIndex(),simulationJobStatus.getTaskID());
+		cache.put(key, new SimStatusCacheEntry(simulationJobStatus, null));
 	}
 
 	@Override
 	public SimulationJobStatus[] getActiveJobs() throws DataAccessException, SQLException{
 		SimulationJobStatusPersistent[] activeJobsDb = adminDbTopLevel.getActiveJobs(VCellServerID.getSystemServerID(),true);
 		SimulationJobStatus[] activeJobs = new SimulationJobStatus[activeJobsDb.length];
-		for (int i=0;i<activeJobs.length;i++){
-			activeJobs[i] = getSimulationJobStatusTransient(activeJobsDb[i]);
+		for (int i=0;i<activeJobsDb.length;i++){
+			SimJobStatusKey key = new SimJobStatusKey(activeJobsDb[i].getVCSimulationIdentifier().getSimulationKey(),activeJobsDb[i].getJobIndex(),activeJobsDb[i].getTaskID());
+			SimStatusCacheEntry entry = cache.get(key);
+			if (entry!=null){
+				activeJobs[i] = entry.jobStatus;
+			}else{
+				activeJobs[i] = translateToSimulationJobStatusTransient(activeJobsDb[i]);
+				cache.put(key, new SimStatusCacheEntry(activeJobs[i],null));
+			}
 		}
 		return activeJobs;
 	}
@@ -105,9 +227,17 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 	
 	@Override
-	public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException {
-		SimulationJobStatusPersistent newSimulationJobStatusDb = getSimulationJobStatusPersistent(newSimulationJobStatus);
+	public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, StateInfo stateInfo) throws DataAccessException, UpdateSynchronizationException, SQLException {
+		SimulationJobStatusPersistent newSimulationJobStatusDb = translateToSimulationJobStatusPersistent(newSimulationJobStatus);
 		adminDbTopLevel.updateSimulationJobStatus(newSimulationJobStatusDb,true);
+
+		SimJobStatusKey key = new SimJobStatusKey(newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey(), newSimulationJobStatus.getJobIndex(), newSimulationJobStatus.getTaskID());
+		cache.put(key, new SimStatusCacheEntry(newSimulationJobStatus,stateInfo));
+	}
+
+	@Override
+	public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException {
+		updateSimulationJobStatus(newSimulationJobStatus, null);
 	}
 
 	@Override
@@ -212,11 +342,11 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 
 	@Override
 	public SimulationStatus[] getSimulationStatus(KeyValue[] simKeys) throws ObjectNotFoundException, DataAccessException {
-		SimulationStatusPersistent[] simStatusDB = databaseServerImpl.getSimulationStatus(simKeys);
+		SimulationStatusPersistent[] simStatusDbArray = databaseServerImpl.getSimulationStatus(simKeys);
 		ArrayList<SimulationStatus> simStatusList = new ArrayList<SimulationStatus>();
-		for (SimulationStatusPersistent simStatus : simStatusDB){
-			if (simStatus!=null){
-				simStatusList.add(getSimulationStatusTransient(simStatus));
+		for (SimulationStatusPersistent simStatusDb : simStatusDbArray){
+			if (simStatusDb!=null){
+				simStatusList.add(buildSimulationStatus(simStatusDb));
 			}else{
 				simStatusList.add(null);
 			}
@@ -227,19 +357,64 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	@Override
 	public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
 		SimulationStatusPersistent simStatusDB = databaseServerImpl.getSimulationStatus(simulationKey);
-		return getSimulationStatusTransient(simStatusDB);
+		return buildSimulationStatus(simStatusDB);
 	}
 
-	private SimulationStatus getSimulationStatusTransient(SimulationStatusPersistent simStatusPersistent) {
-		SimulationJobStatus[] simJobStatusArray = new SimulationJobStatus[simStatusPersistent.getJobStatuses().length];
-		for (int i=0;i<simJobStatusArray.length;i++){
-			simJobStatusArray[i] = getSimulationJobStatusTransient(simStatusPersistent.getJobStatus(i));
+	private SimulationStatus buildSimulationStatus(SimulationStatusPersistent simStatusDB) throws ObjectNotFoundException, DataAccessException {
+		SimulationStatus simulationStatus = translateToSimulationStatusTransient(simStatusDB);
+		// replace SimulationJobStatus from cache when possible
+		ArrayList<SimulationJobStatus> simJobStatusList = new ArrayList<SimulationJobStatus>();
+		int index = 0;
+		while (simulationStatus.getJobStatus(index)!=null){
+			SimulationJobStatus simJobStatusDb = simulationStatus.getJobStatus(index);
+			SimJobStatusKey key = new SimJobStatusKey(simJobStatusDb.getVCSimulationIdentifier().getSimulationKey(), simJobStatusDb.getJobIndex(), simJobStatusDb.getTaskID());
+			SimStatusCacheEntry entry = cache.get(key);
+			if (entry != null){
+				// assume cache is more recent
+				simJobStatusList.add(entry.jobStatus);
+			}else{
+				simJobStatusList.add(simJobStatusDb);
+				cache.put(key, new SimStatusCacheEntry(simJobStatusDb,null));
+			}
+			index++;
 		}
-		SimulationStatus simStatus = new SimulationStatus(simJobStatusArray);
-		return simStatus;
+		SimulationStatus newSimStatus = new SimulationStatus(simJobStatusList.toArray(new SimulationJobStatus[simJobStatusList.size()]));
+		return newSimStatus;
 	}
-	
-	private SimulationJobStatus getSimulationJobStatusTransient(SimulationJobStatusPersistent simJobStatus){
+
+	@Override
+	public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
+		//
+		// create corresponding SimpleJobStatus[] from SimpleJobStatusPersistent[]
+		// 1) get SimpleJobStatusPersistent from database (with stored status, metadata, and documentLinks - but no stateInfo)
+		// 2) if already in cache, use SimulationJobStatus and stateInfo from cache.
+		// 3) if not in cache, use SimulationJobStatus from database and no stateInfo, populate cache.
+		//
+		List<SimpleJobStatusPersistent> simpleJobStatusPersistentList = databaseServerImpl.getSimpleJobStatus(simStatusQuerySpec);
+		ArrayList<SimpleJobStatus> simpleJobStatusList = new ArrayList<SimpleJobStatus>();
+		for (SimpleJobStatusPersistent simpleJobStatusPersistent : simpleJobStatusPersistentList){
+			SimulationJobStatusPersistent simJobStatusDb = simpleJobStatusPersistent.jobStatus;
+			SimJobStatusKey key = new SimJobStatusKey(simpleJobStatusPersistent.simulationMetadata.vcSimID.getSimulationKey(),simJobStatusDb.getJobIndex(),simJobStatusDb.getTaskID());
+			SimStatusCacheEntry simStatusCacheEntry = cache.get(key);
+			
+			StateInfo cachedStateInfo = null; //TODO need to get this from memory cache.
+			SimulationJobStatus latestSimulationJobStatus = null;
+			if (simStatusCacheEntry != null){
+				cachedStateInfo = simStatusCacheEntry.stateInfo;
+				latestSimulationJobStatus = simStatusCacheEntry.jobStatus;
+			}else{
+				latestSimulationJobStatus = translateToSimulationJobStatusTransient(simJobStatusDb);
+				cache.put(key, new SimStatusCacheEntry(latestSimulationJobStatus, null));
+			}
+			
+			SimpleJobStatus bestSimpleJobStatus = translateToSimpleJobStatusTransient(simpleJobStatusPersistent, latestSimulationJobStatus, cachedStateInfo);
+			
+			simpleJobStatusList.add(bestSimpleJobStatus); // uses latest SimulationJobStatus and StateInfo.
+		}
+		return simpleJobStatusList.toArray(new SimpleJobStatus[simpleJobStatusList.size()]);
+	}
+
+	private SimulationJobStatus translateToSimulationJobStatusTransient(SimulationJobStatusPersistent simJobStatus){
 		VCellServerID serverID = simJobStatus.getServerID();
 		VCSimulationIdentifier vcSimID = simJobStatus.getVCSimulationIdentifier();
 		int jobIndex = simJobStatus.getJobIndex();
@@ -262,7 +437,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		return simJobStatusTransient;
 	}
 	
-	private SimulationJobStatusPersistent getSimulationJobStatusPersistent(SimulationJobStatus simJobStatus){
+	private SimulationJobStatusPersistent translateToSimulationJobStatusPersistent(SimulationJobStatus simJobStatus){
 		VCellServerID serverID = simJobStatus.getServerID();
 		VCSimulationIdentifier vcSimID = simJobStatus.getVCSimulationIdentifier();
 		int jobIndex = simJobStatus.getJobIndex();
@@ -284,5 +459,26 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 				
 		return simJobStatusPersistent;
 	}
+
+	private SimpleJobStatus translateToSimpleJobStatusTransient(SimpleJobStatusPersistent simpleJobStatusPersistent, SimulationJobStatus cachedSimulationJobStatus, StateInfo cachedStateInfo){
+		SimulationJobStatus simJobStatus = null;
+		if (cachedSimulationJobStatus != null){
+			simJobStatus = cachedSimulationJobStatus;
+		}else{
+			simJobStatus = translateToSimulationJobStatusTransient(simpleJobStatusPersistent.jobStatus);
+		}
+		SimpleJobStatus simpleJobStatus = new SimpleJobStatus(simpleJobStatusPersistent.simulationMetadata,simpleJobStatusPersistent.simulationDocumentLink,simJobStatus,cachedStateInfo);
+		return simpleJobStatus;
+	}
+	
+	private SimulationStatus translateToSimulationStatusTransient(SimulationStatusPersistent simStatusPersistent) {
+		SimulationJobStatus[] simJobStatusArray = new SimulationJobStatus[simStatusPersistent.getJobStatuses().length];
+		for (int i=0;i<simJobStatusArray.length;i++){
+			simJobStatusArray[i] = translateToSimulationJobStatusTransient(simStatusPersistent.getJobStatus(i));
+		}
+		SimulationStatus simStatus = new SimulationStatus(simJobStatusArray);
+		return simStatus;
+	}
+	
 	
 }

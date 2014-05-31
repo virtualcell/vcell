@@ -22,6 +22,7 @@ import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.htc.HtcJobID;
+import cbit.vcell.messaging.db.RunningStateInfo;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
@@ -343,8 +344,8 @@ public class SimulationStateMachine {
 
 				}else if (oldSchedulerStatus.isRunning()){
 					if (oldSimExeStatus != null) {
-						Date latestUpdate = oldSimExeStatus.getLatestUpdateDate();
-						if (System.currentTimeMillis() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
+//						Date latestUpdate = oldSimExeStatus.getLatestUpdateDate();
+//						if (System.currentTimeMillis() - latestUpdate.getTime() >= MessageConstants.INTERVAL_PING_SERVER_MS * 3 / 5) {
 							// new queue status		
 							SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
 							SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
@@ -352,7 +353,7 @@ public class SimulationStateMachine {
 							newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
 									taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
 						}
-					}
+//					}
 				}
 			}
 
@@ -404,14 +405,19 @@ public class SimulationStateMachine {
 			}
 		}
 		if (newJobStatus!=null){
-			simulationDatabase.updateSimulationJobStatus(newJobStatus);
 			if (!newJobStatus.compareEqual(oldSimulationJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()) {		
 				Double progress = workerEvent.getProgress();
 				Double timepoint = workerEvent.getTimePoint();
+				RunningStateInfo runningStateInfo = null;
+				if (progress != null && timepoint != null){
+					runningStateInfo = new RunningStateInfo(progress,timepoint);
+				}
+				simulationDatabase.updateSimulationJobStatus(newJobStatus,runningStateInfo);
 				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
 				msgForClient.sendToClient(session);
 				log.print("Send status to client: " + msgForClient);
 			} else {
+				simulationDatabase.updateSimulationJobStatus(newJobStatus);
 				StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
 				msgForClient.sendToClient(session);
 				log.print("Send status to client: " + msgForClient);
@@ -419,7 +425,11 @@ public class SimulationStateMachine {
 		}else if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()){
 			Double progress = workerEvent.getProgress();
 			Double timepoint = workerEvent.getTimePoint();
-			simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus);
+			RunningStateInfo runningStateInfo = null;
+			if (progress!=null && timepoint!=null){
+				runningStateInfo = new RunningStateInfo(progress,timepoint);
+			}
+			simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,runningStateInfo);
 			StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
 			msgForClient.sendToClient(session);
 			log.print("Send status to client: " + msgForClient);

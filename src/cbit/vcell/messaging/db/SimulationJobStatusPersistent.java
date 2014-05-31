@@ -141,6 +141,9 @@ public class SimulationJobStatusPersistent implements org.vcell.util.Matchable, 
  * SimulationJobStatus constructor comment.
  */
 public SimulationJobStatusPersistent(VCellServerID serverID, VCSimulationIdentifier vcSimID, int jobIndex, Date submitDate, SchedulerStatus schedulerStatus, int taskID, SimulationMessagePersistent simMessage, SimulationQueueEntryStatusPersistent simQueueStatus, SimulationExecutionStatusPersistent simExeStatus){
+	if (vcSimID == null) {
+		throw new RuntimeException("SimulationJobStatus : VCSimID should not be null");
+	}
 	if (simMessage == null) {
 		throw new RuntimeException("SimulationJobStatus : SimulationMessage should not be null");
 	}

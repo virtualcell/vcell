@@ -11,7 +11,7 @@
 package cbit.vcell.message.server.console;
 import javax.swing.BorderFactory;
 
-import cbit.vcell.messaging.db.SimpleJobStatusPersistent;
+import cbit.vcell.messaging.db.SimpleJobStatus;
 
 /**
  * Insert the type's description here.
@@ -52,7 +52,7 @@ public class SimulationJobStatusDetailDialog extends javax.swing.JDialog {
 	private javax.swing.JTextArea ivjSolverDescTextArea = null;
 	private javax.swing.JButton ivjResubmitButton = null;
 	private javax.swing.JButton ivjStopButton = null;
-	private SimpleJobStatusPersistent jobStatus = null;
+	private SimpleJobStatus simpleJobStatus = null;
 	private ServerManageConsole smConsole = null;
 	private javax.swing.JPanel ivjJPanel12 = null;
 	private javax.swing.JPanel ivjJPanel13 = null;
@@ -1636,7 +1636,7 @@ public void resubmitButton_ActionPerformed(java.awt.event.ActionEvent actionEven
  * Creation date: (7/19/2004 3:15:52 PM)
  */
 public void resubmitSimulation() {
-	smConsole.resubmitSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+	smConsole.resubmitSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 }
 
 
@@ -1645,24 +1645,24 @@ public void resubmitSimulation() {
  * Creation date: (3/29/2004 2:05:24 PM)
  */
 public void setStatus() {
-	jobStatus = smConsole.getReturnedSimulationJobStatus(currentSelected);
-	setTitle("Simulation Status [" + jobStatus.getUserID() + "," + jobStatus.getVCSimulationIdentifier().getSimulationKey() + "]");
-	getUserTextField().setText(jobStatus.getUserID());
-	getSimIDTextField().setText(jobStatus.getVCSimulationIdentifier().getSimulationKey() + "");
-	getJobIndexTextField().setText(jobStatus.getJobIndex() + "");
-	getComputeHostTextField().setText(jobStatus.getComputeHost());
-	getSubmitDateTextField().setText(jobStatus.getSubmitDate() == null ? "" : dateTimeFormatter.format(jobStatus.getSubmitDate()));
-	getStartDateTextField().setText(jobStatus.getStartDate() == null ? "" : dateTimeFormatter.format(jobStatus.getStartDate()));
-	getEndDateTextField().setText(jobStatus.getEndDate() == null ? "" : dateTimeFormatter.format(jobStatus.getEndDate()));
-	getServerIDTextField().setText(jobStatus.getEndDate() == null ? "" : jobStatus.getServerID());
-	getTaskIDTextField().setText(jobStatus.getTaskID() == null ? "" : jobStatus.getTaskID() + "");
-	getSolverDescTextArea().setText(jobStatus.getSolverDescriptionVCML()+"\n"+jobStatus.getMeshSampling());
+	simpleJobStatus = smConsole.getReturnedSimulationJobStatus(currentSelected);
+	setTitle("Simulation Status [" + simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName() + "," + simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName() + "]");
+	getUserTextField().setText(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName());
+	getSimIDTextField().setText(simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey() + "");
+	getJobIndexTextField().setText(simpleJobStatus.jobStatus.getJobIndex() + "");
+	getComputeHostTextField().setText(simpleJobStatus.jobStatus.getComputeHost());
+	getSubmitDateTextField().setText(simpleJobStatus.jobStatus.getSubmitDate() == null ? "" : dateTimeFormatter.format(simpleJobStatus.jobStatus.getSubmitDate()));
+	getStartDateTextField().setText(simpleJobStatus.jobStatus.getStartDate() == null ? "" : dateTimeFormatter.format(simpleJobStatus.jobStatus.getStartDate()));
+	getEndDateTextField().setText(simpleJobStatus.jobStatus.getEndDate() == null ? "" : dateTimeFormatter.format(simpleJobStatus.jobStatus.getEndDate()));
+	getServerIDTextField().setText(simpleJobStatus.jobStatus.getEndDate() == null ? "" : simpleJobStatus.jobStatus.getServerID().toString());
+	getTaskIDTextField().setText("" + simpleJobStatus.jobStatus.getTaskID());
+	getSolverDescTextArea().setText(simpleJobStatus.simulationMetadata.getSolverDescriptionVCML()+"\n"+simpleJobStatus.simulationMetadata.getMeshSampling());
 	getSolverDescTextArea().setCaretPosition(0);
-	getStatusMessageTextArea().setText(jobStatus.getStatusMessage());
+	getStatusMessageTextArea().setText(simpleJobStatus.jobStatus.getSimulationMessage().getDisplayMessage());
 	getStatusMessageTextArea().setCaretPosition(0);
 	getStopButton().setEnabled(false);
 	getResubmitButton().setEnabled(false);
-	if (jobStatus.isDone()) {
+	if (simpleJobStatus.jobStatus.getSchedulerStatus().isDone()) {
 		getResubmitButton().setEnabled(true);		
 	} else {
 		getStopButton().setEnabled(true);
@@ -1709,6 +1709,6 @@ public void stopButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
  * Creation date: (7/19/2004 3:15:42 PM)
  */
 public void stopSimulation() {
-	smConsole.stopSimulation(jobStatus.getUserID(), jobStatus.getVCSimulationIdentifier().getSimulationKey());
+	smConsole.stopSimulation(simpleJobStatus.simulationMetadata.vcSimID.getOwner().getName(), simpleJobStatus.simulationMetadata.vcSimID.getSimulationKey());
 }
 }
