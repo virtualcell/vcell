@@ -41,7 +41,6 @@ public class Logging {
 			PropertyConfigurator.configure(def);
 		}
 	}
-	
 
 	/**
 	 * 
@@ -59,7 +58,7 @@ public class Logging {
 		if (secondaryDir != null) {
 			File initFile = new File(secondaryDir,PROP_FILE);
 			if (initFile.exists()) {
-				PropertyConfigurator.configure(PROP_FILE);
+				PropertyConfigurator.configure(initFile.getAbsolutePath());
 				if (lg.isInfoEnabled())
 					lg.info("logger initialized from file  "
 							+ initFile.getAbsolutePath());
