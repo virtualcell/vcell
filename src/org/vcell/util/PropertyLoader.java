@@ -11,6 +11,7 @@
 package org.vcell.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -19,13 +20,13 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PropertyLoader {
+	
 	//must come before uses of #record method
 	private static HashMap<String, MetaProp> propMap = new HashMap<String,MetaProp>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
 	public static final String ADMINISTRATOR_ID = "2";
 
 	public static final String propertyFileProperty			= "vcell.propertyfile";
-	public static final String systemTempDirProperty		= "java.io.tmpdir";		// overridden in server launch scripts to ${common_siteRootDir}/tmp
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",RequiredFor.NOT,ValueType.GEN);
 
@@ -140,6 +141,8 @@ public class PropertyLoader {
 	public static final String installationRoot = record("vcell.installDir",RequiredFor.BOTH,ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);
+	
+	private static File systemTemporaryDirectory = null;
 
 	/**
 	 * under which context(s) are we running? 
@@ -281,6 +284,22 @@ public class PropertyLoader {
 	public PropertyLoader() throws Exception {
 		loadProperties();
 	}
+	
+	/**
+	 * get Java's system temporary directory. This will be either a JVM default, or
+	 * a directory specified by the "java.io.tmpdir" system property
+	 * @return
+	 * @throws IOException
+	 */
+	public static File getSystemTemporaryDirectory( ) throws IOException {
+		if (systemTemporaryDirectory != null) {
+			return systemTemporaryDirectory;
+		}
+		File query = File.createTempFile("PropertyLoaderQuery",null);
+		systemTemporaryDirectory = query.getParentFile();
+		query.delete();
+		return systemTemporaryDirectory;
+	}
 
 	/**
 	 * This method was created in VisualAge.
@@ -392,7 +411,7 @@ public class PropertyLoader {
 			}
 		} 
 		if (propertyFile.canRead()) {
-			java.util.Properties p = new Properties(); 
+			java.util.Properties p = new SProperties(); 
 			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
 			p.load(propFile);
 			propFile.close();
