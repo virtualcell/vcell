@@ -446,10 +446,9 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 
 public ExportOutput[] makeVTKUnstructuredData0(OutputContext outputContext,JobRequest jobRequest, User user,
 		DataServerImpl dataServerImpl, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception{
-	String simID = exportSpecs.getVCDataIdentifier().getID();
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	boolean bChombo = dataServerImpl.isChombo(user, vcdID);
-	final File tmpDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.systemTempDirProperty));
+	final File tmpDir = PropertyLoader.getSystemTemporaryDirectory();
 	if (bChombo){
 		return makeVTKUnstructuredData_Chombo(outputContext, jobRequest, user, dataServerImpl, exportSpecs, tmpDir, fileDataContainerManager);
 	}else{

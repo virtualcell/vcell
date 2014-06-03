@@ -135,7 +135,7 @@ public static void main(String [] args) throws Exception{
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors());
 	MovieSpecs movieSpecs = new MovieSpecs(
-		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,
+		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,///
 		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
 	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest",null);
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
@@ -193,9 +193,7 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynVisitExecutableProperty));
 	File visitSmoldynScriptLocation =
 		new File(PropertyLoader.getRequiredProperty(PropertyLoader.visitSmoldynScriptPathProperty));
-	final File visitSmoldynScriptTempDir =
-		new File(PropertyLoader.getRequiredProperty(
-				PropertyLoader.systemTempDirProperty));
+	final File visitSmoldynScriptTempDir = PropertyLoader.getSystemTemporaryDirectory();
 
 	//-----Get all data (from archive if necessary)
 	SimulationData simData = new SimulationData(vcdID,
