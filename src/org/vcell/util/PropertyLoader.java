@@ -411,7 +411,7 @@ public class PropertyLoader {
 			}
 		} 
 		if (propertyFile.canRead()) {
-			java.util.Properties p = new SProperties(); 
+			java.util.Properties p = new Properties(); 
 			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
 			p.load(propFile);
 			propFile.close();
