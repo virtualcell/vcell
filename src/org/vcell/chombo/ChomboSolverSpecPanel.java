@@ -14,53 +14,34 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.InputVerifier;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableModel;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
-import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
-import org.w3c.dom.css.ViewCSS;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.GuiConstants;
-import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -171,7 +152,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 				{
 					return null;
 				}
-				return new ScopedExpression(level.getRoiExpression(), ReservedVariable.X.getNameScope(), true, autoCompleteSymbolFilter);
+				return new ScopedExpression(level.getRoiExpression(), ReservedVariable.X.getNameScope(), true, true, autoCompleteSymbolFilter);
 			case COLUMN_TagsGrow:
 				return level.isTagsGrowEnabled();
 			}

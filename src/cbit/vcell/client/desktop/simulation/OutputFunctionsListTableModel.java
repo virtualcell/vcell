@@ -119,7 +119,7 @@ public Object getValueAt(int row, int column) {
 						return null; 
 					} else {
 						AutoCompleteSymbolFilter autoCompleteSymbolFilter = outputFunctionContext.getAutoCompleteSymbolFilter(obsFunction.getDomain());
-						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true, autoCompleteSymbolFilter);
+						return new ScopedExpression(obsFunction.getExpression(),outputFunctionContext.getNameScope(), true, true, autoCompleteSymbolFilter);
 					}
 				}
 				case COLUMN_OUTPUTFN_VARIABLETYPE: {

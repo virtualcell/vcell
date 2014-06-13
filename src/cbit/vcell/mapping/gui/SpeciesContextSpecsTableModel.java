@@ -163,7 +163,7 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_INITIAL:{
 				SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
 				if(initialConditionParameter != null) {
-					return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, autoCompleteSymbolFilter);
+					return new ScopedExpression(initialConditionParameter.getExpression(),initialConditionParameter.getNameScope(),  true, true, autoCompleteSymbolFilter);
 				} else	{
 					return null;
 				}
@@ -172,7 +172,7 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_DIFFUSION:{
 				SpeciesContextSpecParameter diffusionParameter = scSpec.getDiffusionParameter();
 				if(diffusionParameter != null && !scSpec.isConstant() && scSpec.isWellMixed()!=null && !scSpec.isWellMixed()) 	{
-					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, autoCompleteSymbolFilter);
+					return new ScopedExpression(diffusionParameter.getExpression(),diffusionParameter.getNameScope(), true, true, autoCompleteSymbolFilter);
 				} else {
 					return null;
 				}

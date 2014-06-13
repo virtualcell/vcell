@@ -122,7 +122,7 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_VALUE:{
 				Expression exp = parameter.getExpression();
 				if (exp!=null){
-					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(), false, autoCompleteSymbolFilter);						
+					return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(), false, true, autoCompleteSymbolFilter);						
 				}else{
 					return "Variable";
 				}

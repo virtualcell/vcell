@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 
 import org.vcell.util.CommentStringTokenizer;
 
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
@@ -69,7 +70,8 @@ public class MathFunctionDefinitions {
 	
 	public static Expression fixFunctionSyntax(Expression exp) throws ExpressionException {
 		FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(new FunctionFilter() {
-			public boolean accept(String functionName) {
+			@Override
+			public boolean accept(String functionName, FunctionType functionType) {
 				return (functionName.equals(FunctionName_field_old)  || 
 						functionName.equals(FunctionName_grad_old));
 			}

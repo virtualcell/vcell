@@ -28,6 +28,7 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
@@ -36,7 +37,7 @@ import cbit.vcell.parser.FunctionInvocation;
 public class FieldUtilities {
 	
 	public static class FieldFunctionFilter implements FunctionFilter {
-		public boolean accept(String functionName) {
+		public boolean accept(String functionName, FunctionType functionType) {
 			return (functionName.equals(FieldFunctionDefinition.FUNCTION_name));
 		}
 	};

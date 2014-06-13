@@ -12,6 +12,8 @@ package cbit.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
@@ -21,9 +23,16 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.ASTLiteralNode;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
 @SuppressWarnings("serial")
 public class TableCellEditorAutoCompletion extends DefaultCellEditor {
@@ -60,7 +69,35 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 				if (text.trim().length() > 0) {
 					try {
 						Expression exp = new Expression(text);
-						if (scopedExpression == null || scopedExpression.isValidateBinding()) {
+						if (scopedExpression == null || scopedExpression.isValidateFunctionBinding()){
+							FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
+							for (FunctionInvocation functionInvocation : functionInvocations){
+								String formalDefinition = functionInvocation.getFormalDefinition();
+								if (functionInvocation.getFunctionId() == FunctionType.USERDEFINED){
+									SymbolTableFunctionEntry stfe = (SymbolTableFunctionEntry) textFieldAutoCompletion.getSymbolTable().getEntry(formalDefinition);
+									if (stfe == null){
+										//
+										// check for wrong number of arguments
+										//
+										Map<String, SymbolTableEntry> entries = new HashMap<String, SymbolTableEntry>();
+										textFieldAutoCompletion.getSymbolTable().getEntries(entries);
+										System.out.println("available symbols");
+										for (String symbol : entries.keySet()){
+											System.out.print(symbol+",");
+										}
+										System.out.println("");
+										throw new ExpressionBindingException("unknown function "+formalDefinition,formalDefinition);
+									}
+								}else{ // built in function, check arguments
+									FunctionType functionType = functionInvocation.getFunctionId();
+									String formalDefinitionBuiltin = ASTFuncNode.getFormalDefinition(functionType.getName(),functionType.getArgTypes());
+									if (!formalDefinition.equals(formalDefinitionBuiltin)){
+										throw new ExpressionBindingException("expecting "+formalDefinitionBuiltin, formalDefinition);
+									}
+								}
+							}
+						}
+						if (scopedExpression == null || scopedExpression.isValidateIdentifierBinding()) {
 							exp.bindExpression(textFieldAutoCompletion.getSymbolTable());
 						}
 					} catch (ExpressionBindingException ex) {

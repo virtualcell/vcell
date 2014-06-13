@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
@@ -100,7 +101,8 @@ public class SolverUtilities {
 		}
 		FunctionInvocation[] functionInvocations = expression.getFunctionInvocations(new FunctionFilter() {
 			
-			public boolean accept(String functionName) {
+			@Override
+			public boolean accept(String functionName, FunctionType functionType) {
 				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
 						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
 					return true;

@@ -105,7 +105,7 @@ public Object getValueAt(int row, int col) {
 			}
 			case COLUMN_VALUE:{
 				if (subVolume instanceof AnalyticSubVolume){
-					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedVariable.X.getNameScope(), true, 
+					return new ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(), ReservedVariable.X.getNameScope(), true, true, 
 							autoCompleteSymbolFilter);
 				}
 				if (subVolume instanceof CSGObject){

@@ -169,7 +169,7 @@ public Object getValueAt(int row, int col) {
 					return null;						
 				} 
 				boolean bValidateBinding = !(parameter instanceof KineticsParameter);
-				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, null);				
+				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, true, null);				
 			}
 			case COLUMN_UNIT:{
 				return parameter.getUnitDefinition();				

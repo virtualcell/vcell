@@ -23,7 +23,8 @@ import cbit.vcell.parser.NameScope;
 public class ScopedExpression {
 	private Expression fieldRenamedExpression = null;
 	private NameScope fieldNameScope = null;
-	private boolean bValidateBinding = true;
+	private boolean bValidateIdentifierBinding = true;
+	private boolean bValidateFunctionBinding = true;
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	final private String fieldRenamedExpressionInfix;
 	private ExpressionBindingException expressionBindingException = null;
@@ -33,20 +34,21 @@ public class ScopedExpression {
  * @throws ExpressionBindingException 
  */
 public ScopedExpression(Expression argExpression, NameScope argNameScope) throws ExpressionBindingException {
-	this(argExpression,argNameScope,true, null);
+	this(argExpression,argNameScope,true, true, null);
 }
 
 /**
  * ContextualExpression constructor comment.
  * @throws ExpressionBindingException 
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argValidateBinding, AutoCompleteSymbolFilter stef) {
+public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argValidateIdentifierBinding, boolean argValidateFunctionBinding, AutoCompleteSymbolFilter stef) {
 	super();
 	if (argExpression == null) {
 		throw new RuntimeException("Expression cannot be null");
 	}
 	this.fieldNameScope = argNameScope;
-	this.bValidateBinding = argValidateBinding;
+	this.bValidateIdentifierBinding = argValidateIdentifierBinding;
+	this.bValidateFunctionBinding = argValidateFunctionBinding;
 	autoCompleteSymbolFilter = stef;
 	this.fieldRenamedExpression = argExpression;
 	if (fieldNameScope != null) {
@@ -89,8 +91,12 @@ public String infix() {
  * Creation date: (4/2/2004 3:02:27 PM)
  * @return boolean
  */
-public boolean isValidateBinding() {
-	return bValidateBinding;
+public boolean isValidateIdentifierBinding() {
+	return bValidateIdentifierBinding;
+}
+
+public boolean isValidateFunctionBinding() {
+	return bValidateFunctionBinding;
 }
 /**
  * Insert the method's description here.
