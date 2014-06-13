@@ -233,7 +233,7 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 						Kinetics.KineticsParameter ratePara = origKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate);
 						if(ratePara != null && ratePara.getExpression() !=null)
 						{
-							return new ScopedExpression(ratePara.getExpression(),ratePara.getNameScope(), false, null);
+							return new ScopedExpression(ratePara.getExpression(),ratePara.getNameScope(), false, true, null);
 						}
 					}
 					return null;
@@ -249,7 +249,7 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 				{
 					if(maFunc != null && maFunc.getForwardRate() != null)
 					{
-						return new ScopedExpression(maFunc.getForwardRate(), null, false, null);
+						return new ScopedExpression(maFunc.getForwardRate(), null, false, true, null);
 					}
 					return null;
 				}
@@ -257,7 +257,7 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 				{
 					if(maFunc != null && maFunc.getReverseRate() != null)
 					{
-						return new ScopedExpression(maFunc.getReverseRate(), null, false, null);
+						return new ScopedExpression(maFunc.getReverseRate(), null, false, true, null);
 					}
 					return null;
 				}
