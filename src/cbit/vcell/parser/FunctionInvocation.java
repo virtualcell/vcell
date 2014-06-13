@@ -11,6 +11,7 @@
 package cbit.vcell.parser;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
 public class FunctionInvocation {
 	private String functionName = null;
@@ -45,6 +46,18 @@ public class FunctionInvocation {
 
 	public Expression getFunctionExpression() {
 		return functionExpression;
+	}
+	
+	public String getFormalDefinition(){
+		FunctionArgType[] argTypes = new FunctionArgType[arguments.length];
+		for (int i = 0; i < argTypes.length; i++) {
+			if (arguments[i].isLiteral()){
+				argTypes[i] = FunctionArgType.LITERAL;
+			}else{
+				argTypes[i] = FunctionArgType.NUMERIC;
+			}
+		}
+		return ASTFuncNode.getFormalDefinition(getFunctionName(), argTypes);
 	}
 	
 	public SymbolTableFunctionEntry getSymbolTableFunctionEntry() {

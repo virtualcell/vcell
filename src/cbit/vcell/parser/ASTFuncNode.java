@@ -2352,7 +2352,7 @@ public Node flatten() throws ExpressionException {
 }
 
 void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilter filter) {
-	if (filter==null || filter.accept(getName())){
+	if (filter==null || filter.accept(getName(),getFunction())){
 		FunctionInvocation functionInvocation = new FunctionInvocation(this);
 		if (!v.contains(functionInvocation)){
 			v.add(functionInvocation);
