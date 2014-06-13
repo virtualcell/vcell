@@ -256,7 +256,7 @@ public Object getValueAt(int row, int column) {
 						}
 						
 					};
-					return new ScopedExpression(actualExpression, simSymbolTable.getNameScope(), true, symbolTableEntryFilter); 
+					return new ScopedExpression(actualExpression, simSymbolTable.getNameScope(), true, true, symbolTableEntryFilter); 
 				}
 			}
 			case COLUMN_SCAN: {

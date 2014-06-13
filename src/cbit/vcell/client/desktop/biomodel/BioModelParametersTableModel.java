@@ -42,7 +42,6 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -169,7 +168,7 @@ public Object getValueAt(int row, int col) {
 					return null;						
 				} 
 				boolean bValidateBinding = !(parameter instanceof KineticsParameter);
-				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, null);				
+				return new ScopedExpression(parameter.getExpression(), parameter.getNameScope(), bValidateBinding, true, null);				
 			}
 			case COLUMN_UNIT:{
 				if (parameter.getUnitDefinition() != null) {

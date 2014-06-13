@@ -112,7 +112,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 						if (eventAssignment.getAssignmentExpression() == null) {
 							return null; 
 						} else {
-							return new ScopedExpression(eventAssignment.getAssignmentExpression(), fieldBioEvent.getNameScope(), true, autoCompleteSymbolFilter);
+							return new ScopedExpression(eventAssignment.getAssignmentExpression(), fieldBioEvent.getNameScope(), true, true, autoCompleteSymbolFilter);
 						}
 					}
 					case COLUMN_EVENTASSIGN_UNITS: {
