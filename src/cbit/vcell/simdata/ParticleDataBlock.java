@@ -10,7 +10,8 @@
 
 package cbit.vcell.simdata;
 
-
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import java.util.*;
 import java.io.*;
 
@@ -91,13 +92,13 @@ private void read(File file, File zipFile) throws DataAccessException, IOExcepti
 
 	Vector lines = new Vector();
 	BufferedReader reader = null;
-	java.util.zip.ZipFile zipZipFile = null;
+	org.apache.commons.compress.archivers.zip.ZipFile zipZipFile = null;
 	
 	String fileName = file.getPath();
 	if (zipFile != null) {
-		zipZipFile = new java.util.zip.ZipFile(zipFile);
+		zipZipFile = new org.apache.commons.compress.archivers.zip.ZipFile(zipFile);
 		java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
-		InputStream is = zipZipFile.getInputStream(dataEntry);
+		InputStream is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
 		reader = new BufferedReader(new InputStreamReader(is));
 	} else {
 		System.out.println("ParticleDataSet.read() open '" + fileName + "'");

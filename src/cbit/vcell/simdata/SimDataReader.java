@@ -15,7 +15,9 @@ import java.io.FileInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.zip.ZipFile;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import java.util.zip.ZipEntry;
 
 import ncsa.hdf.object.Dataset;
@@ -46,7 +48,8 @@ public class SimDataReader{
 	private int[][] varIndexes;
 	private int masterTimeIndex = 0;
 	private long masterStreamIndex = 0;
-	private ZipFile currentZipFile = null;
+	private org.apache.commons.compress.archivers.zip.ZipFile currentZipFile = null;
+	private String currentZipFileName = null;
 	private DataInputStream dis = null;
 	long[][][] sortedVarIndexes = null;
 
@@ -102,8 +105,9 @@ public void close(){
 		try{
 			currentZipFile.close();
 			currentZipFile = null;
+			currentZipFileName = null;
 		}catch(IOException e){
-			error+= "Error closing zipfile "+currentZipFile.getName()+"\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName());
+			error+= "Error closing zipfile "+currentZipFileName.toString()+"\n"+(e.getMessage() != null?e.getMessage():e.getClass().getName());
 		}
 	}
 	
@@ -124,9 +128,10 @@ private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exc
 	if (zipFilenNames == null || zipFilenNames[masterTimeIndex] == null) {
 		return;
 	}
-	if (currentZipFile == null || !currentZipFile.getName().equals(zipFilenNames[masterTimeIndex])) {
+	if (currentZipFile == null || !currentZipFileName.equals(zipFilenNames[masterTimeIndex])) {
 		close();
 		currentZipFile = new ZipFile(zipFilenNames[masterTimeIndex]);
+		currentZipFileName=zipFilenNames[masterTimeIndex];
 	}
 	File tempFile = null;
 	FileFormat solFile = null;
@@ -234,16 +239,18 @@ private void getNextDataAtCurrentTime0(double[][] returnValues) throws IOExcepti
 		//Setup the proper DataInputStream
 		String currentSimDataFileName = simDataFileNames[masterTimeIndex];
 		if(zipFilenNames != null && zipFilenNames[masterTimeIndex] != null){
-			if(currentZipFile == null || !currentZipFile.getName().equals(zipFilenNames[masterTimeIndex])){
+			if(currentZipFile == null || !currentZipFileName.equals(zipFilenNames[masterTimeIndex])){
 				if(currentZipFile != null){
 					currentZipFile.close();
+					currentZipFileName=null;
 				}
-				currentZipFile = new ZipFile(zipFilenNames[masterTimeIndex]);
+				currentZipFile = new org.apache.commons.compress.archivers.zip.ZipFile(zipFilenNames[masterTimeIndex]);
+				currentZipFileName=zipFilenNames[masterTimeIndex];
 			}
 			if(dis != null){dis.close();dis = null;}
 			ZipEntry ze = currentZipFile.getEntry(currentSimDataFileName);
 			if(wantsThisTime[masterTimeIndex]){
-				InputStream is = currentZipFile.getInputStream(ze);
+				InputStream is = currentZipFile.getInputStream((ZipArchiveEntry) ze);
 				//java.io.BufferedInputStream bis = new java.io.BufferedInputStream(is);
 				dis = new java.io.DataInputStream(is);
 			}

@@ -13,7 +13,9 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -577,7 +579,7 @@ public class SimulationDataSpatialHdf5
 			ZipEntry simEntry = hdf5ZipZipFile.getEntry(logEntry.simHdf5FileName);
 			
 			// read data from zip file
-			bis = new BufferedInputStream(hdf5ZipZipFile.getInputStream(simEntry));
+			bis = new BufferedInputStream(hdf5ZipZipFile.getInputStream((ZipArchiveEntry) simEntry));
 			tempFile = File.createTempFile("tmpHdf5", HDF5_EXT);
 			tempFile.deleteOnExit();
 			fos = new FileOutputStream(tempFile);
