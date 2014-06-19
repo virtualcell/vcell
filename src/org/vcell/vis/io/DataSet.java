@@ -23,7 +23,10 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -67,7 +70,7 @@ public class DataSet implements java.io.Serializable
 					File pdeFile = new File(fileName);
 					InputStream is = null;
 					long length = 0;
-					java.util.zip.ZipFile zipZipFile = null;
+					ZipFile zipZipFile = null;
 		
 					if (zipFile == null && !pdeFile.exists()) {
 						throw new FileNotFoundException("file "+fileName+" does not exist");
@@ -76,7 +79,7 @@ public class DataSet implements java.io.Serializable
 						zipZipFile = openZipFile(zipFile);
 						java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
 						length = dataEntry.getSize();
-						is = zipZipFile.getInputStream(dataEntry);
+						is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
 					} else {
 						length = pdeFile.length();
 						is = new FileInputStream(pdeFile);
@@ -147,10 +150,10 @@ public class DataSet implements java.io.Serializable
 		return typeArray;
 	}
 	
-	private static java.util.zip.ZipFile openZipFile(File zipFile) throws IOException {
+	private static ZipFile openZipFile(File zipFile) throws IOException {
 		for (int i = 0; i < 20; i ++) {
 			try {
-				return new java.util.zip.ZipFile(zipFile);
+				return new ZipFile(zipFile);
 			} catch (java.util.zip.ZipException ex) {			
 				if (i < 19) {
 					try {
@@ -173,7 +176,7 @@ public class DataSet implements java.io.Serializable
 	 */
 	public void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 		
-		java.util.zip.ZipFile zipZipFile = null;
+		ZipFile zipZipFile = null;
 		DataInputStream dataInputStream = null;
 		try{
 			this.fileName = file.getPath();	
@@ -185,7 +188,7 @@ public class DataSet implements java.io.Serializable
 				System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
 				zipZipFile = openZipFile(zipFile);
 				java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
-				is = zipZipFile.getInputStream(dataEntry);
+				is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
 				length = dataEntry.getSize();
 			} else {		
 				if (!file.exists()){
@@ -267,7 +270,7 @@ public class DataSet implements java.io.Serializable
 		try
 		{
 			ZipEntry dataEntry = zipFile.getEntry(fileName);
-			is = zipFile.getInputStream(dataEntry);		
+			is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);		
 			return createTempHdf5File(is);
 		}
 		finally

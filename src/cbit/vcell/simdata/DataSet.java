@@ -22,10 +22,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
+//import java.util.zip.ZipEntry;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+//import java.util.zip.ZipFile;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Dataset;
@@ -82,8 +86,8 @@ double[] getData(String varName, File zipFile) throws IOException {
 				File pdeFile = new File(fileName);
 				InputStream is = null;
 				long length = 0;
-				java.util.zip.ZipFile zipZipFile = null;
-	
+				org.apache.commons.compress.archivers.zip.ZipFile zipZipFile = null;
+	            
 				if (zipFile == null && !pdeFile.exists()) {
 					throw new FileNotFoundException("file "+fileName+" does not exist");
 				}
@@ -91,7 +95,7 @@ double[] getData(String varName, File zipFile) throws IOException {
 					zipZipFile = openZipFile(zipFile);
 					java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(pdeFile.getName());
 					length = dataEntry.getSize();
-					is = zipZipFile.getInputStream(dataEntry);
+					is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
 				} else {
 					length = pdeFile.length();
 					is = new FileInputStream(pdeFile);
@@ -222,10 +226,10 @@ int[] getVariableTypeIntegers() {
  * Creation date: (6/23/2004 9:37:26 AM)
  * @return java.util.zip.ZipFile
  */
-protected static java.util.zip.ZipFile openZipFile(File zipFile) throws IOException {
+protected static ZipFile openZipFile(File zipFile) throws IOException {
 	for (int i = 0; i < 20; i ++) {
 		try {
-			return new java.util.zip.ZipFile(zipFile);
+			return new org.apache.commons.compress.archivers.zip.ZipFile(zipFile);
 		} catch (java.util.zip.ZipException ex) {			
 			if (i < 19) {
 				try {
@@ -248,7 +252,7 @@ protected static java.util.zip.ZipFile openZipFile(File zipFile) throws IOExcept
  */
 void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	
-	java.util.zip.ZipFile zipZipFile = null;
+	ZipFile zipZipFile = null;
 	DataInputStream dataInputStream = null;
 	try{
 		this.fileName = file.getPath();	
@@ -260,7 +264,7 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 			System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
 			zipZipFile = openZipFile(zipFile);
 			java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
-			is = zipZipFile.getInputStream(dataEntry);
+			is = zipZipFile.getInputStream((ZipArchiveEntry) dataEntry);
 			length = dataEntry.getSize();
 		} else {		
 			if (!file.exists()){
@@ -342,7 +346,7 @@ static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOExcept
 	try
 	{
 		ZipEntry dataEntry = zipFile.getEntry(fileName);
-		is = zipFile.getInputStream(dataEntry);		
+		is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);		
 		return createTempHdf5File(is);
 	}
 	finally

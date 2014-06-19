@@ -35,7 +35,8 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -925,7 +926,7 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
  */
 public File getLogFilePrivate() throws FileNotFoundException {
 	File logFile = getLogFile();
-	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logile.exists()");
+	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logFile.exists()");
 	if (logFile.exists()){
 		VCMongoMessage.sendTrace("SimulationData.getLogFile() <<EXIT>> file found");
 		return logFile;
