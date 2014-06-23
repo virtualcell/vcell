@@ -35,7 +35,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.SimpleUserMessage;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
@@ -57,6 +56,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.resource.LicenseManager;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
@@ -579,16 +579,11 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 			StdoutSessionLog log = new StdoutSessionLog("Quick run");
 			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
 			SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
-			if (!ResourceUtil.isLicensed(solverDescription.specialLicense)) {
-				String licenseText = ResourceUtil.getLicenseText(solverDescription.specialLicense);
-				String r = DialogUtils.showOKCancelWarningDialog(getDocumentWindowManager().getComponent(),"License acceptance required",
-						licenseText);
-				if (SimpleUserMessage.OPTION_CANCEL.equals(r)) {
-					throw new UserCancelException("no license");
-				}
-				else {
-					ResourceUtil.acceptLicense(solverDescription.specialLicense);
-				}
+			if (!solverDescription.licensedLibrary.isLicensed()) {
+				
+			}
+			if (!solverDescription.licensedLibrary.isLicensed()) {
+				LicenseManager.promptForLicense(getDocumentWindowManager().getComponent(),solverDescription.licensedLibrary,true);
 			}
 			Solver solver = createQuickRunSolver(log, localSimDataDir, simTask);
 			if (solver == null) {
