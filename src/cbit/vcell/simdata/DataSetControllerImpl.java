@@ -34,7 +34,9 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import ncsa.hdf.hdf5lib.H5;
@@ -1330,19 +1332,19 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 				}
 				removeFilesIfErrorV.add(zipFile_new);
 				
-				ZipFile inZipFile = null;
+				org.apache.commons.compress.archivers.zip.ZipFile inZipFile = null;
 		        InputStream zis = null;
 		        ZipOutputStream zos = null;
 		        try{
 		        	inZipFile = new ZipFile(zipFile_orig);;
 			        zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile_new)));
-			        Enumeration<? extends ZipEntry> zipEntryEnum = inZipFile.entries();
+			        Enumeration<? extends ZipEntry> zipEntryEnum = inZipFile.getEntries();
 			        while(zipEntryEnum.hasMoreElements()){
 			        	ZipEntry zeIN = zipEntryEnum.nextElement();
 			        	byte[] zdataIN = new byte[(int)zeIN.getSize()];
 			        	int num = 0;
 			        	int numTotal = 0;
-			        	zis = new BufferedInputStream(inZipFile.getInputStream(zeIN));
+			        	zis = new BufferedInputStream(inZipFile.getInputStream((ZipArchiveEntry) zeIN));
 			    //long startTime = System.currentTimeMillis();
 			        	while((num = zis.read(zdataIN, numTotal, zdataIN.length-numTotal)) != -1 && numTotal != zdataIN.length){
 			        		numTotal+= num;
