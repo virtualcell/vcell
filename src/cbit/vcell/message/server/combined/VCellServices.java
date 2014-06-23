@@ -85,6 +85,11 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	private DatabaseServerImpl databaseServerImpl = null;
 	private SimulationDatabase simulationDatabase = null;
 	private HtcProxy htcProxy = null;
+	
+	VCMessageSession dataSession = null;
+	VCMessageSession exportSession = null;
+	
+	
 	/**
 	 * Scheduler constructor comment.
 	 */
@@ -120,6 +125,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		ServiceInstanceStatus htcServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.PBSCOMPUTE,99,ManageUtils.getHostName(), new Date(), true);
 		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, htcServiceInstanceStatus,new StdoutSessionLog("PBSCOMPUTE"), true);
 		htcSimulationWorker.init();
+		
+		dataSession = vcMessagingService.createProducerSession();
+		exportSession = vcMessagingService.createProducerSession();
 	}
 
 	@Override
@@ -131,6 +139,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		simDataServer.stopService();
 		exportDataServer.stopService();
 		htcSimulationWorker.stopService();
+		dataSession.close();
+		exportSession.close();
 	}
 
 
@@ -231,30 +241,34 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	}
 
 	public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
-		try {
-			VCMessageSession dataSession = vcMessagingService.createProducerSession();
-			VCMessage dataEventMessage = dataSession.createObjectMessage(event);
-			dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
-			dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-			
-			dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
-			dataSession.close();
-		} catch (VCMessagingException ex) {
-			log.exception(ex);
+		synchronized(dataSession){
+			try {
+				//VCMessageSession dataSession = vcMessagingService.createProducerSession();
+				VCMessage dataEventMessage = dataSession.createObjectMessage(event);
+				dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
+				dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
+				
+				dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
+				//dataSession.close();
+			} catch (VCMessagingException ex) {
+				log.exception(ex);
+			}
 		}
 	}
 
 	public void exportMessage(cbit.rmi.event.ExportEvent event) {
-		try {
-			VCMessageSession dataSession = vcMessagingService.createProducerSession();
-			VCMessage exportEventMessage = dataSession.createObjectMessage(event);
-			exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
-			exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-			
-			dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
-			dataSession.close();
-		} catch (VCMessagingException ex) {
-			log.exception(ex);
+		synchronized(exportSession){
+			try {
+				//VCMessageSession dataSession = vcMessagingService.createProducerSession();
+				VCMessage exportEventMessage = exportSession.createObjectMessage(event);
+				exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
+				exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
+				
+				exportSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
+				//dataSession.close();
+			} catch (VCMessagingException ex) {
+				log.exception(ex);
+			}
 		}
 	}
 
