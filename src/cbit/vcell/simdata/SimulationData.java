@@ -34,7 +34,9 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import org.jdom.Document;
 import org.jdom.Element;
