@@ -69,5 +69,6 @@
 	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sshj-0.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-compress-1.8.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
