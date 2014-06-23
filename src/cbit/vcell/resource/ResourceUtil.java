@@ -16,10 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,14 +58,6 @@ public class ResourceUtil {
 	 * name of native library directory (leaf only)
 	 */
 	public final static String NATIVE_LIB_DIR; 
-	/**
-	 * has the user accepted special license? 
-	 */
-	private static Boolean specialLicenseAccepted[] = new Boolean[SpecialLicense.size];
-	/**
-	 * preferences key prefix 
-	 */
-	private static final String LICENSE_ACCEPTED = "licenseAccepted";
 	static {
 		String BIT_SUFFIX = "";
 		if (b64bit) {
@@ -105,6 +93,10 @@ public class ResourceUtil {
 	private static File logDir = null;
 
 	private static File solversDirectory = null;
+	/**
+	 * directory to cache licensed files download from vcell.org
+	 */
+	private static File downloadDirectory = null;
 
 	private static List<File>  librariesLoaded = new ArrayList<File>();
 	private static boolean nativeLoaded = false; 
@@ -268,16 +260,20 @@ public class ResourceUtil {
 	
 	}	/**
 	 * @param basename name of executable without path or os specific extension
-	 * @param sl special license, may be null 
+	 * @param ll LicensedLibrary, may not be null 
 	 * @param firstLoad is the first exe loaded?
 	 * @return executable
 	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
 	 */
-	private static File loadExecutable(String basename, SpecialLicense sl) throws IOException {
-		if (!isLicensed(sl)) {
-			throw new UnsupportedOperationException("Unable to run " + basename + " because " + sl.toString( ) + " software license not accepted.");
+	private static File loadExecutable(String basename, LicensedLibrary ll) throws IOException {
+		if (!ll.isLicensed()) {
+			throw new UnsupportedOperationException("Unable to run " + basename + " because " + ll.toString( ) + " software license not accepted.");
 		}
-		loadLicensedLibraries(sl);
+		if (!ll.isInstalled()) {
+			LicenseManager.install(ll);
+		}
+		ll.makePresentIn(getSolversDirectory());
+		
 		String name = basename + EXE_BIT_SUFFIX;
 		String res = RES_PACKAGE + "/" + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
@@ -285,18 +281,14 @@ public class ResourceUtil {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
 		ArrayList<String> fromResourceLibraries = new ArrayList<String>();
+		for (String libName : ll.bundledLibraryNames()) {
+			fromResourceLibraries.add(libName);
+		}
 		if (bWindows) {
 			if (b64bit){
 				fromResourceLibraries.add("glut64.dll");
 			}else{
 				fromResourceLibraries.add("glut32.dll");
-			}
-
-			if (sl == SpecialLicense.CYGWIN) {
-				fromResourceLibraries.add("cyggcc_s-seh-1.dll");
-				fromResourceLibraries.add("cygstdc++-6.dll");
-				fromResourceLibraries.add("cyggfortran-3.dll");
-				fromResourceLibraries.add("cygquadmath-0.dll");
 			}
 		}
 		else if (bLinux) {
@@ -315,115 +307,13 @@ public class ResourceUtil {
 		return exe;
 	}
 	
-	/**
-	 * determine if licensed is required and user has accepted 
-	 * @return true if has
-	 */
-	public static boolean isLicensed(SpecialLicense license) {
-		if (license == null) {
-			return true;
-		}
-		//change to case statement if additional licenses added
-		if (license == SpecialLicense.CYGWIN) {
-			if (!bWindows) {
-				return true;
-			}
-		}
-			
-		int index = license.ordinal();
-		if (specialLicenseAccepted[index] == null) {
-			Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
-			specialLicenseAccepted[index] = uprefs.getBoolean(LICENSE_ACCEPTED + license.name(),false);
-		}
-		return specialLicenseAccepted[index];
-	}
-	
-	/**
-	 * 
-	 * @param license
-	 * @throws IllegalArgumentException if license null
-	 */
-	public static void acceptLicense(SpecialLicense license) {
-		if (license == null) {
-			throw new IllegalArgumentException("null license object");
-		}
-		int index = license.ordinal();
-		specialLicenseAccepted[index] = true; 
-		Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
-		uprefs.putBoolean(LICENSE_ACCEPTED + license.name(),true);
-	}
-	
-	/**
-	 * download license file from Internet
-	 * @param license
-	 * @return license text from internet or default text if that fails 
-	 */
-	public static String getLicenseText(SpecialLicense license) {
-		try {
-			String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
-			urlS += license.category.name() + '/' + NATIVE_LIB_DIR + '/' + license.filename;
-			URL url = new URL(urlS);
-			try (InputStreamReader is = new InputStreamReader(url.openStream())) {
-				try (java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A")) {
-					return s.next(); 
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return license.licenseText; 
-
-	}
 	static {
-		if (SpecialLicense.size != 1) {
+		if (LibraryLicense.size != 1) {
 			//if a new license is added, we need to update the routine below
 			throw new Error("Update ResourceUtil.loadLicensedLibraries");
 		}
 	}
 	
-	/**
-	 * download files required for license from Internet
-	 * @param license
-	 * @throws Exception
-	 */
-	static void loadLicensedLibraries(SpecialLicense license) throws IOException {
-		if (license == null) {
-			return;
-		}
-		//per "You aren't gonna need it" we'll just do Cygwin for now
-		if (license != null) {
-			assert license == SpecialLicense.CYGWIN;
-		}
-		String libraryName = "cygwin1.dll";
-		File cygwinDll = new java.io.File(getSolversDirectory(), libraryName);
-		if (!librariesLoaded.contains(cygwinDll)) {
-			if (!cygwinDll.exists()) {
-				String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
-				urlS += license.category.name() + '/' + NATIVE_LIB_DIR + '/' + libraryName; 
-				URL url = new URL(urlS);
-				ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-				try (FileOutputStream fos = new FileOutputStream(cygwinDll)) {
-					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				}
-			}
-			librariesLoaded.add(cygwinDll) ;
-			return;
-		}
-		
-		
-		
-	}
-	
-	//for junit testing
-	static void clearLicense(SpecialLicense license) {
-		assert license != null;
-		int index = license.ordinal();
-		specialLicenseAccepted[index] = null; 
-		Preferences uprefs = Preferences.userNodeForPackage(ResourceUtil.class);
-		uprefs.remove(LICENSE_ACCEPTED + license.name());
-	}
-
 	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
 
 	public static JavaVersion getJavaVersion() {
@@ -580,6 +470,21 @@ public class ResourceUtil {
 		return vcellHome;
 	}	
 
+	/**
+	 * directory to cache licensed files download from vcell.org
+	 */
+	public static File getDownloadDirectory() 
+	{
+		if(downloadDirectory == null)
+		{
+			downloadDirectory = new File(getVcellHome(), "download");
+			if (!downloadDirectory.exists()) {
+				downloadDirectory.mkdirs();
+			}
+		}
+		return downloadDirectory;
+	}
+	
 	public static File getSolversDirectory() 
 	{
 		if(solversDirectory == null)
@@ -608,7 +513,7 @@ public class ResourceUtil {
 			File files[] = new File[nameInfos.length];
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = loadExecutable(ni.exeName, sd.specialLicense);
+				File exe = loadExecutable(ni.exeName, sd.licensedLibrary);
 				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
 				files[i] = exe; 
 			}

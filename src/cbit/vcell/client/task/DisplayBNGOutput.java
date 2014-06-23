@@ -12,6 +12,7 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
+import cbit.vcell.client.BNGWindowManager;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.server.bionetgen.BNGOutput;
 
@@ -32,7 +33,7 @@ public class DisplayBNGOutput extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
-	BNGOutputPanel bngOutputPanel = (BNGOutputPanel)hashTable.get("bngOutputPanel");
+	BNGOutputPanel bngOutputPanel = (BNGOutputPanel)hashTable.get(BNGWindowManager.BNG_OUTPUT_PANEL);
 	BNGOutput bngOutput = (BNGOutput)hashTable.get("bngOutput");
 	if (bngOutput != null) {
 		bngOutputPanel.changeBNGPanelTab();

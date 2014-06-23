@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import cbit.vcell.resource.SpecialLicense;
+import cbit.vcell.resource.LicensedLibrary;
 
 
 /**
@@ -113,7 +113,7 @@ public enum SolverDescription {
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step)","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_DirichletAtMembraneBoundary},
-	      SolverExecutable.VCellChombo, SpecialLicense.CYGWIN, "KISAO:0000285"), 
+	      SolverExecutable.VCellChombo, LicensedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285"), 
       ;
 
 	public enum SolverFeature {
@@ -262,7 +262,10 @@ public enum SolverDescription {
 	private final SupportedTimeSpec supportedTimeSpec; 
 	private final Set<SolverFeature> supportedFeatures;
 	private final SolverExecutable solverExecutable;
-	public final SpecialLicense specialLicense;
+	/**
+	 * will not be null, may be placeholder
+	 */
+	public final LicensedLibrary licensedLibrary;
 	public final String kisao;
 	
 	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
@@ -270,7 +273,7 @@ public enum SolverDescription {
 			String displayLabel, String databaseName,
 			String fullDescription, int timeOrder, SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, SpecialLicense specLicense, String kisao) {
+			SolverExecutable se, LicensedLibrary licensedLibrary, String kisao) {
 
 		variableTimeStep = (ts == TimeStep.VARIABLE);
 		errorTolerance = ( et == ErrorTol.YES);
@@ -283,7 +286,7 @@ public enum SolverDescription {
 		supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
 		solverExecutable = se;
-		this.specialLicense = specLicense;
+		this.licensedLibrary = licensedLibrary != null ? licensedLibrary : LicensedLibrary.NONE;
 		this.kisao = kisao;
 	}
 
@@ -316,9 +319,11 @@ public enum SolverDescription {
 	 * @param sl license to test for
 	 * @return true if it does
 	 */
-	public boolean requiresLicense(SpecialLicense sl) {
-		return specialLicense == sl;
+	/*
+	public boolean requiresLicense(LicenseLibrary sl) {
+		return licensedLibrary == sl;
 	}
+	*/
 	
 	/**
 	 * replace DISPLAY_LABEL_TOKEN with displayName
