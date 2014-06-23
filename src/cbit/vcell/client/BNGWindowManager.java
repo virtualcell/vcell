@@ -54,6 +54,11 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Anuradha Lakshminarayana
  */
 public class BNGWindowManager extends TopLevelWindowManager {
+	/**
+	 * key for async hash
+	 */
+	public static final String BNG_OUTPUT_PANEL = "bngOutputPanel";
+	
 	private BNGOutputPanel fieldBngOutputPanel = null;
 
 /**
@@ -137,7 +142,7 @@ public void importSbml(String bngSbmlStr) {
 	
 	// Create a default VCLogger - SBMLImporter needs it
     cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-        private StringBuffer buffer = new StringBuffer();
+        //private StringBuffer buffer = new StringBuffer();
         public void sendMessage(int messageLevel, int messageType) {
             String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
             sendMessage(messageLevel, messageType, message);	
@@ -209,7 +214,7 @@ public void runBioNetGen(BNGInput bngInput) {
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("bngInput", bngInput);
-	hash.put("bngOutputPanel", getBngOutputPanel());
+	hash.put(BNG_OUTPUT_PANEL, getBngOutputPanel());
 
 	// Create the AsynchClientTasks : in this case, running the BioNetGen (non-swing) and then displaying the output (swing) tasks.
 	AsynchClientTask[] tasksArray = new AsynchClientTask[2];
@@ -345,10 +350,9 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 			// Read characters from file into character array and transfer into string buffer.
 			StringBuffer stringBuffer = new StringBuffer();
 			FileInputStream fis = null;
-			try {
-				fis = new FileInputStream(selectedFile);
-				InputStreamReader reader = new InputStreamReader(fis);
-				BufferedReader br = new BufferedReader(reader);
+			fis = new FileInputStream(selectedFile);
+			InputStreamReader reader = new InputStreamReader(fis);
+			try (BufferedReader br = new BufferedReader(reader)) {
 				char charArray[] = new char[10000];
 				while (true) {
 					int numRead = br.read(charArray, 0, charArray.length);
@@ -358,11 +362,7 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 						break;
 					}
 				}
-			} finally{
-				if (fis != null){
-					fis.close();
-				}
-			}
+			} 
 
 			if (stringBuffer.length() != selectedFileLength){
 				System.out.println("<<<SYSOUT ALERT>>> Reading from bng file: read "+stringBuffer.length()+" of "+selectedFileLength+" bytes of input file");
