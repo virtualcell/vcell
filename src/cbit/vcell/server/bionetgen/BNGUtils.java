@@ -9,13 +9,17 @@
  */
 
 package cbit.vcell.server.bionetgen;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGInput;
-import java.io.*;
+import java.awt.Component;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.vcell.util.FileUtils;
+
+import cbit.vcell.resource.LicenseManager;
+import cbit.vcell.resource.LicensedLibrary;
+import cbit.vcell.resource.ResourceUtil;
 
 /**
  * Insert the type's description here.
@@ -26,21 +30,17 @@ public class BNGUtils {
 	private final static String EXE_SUFFIX = ResourceUtil.bWindows ? ".exe" : "";
 	private final static String EXE_BNG = "BNG2" + EXE_SUFFIX;
 	private final static String RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
-	private final static String DLL_CYGWIN = "cygwin1.dll";
-	private final static String RES_DLL_CYGWIN = ResourceUtil.RES_PACKAGE + "/" + DLL_CYGWIN;
 	// run_network is called from within BNG2.exe, so the extension is not controlled from here
 	private final static String EXE_RUN_NETWORK = "run_network" + (ResourceUtil.bWindows ? ".exe" : "");
 	private final static String RES_EXE_RUN_NETWORK = ResourceUtil.RES_PACKAGE + "/" + EXE_RUN_NETWORK;
 
 	private final static String suffix_input = ".bngl";
-	private final static String prefix = "vcell_bng_";
 
 	private static File workingDir = null;
 	private static org.vcell.util.Executable executable = null;
 	private static boolean bFirstTime = true;
 
 	private static File file_exe_bng = null;
-	private static File file_dll_cygwin = null;
 	private static File file_exe_run_network = null;
 
 /**
@@ -118,14 +118,13 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		ArrayList<String> filecontents = new ArrayList<String>();
 	
 		for (int i = 0; i < files.length; i ++) {
-			if(files[i].getName().equals(file_dll_cygwin.getName()) || files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
+			if(files[i].getName().equals(LicensedLibrary.CYGWIN_DLL_BIONETGEN.libraryName())
+					|| files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
 				continue;
 			}
 			filenames.add(files[i].getName());
 			filecontents.add(FileUtils.readFileToString(files[i]));
-//			files[i].delete();
 		}		
-//		workingDir.delete();
 		
 		bngOutput = new BNGOutput(stdoutString, filenames.toArray(new String[0]), filecontents.toArray(new String[0]));
 		System.out.println("--------------Finished BNG----------------------------");
@@ -142,7 +141,6 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 			for (int i = 0; i < files.length; i ++) {
 				files[i].delete();
 			}		
-//			workingDir.delete();
 		}
 		
 		workingDir = null;
@@ -150,6 +148,12 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 	}
 
 	return bngOutput;
+}
+
+public static void initializeLicensedLibrary(Component parent) throws Exception {
+	if (!LicensedLibrary.CYGWIN_DLL_BIONETGEN.isLicensed()) {
+		LicenseManager.promptForLicense(parent, LicensedLibrary.CYGWIN_DLL_BIONETGEN,true); 
+	}
 }
 
 
@@ -167,21 +171,16 @@ private static void initialize() throws Exception {
 	System.out.println("BNG working directory is " + bngHome.getAbsolutePath());
 	
 	file_exe_bng = new java.io.File(bngHome, EXE_BNG);
-	file_dll_cygwin = new java.io.File(bngHome, DLL_CYGWIN);
 	file_exe_run_network = new java.io.File(bngHome, EXE_RUN_NETWORK);
+	LicensedLibrary.CYGWIN_DLL_BIONETGEN.makePresentIn(bngHome);
+		
 	if (bFirstTime) {
 		ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
-		if (ResourceUtil.bWindows) {
-			ResourceUtil.writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
-		}
 		ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
 		bFirstTime = false;		
 	} else {			
 		if (!file_exe_bng.exists()) {
 			ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
-		}
-		if (ResourceUtil.bWindows && !file_dll_cygwin.exists()) {
-			ResourceUtil.writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
 		}
 		if (!file_exe_run_network.exists()) {	
 			ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);

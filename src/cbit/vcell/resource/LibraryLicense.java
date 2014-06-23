@@ -6,7 +6,7 @@ package cbit.vcell.resource;
  * @author gweatherby
  *
  */
-public enum SpecialLicense {
+public enum LibraryLicense {
 	CYGWIN(Category.GPL, "Cygwin runtime provided under GNU General Public License v3.", "CYGWIN_LICENSE"); 
 	enum Category {
 		GPL;
@@ -33,7 +33,7 @@ public enum SpecialLicense {
 	 * @param licenseText in case filename can't be downloaded
 	 * @param filename full license text from website
 	 */
-	private SpecialLicense(SpecialLicense.Category cat, String licenseText, String filename) {
+	private LibraryLicense(LibraryLicense.Category cat, String licenseText, String filename) {
 		category = cat;
 		this.licenseText = licenseText;
 		this.filename = filename;

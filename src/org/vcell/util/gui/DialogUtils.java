@@ -1082,12 +1082,12 @@ public static String showWarningDialog(final Component parentComponent,final Str
 }
 
 public static String showOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
+	if (parentComponent==null){
+		throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
+	}
 	return (String)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			if (parentComponent==null){
-				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
-			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
 			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
 		}

@@ -12,6 +12,8 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
+import cbit.vcell.client.BNGWindowManager;
+import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
@@ -33,6 +35,8 @@ public class RunBioNetGen extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
+	BNGOutputPanel bngOutputPanel = (BNGOutputPanel)hashTable.get(BNGWindowManager.BNG_OUTPUT_PANEL);
+	BNGUtils.initializeLicensedLibrary(bngOutputPanel);
 	BNGInput bngInput = (BNGInput)hashTable.get("bngInput");
 	BNGOutput bngOutput = BNGUtils.executeBNG(bngInput);
 	if (bngOutput != null) {
