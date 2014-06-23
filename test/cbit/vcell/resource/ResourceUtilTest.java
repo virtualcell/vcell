@@ -22,25 +22,18 @@ public class ResourceUtilTest {
 		 System.out.println(f.getAbsolutePath());
 	}
 	
-	//@After uncomment to remove stored executable locations
+	//@After //uncomment to remove stored executable locations
 	public void clearStored( ) throws BackingStoreException {
 		ResourceUtil.ExeCache.forgetExecutableLocations( );
 	}
 	
 	@Test
 	public void clearLicense( ) throws BackingStoreException {
-		ResourceUtil.clearLicense(SpecialLicense.CYGWIN);
+		LicenseManager.clearLicense(LibraryLicense.CYGWIN);
 	}
 	//@Test
 	public void readLicense( ) throws BackingStoreException {
-		System.out.println(ResourceUtil.getLicenseText(SpecialLicense.CYGWIN));
-	}
-	//@Test
-	public void getCygwin( ) throws Exception {
-		long start = System.currentTimeMillis(); 
-		ResourceUtil.loadLicensedLibraries(SpecialLicense.CYGWIN);
-		long end= System.currentTimeMillis(); 
-		System.out.println("time " + (end -start) / 1000.0);
+		System.out.println(LicenseManager.getLicenseText(LibraryLicense.CYGWIN));
 	}
 	
 	@Test
@@ -48,13 +41,4 @@ public class ResourceUtilTest {
 		System.out.println("Running debug is " + ResourceUtil.isRunningInDebugger());
 	}
 	
-	public static void main (String args[]){
-		try {
-			ResourceUtil.ExeCache.forgetExecutableLocations( );
-		} catch (BackingStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("Cleared");
-	}
 }
