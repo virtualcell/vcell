@@ -1,11 +1,5 @@
 package cbit.vcell.util;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 /**
  * EventRateLimiter -- Class provides for keeping track of how much time has
  * transpired since a given processes with associated messaging events has begun
@@ -26,26 +20,29 @@ import java.util.Map.Entry;
  * 
  * @author Ed Boyce
  * 
- * @version June 20, 2014
+ * @version June 24, 2014
  * 
  */
 
 public class EventRateLimiter {
 
-private final long startTime = new Date().getTime();
+private final long startTime = System.currentTimeMillis();
 private long timeOfLastEvent = startTime;
-private LinkedHashMap<Long, Long> intervals = new LinkedHashMap<Long, Long>();
+private long[][] intervals = null;
+
+private static final int TIME_INTERVAL_REGIME = 0;
+private static final int TIME_INTERVAL_PER_REGIME = 1;
 
 /**
  * 
  * @param specifiedIntervals: 
- *    <code>LinkedHashMap Long m --> Long n</code> representing a map comprised of of interval 
+ *    <code>long[m][n]</code> representing a map comprised of of interval 
  *    definition entries which indicate: until total elapsed time of m milliseconds, 
  *    allow events to fire only as often as every n milliseconds.
  *    
  */
 
-public EventRateLimiter(LinkedHashMap<Long,Long> specifiedIntervals){
+public EventRateLimiter(long[][] specifiedIntervals){
 	intervals = specifiedIntervals;
 }
 
@@ -56,38 +53,39 @@ public EventRateLimiter(LinkedHashMap<Long,Long> specifiedIntervals){
  */
 
 public EventRateLimiter(){
-	intervals = getDefaultIntervals();
+	this(getDefaultIntervals());
 	}
 
 /**
  * 
  * Default Intervals:
- * 	  For first 10 seconds, at most once every quarter second
+ * 	  For first 10 seconds, at most once every half second
  *    For 11 seconds through first minute, once per second
  *    For second through tenth minute, once per 5 seconds
  *    For 11th minute through 1 hour, once per 15 seconds
  *    After 1 hour, twice per minute
  *    
- *    @return <code>LinkedHashMap Long m --> Long n</code> representing a map comprised of of interval 
+ *    @return <code>long[m][n] </code> representing a map comprised of of interval 
  *    definition entries which indicate: until total elapsed time of m milliseconds, 
  *    allow events to fire only as often as every n milliseconds.
  *    
  **/
 
-private LinkedHashMap<Long, Long> getDefaultIntervals() {
-	LinkedHashMap<Long, Long> defaultIntervals = new LinkedHashMap<Long, Long>();
-	defaultIntervals.put(new Long(10000), new Long(250));
-	defaultIntervals.put(new Long(100000), new Long(1000));
-	defaultIntervals.put(new Long(600000), new Long(5000));
-	defaultIntervals.put(new Long(3600000), new Long(15000));
-	defaultIntervals.put(new Long(3600001), new Long(30000));
 
-	return defaultIntervals;
+private static long[][] getDefaultIntervals(){
+	long[][] staticLookupTable = {
+			{10000,500},
+			{100000,1000},
+			{600000,5000},
+			{3600000,15000},
+			{3600001,30000}
+			};
+	return staticLookupTable;
 }
 
 
 private long timeRightNow(){
-	return new Date().getTime();
+	return System.currentTimeMillis();
 }
 
 
@@ -103,32 +101,34 @@ private long timeSinceLastApprovedEvent(){
  * was approved, also taking into account how much total process time has transpired. 
  *
  */
-public boolean okayToFireEventNow(){
-	Iterator<Entry<Long, Long>> intervalIterator = intervals.entrySet().iterator();
-	Map.Entry<Long,Long> intervalMapEntry = (Map.Entry<Long,Long>)intervalIterator.next();
-	if (timeSinceLastApprovedEvent()<(Long)intervalMapEntry.getValue()){
-		return false;
-	} else {
-		/*
-		 * Time to move on to the next era of time intervals?
-		 *
-		 * Check only while there are remaining intervalMapEntries beyond the current one.
-		 * Note: using the Iterator.remove method on LinkedHashMap entries is supposedly
-		 * safe against ConcurrentModificationException's. 
-		 * 
-		 */
-		
-		while (intervalIterator.hasNext()){
-			if ((timeRightNow()-startTime)> intervalMapEntry.getKey()){
-				intervalIterator.remove();
-				intervalMapEntry = (Map.Entry<Long,Long>)intervalIterator.next();
-			} else {
-				break;
-			}
+public boolean isOkayToFireEventNow(){
+	long totalElapsedTimeNow = timeRightNow()-startTime;
+	int currentTimeRegimeIndex = 0;
+	
+	/*
+	 *  First decide what frequency interval is current given 
+	 *  how much total time has elapsed so far.
+	 */
+	
+	for (int i=0; i<intervals.length; i++) {
+		currentTimeRegimeIndex = i;
+		if (totalElapsedTimeNow < intervals[i][TIME_INTERVAL_REGIME]){
+			break;
 		}
 	}
-	timeOfLastEvent = timeRightNow();
-	return true;		
+	
+	/*  Then decide whether enough time has elapse since last approved
+	 *  event according to the current frequency interval.  If not, 
+	 *  return false.  If so, note the current time being that of the
+	 *  last approved event and return true.
+	 */
+	
+	if (timeSinceLastApprovedEvent() < intervals[currentTimeRegimeIndex][TIME_INTERVAL_PER_REGIME]){
+		return false;
+	} else {
+		timeOfLastEvent = timeRightNow();
+		return true;	
+	}
 }
 
 
@@ -136,7 +136,7 @@ public static void main(String[] args) {
 	EventRateLimiter eventRateLimiter = new EventRateLimiter();
 	System.out.println("Starting at "+eventRateLimiter.timeRightNow());
 	while(true){
-		if (eventRateLimiter.okayToFireEventNow()) {
+		if (eventRateLimiter.isOkayToFireEventNow()) {
 			System.out.println("Now it is "+eventRateLimiter.timeRightNow());
 		}		
 	}
