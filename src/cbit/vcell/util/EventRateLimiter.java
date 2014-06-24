@@ -6,11 +6,11 @@ package cbit.vcell.util;
  * (e.g. an export or time series) so that messaging events can be throttled to occur
  * only so often, and optionally at a decreasing frequency as a function of time 
  * for long running processes.  (Because frequent progress updates are desirable for
- * short running exports and time plots but high frequency of updates is less important 
+ * short running exports and time plots, but high frequency of updates is less important 
  * as time wears on).
  * 
  * Default constructor provides preset event intervals.  
- * A second constructor takes specified intervals in the form of a LinkedHashMap.
+ * A second constructor takes specified intervals in the form a two dimensional array mapping.
  * 
  * Assumed elapsed time of process begins at construction.
  * 
@@ -18,11 +18,13 @@ package cbit.vcell.util;
  * has elapsed since the last time an event was approved, also taking into account
  * how much total process time has transpired. 
  * 
+ * 
+ * 
  * @author Ed Boyce
  * 
  * @version June 24, 2014
  * 
- */
+ **/
 
 public class EventRateLimiter {
 
@@ -40,7 +42,7 @@ private static final int TIME_INTERVAL_PER_REGIME = 1;
  *    definition entries which indicate: until total elapsed time of m milliseconds, 
  *    allow events to fire only as often as every n milliseconds.
  *    
- */
+ **/
 
 public EventRateLimiter(long[][] specifiedIntervals){
 	intervals = specifiedIntervals;
@@ -50,7 +52,7 @@ public EventRateLimiter(long[][] specifiedIntervals){
  * 
  * @param None.  Use default intervals from <code>getDefaultIntervals()</code>
  * 
- */
+ **/
 
 public EventRateLimiter(){
 	this(getDefaultIntervals());
@@ -71,7 +73,6 @@ public EventRateLimiter(){
  *    
  **/
 
-
 private static long[][] getDefaultIntervals(){
 	long[][] staticLookupTable = {
 			{10000,500},
@@ -83,7 +84,6 @@ private static long[][] getDefaultIntervals(){
 	return staticLookupTable;
 }
 
-
 private long timeRightNow(){
 	return System.currentTimeMillis();
 }
@@ -93,14 +93,14 @@ private long timeSinceLastApprovedEvent(){
 	return (timeRightNow() - timeOfLastEvent);
 }
 
-
 /**
  * 
  * @return <code>boolean</code>:
  * returns a decision whether enough time has elapsed since the last time an event 
  * was approved, also taking into account how much total process time has transpired. 
  *
- */
+ **/
+
 public boolean isOkayToFireEventNow(){
 	long totalElapsedTimeNow = timeRightNow()-startTime;
 	int currentTimeRegimeIndex = 0;
@@ -117,7 +117,7 @@ public boolean isOkayToFireEventNow(){
 		}
 	}
 	
-	/*  Then decide whether enough time has elapse since last approved
+	/*  Then decide whether enough time has elapsed since last approved
 	 *  event according to the current frequency interval.  If not, 
 	 *  return false.  If so, note the current time being that of the
 	 *  last approved event and return true.
@@ -131,6 +131,9 @@ public boolean isOkayToFireEventNow(){
 	}
 }
 
+/*
+ * JUnit Test resides at cbit.vcell.util.EventRateLimiterTest
+ */
 
 public static void main(String[] args) {
 	EventRateLimiter eventRateLimiter = new EventRateLimiter();
