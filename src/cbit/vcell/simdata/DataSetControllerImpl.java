@@ -3696,7 +3696,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 			ProgressListener progressListener = new ProgressListener(){
 				public void updateProgress(double progress) {
 					//System.out.println("Considering firing progress event at "+new Date());
-					if (eventRateLimiter.okayToFireEventNow()){
+					if (eventRateLimiter.isOkayToFireEventNow()){
 						//System.out.println("ACTUALLY firing Progress event at "+new Date());
 						fireDataJobEventIfNecessary(
 								timeSeriesJobSpec.getVcDataJobID(),
