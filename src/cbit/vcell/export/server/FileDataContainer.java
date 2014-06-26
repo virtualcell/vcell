@@ -1,37 +1,26 @@
-package cbit.vcell.export.server;
+ package cbit.vcell.export.server;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 
 import org.vcell.util.FileUtils;
 
 public class FileDataContainer {
 
 File tempDataFile = null;
-BufferedOutputStream bos;
-	
+
 
 FileDataContainer() throws IOException{
 	tempDataFile = File.createTempFile("TempFile", ".tmp");
-	//System.out.println("Creating tempfile "+tempDataFile.getAbsolutePath());
 	tempDataFile.deleteOnExit();
 }
 
-//FileBackedDataContainer(String str) throws IOException{
-//	this();
-//	this.append(str);
-//}
-	
+
 FileDataContainer(byte[] dataBytes) throws IOException{
 	this();
 	FileUtils.writeByteArrayToFile(dataBytes, tempDataFile);
@@ -43,65 +32,43 @@ FileDataContainer(FileDataContainer container) throws IOException{
 }
 
 void append(CharSequence csq) throws IOException	{
-	getBufferedOutputStream().write(csq.toString().getBytes());
-	getBufferedOutputStream().flush();
+	try(BufferedOutputStream bos = getBufferedOutputStream(true)){
+		bos.write(csq.toString().getBytes());
+		bos.flush();
+		bos.close();
+	}
 }
 
 void append(FileDataContainer container) throws IOException {
-	
-	FileInputStream fis = null;
-	BufferedInputStream bis = null;
-	try{
-		File appendThisDataFile = container.getDataFile();
-		fis = new FileInputStream(appendThisDataFile);
-		bis = new BufferedInputStream(fis);
+	File appendThisDataFile = container.getDataFile();
+	try(
+		FileInputStream fis = new FileInputStream(appendThisDataFile);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		BufferedOutputStream bos = getBufferedOutputStream(true)
+	){
 		// Copy the contents of the file to the output stream
 		byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,appendThisDataFile.length())];
 		int count = 0;                 
 		while ((count = bis.read(buffer)) >= 0) {    
-			getBufferedOutputStream().write(buffer, 0, count);
+			getBufferedOutputStream(true).write(buffer, 0, count);
 		}                 
-		getBufferedOutputStream().flush();
-	}finally{
-		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-		if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
+		bos.flush();
+		bos.close();
+		bis.close();
+		fis.close();
 	}
-
-//    FileInputStream fileInputStream = new FileInputStream(container.getDataFile());
-//    DataInputStream dataInputStream = new DataInputStream(
-//                    fileInputStream);
-//    BufferedReader bufferedReader = new BufferedReader(
-//                    new InputStreamReader(dataInputStream));
-//    String fileData = "";
-//    while ((fileData = bufferedReader.readLine()) != null) {
-//            this.getPrintWriter().println(fileData);
-//    }
-//    bufferedReader.close();	
-//    this.getPrintWriter().flush();
 }
-
 
 File getDataFile(){
 	return tempDataFile;
 }
 
-private BufferedOutputStream getBufferedOutputStream() throws FileNotFoundException{
-	if (bos==null){
-		bos = new BufferedOutputStream(new FileOutputStream(tempDataFile));
-	} 
-	return bos;
+private BufferedOutputStream getBufferedOutputStream(boolean bAppend) throws FileNotFoundException{
+	return new BufferedOutputStream(new FileOutputStream(tempDataFile, bAppend));
+
 }
 
-void closeAndDelete() {
-	if(bos != null){
-		try{
-			try{bos.flush();}catch(Exception e){e.printStackTrace();}
-			try{bos.close();}catch(Exception e){e.printStackTrace();}
-			bos = null;
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
+void deleteTempFile() {
 	if(getDataFile() != null && !getDataFile().delete()){
 		new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'").printStackTrace();
 	}

@@ -29,7 +29,7 @@ public class FileDataContainerManager {
 	}
 	public void closeAllAndDelete(){
 		for(FileDataContainer fileDataContainer:fileDataContainers){
-			fileDataContainer.closeAndDelete();
+			fileDataContainer.deleteTempFile();
 		}
 	}
 	public void append(FileDataContainerID appendToThis,FileDataContainerID appendThis) throws IOException{
