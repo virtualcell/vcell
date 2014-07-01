@@ -102,7 +102,7 @@ public class UserLoginInfo implements Serializable {
 	public static class DigestedPassword implements Serializable {
 		private String digestedPasswordStr;
 
-		public DigestedPassword() {
+		private DigestedPassword() {
 
 		}
 
@@ -141,7 +141,7 @@ public class UserLoginInfo implements Serializable {
 		public static DigestedPassword createAlreadyDigested(
 				String alreadyDigestedPassword) {
 			DigestedPassword newDigestedPassword = new DigestedPassword();
-			newDigestedPassword.digestedPasswordStr = alreadyDigestedPassword;
+			newDigestedPassword.digestedPasswordStr = alreadyDigestedPassword.toUpperCase();
 			return newDigestedPassword;
 
 		}
