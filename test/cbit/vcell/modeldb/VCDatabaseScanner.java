@@ -12,7 +12,6 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -43,9 +42,10 @@ public class VCDatabaseScanner {
 	 * special user id meaning all users
 	 */
 	public static final String ALL_USERS = "-all";
-	private DatabaseServerImpl dbServerImpl = null;
-	private SessionLog log = null;
+	protected DatabaseServerImpl dbServerImpl = null;
+	protected SessionLog log = null;
 	private LocalAdminDbServer localAdminDbServer = null;
+	protected ConnectionFactory connFactory;
 	private User[] allUsers = null;
 
 	
@@ -91,6 +91,7 @@ public VCDatabaseScanner(VCDatabaseScanner rhs) throws Exception{
 	log = rhs.log;
 	localAdminDbServer = rhs.localAdminDbServer;
 	allUsers = rhs.allUsers;
+	connFactory = rhs.connFactory;
 }
 
 /**
@@ -116,6 +117,7 @@ public VCDatabaseScanner(SessionLog log) throws Exception{
  * @throws RemoteException 
  */
 private VCDatabaseScanner(ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) throws DataAccessException, SQLException, RemoteException {
+	this.connFactory = argConFactory;
 	this.log = argSessionLog;
 	this.localAdminDbServer = new LocalAdminDbServer(argConFactory, argKeyFactory, argSessionLog);
 	this.dbServerImpl = new DatabaseServerImpl(argConFactory,argKeyFactory,argSessionLog);
@@ -203,8 +205,9 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
  * generate new math description, compare with old, log status
  * @param biomodel
  */
-private void verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
+protected boolean verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter)  {
 	SimulationContext[] simContexts = bioModel.getSimulationContexts();
+	boolean allGood = true;
 	for (SimulationContext sc : simContexts) {
 		try {
 			MathDescription oldMathDescription = sc.getMathDescription();
@@ -212,10 +215,15 @@ private void verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter prin
 			printWriter.print("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> Successfully regenerated math");
 			MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
 			printWriter.println("\t " + mathCompareResults.toDatabaseStatus());
+			if (!mathCompareResults.isEquivalent()) {
+				return false;
+			}
 		} catch (Exception e) {
 			printWriter.println("\t " + bioModel.getName() + " :: " + sc.getName() + " ----> math regeneration failed.s");
+			allGood = false;
 		}
 	}
+	return allGood;
 }
 
 /**
@@ -276,6 +284,11 @@ public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 }
 
 public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFilePrintStream, User users[], KeyValue singleMathmodelKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	BadMathVisitor badMathVisitor = null;
+	if (databaseVisitor instanceof BadMathVisitor) {
+		badMathVisitor = (BadMathVisitor) databaseVisitor;
+	}
+	final boolean isBadMathVisitor = badMathVisitor != null;
 	if (users==null){
 		users = getAllUsers();
 	}
@@ -305,12 +318,18 @@ public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 				if (!databaseVisitor.filterMathModel(mathInfos[j])){
 					continue;
 				}
+				KeyValue vk = null; 
 				try {
+					vk = mathInfos[j].getVersion().getVersionKey();
 					BigString mathModelXML = dbServerImpl.getMathModelXML(user, mathInfos[j].getVersion().getVersionKey());
 					MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
 					mathModel.refreshDependencies();
 					databaseVisitor.visitMathModel(mathModel,logFilePrintStream);
 				}catch (Exception e2){
+					if (isBadMathVisitor) {
+						badMathVisitor.unableToLoad(vk, e2);
+					}
+					
 					log.exception(e2);
 					if (bAbortOnDataAccessException){
 						throw e2;
