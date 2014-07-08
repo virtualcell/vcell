@@ -290,7 +290,7 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
 		boolean bAbortOnDataAccessException = false;
 			BatchTester scanner = new BatchTester(new NullSessionLog()); 
-			scanner.batchScanBioModels(visitor, "gerard.models_to_scan", 5);
+			scanner.batchScanBioModels(visitor, STATUS_TABLE, 5);
 		}catch(Exception e){
 			e.printStackTrace(System.err);
 		}finally{
