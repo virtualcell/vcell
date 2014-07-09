@@ -26,6 +26,8 @@ import org.vcell.rest.common.SimulationResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
+import cbit.vcell.parser.ExpressionException;
+
 import com.google.gson.Gson;
 
 import freemarker.template.Configuration;
@@ -126,10 +128,7 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 			try {
 				SimulationRepresentation simulationRepresentation = restDatabaseService.query(this,vcellUser);
 				return simulationRepresentation;
-			} catch (DataAccessException e) {
-				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
-			} catch (SQLException e) {
+			} catch (DataAccessException | SQLException | ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}

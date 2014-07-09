@@ -33,6 +33,7 @@ import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -371,7 +372,7 @@ public class RestDatabaseService {
 		return bioModelReps[0];
 	}
 	
-	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}

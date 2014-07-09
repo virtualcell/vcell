@@ -22,6 +22,7 @@
 <th>MathModel</th>
 <th>Simulation Name</th>
 <th>Solver Name</th>
+<th>Overrides</th>
 <th>User Name</th>
 <th>Num Jobs</th>
 <th>Jobs</th>
@@ -44,6 +45,19 @@
     </#if>
 </td>
 <td>${simulation.solverName!""}</td>
+<td>
+<#if simulation.overrides??>
+<#list simulation.overrides as override>
+[${override.name}&nbsp;=&nbsp;<#if override.type == "Single">${override.values[0]}</#if>
+							  <#if override.type == "Variable">${override.expression}</#if>
+							  <#if override.type == "List"><#list override.values as value>${value} </#list></#if>
+							  <#if override.type == "LinearInterval">linearInterval(length=${override.cardinality},min=${override.values[0]},max=${override.values[1]})</#if>
+							  <#if override.type == "LogInterval">logInterval(length=${override.cardinality},min=${override.values[0]},max=${override.values[1]})</#if>] 
+</#list>
+<#else>
+${simulation}
+</#if>
+</td>
 <td>${simulation.ownerName!""}</td>
 <td>${simulation.scanCount!""}</td>
 <td><a href="/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td>

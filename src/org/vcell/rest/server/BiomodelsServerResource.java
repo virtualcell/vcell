@@ -29,6 +29,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.parser.ExpressionException;
 
 import com.google.gson.Gson;
 
@@ -164,10 +165,7 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 					biomodelReps.add(biomodelRep);
 				}
-			} catch (DataAccessException e) {
-				e.printStackTrace();
-				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
-			} catch (SQLException e) {
+			} catch (DataAccessException | SQLException | ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}

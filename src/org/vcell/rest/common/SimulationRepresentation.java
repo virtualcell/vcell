@@ -7,6 +7,7 @@ import cbit.vcell.messaging.db.MathModelLink;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
+import cbit.vcell.parser.ExpressionException;
 
 
 public class SimulationRepresentation {
@@ -21,9 +22,10 @@ public class SimulationRepresentation {
 	private final int scanCount;
 	private final MathModelLink mathModelLink;
 	private final BioModelLink bioModelLink;
+	private final OverrideRepresentation[] overrides;
 	
 
-	public SimulationRepresentation(SimulationRep simulationRep, BioModelRep bioModelRep) {
+	public SimulationRepresentation(SimulationRep simulationRep, BioModelRep bioModelRep) throws ExpressionException {
 		key = simulationRep.getKey().toString();
 		branchId = simulationRep.getBranchID().toString();
 		name = simulationRep.getName();
@@ -35,7 +37,11 @@ public class SimulationRepresentation {
 		this.mathModelLink = null;
 		SimContextRep simContextRep = bioModelRep.getSimContextRepFromMathKey(new KeyValue(mathKey));
 		if (simContextRep==null){
-			System.out.println("coundn't find simContext for MathKey = "+mathKey.toString());
+			System.out.println("couldn't find simContext for MathKey = "+mathKey.toString());
+		}
+		overrides = new OverrideRepresentation[simulationRep.getMathOverrideElements().length];
+		for (int i=0;i<simulationRep.getMathOverrideElements().length;i++){
+			overrides[i] = new OverrideRepresentation(simulationRep.getMathOverrideElements()[i]);
 		}
 		this.bioModelLink = new BioModelLink(
 				bioModelRep.getBmKey().toString(), 
@@ -84,6 +90,10 @@ public class SimulationRepresentation {
 
 	public BioModelLink getBioModelLink(){
 		return bioModelLink;
+	}
+	
+	public OverrideRepresentation[] getOverrides(){
+		return overrides;
 	}
 
 }

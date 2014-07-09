@@ -7,6 +7,7 @@ import org.vcell.util.document.User;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
+import cbit.vcell.parser.ExpressionException;
 
 public class BiomodelRepresentation {
 	
@@ -112,7 +113,7 @@ public class BiomodelRepresentation {
 
 
 
-	public BiomodelRepresentation(BioModelRep bioModelRep){
+	public BiomodelRepresentation(BioModelRep bioModelRep) throws ExpressionException{
 		this.bmKey = bioModelRep.getBmKey().toString();
 		this.name = bioModelRep.getName();
 		this.privacy = bioModelRep.getPrivacy();
