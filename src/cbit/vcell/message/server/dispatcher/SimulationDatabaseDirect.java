@@ -114,23 +114,20 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 
 	private interface SimpleJobStatusCache {
 		SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey);
-		SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey, SimStatusCacheEntry simStatusCacheEntry);
+		void put(SimJobStatusKey simJobStatusKey, SimStatusCacheEntry simStatusCacheEntry);
 	}
 	
 	private static class SimpleJobStatusCache_DONT_CACHE implements SimpleJobStatusCache {
-		private HashMap<SimJobStatusKey, SimStatusCacheEntry> map = new HashMap<SimJobStatusKey,SimStatusCacheEntry>();
-		
 		public SimpleJobStatusCache_DONT_CACHE() {
 		}
 
 		@Override
 		public SimStatusCacheEntry get(SimJobStatusKey simJobStatusKey) {
-			return null; // map.get(simJobStatusKey);
+			return null;
 		}
 
 		@Override
-		public SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey,	SimStatusCacheEntry simStatusCacheEntry) {
-			return map.put(simJobStatusKey,simStatusCacheEntry);
+		public void put(SimJobStatusKey simJobStatusKey, SimStatusCacheEntry simStatusCacheEntry) {
 		}
 		
 	};
@@ -149,8 +146,11 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		}
 
 		@Override
-		public SimStatusCacheEntry put(SimJobStatusKey simJobStatusKey,	SimStatusCacheEntry simStatusCacheEntry) {
-			return map.put(simJobStatusKey,simStatusCacheEntry);
+		public void put(SimJobStatusKey simJobStatusKey, SimStatusCacheEntry simStatusCacheEntry) {
+			// don't cache job status from another site
+			if (simStatusCacheEntry.jobStatus.getServerID().equals(VCellServerID.getSystemServerID())){
+				map.put(simJobStatusKey,simStatusCacheEntry);
+			}
 		}
 		
 	};
