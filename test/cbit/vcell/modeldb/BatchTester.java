@@ -1,7 +1,6 @@
 package cbit.vcell.modeldb;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -66,6 +65,20 @@ public class BatchTester extends VCDatabaseScanner {
 	public BatchTester(SessionLog log) throws Exception {
 		super(log);
 	}
+	
+	/**
+	 * convert KeyValue to long
+	 */
+	private static long convert(KeyValue kv) {
+		return Long.parseLong(kv.toString());
+	}
+	
+	/**
+	 * convert long to KeyValue
+	 */
+	private static KeyValue convert(long v) {
+		return new KeyValue(Long.toString(v));
+	}
 
 	/**
 	 * scan biomodels for further processing, put into database table if criteria met
@@ -97,8 +110,8 @@ public class BatchTester extends VCDatabaseScanner {
 							}
 							try {
 								KeyValue vk = bmi.getVersion().getVersionKey();
-								ps.setLong(1,user.getID().longValue());
-								ps.setLong(2,vk.longValue());
+								ps.setLong(1,convert(user.getID()));
+								ps.setLong(2,convert(vk));
 								ps.execute( );
 							}catch (Exception e2){
 								log.exception(e2);
@@ -173,8 +186,8 @@ public class BatchTester extends VCDatabaseScanner {
 						String exceptionMessage = null;
 						String exceptionClass = null;
 						try {
-							User user = new User("", new KeyValue(modelIdent.userId));
-							KeyValue modelKey = new KeyValue(modelIdent.modelId);
+							User user = new User("", convert(modelIdent.userId));
+							KeyValue modelKey = convert(modelIdent.modelId);
 							BigString bioModelXML = null; 
 							long dbSleepTime = 10; //seconds
 							while (bioModelXML == null) {
