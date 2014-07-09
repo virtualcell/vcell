@@ -20,10 +20,12 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.VCMultiBioVisitor;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
@@ -65,6 +67,20 @@ public class BatchTester extends VCDatabaseScanner {
 	public BatchTester(SessionLog log) throws Exception {
 		super(log);
 	}
+	
+	/**
+	 * convert KeyValue to long
+	 */
+	private static long convert(KeyValue kv) {
+		return Long.parseLong(kv.toString());
+	}
+	
+	/**
+	 * convert long to KeyValue
+	 */
+	private static KeyValue convert(long v) {
+		return new KeyValue(Long.toString(v));
+	}
 
 	/**
 	 * scan biomodels for further processing, put into database table if criteria met
@@ -96,8 +112,8 @@ public class BatchTester extends VCDatabaseScanner {
 							}
 							try {
 								KeyValue vk = bmi.getVersion().getVersionKey();
-								ps.setLong(1,user.getID().longValue());
-								ps.setLong(2,vk.longValue());
+								ps.setLong(1,convert(user.getID()));
+								ps.setLong(2,convert(vk));
 								ps.execute( );
 							}catch (Exception e2){
 								log.exception(e2);
@@ -147,13 +163,13 @@ public class BatchTester extends VCDatabaseScanner {
 					}
 				}
 				printWriter.println("finding  ours");
-				ArrayList<ModelIdent> models = new ArrayList<BatchTester.ModelIdent>();
+				ArrayList<BioModelIdent> models = new ArrayList<BatchTester.BioModelIdent>();
 				try (Statement statement = conn.createStatement()) {
 					String query = "Select id, user_id, model_id from " + statusTable +
 							" where scan_process ='" + processHostId + "' and scanned = 0";
 					ResultSet rs = statement.executeQuery(query);
 					while (rs.next( )) {
-						ModelIdent mi = new ModelIdent(rs);
+						BioModelIdent mi = new BioModelIdent(rs);
 						models.add(mi);
 						printWriter.println("claiming " + mi.statusId);
 					}
@@ -167,13 +183,13 @@ public class BatchTester extends VCDatabaseScanner {
 					PreparedStatement ps = conn.prepareStatement(
 							"Update " + statusTable 
 							+ " set scanned = 1, good = ? , exception_type = ?, exception = ?, scan_process = null where id = ?");
-					for (ModelIdent modelIdent : models) {
+					for (BioModelIdent modelIdent : models) {
 						ScanStatus scanStatus = ScanStatus.PASS;
 						String exceptionMessage = null;
 						String exceptionClass = null;
 						try {
-							User user = new User("", new KeyValue(modelIdent.userId));
-							KeyValue modelKey = new KeyValue(modelIdent.modelId);
+							User user = new User("", convert(modelIdent.userId));
+							KeyValue modelKey = convert(modelIdent.modelId);
 							BigString bioModelXML = null; 
 							long dbSleepTime = 10; //seconds
 							while (bioModelXML == null) {
@@ -262,16 +278,177 @@ public class BatchTester extends VCDatabaseScanner {
 	}
 	*/
 	
-	private static class ModelIdent {
+	/**
+	 * scan math models for further processing, put into database table if criteria met
+	 * @throws DataAccessException 
+	 * @throws XmlParseException 
+	 */
+	public void keyScanMathModels(BadMathVisitor databaseVisitor, Writer writer, 
+			boolean bAbortOnDataAccessException, String statusTableName) throws DataAccessException,
+			XmlParseException {
+				try
+				{
+					PrintWriter printWriter = new PrintWriter(writer);
+					//start visiting models and writing log
+					printWriter.println("Start scanning math-models......");
+					printWriter.println("\n");
+					Object lock = new Object();
+					Connection conn = connFactory.getConnection(lock);
+					PreparedStatement ps = conn.prepareStatement("insert into " + statusTableName + "(model_id) values(?)");
+			
+						MathModelInfo mathModelInfos[] = dbServerImpl.getMathModelInfos(User.ADMINISTRATOR,true);
+						for (int j = 0; j < mathModelInfos.length; j++){
+							MathModelInfo mmi = mathModelInfos[j];
+							if (!databaseVisitor.filterMathModel(mmi)) {
+								continue;
+							}
+							try {
+								KeyValue vk = mmi.getVersion().getVersionKey();
+								ps.setLong(1,convert(vk));
+								ps.execute( );
+							}catch (Exception e2){
+								log.exception(e2);
+								printWriter.println("======= " + e2.getMessage());
+								if (bAbortOnDataAccessException){
+									throw e2;
+								}
+							}
+						}
+					
+					printWriter.close();
+				}catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+
+	@SuppressWarnings("static-access")
+	public void batchScanMathModels(BadMathVisitor databaseVisitor, String statusTable, int chunkSize)
+			throws DataAccessException, XmlParseException, SQLException, IOException {
+		PrintStream current = System.out;
+		//System.setOut(new PrintStream(new NullStream()));
+		try {
+				String processHostId = ManagementFactory.getRuntimeMXBean().getName();
+				String filename = processHostId + ".txt";
+				FileOutputStream fos = new FileOutputStream(filename);
+				System.setOut(new PrintStream(fos));
+				OutputStreamWriter writer = new OutputStreamWriter(fos);
+				PrintWriter printWriter = new PrintWriter(writer, true); //autoflush
+				Connection conn = connFactory.getConnection(null);
+				conn.setAutoCommit(true);
+				printWriter.println("reserving slots");
+				try (Statement statement = conn.createStatement()) {
+					String query = "Update "  + statusTable + " set scan_process = '" + processHostId 
+							+ "', log_file = '" + filename
+							+ "' where scanned = 0 and scan_process is null and rownum <= "
+							+ chunkSize;
+					int uCount = statement.executeUpdate(query);
+					if (uCount > chunkSize) {
+						throw new Error("logic / SQL bad");
+					}
+					if (uCount == 0) {
+						printWriter.println("No models to scan, exiting");
+						System.exit(100);
+						
+					}
+				}
+				printWriter.println("finding  ours");
+				ArrayList<MathModelIdent> models = new ArrayList<BatchTester.MathModelIdent>();
+				try (Statement statement = conn.createStatement()) {
+					String query = "Select model_id from " + statusTable +
+							" where scan_process ='" + processHostId + "' and scanned = 0";
+					ResultSet rs = statement.executeQuery(query);
+					while (rs.next( )) {
+						MathModelIdent mmi = new MathModelIdent(rs);
+						models.add(mmi);
+						printWriter.println("claiming " + mmi.id);
+					}
+				}
+		
+				try
+				{
+					//start visiting models and writing log
+					printWriter.println("Start scanning math-models......");
+					printWriter.println("\n");
+					PreparedStatement ps = conn.prepareStatement(
+							"Update " + statusTable 
+							+ " set scanned = 1, good = ? , exception_type = ?, exception = ?, scan_process = null where model_id = ?");
+					for (MathModelIdent modelIdent : models) {
+						ScanStatus scanStatus = ScanStatus.PASS;
+						String exceptionMessage = null;
+						String exceptionClass = null;
+						try {
+							KeyValue modelKey = convert(modelIdent.id);
+							BigString mathModelXML = null; 
+							long dbSleepTime = 10; //seconds
+							while (mathModelXML == null) {
+								try {
+									 mathModelXML = dbServerImpl.getMathModelXML(User.ADMINISTRATOR, modelKey);
+								} catch (DataAccessException dae) {
+									Throwable cause = dae.getCause();
+									if (cause instanceof  oracle.ucp.UniversalConnectionPoolException) {
+										printWriter.println("No db connection for  " + modelIdent.id + ", sleeping " + dbSleepTime + " seconds");
+										Thread.currentThread().sleep(dbSleepTime * 1000); 
+										dbSleepTime *= 1.5; //wait a little longer next time
+									}
+									else {
+										throw dae; //other exception, just rethrow
+									}
+								}
+							}
+							MathModel storedModel = cbit.vcell.xml.XmlHelper.XMLToMathModel( new XMLSource(mathModelXML.toString()));
+							databaseVisitor.visitMathModel(storedModel,System.out);
+						}catch (Exception e){
+							log.exception(e);
+							scanStatus = ScanStatus.FAIL;
+							exceptionClass = e.getClass().getName();
+							exceptionMessage = e.getMessage();
+							printWriter.println("failed " + modelIdent.id);
+							e.printStackTrace(printWriter);
+						}
+						ps.setInt(1,scanStatus.code);
+						ps.setString(2,exceptionClass);
+						ps.setString(3,exceptionMessage);
+						ps.setLong(4,modelIdent.id);
+						boolean estat = ps.execute();
+						if (estat) {
+							throw new Error("logic");
+						}
+						int uc = ps.getUpdateCount();
+						if (uc != 1) {
+							throw new Error("logic / sql ");
+						}
+						printWriter.println("model " + modelIdent.id + " " + scanStatus);
+					}
+	
+				printWriter.close();
+		}
+		finally {
+			System.setOut(current);
+		}
+	}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static class BioModelIdent {
 		private final long statusId;
 		private final long userId;
 		private final long modelId;
-		ModelIdent(ResultSet rs) throws SQLException {
+		BioModelIdent(ResultSet rs) throws SQLException {
 			statusId = rs.getLong(ID);
 			userId = rs.getLong(USER_ID);
 			modelId = rs.getLong(MODEL_ID);
 			
 		}
+	}
+	private static class MathModelIdent {
+		private final long id; 
+		MathModelIdent(ResultSet rs) throws SQLException {
+			id = rs.getLong(MODEL_ID);
+		}
+		
 	}
 	
 	/**
