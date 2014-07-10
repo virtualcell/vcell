@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -63,6 +64,10 @@ public class BatchTester extends VCDatabaseScanner {
 	 * database column name 
 	 */
 	public final String EXCEPTION = "exception";
+	/**
+	 * special user with access to all models (see {@link DatabasePolicySQL#enforceOwnershipSelect(User, cbit.sql.Field[], cbit.sql.Table[], String, String)
+	 */
+	public static final User ADMINISTRATOR = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 
 	public BatchTester(SessionLog log) throws Exception {
 		super(log);
@@ -296,7 +301,7 @@ public class BatchTester extends VCDatabaseScanner {
 					Connection conn = connFactory.getConnection(lock);
 					PreparedStatement ps = conn.prepareStatement("insert into " + statusTableName + "(model_id) values(?)");
 			
-						MathModelInfo mathModelInfos[] = dbServerImpl.getMathModelInfos(User.ADMINISTRATOR,true);
+						MathModelInfo mathModelInfos[] = dbServerImpl.getMathModelInfos(BatchTester.ADMINISTRATOR,true);
 						for (int j = 0; j < mathModelInfos.length; j++){
 							MathModelInfo mmi = mathModelInfos[j];
 							if (!databaseVisitor.filterMathModel(mmi)) {
@@ -383,7 +388,7 @@ public class BatchTester extends VCDatabaseScanner {
 							long dbSleepTime = 10; //seconds
 							while (mathModelXML == null) {
 								try {
-									 mathModelXML = dbServerImpl.getMathModelXML(User.ADMINISTRATOR, modelKey);
+									 mathModelXML = dbServerImpl.getMathModelXML(BatchTester.ADMINISTRATOR, modelKey);
 								} catch (DataAccessException dae) {
 									Throwable cause = dae.getCause();
 									if (cause instanceof  oracle.ucp.UniversalConnectionPoolException) {
