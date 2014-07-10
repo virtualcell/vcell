@@ -1,8 +1,18 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html"; charset=UTF-8" />
+<script type="jquery_1_3_2.min.js">
+<script type="text/JavaScript">
+	jQuery(document).ready(function(){ // DOM not loaded, must use ready event 
+		alert(jQuery('p').text('hello'));
+	});
+</script>
+</script>
 <title>Simulation Tasks</title>
 </head>
 <body>
+<p> the DOM is ready </p>
 <#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on">
 <center><h2><a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 </center>
