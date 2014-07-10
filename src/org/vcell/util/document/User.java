@@ -11,9 +11,6 @@
 package org.vcell.util.document;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
-import org.vcell.util.PropertyLoader;
-
-import cbit.vcell.modeldb.DatabasePolicySQL;
 
 /**
  * This type was created in VisualAge.
@@ -28,11 +25,6 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	
 	public static User tempUser = new User("user",new KeyValue("123"));
 	/**
-	 * special user with access to all models (see {@link DatabasePolicySQL#enforceOwnershipSelect(User, cbit.sql.Field[], cbit.sql.Table[], String, String)
-	 */
-	public static final User ADMINISTRATOR = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
-
-/**
  * User constructor comment.
  */
 public User(String userid, KeyValue key) {
