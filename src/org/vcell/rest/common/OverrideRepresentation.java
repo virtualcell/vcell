@@ -82,7 +82,31 @@ public class OverrideRepresentation {
 			throw new RuntimeException("expecting either an actualValue or a constant array spec in math override for "+element.getName());
 		}
 	}
-
+	
+	public String getSerialization(){
+		if (type.equals(OVERRIDE_TYPE_List)){
+			return String.valueOf(values[0]);
+		}
+		if (type.equals(OVERRIDE_TYPE_Variable)){
+			return expression;
+		}
+		if (type.equals(OVERRIDE_TYPE_List)){
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("[");
+			for (double val : values){
+				buffer.append(val+" ");
+			}
+			buffer.append("]");
+		}
+		if (type.equals(OVERRIDE_TYPE_LinearInterval)){
+			return "linearInterval(length="+cardinality+",min="+values[0]+",max="+values[1]+")";
+		}
+		if (type.equals(OVERRIDE_TYPE_LogInterval)){
+			return "logInterval(length="+cardinality+",min="+values[0]+",max="+values[1]+")";
+		}
+		return "unknownType";
+	}
+	
 	public String getName() {
 		return name;
 	}

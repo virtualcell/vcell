@@ -9,6 +9,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.MethodInfo;
 import org.restlet.ext.wadl.ParameterInfo;
@@ -24,9 +25,15 @@ import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.rest.common.SimulationResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.xml.XmlParseException;
 
 import com.google.gson.Gson;
 
@@ -128,7 +135,11 @@ public class BiomodelSimulationServerResource extends AbstractServerResource imp
 			try {
 				SimulationRepresentation simulationRepresentation = restDatabaseService.query(this,vcellUser);
 				return simulationRepresentation;
-			} catch (DataAccessException | SQLException | ExpressionException e) {
+			} catch (PermissionException ee){
+				ee.printStackTrace();
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
+			} catch (DataAccessException | SQLException | ExpressionException | XmlParseException | MappingException | MathException
+					| MatrixException | ModelException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
 			}

@@ -135,7 +135,7 @@ public class BiomodelServerResource extends AbstractServerResource implements Bi
 				return biomodelRep;
 			} catch (PermissionException e) {
 				e.printStackTrace();
-				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
 				throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");

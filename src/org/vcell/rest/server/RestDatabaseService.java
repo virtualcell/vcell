@@ -7,9 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.SimulationRepresentation;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.GroupAccess;
@@ -19,11 +21,16 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -38,6 +45,9 @@ import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 
 public class RestDatabaseService {
 	
@@ -372,7 +382,7 @@ public class RestDatabaseService {
 		return bioModelReps[0];
 	}
 	
-	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException {	
+	public SimulationRepresentation query(BiomodelSimulationServerResource resource, User vcellUser) throws SQLException, DataAccessException, ExpressionException, XmlParseException, MappingException, MathException, MatrixException, ModelException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -412,7 +422,16 @@ public class RestDatabaseService {
 			
 		}
 		if (bioModelReps==null || bioModelReps.length!=1){
-			throw new RuntimeException("failed to get biomodel");
+			//
+			// try to determine if the current credentials are insufficient, try to fetch BioModel again with administrator privilege.
+			//
+			User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+			BioModelRep[] allBioModelReps = databaseServerImpl.getBioModelReps(adminUser, conditionsBuffer.toString(), null, startRow, 1);
+			if (allBioModelReps!=null && allBioModelReps.length>=0){
+				throw new PermissionException("insufficient privilege to retrive BioModel "+bioModelID);
+			}else{
+				throw new RuntimeException("failed to get biomodel");
+			}
 		}
 		
 		String simulationId = (String)resource.getRequestAttributes().get(VCellApiApplication.SIMULATIONID);
@@ -420,7 +439,9 @@ public class RestDatabaseService {
 			throw new RuntimeException(VCellApiApplication.SIMULATIONID+" not specified");
 		}
 		SimulationRep simRep = getSimulationRep(new KeyValue(simulationId));
-		return new SimulationRepresentation(simRep, bioModelReps[0]);
+		BigString bioModelXML = databaseServerImpl.getBioModelXML(vcellUser, bioModelReps[0].getBmKey());
+		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+		return new SimulationRepresentation(simRep, bioModel);
 	}
 	
 	public SimContextRep getSimContextRep(KeyValue key) throws DataAccessException, SQLException{

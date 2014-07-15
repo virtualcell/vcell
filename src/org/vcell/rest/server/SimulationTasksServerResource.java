@@ -10,6 +10,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -26,6 +27,7 @@ import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.SimulationTaskRepresentation;
 import org.vcell.rest.common.SimulationTasksResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.messaging.db.SimpleJobStatus;
@@ -190,6 +192,8 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 					SimulationTaskRepresentation simTaskRep = new SimulationTaskRepresentation(simpleJobStatus);
 					simTaskReps.add(simTaskRep);
 				}
+			} catch (PermissionException ee){
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
 			} catch (DataAccessException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve active jobs from VCell Database : "+e.getMessage());

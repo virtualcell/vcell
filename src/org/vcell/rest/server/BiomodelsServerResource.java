@@ -10,6 +10,7 @@ import java.util.Map;
 import org.restlet.data.LocalReference;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.freemarker.TemplateRepresentation;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.DocumentationInfo;
@@ -26,6 +27,7 @@ import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.common.BiomodelRepresentation;
 import org.vcell.rest.common.BiomodelsResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import cbit.vcell.modeldb.BioModelRep;
@@ -165,6 +167,9 @@ public class BiomodelsServerResource extends AbstractServerResource implements B
 					BiomodelRepresentation biomodelRep = new BiomodelRepresentation(bioModelRep);
 					biomodelReps.add(biomodelRep);
 				}
+			} catch (PermissionException ee){
+				ee.printStackTrace();
+				throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "not authorized");
 			} catch (DataAccessException | SQLException | ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException("failed to retrieve biomodels from VCell Database : "+e.getMessage());
