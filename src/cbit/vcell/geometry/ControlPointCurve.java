@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry;
 
+import java.util.Vector;
+
 import org.vcell.util.Coordinate;
 
 /**
@@ -17,8 +19,9 @@ import org.vcell.util.Coordinate;
  * Creation date: (7/19/00 1:04:53 PM)
  * @author: 
  */
+@SuppressWarnings("serial")
 public abstract class ControlPointCurve extends Curve {
-	private java.util.Vector controlPoints = new java.util.Vector();
+	private Vector<Coordinate> controlPoints = new Vector<Coordinate>(); 
 	public static final int INFINITE = 0;
 /**
  * ControlPointCurve constructor comment.
@@ -59,7 +62,7 @@ public void addOffsetControlPoint(Coordinate offset, int controlPointIndex) {
  * @param offset cbit.vcell.geometry.Coordinate
  */
 private void addOffsetControlPointPrivate(Coordinate offset, int controlPointIndex) {
-    Coordinate oldCoordinate = (Coordinate) controlPoints.elementAt(controlPointIndex);
+    Coordinate oldCoordinate = controlPoints.elementAt(controlPointIndex);
     Coordinate newCoordinate = new Coordinate (
 	    oldCoordinate.getX() + offset.getX(),
 		oldCoordinate.getY() + offset.getY(),
@@ -109,11 +112,10 @@ public boolean appendControlPointCurve(ControlPointCurve controlPointCurve) {
  */
 public Object clone() {
 	ControlPointCurve cpc = (ControlPointCurve) super.clone();
-	java.util.Vector v = new java.util.Vector();
-	for(int c = 0;c < controlPoints.size();c+= 1){
-		v.addElement((Coordinate)(((Coordinate)controlPoints.elementAt(c)).clone()));
+	cpc.controlPoints = new Vector<Coordinate>(controlPoints.size( )) ;
+	for(int c = 0;c < controlPoints.size();c++){
+		cpc.controlPoints.addElement((Coordinate) controlPoints.elementAt(c).clone( ));
 	}
-	cpc.controlPoints = v;
 	return cpc;
 }
 /**
@@ -131,7 +133,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 		return false;
 	}
 	for (int c = 0; c < controlPoints.size(); c += 1) {
-		Coordinate thisCoord = (Coordinate) controlPoints.elementAt(c);
+		Coordinate thisCoord = controlPoints.elementAt(c);
 		Coordinate cpcCoord = (Coordinate) cpc.controlPoints.elementAt(c);
 		if (!org.vcell.util.Compare.isEqual(thisCoord, cpcCoord)) {
 			return false;
@@ -146,7 +148,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  */
 public Coordinate getControlPoint(int getIndex) {
 	// cbit.util.Assertion.assert(getIndex < getControlPointCount());
-	return (Coordinate)((Coordinate)controlPoints.elementAt(getIndex)).clone();
+	return (Coordinate)controlPoints.elementAt(getIndex).clone();
 	}
 /**
  * Insert the method's description here.
@@ -160,7 +162,7 @@ public int getControlPointCount() {
  * Creation date: (10/10/00 5:05:46 PM)
  * @return java.util.Vector
  */
-public java.util.Vector getControlPointsVector() {
+public java.util.Vector<Coordinate> getControlPointsVector() {
 	return controlPoints;
 }
 /**
@@ -295,7 +297,7 @@ public int pickControlPoint(Coordinate pickPoint, double minPickDistance) {
 	int controlPointIndex = Curve.NONE_SELECTED;
 	int controlPointCount = getControlPointCount();
 	for (int i = 0; i < controlPointCount; i++) {
-		Coordinate controlPointCoord = (Coordinate) controlPoints.elementAt(i);
+		Coordinate controlPointCoord = controlPoints.elementAt(i);
 		double distance = pickPoint.distanceTo(controlPointCoord);
 		if (distance <= minPickDistance && distance < shortestDistance) {
 			controlPointIndex = i;
@@ -357,21 +359,7 @@ public int removeControlPoint(int removeIndex, boolean bDeleteKeyPressed) {
 	}
 	return CurveSelectionInfo.NONE_SELECTED;
 }
-/**
- * Insert the method's description here.
- * Creation date: (4/2/01 3:22:23 PM)
- * @return java.lang.String
- */
-public void reverseControlPoints() {
-	for (int i = 0; i < controlPoints.size()/2; i++) {
-		int I = controlPoints.size() - 1 - i;
-		Object a = controlPoints.elementAt(i);
-		Object b = controlPoints.elementAt(I);
-		controlPoints.setElementAt(b, i);
-		controlPoints.setElementAt(a, I);
-	}
-	sampledCurveDirty();
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/17/2003 5:53:12 PM)
