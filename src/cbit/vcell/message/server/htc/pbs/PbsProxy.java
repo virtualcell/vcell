@@ -144,15 +144,13 @@ public final class PbsProxy extends HtcProxy {
 				sw.append("#PBS -q "+pbsQueueName+"\n");
 			}
 			sw.append("#PBS -m a\n");
-			sw.append("#PBS -M schaff@neuron.uchc.edu\n");
+			sw.append("#PBS -M schaff@uchc.edu\n");
 			sw.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
 			sw.append("#PBS -j oe\n");
 //			sw.append("#PBS -k oe\n");
 			sw.append("#PBS -r n\n");
 			sw.append("#PBS -l nice=10\n");
 			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
-			sw.append("export LD_LIBRARY_PATH=/share/apps/sonic/mq8.5.1:$LD_LIBRARY_PATH\n");
-			
 			sw.append("echo\n");
 			sw.append("echo\n");
 			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
