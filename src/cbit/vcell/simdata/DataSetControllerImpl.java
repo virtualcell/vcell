@@ -3682,7 +3682,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 		if(timeSeriesJobSpec.isCalcSpaceStats()){
 			spatialStatsInfo = calcSpatialStatsInfo(outputContext,timeSeriesJobSpec,vcdID);
 		}
-		//final EventRateLimiter eventRateLimiter = new EventRateLimiter();
+		final EventRateLimiter eventRateLimiter = new EventRateLimiter();
 		for(int k=0;k<timeSeriesJobSpec.getVariableNames().length;k+= 1){
 			double[][] timeSeries = null;
 			String varName = timeSeriesJobSpec.getVariableNames()[k];
@@ -3696,7 +3696,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 			ProgressListener progressListener = new ProgressListener(){
 				public void updateProgress(double progress) {
 					//System.out.println("Considering firing progress event at "+new Date());
-					//if (eventRateLimiter.isOkayToFireEventNow()){
+					if (eventRateLimiter.isOkayToFireEventNow()){
 						//System.out.println("ACTUALLY firing Progress event at "+new Date());
 						fireDataJobEventIfNecessary(
 								timeSeriesJobSpec.getVcDataJobID(),
@@ -3705,7 +3705,7 @@ private TimeSeriesJobResults getTimeSeriesValues_private(OutputContext outputCon
 								new Double(progress),
 								null,null
 							);
-					//}
+					}
 				}
 				public void updateMessage(String message){
 					//ignore
