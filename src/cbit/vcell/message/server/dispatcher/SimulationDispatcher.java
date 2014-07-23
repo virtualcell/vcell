@@ -319,7 +319,8 @@ public class SimulationDispatcher extends ServiceProvider {
 							if (simJobStatus.getSimulationExecutionStatus()==null){
 								killJob = true;
 							}else{
-								long elapsedTimeMS = System.currentTimeMillis() - simJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+								SimulationStateMachine ssm = simDispatcherEngine.getSimulationStateMachine(simTaskInfo.simId, simTaskInfo.jobIndex);
+								long elapsedTimeMS = System.currentTimeMillis() - ssm.getSolverProcessTimestamp(); 
 								if (elapsedTimeMS > MessageConstants.INTERVAL_HTCJOBKILL_DONE_TIMEOUT_MS){
 									killJob = true;
 								}
@@ -357,7 +358,11 @@ public class SimulationDispatcher extends ServiceProvider {
 			Set<KeyValue> unreferencedSimKeys = simulationDatabase.getUnreferencedSimulations();
 			for (SimulationJobStatus activeJobStatus : activeJobStatusArray){
 				SchedulerStatus schedulerStatus = activeJobStatus.getSchedulerStatus();
-				long timeSinceLastUpdateMS = currentTimeMS - activeJobStatus.getSimulationExecutionStatus().getLatestUpdateDate().getTime();
+				
+				KeyValue simId = activeJobStatus.getVCSimulationIdentifier().getSimulationKey();
+				int jobIndex = activeJobStatus.getJobIndex();
+				SimulationStateMachine ssm = simDispatcherEngine.getSimulationStateMachine(simId, jobIndex);
+				long timeSinceLastUpdateMS = currentTimeMS - ssm.getSolverProcessTimestamp(); 
 				
 				//
 				// fail any active jobs

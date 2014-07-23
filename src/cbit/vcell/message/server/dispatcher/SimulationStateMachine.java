@@ -50,8 +50,13 @@ public class SimulationStateMachine {
 	public static final int PRIORITY_DEFAULT = 5;
 	public static final int PRIORITY_HIGH = 9;	
 	
-	private KeyValue simKey;
-	private int jobIndex;
+	private final KeyValue simKey;
+	private final int jobIndex;
+	
+	/**
+	 * in memory storage of last time information about this job was received
+	 */
+	private long solverProcessTimestamp;
 	//private ArrayList<StateMachineTransition> stateMachineTransitions = new ArrayList<StateMachineTransition>();
 //	public static class StateMachineTransition {
 //		public final AbstractStateMachineEvent event;
@@ -139,14 +144,20 @@ public class SimulationStateMachine {
 	public SimulationStateMachine(KeyValue simKey, int jobIndex){
 		this.simKey = simKey;
 		this.jobIndex = jobIndex;
+		updateSolverProcessTimestamp();
 	}
 
+	/*
 	public SimulationStateMachine(SimulationJobStatus[] simJobStatus) {
-		this.simKey = simJobStatus[0].getVCSimulationIdentifier().getSimulationKey();
-		this.jobIndex = simJobStatus[0].getJobIndex();
-//		for (SimulationJobStatus jobStatus : simJobStatus){
-//			addStateMachineTransition(new StateMachineTransition(new PreloadStateMachineEvent(jobStatus.getTaskID()), null, jobStatus));
-//		}
+		this(simJobStatus[0].getVCSimulationIdentifier().getSimulationKey(),simJobStatus[0].getJobIndex());
+	}
+	*/
+	
+	/**
+	 * set in memory last update time to now
+	 */
+	private void updateSolverProcessTimestamp( ) {
+		solverProcessTimestamp = System.currentTimeMillis();
 	}
 	
 	public KeyValue getSimKey() {
@@ -174,7 +185,16 @@ public class SimulationStateMachine {
 //		stateMachineTransitions.add(stateMachineTransition);
 //	}
 
+	/**
+	 * return last time a status update was received in memory
+	 * @return time since information last changed about this task
+	 */
+	 long getSolverProcessTimestamp() {
+		return solverProcessTimestamp;
+	}
+
 	public synchronized void onWorkerEvent(WorkerEvent workerEvent, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws DataAccessException, VCMessagingException, SQLException {
+		updateSolverProcessTimestamp();
 		WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 		VCMongoMessage.sendWorkerEvent(workerEventMessage);
 		
@@ -504,6 +524,7 @@ public class SimulationStateMachine {
 	
 
 	public synchronized void onDispatch(Simulation simulation, SimulationJobStatus oldSimulationJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+		updateSolverProcessTimestamp();
 		VCSimulationIdentifier vcSimID = oldSimulationJobStatus.getVCSimulationIdentifier();
 		int taskID = oldSimulationJobStatus.getTaskID();
 
@@ -563,6 +584,7 @@ public class SimulationStateMachine {
 	}
 
 	public synchronized void onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
+		updateSolverProcessTimestamp();
 		
 		if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
 			log.alert(user + " is not authorized to stop simulation (key=" + simKey + ")");
@@ -608,6 +630,7 @@ public class SimulationStateMachine {
 	}
 
 	public synchronized void onSystemAbort(SimulationJobStatus oldJobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, UpdateSynchronizationException, DataAccessException, SQLException {
+		updateSolverProcessTimestamp();
 		
 		int taskID = oldJobStatus.getTaskID();
 
