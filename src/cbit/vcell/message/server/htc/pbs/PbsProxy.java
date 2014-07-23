@@ -6,10 +6,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
@@ -33,6 +36,8 @@ public final class PbsProxy extends HtcProxy {
 	private final static String JOB_CMD_SUBMIT = "qsub";
 	private final static String JOB_CMD_DELETE = "qdel";
 	private final static String JOB_CMD_STATUS = "qstat";
+	private Pattern statPattern = null;
+	private String jobPrefix = null; 
 
 	public PbsProxy(CommandService commandService, String htcUser){
 		super(commandService, htcUser);
@@ -111,6 +116,9 @@ public final class PbsProxy extends HtcProxy {
 			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardError = commandOutput.getStandardError();
+			String standardOut = commandOutput.getStandardOutput();
+			System.err.println(standardOut);
+			
 			if (exitStatus!=null && exitStatus==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
 				throw new HtcJobNotFoundException(standardError);
 			}
@@ -126,6 +134,12 @@ public final class PbsProxy extends HtcProxy {
 
 	@Override
 	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
+		if (lg.isInfoEnabled()) {
+			char space=' ';
+			lg.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
+				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
+				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
+		}
 		try {
 
 			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
@@ -150,6 +164,10 @@ public final class PbsProxy extends HtcProxy {
 //			sw.append("#PBS -k oe\n");
 			sw.append("#PBS -r n\n");
 			sw.append("#PBS -l nice=10\n");
+			if (ncpus > 1) {
+				char newline = '\n';
+				sw.append("#PBS -l nodes=1:ppn=" + ncpus + newline); 
+			}
 			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
 			sw.append("echo\n");
 			sw.append("echo\n");
@@ -253,21 +271,32 @@ public final class PbsProxy extends HtcProxy {
 	
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
+		if (!jobNamePrefix.equals(jobPrefix)) { //if jobNamePrefix changes, rebuild pattern
+			jobPrefix = jobNamePrefix; 
+			statPattern = Pattern.compile( 	"^(\\d*)\\S*\\s*\\S*\\s*\\S*\\s*" + jobPrefix + ".*", Pattern.DOTALL);
+			/*
+			 * \\d -- digits, collect in group 1
+			 * \\S non-space
+			 * \\s space
+			 * .* rest of the line,   DOTALL option required to match newline
+			 */
+		}
 		try {
 			String PBS_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcPbsHome);
 			if (!PBS_HOME.endsWith("/")){
 				PBS_HOME += "/";
 			}
-			String[] cmd = constructShellCommand(commandService, new String[]{PBS_HOME + JOB_CMD_STATUS, "|", "grep", htcUser,"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+			String[] cmd = constructShellCommand(commandService, new String[]{PBS_HOME + JOB_CMD_STATUS, "-u",  htcUser});
 			CommandOutput commandOutput = commandService.command(cmd);
 			ArrayList<HtcJobID> pbsJobIDs = new ArrayList<HtcJobID>();
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
 			while((line = br.readLine()) != null){
-				StringTokenizer st = new StringTokenizer(line," \t");
-				String pbsJobInfo = st.nextToken();
-				Integer pbsJobID = new Integer(pbsJobInfo.substring(0,pbsJobInfo.indexOf('.')));
-				pbsJobIDs.add(new PbsJobID(String.valueOf(pbsJobID)));
+				Matcher m = statPattern.matcher(line);
+				if (m.matches()) {
+					String idStr = m.group(1);
+					pbsJobIDs.add(new PbsJobID(idStr));
+				}
 			}
 			return pbsJobIDs;
 		} catch (Exception e) {
@@ -282,6 +311,7 @@ public final class PbsProxy extends HtcProxy {
 
 	@Override
 	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
+		
 		try{
 			String PBS_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcPbsHome);
 			if (!PBS_HOME.endsWith("/")){
