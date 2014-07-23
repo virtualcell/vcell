@@ -2,6 +2,7 @@ package cbit.vcell.message.server.cmd;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
@@ -46,6 +47,7 @@ public class CommandServiceSsh extends CommandService {
 			String cmd = CommandOutput.concatCommandStrings(commandStrings);
 
 			Session.Command command = session.exec(cmd);
+			command.join(1,TimeUnit.MINUTES); //wait up to a minute for return -- will return sooner if command completes
 			String standardOutput = IOUtils.readFully(command.getInputStream()).toString();
 			String standardError = IOUtils.readFully(command.getErrorStream()).toString();
 			Integer exitStatus = command.getExitStatus();
