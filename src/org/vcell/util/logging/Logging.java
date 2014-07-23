@@ -4,8 +4,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.vcell.util.PropertyLoader;
@@ -36,8 +38,8 @@ public class Logging {
 			def.put("log4j.rootLogger","FATAL, A1");
 			def.put("log4j.appender.A1","org.apache.log4j.ConsoleAppender");
 			def.put("log4j.appender.A1.layout","org.apache.log4j.PatternLayout");
-			def.put("log4j.appender.A1.layout.ConversionPattern","%-4r [%t] %-5p %c %x --> %m %n");
-			def.put("log4j.appender.target","System.err");
+			def.put("log4j.appender.A1.layout.ConversionPattern","%-4r [%t] %-5p %c %x %d--> %m %n");
+			def.put("log4j.appender.A1.Target","System.out");
 			PropertyConfigurator.configure(def);
 		}
 	}
@@ -47,6 +49,36 @@ public class Logging {
 	 * force loading of class to invoke static initialization code
 	 */
 	public static void init() {
+	}
+	
+	public static enum ConsoleDestination {
+		STD_OUT("System.out"),
+		STD_ERR("System.err");
+		public final String log4jName;
+
+		private ConsoleDestination(String log4jName) {
+			this.log4jName = log4jName;
+		}
+		
+	}
+	/**
+	 * change console logging from stderr to stdout, or vice-versa
+	 * @param from
+	 * @param to
+	 */
+	public static void changeConsoleLogging(ConsoleDestination from, ConsoleDestination to) {
+		Logger rootLogger = Logger.getRootLogger();
+		Enumeration<?> e = rootLogger.getAllAppenders();
+		while (e.hasMoreElements()) {
+			Object a = e.nextElement();
+			if (a instanceof ConsoleAppender) {
+				ConsoleAppender ca = (ConsoleAppender) a;
+				if (ca.getTarget().equals(from.log4jName)) {
+					ca.setTarget(to.log4jName);
+					ca.activateOptions();
+				}
+			}
+		}
 	}
 	
 	/**
