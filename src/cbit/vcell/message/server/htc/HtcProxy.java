@@ -3,7 +3,6 @@ package cbit.vcell.message.server.htc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
@@ -12,20 +11,17 @@ import java.nio.charset.CharsetEncoder;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
+import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
-import cbit.vcell.message.server.htc.pbs.PbsProxy;
 
 public abstract class HtcProxy {
+	protected static Logger lg = Logger.getLogger(HtcProxy.class);
 	
 	/**
 	 * 
