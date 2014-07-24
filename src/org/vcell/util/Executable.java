@@ -130,7 +130,9 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 			}
 		}
 		// log output
-		System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
+		if (!((PropertyLoader.getBooleanProperty(PropertyLoader.suppressQStatStandardOutLogging, true) && getCommand().contains("qstat -f")))){
+			System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
+		}
 		// finally, throw if it was a failure
 		if (getStatus().isError()) {
 			throw new Exception(getErrorString());

@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.vcell.util.Executable;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 
@@ -25,11 +26,13 @@ public class CommandServiceLocal extends CommandService {
 		exe.start(allowableReturnCodes);
 		long elapsedTimeMS = System.currentTimeMillis() - timeMS;
 		CommandOutput commandOutput = new CommandOutput(command, exe.getStdoutString(), exe.getStderrString(), exe.getExitValue(), elapsedTimeMS);
-
+        boolean bSuppressQStat = false;
 		VCMongoMessage.sendCommandServiceCall(commandOutput);
-
+		if (PropertyLoader.getBooleanProperty(PropertyLoader.suppressQStatStandardOutLogging, true) && commandOutput.getCommand().contains("qstat -f")){
+			bSuppressQStat = true;
+		}
 		System.out.println("Command: " + commandOutput.getCommand());
-		if(!bQuiet){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
+		if(!bQuiet && !bSuppressQStat){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
 		System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
 		System.out.println("Command: exit = " + commandOutput.getExitStatus());
 		
