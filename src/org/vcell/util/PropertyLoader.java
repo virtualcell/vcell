@@ -141,6 +141,7 @@ public class PropertyLoader {
 	public static final String installationRoot = record("vcell.installDir",RequiredFor.BOTH,ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);
+	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", RequiredFor.NOT, ValueType.BOOL);
 	
 	private static File systemTemporaryDirectory = null;
 
@@ -229,7 +230,11 @@ public class PropertyLoader {
 		/**
 		 * url
 		 */
-		 URL
+		 URL,
+		/**
+		 * boolean (true or false)
+		 */
+		 BOOL
 	}
 
 	/**
@@ -301,11 +306,21 @@ public class PropertyLoader {
 		return systemTemporaryDirectory;
 	}
 
-	/**
-	 * This method was created in VisualAge.
-	 * @return java.lang.String
-	 * @param propertyName java.lang.String
-	 */
+
+
+	public final static boolean getBooleanProperty(String propertyName, boolean defaultValue){
+		try {
+			String propertyValue = System.getProperty(propertyName);
+			if (propertyValue==null){
+				return defaultValue;
+			}else{
+				return Boolean.parseBoolean(propertyValue);
+			}
+		}catch (Exception e){
+			return defaultValue;
+		}	
+	}
+	
 	public final static int getIntProperty(String propertyName, int defaultValue) {
 		try {
 			String propertyValue = System.getProperty(propertyName);
