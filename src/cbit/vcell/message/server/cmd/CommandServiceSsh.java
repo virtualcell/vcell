@@ -13,6 +13,7 @@ import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 
 import org.vcell.util.ExecutableException;
+import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.mongodb.VCMongoMessage;
 
@@ -43,9 +44,11 @@ public class CommandServiceSsh extends CommandService {
 		try {
 			long timeMS = System.currentTimeMillis();
 			session = ssh.startSession();
-
+            boolean bSuppressQStat = false;
 			String cmd = CommandOutput.concatCommandStrings(commandStrings);
-
+			if (PropertyLoader.getBooleanProperty(PropertyLoader.suppressQStatStandardOutLogging, true) && cmd.contains("qstat -f")){
+				bSuppressQStat = true;
+			}
 			Session.Command command = session.exec(cmd);
 			command.join(1,TimeUnit.MINUTES); //wait up to a minute for return -- will return sooner if command completes
 			String standardOutput = IOUtils.readFully(command.getInputStream()).toString();
@@ -58,7 +61,7 @@ public class CommandServiceSsh extends CommandService {
 			VCMongoMessage.sendCommandServiceCall(commandOutput);
 
 			System.out.println("Command: " + commandOutput.getCommand());
-			if(!bQuiet){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
+			if(!bQuiet && !bSuppressQStat){System.out.println("Command: stdout = " + commandOutput.getStandardOutput());}
 			System.out.println("Command: stderr = " + commandOutput.getStandardError()); 
 			System.out.println("Command: exit = " + commandOutput.getExitStatus());
 			
