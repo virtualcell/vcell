@@ -177,7 +177,10 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				applicationSpecificationsPanel.setSimulationContext(simulationContext);
 				applicationProtocolsPanel.setSimulationContext(simulationContext);
 				applicationSimulationsPanel.setSimulationContext(simulationContext);
+				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
+				parameterEstimationPanel.setSelectionManager(selectionManager);
+
 			}
 		};		
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});

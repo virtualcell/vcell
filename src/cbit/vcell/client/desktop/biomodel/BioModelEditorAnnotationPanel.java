@@ -16,9 +16,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+
+import org.vcell.util.Compare;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
@@ -33,7 +37,7 @@ public class BioModelEditorAnnotationPanel extends DocumentEditorSubPanel {
 	private EventHandler eventHandler = new EventHandler();
 	private JTextArea annotationTextArea;
 
-	private class EventHandler implements FocusListener {
+	private class EventHandler extends MouseAdapter implements FocusListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -41,6 +45,15 @@ public class BioModelEditorAnnotationPanel extends DocumentEditorSubPanel {
 				changeAnnotation();
 			}
 		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseExited(e);
+			if(e.getSource() == annotationTextArea){
+				changeAnnotation();
+			}
+		}
+
 	}
 
 /**
@@ -92,6 +105,7 @@ private void initialize() {
 		add(jsp, gbc);		
 				
 		annotationTextArea.addFocusListener(eventHandler);
+		annotationTextArea.addMouseListener(eventHandler);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -105,7 +119,10 @@ private void changeAnnotation() {
 		if (bioModel == null) {
 			return;
 		}
-		bioModel.getVCMetaData().setFreeTextAnnotation(bioModel, annotationTextArea.getText());	
+		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+		if(!Compare.isEqualOrNull(bioModel.getVCMetaData().getFreeTextAnnotation(bioModel),textAreaStr)){
+			bioModel.getVCMetaData().setFreeTextAnnotation(bioModel, textAreaStr);	
+		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this,"Edit Species Error\n"+e.getMessage(), e);

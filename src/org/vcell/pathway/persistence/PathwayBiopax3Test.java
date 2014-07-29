@@ -41,7 +41,7 @@ public class PathwayBiopax3Test {
 //			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\SBPax3.owl"));
 //			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\Reactome3_189445.owl"));
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(new RDFXMLContext());
-			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
+			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement(),true);
 //			System.out.print(pathwayModel.show(true));
 			pathwayModel.reconcileReferences(null);
 			

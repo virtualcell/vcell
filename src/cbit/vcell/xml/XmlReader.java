@@ -460,7 +460,7 @@ public BioModel getBioModel(Element param) throws XmlParseException{
 		Element rdfElement = pathwayElement.getChild(XMLRDF.tagRDF, XMLRDF.nsRDF);
 		if (rdfElement!=null){
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(new RDFXMLContext());
-			PathwayModel pathwayModel = pathwayReader.parse(rdfElement);
+			PathwayModel pathwayModel = pathwayReader.parse(rdfElement,false);
 			pathwayModel.reconcileReferences(null);		// ??? is this needed ???
 			// we keep as lvl 1 only the objects which we want to show in the diagram
 			pathwayModel.filterDiagramObjects();

@@ -22,6 +22,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Parent;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.util.xml.XmlUtil;
@@ -53,9 +54,10 @@ public class VCMLComparator {
 		VCMLComparator.ps = ps;
 	}
 
-
 	private static Hashtable<String, String> map;
 
+	private static final Namespace RDF_NS_JDOM = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+	
 	public static class VCMLElementSorter implements Comparator<Element> {
 	
 		public int compare(Element e1, Element e2) {
@@ -79,14 +81,32 @@ public class VCMLComparator {
 			}
 			//if they belong to the same element, sort by their 'primary key' attribute.
 			String pkName = (String)map.get(eName1);                       //or eName2
-			if (pkName == null)
-				pkName = XMLTags.NameAttrTag;
-			int index = pkName.indexOf("&");
-			if (index == -1) {
-				if (pkName.equals("TEXT")) {
-					result = e1.getTextTrim().compareTo(e2.getTextTrim());
-				} else {
-					if((e1.getAttributeValue(pkName) == null)){
+			
+			if (pkName == null || pkName.indexOf("&") == -1) {
+				if (XMLTags.TEXT_PROP.equals(pkName)) {
+					result = (Compare.isEqualOrNull(e1.getTextTrim(), e2.getTextTrim())?0:e1.getTextTrim().compareTo(e2.getTextTrim()));
+				}else if (XMLTags.RELATIONSHIP_PROP.equals(pkName)) {
+					int result0 = e1.getAttributeValue(XMLTags.bioPaxObjectIdTag).compareTo(e2.getAttributeValue(XMLTags.bioPaxObjectIdTag));
+					if(result0 == 0){
+						return e1.getAttributeValue(XMLTags.bioModelObjectIdTag).compareTo(e2.getAttributeValue(XMLTags.bioModelObjectIdTag));
+					}
+					return result0;
+
+				}else if(pkName == null){
+					boolean e1_no_ns = e1.getAttributeValue(XMLTags.NODEID_PROP) != null;
+					boolean e2_no_ns = e2.getAttributeValue(XMLTags.NODEID_PROP) != null;
+					boolean e1_with_ns = e1.getAttributeValue(XMLTags.NODEID_PROP,RDF_NS_JDOM) != null;
+					boolean e2_with_ns = e1.getAttributeValue(XMLTags.NODEID_PROP,RDF_NS_JDOM) != null;
+					
+					if((e1_no_ns || e1_with_ns) && (e2_no_ns || e2_with_ns)){
+						result = e1.getAttributeValue(XMLTags.NODEID_PROP,(e1_no_ns?null:RDF_NS_JDOM)).compareTo(e2.getAttributeValue(XMLTags.NODEID_PROP,(e2_no_ns?null:RDF_NS_JDOM)));
+					}else if(e1.getAttributeValue(XMLTags.NameAttrTag) != null){
+						result = e1.getAttributeValue(XMLTags.NameAttrTag).compareTo(e2.getAttributeValue(XMLTags.NameAttrTag));
+					}else{
+						result = 0;
+					}
+				}else {
+					if(e1.getAttributeValue(pkName) == null){
 						result = 0;
 					}else{
 						result = e1.getAttributeValue(pkName).compareTo(e2.getAttributeValue(pkName));
@@ -111,6 +131,10 @@ public class VCMLComparator {
 	//but some other attribute.
 	static { 
 		map = new Hashtable<String, String>();
+//		map.put("PhysicalEntity","nodeID");
+//		map.put("BiochemicalReaction", "nodeID");
+		map.put("RelationshipObject", XMLTags.RELATIONSHIP_PROP);
+		map.put("DiagramObjectsID",XMLTags.TEXT_PROP);
 		map.put(XMLTags.ReactantTag, XMLTags.SpeciesContextRefAttrTag);
 		map.put(XMLTags.ProductTag, XMLTags.SpeciesContextRefAttrTag);
 		map.put(XMLTags.CatalystTag, XMLTags.SpeciesContextRefAttrTag);

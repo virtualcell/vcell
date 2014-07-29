@@ -20,6 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -33,6 +35,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.TextFieldAutoCompletion;
@@ -75,7 +78,7 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 	
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 
-	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -89,6 +92,15 @@ public class StructurePropertiesPanel extends DocumentEditorSubPanel {
 				changeNegativeFeature();
 			}
 		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseExited(e);
+			if(e.getSource() == annotationTextArea){
+				changeAnnotation();
+			}
+		}
+
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == structure || evt.getSource() == structure.getStructureSize()
 					|| structure instanceof Membrane && evt.getSource() == ((Membrane)structure).getMembraneVoltage()) {
@@ -133,6 +145,7 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
+	annotationTextArea.addMouseListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
 	positiveFeatureComboBox.addFocusListener(eventHandler);
 	negativeFeatureComboBox.addFocusListener(eventHandler);
@@ -340,7 +353,10 @@ private void changeAnnotation() {
 			return;
 		}
 		VCMetaData vcMetaData = fieldModel.getVcMetaData();
-		vcMetaData.setFreeTextAnnotation(structure, annotationTextArea.getText());
+		String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+		if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(structure),textAreaStr)){
+			vcMetaData.setFreeTextAnnotation(structure, textAreaStr);	
+		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, e.getMessage(), e);
