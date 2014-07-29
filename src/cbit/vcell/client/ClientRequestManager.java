@@ -378,6 +378,7 @@ private CloseOption checkBeforeClosing(DocumentWindowManager windowManager) {
 	try {
 		isChanged = getDocumentManager().isChanged(vcDocument);
 	} catch (Exception exc) {
+		exc.printStackTrace();
 		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_UnableToCheckForChanges, null);
 		if (choice.equals(UserMessage.OPTION_CANCEL)){
 			// user canceled

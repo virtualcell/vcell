@@ -50,6 +50,7 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
+import org.vcell.util.Compare;
 import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
@@ -169,7 +170,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	}
 
-	private class EventHandler implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener{
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == nameTextField) {
 				changeName();
@@ -192,6 +193,15 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			} else if (e.getSource() == nameTextField) {
 				changeName();
 			} 
+		}
+		
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseExited(e);
+			if(e.getSource() == annotationTextArea){
+				changeFreeTextAnnotation();
+			}
 		}
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSpeciesContext) {
@@ -234,6 +244,7 @@ private void handleException(java.lang.Throwable exception) {
  */
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
+	annotationTextArea.addMouseListener(eventHandler);
 	nameTextField.addFocusListener(eventHandler);
 	getPCLinkValueEditorPane().addHyperlinkListener(eventHandler);
 }
@@ -259,6 +270,7 @@ private void initialize() {
 		JLabel label = new JLabel("Species Name");
 		add(label, gbc);
 		
+		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -329,7 +341,10 @@ private void changeFreeTextAnnotation() {
 		// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
 		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), annotationTextArea.getText());	
+			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(getSpeciesContext().getSpecies()),textAreaStr)){
+				vcMetaData.setFreeTextAnnotation(getSpeciesContext().getSpecies(), textAreaStr);	
+			}
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);

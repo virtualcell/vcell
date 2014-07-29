@@ -37,7 +37,7 @@ public class PathwayIOUtil {
 		}
 		if(itIsLevel3) {
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(context);
-			pathwayModel = pathwayReader.parse(rootElement);
+			pathwayModel = pathwayReader.parse(rootElement,true);
 		} else {		// if it's not level3 we assume it to be level2
 		// TODO: once biopax version3 becomes dominant change the code to use that as the default
 			PathwayReader pathwayReader = new PathwayReader(context);

@@ -73,6 +73,10 @@ public class XMLTags {
 	public static final String BMBIOQUAL_NAMESPACE_PREFIX 	= "bqbiol";
 	public static final String BMMODELQUAL_NAMESPACE_URI 	= "http://biomodels.net/model-qualifiers#";			//xmlns:bqmodel="http://biomodels.net/model-qualifiers/"
 	public static final String BMMODELQUAL_NAMESPACE_PREFIX = "bqmodel";
+	public final static String TEXT_PROP					= "TEXT";
+	public final static String RELATIONSHIP_PROP			= "RELATIONSHIP";
+	public final static String NODEID_PROP					= "nodeID";
+
 	
 	// VCMEtaData/MIRIAM properties
 	public static final String PROPERTY_ISVERSIONOF 		= "isVersionOf";

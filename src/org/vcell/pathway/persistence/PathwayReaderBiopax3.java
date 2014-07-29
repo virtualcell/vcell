@@ -139,7 +139,7 @@ public class PathwayReaderBiopax3 {
 //			Document document = XmlUtil.readXML(new File("C:\\dan\\reactome biopax\\recursive.owl"));
 			PathwayReaderBiopax3 pathwayReader = new PathwayReaderBiopax3(new RDFXMLContext());
 			System.out.println("starting parsing");
-			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement());
+			PathwayModel pathwayModel = pathwayReader.parse(document.getRootElement(),true);
 			System.out.println("ending parsing");
 			pathwayModel.reconcileReferences(null);
 			System.out.println(pathwayModel.show(false));
@@ -148,7 +148,7 @@ public class PathwayReaderBiopax3 {
 		}
 	}
 
-	public PathwayModel parse(Element rootElement) {
+	public PathwayModel parse(Element rootElement,boolean bExternal) {
 		
 		for (Object child : rootElement.getChildren()){
 			if (child instanceof Element){
@@ -297,7 +297,7 @@ public class PathwayReaderBiopax3 {
 				}else if (childElement.getName().equals("DiagramObjectsID")){
 					String id = childElement.getTextTrim();
 					if(id != null && !id.equals("")) {
-						pathwayModel.getDiagramObjects().add(context.unAbbreviateURI(childElement, id));
+						pathwayModel.getDiagramObjects().add((bExternal?context.unAbbreviateURI(childElement, id):id));
 					}
 				}else{
 					showUnexpected(childElement);
