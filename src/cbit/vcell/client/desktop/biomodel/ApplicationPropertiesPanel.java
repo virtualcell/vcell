@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -43,7 +45,7 @@ public class ApplicationPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextField nameTextField = null;
 	private EventHandler eventHandler = new EventHandler();
 	
-	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
@@ -53,6 +55,15 @@ public class ApplicationPropertiesPanel extends DocumentEditorSubPanel {
 				changeName();
 			}
 		}
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseExited(e);
+			if(e.getSource() == annotationTextArea){
+				changeAnnotation();
+			}
+		}
+
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == simulationContext) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME) 
@@ -104,6 +115,7 @@ private void initialize() {
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
 		annotationTextArea.addFocusListener(eventHandler);
+		annotationTextArea.addMouseListener(eventHandler);
 		
 		tree = new JTree();
 		treeModel = new ApplicationPropertiesTreeModel();

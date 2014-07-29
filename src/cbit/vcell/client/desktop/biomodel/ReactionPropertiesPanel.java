@@ -40,6 +40,7 @@ import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -103,7 +104,7 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 			KineticsDescription.GeneralPermeability
 	};
 	
-	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener {
+	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) { 
 				updateKineticChoice();
@@ -120,6 +121,16 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 				changeName();
 			}
 		}
+		
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseExited(e);
+			if(e.getSource() == annotationTextArea){
+				changeFreeTextAnnotation();
+			}
+		}
+
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == reactionStep) {
 				updateInterface();
@@ -177,6 +188,7 @@ private void handleException(java.lang.Throwable exception) {
 
 private void initConnections() throws java.lang.Exception {
 	annotationTextArea.addFocusListener(eventHandler);
+	annotationTextArea.addMouseListener(eventHandler);
 }
 
 private void initialize() {
@@ -334,7 +346,10 @@ private void changeFreeTextAnnotation() {
 		// set text from annotationTextField in free text annotation for simple reactions in vcMetaData (from model)
 		if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
-			vcMetaData.setFreeTextAnnotation(reactionStep, annotationTextArea.getText());	
+			String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+			if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(reactionStep),textAreaStr)){
+				vcMetaData.setFreeTextAnnotation(reactionStep, textAreaStr);	
+			}
 		}
 	} catch(Exception e){
 		e.printStackTrace(System.out);

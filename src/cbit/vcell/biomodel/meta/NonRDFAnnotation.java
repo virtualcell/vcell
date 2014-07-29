@@ -10,6 +10,8 @@
 
 package cbit.vcell.biomodel.meta;
 
+import java.util.TreeSet;
+
 import org.jdom.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -77,27 +79,13 @@ public class NonRDFAnnotation implements Matchable {
 			if (xmlAnnotations.length != nonRDFAnnotation.xmlAnnotations.length) {
 				return false;
 			}
-			if (!Compare.isEqualOrNull(XmlUtil.xmlToString(xhtmlNotes), XmlUtil.xmlToString(nonRDFAnnotation.xhtmlNotes))) {
-				return false;
-			}
+			TreeSet<String> myXmlAnnots = new TreeSet<>();
+			TreeSet<String> otherXmlAnnots = new TreeSet<>();
 			for (int i = 0; i < xmlAnnotations.length; i ++) {
-				Element element1 = xmlAnnotations[i];
-				Element element2 = null;
-				for (Element e : nonRDFAnnotation.xmlAnnotations) {
-					if (element1.getName().equals(e.getName())) {
-						if (element1.getNamespace() != null && element1.getNamespace().equals(e.getNamespace())
-							|| element1.getNamespace() == null && e.getNamespace() == null) {					
-							element2 = e;
-						}
-					}
-				}
-				if (element2 == null) {
-					return false;
-				}				
-				if (!Compare.isEqualOrNull(XmlUtil.xmlToString(element1), XmlUtil.xmlToString(element2))) {
-					return false;
-				}
+				myXmlAnnots.add(XmlUtil.xmlToString(xmlAnnotations[i]));
+				otherXmlAnnots.add(XmlUtil.xmlToString(nonRDFAnnotation.xmlAnnotations[i]));
 			}
+			return myXmlAnnots.equals(otherXmlAnnots);
 		} 
 		return true;
 	}
