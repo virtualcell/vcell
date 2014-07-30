@@ -50,39 +50,7 @@ public ExportOutput(boolean valid, String dataType, String simID, String dataID,
 }
 
 public void writeDataToOutputStream(OutputStream outputStream,FileDataContainerManager fileDataContainerManager) throws FileNotFoundException, IOException{
-//	FileInputStream fis = new FileInputStream(data.getDataFile());
-//	ReadableByteChannel source = Channels.newChannel(fis);
-//    WritableByteChannel target = Channels.newChannel(outputStream);
-//
-//    ByteBuffer buffer = ByteBuffer.allocate(16 * 4096);
-//    while (source.read(buffer) != -1) {
-//        buffer.flip(); // Prepare the buffer to be drained
-//        while (buffer.hasRemaining()) {
-//            target.write(buffer);
-//        }
-//        buffer.clear(); // Empty buffer to get ready for filling
-//    }
-//
-//    source.close();
-//	fis.close();
-	
-	FileInputStream fis = null;
-	BufferedInputStream bis = null;
-	try{
-		File dataFile = fileDataContainerManager.getFileDataContainer(fileDataContainerID).getDataFile();
-		fis = new FileInputStream(dataFile);
-		bis = new BufferedInputStream(fis);
-		// Copy the contents of the file to the output stream
-		byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,dataFile.length())];
-		int count = 0;                 
-		while ((count = bis.read(buffer)) >= 0) {    
-			outputStream.write(buffer, 0, count);
-		}                 
-		outputStream.flush();
-	}finally{
-		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-		if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
-	}
+	fileDataContainerManager.writeAndFlush(fileDataContainerID, outputStream);
 }
 
 public FileDataContainerID getFileDataContainerID(){

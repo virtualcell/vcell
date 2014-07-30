@@ -102,20 +102,18 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 					// make datafile and update info
 					nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-					DataOutputStream out = null;
-					try {
-						out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
+					//DataOutputStream out = null;
+				
+						//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 							for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 								double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 								for (int k = 0; k < data.length; k++){
-									out.writeDouble(data[k]);
+									fileDataContainerManager.append(nrrdInfo.getDataFileID(), String.valueOf(data[k]));
 								}
 							}
 						}
-					}finally {
-						if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
-					}
+					
 					// write out final output
 					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					return new NrrdInfo[] {nrrdInfo};
@@ -150,22 +148,20 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						// make datafile and update info						
 						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-						DataOutputStream out = null;
+		
 						try {
-							out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
+							//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 							for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								//for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
 									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
-										out.writeDouble(data[k]);
+										fileDataContainerManager.append(nrrdInfo.getDataFileID(), String.valueOf(data[k]));
 									}
 								//}
 							}
 						} catch (IOException exc) {
 							throw new DataAccessException(exc.toString());
-						} finally {
-							if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
-						}
+						} 
 						// write out final output
 						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					}
@@ -206,21 +202,19 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
 						// make datafile and update info
 						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-						DataOutputStream out = null;
+					
 						try {
-							out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
+							//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
 							//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 								for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 									for (int k = 0; k < data.length; k++){
-										out.writeDouble(data[k]);
+										fileDataContainerManager.append(nrrdInfo.getDataFileID(),String.valueOf(data[k]));
 									}
 								}
 							//}
 						} catch (IOException exc) {
 							throw new DataAccessException(exc.toString());
-						} finally {
-							if(out != null){try{out.close();}catch(Exception e){e.printStackTrace();}}
 						}
 						// write out final output
 						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
@@ -477,7 +471,7 @@ public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext
 	for (File file : vtkFiles){
 		String dataID = file.getName().replace(simID.toString(), "");
 		ExportOutput exportOut = new ExportOutput(true,".vtu",simID.toString(),dataID,fileDataContainerManager);
-		fileDataContainerManager.append(exportOut.getFileDataContainerID(), FileUtils.readByteArrayFromFile(file));
+		fileDataContainerManager.manageExistingTempFile(exportOut.getFileDataContainerID(), file);
 		exportOutV.add(exportOut);				
 	}
 
@@ -506,7 +500,7 @@ public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,
 	for (File file : vtkFiles){
 		String dataID = file.getName().replace(simID.toString(), "");
 		ExportOutput exportOut = new ExportOutput(true,".vtu",simID.toString(),dataID,fileDataContainerManager);
-		fileDataContainerManager.append(exportOut.getFileDataContainerID(), FileUtils.readByteArrayFromFile(file));
+		fileDataContainerManager.manageExistingTempFile(exportOut.getFileDataContainerID(), file);
 		exportOutV.add(exportOut);				
 	}
 

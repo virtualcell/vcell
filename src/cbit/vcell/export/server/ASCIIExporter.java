@@ -66,7 +66,7 @@ private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, Use
 	dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
 	return new ExportOutput[] {exportOutput};	
 }
-
+ 
 
 /**
  * Insert the method's description here.
@@ -218,7 +218,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 			String dataType = ".csv";
 			FileDataContainerID fileDataContainerID_header = fileDataContainerManager.getNewFileDataContainerID();
 			SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
-			fileDataContainerManager.getFileDataContainer(fileDataContainerID_header).append("\""+"Model: '"+contextName+"'\"\n\"Simulation: '"+simNameSimDataIDs[v].getSimulationName()+"' ("+paramScanInfo+")\"\n"+simulationDescription.getHeader(dataType));
+			fileDataContainerManager.append(fileDataContainerID_header,"\""+"Model: '"+contextName+"'\"\n\"Simulation: '"+simNameSimDataIDs[v].getSimulationName()+"' ("+paramScanInfo+")\"\n"+simulationDescription.getHeader(dataType));
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_SELECTIONS: {
 					// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
@@ -307,10 +307,10 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 		String DATATYPE = exportOutputV.elementAt(0)[i].getDataType();
 		String DATAID = exportOutputV.elementAt(0)[i].getDataID();
 		combinedExportOutput[i] = new ExportOutput(true, DATATYPE, "MultiSimulation", DATAID, fileDataContainerManager);
-		FileDataContainer container = fileDataContainerManager.getFileDataContainer(combinedExportOutput[i].getFileDataContainerID());
+		//FileDataContainer container = fileDataContainerManager.getFileDataContainer(combinedExportOutput[i].getFileDataContainerID());
 		for (int j = 0; j < exportOutputV.size(); j++) {
-			container.append(fileDataContainerManager.getFileDataContainer(exportOutputV.elementAt(j)[i].getFileDataContainerID())); 
-			container.append("\n");
+			fileDataContainerManager.append(combinedExportOutput[i].getFileDataContainerID(),exportOutputV.elementAt(j)[i].getFileDataContainerID()); 
+			fileDataContainerManager.append(combinedExportOutput[i].getFileDataContainerID(),"\n");
 		}
 	}
 	return combinedExportOutput;
