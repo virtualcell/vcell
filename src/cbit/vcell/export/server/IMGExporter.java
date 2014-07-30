@@ -725,7 +725,9 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			DataOutputStream movieos = null;
 			try{
 				ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, dataID,fileDataContainerManager);
-				fos = new FileOutputStream(fileDataContainerManager.getFile(exportOutput.getFileDataContainerID()));
+				File tempMovieFile = File.createTempFile("Movie", "temp");
+				fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tempMovieFile);
+				fos = new FileOutputStream(tempMovieFile);
 				bos = new BufferedOutputStream(fos);
 				movieos = new DataOutputStream(bos);
 				MediaMethods.writeMovie(movieos, newMovie);
@@ -752,8 +754,10 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 				BufferedOutputStream bos = null;
 				DataOutputStream movieos = null;
 				try{
-					ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, storedDataID,fileDataContainerManager);
-					fos = new FileOutputStream(fileDataContainerManager.getFile(exportOutput.getFileDataContainerID()));
+					ExportOutput exportOutput = new ExportOutput(true, ".mov", simID, storedDataID,fileDataContainerManager);				
+					File tempMovieFile = File.createTempFile("Movie", "temp");
+					fileDataContainerManager.manageExistingTempFile(exportOutput.getFileDataContainerID(), tempMovieFile);
+					fos = new FileOutputStream(tempMovieFile);
 					bos = new BufferedOutputStream(fos);
 					movieos = new DataOutputStream(bos);
 					writeQTVRWorker(movieos, videoMediaChunkArr, numTimes,videoMediaChunkArr.length/numTimes, mirrorWidth, mirrorHeight);

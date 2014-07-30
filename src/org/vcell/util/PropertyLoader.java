@@ -84,6 +84,7 @@ public class PropertyLoader {
 
 	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",RequiredFor.NOT,ValueType.GEN);
 	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",RequiredFor.NOT,ValueType.GEN);
+	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",RequiredFor.NOT,ValueType.INT);
 
 	public static final String dbDriverName					= record("vcell.server.dbDriverName",RequiredFor.NOT,ValueType.GEN);
 	public static final String dbConnectURL					= record("vcell.server.dbConnectURL",RequiredFor.NOT,ValueType.GEN);
@@ -328,6 +329,19 @@ public class PropertyLoader {
 				return defaultValue;
 			}else{
 				return Integer.parseInt(propertyValue);
+			}
+		}catch (Exception e){
+			return defaultValue;
+		}		
+	}
+	
+	public final static long getLongProperty(String propertyName, long defaultValue) {
+		try {
+			String propertyValue = System.getProperty(propertyName);
+			if (propertyValue==null){
+				return defaultValue;
+			}else{
+				return Long.parseLong(propertyValue);
 			}
 		}catch (Exception e){
 			return defaultValue;
