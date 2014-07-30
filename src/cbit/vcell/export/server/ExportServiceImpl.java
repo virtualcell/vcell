@@ -307,35 +307,13 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 			if (nrrdInfos[i].isHasData()) {
 				// nrrdInfo 'header' file contains either just the header or both the header and data together
 				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename((nrrdInfos[i].isSeparateHeader()?true:false)));
-				zipOut.putNextEntry(zipEntry);
-				BufferedInputStream in = null;
-				byte[] bytes = new byte[65536];
-				try {
-					in = new BufferedInputStream(new FileInputStream(fileDataContainerManager.getFile(nrrdInfos[i].getHeaderFileID())));
-					int b = in.read(bytes);
-					while (b != -1) {
-						zipOut.write(bytes, 0, b);
-						b = in.read(bytes);
-					}
-				} finally {
-					if(in != null){try{in.close();}catch(Exception e){e.printStackTrace();}}
-				}
+				zipOut.putNextEntry(zipEntry);				
+				fileDataContainerManager.writeAndFlush(nrrdInfos[i].getHeaderFileID(), zipOut);
 				if (nrrdInfos[i].isSeparateHeader()) {
-					// The data was not saved with the 'header' file so save it separately
-					zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename(false));
-					zipOut.putNextEntry(zipEntry);
-					File datafile = fileDataContainerManager.getFile(nrrdInfos[i].getDataFileID());
-					in = null;
-					try {
-						in = new BufferedInputStream(new FileInputStream(datafile));
-						int b = in.read(bytes);
-						while (b != -1) {
-							zipOut.write(bytes, 0, b);
-							b = in.read(bytes);
-						}
-					} finally {
-						if(in != null){try{in.close();}catch(Exception e){e.printStackTrace();}}
-					}
+						// The data was not saved with the 'header' file so save it separately
+						zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename(false));
+						zipOut.putNextEntry(zipEntry);
+						fileDataContainerManager.writeAndFlush(nrrdInfos[i].getDataFileID(), zipOut);
 				}
 			} else {
 				exportValid = false;

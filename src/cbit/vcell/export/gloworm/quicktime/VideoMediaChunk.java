@@ -95,8 +95,11 @@ private void writeChunks(byte[] dataBytes, boolean bInitializeFile) throws IOExc
 
 public VideoMediaChunk(VideoMediaSample sample,FileDataContainerManager fileDataContainerManager) throws IOException{
 	init(sample);
-	
-	this.dataFile = fileDataContainerManager.getFile(fileDataContainerManager.getNewFileDataContainerID());
+	File tempMovieFile = File.createTempFile("VideoMediaChunk", "temp");
+	this.dataFile = tempMovieFile;
+			
+	FileDataContainerManager.FileDataContainerID fileDataContainerID =   fileDataContainerManager.getNewFileDataContainerID();
+	fileDataContainerManager.manageExistingTempFile(fileDataContainerID, tempMovieFile);
 	boolean bInitializeFile = true;
 
 	writeChunks(sample.getDataBytes(),bInitializeFile);
