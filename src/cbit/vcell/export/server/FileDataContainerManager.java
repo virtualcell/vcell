@@ -15,8 +15,6 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
-
 public class FileDataContainerManager {
 	ArrayList<FileDataContainer> fileDataContainers = new ArrayList<FileDataContainer>();
 	private long aggregateDataSize = 0;
