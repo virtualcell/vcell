@@ -96,7 +96,7 @@ public class VCMLComparator {
 					boolean e1_no_ns = e1.getAttributeValue(XMLTags.NODEID_PROP) != null;
 					boolean e2_no_ns = e2.getAttributeValue(XMLTags.NODEID_PROP) != null;
 					boolean e1_with_ns = e1.getAttributeValue(XMLTags.NODEID_PROP,RDF_NS_JDOM) != null;
-					boolean e2_with_ns = e1.getAttributeValue(XMLTags.NODEID_PROP,RDF_NS_JDOM) != null;
+					boolean e2_with_ns = e2.getAttributeValue(XMLTags.NODEID_PROP,RDF_NS_JDOM) != null;
 					
 					if((e1_no_ns || e1_with_ns) && (e2_no_ns || e2_with_ns)){
 						result = e1.getAttributeValue(XMLTags.NODEID_PROP,(e1_no_ns?null:RDF_NS_JDOM)).compareTo(e2.getAttributeValue(XMLTags.NODEID_PROP,(e2_no_ns?null:RDF_NS_JDOM)));
