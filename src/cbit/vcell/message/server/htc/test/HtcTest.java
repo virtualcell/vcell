@@ -108,7 +108,7 @@ public class HtcTest {
 		System.out.println("<<<<<--------------  SUBMITTING SINGLE JOB ------------------>>>>>>");
 		HtcJobID jobID = null;
 		try {
-			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE");
+			jobID = htcProxy.submitJob("myJob2","/home/VCELL/vcell/myJob2.sub",new String[] { "cp", "dkdkdk" }, new String[] { "echo", "worked" }, 1, 100, new String[] { "echo", "postCommand exit code is ", "EXIT_CODE"}, "EXIT_CODE",null);
 		} catch (Exception e1) {
 			e1.printStackTrace(System.out);
 		}

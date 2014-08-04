@@ -126,4 +126,8 @@ public boolean compareEqual(Matchable obj) {
 	}
 	return false;
 }
+
+public int numProcessors( ) {
+	return sim.getSolverTaskDescription().getNumProcessors(); //CBN?
+}
 }

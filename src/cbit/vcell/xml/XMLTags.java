@@ -613,5 +613,8 @@ public class XMLTags {
   public final static String RefineRatioAttrTag = "RefineRatio";
   public final static String TagsGrowAttrTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
+  
+  //Parallel processing
+  public final static String NUM_PROCESSORS = "NumberProcessors";
 	
 }

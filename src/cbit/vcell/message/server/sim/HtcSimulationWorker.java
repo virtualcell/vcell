@@ -14,9 +14,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -42,10 +42,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCPooledQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.VCTopicConsumer;
-import cbit.vcell.message.VCTopicConsumer.TopicListener;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
@@ -60,7 +57,6 @@ import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobID.BatchSystemType;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.pbs.PbsProxy;
 import cbit.vcell.message.server.htc.sge.SgeProxy;
 import cbit.vcell.message.server.jmx.VCellServiceMXBean;
@@ -74,6 +70,8 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
+import cbit.vcell.tools.FailedPortableCommand;
+import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 /**
@@ -86,7 +84,6 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private HtcProxy htcProxy = null;
 
 	private VCQueueConsumer queueConsumer = null;
-	private VCTopicConsumer serviceControlTopicConsumer = null;
 	private VCMessageSession sharedMessageProducer = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
 	
@@ -112,78 +109,55 @@ public void init() {
 	initQueueConsumer();
 }
 
-private void initServiceControlTopicListener() {
-	TopicListener listener = new TopicListener() {
 
-		public void onTopicMessage(VCMessage message, VCMessageSession session) {
-			try {
-				String msgType = message.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
-				
-				if (msgType == null) {
-					return;
-				}
-				
-				if (msgType.equals(MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE)) {			
-					final long simID = message.getLongProperty(MessageConstants.SIMKEY_PROPERTY);
-					final int jobIndex = message.getIntProperty(MessageConstants.JOBINDEX_PROPERTY);
-					final int taskID = message.getIntProperty(MessageConstants.TASKID_PROPERTY);
-					String htcJobIdString = null;
-					if (message.propertyExists(MessageConstants.HTCJOBID_PROPERTY)){
-						htcJobIdString = message.getStringProperty(MessageConstants.HTCJOBID_PROPERTY);
-					}
-					final HtcJobID htcJobId = (htcJobIdString!=null) ? HtcJobID.fromDatabase(htcJobIdString) : null;
-					
-					Runnable runnable = new Runnable(){
-						public void run() {
-							HtcProxy threadLocalHtcProxy = htcProxy.cloneThreadsafe();
-							try {
-								try {
-									Thread.sleep(10000); // sleep 10 seconds once ... give job time to kill itself gracefully
-								} catch (InterruptedException e1) {
-								}
-								if (htcJobId!=null){
-									threadLocalHtcProxy.killJob(htcJobId);
-								}else{
-									//
-									// should only return one running job with this name (sim/job/task) (but handles more than one).
-									//
-									String simJobName = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(new KeyValue(simID+""), jobIndex, taskID));
-									List<HtcJobID> htcJobIDs = threadLocalHtcProxy.getRunningSimulationJobIDs();
-									Map<HtcJobID,HtcJobInfo> htcJobInfos = threadLocalHtcProxy.getJobInfos(htcJobIDs);
-									for (HtcJobInfo htcJobInfo : htcJobInfos.values()){
-										try {
-											if (htcJobInfo.isFound() && htcJobInfo.getJobName().equals(simJobName)){
-												threadLocalHtcProxy.killJob(htcJobInfo.getHtcJobID());
-											}
-										} catch (Exception e) {
-											log.exception(e);
-										}
-									}
-								}
-							} catch (Exception e) {
-								log.exception(e);
-							} finally {
-								threadLocalHtcProxy.getCommandService().close();
-							}
-						}
-					};
-					Thread killSimulationThread = new Thread(runnable, "Kill Simulation Thread (sim="+simID+", job="+jobIndex+", taskid="+taskID);
-					killSimulationThread.setDaemon(true);
-					killSimulationThread.start();
-				}
-			} catch (Exception ex) {
-				log.exception(ex);
-			}	
-		}
-
-	};
-	VCMessageSelector selector = null;
-	String threadName = "Service Control Topic Consumer (for killing sims)";
-	serviceControlTopicConsumer = new VCTopicConsumer(VCellTopic.ServiceControlTopic, listener, selector, threadName, MessageConstants.PREFETCH_LIMIT_SERVICE_CONTROL);
-	vcMessagingService.addMessageConsumer(serviceControlTopicConsumer);
+private static class RunDirectories {
+	/**
+	 * where solver runs
+	 */
+	String runDirectory;
+	/**
+	 * where data ends up
+	 */
+	String finalDataDirectory;
+	
+	/**
+	 * directories are same
+	 * @param runDirectory
+	 */
+	RunDirectories(String runDirectory) {
+		this.runDirectory = runDirectory;
+		this.finalDataDirectory = runDirectory; 
+	}
+	
+	/**
+	 * directories are different
+	 * @param runDirectory
+	 * @param finalDataDirectory
+	 */
+	RunDirectories(String runDirectory, String finalDataDirectory) {
+		this.runDirectory = runDirectory;
+		this.finalDataDirectory = finalDataDirectory;
+	}
+	
+	boolean isCopyNeeded( ) {
+		return !runDirectory.equals(finalDataDirectory);
+	}
+	
 }
-
-
+/**
+ * determine which user directory to use, based on whether task is parallel or not
+ * @param simTask
+ * @return appropriate user directory
+ */
+private RunDirectories userDirFor(SimulationTask simTask) {
+		String userDir = "/" + simTask.getUserName();
+		String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty);
+		if (!simTask.getSimulation( ).getSolverTaskDescription().isParallel()) {
+			return new RunDirectories(primary + userDir);
+		}
+		String runDir = PropertyLoader.getRequiredProperty(PropertyLoader.PARALLEL_DATA_DIR);
+		return new RunDirectories(runDir + userDir , primary + userDir);
+}
 
 private void initQueueConsumer() {
 	
@@ -197,9 +171,9 @@ private void initQueueConsumer() {
 			try {
 				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 				simTask = simTaskMessage.getSimulationTask();
-				File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),simTask.getUserName());
+				RunDirectories rd = userDirFor(simTask);
 				HtcProxy clonedHtcProxy = htcProxy.cloneThreadsafe();
-				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, log, userdir);
+				HtcJobID pbsId = submit2PBS(simTask, clonedHtcProxy, log, rd);
 				synchronized (sharedMessageProducer) {
 					WorkerEventMessage.sendAccepted(sharedMessageProducer, HtcSimulationWorker.class.getName(), simTask, ManageUtils.getHostName(), pbsId);
 				}
@@ -228,7 +202,7 @@ private void initQueueConsumer() {
 	vcMessagingService.addMessageConsumer(queueConsumer);
 }
 
-private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, SessionLog log, File userdir) throws XmlParseException, IOException, SolverException, ExecutableException {
+private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, SessionLog log, RunDirectories rd) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
 	String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
@@ -238,10 +212,11 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
     String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
 	String subFile = htcLogDirString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 	
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userdir, simTask, true);
+	File userDir = new File(rd.runDirectory);
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userDir, simTask, true);
 	
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-	String simTaskFilePath = forceUnixPath(new File(userdir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskFilePath = forceUnixPath(new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 	
 	if (clonedHtcProxy.getCommandService() instanceof CommandServiceSsh){
 		// write simTask file locally, and send it to server, and delete local copy.
@@ -265,8 +240,11 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 			simOwner.getID().toString(),
 			Integer.toString(simTask.getSimulationJob().getJobIndex()),
 			Integer.toString(simTask.getTaskID()),
-			SOLVER_EXIT_CODE_REPLACE_STRING
+			SOLVER_EXIT_CODE_REPLACE_STRING,
+			subFile
 	};
+	
+	int ncpus = simTask.getSimulation().getSolverTaskDescription().getNumProcessors(); //CBN? 
 
 	if (realSolver instanceof AbstractCompiledSolver) {
 		
@@ -274,7 +252,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		String[] preprocessorCmd = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
 				simTaskFilePath, 
-				forceUnixPath(userdir.getAbsolutePath())
+				forceUnixPath(userDir.getAbsolutePath())
 		};
 		String[] nativeExecutableCmd = ((AbstractCompiledSolver)realSolver).getMathExecutableCommand();
 		for (int i=0;i<nativeExecutableCmd.length;i++){
@@ -283,7 +261,15 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
 		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
 		
-		jobid = clonedHtcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+		Collection<PortableCommand> postProcessingCommands = null;
+		if (rd.isCopyNeeded()) {
+			postProcessingCommands = new ArrayList<PortableCommand>(); 
+			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), rd.runDirectory,rd.finalDataDirectory); 
+			postProcessingCommands.add(csf);
+			postProcessingCommands.add(new FailedPortableCommand()); //test failure
+		}
+		
+		jobid = clonedHtcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING,postProcessingCommands);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -293,16 +279,17 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		String[] command = new String[] { 
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
 				simTaskFilePath,
-				forceUnixPath(userdir.getAbsolutePath())
+				forceUnixPath(userDir.getAbsolutePath())
 		};
 
-		jobid = clonedHtcProxy.submitJob(jobname, subFile, command, 1, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
+		jobid = clonedHtcProxy.submitJob(jobname, subFile, command, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
 		if (jobid == null) {
 			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
 		}
 	}
 	return jobid;
 }
+
 private static String forceUnixPath(String filePath){
 	return filePath.replace("C:","").replace("D:","").replace("\\","/");
 }

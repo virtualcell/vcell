@@ -122,8 +122,11 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		
 		@Override
 		public int getRowCount() {
-			int numRefinementLevels = simulation.getSolverTaskDescription().getChomboSolverSpec() == null ? 0 : simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
-			return numRefinementLevels == 0 ? 1 : numRefinementLevels;
+			if (isSimulationChombo())
+			{
+				return Math.max(simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels(), 1);
+			}
+			return 0;
 		}
 
 		@Override
@@ -133,28 +136,31 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 
 		@Override
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			int numRefinementLevels = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
-			if (columnIndex == COLUMN_Level)
+			if (isSimulationChombo()) 
 			{
-				return numRefinementLevels == 0 ? "" : rowIndex + 1;
-			}
-			if (numRefinementLevels == 0 || rowIndex >= numRefinementLevels)
-			{
-				return null;
-			}
-			RefinementLevel level = simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(rowIndex);
-			switch (columnIndex)
-			{
-			case COLUMN_RefinementRatio:
-				return level.getRefineRatio();
-			case COLUMN_ROI:
-				if (level.getRoiExpression() == null)
+				int numRefinementLevels = simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels();
+				if (columnIndex == COLUMN_Level)
+				{
+					return numRefinementLevels == 0 ? "" : rowIndex + 1;
+				}
+				if (numRefinementLevels == 0 || rowIndex >= numRefinementLevels)
 				{
 					return null;
 				}
-				return new ScopedExpression(level.getRoiExpression(), ReservedVariable.X.getNameScope(), true, true, autoCompleteSymbolFilter);
-			case COLUMN_TagsGrow:
-				return level.isTagsGrowEnabled();
+				RefinementLevel level = simulation.getSolverTaskDescription().getChomboSolverSpec().getRefinementLevel(rowIndex);
+				switch (columnIndex)
+				{
+				case COLUMN_RefinementRatio:
+					return level.getRefineRatio();
+				case COLUMN_ROI:
+					if (level.getRoiExpression() == null)
+					{
+						return null;
+					}
+					return new ScopedExpression(level.getRoiExpression(), ReservedVariable.X.getNameScope(), true, true, autoCompleteSymbolFilter);
+				case COLUMN_TagsGrow:
+					return level.isTagsGrowEnabled();
+				}
 			}
 			return null;
 		}
@@ -208,8 +214,16 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return columnIndex != COLUMN_Level 
+			return isSimulationChombo() && columnIndex != COLUMN_Level 
 					&& simulation.getSolverTaskDescription().getChomboSolverSpec().getNumRefinementLevels() > 0;
+		}
+		
+		/**
+		 * is current simulation chombo solver?
+		 * @return true if is
+		 */
+		private boolean isSimulationChombo() {
+			return simulation.getSolverTaskDescription().getChomboSolverSpec() != null;
 		}
 	}
 	

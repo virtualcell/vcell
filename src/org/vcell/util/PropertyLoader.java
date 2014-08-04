@@ -30,8 +30,9 @@ public class PropertyLoader {
 
 	public static final String vcellServerIDProperty        = record("vcell.server.id",RequiredFor.NOT,ValueType.GEN);
 
-	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",RequiredFor.NOT,ValueType.DIR);
-	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",RequiredFor.NOT,ValueType.DIR);
+	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",RequiredFor.SERVER,ValueType.DIR);
+	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",RequiredFor.SERVER,ValueType.DIR);
+	public static final String PARALLEL_DATA_DIR			= record("vcell.parallelDatadir",RequiredFor.SERVER,ValueType.DIR);
 
 	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",RequiredFor.NOT,ValueType.GEN);
 	public static final String htcBatchSystemQueue			= record("vcell.htc.queue",RequiredFor.NOT,ValueType.GEN);
@@ -139,7 +140,7 @@ public class PropertyLoader {
 	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",RequiredFor.NOT,ValueType.EXE);
 
 	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",RequiredFor.NOT,ValueType.GEN);
-	public static final String installationRoot = record("vcell.installDir",RequiredFor.BOTH,ValueType.DIR);
+	public static final String installationRoot = record("vcell.installDir",RequiredFor.CLIENT,ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", RequiredFor.NOT, ValueType.BOOL);
@@ -269,7 +270,7 @@ public class PropertyLoader {
 	/**
 	 * has user been nagged about required property not marked required?
 	 */
-	private static Map<String,Object> nagged = new Hashtable<String, Object>();
+	private static Map<String,Object> nagged = new HashMap<String, Object>();
 
 
 	/**

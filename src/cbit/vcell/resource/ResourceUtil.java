@@ -352,6 +352,24 @@ public class ResourceUtil {
 		}
 		nativeLoaded = true;
 	}
+	/**
+	 * set path to native library directory and load them up
+	 * @param from directory to load file
+	 * @throws Error if load fails
+	 */
+	public static void loadNativeLibraries(String from ) throws Error {
+		if (!nativeLoaded) {
+			NativeLoader.setNativeLibraryDirectory(from);
+			try {
+				NativeLoader nl = new NativeLoader();
+				nl.loadNativeLibraries();
+			}
+			catch (Exception e) {
+				throw new Error("Error setting up native libraries ",e);
+			}
+		}
+		nativeLoaded = true;
+	}
 
 	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	public static String getLastUserLocalDir() {

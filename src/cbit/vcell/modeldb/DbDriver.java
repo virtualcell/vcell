@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -26,13 +25,15 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
@@ -114,6 +115,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * This type was created in VisualAge.
  */
 public abstract class DbDriver {
+	private static final Logger lg = Logger.getLogger(DbDriver.class);
 	//
 	private static final int ORACLE_VARCHAR2_SIZE_LIMIT = 4000;
 	public static final String INSERT_VARCHAR2_HERE = "INSERT_VARCHAR2_HERE";
@@ -4518,7 +4520,10 @@ public static void varchar2_CLOB_update(
             marker_index,
             marker_index + INSERT_VARCHAR2_HERE.length(),
             "'" + TokenMangler.getSQLEscapedString(data) + "'");
-        updateCleanSQL(con, sb.toString());
+        int changed = updateCleanSQL(con, sb.toString());
+        if (changed != 1 && lg.isEnabledFor(Level.WARN) ){
+        	lg.warn("query " + sb.toString() + " changed " + changed +  " rows"); 
+        }
     }else{
 	    throw new RuntimeException("Expected charchar2_CLOB Marker Not Found in sql");
     }

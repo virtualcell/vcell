@@ -5035,8 +5035,10 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		e.printStackTrace();
 		throw new XmlParseException("A PropertyVetoException was fired when setting the taskType: " + taskType, e);
 	}
+	int numProcessors = parseIntWithDefault(param, XMLTags.NUM_PROCESSORS, 1); 
 
 	try {
+		solverTaskDesc.setNumProcessors(numProcessors);
 		solverTaskDesc.setUseSymbolicJacobian(useSymJacob);	
 		//get TimeBound
 		solverTaskDesc.setTimeBounds( getTimeBounds(param.getChild(XMLTags.TimeBoundTag, vcNamespace)) );
@@ -6217,37 +6219,76 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 	return var;
 }
 
+private interface Convert<T> {
+	T parse(String in);
+}
+private	Convert<Integer> convertInt = new Convert<Integer>() {
+			public Integer parse(String in) {
+				return Integer.parseInt(in);
+			}
+		}; 
+		
+private Convert<Double> convertDouble = new Convert<Double>() {
+			public Double parse(String in) {
+				return Double.parseDouble(in);
+			}
+		}; 
+		
+private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
+			public Boolean parse(String in)  {
+				return Boolean.parseBoolean(in);
+			}
+		}; 
+
+/**
+ * parse parent for specified element. Return defaultValue if it's not present
+ * @param parent
+ * @param tagName
+ * @param defaultValue
+ * @param c converter to change string into T 
+ * @return parsed value, if present, default otherwise
+ */
+	private <T> T parseWithDefault(Element parent, String tagName, T defaultValue, Convert<T> c) {
+		Element child = parent.getChild(tagName,vcNamespace);
+		if (child != null) {
+			return c.parse(child.getText());
+		}
+		return defaultValue;
+	}
+	
+	/**
+	 * read integer XML
+	 * @see #parseWithDefault(Element, String, Object, Convert) 
+	 */
+	private int parseIntWithDefault(Element parent, String tagName, int defaultValue) {
+		return parseWithDefault(parent,tagName,defaultValue,convertInt);
+	}
+	
+	/**
+	 * read double XML
+	 * @see #parseWithDefault(Element, String, Object, Convert) 
+	 */
+	private double parseDoubleWithDefault(Element parent, String tagName, double defaultValue) {
+		return parseWithDefault(parent,tagName,defaultValue,convertDouble);
+	}
+	/**
+	 * read boolean XML
+	 * @see #parseWithDefault(Element, String, Object, Convert) 
+	 */
+	private boolean parseBooleanWithDefault(Element parent, String tagName, boolean defaultValue) {
+		return parseWithDefault(parent,tagName,defaultValue,convertBoolean);
+	}
+	
 	private ChomboSolverSpec getChomboSolverSpec(Element element, int dimension) throws XmlParseException {
-		Element maxBoxSizeElement = element.getChild(XMLTags.MaxBoxSizeTag, vcNamespace);
-		int maxBoxSize = ChomboSolverSpec.getDefaultMaxBoxSize(dimension);
-		if (maxBoxSizeElement != null)
-		{
-			maxBoxSize = Integer.parseInt(maxBoxSizeElement.getText());
-		}
-		Element viewLevelElement = element.getChild(XMLTags.ViewLevelTag, vcNamespace);
-		Integer viewLevel = null;
-		if (viewLevelElement != null)
-		{
-			viewLevel = Integer.parseInt(viewLevelElement.getText());
-		}
-		Element fillRatioElement = element.getChild(XMLTags.FillRatioTag, vcNamespace);
-		double fillRatio = ChomboSolverSpec.getDefaultFillRatio();
-		if (fillRatioElement != null)
-		{
-			fillRatio = Double.parseDouble(fillRatioElement.getText());
-		}
-		Element saveVCellOutputElement = element.getChild(XMLTags.SaveVCellOutput, vcNamespace);
-		boolean bSaveVCellOutput = true;
-		if (saveVCellOutputElement != null)
-		{
-			bSaveVCellOutput = Boolean.parseBoolean(saveVCellOutputElement.getText());
-		}
-		Element saveChomboOutputElement = element.getChild(XMLTags.SaveChomboOutput, vcNamespace);
-		boolean bSaveChomboOutput = false;
-		if (saveChomboOutputElement != null)
-		{
-			bSaveChomboOutput = Boolean.parseBoolean(saveChomboOutputElement.getText());
-		}
+		int maxBoxSize = parseIntWithDefault(element, XMLTags.MaxBoxSizeTag, ChomboSolverSpec.getDefaultMaxBoxSize(dimension));
+		
+		
+		double fillRatio = parseDoubleWithDefault(element,XMLTags.FillRatioTag, ChomboSolverSpec.getDefaultFillRatio());
+		
+		boolean bSaveVCellOutput = parseBooleanWithDefault(element, XMLTags.SaveVCellOutput, true);
+		
+		boolean bSaveChomboOutput = parseBooleanWithDefault(element, XMLTags.SaveChomboOutput, false); 
+		
 		
 		try {
 			ArrayList<RefinementLevel> refineLevelList = new ArrayList<RefinementLevel>();
@@ -6272,10 +6313,9 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 					refineLevelList.add(rfl);
 				}
 			}
-			if (viewLevel == null)
-			{
-				viewLevel = refineLevelList.size();
-			}
+			
+			int viewLevel = parseIntWithDefault(element,XMLTags.ViewLevelTag, refineLevelList.size());
+			
 			return new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineLevelList);
 		} catch (ExpressionException e) {
 			throw new XmlParseException(e);

@@ -199,7 +199,15 @@ public class SimulationMessage implements Serializable {
 			return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,"solver exited (code="+solverExitCode+")");
 		}
 	}
-
+	
+	/**
+	 * @param e exception, may not be null
+	 * @return {@link DetailedState#WORKEREVENT_WORKEREXIT_ERROR} message
+	 */
+	public static SimulationMessage WorkerExited(Exception e){
+		return new SimulationMessage(DetailedState.WORKEREVENT_WORKEREXIT_ERROR,"worker exited (exception="+e.getMessage()+')');
+	}
+	
 	public static SimulationMessage solverEvent_Starting_Submit(String submitMsg, HtcJobID htcJobId){
 		SimulationMessage simMessage = new SimulationMessage(DetailedState.SOLVEREVENT_STARTING_SUBMITTED,submitMsg);
 		simMessage.htcJobId = htcJobId;

@@ -52,7 +52,7 @@ public class VtkGridUtils {
 	static {
 		try {
 			// note, have to set PATH environment variable to include these libraries before execution (or -Dvtk.lib.dir=../nativelibs/win64 may work on command line).
-			vtkNativeLibrary.LoadAllNativeLibraries();
+			//vtkNativeLibrary.LoadAllNativeLibraries();
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
