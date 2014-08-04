@@ -39,6 +39,13 @@ public class Log4jSessionLog implements SessionLog {
 	}
 	
 	/**
+	 * @return underlying log4j logger
+	 */
+	public Logger getLogger( ) {
+		return lg;
+	}
+	
+	/**
 	 * lazy evaluate host: determine on first logging -- to avoid startup race conditions
 	 * @return host name plus space 
 	 */

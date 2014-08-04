@@ -12,6 +12,7 @@ package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -19,6 +20,7 @@ import java.util.Hashtable;
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
@@ -41,6 +43,11 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_ERROR = "abort";
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
+	private static final Logger lg = Logger.getLogger(ClientTaskDispatcher.class);
+	/**
+	 * used to count / generate thread names
+	 */
+	private static long serial = 0;
 
 /**
  * don't show popup.
@@ -93,7 +100,11 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
 		}
 		taskList.add(tasks[i]);
+		if (lg.isDebugEnabled()) {
+			lg.debug("added task name " + tasks[i].getTaskName());
+		}
 	}
+	final String threadBaseName = "ClientTaskDispatcher " + ( serial++ )  + ' ';
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
 		private AsynchProgressPopup pp = null;
@@ -136,6 +147,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// also skip selected tasks specified by conditionalSkip tag 
 				final AsynchClientTask currentTask = taskList.get(i);
 				currentTask.setClientTaskStatusSupport(pp);
+				setSwingWorkerThreadName(this,threadBaseName + currentTask.getTaskName());
 				
 //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
 				if (pp != null ) {
@@ -249,6 +261,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
 		}
 	};
+	setSwingWorkerThreadName(worker,threadBaseName); 
 	worker.start();
 }
 
@@ -283,4 +296,30 @@ public static void recordException(Throwable exc, Hashtable<String, Object> hash
 		hash.put(TASK_ABORTED_BY_ERROR, exc);
 	}
 }
+
+/**
+ * set {@link SwingWorker} thread name
+ * @param sw
+ * @param name may not be null
+ * @throws IllegalArgumentException if name is null
+ */
+private static void setSwingWorkerThreadName(SwingWorker sw, String name) {
+	if (name != null ) {
+		try {
+			Field threadVarField = SwingWorker.class.getDeclaredField("threadVar");
+			threadVarField.setAccessible(true);
+			Object threadVar = threadVarField.get(sw);
+			Field threadField = threadVar.getClass().getDeclaredField("thread");
+			threadField.setAccessible(true);
+			Thread thread = (Thread) threadField.get(threadVar);	
+			thread.setName(name);
+		}
+		catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+			lg.warn("setSwingWorkerName fail", e);
+		}
+		return;
+	}
+	throw new IllegalArgumentException("name may not be null");
+}
+
 }

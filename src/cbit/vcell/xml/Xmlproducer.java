@@ -457,6 +457,7 @@ public Element getXML(Origin param) throws XmlParseException{
  * @return Element
  * @param param cbit.vcell.biomodel.BioModel
  */
+@SuppressWarnings("deprecation")
 public Element getXML(BioModel param) throws XmlParseException, ExpressionException {
 	//Creation of BioModel Node
 	Element biomodelnode = new Element(XMLTags.BioModelTag);
@@ -1258,9 +1259,9 @@ private Element getXML(FeatureMapping param) {
 	feature.setAttribute(XMLTags.FeatureAttrTag, mangle(param.getFeature().getName()));
 	GeometryClass geometryClass = param.getGeometryClass();
 	if (geometryClass != null) {
-		feature.setAttribute(XMLTags.GeometryClassAttrTag, this.mangle(geometryClass.getName()));
+		feature.setAttribute(XMLTags.GeometryClassAttrTag, Xmlproducer.mangle(geometryClass.getName()));
 		if (geometryClass instanceof SubVolume){
-			feature.setAttribute(XMLTags.SubVolumeAttrTag, this.mangle(geometryClass.getName()));
+			feature.setAttribute(XMLTags.SubVolumeAttrTag, Xmlproducer.mangle(geometryClass.getName()));
 		}
 	}
 	//Add size
@@ -3153,31 +3154,6 @@ private Element getXML(Diagram param) {
 	return diagram;
 }
 
-
-/**
- * This method returns a XML version of a Feature.
- * Creation date: (2/22/2001 7:05:40 PM)
- * @return Element
- * @param param cbit.vcell.model.Feature
- * @param model cbit.vcell.model.Model
- * @deprecated This methos is no longer in use. Functionnality moved to the get-Structures.
- */
-private Element getXML(Feature param/*, Model model*/) {
-	Element feature = new Element(XMLTags.FeatureTag);
-	
-	//Get parameters
-	feature.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	/******* not any more in use***** Species contexts moved to the Model level ***
-	//Get SpeciesContexts
-	SpeciesContext[] array = model.getSpeciesContexts(param);
-	for (int i=0 ; i< array.length ; i++) {
-		feature.addContent( getXML((SpeciesContext)array[i]) );
-	}*********************/
-	
-	return feature;
-}
-
-
 /**
  * This method returns a XML representation of a Flux Reaction object.
  * Creation date: (2/26/2001 12:30:13 PM)
@@ -3918,7 +3894,7 @@ private Element getXML(StochSimOptions param, boolean isHybrid) {
 Element getXML(Simulation param) {
 	Element simulationElement = new Element(XMLTags.SimulationTag);
 
-	//Add Atributes
+	//Add Attributes
 	String name = mangle(param.getName());
 	simulationElement.setAttribute(XMLTags.NameAttrTag, name);
 	//simulation.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
@@ -3961,7 +3937,7 @@ Element getXML(Simulation param) {
 private Element getXML(SolverTaskDescription param) {
 	Element solvertask = new Element(XMLTags.SolverTaskDescriptionTag);
 
-	//Add Atributes
+	//Add Attributes
 	if (param.getTaskType() == SolverTaskDescription.TASK_UNSTEADY){
 		solvertask.setAttribute(XMLTags.TaskTypeTag, XMLTags.UnsteadyTag);
 	} else if (param.getTaskType() == SolverTaskDescription.TASK_STEADY){
@@ -4021,6 +3997,10 @@ private Element getXML(SolverTaskDescription param) {
 		Element chomboElement = getXML(chomboSolverSpec);
 		solvertask.addContent(chomboElement);
 	}
+	
+	Element numProcessors= new Element(XMLTags.NUM_PROCESSORS);
+	numProcessors.setText(Integer.toString(param.getNumProcessors()));
+	solvertask.addContent(numProcessors);
 	return solvertask;
 }
 

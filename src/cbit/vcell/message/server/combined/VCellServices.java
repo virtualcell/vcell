@@ -62,6 +62,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -73,6 +74,7 @@ import cbit.vcell.solvers.AbstractSolver;
  * @author: Jim Schaff
  */
 public class VCellServices extends ServiceProvider implements ExportListener, DataJobListener {
+	public static final String NATIVE_LIB_PROPERTY = "vcell.lib";
 	
 	private SimulationDispatcher simulationDispatcher = null;
 	private DatabaseServer databaseServer = null;
@@ -157,6 +159,12 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties();
 			CommandService.bQuiet = true;
+			String libDir = System.getProperty(NATIVE_LIB_PROPERTY);
+			if (libDir == null) {
+				System.err.println(NATIVE_LIB_PROPERTY + " not set");
+				System.exit(2);
+			}
+			ResourceUtil.loadNativeLibraries(libDir);
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;

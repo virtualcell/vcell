@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -91,6 +92,7 @@ public class XmlHelper {
 	//For now, same as their VCML counterparts.
 	private static final String SIM_CONTAINER = XMLTags.SimulationSpecTag;
 	private static final String IMAGE_CONTAINER = XMLTags.GeometryTag;
+	private static final Logger lg = Logger.getLogger(XmlHelper.class);
 
 	//no instances allowed
 	private XmlHelper() {}
@@ -488,6 +490,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 //		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));		
 //		xmlString = XmlUtil.xmlToString(element);
 		
+		lg.info(xmlString);
 		return xmlString;
 	}
 

@@ -320,4 +320,16 @@ public static WorkerEventMessage sendWorkerExitError(VCMessageSession session, O
 
 	return workerEventMessage;
 }
+/**
+ * send ExitError with custom message
+ * @param message describing the reason for the exit
+ * @throws VCMessagingException
+ */
+public static WorkerEventMessage sendWorkerExitError(VCMessageSession session, Object source, String hostName, VCSimulationIdentifier vcSimID, int jobIndex, int taskID, SimulationMessage message) throws VCMessagingException {
+	WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_WORKER_EXIT_ERROR,source,vcSimID,jobIndex,hostName,taskID,null,null,message);
+	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
+	workerEventMessage.sendWorkerEvent(session);
+
+	return workerEventMessage;
+}
 }

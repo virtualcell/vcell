@@ -20,6 +20,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
@@ -54,6 +55,7 @@ import cbit.rmi.event.PerformanceData;
 import cbit.rmi.event.PerformanceDataEntry;
 import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.controls.SessionManager;
@@ -102,6 +104,7 @@ import cbit.vcell.xml.XmlParseException;
  * @author: 
  */
 public class ClientDocumentManager implements DocumentManager{
+	private static Logger lg = Logger.getLogger(ClientDocumentManager.class);
 	//
 	//
 	private SessionManager sessionManager = null;
@@ -312,13 +315,14 @@ public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAd
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private VersionInfo addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
 
 	//
 	// unpublish from database
 	//
 	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	VersionInfo newVersionInfo = dbServer.groupAddUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
+	@SuppressWarnings("unchecked")
+	T newVersionInfo = (T) dbServer.groupAddUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
 	
 	//
 	// replace versionInfo in hashTable
@@ -542,6 +546,7 @@ public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, Str
 	try {
 		// Add to Server Disk
 		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
+		lg.debug(fdor);
 	} catch (DataAccessException e) {
 		try{
 			// try to cleanup new ExtDataID
@@ -1155,46 +1160,6 @@ public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
 	return vcImage;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 2:50:07 PM)
- * @return cbit.sql.Versionable
- * @param vType cbit.sql.VersionableType
- * @param key cbit.sql.KeyValue
- */
-private synchronized VCImageInfo getImageInfo(KeyValue key) throws DataAccessException {
-	if (key==null){
-System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
-		return null;
-	}
-	//
-	// first look in local cache for the Info object
-	//
-	VCImageInfo imageInfo = (VCImageInfo)imgInfoHash.get(key);
-	if (imageInfo!=null){
-//System.out.println("<<<IN CACHE>>> ClientDocumentManager.getImageInfo("+key+")");
-		return imageInfo;
-	}
-	
-	//
-	// else get new list of info objects from database and stick in cache
-	//
-	reloadVCImageInfos();
-//	bImageInfosDirty = false;
-
-	//
-	// now look in cache again (should be in there unless it was deleted from database).
-	//
-	imageInfo = (VCImageInfo)imgInfoHash.get(key);
-	if (imageInfo!=null){
-		return imageInfo;
-	}else{
-		throw new ObjectNotFoundException("VCImageInfo("+key+") not found");
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
@@ -1496,27 +1461,6 @@ public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccess
 	
 	return simulation;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:22:40 PM)
- * @return cbit.vcell.mathmodel.MathModel
- * @param mathModelXML java.lang.String
- */
-private Simulation getSimulationFromDatabaseXML(String simulationXML) throws DataAccessException{
-
-	try{
-		Simulation sim = XmlHelper.XMLToSim(simulationXML);
-		cacheSimulations(new Simulation[] {sim});
-		sim.refreshDependencies();
-		return sim;
-	}catch(XmlParseException e){
-		e.printStackTrace();
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
-	}
-}
-
 
 /**
  * Insert the method's description here.
@@ -2137,29 +2081,6 @@ private void reloadMathModelInfos() throws DataAccessException {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-private void reloadVCImageInfos() throws DataAccessException {
-	try {
-		System.out.println("ClientDocumentManager.reloadVCImageInfos()");
-		VCImageInfo vcImageInfos[] = sessionManager.getUserMetaDbServer().getVCImageInfos(true);
-		if (vcImageInfos!=null){
-			imgInfoHash.clear();
-			for (int i=0;i<vcImageInfos.length;i++){
-				imgInfoHash.put(vcImageInfos[i].getVersion().getVersionKey(),vcImageInfos[i]);
-			}
-		}
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		throw new DataAccessException("RemoteException: "+e.getMessage());
-	}
-}
-
-
 /**
  * 
  * @param newListener cbit.vcell.clientdb.DatabaseListener
@@ -2305,13 +2226,14 @@ public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String use
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private VersionInfo removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteException, DataAccessException {
 
 	//
 	// unpublish from database
 	//
 	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	VersionInfo newVersionInfo = dbServer.groupRemoveUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
+	@SuppressWarnings("unchecked")
+	T newVersionInfo = (T) dbServer.groupRemoveUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
 	
 	//
 	// replace versionInfo in hashTable
@@ -2502,6 +2424,9 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String mathModelXML = null;
 		try {
 			mathModelXML = XmlHelper.mathModelToXML(mathModel);
+			if (lg.isInfoEnabled()) {
+				lg.info(XmlUtil.beautify(mathModelXML));
+			}
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
@@ -2510,6 +2435,9 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML),independentSims).toString();
 
 		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
+		if (lg.isInfoEnabled()) {
+			lg.info(XmlUtil.beautify(savedMathModelXML));
+		}
 		
 		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
 
@@ -2524,34 +2452,6 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
 		return savedMathModel;
-	}catch (RemoteException e){
-		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
-	}	
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- * @deprecated  for testing purposes only
- */
-private Simulation save(Simulation simulation, boolean bForceIndependent) throws DataAccessException {
-	
-	try {
-		String simulationXML = null;
-		try {
-			simulationXML = XmlHelper.simToXML(simulation);
-		}catch (XmlParseException e){
-			e.printStackTrace(System.out);
-			throw new DataAccessException(e.getMessage());
-		}
-			
-		String savedSimulationXML = sessionManager.getUserMetaDbServer().saveSimulation(new BigString(simulationXML),bForceIndependent).toString();
-
-		Simulation savedSimulation = getSimulationFromDatabaseXML(savedSimulationXML);
-
-		return savedSimulation;
 	}catch (RemoteException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage());
@@ -2869,13 +2769,14 @@ public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAcc
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private VersionInfo setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable vInfoHash) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteException, DataAccessException {
 
 	//
 	// unpublish from database
 	//
 	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	VersionInfo newVersionInfo = dbServer.groupSetPrivate(vType,versionInfo.getVersion().getVersionKey());
+	@SuppressWarnings("unchecked")
+	T newVersionInfo = (T) dbServer.groupSetPrivate(vType,versionInfo.getVersion().getVersionKey());
 	
 	//
 	// replace versionInfo in hashTable
@@ -3029,13 +2930,14 @@ public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAcce
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  */
-private VersionInfo setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable vInfoHash) throws RemoteException, DataAccessException {
+private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteException, DataAccessException {
 
 	//
 	// publish from database
 	//
 	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	VersionInfo newVersionInfo = dbServer.groupSetPublic(vType,versionInfo.getVersion().getVersionKey());
+	@SuppressWarnings("unchecked")
+	T newVersionInfo = (T) dbServer.groupSetPublic(vType,versionInfo.getVersion().getVersionKey());
 	
 	//
 	// replace versionInfo in hashtable

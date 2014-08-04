@@ -11,6 +11,7 @@
 package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
 
+import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
@@ -47,6 +48,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	//  Or TASK_NONE for use as a default?
 	public static final int TASK_UNSTEADY = 0;
 	public static final int TASK_STEADY   = 1;
+	
+	private static Logger lg = Logger.getLogger(SolverTaskDescription.class);
 	//
 	private int fieldTaskType = TASK_UNSTEADY;
 	private Constant fieldSensitivityParameter = null;
@@ -65,6 +68,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 	private SundialsSolverOptions sundialsSolverOptions = null; 
 	private ChomboSolverSpec chomboSolverSpec = null;
+	/**
+	 * number of parallel processors to use for solution, if supported by 
+	 * select solver
+	 */
+	private int numProcessors = 1;
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -156,6 +164,7 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	} else {
 		chomboSolverSpec = null;
 	}
+	numProcessors = solverTaskDescription.numProcessors;
 }
 
 
@@ -186,35 +195,35 @@ public boolean compareEqual(Matchable object) {
 	if (object != null && object instanceof SolverTaskDescription) {
 		SolverTaskDescription solverTaskDescription = (SolverTaskDescription) object;
 		if (getTaskType() != solverTaskDescription.getTaskType()) {
-			return (false);
+			return false;
 		}
 		//
 		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) {
-			return (false);
+			return false;
 		}
 		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) {
-			return (false);
+			return false;
 		}
 		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) {
-			return (false);
+			return false;
 		}
 		if  (!Compare.isEqualOrNull(getStochOpt(),solverTaskDescription.getStochOpt())) {
 			return false;
 		}
 		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) {
-			return (false);
+			return false;
 		}
 		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) {
-			return (false);
+			return false;
 		}
 		if (!Compare.isEqualOrNull(getSensitivityParameter(),solverTaskDescription.getSensitivityParameter())) {
-			return (false);
+			return false;
 		}
 		if (!Compare.isEqual(getSolverDescription(),solverTaskDescription.getSolverDescription())) {
-			return (false);
+			return false;
 		}
 		if (getTaskType() != solverTaskDescription.getTaskType()) {
-			return (false);
+			return false;
 		}
 		if (!Compare.isEqualOrNull(stopAtSpatiallyUniformErrorTolerance, solverTaskDescription.stopAtSpatiallyUniformErrorTolerance)) {
 			return false;
@@ -229,11 +238,11 @@ public boolean compareEqual(Matchable object) {
 			return false;
 		}
 		if (!Compare.isEqualOrNull(chomboSolverSpec,solverTaskDescription.chomboSolverSpec)) {
-			return (false);
+			return false;
 		}
-		return true;
+		return numProcessors == solverTaskDescription.numProcessors;
 	}
-	return (false);
+	return false;
 }
 
 /**
@@ -470,6 +479,7 @@ public String getVCML() {
 	//		SensitivityParameter {
 	//			Constant k1 39.0;
 	//		}
+	//		NumProcessors 1	
 	//   }
 	//
 	//	
@@ -524,6 +534,7 @@ public String getVCML() {
 	if (chomboSolverSpec != null) {
 		buffer.append(chomboSolverSpec.getVCML()+"\n");
 	}
+	buffer.append("\t" + VCML.NUM_PROCESSORS + " " + numProcessors + "\n");
 	
 	buffer.append(VCML.EndBlock+"\n");
 		
@@ -635,7 +646,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  */
 public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//
-	// read format as follows:
+	// read format as follows: (OUT OF DATE)
 	//
 	//   SolverTaskDescription {
 	//		TaskType Unsteady
@@ -707,7 +718,9 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
+			lg.debug(token);
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
+				lg.debug("end block");
 				break;
 			}
 			if (token.equalsIgnoreCase(VCML.TaskType)) {
@@ -820,6 +833,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				setSundialsSolverOptions(new SundialsSolverOptions(tokens));
 			} else	if (token.equalsIgnoreCase(VCML.ChomboSolverSpec)) {
 				chomboSolverSpec = new ChomboSolverSpec(tokens);				
+			}
+			else if (token.equalsIgnoreCase(VCML.NUM_PROCESSORS))
+			{
+				token = tokens.nextToken();
+				numProcessors = Integer.parseInt(token);
 			} else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
@@ -1069,6 +1087,28 @@ public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverO
 	public final void setChomboSolverSpec(ChomboSolverSpec chomboSolverSpec)
 	{
 		this.chomboSolverSpec = chomboSolverSpec;
+	}
+
+	public int getNumProcessors() {
+		return numProcessors;
+	}
+	
+	/**
+	 * return true if set for parallel processing ({@link #numProcessors} > 1)
+	 * (note selected solver may not support parallel processing)
+	 * @return true if is
+	 */
+	public boolean isParallel( ) {
+		return numProcessors > 1;
+	}
+
+	/**
+	 * set num of processors; < 1 treated as 1
+	 * @param numProcessors
+	 */
+	public void setNumProcessors(int numProcessors) {
+		numProcessors = Math.max(numProcessors, 1); //must be >= 1
+		this.numProcessors = numProcessors;
 	}
 
 //double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception

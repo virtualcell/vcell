@@ -39,6 +39,7 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
 	public static final String PROPERTY_NAME_SOLVER_TASK_DESCRIPTION = "solverTaskDescription";
 	// size quotas enforced per simulation
@@ -83,6 +84,8 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private MeshSpecification fieldMeshSpecification = null;
 	private boolean fieldIsDirty = false;
 	private java.lang.String fieldWarning = null;
+	
+	
 	
 /**
  * One of three ways to construct a Simulation.  This constructor
@@ -343,7 +346,6 @@ public java.lang.String getDescription() {
 public boolean getIsDirty() {
 	return fieldIsDirty;
 }
-
 
 /**
  * Gets the isSpatial property (boolean) value.

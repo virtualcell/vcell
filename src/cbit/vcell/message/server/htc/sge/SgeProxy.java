@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.tools.PortableCommand;
+import cbit.vcell.tools.PortableCommandWrapper;
 
 public class SgeProxy extends HtcProxy {
 	private final static int QDEL_JOB_NOT_FOUND_RETURN_CODE = 1;
@@ -258,7 +261,10 @@ denied: job "6894" does not exist
 	}
 	
 	@Override
-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
+	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+		if (ncpus > 1) {
+			throw new ExecutableException("parallel processing not implemented on " + getClass( ).getName());
+		}
 		try {
 
 			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
@@ -342,6 +348,9 @@ denied: job "6894" does not exist
 					sw.append("		echo\n");
 				}
 				sw.append("exit $retcode1\n");
+			}
+			if (postProcessingCommands != null) {
+				PortableCommandWrapper.insertCommands(sw, postProcessingCommands); 
 			}
 			
 			File tempFile = File.createTempFile("tempSubFile", ".sub");

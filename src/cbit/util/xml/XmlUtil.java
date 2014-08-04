@@ -9,13 +9,6 @@
  */
 
 package cbit.util.xml;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +19,23 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 /**
  * General Xml utility methods.
@@ -45,6 +55,18 @@ public class XmlUtil {
 	public static final String NS_SCHEMA_LOC_PROP_NAME = "http://apache.org/xml/properties/schema/external-schemaLocation";
 
 	private static String errorLog = "";
+	
+	private static Transformer transformer = null;
+	
+	private static Transformer getTransformer( ) throws TransformerConfigurationException, TransformerFactoryConfigurationError {
+		if (transformer != null) {
+			return transformer;
+		}
+		transformer = TransformerFactory.newInstance().newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+		return transformer;
+	}
 
 	public static String getErrorLog() {
 
@@ -59,6 +81,12 @@ private XmlUtil() {
 }
 
 
+/**
+ * read stuff from file ; not necessarily XML
+ * @param fileName
+ * @return
+ * @throws IOException
+ */
 	public static String getXMLString(String fileName) throws IOException {
 
 		FileInputStream fis = null;
@@ -81,6 +109,13 @@ private XmlUtil() {
 		}
 	}
 
+	/**
+	 * write any string to file
+	 * @param xmlString
+	 * @param filename
+	 * @param bUseUTF8
+	 * @throws IOException
+	 */
 	public static void writeXMLStringToFile(String xmlString, String filename, boolean bUseUTF8) throws IOException {
 		File outputFile = new File(filename);
 		OutputStreamWriter fileOSWriter = null;
@@ -211,7 +246,7 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 		//set namespace for this node
 		rootNode.setNamespace(namespace);
 		
-    	java.util.Iterator childIterator = rootNode.getChildren().iterator();
+    	java.util.Iterator<?> childIterator = rootNode.getChildren().iterator();
     	
     	while (childIterator.hasNext()) {
     		org.jdom.Element child = (org.jdom.Element)childIterator.next();
@@ -267,5 +302,24 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 	    	xmlOut.getFormat().setTextMode(Format.TextMode.TRIM_FULL_WHITE);
 	    } 
 		return xmlOut.outputString(xmlDoc);		        
+	}
+	/**
+	 * attempt pretty print XML String into nicely formatted XML
+	 * @param xmlInput input string
+	 * @return nicely formatted String or original string if there is transformation exception
+	 */
+	public static String beautify(String xmlInput) {
+		try {
+			Transformer tfr;
+			tfr = getTransformer();
+			StringWriter sw  = new StringWriter();
+			StreamResult sr = new StreamResult(sw);
+			StreamSource src = new StreamSource(new StringReader(xmlInput));
+			tfr.transform(src, sr);
+			return sw.toString();
+		} catch (TransformerFactoryConfigurationError | TransformerException e) {
+			e.printStackTrace();
+		}
+		return xmlInput;
 	}
 }
