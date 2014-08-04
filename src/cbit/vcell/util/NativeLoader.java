@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 /**
@@ -86,6 +87,8 @@ public class NativeLoader {
 	private static String nativeLibraryDirectory  = null;
 	
 	private static String systemLibRegex = null;
+	
+	private static Logger lg = Logger.getLogger(NativeLoader.class);
 
 	/**
 	 * preferences to use
@@ -130,6 +133,9 @@ public class NativeLoader {
 			//System.err.println(f.getAbsolutePath());
 			if (nativeDir.equals(f)) {
 				found = true;
+				if (lg.isDebugEnabled()) {
+					lg.debug(nativeLibraryDirectory + " found in directory " + f.getAbsolutePath() + " of " + NATIVE_PATH_PROP + " " + jlp);
+				}
 				break;
 			}
 		}
@@ -137,6 +143,9 @@ public class NativeLoader {
 			files.add(nativeDir);
 			String newPath = FileUtils.pathJoinFiles(files);
 			System.setProperty(NATIVE_PATH_PROP,newPath);
+			if (lg.isDebugEnabled()) {
+				lg.debug("adding " + nativeLibraryDirectory + " to " + NATIVE_PATH_PROP + " " + jlp);
+			}
 			 
 			Field fieldSysPath;
 			fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
@@ -290,9 +299,15 @@ public class NativeLoader {
 		String fullpath = dirPath + FILESEP + lib;
 		try {
 			System.load(fullpath);
+			if (lg.isTraceEnabled()) {
+				lg.trace("loaded "  + fullpath);
+			}
 			return true;
 		}
 		catch (Error e) {
+			if (lg.isTraceEnabled()) {
+				lg.trace("load attempt "  + fullpath + " failed");
+			}
 			//System.err.println(new File (fullpath).getAbsolutePath());
 			if (isFailErrors()) {
 				recordError(e);

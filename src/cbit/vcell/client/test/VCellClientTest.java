@@ -52,7 +52,7 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	Logging.init(ResourceUtil.getVcellHome());
+	Logging.init();
 	if (!ResourceUtil.isRunningInDebugger()) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));

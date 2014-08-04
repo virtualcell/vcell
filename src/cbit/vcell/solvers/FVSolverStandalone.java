@@ -14,6 +14,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Vector;
 
+import org.apache.commons.math.MathRuntimeException;
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
@@ -23,6 +25,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.Solver;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 
@@ -134,17 +137,18 @@ public String[] getMathExecutableCommand() {
 	Simulation simulation = getSimulationJob().getSimulation();
 	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
 		int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
-		if (dimension == 1) 
-		{
-			throw new RuntimeException("Chombo Solver doesn't run 1D simulation");
-		}
-		else if (dimension == 2)
-		{
+		switch (dimension) {
+		case 2:
 			executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable2D);
-		} 
-		else if (dimension == 3)
-		{
+			break;
+		case 3:
 			executableName = PropertyLoader.getRequiredProperty(PropertyLoader.VCellChomboExecutable3D);
+			break;
+		default:
+			throw new IllegalArgumentException("VCell Chombo solver does not support " + dimension + "problems");
+		}
+		if (simulation.getSolverTaskDescription().isParallel()) {
+			executableName += "parallel";
 		}
 	}
 	else

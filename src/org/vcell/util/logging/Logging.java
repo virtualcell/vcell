@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -20,20 +21,52 @@ import org.vcell.util.PropertyLoader;
  */
 
 public class Logging {
+	public static final String COMMAND_LINE_PROPERTY="log4jConfigurationFile";
 	/**
 	 * {@link org.apache.log4j Log4J } configuration file
 	 */
 	public static final String PROP_FILE = "log4j.properties";
 	static Logger lg = Logger.getLogger(Logging.class);
-	static {
-		File initFile = new File(PROP_FILE);
-		if (initFile.exists()) {
-			PropertyConfigurator.configure(PROP_FILE);
-			if (lg.isInfoEnabled())
-				lg.info("logger initialized from file  "
-						+ initFile.getAbsolutePath());
+	/**
+	 * @return file specified on command line, if any, if it exists
+	 */
+	private static File commandLineFile( ) {
+		String commandLineProperty = System.getProperty(COMMAND_LINE_PROPERTY);
+		if (commandLineProperty != null) {
+			File f = new File(commandLineProperty);
+			if (f.exists()) {
+				return f;
+			}
 		}
-		else {
+		return null;
+	}
+	/*
+	 * first, look for configuration file specified on command line (#COMMAND_LINE_PROPERTY).
+	 * if that's not present, look for default file (#PROP_FILE) in current working directory.
+	 * if that's not present, just use hardcoded default settings
+	 */
+	static {
+		File initFile = commandLineFile( );
+		if (initFile == null) {
+			File pFile = new File(PROP_FILE);
+			if (pFile.exists()) {
+				initFile = pFile;
+			}
+		}
+
+		boolean initialized = false;
+		if (initFile != null) {
+			try {
+				PropertyConfigurator.configure(initFile.toURI().toURL());
+				initialized = true;
+				if (lg.isInfoEnabled()) {
+					lg.info("logger initialized from file  " + initFile.getAbsolutePath());
+				}
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}
+		if (!initialized) {
 			Properties def = new Properties();
 			def.put("log4j.rootLogger","FATAL, A1");
 			def.put("log4j.appender.A1","org.apache.log4j.ConsoleAppender");
@@ -77,23 +110,6 @@ public class Logging {
 					ca.setTarget(to.log4jName);
 					ca.activateOptions();
 				}
-			}
-		}
-	}
-	
-	/**
-	 * init, look for  {@link #PROP_FILE} in specified directory
-	 * or current directory if null 
-	 * @param secondaryDir may be null (no op)
-	 */
-	public static void init(File secondaryDir) {
-		if (secondaryDir != null) {
-			File initFile = new File(secondaryDir,PROP_FILE);
-			if (initFile.exists()) {
-				PropertyConfigurator.configure(initFile.getAbsolutePath());
-				if (lg.isInfoEnabled())
-					lg.info("logger initialized from file  "
-							+ initFile.getAbsolutePath());
 			}
 		}
 	}

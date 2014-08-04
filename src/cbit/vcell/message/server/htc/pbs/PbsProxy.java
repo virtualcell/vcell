@@ -7,6 +7,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.tools.PortableCommand;
+import cbit.vcell.tools.PortableCommandWrapper;
 
 public final class PbsProxy extends HtcProxy {
 	private static final int QDEL_JOB_NOT_FOUND_RETURN_CODE = 153;
@@ -133,7 +136,15 @@ public final class PbsProxy extends HtcProxy {
 	}
 
 	@Override
-	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException{	
+	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, 
+			String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, 
+			Collection<PortableCommand> postProcessingCommands) throws ExecutableException{	
+		if (lg.isInfoEnabled()) {
+			char space=' ';
+			lg.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
+				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
+				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
+		}
 		if (lg.isInfoEnabled()) {
 			char space=' ';
 			lg.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
@@ -231,6 +242,9 @@ public final class PbsProxy extends HtcProxy {
 					sw.append("		echo\n");
 				}
 				sw.append("     exit $retcode1\n");
+			}
+			if (postProcessingCommands != null) {
+				PortableCommandWrapper.insertCommands(sw, postProcessingCommands); 
 			}
 			
 			File tempFile = File.createTempFile("tempSubFile", ".sub");

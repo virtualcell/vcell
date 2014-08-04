@@ -20,6 +20,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.SolverUtilities;
 
 
+@SuppressWarnings("serial")
 public class ChomboSolverSpec implements Matchable, Serializable, VetoableChangeListener {
 	
 	private static double defaultFillRatio = 0.9;
@@ -197,56 +198,70 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 				throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 			}
 		}
-		boolean bMeshRefinementBeginToken = false;
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
-				if (!bMeshRefinementBeginToken)
-				{
 					break;
-				}
 			}
-			else if (token.equalsIgnoreCase(VCML.MaxBoxSize))
+			if (token.equalsIgnoreCase(VCML.MaxBoxSize))
 			{
 				token = tokens.nextToken();
 				maxBoxSize = Integer.parseInt(token);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.ViewLevel))
+			if (token.equalsIgnoreCase(VCML.ViewLevel))
 			{
 				token = tokens.nextToken();
 				viewLevel = Integer.parseInt(token);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.FillRatio))
+			if (token.equalsIgnoreCase(VCML.FillRatio))
 			{
 				token = tokens.nextToken();
 				fillRatio = Double.parseDouble(token);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.SaveVCellOutput))
+			if (token.equalsIgnoreCase(VCML.SaveVCellOutput))
 			{
 				token = tokens.nextToken();
 				bSaveVCellOutput = Boolean.parseBoolean(token);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.SaveChomboOutput))
+			if (token.equalsIgnoreCase(VCML.SaveChomboOutput))
 			{
 				token = tokens.nextToken();
 				bSaveChomboOutput = Boolean.parseBoolean(token);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.MeshRefinement))
+			if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
-				// BeginToken
-				token = tokens.nextToken();
-				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
-				}
-				bMeshRefinementBeginToken = true;
+				readVCMLRefinementLevels(tokens);
+				continue;
 			}
-			else if (token.equalsIgnoreCase(VCML.RefinementLevel)) 
+			throw new DataAccessException("unexpected token " + token); 
+		}
+	}
+	
+	private void readVCMLRefinementLevels(CommentStringTokenizer tokens) throws DataAccessException {
+		// BeginToken
+		String token = tokens.nextToken();
+		if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
+			throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+		}
+		while (tokens.hasMoreTokens()) {
+			token = tokens.nextToken();
+			if (token.equalsIgnoreCase(VCML.RefinementLevel)) 
 			{
 				RefinementLevel rfl = new RefinementLevel(tokens);
 				refinementLevelList.add(rfl);				
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.EndBlock)) {
+				return;
+			}
+			throw new DataAccessException("unexpected token in refinement levels " + token); 
 		}
+		throw new DataAccessException("unclosed refinement level block");
 	}
 
 	public void setMaxBoxSize(int newValue) throws PropertyVetoException {

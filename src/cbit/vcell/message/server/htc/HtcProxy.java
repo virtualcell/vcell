@@ -8,6 +8,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -19,6 +20,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.tools.PortableCommand;
 
 public abstract class HtcProxy {
 	protected static Logger lg = Logger.getLogger(HtcProxy.class);
@@ -107,14 +109,20 @@ public abstract class HtcProxy {
 	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
 	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, null, exitCommand, exitCodeReplaceTag);
+		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, null, exitCommand, exitCodeReplaceTag, null);
 	}
 
-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag);
+	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand, 
+			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag, postProcessingCommands);
 	}
 	
-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException;
+	/**
+	 * @param postProcessingCommands may be null if no commands desired
+	 * @throws ExecutableException
+	 */
+	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand, 
+			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
 	
@@ -164,25 +172,25 @@ public abstract class HtcProxy {
 		return HTC_SIMULATION_JOB_NAME_PREFIX+simTaskInfo.simId.toString()+"_"+simTaskInfo.jobIndex+"_"+simTaskInfo.taskId;
 	}
 
-	public static void writeUnixStyleTextFile(File file, String javaString)
-			throws IOException {
-				FileChannel fc = new FileOutputStream(file).getChannel();
-				
-			    Charset asciiCharset = Charset.forName("US-ASCII");
-			    CharsetEncoder encoder = asciiCharset.newEncoder();
-			    CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
-			    ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
-			    byte[] asciiArray = asciiByteBuffer.array();
-			    ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
-			    for (int i=0;i<asciiArray.length;i++){
-			    	if (asciiArray[i] != 0x0d){  // skip \r character
-			    		unixByteBuffer.put(asciiArray[i]);
-			    	}
-			    }
-			    unixByteBuffer.rewind();
-			    fc.write(unixByteBuffer);
-			    fc.close();
+	public static void writeUnixStyleTextFile(File file, String javaString) throws IOException {
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+			FileChannel fc = fos.getChannel();
+			Charset asciiCharset = Charset.forName("US-ASCII");
+			CharsetEncoder encoder = asciiCharset.newEncoder();
+			CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
+			ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
+			byte[] asciiArray = asciiByteBuffer.array();
+			ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
+			for (int i=0;i<asciiArray.length;i++){
+				if (asciiArray[i] != 0x0d){  // skip \r character
+					unixByteBuffer.put(asciiArray[i]);
+				}
 			}
+			unixByteBuffer.rewind();
+			fc.write(unixByteBuffer);
+			fc.close();
+		}
+	}
 
 	public abstract String getSubmissionFileExtension();
 
@@ -203,3 +211,38 @@ public abstract class HtcProxy {
 		throw new RuntimeException("expected either SSH or Local CommandService");
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
