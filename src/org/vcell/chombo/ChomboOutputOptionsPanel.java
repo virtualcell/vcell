@@ -112,7 +112,8 @@ public class ChomboOutputOptionsPanel extends JPanel {
 		if (solverTaskDescription.isParallel()) {
 			vcellOutputCheckBox.setSelected(false);
 		}
-		numProcessors.setEnabled(!vcellOutputCheckBox.isSelected());
+		//numProcessors.setEnabled(!vcellOutputCheckBox.isSelected());
+		numProcessors.setEnabled(false);
 	}
 	
 
@@ -131,7 +132,8 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	 * set num processors field from current solverTaskDescription 
 	 */
 	private void setNumProcessorsField( ) {
-		numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
+		//numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
+		numProcessors.setValue(1);
 	}
 
 	private void updateDisplay() {
