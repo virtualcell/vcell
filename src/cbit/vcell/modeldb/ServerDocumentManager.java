@@ -82,7 +82,7 @@ public class ServerDocumentManager {
 /**
  * ClientDocumentManager constructor comment.
  */
-ServerDocumentManager(DatabaseServerImpl argDbServerImpl) {
+public ServerDocumentManager(DatabaseServerImpl argDbServerImpl) {
 	this.dbServer = argDbServerImpl;
 }
 
