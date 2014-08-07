@@ -20,6 +20,7 @@ import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
+import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
 import org.vcell.rest.server.BiomodelSimulationStartServerResource;
 import org.vcell.rest.server.BiomodelSimulationStopServerResource;
@@ -99,6 +100,7 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String JOBINDEX = "jobindex";
 	
+	public static final String SAVESIMULATION = "save";
 	public static final String STARTSIMULATION = "startSimulation";
 	public static final String STOPSIMULATION = "stopSimulation";
 
@@ -222,6 +224,7 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STOPSIMULATION, BiomodelSimulationStopServerResource.class);  
 		rootRouter.attach("/"+SIMTASK, SimulationTasksServerResource.class);  

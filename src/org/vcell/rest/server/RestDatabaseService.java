@@ -1,8 +1,10 @@
 package org.vcell.rest.server;
 
+import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
@@ -21,8 +23,10 @@ import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.message.VCMessageSession;
@@ -36,6 +40,7 @@ import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.modeldb.SimulationRep;
@@ -43,6 +48,7 @@ import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
@@ -65,6 +71,66 @@ public class RestDatabaseService {
 		this.log = log;
 	}
 	
+	public static class SimulationSaveResponse {
+		public final BioModel newBioModel;
+		public final Simulation newSimulation;
+		public SimulationSaveResponse(BioModel newBioModel, Simulation newSimulation){
+			this.newBioModel = newBioModel;
+			this.newSimulation = newSimulation;
+		}
+	}
+	
+	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException{
+		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);
+		KeyValue simKey = new KeyValue(simId);
+		SimulationRep simRep = getSimulationRep(simKey);
+		if (simRep == null){
+			throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
+		}
+		boolean myModel = simRep.getOwner().compareEqual(vcellUser);
+		// get the bioModel
+		String biomodelId = resource.getAttribute(VCellApiApplication.BIOMODELID);
+		KeyValue biomodelKey = new KeyValue(biomodelId);
+		BigString bioModelXML = this.databaseServerImpl.getBioModelXML(vcellUser, biomodelKey);
+		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+		// copy the simulation as new
+		Simulation origSimulation = null;
+		for (Simulation sim : bioModel.getSimulations()){
+			if (sim.getKey().equals(simKey)){
+				origSimulation = sim;
+			}
+		}
+		if (origSimulation==null){
+			throw new RuntimeException("cannot find original Simulation");
+		}
+		
+		SimulationContext simContext = bioModel.getSimulationContext(origSimulation);
+		Simulation newUnsavedSimulation = simContext.copySimulation(origSimulation);
+		// make appropriate changes
+		
+		// TODO: make changes to the cloned simulation (overrides ...etc).
+		
+		// save bioModel
+		String editedBioModelXML = XmlHelper.bioModelToXML(bioModel);
+		ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this.databaseServerImpl);
+		String modelName = bioModel.getName();
+		if (!myModel){
+			modelName = modelName+"_"+Math.abs(new Random().nextInt());
+		}
+		String newBioModelXML = serverDocumentManager.saveBioModel(new QueryHashtable(), vcellUser, editedBioModelXML, modelName, null);
+		BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(newBioModelXML));
+		Simulation savedSimulation = null;
+		for (Simulation sim : savedBioModel.getSimulations()){
+			if (sim.getName().equals(newUnsavedSimulation.getName())){
+				savedSimulation = sim;
+			}
+		}
+		if (savedSimulation==null){
+			throw new RuntimeException("cannot find new Simulation");
+		}
+		return new SimulationSaveResponse(savedBioModel, savedSimulation);
+	}
+
 	public SimulationRep startSimulation(BiomodelSimulationStartServerResource resource, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
