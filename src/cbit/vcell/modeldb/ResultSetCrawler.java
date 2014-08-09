@@ -32,6 +32,7 @@ import org.vcell.util.document.UserInfo;
 
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.util.AmplistorUtils;
 
 
 /**
@@ -49,6 +50,8 @@ public class ResultSetCrawler {
 			String startingUsername = null;
 			String outputDirName = ".";
 
+			String ampliCredName = null;
+			String ampliCredPassword = null;
 			int count = 0;
 
 			while (count < args.length) {
@@ -68,6 +71,12 @@ public class ResultSetCrawler {
 					SCAN_ONLY = false;
 				} else if (args[count].equals("-s")) {
 					SCAN_ONLY = true;
+				} else if (args[count].equals("-y")) {
+					count ++;
+					ampliCredName = args[count];
+				} else if (args[count].equals("-z")) {
+					count ++;
+					ampliCredPassword = args[count];
 				} else {
 					System.out.println("Wrong arguments, see usage below.");
 					printUsage();
@@ -139,7 +148,7 @@ public class ResultSetCrawler {
 					ExternalDataIdentifier[] extDataIDArr = adminDbTopLevel.getExternalDataIdentifiers(user,true);
 					
 					// scan this user directory
-					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, log, SCAN_ONLY);
+					scanUserDirectory(userDir, extDataIDArr, simulationInfos, outputDir, log, SCAN_ONLY,(ampliCredName==null || ampliCredPassword==null?null:new AmplistorUtils.AmplistorCredential(ampliCredName, ampliCredPassword)));
 				} catch (Exception ex) {
 					log.exception(ex);
 				}
@@ -162,13 +171,15 @@ public class ResultSetCrawler {
 
 
 	private static void printUsage() {
-		System.out.println("ResultSetCrawler [-h] [-u username] [-c username] [-o outputdir] [-d | -s]");
+		System.out.println("ResultSetCrawler [-h] [-u username] [-c username] [-o outputdir] [-d | -s] [-y ampliCredName] [-z ampliCredPassword]");
 		System.out.println("-h : \n\thelp");
 		System.out.println("-u username: \n\tscan a single user only");
 		System.out.println("-c username: \n\tcontinue scanning from a user");
 		System.out.println("-o outputdir : \n\tdirectory where scan results are stored (default is current directory)");
 		System.out.println("-s : \n\tscan only (default)");
 		System.out.println("-d : \n\tscan and delete files");
+		System.out.println("-y ampliCredName: \n\tAmplistor Credential (username), must have delete permission on amplistor");
+		System.out.println("-z ampliCredPassword: \n\tAmplistor Credential (password)");
 	}
 
 
@@ -183,7 +194,9 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
 	allUserDirs.addAll(Arrays.asList(primaryUserDirs));
 	if (secondaryDataRootDir!=null){
 		File secondaryUserDirs[] = secondaryDataRootDir.listFiles();
-		allUserDirs.addAll(Arrays.asList(secondaryUserDirs));
+		if(secondaryUserDirs != null && secondaryDataRootDir.length() > 0){
+			allUserDirs.addAll(Arrays.asList(secondaryUserDirs));
+		}
 	}
 	Comparator<File> caseInsensitiveFileComparator = new Comparator<File>() {
 		public int compare(File o1, File o2) {
@@ -218,7 +231,7 @@ private static List<File> getDirectoriesToScan(HashMap<String,User> usersToScan,
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final SessionLog log, final boolean bScanOnly) throws Exception {
+private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] extDataIDArr, SimulationInfo[] simulationInfos, File outputDir, final SessionLog log, final boolean bScanOnly,AmplistorUtils.AmplistorCredential amplistorCredential) throws Exception {
 	File outputFile = null;
 	java.io.PrintWriter writer = null;
 	try {
@@ -241,6 +254,14 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 			referencedKeys.add(simulationInfo.getSimulationVersion().getVersionKey());
 		}
 		
+		if(amplistorCredential != null){
+			try{
+				AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.get_Service_VCell_urlString(userDir.getName()), referencedKeys,amplistorCredential);
+			}catch(Exception e){
+				log.print("Amplistor delete failed url="+AmplistorUtils.get_Service_VCell_urlString(userDir.getName())+" : "+e.getMessage());
+			}
+		}
+
 		final HashMap<KeyValue,Integer> deletedKeyMap = new HashMap<KeyValue,Integer>();
 				
 		//
@@ -288,7 +309,7 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 		// visit all of the files and delete if bScanOnly=false
 		//
 		userDir.listFiles(fileVisitor);
-				
+		
 		pw.println("done scanning directory : "+userDir.getPath());
 		log.print("done scanning directory : "+userDir.getPath());
 	} finally {
