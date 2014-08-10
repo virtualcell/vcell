@@ -11,61 +11,67 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-import javax.xml.bind.DatatypeConverter;
-
 import org.junit.Test;
+import org.vcell.util.document.KeyValue;
 
+import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
 public class AmplistorUtilsTest {
-		
+	
+	private static final int NUMFILES = 5;
+	public static final String AMPLI_REST_TEST_USER_KEY = 		"AMPLI_REST_TEST_USER_KEY";//e.g. eclipse debug config. -DAMPLI_REST_TEST_USER_KEY=camadmin
+	public static final String AMPLI_REST_TEST_PASSWORD_KEY = 	"AMPLI_REST_TEST_PASSWORD_KEY";//e.g. eclipse debug config. -DAMPLI_REST_TEST_PASSWORD_KEY=thePassword
+	
 	public static void main(String[] args) throws Exception{
-		test();
+		new AmplistorUtilsTest().test();
 	}
 	
 	@Test
-	public static void test() throws Exception{
+	public void test() throws Exception{
 		
 		//
-		//Create amplistor access credential
+		//Create amplistor full access credential
 		//
 		//must set this property in eclipse debug configuration
-		final String AMPLI_REST_TEST_PASSWORD_PROP = "AMPLI_REST_TEST_PASSWORD_PROP";//use c......h	
 		AmplistorCredential amplistorCredential =
-			new AmplistorCredential("camadmin",decrypt("kXRnFZwpP1YwpQRDzdx/zw==",System.getProperty(AMPLI_REST_TEST_PASSWORD_PROP)));
+			new AmplistorCredential(System.getProperty(AMPLI_REST_TEST_USER_KEY),System.getProperty(AMPLI_REST_TEST_PASSWORD_KEY));
+		if(amplistorCredential.userName == null || amplistorCredential.password == null){
+			throw new Exception("Amplistor full access credential required for test");
+		}
 		
 		//
 		//Define Amplistor test dir
 		//
 		final String AMPLI_REST_TEST_DIR = "Ampli_REST_Test_Dir";
-		String dirNameURL = AmplistorUtils.get_Service_VCell_urlString(AMPLI_REST_TEST_DIR);
+		String dirNameURL = AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+AMPLI_REST_TEST_DIR;
 
 		//
 		//Define Local test dir and file
 		//
-		File tmpDir = Files.createTempDirectory("rnd_").toFile();
-		File tmpFile = File.createTempFile("rnd_", ".rndbin",tmpDir);
-		
 		Random rand = new Random();
 		byte[] rndBytes = new byte[10000];
 		rand.nextBytes(rndBytes);
 
-		FileOutputStream fos = new FileOutputStream(tmpFile);
-		BufferedOutputStream bos = new BufferedOutputStream(fos);
-		bos.write(rndBytes);
-		bos.close();
+		File tmpDir = Files.createTempDirectory("rnd_").toFile();
 		
+		File[] tmpFiles = new File[NUMFILES];
+		final String SIMID_PREFIX = "SimID_";
+		for (int i = 0; i < NUMFILES; i++) {
+			tmpFiles[i] = File.createTempFile(SIMID_PREFIX+i+"_0_", ".rndbin",tmpDir);
+			FileOutputStream fos = new FileOutputStream(tmpFiles[i]);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			bos.write(rndBytes);
+			bos.close();
+		}
+
 		//
-		//Clean before we begin test
+		//Clean Amplistor before we begin test
 		//
 		try{
 			deleteDirAndAllFiles(dirNameURL, amplistorCredential);
@@ -77,7 +83,6 @@ public class AmplistorUtilsTest {
 		//Create test dir on amplistor
 		//
 		AmplistorUtils.createDir(dirNameURL, amplistorCredential);
-//		AmplistorUtils.ampliDirOperation(dirNameURL, amplistorCredential,AmplistorUtils.AMPLI_OP_METHOD.PUT);
 		
 		//
 		//Upload rnd file
@@ -88,30 +93,33 @@ public class AmplistorUtilsTest {
 		}
 		
 		//
-		//set metadata (this is done during upload automatically but do it again to demonstrate)
+		//set metadata on first file (this is done during upload automatically but do it again to demonstrate)
 		//
-		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFile.getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, tmpFile.lastModified()/1000+".0");
+		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, tmpFiles[0].lastModified()/1000+".0");
 
 		//
-		//List dir
+		//List amplistor test dir we created and populated
 		//
 		ArrayList<String> fileNames = AmplistorUtils.listDir(dirNameURL, amplistorCredential);
+		if(fileNames.size() != NUMFILES){
+			throw new Exception("Expected "+NUMFILES+" files but got "+fileNames.size());
+		}
 		for(String fileName:fileNames){
 			System.out.println("listing:"+fileName);
 		}
 		
 		//
-		//Download file
+		//Download 1 of the files
 		//
-		byte[] downloadBytes = AmplistorUtils.getObjectData(dirNameURL+"/"+tmpFile.getName(), amplistorCredential);
+		byte[] downloadBytes = AmplistorUtils.getObjectData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential);
 		
 		//
-		//Check files are same
+		//Check local and remote files are same
 		//
-		if(downloadBytes.length != tmpFile.length() || rndBytes.length != downloadBytes.length){
-			throw new Exception("round trip file sizes are different local = "+tmpFile.length()+" remote = "+downloadBytes.length+" memory = "+rndBytes.length);
+		if(downloadBytes.length != tmpFiles[0].length() || rndBytes.length != downloadBytes.length){
+			throw new Exception("round trip file sizes are different local = "+tmpFiles[0].length()+" remote = "+downloadBytes.length+" memory = "+rndBytes.length);
 		}
-		FileInputStream fis = new FileInputStream(tmpFile);
+		FileInputStream fis = new FileInputStream(tmpFiles[0]);
 		BufferedInputStream bis = new BufferedInputStream(fis);
 		DataInputStream dis = new DataInputStream(bis);
 		byte[] localBytes = new byte[rndBytes.length];
@@ -122,15 +130,91 @@ public class AmplistorUtilsTest {
 		}
 		
 		//
+		//Check special SimID parsing for delete
+		//
+		HashSet<KeyValue> doNotDeleteTheseSimKeys = new HashSet<>();
+		doNotDeleteTheseSimKeys.add(new KeyValue("0"));
+		doNotDeleteTheseSimKeys.add(new KeyValue("1"));
+		long numDeleted = AmplistorUtils.deleteSimFilesNotInHash(dirNameURL, doNotDeleteTheseSimKeys, false,amplistorCredential).size();
+		if(numDeleted != (NUMFILES-doNotDeleteTheseSimKeys.size())){
+			throw new Exception("Expected to delete "+(NUMFILES-doNotDeleteTheseSimKeys.size())+" but deleted "+numDeleted);
+		}
+		
+		//
+		//remove one of the remaining files on amplistor
+		//
+		AmplistorUtils.deleteFilesOperation(new String[] {tmpFiles[0].getName()}, dirNameURL, amplistorCredential);
+		
+		//
+		//try to remove bogus filename (should fail)
+		//
+		try{
+			AmplistorUtils.deleteFilesOperation(new String[] {"blahblah"}, dirNameURL, amplistorCredential);
+			throw new Exception("We shouldn't have gotten here, Expecting FileNotFoundException");
+		}catch(FileNotFoundException e){
+			//ignore, this should happen
+		}
+		
+		//
+		//there should be 1 file left
+		//
+		int numleft = AmplistorUtils.listDir(dirNameURL, amplistorCredential).size();
+		if(numleft != 1){
+			throw new Exception("Expecting 1 file in list but got "+numleft);
+		}
+		
+		//
 		//Remove test from amplistor
 		//
 		deleteDirAndAllFiles(dirNameURL, amplistorCredential);//do not ignore FileNotFound
 		
+		
 		//
-		//Clean up local bytes
+		//vcell_logs Amplistor test
+		//
+		
+		//
+		//try to upload to vcell_logs without credentials
+		//
+		AmplistorUtils.uploadFile(new URL(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL), tmpFiles[0], null);
+		
+		//
+		//try to get dir list from vcell_logs without credentials (should fail)
 		//
 		try{
-			tmpFile.delete();
+			AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, null);
+			throw new Exception("Souldn't have gotten here, Expecting failure to get vcell_logs with no authentication");
+		}catch(AuthenticationException e){
+			//ignore, this should happen
+		}
+				
+		//
+		//try to get dir list from vcell_logs with credentials (should succeed)
+		//
+		ArrayList<String> vcell_logs_dirlist = AmplistorUtils.listDir(AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, amplistorCredential);
+		System.out.println("Found "+vcell_logs_dirlist.size()+" files in vcell_logs directory");
+		
+		//
+		//try to delete file from vcell_logs without credentials (should fail)
+		//
+		try{
+			AmplistorUtils.deleteFilesOperation(new String[] {tmpFiles[0].getName()}, AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, null);
+			throw new Exception("Souldn't have gotten here, Expecting failure to get vcell_logs with no authentication");
+		}catch(AuthenticationException e){
+			//ignore, this should happen
+		}
+
+		//
+		//try to delete file from vcell_logs with credentials (should succeed)
+		//
+		AmplistorUtils.deleteFilesOperation(new String[] {tmpFiles[0].getName()}, AmplistorUtils.DEFAULT_AMPLI_VCELL_LOGS_URL, amplistorCredential);
+
+		
+		//
+		//Clean up local test files
+		//
+		try{
+			for (int i = 0; i < NUMFILES; i++) {tmpFiles[i].delete();}
 			tmpDir.delete();
 		}catch(Exception e){
 			//ignore, not part of test
@@ -140,21 +224,6 @@ public class AmplistorUtilsTest {
 	private static void deleteDirAndAllFiles(String dirNameURL,AmplistorCredential amplistorCredential) throws Exception{
 		AmplistorUtils.deleteAllFiles(dirNameURL,amplistorCredential);
 		AmplistorUtils.deleteDir(dirNameURL, amplistorCredential);
-//		AmplistorUtils.ampliDirOperation(dirNameURL, amplistorCredential,AmplistorUtils.AMPLI_OP_METHOD.DELETE);
 	}
-	
-	
-	private static final byte[] SALT = { 
-        (byte) 0xde, (byte) 0x33, (byte) 0x10, (byte) 0x12, 
-        (byte) 0xde, (byte) 0x33, (byte) 0x10, (byte) 0x12, 
-    };
-	public static String decrypt(String decryptThis,String masterPassword) throws Exception{ 
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWithMD5AndDES"); 
-        SecretKey key = keyFactory.generateSecret(new PBEKeySpec(masterPassword.toCharArray())); 
-        Cipher pbeCipher = Cipher.getInstance("PBEWithMD5AndDES"); 
-        pbeCipher.init(Cipher.DECRYPT_MODE, key, new PBEParameterSpec(SALT, 20)); 
-        return new String(pbeCipher.doFinal(DatatypeConverter.parseBase64Binary(decryptThis))); 
-    }
-
 }
 

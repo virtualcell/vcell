@@ -256,9 +256,25 @@ private static void scanUserDirectory(File userDir, ExternalDataIdentifier[] ext
 		
 		if(amplistorCredential != null){
 			try{
-				AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.get_Service_VCell_urlString(userDir.getName()), referencedKeys,amplistorCredential);
+				if(bScanOnly){
+					ArrayList<String> shouldBeDeleted =
+						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
+					for(String fileName:shouldBeDeleted){
+						pw.println("Should delete Amplistor "+fileName);
+						log.print("Should delete Amplistor "+fileName);					
+					}
+				}else{
+					ArrayList<String> wasDeleted =
+						AmplistorUtils.deleteSimFilesNotInHash(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName(), referencedKeys,bScanOnly,amplistorCredential);
+					for(String fileName:wasDeleted){
+						pw.println("deleted Amplistor "+fileName);
+						log.print("deleted Amplistor "+fileName);					
+						
+					}
+				}
 			}catch(Exception e){
-				log.print("Amplistor delete failed url="+AmplistorUtils.get_Service_VCell_urlString(userDir.getName())+" : "+e.getMessage());
+				log.print("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
+				pw.println("Amplistor delete failed url="+AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+userDir.getName()+" : "+e.getMessage());
 			}
 		}
 
