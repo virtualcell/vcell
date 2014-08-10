@@ -32,6 +32,7 @@ import org.jdom.Element;
 import org.vcell.util.document.KeyValue;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 
@@ -42,7 +43,8 @@ public class AmplistorUtils {
 	private static enum AMPLI_OP_KIND {FILE,DIR};
 	private static enum AMPLI_OP_METHOD {GET,PUT,DELETE};
 	
-	private static final String AMPLI_VCELL_URL = "http://obj1.cam.uchc.edu:8080/namespace/service_vcell/";
+	public static final String DEFAULT_AMPLI_SERVICE_VCELL_URL = 	"http://obj1.cam.uchc.edu:8080/namespace/service_vcell/";
+	public static final String DEFAULT_AMPLI_VCELL_LOGS_URL = 		"http://obj1.cam.uchc.edu:8080/namespace/vcell_logs/";
 	
 	public static class AmplistorCredential {
 		public String userName;
@@ -53,9 +55,6 @@ public class AmplistorUtils {
 		}
 	}
 	
-	public static String get_Service_VCell_urlString(String append){
-		return AMPLI_VCELL_URL+(append==null || append.length()==0?"":append);
-	}
 	public static byte[] getObjectData(String urlStr,AmplistorCredential amplistorCredential) throws Exception{
 		CheckOPHelper checkOPHelper = null;
 		try{
@@ -224,9 +223,9 @@ public class AmplistorUtils {
 //		}
 //	}
 
-	private static void ampliDeleteFilesOperation(File[] files,AmplistorCredential amplistorCredential) throws Exception{
-		for(File file:files){
-			URL httpURL = new URL(AMPLI_VCELL_URL+file.getParentFile().getName()+"/"+file.getName()/*+"?meta=xml"*/);//don't use "?meta=xml" when deleteing
+	public static void deleteFilesOperation(String[] fileNames,String fullAmplistorDirURL,AmplistorCredential amplistorCredential) throws Exception{
+		for(String fileName:fileNames){
+			URL httpURL = new URL(fullAmplistorDirURL+(fullAmplistorDirURL.charAt(fullAmplistorDirURL.length()-1)=='/'?"":"/")+fileName);
 			ampliCheckOP(httpURL, amplistorCredential, AMPLI_OP_METHOD.DELETE, null, AMPLI_OP_KIND.FILE,null);
 		}
 	}
@@ -269,11 +268,9 @@ public class AmplistorUtils {
 	}
 
 	private static class CheckOPHelper{
-		String authorizationResponse;
 		Document responseDoc;
 		HttpURLConnection httpURLConnection;
-		public CheckOPHelper(String authorizationResponse,Document responseDoc,HttpURLConnection httpURLConnection) {
-			this.authorizationResponse = authorizationResponse;
+		public CheckOPHelper(Document responseDoc,HttpURLConnection httpURLConnection) {
 			this.responseDoc = responseDoc;
 			this.httpURLConnection = httpURLConnection;
 		}
@@ -286,19 +283,21 @@ public class AmplistorUtils {
 		    
 		    int responseCode = httpURLConnection.getResponseCode();
 //		    System.out.println("Status code: " + responseCode);
-		    if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED && authorizationResponse == null){
-		    	System.out.println("Responding to Amplistor server authentication request...");
+		    if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED && amplistorCredential == null){
+		    	throw new AuthenticationException("Authentication required but no credentials available");
+		    }else if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED && authorizationResponse == null){
+//		    	System.out.println("Responding to Amplistor server authentication request...");
 		    	String authorizationRequestNew = respondToChallenge(httpURLConnection,amplistorCredential,ampliOpMethod);
 		    	httpURLConnection.disconnect();
 		    	return ampliCheckOP(httpURL, amplistorCredential, ampliOpMethod, authorizationRequestNew,ampliOpKind,metaData);
 		    }else if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED && authorizationResponse != null){
-		    	throw new Exception("User "+amplistorCredential.userName+" authentication failed for URL="+httpURL);
-		    }else if(responseCode == HttpURLConnection.HTTP_NOT_FOUND && ampliOpMethod == AMPLI_OP_METHOD.GET){
+		    	throw new AuthenticationException("User "+amplistorCredential.userName+" authentication failed for URL="+httpURL);
+		    }else if(responseCode == HttpURLConnection.HTTP_NOT_FOUND && (ampliOpMethod == AMPLI_OP_METHOD.GET || ampliOpMethod == AMPLI_OP_METHOD.DELETE)){
 		    	throw new FileNotFoundException("File not found "+httpURL);
 		    }else if(responseCode == HttpURLConnection.HTTP_OK && ampliOpMethod == AMPLI_OP_METHOD.GET && ampliOpKind == AMPLI_OP_KIND.DIR){
-		    	checkOPHelper = new CheckOPHelper(authorizationResponse, getResponseXML(httpURLConnection),httpURLConnection);
+		    	checkOPHelper = new CheckOPHelper(getResponseXML(httpURLConnection),httpURLConnection);
 		    }else if(responseCode == HttpURLConnection.HTTP_OK && ampliOpMethod == AMPLI_OP_METHOD.GET && ampliOpKind == AMPLI_OP_KIND.FILE){
-		    	checkOPHelper = new CheckOPHelper(authorizationResponse, null,httpURLConnection);
+		    	checkOPHelper = new CheckOPHelper(null,httpURLConnection);
 		    }else if((ampliOpMethod==AMPLI_OP_METHOD.PUT && responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_CREATED) || 
 		    		(ampliOpMethod==AMPLI_OP_METHOD.DELETE && responseCode != HttpURLConnection.HTTP_NO_CONTENT) ||
 		    		(ampliOpMethod==AMPLI_OP_METHOD.GET && responseCode != HttpURLConnection.HTTP_OK)){
@@ -352,7 +351,7 @@ public class AmplistorUtils {
 	    // Digest password using the MD5 algorithm
 	    md5.update(inputStr.getBytes());
 	    String digestedInputStr = digest2HexString(md5.digest());
-	    System.out.println(inputStr + " " + digestedInputStr);
+//	    System.out.println(inputStr + " " + digestedInputStr);
 	    return digestedInputStr;
 	}
 	private static String digest2HexString(byte[] digest)
@@ -378,21 +377,21 @@ public class AmplistorUtils {
 		boolean isChallenge = false;
 		Map<String, List<String>> map = httpURLConnection.getHeaderFields();
 		for(String key:map.keySet()){
-			System.out.println(key);
+//			System.out.println(key);
 			for(String val:map.get(key)){
-				System.out.println("  '"+val+"'");
+//				System.out.println("  '"+val+"'");
 				if(key != null && key.equals("WWW-Authenticate")){
 					isChallenge = true;
 					StringTokenizer st = new StringTokenizer(val, " ");
 					while(st.hasMoreElements()){
 						String token = st.nextToken();
-						System.out.println("    '"+token+"'");
+//						System.out.println("    '"+token+"'");
 						if(!token.equals("Digest")){
 							StringTokenizer st2 = new StringTokenizer(token, ",=\"");
 							while(st2.hasMoreElements()){
 								String challengeKey = st2.nextToken();
 								String challengeVal = st2.nextToken();
-								System.out.println("      "+challengeKey+" = "+challengeVal);
+//								System.out.println("      "+challengeKey+" = "+challengeVal);
 								challengeHash.put(challengeKey, challengeVal);
 							}
 						}else{
@@ -436,14 +435,14 @@ public class AmplistorUtils {
 	public static ArrayList<String> listDir(String dirURL,AmplistorCredential amplistorCredential) throws Exception{
 		return listOrDelete0(dirURL, null, false, amplistorCredential);
 	}
-	public static void deleteSimFilesNotInHash(String dirURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,AmplistorCredential amplistorCredential) throws Exception{
+	public static ArrayList<String> deleteSimFilesNotInHash(String dirURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,boolean bScanOnly,AmplistorCredential amplistorCredential) throws Exception{
 		if(doNotDeleteTheseSimKeys == null){
 			throw new IllegalArgumentException("Parameter doNotDeleteTheseSimKeys cannot be null (being empty is OK)");
 		}
-		listOrDelete0(dirURL, doNotDeleteTheseSimKeys, true, amplistorCredential);
+		return listOrDelete0(dirURL, doNotDeleteTheseSimKeys, !bScanOnly, amplistorCredential);
 	}
-	public static void deleteAllFiles(String dirURL,AmplistorCredential amplistorCredential) throws Exception{
-		listOrDelete0(dirURL, null, true, amplistorCredential);
+	public static long deleteAllFiles(String dirURL,AmplistorCredential amplistorCredential) throws Exception{
+		return listOrDelete0(dirURL, null, true, amplistorCredential).size();
 	}
 	private static ArrayList<String> listOrDelete0(String userURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,boolean bDelete,AmplistorCredential amplistorCredential) throws Exception{
 		ArrayList<String> affectedFileNames = new ArrayList<String>();
@@ -467,7 +466,7 @@ public class AmplistorUtils {
 					currentCount++;
 					if(doNotDeleteTheseSimKeys != null){
 						if((currentCount+count)%5000 == 0){
-							System.out.println("checked "+(count+currentCount)+" files so far");
+//							System.out.println("checked "+(count+currentCount)+" files so far");
 						}
 						KeyValue parsedSimIDKey = null;
 						StringTokenizer st = new StringTokenizer(fileName, "_");
@@ -510,7 +509,7 @@ public class AmplistorUtils {
 				break;
 			}
 		}
-		System.out.println("Total count="+count+(doNotDeleteTheseSimKeys != null?", match count="+resultCount:""));
+//		System.out.println("Total count="+count+(doNotDeleteTheseSimKeys != null?", match count="+resultCount:""));
 		return affectedFileNames;
 
 	}
