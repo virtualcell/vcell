@@ -1,5 +1,6 @@
 package cbit.vcell.util;
 
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -181,47 +182,6 @@ public class AmplistorUtils {
 		metaData.put(metaDataName, metaDataValue);
 		ampliCheckOP(new URL(targetURL+"?update=set"), amplistorCredential, AMPLI_OP_METHOD.PUT, null, AMPLI_OP_KIND.FILE, metaData);
 	}
-	
-//	private static void setMetaData(String urlStr,AmplistorCredential amplistorCredential,HashMap<String, String> metaData,String authorizationRequest) throws Exception{
-//		URL url = new URL(urlStr);
-//		HttpURLConnection urlCon = null;
-//		try{
-//			urlCon = (HttpURLConnection) url.openConnection();
-//			urlCon.setRequestMethod(AMPLI_OP_METHOD.PUT.toString());
-//			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
-//			urlCon.setRequestProperty("Accept","application/xml");
-//			if(authorizationRequest != null){
-//				urlCon.setRequestProperty("Authorization", authorizationRequest);
-//			}
-//
-//			for(String metaKey:metaData.keySet()){
-//				urlCon.setRequestProperty(metaKey,"\""+metaData.get(metaKey)+"\"");
-//			}
-//			
-//			int responseCode = urlCon.getResponseCode();
-//			System.out.println("\nSending 'PUT' request to URL : " + url);
-//			System.out.println("Response Code : " + responseCode);
-//			
-//			if(responseCode == HttpURLConnection.HTTP_UNAUTHORIZED){
-//				if(authorizationRequest == null){//try again with authorization
-//					String reqAuth = RSCAuthRequest.respondToChallenge(urlCon, amplistorCredential, ResultSetCrawler.RSCAuthRequest.AMPLI_OP_METHOD.PUT);
-//					urlCon.disconnect();
-//					setMetaData(urlStr, amplistorCredential,metaData, reqAuth);
-//				}else{
-//					throw new Exception("HTTP authorization failed");
-//				}
-//			}else if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_CREATED){//nothing worked
-//				throw new Exception("Unexpected responseCode="+responseCode);
-//			}
-//
-//			Document responseDoc = getResponseXML(urlCon);
-//			if(responseDoc != null){
-//				System.out.println(XmlUtil.xmlToString(responseDoc.getRootElement()));
-//			}
-//		}finally{
-//			if(urlCon != null){urlCon.disconnect();}
-//		}
-//	}
 
 	public static void deleteFilesOperation(String[] fileNames,String fullAmplistorDirURL,AmplistorCredential amplistorCredential) throws Exception{
 		for(String fileName:fileNames){
@@ -229,11 +189,6 @@ public class AmplistorUtils {
 			ampliCheckOP(httpURL, amplistorCredential, AMPLI_OP_METHOD.DELETE, null, AMPLI_OP_KIND.FILE,null);
 		}
 	}
-//	public static String[] ampliGetDirList(URL dirURL){
-//		String[] dirList = null;
-//		ampliCheckOP(httpURL, amplistorCredential, ampliOpMethod, authorizationRequest, ampliOpKind)
-//		return dirList;
-//	}
 	public static void createDir(String dirNameURL,AmplistorCredential amplistorCredential) throws Exception{
 		ampliDirOperation(dirNameURL, amplistorCredential,AmplistorUtils.AMPLI_OP_METHOD.PUT);
 	}
@@ -522,10 +477,19 @@ public class AmplistorUtils {
 		return rfc1123Format.format(new Date());
 	}
 
-	private static void printHeader(String urlStr) throws Exception{
+	public static class AmpliCustomHeaderHelper{
+		public Date customCreation;
+		public Date customModification;
+		public AmpliCustomHeaderHelper(Date customCreation,Date customModification) {
+			this.customCreation = customCreation;
+			this.customModification = customModification;
+		}
+		
+	}
+	public static AmpliCustomHeaderHelper printHeaderFields(String urlStr) throws Exception{
 		Map<String, List<String>> headerMap = getHeaderFields(urlStr);
-		Date creationDate = null;
-		Date modifiedDate = null;
+		Date customCreationDate = null;
+		Date customModifiedDate = null;
 		for(String headerFieldName:headerMap.keySet()){
 			System.out.println(headerFieldName+":"+headerMap.get(headerFieldName));
 			if("Last-Modified".equals(headerFieldName)){
@@ -537,9 +501,6 @@ public class AmplistorUtils {
 				Date date = new Date(Long.parseLong(dateLong));
 				String dateStr = rfc1123Format.format(date);
 				System.out.println(headerFieldName+"("+dateLong+")"+":"+dateStr);
-//				if(!dateStr.startsWith("Wed, 09 Oct 02013") && !dateStr.startsWith("Tue, 08 Oct 02013")){
-//					System.out.println("mismatch");
-//				}
 			}else if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName) || "X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
 				String dateLong = ((List<String>)headerMap.get(headerFieldName)).get(0);
 				if(dateLong.indexOf('"') != -1){//get rid of quotes
@@ -566,22 +527,14 @@ public class AmplistorUtils {
 				}
 				String dateStr = rfc1123Format.format(date);
 				System.out.println(headerFieldName+"("+dateLong+")"+":"+dateStr+"   "+urlStr);
-//				if(!dateStr.contains("21 Feb 02013") && !dateStr.contains("22 Feb 02013") && !dateStr.contains("30 Sep 02013")){
-//					System.out.println("mismatch");
-//				}
 				if("X-Ampli-Custom-Meta-creation-date".equals(headerFieldName)){
-					creationDate = date;
+					customCreationDate = date;
 				}else if("X-Ampli-Custom-Meta-modification-date".equals(headerFieldName)){
-					modifiedDate = date;
+					customModifiedDate = date;
 				}
 			}
 		}
-		if(modifiedDate != null && creationDate != null && modifiedDate.compareTo(creationDate) == -1){
-			System.out.println("-----creation older than modified");
-			if(!urlStr.endsWith(".zip")){
-				System.out.println("not zip");
-			}
-		}
+		return new AmpliCustomHeaderHelper(customCreationDate, customModifiedDate);
 	}
 
 	private static Map<String, List<String>> getHeaderFields(String urlStr) throws Exception{
@@ -657,8 +610,5 @@ public class AmplistorUtils {
 		}finally{
 			if(urlCon != null){urlCon.disconnect();}
 		}
-	}
-
-
-	
+	}	
 }
