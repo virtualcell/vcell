@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.server;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -353,10 +354,12 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
+		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),getClientServerInfo().toString()+"\n"+VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + cexc.getMessage());
 		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + exc.getMessage());		
+		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),getClientServerInfo().toString()+"\n"+VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + exc.getMessage());
+		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\nException:\n" + exc.getMessage());
 	}
 	
 	return newVCellConnection;	

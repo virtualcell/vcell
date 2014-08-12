@@ -38,8 +38,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -67,9 +69,12 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.util.AmplistorUtils;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -1073,4 +1078,22 @@ public final class BeanUtils {
 		//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
 		return convertedLikeString;
 	}
+	
+	public static void sendRemoteLogMessage(final UserLoginInfo userLoginInfo,final String message){
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try{
+					AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+userLoginInfo.getUserName()+"_"+System.currentTimeMillis(), null,
+						new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())+"\n"+
+						"vers='"+VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString()+"' java='"+userLoginInfo.getJava_version()+"' os='"+userLoginInfo.getOs_name()+"' osvers='"+userLoginInfo.getOs_version()+"' arch='"+userLoginInfo.getOs_arch()+"'\n"+
+						message);
+				}catch(Exception e){
+					e.printStackTrace();
+					//ignore
+				}
+			}
+		}).start();
+	}
+
 }

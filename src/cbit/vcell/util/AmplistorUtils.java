@@ -4,6 +4,7 @@ package cbit.vcell.util;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -46,6 +47,7 @@ public class AmplistorUtils {
 	
 	public static final String DEFAULT_AMPLI_SERVICE_VCELL_URL = 	"http://obj1.cam.uchc.edu:8080/namespace/service_vcell/";
 	public static final String DEFAULT_AMPLI_VCELL_LOGS_URL = 		"http://obj1.cam.uchc.edu:8080/namespace/vcell_logs/";
+	public static final String DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL = "http://archive.cam.uchc.edu/namespace/vcell_logs/";
 	
 	public static class AmplistorCredential {
 		public String userName;
@@ -162,16 +164,21 @@ public class AmplistorUtils {
 
 	}
 
+	public static void uploadString(String remoteDestinationFileURL,AmplistorCredential amplistorCredential,String uploadStr) throws Exception{
+		byte[] uploadBytes = uploadStr.getBytes();
+		InputStream is = new ByteArrayInputStream(uploadBytes);
+		createWithPutXML(remoteDestinationFileURL.toString(), amplistorCredential,is,uploadBytes.length,null);
+	}
+	public static void uploadStream(URL remoteDestinationFileURL,AmplistorCredential amplistorCredential,InputStream is,long size) throws Exception{
+		createWithPutXML(remoteDestinationFileURL.toString(), amplistorCredential,is,size,null);		
+	}
 	public static void uploadFile(URL remoteDestinationDirURL,File currentFile,AmplistorCredential amplistorCredential) throws Exception{
 		BufferedInputStream bis = null;
 		try{
 			bis = new BufferedInputStream(new FileInputStream(currentFile));
-			createWithPutXML(remoteDestinationDirURL.toString()+"/"+currentFile.getName(), amplistorCredential,bis,currentFile.length(),null);
+			uploadStream(new URL(remoteDestinationDirURL.toString()+"/"+currentFile.getName()), amplistorCredential, bis, currentFile.length());
+//			createWithPutXML(remoteDestinationDirURL.toString()+"/"+currentFile.getName(), amplistorCredential,bis,currentFile.length(),null);
 			setFileMetaData(remoteDestinationDirURL.toString()+"/"+currentFile.getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
-//			HashMap<String, String> metaData = new HashMap<String, String>();
-//			metaData.put(SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
-//			ampliCheckOP(new URL(remoteDestinationDirURL.toString()+"/"+currentFile.getName()+"?update=set"), amplistorCredential, AMPLI_OP_METHOD.PUT, null, AMPLI_OP_KIND.FILE, metaData);
-//			setMetaData(remoteDestinationDirURL.toString()+"/"+currentFile.getName()+"?update=set",amplistorCredential, metaData,null);
 		}finally{
 			try{if(bis != null){bis.close();}}catch(Exception e){System.out.println("bis close error "+e.getMessage());}
 		}
