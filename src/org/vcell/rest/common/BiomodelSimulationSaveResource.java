@@ -1,14 +1,15 @@
 package org.vcell.rest.common;
 
-import org.restlet.representation.Representation;
+import org.json.JSONException;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.resource.Post;
 
 public interface BiomodelSimulationSaveResource {
 
 	/**
-	 * starts the simulation
+	 * saves the simulation (within a new BioModel instance) and redirects to that new simulation.
 	 */
 	@Post
-	public Representation save();
+	public void save(JsonRepresentation jsonOverrides) throws JSONException;
 		
 }

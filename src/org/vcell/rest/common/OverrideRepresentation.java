@@ -1,5 +1,9 @@
 package org.vcell.rest.common;
 
+import java.util.ArrayList;
+
+import cbit.vcell.math.Constant;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
@@ -80,6 +84,40 @@ public class OverrideRepresentation {
 			}
 		}else{
 			throw new RuntimeException("expecting either an actualValue or a constant array spec in math override for "+element.getName());
+		}
+	}
+	
+	public void applyMathOverrides(MathOverrides mathOverrides) throws ExpressionException{
+		switch (type){
+			case OVERRIDE_TYPE_Single:{
+				mathOverrides.putConstant(new Constant(name, new Expression(values[0])));
+				break;
+			}
+			case OVERRIDE_TYPE_Variable:{
+				mathOverrides.putConstant(new Constant(name, new Expression(expression)));
+				break;
+			}
+			case OVERRIDE_TYPE_List:{
+				String[] valuesStringArray = new String[values.length];
+				for (int i=0; i<values.length; i++){
+					valuesStringArray[i] = ""+values[i];
+				}
+				mathOverrides.putConstantArraySpec(ConstantArraySpec.createListSpec(name, valuesStringArray));
+				break;
+			}
+			case OVERRIDE_TYPE_LinearInterval:{
+				boolean bLogInterval = false;
+				mathOverrides.putConstantArraySpec(ConstantArraySpec.createIntervalSpec(name, values[0], values[1], values.length, bLogInterval)); 
+				break;
+			}
+			case OVERRIDE_TYPE_LogInterval:{
+				boolean bLogInterval = true;
+				mathOverrides.putConstantArraySpec(ConstantArraySpec.createIntervalSpec(name, values[0], values[1], values.length, bLogInterval)); 
+				break;
+			}
+			default:{
+				throw new RuntimeException("unsupported math override type: "+type);
+			}
 		}
 	}
 	

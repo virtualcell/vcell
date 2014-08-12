@@ -4,10 +4,12 @@ import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.vcell.rest.VCellApiApplication;
+import org.vcell.rest.common.OverrideRepresentation;
 import org.vcell.rest.common.SimulationRepresentation;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -48,6 +50,7 @@ import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -80,7 +83,7 @@ public class RestDatabaseService {
 		}
 	}
 	
-	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException{
+	public SimulationSaveResponse saveSimulation(BiomodelSimulationSaveServerResource resource, User vcellUser, List<OverrideRepresentation> overrideRepresentations) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException, XmlParseException, PropertyVetoException, MappingException, ExpressionException{
 		String simId = resource.getAttribute(VCellApiApplication.SIMULATIONID);
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
@@ -106,9 +109,14 @@ public class RestDatabaseService {
 		
 		SimulationContext simContext = bioModel.getSimulationContext(origSimulation);
 		Simulation newUnsavedSimulation = simContext.copySimulation(origSimulation);
-		// make appropriate changes
 		
-		// TODO: make changes to the cloned simulation (overrides ...etc).
+		// make appropriate changes
+		// MATH OVERRIDES
+		MathOverrides mathOverrides = new MathOverrides(newUnsavedSimulation);
+		for (OverrideRepresentation overrideRep : overrideRepresentations){
+			overrideRep.applyMathOverrides(mathOverrides);
+		}
+		newUnsavedSimulation.setMathOverrides(mathOverrides);
 		
 		// save bioModel
 		String editedBioModelXML = XmlHelper.bioModelToXML(bioModel);

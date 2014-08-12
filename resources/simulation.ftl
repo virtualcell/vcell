@@ -58,7 +58,7 @@ none
 <th>context</th>
 </tr>
 <#list simulation.parameters as parameter>
-<tr>
+<tr id="overrideRow:${parameter.name}">
 <td>
 ${parameter.name}
 </td>
@@ -76,9 +76,8 @@ ${parameter.defaultValue}
 	public final int cardinality;
 -->
 <tr><td>type</td><td>
-<#if simulation.getOverride(parameter.name)??><#assign overrideAA = simulation.getOverride(parameter.name)></#if>
-<#if override??>
-<#assign overrideType = override.type>
+<#if simulation.getOverride(parameter.name)??>
+<#assign overrideType = simulation.getOverride(parameter.name).type>
 <#else>
 <#assign overrideType = "none">
 </#if>
@@ -88,12 +87,12 @@ ${parameter.defaultValue}
 <option  value="List"           <#if overrideType == "List">selected="selected"</#if>            >list</option>
 <option  value="LinearInterval" <#if overrideType == "LinearInterval">selected="selected"</#if>  >linearInterval</option>
 <option  value="LogInterval"    <#if overrideType == "LogInterval">selected="selected"</#if>     >logInterval</option>
-<option  value="Dependent"       <#if overrideType == "Variable">selected="selected"</#if>        >dependent</option>
+<option  value="Variable"       <#if overrideType == "Variable">selected="selected"</#if>        >variable</option>
 </select>
 </td></tr>
-<tr id="row:expression:${parameter.name}"><td>expression</td><td><input id="expression:${parameter.name}" type="text"><#if override??>${override.expression}</#if></input></td></tr>
-<tr id="row:cardinality:${parameter.name}"><td>cardinality</td><td><input min="0" type="number"><#if override??>${override.cardinality}</#if></input></td></tr>
-<tr id="row:values:${parameter.name}"><td>values</td><td><input id="values:${parameter.name}" type="text"><#if override??>${override.values}</#if></input></td></tr>
+<tr id="row:expression:${parameter.name}"><td>expression</td><td><input id="input:expression:${parameter.name}" type="text"><#if override??>${override.expression}</#if></input></td></tr>
+<tr id="row:cardinality:${parameter.name}"><td>cardinality</td><td><input id="input:cardinality:${parameter.name}" min="0" type="number"><#if override??>${override.cardinality}</#if></input></td></tr>
+<tr id="row:values:${parameter.name}"><td>values</td><td><input id="input:values:${parameter.name}" type="text"><#if override??>${override.values}</#if></input></td></tr>
 </table>
 
 </td>
@@ -118,7 +117,7 @@ none
 <tr><td>data</td><td><a href="/simdata/${simulation.key}">metadata</a></td></tr>
 
 </table>
-<form name="save" action="${simlink}/save" method="post"><input type='submit' value='Save'/></form>
+<form class="tryme" name="tryme" ><input type='submit' value='Save'/></form>
 <br/>
 <form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
 <form name="stop" action="${simlink}/stopSimulation" method="post"><input type='submit' value='Stop'/></form>
@@ -132,95 +131,229 @@ ${jsonResponse}
 
 <script type="text/JavaScript" src="/scripts/jquery_1_3_2.min.js"></script>
 <script type="text/JavaScript">
-function setVisible(selectElement,bDefaults){
+function getOverride(simulation,parameterName){
+	for (var i = 0; i < simulation.overrides.length; i++){
+		if (simulation.overrides[i].name === parameterName){
+			return simulation.overrides[i];
+		}
+	}
+	return null;
+}
+function setVisible(selectElement,bDefaults,simulation){
 	var overrideType = selectElement.val();
 	var paramName = selectElement.attr("id").replace("type:","");
-	var expressionInput = $("[id=\"row:expression:"+paramName+"\"]");
-	var cardinalityInput = $("[id=\"row:cardinality:"+paramName+"\"]");
-	var valuesInput = $("[id=\"row:values:"+paramName+"\"]");
+	var expressionRow = $("[id=\"row:expression:"+paramName+"\"]");
+	var cardinalityRow = $("[id=\"row:cardinality:"+paramName+"\"]");
+	var valuesRow = $("[id=\"row:values:"+paramName+"\"]");
+	var expressionInput = $("[id=\"input:expression:"+paramName+"\"]");
+	var cardinalityInput = $("[id=\"input:cardinality:"+paramName+"\"]");
+	var valuesInput = $("[id=\"input:values:"+paramName+"\"]");
+	var overrideRow = $("[id=\"overrideRow:"+paramName+"\"]");
+	var override = getOverride(simulation,paramName);
+//	if (bDefaults){
+//	   expressionInput.find('input').val("");
+//	   cardinalityInput.find('input').val("");
+//	   valuesInput.find('input').val("");
+//	}
+	if (override != null){
+		if (override.hasOwnProperty('expression') && override.expression!=null){
+			expressionInput.val(override.expression);
+		}else{
+			expressionInput.val("");
+		}
+		if (override.hasOwnProperty('cardinality') && override.cardinality!=null){
+			cardinalityInput.val(override.cardinality);
+		}else{
+			cardinalityInput.val("");
+		}
+		if (override.hasOwnProperty('values') && override.values!=null){
+			valuesInput.val(override.values);
+		}else{
+			valuesInput.val("");
+		}
+	}
 	switch(overrideType){
 	case "none":{
-	   selectElement.css('color','red');
-	   expressionInput.css('display', 'none');
-	   expressionInput.find('input').val("");
-	   
-	   cardinalityInput.css('display', 'none');
-	   cardinalityInput.find('input').val("");
-	   
-	   valuesInput.css('display', 'none');
-	   valuesInput.find('input').val("");
+	   overrideRow.css('color','grey');
+	   selectElement.css('color','grey');
+	   expressionRow.css('display', 'none');
+	   cardinalityRow.css('display', 'none');
+	   valuesRow.css('display', 'none');
 	   break;
 	   }
 	case "Single":{
-	   selectElement.css('color','orange');
-	   expressionInput.css("display", "table-row");
-	   
-	   cardinalityInput.css('display', 'none');
-	   cardinalityInput.find('input').val("");
-	   
-	   valuesInput.css('display', 'none');
-	   valuesInput.find('input').val("");
+	   overrideRow.css('color','red');
+	   selectElement.css('color','red');
+	   expressionRow.css("display", "none");
+	   cardinalityRow.css('display', 'none');
+	   valuesRow.css('display', 'table-row');
+	   valuesRow.css('display', 'table-row');
 	   break;
 	   }
 	case "LinearInterval":{
-	   selectElement.css('color','grey');
-	   expressionInput.css('display', 'none');
-	   expressionInput.find('input').val("");
-	   
-	   cardinalityInput.css('display', 'table-row');
-
-	   valuesInput.css('display', 'table-row');
+	   overrideRow.css('color','red');
+	   selectElement.css('color','red');
+	   expressionRow.css('display', 'none');
+	   cardinalityRow.css('display', 'table-row');
+	   valuesRow.css('display', 'table-row');
 	   break;
 	   }
 	case "LogInterval":{
-	   selectElement.css('color','green');
-	   expressionInput.css('display', 'none');
-	   expressionInput.find('input').val("");
-	   
-	   cardinalityInput.css('display', 'table-row');
-	   
-	   valuesInput.css('display', 'table-row');
+	   overrideRow.css('color','red');
+	   selectElement.css('color','red');
+	   expressionRow.css('display', 'none');
+	   cardinalityRow.css('display', 'table-row');
+	   valuesRow.css('display', 'table-row');
 	   break;
 	   }
 	case "List":{
-	   selectElement.css('color','blue');
-	   expressionInput.css('display', 'none');
-	   expressionInput.find('input').val("");
-	   
-	   cardinalityInput.css('display', 'none');
-	   cardinalityInput.find('input').val("");
-	   
-	   valuesInput.css('display', 'table-row');
+	   overrideRow.css('color','red');
+	   selectElement.css('color','red');
+	   expressionRow.css('display', 'none');
+	   cardinalityRow.css('display', 'none');
+	   valuesRow.css('display', 'table-row');
 	   break;
 	   }
-	case "Dependent":{
-	   selectElement.css('color','violet');
-	   expressionInput.css("display", "table-row");
-	   
-	   cardinalityInput.css('display', 'none');
-	   cardinalityInput.find('input').val("");
-	   
-	   valuesInput.css('display', 'none');
-	   valuesInput.find('input').val("");
+	case "Variable":{
+	   overrideRow.css('color','red');
+	   selectElement.css('color','red');
+	   expressionRow.css("display", "table-row");
+	   cardinalityRow.css('display', 'none');
+	   valuesRow.css('display', 'none');
 	   break;
 	   }
 	}
-//	alert("expression = "+expressionInput);
 }
-</script>
-<script type="text/JavaScript">
+function parseOverrideFromElement(selectElement){
+	var overrideType = selectElement.val();
+	var paramName = selectElement.attr("id").replace("type:","");
+	var expressionInput = $("[id=\"input:expression:"+paramName+"\"]");
+	var cardinalityInput = $("[id=\"input:cardinality:"+paramName+"\"]");
+	var valuesInput = $("[id=\"input:values:"+paramName+"\"]");
+
+	switch(overrideType){
+	case "none":{
+		return null;
+	   }
+	case "Single":{
+		return {name: paramName,
+				type: overrideType,
+				values: JSON.parse("["+valuesInput.val()+"]"),
+				cardinality: 1};
+	   }
+	case "LinearInterval":{
+		var valuesStringArray = valuesInput.val().replace("/,/g"," ").split(" ");
+		return {name: paramName,
+				type: overrideType,
+				values: JSON.parse("["+valuesStringArray+"]"),
+				cardinality: JSON.parse(cardinalityInput.val())};
+	   }
+	case "LogInterval":{
+		var valuesStringArray = valuesInput.val().replace("/,/g"," ").split(" ");
+		return {name: paramName,
+				type: overrideType,
+				values: JSON.parse("["+valuesStringArray+"]"),
+				cardinality: JSON.parse(cardinalityInput.val())};
+	   }
+	case "List":{
+		var valuesStringArray = valuesInput.val().replace("/,/g"," ").split(" ");
+		return {name: paramName,
+				type: overrideType,
+				values: JSON.parse("["+valuesStringArray+"]"),
+				cardinality: JSON.parse(valuesStringArray.length)};
+	   }
+	case "Variable":{
+		return {name: paramName,
+				type: overrideType,
+				expression: expressionInput.val(), // keep expression as a string
+				cardinality: 1};
+	   }
+	}
+}
+function formatOverride(pName,overrideType,expression,valuesArray,cardinality){
+	switch(overrideType){
+	case "none":{
+	   return "";
+	}
+	case "Single":{
+	   return "["+pName+" = "+values+"]";
+	}
+	case "LinearInterval":{
+	   return "["+pName+" = linearInterval(length="+cardinality+",min="+values[0]+",max="+values[1]+")]";
+	}
+	case "LogInterval":{
+	   return "["+pName+" = logInterval(length="+cardinality+",min="+values[0]+",max="+values[1]+")]";
+	}
+	case "List":{
+	   var listString = "";
+	   for (var i = 0; i<valuesArray.length;i++){
+			listString += valuesArray[i];
+			if (i < valuesArray.length-1){
+				listString += " ";
+			}
+	   }
+	   return "["+pName+" = "+listString+"]";
+	}
+	case "Variable":{
+	   return "["+pName+" = "+expression+"]";
+	}
+	}
+}
+	
+
+
+	var simulation = JSON.parse("${jsonResponse?js_string}");
 	jQuery("[id^=row:cardinality:]").css("display","none");
 	jQuery("[id^=row:expression:]").css("display","none");
 	jQuery("[id^=row:values:]").css("display","none");
-	jQuery("select.overrideType").each(function() { setVisible($(this),false); return this; });
+	jQuery("select.overrideType").each(function() { setVisible($(this),false,simulation); return this; });
 	//
 	// event handlers for changing override type
 	//
 	$("select.overrideType").change(function() { 
 		var overrideType = $(this).val();
 		var id = $(this).attr("id");
-		setVisible($(this),true);
+		setVisible($(this),true,simulation);
     });
+	$("form.tryme").submit(function(e) { 
+		//
+		// gather new list of overrides and pop it up.
+		//
+		var overridesArray = [];
+		jQuery("select.overrideType").each(function() { 
+				var overrideObj = parseOverrideFromElement($(this));
+				if (overrideObj != null){
+					overridesArray.push(overrideObj);
+				}
+				return this; 
+			});
+		
+		var jsonData = JSON.stringify( {overrides: overridesArray} );
+		var object = JSON.parse(jsonData);
+		$.ajax({
+			type: "POST",
+			url: "${simlink}/save",
+			data: jsonData,
+			contentType: "application/json",
+			dataType: "json",
+			success: function(data, textStatus, jqXHR)   {
+				if (data==null){
+					alert("it worked, data is null");
+					return;
+				}
+				var newURL = "/biomodel/"+data.bioModelLink.bioModelKey+"/simulation/"+data.key;
+				alert("it worked: oldSimKey="+JSON.stringify(simulation.key)+" newSimKey="+JSON.stringify(data.key)+" origURL=${simlink}  newURL="+newURL);
+				window.location.href = newURL;
+			},
+			failure: function(jqXHR, textStatus, errorThrown) { 
+				alert("it failed: "+textStatus);
+			},
+			async:false
+		});
+    	e.preventDefault(); //STOP default action
+    });
+   // alert("simulation = "+simulation.overrides[0].name);
+    
 </script>
 </body>
 </html>

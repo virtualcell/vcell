@@ -50,7 +50,11 @@ public class SimulationRepresentation {
 		this.ownerKey = simulationRep.getOwner().getID().toString();
 		this.ownerName = simulationRep.getOwner().getName();
 		this.mathKey = simulationRep.getMathKey().toString();
-		this.solverName = simulationRep.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
+		if (simulationRep.getSolverTaskDescription()!=null){
+			this.solverName = simulationRep.getSolverTaskDescription().getSolverDescription().getDisplayLabel();
+		}else{
+			this.solverName = "unknown";
+		}
 		this.scanCount = simulationRep.getScanCount();
 		this.mathModelLink = null;
 		this.overrides = overrides;
