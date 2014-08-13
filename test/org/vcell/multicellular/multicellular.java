@@ -8,17 +8,15 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.TranslationLogger;
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.Xmlproducer;
 
 public class multicellular {
 
 	public static void main(String[] args) {
 		try {
 			System.getProperties().setProperty("vcell.installDir", "C:\\developer\\eclipse\\workspace\\vcell\\");
-			ResourceUtil.loadNativeLibraries();
+			NativeLib.SBML.load();
 			
 			MulticellularModel mcModel = new MulticellularModel("myModel");
 			CellModel cellModel = mcModel.createCellModel("cellType1");

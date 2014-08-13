@@ -26,7 +26,7 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -87,9 +87,7 @@ public class BiomodelsDB_TestSuite {
 			 * vcell.mathSBML.directory = "c:\\developer\\eclipse\\workspace\\mathsbml\\"
 			 * vcell.mathematica.kernel.executable = "C:\\Program Files\\Wolfram Research\\Mathematica\\7.0\\MathKernel.exe"
 			 */
-			
-			File reportFile = new File(outDir,"report.xml");
-			ResourceUtil.loadNativeLibraries();
+			NativeLib.SBML.load();
 
 			BioModelsWebServicesServiceLocator locator = new BioModelsWebServicesServiceLocator();
 			BioModelsWebServices service = locator.getBioModelsWebServices();
@@ -431,7 +429,6 @@ public class BiomodelsDB_TestSuite {
 			}finally{
 				printWriter.close();
 			}
-			reportFile = new File(outDir,"report.xml");
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}

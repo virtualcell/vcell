@@ -166,6 +166,7 @@ import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
@@ -233,7 +234,7 @@ public class SBMLImporter {
 	}
 	static
 	{
-		ResourceUtil.loadNativeLibraries();
+		NativeLib.SBML.load( );
 	}
 	
 	/**

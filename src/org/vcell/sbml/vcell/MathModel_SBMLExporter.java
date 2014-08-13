@@ -70,7 +70,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
 /**
  * Insert the type's description here.
@@ -80,7 +80,7 @@ import cbit.vcell.xml.XMLSource;
 public class MathModel_SBMLExporter {
 	static
 	{
-		ResourceUtil.loadNativeLibraries();
+		NativeLib.SBML.load( );
 	}
 
 /**

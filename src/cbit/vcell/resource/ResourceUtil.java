@@ -99,9 +99,16 @@ public class ResourceUtil {
 	private static File downloadDirectory = null;
 
 	private static List<File>  librariesLoaded = new ArrayList<File>();
-	private static boolean nativeLoaded = false; 
+	private static boolean nativeLibrariesSetup = false; 
 	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
 		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+		    
+    /**
+     * ensure class loaded so static initialization executes
+     */
+    public static void init( ) {
+    	
+    }
 	
 	/**
 	 * class which can help find executable via some means
@@ -334,23 +341,16 @@ public class ResourceUtil {
 	}
 
 	/**
-	 * set path to native library directory and load them up
+	 * set path to native library directory 
 	 * @throws Error if load fails
 	 */
-	public static void loadNativeLibraries( ) throws Error {
-		if (!nativeLoaded) {
+	public static void setNativeLibraryDirectory( ) throws Error {
+		if (!nativeLibrariesSetup) {
 			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
 			String nativeDir = iRoot + "/nativelibs/" + NATIVE_LIB_DIR;
 			NativeLoader.setNativeLibraryDirectory(nativeDir);
-			try {
-				NativeLoader nl = new NativeLoader();
-				nl.loadNativeLibraries();
-			}
-			catch (Exception e) {
-				throw new Error("Error setting up native libraries ",e);
-			}
 		}
-		nativeLoaded = true;
+		nativeLibrariesSetup = true;
 	}
 	/**
 	 * set path to native library directory and load them up
@@ -358,17 +358,10 @@ public class ResourceUtil {
 	 * @throws Error if load fails
 	 */
 	public static void loadNativeLibraries(String from ) throws Error {
-		if (!nativeLoaded) {
+		if (!nativeLibrariesSetup) {
 			NativeLoader.setNativeLibraryDirectory(from);
-			try {
-				NativeLoader nl = new NativeLoader();
-				nl.loadNativeLibraries();
-			}
-			catch (Exception e) {
-				throw new Error("Error setting up native libraries ",e);
-			}
 		}
-		nativeLoaded = true;
+		nativeLibrariesSetup = true;
 	}
 
 	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
