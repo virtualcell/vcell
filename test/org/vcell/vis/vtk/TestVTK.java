@@ -19,7 +19,7 @@ import vtk.vtkSphereSource;
 import vtk.vtkUnstructuredGrid;
 import vtk.vtkUnstructuredGridGeometryFilter;
 import vtk.vtkWindowedSincPolyDataFilter;
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 
 /**
  * Basic VTK test
@@ -34,7 +34,7 @@ public class TestVTK {
 			if (PropertyLoader.getProperty(PropertyLoader.installationRoot,null) == null) {
 				System.setProperty(PropertyLoader.installationRoot,System.getProperty("user.dir"));
 			}
-			ResourceUtil.loadNativeLibraries();
+			NativeLib.VTK.load( );
 			vtkNativeLibrary.LoadAllNativeLibraries();
 		}catch (Exception e){
 			e.printStackTrace(System.out);

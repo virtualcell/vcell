@@ -3,10 +3,13 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
@@ -17,7 +20,6 @@ import org.vcell.util.FileUtils;
  * {@link #setNativeLibraryDirectory(String)} and {@link #setOsType(OsType)}
  * prior to creating NativeLoader object.
  * 
- * Not necessarily threadsafe
  * @author gweatherby
  *
  */
@@ -28,49 +30,16 @@ public class NativeLoader {
 	 * and throwing exeption
 	 */
 	public static final int NUM_ATTEMPTS = 50;
-
 	
+	/**
+	 * specify supported operating systems (determines file name pattern of shared / dynamic libraries)
+	 */
 	public enum OsType {
 		LINUX,
 		WINDOWS,
 		MAC
 	}
-
-	/**
-	 * set os type
-	 * @param osType
-	 */
-	public static void setOsType(OsType osType) {
-		switch (osType) {
-		case LINUX:
-			systemLibRegex = LINUX_REGEX;
-			break;
-		case WINDOWS:
-			systemLibRegex = WINDOWS_REGEX; 
-			break;
-		case MAC:
-			systemLibRegex = MAC_REGEX; 
-			break;
-		default:
-			throw new IllegalStateException("unknown os type " + osType);
-		}
-	}
 	
-
-	/**
-	 * file separator for os
-	 */
-	private final static String FILESEP = System.getProperty("file.separator");
-	
-	/**
-	 * our preferences key
-	 */
-	private final static String PREFS_KEY = "nativeLibs" ;
-	/*
-	 * our preferences key
-	 */
-	private final static String NUM_PREFS = "nativeLibPrefCount";
-	/**
 	/**
 	 * regex for linux shared libraries
 	 */
@@ -86,51 +55,111 @@ public class NativeLoader {
 	
 	private static String nativeLibraryDirectory  = null;
 	
-	private static String systemLibRegex = null;
+	private static final String NATIVE_PATH_PROP = "java.library.path";
+	
+	/**
+	 * pool for executing loads. Javadocs indicate should not consume resources when not runnning
+	 */
+	private static ExecutorService executor = Executors.newCachedThreadPool(new NameTheThreads());
+	
+	/** 
+	 * store names previously called
+	 */
+	private static Map<String,Future<Boolean> > cache = new HashMap<String, Future<Boolean>>( );
 	
 	private static Logger lg = Logger.getLogger(NativeLoader.class);
-
-	/**
-	 * preferences to use
-	 */
-	private Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
-	/**
-	 * map of files in native lib directory
-	 */
-	private Map<String,Boolean> libsPresentMap = new HashMap<String,Boolean>( );
-	/**
-	 * ordered list of libraries
-	 */
-	private List<String>  storedLoadOrder = new LinkedList<String>( );
-	/**
-	 * if true, stored list is out of date
-	 */
-	private boolean listDirty = false;
-	/**
-	 * path to native library directory
-	 */
-	private String dirPath = nativeLibraryDirectory;
-	/**
-	 * last recorded load error, for messaging
-	 */
-	private List<Error> failErrors = null;
 	
-	private final String NATIVE_PATH_PROP = "java.library.path";
+	/**
+	 * library name path (see {@link NativeGroup} )
+	 */
+	static String systemLibRegex = null;
+	
+	/**
+	 * library name prefix (see {@link NativeGroup} )
+	 */
+	static String libPrefix = "lib"; //default for Mac and linux
 
-	public NativeLoader() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	/**
+	 * preferences to use (see {@link NativeGroup} )
+	 */
+	static Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
+	/**
+	 * file separator for os (see {@link NativeGroup} )
+	 */
+	
+	final static String FILESEP = System.getProperty("file.separator");
+	
+	/**
+	 * set native library directory for this OS
+	 * @param nativeLibraryDirectory
+	 */
+	public static void setNativeLibraryDirectory(String nativeLibraryDirectory) {
+		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
+		try {
+			setSystemPath();
+		} catch (Exception e) {
+			throw new RuntimeException("Exception setting support library path, some functionality may be lost",e);
+		}
+	}
+	
+	/**
+	 * set os type
+	 * @param osType
+	 */
+	public static void setOsType(OsType osType) {
+		switch (osType) {
+		case LINUX:
+			systemLibRegex = LINUX_REGEX;
+			break;
+		case WINDOWS:
+			systemLibRegex = WINDOWS_REGEX; 
+			libPrefix = "";
+			break;
+		case MAC:
+			systemLibRegex = MAC_REGEX; 
+			break;
+		default:
+			throw new IllegalStateException("unknown os type " + osType);
+		}
+	}
+	
+	/**
+	 * commence loading libraries matching pattern from previously set directory. If load already started, return prior value
+	 * @param namePattern see {@link NativeGroup#NativeGroup(String, String)}
+	 * @return new or existing future
+	 */
+	public static Future<Boolean> load(String namePattern) {
 		if (nativeLibraryDirectory == null) {
-			throw new IllegalStateException(getClass( ).getName() + " created before native library location set");
+			throw new IllegalStateException("load called before setNativeLibraryDirectory");
 		}
 		if (systemLibRegex == null) {
-			throw new IllegalStateException(getClass( ).getName() + " created before os type set"); 
+			throw new IllegalStateException("load called before setOsType");
 		}
-		//verify on system native lib path, in case other code searches for it (e.g. H5)
+		if (cache.containsKey(namePattern)) {
+			return cache.get(namePattern);
+		}
+		NativeGroup ng = new NativeGroup(namePattern, nativeLibraryDirectory);
+		Future<Boolean> f = executor.submit(ng);
+		cache.put(namePattern, f);
+		return f;
+	}
+	
+	/**
+	 * verify native directory on system native lib path, in case other code searches for it (e.g. H5)
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	private static void setSystemPath() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		boolean found = false;
 		File nativeDir = new File(nativeLibraryDirectory);
 		String jlp = System.getProperty(NATIVE_PATH_PROP);
 		Collection<File> files = FileUtils.toFiles(FileUtils.splitPathString(jlp), true);
 		for (File f: files) {
-			//System.err.println(f.getAbsolutePath());
+			if (lg.isDebugEnabled()) {
+				lg.debug("native path directory " + f.getAbsolutePath());
+			}
 			if (nativeDir.equals(f)) {
 				found = true;
 				if (lg.isDebugEnabled()) {
@@ -147,207 +176,39 @@ public class NativeLoader {
 				lg.debug("adding " + nativeLibraryDirectory + " to " + NATIVE_PATH_PROP + " " + jlp);
 			}
 			 
-			Field fieldSysPath;
-			fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+			//clear paths cached in JVM to trigger reparsing of NATIVE_PATH_PROP
+			Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
 			fieldSysPath.setAccessible( true );
 			fieldSysPath.set( null, null );
 		}
 	}
 	
 	/**
-	 * set native library directory for this OS
-	 * @param nativeLibraryDirectory
+	 *  factory to name threads sequentially, set as daemon, and set as
+	 *  minimum priority
 	 */
-	public static void setNativeLibraryDirectory(String nativeLibraryDirectory) {
-		NativeLoader.nativeLibraryDirectory = nativeLibraryDirectory;
-		
-	}
+	private static class NameTheThreads implements ThreadFactory {
+		private static AtomicLong counter = new AtomicLong(0); 
 
-	/**
-	 * attempt to load all libraries in nativelibs directory.
-	 * try multiple times in case some libraries are dependent on others
-	 * if successful, record order of libraries in local preferences file
-	 * for faster subsequent startups; 
-	 * rebuild local list if libraries added / removed from nativelibs directory
-	 */
-	public void loadNativeLibraries( ) throws Error {
-		assert FILESEP != null : "bad file sep";
-		assert FileUtils.PATHSEP != null : "bad path sep";
-		loadMap( );
-		loadListFromPreferences();
-		Iterator<String> iter = storedLoadOrder.iterator();
-		List<String> failed = new LinkedList<String>( );
-		//try to load names stored in preferences
-		while (iter.hasNext()) {
-			String lName = iter.next( );
-			//make sure still present
-			if (!libsPresentMap.containsKey(lName)) {
-				listDirty = true; //library removed
-				iter.remove();
-				continue;
-			}
-			if (!attemptLoad(lName)) {
-				listDirty = true; //stored order no longer works
-				iter.remove();
-				failed.add(lName);
-				continue;
-			}
-			//library is present in directory and preferences and loads correctly
-			libsPresentMap.put(lName, true);
-		}
-		iter = null;
-		//check for libraries not stored in preferences
-		for (Map.Entry<String,Boolean> entry : libsPresentMap.entrySet()) {
-			if (!entry.getValue()) {
-				listDirty = true; //library added
-				failed.add(entry.getKey());
-			}
-		}
-		if (!listDirty) {
-			//nothing unexpected, we're done
-			return;
-		}
-
-		//non-standard loop to set flag on last iteration
-		for (int i = 1; failed.size() > 0 && i <= NUM_ATTEMPTS; i++) {
-			if (i == NUM_ATTEMPTS) {  //record error messages on last go through
-				setFailErrors();
-			}
-			Iterator<String> fIter = failed.iterator();
-			while (fIter.hasNext()) {
-				String lib = fIter.next();
-				if (attemptLoad(lib)) {
-					storedLoadOrder.add(lib);
-					fIter.remove( );
-				}
-			}
-		}
-		checkForFailure(failed);
-		storeListToPreferences();
-	}
-	
-	/**
-	 * throw detailed exception if couldn't load everything
-	 */
-	private void checkForFailure(List<String> failed) { 
-		if (failed.size( ) > 0) {
-			String msg = "After " + NUM_ATTEMPTS + " attempts, unable to load native libs: ";
-			for (Error e : failErrors) {
-				msg += "\n" + e.getMessage();
-			}
-		throw new IllegalStateException(msg);
-		}
-	}
-	
-
-	/**
-	 * load {@link #libsPresentMap} with listing of files in native lib directory
-	 */
-	private void loadMap() {
-		File dir = new File(dirPath);
-		if (!dir.isDirectory()) {
-			throw new IllegalArgumentException(dirPath + " is not directory");
-		}
-		File list[] = dir.listFiles();
-		for (File f : list) {
-			if (f.isFile()) {
-				String name = f.getName();
-				if (name.matches(NativeLoader.systemLibRegex)) {
-					libsPresentMap.put(name, false);
-				}
-			}
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t= new Thread(r);
+			t.setName("NativeLoader " + counter.getAndAdd(1));
+			t.setDaemon(true);
+			t.setPriority(Thread.MIN_PRIORITY);
+			return t;
 		}
 	}
 	
 	/**
-	 * load {@link #storedLoadOrder} list from user preferences
+	 * clean (clear) preferences
+	 * @throws BackingStoreException
 	 */
-	private void loadListFromPreferences( ) {
-		final int count = pref.getInt(NUM_PREFS, 0);
-		for (int i = 0; i < count;i++) {
-			String depsBlob = pref.get(PREFS_KEY + i, "");
-			Collection<String> paths = FileUtils.splitPathString(depsBlob);
-			storedLoadOrder.addAll(paths);
-		}
-		listDirty = false;
-	}
-
-	/**
-	 * store loadOrder list to user preferences
-	 */
-	private void storeListToPreferences( ) {
-		String depsBlob = FileUtils.pathJoinStrings(storedLoadOrder);
-		//split blob into appropriately sized chunks
-		int blobCount = 0;
-		while (depsBlob.length() > Preferences.MAX_VALUE_LENGTH) {
-			int sep = depsBlob.lastIndexOf(FileUtils.PATHSEP, Preferences.MAX_VALUE_LENGTH); 
-			String chunk = depsBlob.substring(0, sep);
-			pref.put(PREFS_KEY + blobCount++,chunk);
-			depsBlob = depsBlob.substring(sep + 1);
-		}
-		
-		pref.put(PREFS_KEY + blobCount++, depsBlob);
-		pref.put(NUM_PREFS,Integer.toString(blobCount));
-		listDirty = false;
-	}
-	/**
-	 * attempt to load library in #dirPath
-	 * @param lib to load 
-	 * @return true if loads okay
-	 */
-	private boolean attemptLoad(String lib)  {
-		String fullpath = dirPath + FILESEP + lib;
-		try {
-			System.load(fullpath);
-			if (lg.isTraceEnabled()) {
-				lg.trace("loaded "  + fullpath);
-			}
-			return true;
-		}
-		catch (Error e) {
-			if (lg.isTraceEnabled()) {
-				lg.trace("load attempt "  + fullpath + " failed");
-			}
-			//System.err.println(new File (fullpath).getAbsolutePath());
-			if (isFailErrors()) {
-				recordError(e);
-			}
-			//System.err.println(e.getMessage());
-			return false;
-		}
-	}
-	/**
-	 * are we recording failure errors?
-	 * @return true if yes
-	 */
-	private boolean isFailErrors() {
-		return failErrors != null;
-	}
-
-	/**
-	 * activate recording of failure errors
-	 */
-	private void setFailErrors() {
-		failErrors = new LinkedList<Error>( );
-	}
-	
-	/**
-	 * record link #Error
-	 * @param e to record
-	 * @throws AssertionError if {@link #setFailErrors()} not set
-	 */
-	private void recordError(Error e) {
-		assert failErrors != null : "logic error";
-		failErrors.add(e);
-	}
-	
-	static void clean( ) {
+	static void clean( ) throws BackingStoreException {
 		Preferences pref = Preferences.userNodeForPackage(NativeLoader.class);
-		final int count = pref.getInt(NUM_PREFS, 1000);
-		for (int i = 0; i < count; i++) {
-			pref.remove(PREFS_KEY + i);
+		for (String c : pref.childrenNames()) {
+			pref.node(c).clear();
 		}
-		pref.remove(PREFS_KEY);
-		pref.remove(NUM_PREFS);
+		pref.clear( );
 	}
 }

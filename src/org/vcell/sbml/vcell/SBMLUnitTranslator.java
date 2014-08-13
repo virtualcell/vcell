@@ -24,6 +24,7 @@ import org.sbml.libsbml.libsbmlConstants;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
@@ -313,8 +314,7 @@ public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSyst
 	if (sbmlStr == null || sbmlStr.length() == 0) {
 		throw new RuntimeException("SBMl string is empty, cannot add unit definitions to SBML model.");
 	}
-	
-	ResourceUtil.loadNativeLibraries();
+	NativeLib.SBML.load( );
 
 	// create a libsbml (sbml) model object, create sbml unitDefinitions for the units above, add to model.
 	SBMLReader sbmlReader = new SBMLReader();

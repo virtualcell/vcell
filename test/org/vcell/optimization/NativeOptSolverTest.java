@@ -14,7 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 
 public class NativeOptSolverTest {
 	
@@ -23,7 +23,7 @@ public class NativeOptSolverTest {
 	 */
 	public static void main(String[] args) {
 		try {
-			ResourceUtil.loadNativeLibraries();
+			NativeLib.NATIVE_SOLVERS.load();
 			String optProblemXML = getXMLString("..\\numerics\\OptStandalone2\\test9.xml");
 			OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 			NativeOptSolver nativeOptSolver = new NativeOptSolver();

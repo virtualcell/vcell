@@ -10,7 +10,7 @@
 
 package cbit.vcell.solvers;
 
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.NativeLib;
 
 /**
  * Insert the type's description here.
@@ -19,7 +19,7 @@ import cbit.vcell.resource.ResourceUtil;
  */
 public class NativeCVODESolver {
 	static {
-		ResourceUtil.loadNativeLibraries();
+		NativeLib.NATIVE_SOLVERS.load( );
     }
 
 	private boolean bStopRequested = false;

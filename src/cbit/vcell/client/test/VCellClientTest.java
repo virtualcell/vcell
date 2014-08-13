@@ -17,7 +17,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
-import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
@@ -137,27 +136,16 @@ public static void main(java.lang.String[] args) {
 		}else{
 			VCMongoMessage.enabled = false;
 		}
-		try {
-			long tstart_ms = 0; 
-			Logger lg = Logger.getLogger(VCellClientTest.class);
-			if (lg.isInfoEnabled()) {
-				tstart_ms = System.currentTimeMillis();
-			}
-			ResourceUtil.loadNativeLibraries();
-			if (lg.isInfoEnabled()) {
-				lg.info("loading libraries: elapsed time = "+((System.currentTimeMillis()-tstart_ms)/1000.0)+" seconds");
-			}
-		}
-		catch (Throwable e) {
-			e.printStackTrace();
-			BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\n"+"LoadNativeLibraries failed" + "\n\n" + e.getMessage());
-			JOptionPane.showMessageDialog(null, e.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
-			System.exit(1);
-		}
-		
+
+		//call in main thread, since it's quick and not necessarily thread safe
+		ResourceUtil.setNativeLibraryDirectory();
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
-		
+
+		//starting loading libraries
+		new LibraryLoaderThread().start( );
 	} catch (Throwable exception) {
+		BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());
+		JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
 		System.err.println("Exception occurred in main() of VCellApplication");
 		exception.printStackTrace(System.out);
 	}
