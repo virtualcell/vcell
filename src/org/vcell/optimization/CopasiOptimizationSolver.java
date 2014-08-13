@@ -12,40 +12,30 @@ package org.vcell.optimization;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.jdom.Element;
 import org.vcell.util.FileUtils;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.NativeIDASolver;
 import cbit.vcell.util.RowColumnResultSet;
 
 
 public class CopasiOptimizationSolver {	
 	static {
-		ResourceUtil.loadNativeLibraries();
+		NativeLib.COPASI.load( );
 	}
 	private static final String DataType_int = "int";
 	private static final String DataType_float = "float";

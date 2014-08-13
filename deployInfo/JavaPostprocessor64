@@ -29,7 +29,10 @@ arguments=$*
 
 echo "starting postprocessor"
 
-nice ${common_jre} -cp ${common_jvm_jars} ${jvmprop} ${postprocessor_mainclass} ${arguments}
+nice ${common_jre} -cp ${common_jvm_jars} ${jvmprop} ${postprocessor_mainclass} ${arguments} | tee -ai /dev/stderr |grep -q 'os::commit_memory'
+if [ $? -eq 0 ]; then
+	echo "MEMORY FAILURE DETECTED"
+fi
 
 echo "postprocessor returned"
 

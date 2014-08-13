@@ -43,6 +43,7 @@ import org.vcell.util.PropertyLoader;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
 
 
@@ -53,7 +54,8 @@ public class CopasiSBMLSolver implements SBMLSolver {
 	static
 	{
 		try {
-			ResourceUtil.loadNativeLibraries();
+			NativeLib.SBML.load();
+			NativeLib.COPASI.load();
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
@@ -172,7 +174,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 		    CReportDefinition report = reports.createReportDefinition("Report", "Output for - timecourse");
 		    // set the task type for the report definition to timecourse
 		    report.setTaskType(CCopasiTask.timeCourse);
-		    // we don’t want a table
+		    // we donï¿½t want a table
 		    report.setIsTable(false);
 		    // the entries in the output should be seperated by a ", "
 		    report.setSeparator(new CCopasiReportSeparator(", "));
@@ -189,7 +191,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 		    for (i = 0;i < iMax;++i) {
 		    	CMetab metab = model.getMetabolite(i);
 		    	assert metab != null;
-			    // we don’t want output for FIXED metabolites right now
+			    // we donï¿½t want output for FIXED metabolites right now
 //			    if (metab.getStatus() != CModelEntity.FIXED) {
 				    // we want the concentration oin the output alternatively, we could use "Reference=Amount" to get the
 				    // particle number
@@ -211,7 +213,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 
 		    // get the trajectory task object
 		    CTrajectoryTask trajectoryTask = (CTrajectoryTask)copasiModel.getTask("Time-Course");
-		    // if there isn’t one
+		    // if there isnï¿½t one
 		    if (trajectoryTask == null) {
 			    // create a new one
 			    trajectoryTask = new CTrajectoryTask();
@@ -230,7 +232,7 @@ public class CopasiSBMLSolver implements SBMLSolver {
 		    // set the output filename
 		    outputFile = new File(outDir,filePrefix+".copasi.csv");
 		    trajectoryTask.getReport().setTarget(outputFile.getAbsolutePath());
-		    // don’t append output if the file exists, but overwrite the file
+		    // donï¿½t append output if the file exists, but overwrite the file
 		    trajectoryTask.getReport().setAppend(false);
 		    // get the problem for the task to set some parameters
 		    CTrajectoryProblem problem = (CTrajectoryProblem)trajectoryTask.getProblem();

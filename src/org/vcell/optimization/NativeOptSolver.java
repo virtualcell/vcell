@@ -10,6 +10,7 @@
 
 package org.vcell.optimization;
 
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.ResourceUtil;
 
 /**
@@ -19,7 +20,7 @@ import cbit.vcell.resource.ResourceUtil;
  */
 public class NativeOptSolver {
 	static {
-		ResourceUtil.loadNativeLibraries();
+		NativeLib.NATIVE_SOLVERS.load();
 	}
 
 	
