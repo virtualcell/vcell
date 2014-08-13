@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -33,6 +34,8 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.util.AmplistorUtils;
+import cbit.vcell.util.VCellErrorMessages;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -147,6 +150,7 @@ public static void main(java.lang.String[] args) {
 		}
 		catch (Throwable e) {
 			e.printStackTrace();
+			BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\n"+"LoadNativeLibraries failed" + "\n\n" + e.getMessage());
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
 			System.exit(1);
 		}
