@@ -227,7 +227,7 @@ public int[] getUnsortedSelectedIndices()
 		}
 		int[] unsortedSelectedIndices = new int[selectedIndices.length];
 		for (int i = 0; i < selectedIndices.length; i++) {
-			unsortedSelectedIndices[i] = getmultisourcePlotListModel().getSortedDataReferences().get(i).unsortedIndex;
+			unsortedSelectedIndices[i] = getmultisourcePlotListModel().getSortedDataReferences().get(selectedIndices[i]).unsortedIndex;
 		}
 		return unsortedSelectedIndices;
 	}
@@ -244,7 +244,7 @@ public void setUnsortedSelectedIndices(int[] unsortedSelectedIndices)
 		int[] sortedSelectedIndices = new int[unsortedSelectedIndices.length];
 		for (int i = 0; i < unsortedSelectedIndices.length; i++) {
 			for (int j = 0; j < getmultisourcePlotListModel().getSortedDataReferences().size(); j++) {
-				if(getmultisourcePlotListModel().getSortedDataReferences().get(j).unsortedIndex == unsortedSelectedIndices[j]){
+				if(getmultisourcePlotListModel().getSortedDataReferences().get(j).unsortedIndex == unsortedSelectedIndices[i]){
 					sortedSelectedIndices[i] = j;
 					break;
 				}
