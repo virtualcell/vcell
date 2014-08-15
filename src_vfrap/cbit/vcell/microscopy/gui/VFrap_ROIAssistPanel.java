@@ -81,7 +81,7 @@ public class VFrap_ROIAssistPanel extends JPanel {
 					}catch(final Exception e2){
 						waitCursor(false);
 						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
-							DialogUtils.showErrorDialog(VFrap_ROIAssistPanel.this, "Error creating ROI source\n"+e2.getMessage());
+							DialogUtils.showErrorDialog(VFrap_ROIAssistPanel.this, "Error creating ROI source\n"+e2.getClass().getSimpleName()+"\n"+e2.getMessage());
 						}});
 					}finally{
 						waitCursor(false);
@@ -498,6 +498,10 @@ public class VFrap_ROIAssistPanel extends JPanel {
 		
 		thresholdSlider.removeChangeListener(processTimepointChangeListener);
 		thresholdSlider.setValue(0);
+		
+		roiTimeAverageDataShort = null;
+		lastROISourceDataShort = null;
+		lastRegionInfos = null;
 		new Thread(new Runnable(){public void run(){
 			try{
 				createROISourceData(true);
