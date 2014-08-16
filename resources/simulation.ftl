@@ -2,11 +2,12 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html"; charset=UTF-8" />
-<title>Simulation Tasks</title>
+<title>Simulation Description</title>
 </head>
 <body>
-<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on">
-<center><h2><a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
+<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
+<center><h2><a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 </center>
 
 <#if simulation.bioModelLink??>
@@ -32,6 +33,10 @@ unknown
 <tr><td>Owner</td><td>${simulation.ownerName!""}</td></tr>
 </td></tr>
 <tr><td>Solver</td><td>&quot;${simulation.solverName!""}&quot;</td></tr>
+<tr><td>num jobs</td><td>${simulation.scanCount!""}</td></tr>
+<tr><td>check status</td><td><a href="/simstatus?simId=${simulation.key}&hasData=all&neverran=on&active=on&&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check status</a></td></tr>
+<tr><td>check jobs</td><td><a href="/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td></tr>
+<tr><td>data</td><td><a href="/simdata/${simulation.key}">metadata</a></td></tr>
 <tr><td>Overrides</td><td>
 <#if (simulation.overrides?size>0)>
 <#list simulation.overrides as override>
@@ -45,8 +50,13 @@ unknown
 none
 </#if>
 </td></tr>
-<tr><td>Parameters</td><td>
+</table>
+<form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
+<br/>
+<br/>
 
+<h3>Parameters</h3>
+ <form class="tryme" name="tryme" ><input type='submit' value='Save'/></form>
 <#if (simulation.parameters??)>
 <table>
 <tr>
@@ -111,18 +121,6 @@ ${parameter.defaultValue}
 none
 </#if>
 
-</td></tr>
-<tr><td>num jobs</td><td>${simulation.scanCount!""}</td></tr>
-<tr><td>check jobs</td><td><a href="/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td></tr>
-<tr><td>data</td><td><a href="/simdata/${simulation.key}">metadata</a></td></tr>
-
-</table>
-<form class="tryme" name="tryme" ><input type='submit' value='Save'/></form>
-<br/>
-<form name="start" action="${simlink}/startSimulation" method="post"><input type='submit' value='Start'/></form>
-<form name="stop" action="${simlink}/stopSimulation" method="post"><input type='submit' value='Stop'/></form>
-<br/>
-<br/>
 
 <#if jsonResponse??> JSON response <br/>
 ${jsonResponse}

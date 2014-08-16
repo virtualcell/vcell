@@ -28,6 +28,7 @@ import org.vcell.rest.server.BiomodelsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.rest.server.SimDataServerResource;
 import org.vcell.rest.server.SimDataValuesServerResource;
+import org.vcell.rest.server.SimulationStatusServerResource;
 import org.vcell.rest.server.SimulationTaskServerResource;
 import org.vcell.rest.server.SimulationTasksServerResource;
 import org.vcell.rest.users.EmailTokenVerifyRestlet;
@@ -89,6 +90,8 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String BIOMODEL = "biomodel";
 	public static final String BIOMODELID = "biomodelid";
 
+	public static final String SIMSTATUS = "simstatus";
+	
 	public static final String SIMTASK = "simtask";
 	public static final String SIMTASKID = "simtaskid";
 	
@@ -227,6 +230,7 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STOPSIMULATION, BiomodelSimulationStopServerResource.class);  
+		rootRouter.attach("/"+SIMSTATUS, SimulationStatusServerResource.class);  
 		rootRouter.attach("/"+SIMTASK, SimulationTasksServerResource.class);  
 		rootRouter.attach("/"+SIMTASK+"/{"+SIMTASKID+"}", SimulationTaskServerResource.class);  
 		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  

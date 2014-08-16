@@ -4,6 +4,8 @@ import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.OverrideRepresentation;
 import org.vcell.rest.common.SimulationRepresentation;
+import org.vcell.rest.common.SimulationStatusRepresentation;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -36,6 +39,7 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.server.bootstrap.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.RpcSimServerProxy;
 import cbit.vcell.messaging.db.SimpleJobStatus;
+import cbit.vcell.messaging.db.SimulationDocumentLink;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.BioModelTable;
@@ -54,6 +58,7 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -378,7 +383,7 @@ public class RestDatabaseService {
 			}
 			conditionsBuffer.append(condition);
 		}
-		OrderBy orderBy = OrderBy.date_asc; // default
+		OrderBy orderBy = OrderBy.date_desc; // default
 		if (orderByParam!=null){
 			if (orderByParam.equals(BiomodelsServerResource.PARAM_ORDERBY_DATE_ASC)){
 				orderBy = OrderBy.date_asc;
@@ -611,6 +616,93 @@ public class RestDatabaseService {
 		}finally{
 			rpcSession.close();
 		}
+    }
+
+    public SimulationStatusRepresentation[] query(SimulationStatusServerResource resource, User vcellUser) throws SQLException, DataAccessException {	
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String userID = vcellUser.getName();
+		SimpleJobStatusQuerySpec simQuerySpec = new SimpleJobStatusQuerySpec();
+		simQuerySpec.userid = userID;
+		simQuerySpec.simId = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SIM_ID);
+		String hasData = resource.getQueryValue(SimulationStatusServerResource.PARAM_HAS_DATA);
+		if (hasData!=null && hasData.equals("yes")){
+			simQuerySpec.hasData = true;
+		}else if (hasData!=null && hasData.equals("no")){
+			simQuerySpec.hasData = false;
+		}else{
+			simQuerySpec.hasData = null;
+		}
+		simQuerySpec.waiting = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.queued = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.dispatched = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.running = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_ACTIVE,false);
+		simQuerySpec.completed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_COMPLETED,false);
+		simQuerySpec.failed = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_FAILED,false);
+		simQuerySpec.stopped = resource.getBooleanQueryValue(SimulationStatusServerResource.PARAM_STATUS_STOPPED,false);
+		simQuerySpec.submitLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_LOW);
+		simQuerySpec.submitHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_SUBMIT_HIGH);
+		simQuerySpec.startLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_LOW);
+		simQuerySpec.startHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_HIGH);
+		simQuerySpec.endLowMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_LOW);
+		simQuerySpec.endHighMS = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_END_HIGH);
+		Long startRowParam = resource.getLongQueryValue(SimulationStatusServerResource.PARAM_START_ROW);
+		simQuerySpec.startRow = 1; // default
+		if (startRowParam!=null){
+			simQuerySpec.startRow = startRowParam.intValue();
+		}
+		Long maxRowsParam = resource.getLongQueryValue(SimulationTasksServerResource.PARAM_MAX_ROWS);
+		simQuerySpec.maxRows = 10; // default
+		if (maxRowsParam!=null){
+			simQuerySpec.maxRows = maxRowsParam.intValue();
+		}
+
+		SimulationStatus[] simStatuses = null;
+		HashMap<KeyValue,SimulationDocumentLink> simDocLinks = new HashMap<KeyValue,SimulationDocumentLink>();
+
+		//
+		// ask server for simJobStatuses with above query spec.
+		// find set of simulation IDs from the result set of simJobStatus
+		// ask server for simulationStatuses from list of sim IDs.
+		//
+		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+		try {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			try {
+				userLoginInfo.setUser(vcellUser);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new DataAccessException(e.getMessage());
+			}
+			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession, log);
+			SimpleJobStatus[] simpleJobStatusArray = rpcSimServerProxy.getSimpleJobStatus(vcellUser, simQuerySpec);
+			// gather unique simIDs and go back and ask server for SimulationStatuses
+			for (SimpleJobStatus simpleJobStatus : simpleJobStatusArray){
+				KeyValue simulationKey = simpleJobStatus.jobStatus.getVCSimulationIdentifier().getSimulationKey();
+				SimulationDocumentLink simulationDocumentLink = simpleJobStatus.simulationDocumentLink;
+				simDocLinks.put(simulationKey,simulationDocumentLink);
+			}
+			KeyValue[] simKeys = simDocLinks.keySet().toArray(new KeyValue[0]);
+			if (simKeys.length>0){
+				simStatuses = rpcSimServerProxy.getSimulationStatus(vcellUser, simKeys);
+			}
+		}finally{
+			rpcSession.close();
+		}
+		
+		ArrayList<SimulationStatusRepresentation> simStatusReps = new ArrayList<SimulationStatusRepresentation>();
+		for (int i=0; simStatuses!=null && i<simStatuses.length; i++){
+			KeyValue simulationKey = simStatuses[i].getVCSimulationIdentifier().getSimulationKey();
+			SimulationRep simRep = getSimulationRep(simulationKey);
+			try {
+				SimulationRepresentation simRepresentation = new SimulationRepresentation(simRep, simDocLinks.get(simulationKey));
+				simStatusReps.add(new SimulationStatusRepresentation(simRepresentation,simStatuses[i]));
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+			}
+		}
+		return simStatusReps.toArray(new SimulationStatusRepresentation[0]);
     }
 
 	public UserInfo addUser(UserInfo newUserInfo) throws SQLException, ObjectNotFoundException, DataAccessException, UseridIDExistsException {

@@ -3,8 +3,6 @@ package org.vcell.rest.common;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import org.vcell.util.document.KeyValue;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -16,12 +14,12 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.messaging.db.BioModelLink;
 import cbit.vcell.messaging.db.MathModelLink;
+import cbit.vcell.messaging.db.SimulationDocumentLink;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -42,7 +40,7 @@ public class SimulationRepresentation {
 	private final ParameterRepresentation[] parameters;
 	
 
-	private SimulationRepresentation(SimulationRep simulationRep, ParameterRepresentation[] parameters, OverrideRepresentation[] overrides, BioModelLink bioModelLink, MathModelLink mathModelLink) throws ExpressionException {
+	private SimulationRepresentation(SimulationRep simulationRep, ParameterRepresentation[] parameters, OverrideRepresentation[] overrides, SimulationDocumentLink simulationDocumentLink) throws ExpressionException {
 		this.parameters = parameters;
 		this.key = simulationRep.getKey().toString();
 		this.branchId = simulationRep.getBranchID().toString();
@@ -56,17 +54,29 @@ public class SimulationRepresentation {
 			this.solverName = "unknown";
 		}
 		this.scanCount = simulationRep.getScanCount();
-		this.mathModelLink = null;
+		if (simulationDocumentLink instanceof MathModelLink){
+			this.mathModelLink = (MathModelLink)simulationDocumentLink;
+			this.bioModelLink = null;
+		}else if (simulationDocumentLink instanceof BioModelLink){
+			this.mathModelLink = null;
+			this.bioModelLink = (BioModelLink)simulationDocumentLink;
+		}else{
+			this.mathModelLink = null;
+			this.bioModelLink = null;
+		}
 		this.overrides = overrides;
-		this.bioModelLink = bioModelLink;
 	}
 
 	public SimulationRepresentation(SimulationRep simulationRep, BioModelRep bioModelRep) throws ExpressionException {
-		this(simulationRep,null,getOverrideRepresentations(simulationRep),getBioModelLink(bioModelRep,simulationRep),null);
+		this(simulationRep,null,getOverrideRepresentations(simulationRep),getBioModelLink(bioModelRep,simulationRep));
+	}
+	
+	public SimulationRepresentation(SimulationRep simulationRep, SimulationDocumentLink simulationDocumentLink) throws ExpressionException {
+		this(simulationRep,null,getOverrideRepresentations(simulationRep),simulationDocumentLink);
 	}
 	
 	public SimulationRepresentation(SimulationRep simulationRep, BioModel bioModel) throws ExpressionException, MappingException, MathException, MatrixException, ModelException {
-		this(simulationRep,getParameters(bioModel,simulationRep),getOverrideRepresentations(simulationRep),getBioModelLink(bioModel,simulationRep),null);
+		this(simulationRep,getParameters(bioModel,simulationRep),getOverrideRepresentations(simulationRep),getBioModelLink(bioModel,simulationRep));
 	}
 	
 	private static OverrideRepresentation[] getOverrideRepresentations(SimulationRep simulationRep) throws ExpressionException{
