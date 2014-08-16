@@ -297,6 +297,18 @@ private void initStatus() {
 }
 
 
+public boolean isActive() {
+	return status == START_REQUESTED || status == DISPATCHED || status == WAITING || status == QUEUED || status == RUNNING;
+}
+
+public boolean isWaiting() {
+	return status == WAITING;
+}
+
+public boolean isQueued() {
+	return status == QUEUED;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/3/2003 10:28:24 AM)
