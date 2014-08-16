@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,11 +27,13 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.util.Hex;
 import org.vcell.util.document.KeyValue;
 
 import cbit.util.xml.XmlUtil;
@@ -40,7 +43,8 @@ import cbit.vcell.solver.Simulation;
 
 public class AmplistorUtils {
 
-	
+	private static Random rand = null;
+
 
 	private static enum AMPLI_OP_KIND {FILE,DIR};
 	private static enum AMPLI_OP_METHOD {GET,PUT,DELETE};
@@ -368,8 +372,14 @@ public class AmplistorUtils {
 		}
 		return challengeHash;
 	}
-	private static String generateAuthorizationRequest(Hashtable<String, String> challengeHash,AMPLI_OP_METHOD ampliOpMethod){			
-		String cNonce="c4020839a1c2ccb6";
+	private static String generateAuthorizationRequest(Hashtable<String, String> challengeHash,AMPLI_OP_METHOD ampliOpMethod) throws Exception{
+		byte[] cNonceBytes = new byte[8];
+		if(rand == null){
+			rand = SecureRandom.getInstance("SHA1PRNG");//This automatically chooses good random seed
+		}
+		rand.nextBytes(cNonceBytes); 
+		String cNonce=Hex.toString(cNonceBytes);
+		
 		String uri = challengeHash.get(AUTH_DIGEST_URI);
         String ha1 = calculateMD5(challengeHash.get(AUTH_USER) + ":" + challengeHash.get("realm") + ":" + challengeHash.get(AUTH_PASSWORD));
         String ha2 = calculateMD5(ampliOpMethod.toString() + ":" + uri);
