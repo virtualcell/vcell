@@ -135,6 +135,9 @@ public InitialConditionsPanel() {
 	initialize();
 }
 
+public void setSearchText(String searchText){
+	tableModel.setSearchText(searchText);
+}
 /**
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
