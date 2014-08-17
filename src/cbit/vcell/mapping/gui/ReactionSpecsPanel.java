@@ -54,6 +54,9 @@ public ReactionSpecsPanel() {
 	initialize();
 }
 
+public void setSearchText(String searchText){
+	ivjReactionSpecsTableModel.setSearchText(searchText);
+}
 /**
  * Initialize the class.
  */
