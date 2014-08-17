@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -45,6 +46,38 @@ public ReactionSpecsTableModel(ScrollTable table) {
 	addPropertyChangeListener(this);
 }
 
+private String searchText;
+public void setSearchText(String searchText){
+	this.searchText = searchText;
+	refreshData();
+}
+
+protected List<ReactionSpec> computeData() {
+	ArrayList<ReactionSpec> allParameterList = new ArrayList<ReactionSpec>();
+	if(getSimulationContext() != null){
+		allParameterList.addAll(Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs()));
+	}else{
+		return null;
+	}
+	boolean bSearchInactive = searchText == null || searchText.length() == 0;
+	if(bSearchInactive){
+		return allParameterList;
+	}
+	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
+	ArrayList<ReactionSpec> parameterList = new ArrayList<ReactionSpec>();
+	for (ReactionSpec parameter : allParameterList) {
+		if (bSearchInactive
+			|| parameter.getReactionStep().getName().toLowerCase().contains(lowerCaseSearchText)
+			|| parameter.getReactionStep().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+				/*|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
+				|| parameter.getDescription().toLowerCase().contains(lowerCaseSearchText)*/) {
+			parameterList.add(parameter);
+		}
+	}
+	return parameterList;
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -194,10 +227,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 }
 
 private void refreshData() {
-	List<ReactionSpec> rslist = null;
-	if (getSimulationContext() != null) {
-		rslist = Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs());
-	}
+	List<ReactionSpec> rslist = computeData();
 	setData(rslist);
 }
 

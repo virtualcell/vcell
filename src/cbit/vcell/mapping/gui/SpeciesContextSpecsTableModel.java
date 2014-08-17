@@ -27,6 +27,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -67,6 +68,34 @@ public SpeciesContextSpecsTableModel(ScrollTable table) {
 	refreshColumns();
 }
 
+private String searchText;
+public void setSearchText(String searchText){
+	this.searchText = searchText;
+	refreshData();
+}
+
+protected List<SpeciesContextSpec> computeData() {
+	ArrayList<SpeciesContextSpec> allParameterList = new ArrayList<SpeciesContextSpec>();
+	if(getSimulationContext() != null){
+		allParameterList.addAll(Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs()));
+	}else{
+		return null;
+	}
+	boolean bSearchInactive = searchText == null || searchText.length() == 0;
+	if(bSearchInactive){
+		return allParameterList;
+	}
+	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
+	ArrayList<SpeciesContextSpec> parameterList = new ArrayList<SpeciesContextSpec>();
+	for (SpeciesContextSpec parameter : allParameterList) {
+		if (bSearchInactive
+			|| parameter.getSpeciesContext().getName().toLowerCase().contains(lowerCaseSearchText)
+			|| parameter.getSpeciesContext().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
+			parameterList.add(parameter);
+		}
+	}
+	return parameterList;
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -132,10 +161,7 @@ private SimulationContext getSimulationContext() {
 
 
 private void refreshData() {
-	List<SpeciesContextSpec> speciesContextSpecList = null;
-	if (getSimulationContext() != null){
-		speciesContextSpecList = Arrays.asList(getSimulationContext().getReactionContext().getSpeciesContextSpecs());
-	}
+	List<SpeciesContextSpec> speciesContextSpecList = computeData();
 	setData(speciesContextSpecList);
 	GuiUtils.flexResizeTableColumns(ownerTable);
 }
