@@ -19,7 +19,9 @@ import cbit.vcell.math.MathDescription;
  * @author: Ion Moraru
  */
 public interface SimulationOwner extends GeometryOwner {
-	Simulation addNewSimulation() throws PropertyVetoException;
+	public static String DEFAULT_SIM_NAME_PREFIX = "Simulation";
+
+	Simulation addNewSimulation(String simNamePrefix) throws PropertyVetoException;
 	Simulation copySimulation(Simulation simulation) throws PropertyVetoException;
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;

@@ -77,7 +77,7 @@ public MathModel(Version version) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
+public Simulation addNewSimulation(String simNamePrefix) throws java.beans.PropertyVetoException {
 	MathDescription math = getMathDescription();
 	if (math==null){
 		throw new RuntimeException("Can't create Simulation, math not created");
@@ -88,7 +88,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	Simulation sims[] = getSimulations();
 	String newSimName = null;
 	for (int i = 0; newSimName==null && i < 100; i++){
-		String proposedName = "Simulation"+i;
+		String proposedName = simNamePrefix+i;
 		boolean bFound = false;
 		for (int j = 0; sims!=null && !bFound && j < sims.length; j++){
 			if (sims[j].getName().equals(proposedName)){
