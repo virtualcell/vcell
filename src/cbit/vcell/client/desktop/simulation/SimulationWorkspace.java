@@ -671,7 +671,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Comment
  */
 int newSimulation() throws java.beans.PropertyVetoException {
-	Simulation newSim = getSimulationOwner().addNewSimulation();
+	Simulation newSim = getSimulationOwner().addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
 		if (getSimulationOwner().getSimulations()[i].getName().equals(newSim.getName())) {
 			return i;

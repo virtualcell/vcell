@@ -52,11 +52,13 @@ import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParamet
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.HyperLinkLabel;
 import org.vcell.util.gui.ProgressDialog;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.GuiConstants;
@@ -1158,10 +1160,17 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			//
 			// add new simulation to the Application (other bookkeeping required?)
 			//
+			String newSimName = DialogUtils.showInputDialog0(this, "Enter name for new simulation", "Fitted");
+			newSimName = (newSimName==null?null:newSimName.trim());
+			if(newSimName == null || newSimName.length() == 0){
+				throw new Exception("New Simulation name cannot be 0 characters");
+			}
 			SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			Simulation newSim = simContext.addNewSimulation();
+			Simulation newSim = simContext.addNewSimulation(newSimName);
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			DialogUtils.showInfoDialog(this, "created simulation \""+newSim.getName()+"\"");
+		}catch (UtilCancelException e){
+			//ignore, user cancelled operation
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, e.getMessage(), e);
