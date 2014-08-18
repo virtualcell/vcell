@@ -14,11 +14,17 @@ import cbit.vcell.resource.NativeLib;
  * @author gweatherby
  */
 public class LibraryLoaderThread extends Thread {
+	private final boolean isGui;
 	
 	private static Logger lg = Logger.getLogger(LibraryLoaderThread.class);
 	
-	public LibraryLoaderThread( ) {
-		super("LibraryLoadMonitor");
+	/**
+	 * execute thread
+	 * @param hasGui if true, GUI (Swing available)
+	 */
+	public LibraryLoaderThread(boolean hasGui ) {
+		super("LibraryLoader");
+		this.isGui = hasGui;
 		setDaemon(true);
 	}
 
@@ -45,10 +51,18 @@ public class LibraryLoaderThread extends Thread {
 			} 
 		}
 		if (sb != null) {
+			if (isGui) {
 			if (lg.isEnabledFor(Level.WARN)) {
 				lg.warn("scheduling display of " + sb.toString());
 			}
 			SwingUtilities.invokeLater(new Reporter(sb.toString()));
+			}
+			else {
+				if (lg.isTraceEnabled()) {
+					lg.trace("printing error " + sb.toString());
+				}
+				System.err.println(sb.toString( ));
+			}
 		}
 		lg.debug("library loading complete");
 	}

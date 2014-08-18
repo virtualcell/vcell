@@ -28,6 +28,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.vcell.client.test.LibraryLoaderThread;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.VCMessage;
 import cbit.vcell.message.VCMessageSession;
@@ -165,6 +166,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				System.exit(2);
 			}
 			ResourceUtil.loadNativeLibraries(libDir);
+			new LibraryLoaderThread(false).start( );
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
 			String logdir = null;
