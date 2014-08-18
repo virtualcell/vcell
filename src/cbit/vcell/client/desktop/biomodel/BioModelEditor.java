@@ -65,6 +65,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitSystem;
@@ -163,7 +164,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 							
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
-								Object newsim = selectedSimulationContext.addNewSimulation();
+								Object newsim = selectedSimulationContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 								selectionManager.setSelectedObjects(new Object[]{newsim});
 							}
 						};

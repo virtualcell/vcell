@@ -38,6 +38,7 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
  * Insert the type's description here.
@@ -311,7 +312,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 						
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Object newsim = mathModel.addNewSimulation();
+							Object newsim = mathModel.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 							selectionManager.setSelectedObjects(new Object[]{newsim});
 						}
 					};

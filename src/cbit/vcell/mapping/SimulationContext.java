@@ -491,7 +491,7 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
+public Simulation addNewSimulation(String simNamePrefix) throws java.beans.PropertyVetoException {
 	refreshMathDescription();
 	if (bioModel==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
@@ -502,7 +502,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	Simulation sims[] = bioModel.getSimulations();
 	String newSimName = null;
 	for (int i = 0; newSimName==null && i < 100; i++){
-		String proposedName = "Simulation"+i;
+		String proposedName = simNamePrefix+i;
 		boolean bFound = false;
 		for (int j = 0; !bFound && j < sims.length; j++){
 			if (sims[j].getName().equals(proposedName)){

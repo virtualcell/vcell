@@ -389,7 +389,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 			
 			@Override
-			public Simulation addNewSimulation() throws PropertyVetoException {
+			public Simulation addNewSimulation(String simNamePrefix) throws PropertyVetoException {
 				// TODO Auto-generated method stub
 				return null;
 			}
