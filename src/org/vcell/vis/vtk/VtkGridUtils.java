@@ -24,7 +24,6 @@ import vtk.vtkFloatArray;
 import vtk.vtkGeometryFilter;
 import vtk.vtkIdList;
 import vtk.vtkIdTypeArray;
-import vtk.vtkLine;
 import vtk.vtkNativeLibrary;
 import vtk.vtkObjectBase;
 import vtk.vtkPointData;
@@ -45,14 +44,15 @@ import vtk.vtkXMLFileReadTester;
 import vtk.vtkXMLUnstructuredGridReader;
 import vtk.vtkXMLUnstructuredGridWriter;
 //import vtk.vtkXdmfWriter;
+import cbit.vcell.resource.NativeLib;
 
 public class VtkGridUtils {
 	
 	// Load VTK library and print which library was not properly loaded
 	static {
 		try {
-			// note, have to set PATH environment variable to include these libraries before execution (or -Dvtk.lib.dir=../nativelibs/win64 may work on command line).
-			//vtkNativeLibrary.LoadAllNativeLibraries();
+			//in case loader thread not complete
+			NativeLib.VTK.load();
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
@@ -73,7 +73,7 @@ public class VtkGridUtils {
 		vtkgrid.SetPoints(vtkpoints);
 
 		int quadType = new vtkQuad().GetCellType();
-		int lineType = new vtkLine().GetCellType();
+		//int lineType = new vtkLine().GetCellType();
 		int polygonType = new vtkPolygon().GetCellType();
 		int triangleType = new vtkTriangle().GetCellType();
 		int polyhedronType = new vtkPolyhedron().GetCellType();
