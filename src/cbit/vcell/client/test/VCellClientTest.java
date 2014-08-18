@@ -33,8 +33,6 @@ import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.util.AmplistorUtils;
-import cbit.vcell.util.VCellErrorMessages;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -142,7 +140,7 @@ public static void main(java.lang.String[] args) {
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 
 		//starting loading libraries
-		new LibraryLoaderThread().start( );
+		new LibraryLoaderThread(true).start( );
 	} catch (Throwable exception) {
 		BeanUtils.sendRemoteLogMessage(csInfo.getUserLoginInfo(),csInfo.toString()+"\nvcell startup failed\n\n" + exception.getMessage());
 		JOptionPane.showMessageDialog(null, exception.getMessage(), "Fatal Error",JOptionPane.OK_OPTION);
