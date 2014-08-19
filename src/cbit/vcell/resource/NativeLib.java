@@ -3,6 +3,9 @@ package cbit.vcell.resource;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import cbit.vcell.util.NativeLoader;
 
 /**
@@ -17,6 +20,7 @@ public enum NativeLib {
 	
 	private final String libName;
 	private boolean loaded = false;
+	private static final Logger lg = Logger.getLogger(NativeLib.class);
 
 	private NativeLib(String libName) {
 		this.libName = libName;
@@ -37,7 +41,9 @@ public enum NativeLib {
 		try {
 			r.get( );
 		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+				if (lg.isEnabledFor(Level.WARN)) {
+					lg.warn("Can't load " + libName,e);
+				}
 			throw new RuntimeException("Can't load " + toString(), e);
 		}
 		loaded = true;
