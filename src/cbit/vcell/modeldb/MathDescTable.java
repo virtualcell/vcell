@@ -147,7 +147,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 		mathDescription.read_database(tokens);
 	} catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new org.vcell.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage(),e);
 	}
 	//
 	return mathDescription;
