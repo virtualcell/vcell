@@ -22,13 +22,11 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
@@ -163,12 +161,8 @@ public cbit.vcell.mapping.MathSymbolMapping getMathSymbolMapping() {
 	{
 		try {
 			fieldMathSymbolMapping = getModelOptimizationMapping().computeOptimizationSpec();
-		} catch (MathException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (MathException | MappingException e) {
+			throw new RuntimeException("Error getting math symbol mapping",e);
 		}
 	}
 	return fieldMathSymbolMapping;
@@ -417,10 +411,10 @@ public Parameter getModelParameterByMathName(String mathParamName)
 		Variable var = getMathSymbolMapping().getVariable(pms.getModelParameter());
 		//if(var.getName().equals(mathParamName))
 		if((var!=null) && (var.getName().equals(mathParamName)))
-		{
-			return pms.getModelParameter();
+			{
+				return pms.getModelParameter();
+			}
 		}
-	}
 	
 	return null;
 }
