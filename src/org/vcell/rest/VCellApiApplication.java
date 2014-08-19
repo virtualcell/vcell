@@ -36,6 +36,7 @@ import org.vcell.rest.users.LoginFormRestlet;
 import org.vcell.rest.users.LoginRestlet;
 import org.vcell.rest.users.NewUserRestlet;
 import org.vcell.rest.users.RegistrationFormRestlet;
+import org.vcell.rest.webapp.WebAppRestlet;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -87,6 +88,8 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String VCELLAPI = "vcellapi";
 
+	public static final String WEBAPP = "webapp";
+	
 	public static final String BIOMODEL = "biomodel";
 	public static final String BIOMODELID = "biomodelid";
 
@@ -224,6 +227,7 @@ public class VCellApiApplication extends WadlApplication {
 		Router rootRouter = new Router(getContext());
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
+	    rootRouter.attach("/"+WEBAPP, new WebAppRestlet(getContext()));
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  

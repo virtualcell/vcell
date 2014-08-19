@@ -1,0 +1,15 @@
+<div class="list-group" ng-show="!vcell.currBiomodel.name && !vcell.currSimulation.name">
+	<h3 class="text-center">Biomodels</h3>
+	<div class="list-group-item" ng-repeat="biomodel in vcell.biomodels | limitTo : 10">
+		<h3><a href ng-click="vcell.clickBiomodelRow(biomodel)">biomodel {{biomodel.name | limitTo : 20}}</a></h3>
+	</div>
+</div>
+<div class="list-group" ng-show="vcell.currBiomodel.name && !vcell.currSimulation.name">
+	<h3 class="text-center">Biomodel: &quot;{{vcell.currBiomodel.name}}&quot;</h3>
+	<div class="list-group-item" ng-repeat="simulation in vcell.currBiomodel.simulations | limitTo : 10">
+		<h3><a href ng-click="vcell.clickSimulationRow(simulation)">simulation {{simulation.name | limitTo : 20}}</a></h3>
+	</div>
+</div>
+<div class="list-group" ng-show="vcell.currBiomodel.name && vcell.currSimulation.name">
+	<h3 class="text-center">simulation {{vcell.currSimulation.name | limitTo : 20}}</h3>
+</div>
