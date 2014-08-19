@@ -117,6 +117,12 @@ public static void main(java.lang.String[] args) {
 		if (propertyFile.length()>0){
 			try {
 				PropertyLoader.loadProperties();
+			}catch (Exception e){
+				System.out.println("failed to load properties");
+				e.printStackTrace();
+				
+			}
+			try {
 				VCMongoMessage.enabled = true;
 				VCMongoMessage.serviceStartup(ServiceName.client,null,null);
 			}catch (Exception e){
