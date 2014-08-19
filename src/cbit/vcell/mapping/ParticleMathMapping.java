@@ -915,9 +915,6 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
 	}
 
-System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-System.out.println(mathDesc.getVCML());
-System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
 }
 
 /**
