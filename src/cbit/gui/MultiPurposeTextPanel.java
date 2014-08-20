@@ -40,11 +40,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -95,7 +95,9 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.CountingLineReader;
 
+import cbit.vcell.math.Commented;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
@@ -138,6 +140,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	
 	private MutableAttributeSet keywordStyle = null;
 	private MutableAttributeSet defaultStyle = null;
+	private MutableAttributeSet commentStyle = null;
 	
 	private MyUndoableEditListener undoListener = new MyUndoableEditListener();
 	private int searchPointer = 0;
@@ -436,6 +439,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	private Action defaultKeyUpAction;
 	private Action defaultKeyDownAction;
 	private Action defaultKeyEnterAction;
+	private static final int NOT_THERE = -1;
 	
 	private class InternalEventHandler implements MouseListener, KeyListener, DocumentListener, ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -786,6 +790,7 @@ public class MultiPurposeTextPanel extends JPanel {
 				
 		textPane.setText(textContent);
 		highlightKeywords(textContent, 0);
+		highlightComments();
 		
 		textPane.getDocument().addDocumentListener(eventHandler);
 		textPane.getDocument().addUndoableEditListener(undoListener);
@@ -1252,6 +1257,17 @@ public class MultiPurposeTextPanel extends JPanel {
 		return defaultStyle;		
 	}
 	
+	private MutableAttributeSet getCommentStyle() {
+		if (commentStyle == null) {
+			commentStyle = new SimpleAttributeSet();
+			StyleConstants.setForeground(commentStyle, Color.magenta);
+			StyleConstants.setItalic(commentStyle, true);
+			
+		}
+		return commentStyle;
+		
+	}
+	
 	private class KeywordToken {
 		  private String contents;
 		  private int charBegin;
@@ -1292,6 +1308,60 @@ public class MultiPurposeTextPanel extends JPanel {
 		}
 	}
 	
+	private void highlightComments( ) {
+		String text = getTextPane( ).getText();
+		StyledDocument doc = (StyledDocument) getTextPane( ).getDocument();
+		MutableAttributeSet cstyle = getCommentStyle();
+		boolean inComment = false;
+		try (CountingLineReader reader = new CountingLineReader(new StringReader(text))) {
+			String line = reader.readLine();
+			while (line != null) {
+				if (!inComment) {
+					int cstart = line.indexOf(Commented.BEFORE_COMMENT);
+					if (cstart != NOT_THERE) {
+						inComment = parseAndMarkEndComment(doc, line, reader.lastStringPosition(),cstart); 
+					}
+
+					int start = line.indexOf(Commented.AFTER_COMMENT);
+					if (start != NOT_THERE) {
+						int length = line.length( ) - start;
+						doc.setCharacterAttributes(reader.lastStringPosition() + start, length, cstyle,true); 
+					}
+				}
+				else { //currently inside a /* */. comment
+					inComment = parseAndMarkEndComment(doc, line, reader.lastStringPosition(),0); 
+				}
+
+				line = reader.readLine();
+			}
+		} catch (IOException e) {
+
+		}
+	}
+	
+	/**
+	 * highlight inline comment and see 
+	 * see if /* comment ends on same line
+	 * @param doc
+	 * @param line
+	 * @param lineStart position of beginning of line in doc
+	 * @param cstart starting position of comment
+	 * @return true if comment continues 
+	 */
+	private boolean parseAndMarkEndComment(StyledDocument doc, String line, int lineStart, int cstart) {
+		int cend = line.indexOf(Commented.END_BEFORE_COMMENT);
+		boolean endFound = cend != NOT_THERE;
+		int length;
+		if (endFound) {
+			length = (cend + Commented.END_BEFORE_COMMENT_LENGTH) - cstart; 
+		}
+		else {
+			length = line.length( ) - cstart;
+		}
+		doc.setCharacterAttributes(lineStart + cstart, length, getCommentStyle(),true); 
+		return !endFound;
+	}
+
 	public static boolean isIdentifierPart(char ch) {
 		return Character.isJavaIdentifierStart(ch) || Character.isDigit(ch);
 	}

@@ -123,6 +123,7 @@ import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.Commented;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvolutionDataGenerator;
@@ -171,6 +172,7 @@ import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
+import cbit.vcell.math.VCMLProvider;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
@@ -737,6 +739,19 @@ private CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPa
 	return  newcompartment;
 }
 
+private void transcribeComments(Element source, Object destination) {
+	String before = source.getAttributeValue(XMLTags.BEFORE_COMMENT_ATTR_TAG);
+	String after = source.getAttributeValue(XMLTags.AFTER_COMMENT_ATTR_TAG);
+	if (before != null || after != null) {
+		if (!(destination instanceof Commented)) {
+			throw new UnsupportedOperationException("Can't add comments, " + destination.getClass().toString() + " does not implement " + Commented.class.toString() ); 
+			
+		}
+		Commented c= (Commented) destination;
+		c.setBeforeComment(before);
+		c.setAfterComment(after);
+	}
+}
 
 /**
  * This method returns a Constant object from a XML element.
@@ -752,6 +767,7 @@ private Constant getConstant(Element param) throws XmlParseException {
 	
 	//-- create new constant object ---
 	Constant newconstant = new Constant(name, exp);
+	transcribeComments(param, newconstant);
 
 	return newconstant;	
 }
@@ -1026,6 +1042,7 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 		// create unresolved parameters for all unresolved symbols
 		//
 		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
+		
 		while (unresolvedSymbol!=null){
 			try {
 				Domain domain = null;
@@ -1356,6 +1373,7 @@ private FilamentRegionVariable getFilamentRegionVariable(Element param) {
 
 	//-- create new FilamentRegionVariable object
 	FilamentRegionVariable filRegVariable = new FilamentRegionVariable( name, domain );
+	transcribeComments(param, filRegVariable);
 
 	return filRegVariable;
 }
@@ -1414,6 +1432,7 @@ private FilamentVariable getFilamentVariable(Element param) {
 	}
 	//-- create new filVariable object
 	FilamentVariable filVariable = new FilamentVariable( name, domain );
+	transcribeComments(param, filVariable);
 
 	return filVariable;
 }
@@ -1711,6 +1730,7 @@ if(name.equals("ATP/ADP"))
 	
 	//-- create new Function --
 	Function function = new Function(name, exp, domain);
+	transcribeComments(param, function);
 
 	return function;
 }
@@ -2071,6 +2091,7 @@ private InsideVariable getInsideVariable(Element param) {
 
 	//*** create new InsideVariable ***
 	InsideVariable variable = new InsideVariable(name , volvarName);
+	transcribeComments(param, variable);
 	
 	return variable;
 }
@@ -2904,13 +2925,16 @@ private RandomVariable getRandomVariable(Element param) throws XmlParseException
 		domain = new Domain(domainStr);
 	}
 
+	RandomVariable var = null;
 	if (param.getName().equals(XMLTags.VolumeRandomVariableTag)) {
-		return new VolumeRandomVariable(name, seed, dist, domain);
+		 var = new VolumeRandomVariable(name, seed, dist, domain);
 	} else if (param.getName().equals(XMLTags.MembraneRandomVariableTag)) {
-		return new MembraneRandomVariable(name, seed, dist, domain);
+		var = new MembraneRandomVariable(name, seed, dist, domain);
 	} else {
 		throw new XmlParseException(param.getName() + " is not supported!");
 	}
+	transcribeComments(param, var);
+	return var;
 }
 
 private GaussianDistribution getGaussianDistribution(Element distElement) {
@@ -2959,6 +2983,7 @@ private Event getEvent(MathDescription mathdesc, Element eventElement) throws Xm
 	}
 	
 	Event event = new Event(name, triggerExp, delay, eventAssignmentList);
+	transcribeComments(eventElement, event);
 	return event;
 }
 
@@ -3530,6 +3555,7 @@ private MembraneRegionVariable getMembraneRegionVariable(Element param) {
 
 	//-- create new MembraneRegionVariable object
 	MembraneRegionVariable memRegVariable = new MembraneRegionVariable( name, domain );
+	transcribeComments(param, memRegVariable);
 
 	return memRegVariable;
 }
@@ -3698,6 +3724,7 @@ private MemVariable getMemVariable(Element param) {
 
 	//Create new memVariable
 	MemVariable memVariable = new MemVariable( name, domain );
+	transcribeComments(param, memVariable);
 	
 	return memVariable;
 }
@@ -4032,6 +4059,7 @@ private OutsideVariable getOutsideVariable(Element param) {
 
 	//*** create new OutsideVariable ***
 	OutsideVariable variable = new OutsideVariable(name , volvarName);
+	transcribeComments(param, variable);
 	
 	return variable;
 }
@@ -5540,6 +5568,7 @@ private StochVolVariable getStochVolVariable(Element param)
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
 	//-- create new StochVolVariable object
 	StochVolVariable stochVar = new StochVolVariable(name);
+	transcribeComments(param, stochVar);
 
 	return stochVar;
 }
@@ -6166,6 +6195,7 @@ private VolumeRegionVariable getVolumeRegionVariable(Element param) {
 	}
 	//-- create new VolumeRegionVariable object
 	VolumeRegionVariable volRegVariable = new VolumeRegionVariable( name, domain );
+	transcribeComments(param, volRegVariable);
 
 	return volRegVariable;
 }
@@ -6187,6 +6217,7 @@ private VolVariable getVolVariable(Element param) {
 
 	//-- create new VolVariable object
 	VolVariable volVariable = new VolVariable( name, domain );
+	transcribeComments(param, volVariable);
 
 	return volVariable;
 }
@@ -6201,6 +6232,7 @@ private VolumeParticleVariable getVolumeParticalVariable(Element param) {
 	
 	//-- create new VolVariable object
 	VolumeParticleVariable var = new VolumeParticleVariable( name, domain );
+	transcribeComments(param, var);
 	
 	return var;
 }
@@ -6215,7 +6247,7 @@ private MembraneParticleVariable getMembraneParticalVariable(Element param) {
 	
 	//-- create new VolVariable object
 	MembraneParticleVariable var = new MembraneParticleVariable( name, domain );
-	
+	transcribeComments(param, var);
 	return var;
 }
 

@@ -257,6 +257,8 @@ public class XMLTags {
     public final static String ConstantTag = "Constant";
     public final static String ExpressionTag = "Expression";
     public final static String NameAttrTag = "Name";
+    public final static String BEFORE_COMMENT_ATTR_TAG = "BeforeComment";
+    public final static String AFTER_COMMENT_ATTR_TAG = "AfterComment";
     public final static String FunctionTag = "Function";
     public final static String VolumeFunctionTag = "VolumeFunction";
     public final static String MembraneFunctionTag = "MembraneFunction";

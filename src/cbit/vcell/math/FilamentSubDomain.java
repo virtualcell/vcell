@@ -22,6 +22,20 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 public class FilamentSubDomain extends SubDomain {
+	//place holder
+	@Override
+	protected void parse(MathDescription mathdesc, String tokenString,
+			CommentStringTokenizer tokens) throws MathException,
+			ExpressionException {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected String startToken() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	private CompartmentSubDomain outsideCompartment = null;
 /**
  * This method was created by a SmartGuide.
