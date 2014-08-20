@@ -211,17 +211,20 @@ public class ParticleProperties implements Serializable, Matchable {
 		this.listOfParticleInitialConditions = initialConditions;
 	}
 	
-	public ParticleProperties(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
+	public ParticleProperties(MathDescription mathDesc, CommentStringTokenizer tokens) throws ExpressionException, MathException {
 		super();
 		readVCML(mathDesc, tokens);
 	}
 	
-	private void readVCML(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {	
-		String token = tokens.nextToken();
-		String varname = token;
+	private void readVCML(MathDescription mathDesc, CommentStringTokenizer tokens) throws ExpressionException, MathException {	
+		String varname = tokens.nextToken();
 		var = mathDesc.getVariable(varname);
+		if (var == null) {
+			throw new MathException("Invalid variable name " + varname + " specified for ParticleProperties ");
+			
+		}
 		
-		token = tokens.nextToken();
+		String token = tokens.nextToken();
 		if (!token.equals(VCML.BeginBlock)){
 			throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
 		}

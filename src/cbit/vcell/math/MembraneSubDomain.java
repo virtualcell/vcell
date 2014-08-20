@@ -25,7 +25,24 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
+
 public class MembraneSubDomain extends SubDomain {
+	//placeholder
+	@Override
+	protected void parse(MathDescription mathdesc, String tokenString,
+			CommentStringTokenizer tokens) throws MathException,
+			ExpressionException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected String startToken() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 	/**
 	 * list of symbols from future VCML versions that can be ignored
 	 */

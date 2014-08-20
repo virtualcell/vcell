@@ -489,6 +489,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 //		Element element = xmlProducer.getXML(mathModel);
 //		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));		
 //		xmlString = XmlUtil.xmlToString(element);
+		lg.info(xmlString);
 		
 		lg.info(xmlString);
 		return xmlString;
