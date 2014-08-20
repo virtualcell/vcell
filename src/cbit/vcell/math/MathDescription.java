@@ -30,6 +30,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
+import org.vcell.util.Token;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -80,6 +81,13 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 	private ArrayList<Event> eventList = new ArrayList<Event>();
 
 	private boolean bRegionSizeFunctionsUsed = false;
+	
+	/**
+	 * {@link #getVCML()} will include comments
+	 */
+	private boolean commenting = false;
+
+	private static final char NEWLINE_CHAR = '\n';
 
 	
 /**
@@ -1426,12 +1434,94 @@ public String getVCML() throws MathException {
 	return getVCML_database();
 }
 
+private String getVCML(VCMLProvider obj) throws MathException {
+	final char SPACE = ' ';
+	if (commenting) {
+		String before = obj.getBeforeComment();
+		String after = obj.getAfterComment();
+		StringBuilder sb = new StringBuilder();
+		if (before != null) {
+			sb.append(SPACE);
+			sb.append(Commented.BEFORE_COMMENT);
+			sb.append(SPACE);
+			sb.append(before);
+			sb.append(SPACE);
+			sb.append(Commented.END_BEFORE_COMMENT);
+			sb.append(NEWLINE_CHAR);
+		}
+		if (after == null) {
+			sb.append(obj.getVCML());
+		}
+		else {
+			String baseVCML = obj.getVCML().trim( );
+			
+			//look for newline at very end of String, but don't flag newlines in the midst of the text
+			int newlinePos = Commented.CHAR_NOT_FOUND; 
+			int scan = baseVCML.length() - 1;
+			while (baseVCML.charAt(scan) == NEWLINE_CHAR) {
+				newlinePos = scan;
+				--scan;
+				if (scan == 0) {
+					throw new MathException(obj.getClass().getSimpleName() + "#getVCML( ) returned empty String");
+				}
+			}
+			boolean hasNewline = newlinePos != Commented.CHAR_NOT_FOUND;
+			if (hasNewline) { //if new line present, remove for now
+				baseVCML = baseVCML.substring(0,newlinePos);
+			}
+			sb.append(baseVCML);
+			sb.append(SPACE);
+			sb.append(Commented.AFTER_COMMENT);
+			sb.append(SPACE);
+			sb.append(after);
+			if (hasNewline) { //now add newline back if it was present
+				sb.append(NEWLINE_CHAR);
+			}
+		}
+		return sb.toString();
+	}
+	return obj.getVCML();
+
+}
+/**
+ * add variables of specific type to output. Add newline if any variables added. 
+ * @param clzz class or superclass of desired variable
+ * @param buffer where to add output
+ * @param needsNewline TODO
+ * @throws MathException from {@link Variable#getVCML()}
+ */
+private <T extends Variable> void addVariablesOfType(Class<T> clzz, StringBuilder buffer, boolean needsNewline) throws MathException {
+	int start = buffer.length();
+	for (Variable var: variableList) {
+		if (clzz.isAssignableFrom(var.getClass())) {
+			buffer.append(getVCML(var));
+			if (needsNewline) {
+				buffer.append(NEWLINE_CHAR);
+			}
+		}
+	}
+	if (buffer.length( ) !=  start) {
+		buffer.append(NEWLINE_CHAR);
+	}
+}
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
+ * @return {@link #getVCML_database(boolean)} with comments on
+ * @throws MathException
  */
 public String getVCML_database() throws MathException {
+	return getVCML_database(true);
+}
+
+/**
+ * get VCML representation
+ * @param includeComments if true, includes comments for elements
+ * @return VCML
+ * @throws MathException
+ */
+public String getVCML_database(boolean includeComments) throws MathException {
+	commenting = includeComments;
+		
 	//
 	// regular VCML exception, no name, and no geometry
 	//
@@ -1439,194 +1529,23 @@ public String getVCML_database() throws MathException {
 //	buffer.append(VCML.MathDescription+" "+version.getName()+" {\n");
 	buffer.append(VCML.MathDescription+" {\n");
 	buffer.append("\n");
-	boolean bSpaceNeeded = false;
-	Enumeration<Variable> enum1 = getVariables();
 	
-	// ParameterVariable
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof ParameterVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// Constant
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof Constant){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// VolVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof VolVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// MemVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof MemVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// FilamentVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof FilamentVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// VolumeRegionVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof VolumeRegionVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// MembraneRegionVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof MembraneRegionVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// FilamentRegionVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof FilamentRegionVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// StochVolVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof StochVolVariable)
-		{
-			buffer.append(var.getVCML());
-			bSpaceNeeded = true;
-		}
-	}
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	// VolumeParticleVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof VolumeParticleVariable)
-		{
-			buffer.append(var.getVCML());
-			bSpaceNeeded = true;
-		}
-	}
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// MembraneParticleVariable
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof MembraneParticleVariable)
-		{
-			buffer.append(var.getVCML());
-			bSpaceNeeded = true;
-		}
-	}
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	// Function
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof Function){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}
-	
-	enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = enum1.nextElement();
-		if (var instanceof RandomVariable){
-			buffer.append(var.getVCML()+"\n");
-			bSpaceNeeded = true;
-		}
-	}		
-	if (bSpaceNeeded){
-		buffer.append("\n");
-		bSpaceNeeded = false;
-	}	
+	addVariablesOfType(ParameterVariable.class,buffer, true);
+	addVariablesOfType(Constant.class,buffer, true);
+	addVariablesOfType(VolVariable.class,buffer, true);
+	addVariablesOfType(MemVariable.class,buffer, true);
+	addVariablesOfType(VolumeRegionVariable.class,buffer, true);
+	addVariablesOfType(MembraneRegionVariable.class,buffer, true);
+	addVariablesOfType(FilamentRegionVariable.class,buffer, true);
+	addVariablesOfType(StochVolVariable.class,buffer, false);
+	addVariablesOfType(VolumeParticleVariable.class,buffer, false);
+	addVariablesOfType(MembraneParticleVariable.class,buffer, false);
+	addVariablesOfType(Function.class,buffer, true);
+	addVariablesOfType(RandomVariable.class,buffer, true);
 	
 	// Event
 	for (Event event : eventList) {
-		buffer.append(event.getVCML() + "\n");
+		buffer.append(getVCML(event));
 	}
 	if (eventList.size() > 0) {
 		buffer.append("\n");
@@ -2751,6 +2670,19 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 	}
 }
 
+/**
+ * conditionally transcribe comments from tokens to provider, if provider implements {@link Commented}
+ * @param provider
+ * @param token
+ */
+private void transcribeComments(Object provider, Token token){
+	if (provider instanceof Commented) {
+		Commented c = (Commented) provider;
+		c.setBeforeComment(token.getBeforeComment());
+		c.setAfterComment(token.getAfterComment());
+	}
+}
+
 
 /**
  * This method was created by a SmartGuide.
@@ -2763,30 +2695,31 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 	
 	VariableHash varHash = new VariableHash();	
 	try {
-		String token = null;
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.MathDescription)){
+		Token token = tokens.next();
+		if (token.getValue().equalsIgnoreCase(VCML.MathDescription)){
 			//token = tokens.nextToken();
 			//setName(token);
 			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			//if(!token.equals(argName)){
 			//	throw new DataAccessException("MathDescription Version Name and Token Name Don't match");
 			//}
-			token = tokens.nextToken();
-			if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-				throw new MathException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+			String tokenStr = tokens.nextToken();
+			if (!tokenStr.equalsIgnoreCase(VCML.BeginBlock)){
+				throw new MathException("unexpected token "+tokenStr+" expecting "+VCML.BeginBlock);
 			}
 		}	
 		while (tokens.hasMoreTokens()){
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)){
+			token = tokens.next();
+			String tokenStr = token.getValue(); 
+			if (tokenStr.equalsIgnoreCase(VCML.EndBlock)){
 				break;
 			}			
-			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				VolVariable var = new VolVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 //
 // done in addVariable0()
@@ -2800,101 +2733,110 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			//
 			// this is still here to gracefully read old mathDescriptions
 			//
-			if (token.equalsIgnoreCase(VCML.Task)){
+			if (tokenStr.equalsIgnoreCase(VCML.Task)){
 				while (tokens.hasMoreTokens()){
-					token = tokens.nextToken(); // toss away until end of block
-					if (token.equalsIgnoreCase(VCML.EndBlock)){
+					tokenStr = tokens.nextToken(); // toss away until end of block
+					if (tokenStr.equalsIgnoreCase(VCML.EndBlock)){
 						break;
 					}			
 				}
 				continue;
 			}			
-			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.MembraneVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				MemVariable var = new MemVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.FilamentVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				FilamentVariable var = new FilamentVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeRegionVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				VolumeRegionVariable var = new VolumeRegionVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.MembraneRegionVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				MembraneRegionVariable var = new MembraneRegionVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.FilamentRegionVariable)){
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				FilamentRegionVariable var = new FilamentRegionVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.Constant)){
-				token = tokens.nextToken();
+			if (tokenStr.equalsIgnoreCase(VCML.Constant)){
+				tokenStr = tokens.nextToken();
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-				Constant constant = new Constant(token,exp);
+				Constant constant = new Constant(tokenStr,exp);
+				transcribeComments(constant, token);
 				varHash.addVariable(constant);
 				continue;
 			}
-			if (token.equalsIgnoreCase("Parameter")){
-				token = tokens.nextToken();
-				ParameterVariable pv = new ParameterVariable(token);
+			if (tokenStr.equalsIgnoreCase("Parameter")){
+				tokenStr = tokens.nextToken();
+				ParameterVariable pv = new ParameterVariable(tokenStr);
+				transcribeComments(pv, token);
 				varHash.addVariable(pv);
 				continue;
 			}
 			//stochastic variable
-			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+			if (tokenStr.equalsIgnoreCase(VCML.StochVolVariable))
 			{
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+				tokenStr = tokens.nextToken();
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				StochVolVariable var = new StochVolVariable(name);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.VolumeParticleVariable))
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeParticleVariable))
 			{
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				VolumeParticleVariable var = new VolumeParticleVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.MembraneParticleVariable))
+			if (tokenStr.equalsIgnoreCase(VCML.MembraneParticleVariable))
 			{
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				MembraneParticleVariable var = new MembraneParticleVariable(name,domain);
+				transcribeComments(var, token);
 				varHash.addVariable(var);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.Function)){
-				token = tokens.nextToken();
+			if (tokenStr.equalsIgnoreCase(VCML.Function)){
+				tokenStr = tokens.nextToken();
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				
 /** ---------------------------------------------------------------
  * ATTENTATION: this is a quick fix for a specific user to load his model
@@ -2908,26 +2850,26 @@ if(name.equals("ATP/ADP"))
 }
 				
 				Function function = new Function(name,exp,domain);
+				transcribeComments(function, token);
 				varHash.addVariable(function);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
+			if (tokenStr.equalsIgnoreCase(VCML.CompartmentSubDomain)){
 				if (variableList.size() == 0) {
 					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 				}
-				token = tokens.nextToken();
 				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,this,tokens);
 				addSubDomain0(subDomain);
 				continue;
 			}			
-			if (token.equalsIgnoreCase(VCML.MembraneSubDomain)){
-				token = tokens.nextToken();
-				CompartmentSubDomain insideCompartment = getCompartmentSubDomain(token);
+			if (tokenStr.equalsIgnoreCase(VCML.MembraneSubDomain)){
+				tokenStr = tokens.nextToken();
+				CompartmentSubDomain insideCompartment = getCompartmentSubDomain(tokenStr);
 				if (insideCompartment == null){
 					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
 				}	
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(token);
+				tokenStr = tokens.nextToken();
+				CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(tokenStr);
 				if (outsideCompartment == null){
 					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
 				}	
@@ -2936,11 +2878,11 @@ if(name.equals("ATP/ADP"))
 				addSubDomain0(subDomain);
 				continue;
 			}			
-			if (token.equalsIgnoreCase(VCML.FilamentSubDomain)){
-				token = tokens.nextToken();
-				String subDomainName = token;
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(token);
+			if (tokenStr.equalsIgnoreCase(VCML.FilamentSubDomain)){
+				tokenStr = tokens.nextToken();
+				String subDomainName = tokenStr;
+				tokenStr = tokens.nextToken();
+				CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(tokenStr);
 				if (outsideCompartment == null){
 					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
 				}	
@@ -2952,46 +2894,48 @@ if(name.equals("ATP/ADP"))
 			//
 			// this is here so that old mathDescriptions are read gracefully.
 			//
-			if (token.equalsIgnoreCase(VCML.Mesh)){
+			if (tokenStr.equalsIgnoreCase(VCML.Mesh)){
 				while (tokens.hasMoreTokens()){
-					token = tokens.nextToken(); // toss away until end of block
-					if (token.equalsIgnoreCase(VCML.EndBlock)){
+					tokenStr = tokens.nextToken(); // toss away until end of block
+					if (tokenStr.equalsIgnoreCase(VCML.EndBlock)){
 						break;
 					}			
 				}
 				continue;
 			}
 			
-			if (token.equalsIgnoreCase(VCML.Event)) {
+			if (tokenStr.equalsIgnoreCase(VCML.Event)) {
 				if (variableList.size() == 0) {
 					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 				}
-				token = tokens.nextToken();
+				//Event event = new Event(tokenStr, this, tokens);
 				Event event = new Event(token, this, tokens);
 				eventList.add(event);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.VolumeRandomVariable)) {
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeRandomVariable)) {
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				RandomVariable randomVariable = new VolumeRandomVariable(name, this, tokens, domain);
+				transcribeComments(randomVariable, token);
 				varHash.addVariable(randomVariable);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.MembraneRandomVariable)) {
-				token = tokens.nextToken();
-				Domain domain = Variable.getDomainFromCombinedIdentifier(token);
-				String name = Variable.getNameFromCombinedIdentifier(token);
+			if (tokenStr.equalsIgnoreCase(VCML.MembraneRandomVariable)) {
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
 				RandomVariable randomVariable = new MembraneRandomVariable(name, this, tokens, domain);
+				transcribeComments(randomVariable, token);
 				varHash.addVariable(randomVariable);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.PostProcessingBlock)) {
+			if (tokenStr.equalsIgnoreCase(VCML.PostProcessingBlock)) {
 				postProcessingBlock.read(tokens);
 				continue;
 			}
-			throw new MathFormatException("unexpected identifier "+token);
+			throw new MathFormatException("unexpected identifier "+tokenStr);
 		}		
 	}catch (Throwable e){
 		e.printStackTrace(System.out);

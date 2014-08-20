@@ -19,6 +19,14 @@ public class Token {
 	private String value = null;
 	private int startColIndex = -1;
 	private int lineIndex = -1;
+	/**
+	 * comment before token
+	 */
+	private String beforeComment;
+	/**
+	 * comment after token
+	 */
+	private String afterComment;
 /**
  * Token constructor comment.
  */
@@ -29,6 +37,8 @@ public Token(String argTokenString, int argStartColIndex, int argLineIndex) {
 	this.value = argTokenString;
 	this.startColIndex = argStartColIndex;
 	this.lineIndex = argLineIndex;
+	beforeComment = null;
+	afterComment = null;
 }
 /**
  * Insert the method's description here.
@@ -61,6 +71,46 @@ public int getStartColumnIndex() {
  */
 public String getValue() {
 	return value;
+}
+public String getBeforeComment() {
+	return beforeComment;
+}
+public void setBeforeComment(String beforeComment) {
+	this.beforeComment = beforeComment;
+}
+public String getAfterComment() {
+	return afterComment;
+}
+public void setAfterComment(String afterComment) {
+	this.afterComment = afterComment;
+}
+
+/**
+ * indicate presence of comments for a given Token
+ */
+public enum CommentState {
+	NONE,
+	BEFORE,
+	AFTER,
+	BOTH,
+}
+
+public CommentState getCommentInfo( ) {
+	final boolean haveBefore = beforeComment != null; 
+	final boolean haveAfter = afterComment != null; 
+	if (!haveBefore && !haveAfter) {
+		return CommentState.NONE;
+	}
+	if (haveBefore && !haveAfter) {
+		return CommentState.BEFORE;
+	}
+	if (!haveBefore && haveAfter) {
+		return CommentState.AFTER;
+	}
+	if (haveBefore && haveAfter) {
+		return CommentState.BOTH;
+	}
+	throw new  RuntimeException("invalid programming logic");
 }
 /**
  * Insert the method's description here.

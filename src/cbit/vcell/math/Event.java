@@ -17,13 +17,14 @@ import java.util.Iterator;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.Token;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
-public class Event implements Matchable, Serializable {
+public class Event extends CommentedBlockObject implements Matchable, Serializable, VCMLProvider {
 
 	public static class EventAssignment implements Matchable, Serializable {
 		private Variable variable = null;
@@ -41,8 +42,11 @@ public class Event implements Matchable, Serializable {
 			String token = null;
 			token = tokens.nextToken();			
 			variable = mathdesc.getVariable(token);
-			if (variable == null || !(variable instanceof VolVariable)) {
-				throw new MathException("'" + token + "' in EventAssignment is not valid. An event assignment target must be a VolVariable.");
+			if (variable == null) { 
+				throw new MathException("'" + token + "' in EventAssignment is not valid. No such variable is present");
+			}
+			if (!!(variable instanceof VolVariable)) {
+				throw new MathException("'" + token + "' of type " + variable.getClass().getSimpleName() + " in EventAssignment is not valid. An event assignment target must be a VolVariable.");
 			}
 			assignmentExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
 		}
@@ -170,53 +174,104 @@ public class Event implements Matchable, Serializable {
 			durationExpression.bindExpression(mathDescription);
 		}		
 	}
-	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;
 	private ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 	
+	/*
 	public Event(String name, MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
 		this.name = name;
 		read(mathdesc, tokens);
 	}	
-	
-	private void read(MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
-		eventAssignmentList.clear();
-		String token = null;
-		token = tokens.nextToken();
-		if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-			throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-		}			
-		while (tokens.hasMoreTokens()){
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)){
-				break;
-			}			
-			if(token.equalsIgnoreCase(VCML.Trigger))
-			{
-				triggerExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.Delay)) {
-				delay = new Delay(tokens);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.EventAssignment)) {
-				EventAssignment eventAssignment = new EventAssignment(mathdesc, tokens);
-				eventAssignmentList.add(eventAssignment);
-				continue;
-			}
-			else throw new MathFormatException("unexpected identifier "+token);
-
-		}		
-	}
+	*/
 	public Event(String name, Expression triggerExpression, Delay delay, ArrayList<EventAssignment> eventAssignmentList) {
-		super();
-		this.name = name; 
+		super(name);
 		this.triggerExpression = triggerExpression;
 		this.delay = delay;
 		this.eventAssignmentList = eventAssignmentList;
 	}
+	/**
+	 * construct from token string
+	 * @param token start token (must equal {@link VCML#Event} 
+	 * @param mathdesc parent
+	 * @param tokens token stream 
+	 * @throws MathException bad VCML, et al
+	 * @throws ExpressionException bad expressions in VCML
+	 * @throws IllegalArgumentException if token != Event 
+	 */
+	public Event(Token token, MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+		super(token,tokens);
+		parseBlock(mathdesc, tokens);
+		/*
+		if (!token.getValue().equalsIgnoreCase(VCML.Event)) {
+			throw new IllegalArgumentException("Invalid start token " + token + " for Event");
+		}
+		name = tokens.nextToken();
+		setBeforeComment(token.getBeforeComment());
+		read(mathdesc, tokens);
+		*/
+	}
+	
+	@Override
+	protected String startToken() {
+		return VCML.Event; 
+	}
+	
+
+	@Override
+	protected void parse(MathDescription mathdesc, String tokenString, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+		if(tokenString.equalsIgnoreCase(VCML.Trigger))
+		{
+			triggerExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			return;
+		}
+		if (tokenString.equalsIgnoreCase(VCML.Delay)) {
+			delay = new Delay(tokens);
+			return;
+		}
+		if (tokenString.equalsIgnoreCase(VCML.EventAssignment)) {
+			EventAssignment eventAssignment = new EventAssignment(mathdesc, tokens);
+			eventAssignmentList.add(eventAssignment);
+			return;
+		}
+		throw new MathFormatException("unexpected identifier "+tokenString);
+	}
+
+	/*
+	private void read(MathDescription mathdesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+		eventAssignmentList.clear();
+		String beginBlockString= tokens.nextToken();
+		if (!beginBlockString.equalsIgnoreCase(VCML.BeginBlock)){
+			throw new MathFormatException("unexpected token "+beginBlockString+" expecting "+VCML.BeginBlock);
+		}			
+		while (tokens.hasMoreTokens()){
+			Token token  = tokens.next();
+			String tokenString = token.getValue(); 
+			if (tokenString.equalsIgnoreCase(VCML.EndBlock)){
+				setAfterComment(token.getAfterComment());
+				break;
+			}			
+			if(tokenString.equalsIgnoreCase(VCML.Trigger))
+			{
+				triggerExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+				continue;
+			}
+			if (tokenString.equalsIgnoreCase(VCML.Delay)) {
+				delay = new Delay(tokens);
+				continue;
+			}
+			if (tokenString.equalsIgnoreCase(VCML.EventAssignment)) {
+				EventAssignment eventAssignment = new EventAssignment(mathdesc, tokens);
+				eventAssignmentList.add(eventAssignment);
+				continue;
+			}
+			else throw new MathFormatException("unexpected identifier "+tokenString);
+
+		}		
+	}
+	*/
+	
+
 
 
 	public final Expression getTriggerExpression() {

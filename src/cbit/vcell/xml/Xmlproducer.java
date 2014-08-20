@@ -108,6 +108,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.Action;
+import cbit.vcell.math.Commented;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvolutionDataGenerator;
@@ -155,6 +156,7 @@ import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.UniformDistribution;
+import cbit.vcell.math.VCMLProvider;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable;
@@ -2216,9 +2218,27 @@ private Element getXML(JumpProcess param)
 	return jump;
 }
 
+/**
+ * copy comments, if present, into XML representation
+ * @param source if instanceof {@link Commented}, queried for comments
+ * @param destination
+ */
+private void transcribeComments(Object source, Element destination) {
+	if (source instanceof Commented) {
+		Commented c= (Commented) source;
+		String before = c.getBeforeComment();
+		String after = c.getAfterComment();
+		if (before != null) {
+			destination.setAttribute(XMLTags.BEFORE_COMMENT_ATTR_TAG,before);
+		}
+		if (after != null) {
+			destination.setAttribute(XMLTags.AFTER_COMMENT_ATTR_TAG,after);
+		}
+	}
+}
 
 /**
- * This methos returns a XML representation of a MathDescription object.
+ * This method returns a XML representation of a MathDescription object.
  * Creation date: (3/2/2001 10:57:25 AM)
  * @return Element
  * @param mathdes cbit.vcell.math.MathDescription
@@ -2226,7 +2246,7 @@ private Element getXML(JumpProcess param)
 Element getXML(MathDescription mathdes) throws XmlParseException {
     Element math = new Element(XMLTags.MathDescriptionTag);
 
-    //Add atributes
+    //Add attributes
     math.setAttribute(XMLTags.NameAttrTag, mangle(mathdes.getName()));
     //math.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(mathdes.getDescription()));
     //Add annotation
@@ -2252,51 +2272,52 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
     }*/
     while (enum1.hasMoreElements()) {
         Variable var = enum1.nextElement();
-    //while (k.hasNext()) {
-	    //Variable var = (Variable)k.next();
-	    
-        if (var instanceof Constant) {
-            math.addContent(getXML((Constant) var));
+        Element element = null;
+        if (var instanceof Constant) 
+		{
+            element = getXML((Constant) var);
         }
         else if (var instanceof FilamentRegionVariable) {
-            math.addContent(getXML((FilamentRegionVariable) var));
+            element = getXML((FilamentRegionVariable) var);
         }
         else if (var instanceof FilamentVariable) {
-            math.addContent(getXML((FilamentVariable) var));
+            element = getXML((FilamentVariable) var);
         }
         else if (var instanceof Function) {
-            math.addContent(getXML((Function) var));
+            element = getXML((Function) var);
         }
         else if (var instanceof RandomVariable) {
-            math.addContent(getXML((RandomVariable) var));
+            element = getXML((RandomVariable) var);
         }
         else if (var instanceof InsideVariable) {
 	        //*** for internal use! Ignore it ***
 	        continue;
         }
         else if (var instanceof MembraneRegionVariable) {
-	        math.addContent(getXML((MembraneRegionVariable) var));
+	        element = getXML((MembraneRegionVariable) var);
         }
         else if (var instanceof MemVariable) {
-            math.addContent(getXML((MemVariable) var));
+            element = getXML((MemVariable) var);
         }         
         else if (var instanceof OutsideVariable) {
 	        //*** for internal use! Ignore it ****
 	        continue;
         }
         else if (var instanceof VolumeRegionVariable) {
-            math.addContent(getXML((VolumeRegionVariable) var));
+            element = getXML((VolumeRegionVariable) var);
         }
         else if (var instanceof VolVariable) {
-            math.addContent(getXML((VolVariable) var));
+            element = getXML((VolVariable) var);
         } else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
-            math.addContent(getXML((StochVolVariable) var));
+            element = getXML((StochVolVariable) var);
         } else if (var instanceof ParticleVariable) {
-        	math.addContent(getXML((ParticleVariable) var));
+        	element = getXML((ParticleVariable) var);
         }
         else {
 	        throw new XmlParseException("An unknown variable type "+var.getClass().getName()+" was found when parsing the mathdescription "+ mathdes.getName() +"!");
         }
+        transcribeComments(var, element);
+        math.addContent(element);
     }
     
     //this was moved to the simspec!
@@ -4102,7 +4123,7 @@ private Element getXML(Event event) throws XmlParseException{
 		element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
 		eventElement.addContent(element);
 	}
-
+	transcribeComments(event, eventElement);
 	return eventElement;
 }
 
