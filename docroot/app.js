@@ -3,11 +3,18 @@
 	
 	app.controller('VcellController', ["$http", function($http) {
 		var vcell = this;
-		vcell.biomodels = [];
+
  		vcell.tab = 1;
+
+ 		vcell.credentials = {};
+ 		vcell.user = {};
+
+		vcell.biomodels = [];
  		vcell.currBiomodel = {};
  		vcell.currSimulation = {};
- 		vcell.user = {};
+
+ 		vcell.simStatuses = [];
+ 		vcell.currSimStatus = {};
  		
 		this.isSet = function(checkTab) {
 			return vcell.tab === checkTab;
@@ -16,7 +23,10 @@
 		this.setTab = function(activeTab) {
 			vcell.tab = activeTab;
 		};
-
+		
+		//
+		// fetch the biomodels (first 10)
+		//
 		$http.get('/biomodel')
 			.success(function(data){
     			vcell.biomodels = data;
@@ -25,12 +35,38 @@
   				vcell.biomodels = [ {name: "bad"} ];
   			});
   			
-  		vcell.login = function() {
-  			vcell.user = {name: "schaff"}
+  			
+  		//
+  		// fetch the simulation status (first ?)
+  		//
+		$http.get('/simstatus?maxRows=200&hasData=all&active=on&completed=on&failed=on&stopped=on')
+			.success(function(data){
+    			vcell.simStatuses = data;
+   			})
+  			.error(function(msg){
+  				vcell.simStatuses = [ {name: "bad"} ];
+  			});
+
+
+  		vcell.login = function(credentials) {
+			$http({
+				method: 'POST',
+				url: '/login',
+				data: 'user='+vcell.credentials.username+"&password="+vcell.credentials.password+"&redirecturl=/webapp",
+				headers: {'Content-Type': "application/x-www-form-urlencoded"}
+			}).success(function(data){
+	    		vcell.user = { name: vcell.credentials.username };
+	    		console.log("success "+data);
+	   		}).error(function(msg){
+	   			vcell.user = {};
+	   		});
   		};
 
   		vcell.logout = function() {
-  			vcell.user = {};
+			$http.get('/logout')
+				.success(function(data){
+	    			vcell.user = {};
+	   			});
   		};
   		
   		vcell.back = function() {

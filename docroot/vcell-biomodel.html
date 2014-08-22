@@ -1,15 +1,22 @@
 <div class="list-group" ng-show="!vcell.currBiomodel.name && !vcell.currSimulation.name">
 	<h3 class="text-center">Biomodels</h3>
 	<div class="list-group-item" ng-repeat="biomodel in vcell.biomodels | limitTo : 10">
-		<h3><a href ng-click="vcell.clickBiomodelRow(biomodel)">biomodel {{biomodel.name | limitTo : 20}}</a></h3>
+		<h3><a href ng-click="vcell.clickBiomodelRow(biomodel)">&quot;{{biomodel.name | limitTo : 20}}&quot; [{{biomodel.ownerName}}] A({{biomodel.applications.length}}) S({{biomodel.simulations.length}})</a></h3>
 	</div>
 </div>
 <div class="list-group" ng-show="vcell.currBiomodel.name && !vcell.currSimulation.name">
-	<h3 class="text-center">Biomodel: &quot;{{vcell.currBiomodel.name}}&quot;</h3>
+	<h3 class="text-center">Biomodel Detail</h3>
+	<h3 class="text-center">&quot;{{vcell.currBiomodel.name}}&quot;</h3>
 	<div class="list-group-item" ng-repeat="simulation in vcell.currBiomodel.simulations | limitTo : 10">
-		<h3><a href ng-click="vcell.clickSimulationRow(simulation)">simulation {{simulation.name | limitTo : 20}}</a></h3>
+		<h3><a href ng-click="vcell.clickSimulationRow(simulation)">&quot;{{simulation.name | limitTo : 20}}&quot; [app={{simulation.bioModelLink.simContextName}}]</a></h3>
 	</div>
 </div>
 <div class="list-group" ng-show="vcell.currBiomodel.name && vcell.currSimulation.name">
-	<h3 class="text-center">simulation {{vcell.currSimulation.name | limitTo : 20}}</h3>
+	<h3 class="text-center">Simulation Detail</h3>
+	<table align="center">
+	<tr><td>name</td><td>{{vcell.currSimulation.name | limitTo : 20}}</td></tr>
+	<tr><td>onwer</td><td>{{vcell.currSimulation.ownerName | limitTo : 20}}</td></tr>
+	<tr><td>solver</td><td>{{vcell.currSimulation.solverName | limitTo : 20}}</td></tr>
+	<tr><td>num jobs</td><td>{{vcell.currSimulation.scanCount | limitTo : 20}}</td></tr>
+	</table>
 </div>

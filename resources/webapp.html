@@ -14,21 +14,18 @@
 		</header>
 		
 		<section>
-  			<!--  Biomodel Tab's Content  -->
-  			<vcell-biomodel ng-show="vcell.isSet(1)" ></vcell-biomodel>
+  			<!--  Biomodel Tab Content  -->
+  			<vcell-biomodel ng-show="vcell.isSet(1)"></vcell-biomodel>
 
-  			<!--  Spec Tab's Content  -->
-  			<div ng-show="vcell.isSet(2)">
-  				<h3 class="text-center">Simulation Jobs</h3>
-  			</div>
- 
+  			<!--  Simulation Status Tab Content  -->
+  			<vcell-jobs ng-show="vcell.isSet(2)"></vcell-jobs> 
  
  			<ul class="nav nav-pills">
     			<li ng-class="{ active:vcell.isSet(1) }">
-      				<a href ng-click="vcell.setTab(1)">Biomodels</a>
+      				<a href ng-click="vcell.setTab(1)"><img src="/scripts/diagram_icon.gif" height="26" width="26"/>Biomodels</a>
     			</li>
     			<li ng-class="{ active:vcell.isSet(2) }">
-      				<a href ng-click="vcell.setTab(2)">Simulation Jobs</a>
+      				<a href ng-click="vcell.setTab(2)"><img src="/scripts/run2_16x16.gif" height="26" width="26"/>Simulation Jobs</a>
     			</li>
  			 </ul>
 

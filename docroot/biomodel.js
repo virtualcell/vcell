@@ -15,6 +15,13 @@
         };
     });
 
+    app.directive("vcellJobs", function() {
+        return {
+          restrict: "E",
+          templateUrl: "/scripts/vcell-jobs.html",
+        };
+    });
+
 
 
 })();

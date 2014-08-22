@@ -2,5 +2,9 @@
 <!-- logged in status -->
 <h4 ng-show="vcell.user.name">welcome {{vcell.user.name}}, <a href ng-click="vcell.logout()">sign off</a></h4>
 <!-- not logged in status -->
-<h4 ng-hide="vcell.user.name"><a href ng-click="vcell.login()">sign on</a></h4>
+<form ng-hide="vcell.user.name" name="loginForm" ng-submit="vcell.login(vcell.credentials)" novalidate>
+  <label for="username">Username:</label>  <input type="text"     id="username" ng-model="vcell.credentials.username">
+  <label for="password">Password:</label>  <input type="password" id="password" ng-model="vcell.credentials.password">
+  <button type="submit">Login</button>
+</form>
 </div>
