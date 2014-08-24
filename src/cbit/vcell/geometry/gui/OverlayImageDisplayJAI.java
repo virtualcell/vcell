@@ -370,7 +370,7 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 		if (allROICompositeImage != null){
 			Graphics2D allROICompositeGraphics = (allROICompositeImage != null?allROICompositeImage.createGraphics():null);
 			if(allROICompositeGraphics != null){allROICompositeGraphics.setColor(compositeColor);}
-			int size = (int)(radius/zoom);
+			int size = radius;//(int)(radius/zoom);
 			//-----Interpolate between paint points for continuous lines
 			double currentX = lastPaintPoint.x;
 			double currentY = lastPaintPoint.y;
