@@ -63,6 +63,8 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper;
 import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
@@ -928,7 +930,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 					lastHighlightPoint = e.getPoint();
 					saveUndoableROI();
 					if(paintButton.isSelected() || eraseButton.isSelected()){
-						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
 					}
 				}
 				public void mouseReleased(MouseEvent e){
@@ -1007,7 +1009,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				public void mouseDragged(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
 					if(paintButton.isSelected() || eraseButton.isSelected()){
-						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
 						lastHighlightPoint = e.getPoint();
 //						VirtualFrapLoader.mf.setSaveStatus(true);
 					}else if(cropButton.isSelected()){
@@ -1227,6 +1229,8 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
+	private BrushToolHelper brushToolHelper;
+
 	private JPanel getRightPanel() {
 		if (rightPanel == null) {
 			//this is added to the right side of the editor panel with all the buttons in two columns.
@@ -1329,6 +1333,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getRoiTimePlotButton(), gridBagConstraints12);
 			
 		}
+		brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,rightPanel,getImagePane());
 		return rightPanel;
 	}
 
