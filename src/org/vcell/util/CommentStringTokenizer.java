@@ -16,7 +16,6 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import cbit.vcell.math.Commented;
@@ -44,10 +43,6 @@ public class CommentStringTokenizer {
 	private String beforeComment = null;
 	int currLine = 0;
 	int currCol = 0;
-	static {
-		//for now
-		lg.setLevel(Level.INFO);
-	}
 
 /**
  * support reading from multiple sources (e.g. file) 
@@ -246,6 +241,7 @@ private void refreshCurrTokenizer() {
 		String nextLine = null;
 		try {
 			nextLine = reader.readLine();
+			lg.trace(nextLine);
 		} catch (IOException e) {			
 			e.printStackTrace();
 			throw new NoSuchElementException(e.getMessage());
