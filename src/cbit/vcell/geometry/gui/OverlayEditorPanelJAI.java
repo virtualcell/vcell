@@ -10,6 +10,7 @@
 
 package cbit.vcell.geometry.gui;
 
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -25,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -39,6 +41,7 @@ import java.util.Hashtable;
 import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.FocusManager;
@@ -1469,7 +1472,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 							return;
 						}
 						firePropertyChange(FRAP_DATA_PAINTERASE_PROPERTY, null, null);
-						drawHighlight(e.getX(), e.getY(), circleSize, eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
 					}
 				}
 				public void mouseReleased(MouseEvent e){
@@ -1565,7 +1568,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 						return;
 					}
 					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected())){
-						drawHighlight(e.getX(), e.getY(), circleSize, eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
 						lastMousePoint = e.getPoint();
 					}else if(SwingUtilities.isLeftMouseButton(e) && cropButton.isSelected()){
 						imagePane.setCrop(lastMousePoint, e.getPoint());
@@ -1832,7 +1835,114 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	private int circleSize = 10;
+	public static class BrushToolHelper extends MouseAdapter {
+		private int brushRadius;
+		private AbstractButton[] jButtons;
+		private JPopupMenu jPopupMenu;
+		private Component parentForInputDialog;
+		private Component triggersMenuHideWhenEntered;
+		public BrushToolHelper(AbstractButton[] jButtons,int brushRadius,Component parentForInputDialog,Component triggersMenuHideWhenEntered){
+			this.jButtons = jButtons;
+			this.brushRadius = brushRadius;
+			this.parentForInputDialog = parentForInputDialog;
+			this.triggersMenuHideWhenEntered = triggersMenuHideWhenEntered;
+			
+			triggersMenuHideWhenEntered.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					// TODO Auto-generated method stub
+					super.mouseEntered(e);
+					hidePopup();
+				}
+			});
+			jPopupMenu = new JPopupMenu();
+			JMenuItem size = new JMenuItem("paint/erase brush size...");
+			size.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try{
+						String result = DialogUtils.showInputDialog0(BrushToolHelper.this.jButtons[0].getParent(), "Enter brush radius (0 for single pixel):", BrushToolHelper.this.brushRadius+"");
+						int newcircleSize = Integer.parseInt(result);
+						if(newcircleSize < 0){
+							throw new Exception("brush radius must be >= 0");
+						}
+						BrushToolHelper.this.brushRadius = newcircleSize;
+					}catch(UtilCancelException uce){
+						//ignore, user cancelled
+					}catch(Exception e2){
+						DialogUtils.showErrorDialog(BrushToolHelper.this.jButtons[0].getParent(), "Error: "+e2.getMessage());
+					}
+				}
+			});
+			
+//			jPopupMenu.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseExited(MouseEvent e) {
+//					// TODO Auto-generated method stub
+//					super.mouseExited(e);
+//					boolean bMouseEnteredItem = false;
+//					for(AbstractButton jButton:BrushToolHelper.this.jButtons){
+//						if(SwingUtilities.getDeepestComponentAt(jPopupMenu, e.getX(), e.getY()) != null){
+//							bMouseEnteredItem = true;
+//							break;
+//						}
+//					}
+//					if(!bMouseEnteredItem){
+//						jPopupMenu.setVisible(false);
+//					}
+//				}				
+//			});
+			jPopupMenu.add(size);
+			
+			for(AbstractButton jButton:jButtons){
+				jButton.addMouseListener(this);
+			}
+		}
+		public int getBrushRadius(){
+			return brushRadius;
+		}
+		private void hidePopup(){
+			if(jPopupMenu.isVisible()){
+				jPopupMenu.setVisible(false);
+			}
+		}
+		private void doClick(MouseEvent e){
+			for(AbstractButton jButton:jButtons){
+				if(e.getSource() == jButton){
+					jButton.doClick();
+					break;
+				}
+			}
+		}
+		@Override
+		public void mousePressed(final MouseEvent e) {
+			super.mousePressed(e);
+			if(e.isPopupTrigger()){
+				doClick(e);
+				jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+			}
+		}
+		@Override
+		public void mouseReleased(final MouseEvent e) {
+			super.mouseReleased(e);
+			if(e.isPopupTrigger()){
+				doClick(e);
+				jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+			}
+		}
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+			super.mouseClicked(e);
+			if(e.isPopupTrigger()){
+				doClick(e);
+				jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+			}
+		}
+		
+	};
+
+	private BrushToolHelper brushToolHelper;
 	
 	private JPanel getToolButtonPanel() {
 		if (toolButtonPanel == null) {
@@ -1953,67 +2063,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			gridBagConstraints_7.gridx = 1;
 			toolButtonPanel.add(autoCropButton, gridBagConstraints_7);
 			
-			final JPopupMenu jPopupMenu = new JPopupMenu();
-			JMenuItem size = new JMenuItem("paint/erase brush size...");
-			size.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					try{
-						String result = DialogUtils.showInputDialog0(paintButton, "Enter brush radius (0 for single pixel):", circleSize+"");
-						int newcircleSize = Integer.parseInt(result);
-						if(newcircleSize < 0){
-							throw new Exception("brush radius must be >= 0");
-						}
-						circleSize = newcircleSize;
-					}catch(UtilCancelException uce){
-						//ignore, user cancelled
-					}catch(Exception e2){
-						DialogUtils.showErrorDialog(paintButton, "Error: "+e2.getMessage());
-					}
-				}
-			});
-
-			jPopupMenu.add(size);
-			
-			MouseAdapter mouseAdapter = new MouseAdapter() {
-				
-				private void doClick(MouseEvent e){
-					if(e.getSource()==paintButton && !paintButton.isSelected()){
-						paintButton.doClick();							
-					}else if(e.getSource()==eraseButton/* && !eraseButton.isSelected()*/){
-						eraseButton.doClick();
-					}
-				}
-				@Override
-				public void mousePressed(final MouseEvent e) {
-					super.mousePressed(e);
-					if(e.isPopupTrigger()){
-						doClick(e);
-						jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
-					}
-				}
-				@Override
-				public void mouseReleased(final MouseEvent e) {
-					super.mouseReleased(e);
-					if(e.isPopupTrigger()){
-						doClick(e);
-						jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
-					}
-				}
-				
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					// TODO Auto-generated method stub
-					super.mouseClicked(e);
-					if(e.isPopupTrigger()){
-						doClick(e);
-						jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
-					}
-				}
-				
-			};
 			paintButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/paint.gif")));
-			paintButton.addMouseListener(mouseAdapter);
 			paintButton.setName("roiPaintBtn");
 			paintButton.setSelected(true);
 			paintButton.setPreferredSize(new Dimension(32, 32));
@@ -2031,7 +2081,6 @@ public class OverlayEditorPanelJAI extends JPanel{
 			toolButtonPanel.add(paintButton, gridBagConstraints_1);
 
 			eraseButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/eraser.gif")));
-			eraseButton.addMouseListener(mouseAdapter);
 			eraseButton.setName("roiEraseBtn");
 			eraseButton.setPreferredSize(new Dimension(32, 32));
 			eraseButton.setMinimumSize(new Dimension(32, 32));
@@ -2046,6 +2095,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			gridBagConstraints_2.gridy = 4;
 			gridBagConstraints_2.gridx = 1;
 			toolButtonPanel.add(eraseButton, gridBagConstraints_2);
+
+			brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,toolButtonPanel,getImagePane());
 
 			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
 			fillButton.setName("roiFillBtn");
