@@ -1556,10 +1556,11 @@ public String getVCML_database(boolean includeComments) throws MathException {
 		buffer.append(postProcessingBlock.getVCML() + "\n");
 	}
 		
+	final int dimension = getGeometry().getDimension();
 	Enumeration<SubDomain> enum2 = getSubDomains();
 	while (enum2.hasMoreElements()){
 		SubDomain subDomain = enum2.nextElement();
-		buffer.append(subDomain.getVCML(getGeometry().getDimension())+"\n");
+		buffer.append( getVCML(subDomain.getVCMLProvider(dimension)) + "\n");
 	}
 	buffer.append("}\n");
 	return buffer.toString();		
