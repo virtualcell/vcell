@@ -80,9 +80,6 @@ public abstract class SubDomain extends CommentedBlockObject implements Serializ
 
 	}
 	
-private void allocateFields( )  {
-	
-}
 /**
  * This method was created by a SmartGuide.
  * @param name java.lang.String
@@ -579,6 +576,54 @@ public void trimTrivialEquations(MathDescription mathDesc) {
 			i--;
 		}
 	}
+}
+
+/**
+ * get provider for specified dimension
+ * @param spatialDimension
+ * @return VCMLProvider
+ */
+public VCMLProvider getVCMLProvider(int spatialDimension) {
+	return new ProviderAdapter(spatialDimension);
+}
+
+/**
+ * adapt SubDomain.getVCML(int) API to VCMLProvider.getVCML( )
+ */
+private class ProviderAdapter implements VCMLProvider {
+	private final int spatialDimension;
+
+	ProviderAdapter(int spatialDimension) {
+		super();
+		this.spatialDimension = spatialDimension;
+	}
+
+	@Override
+	public String getBeforeComment() {
+		return SubDomain.this.getBeforeComment();
+	}
+
+	@Override
+	public void setBeforeComment(String comment) {
+		SubDomain.this.setBeforeComment(comment);
+
+	}
+
+	@Override
+	public String getAfterComment() {
+		return SubDomain.this.getAfterComment();
+	}
+
+	@Override
+	public void setAfterComment(String comment) {
+		SubDomain.this.setAfterComment(comment);
+	}
+
+	@Override
+	public String getVCML() throws MathException {
+		return SubDomain.this.getVCML(spatialDimension);
+	}
+
 }
 
 
