@@ -10,7 +10,10 @@ import org.restlet.data.Cookie;
 import org.restlet.data.Form;
 import org.restlet.data.Parameter;
 import org.restlet.data.Reference;
+import org.restlet.data.Status;
 import org.restlet.ext.crypto.CookieAuthenticator;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
@@ -31,7 +34,8 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 	@Override
 	protected void login(Request request, Response response) {
         // Login detected
-        Form form = new Form(request.getEntity());
+        Representation entity = request.getEntity();
+		Form form = new Form(entity);
         Parameter identifier = form.getFirst(getIdentifierFormName());
         Parameter secret = form.getFirst(getSecretFormName());
         Parameter redirectURL = form.getFirst(getRedirectQueryName());
@@ -39,6 +43,10 @@ public class VCellCookieAuthenticator extends CookieAuthenticator {
 		UserLoginInfo.DigestedPassword digestedPassword = new UserLoginInfo.DigestedPassword(secret.getValue());
 		try {
 			User user = vcellApiApplication.getUserVerifier().authenticateUser(identifier.getValue(), digestedPassword.getString().toCharArray());
+			if (user == null){
+				response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+				return;
+			}
 			ApiClient apiClient = vcellApiApplication.getUserVerifier().getApiClient(VCellApiApplication.BROWSER_CLIENTID);
 			ApiAccessToken accessToken = vcellApiApplication.getUserVerifier().generateApiAccessToken(apiClient.getKey(), user);
 

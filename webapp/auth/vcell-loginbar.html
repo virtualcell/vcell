@@ -1,0 +1,6 @@
+<div>
+<!-- logged in status -->
+<h4 ng-show="isAuthorized()">welcome {{session.userId}}, <a href ng-click="logout()">sign off</a></h4>
+<h4 ng-show="!isAuthorized()"><a href ng-click="showLoginDialog()">sign in</a></h4>
+<div login-dialog ng-if="!isLoginPage"></div>
+</div>

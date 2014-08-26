@@ -5,13 +5,16 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeResponse;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.ext.wadl.ApplicationInfo;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.representation.Variant;
 import org.restlet.resource.Directory;
 import org.restlet.resource.ResourceException;
@@ -36,7 +39,6 @@ import org.vcell.rest.users.LoginFormRestlet;
 import org.vcell.rest.users.LoginRestlet;
 import org.vcell.rest.users.NewUserRestlet;
 import org.vcell.rest.users.RegistrationFormRestlet;
-import org.vcell.rest.webapp.WebAppRestlet;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -221,13 +223,14 @@ public class VCellApiApplication extends WadlApplication {
         cookieAuthenticator.setMaxCookieAge(15*60); // 15 minutes (in units of seconds).
 
         String ROOT_URI = javascriptDir.toURI().toString();
+        String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
         System.out.println("using uri="+ROOT_URI+" for scripts directory");
         String SCRIPTS = "scripts";
         
 		Router rootRouter = new Router(getContext());
 		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, AccessTokenServerResource.class);
-	    rootRouter.attach("/"+WEBAPP, new WebAppRestlet(getContext()));
+	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
@@ -249,6 +252,23 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+NEWUSER, new NewUserRestlet(getContext()));
 		
 		rootRouter.attach("/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
+		
+		rootRouter.attach("/auth/user", new Restlet(getContext()){
+
+			@Override
+			public void handle(Request request, Response response) {
+				if (request.getMethod().equals(Method.GET)){
+					VCellApiApplication application = ((VCellApiApplication)getApplication());
+					User vcellUser = application.getVCellUser(request.getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
+					String jsonString = "{}";
+					if (vcellUser != null){
+						jsonString = "{user: \""+vcellUser.getName()+"\"}";
+					}
+			    	response.setEntity(new StringRepresentation(jsonString));
+				}
+			}
+			
+		});
 		
         cookieAuthenticator.setNext(rootRouter);
      	    	 
