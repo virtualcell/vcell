@@ -18,6 +18,10 @@ public abstract class CommentedBlockObject extends CommentedObject {
 		super();
 		this.name = name;
 	}
+	/**
+	 * no-arg constructor to support serialized subclasses
+	 */
+	protected CommentedBlockObject() { }
 
 	/**
 	 * partially construct -- verify tag and set name
