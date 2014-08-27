@@ -12,11 +12,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
-import java.util.TimeZone;
 
 import org.junit.Test;
 import org.vcell.util.document.KeyValue;
@@ -96,24 +94,6 @@ public class AmplistorUtilsTest {
 		}
 		
 		//
-		//set metadata on first file (this is done during upload using lastmodified of file but do it again to demonstrate)
-		//
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(2010, 2, 3, 5, 15, 30);
-		calendar.set(Calendar.MILLISECOND,0);
-		System.out.println("Set time----- "+calendar.getTime().getTime());
-//		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, tmpFiles[0].lastModified()/1000+".0");
-		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, calendar.getTime().getTime()/1000+".0");
-
-		//
-		//Print the http header info for one of the uploaded files
-		//
-		AmplistorUtils.AmpliCustomHeaderHelper ampliCustomHeaderHelper = AmplistorUtils.printHeaderFields(dirNameURL+"/"+tmpFiles[0].getName());
-		if(ampliCustomHeaderHelper.customModification == null || !ampliCustomHeaderHelper.customModification.equals(calendar.getTime())){
-			throw new Exception("Queried custom modification date "+ampliCustomHeaderHelper.customModification+" does not match set custom modification date "+calendar.getTime());
-		}
-
-		//
 		//List amplistor test dir we created and populated
 		//
 		ArrayList<String> fileNames = AmplistorUtils.listDir(dirNameURL, amplistorCredential);
@@ -123,12 +103,30 @@ public class AmplistorUtilsTest {
 		for(String fileName:fileNames){
 			System.out.println("listing:"+fileName);
 		}
-		
+
+		String file0url = dirNameURL+"/"+fileNames.get(0);
+		//
+		//set metadata on first file (this is done during upload using lastmodified of file but do it again to demonstrate)
+		//
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(2010, 2, 3, 5, 15, 30);
+		calendar.set(Calendar.MILLISECOND,0);
+		System.out.println("Set Custom Modification time----- "+calendar.getTime());
+//		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, tmpFiles[0].lastModified()/1000+".0");
+		AmplistorUtils.setFileMetaData(file0url, amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, calendar.getTime().getTime()/1000+".0");
+
+		//
+		//Print the http header info for one of the uploaded files
+		//
+		AmplistorUtils.AmpliCustomHeaderHelper ampliCustomHeaderHelper = AmplistorUtils.printHeaderFields(file0url);
+		if(ampliCustomHeaderHelper.customModification == null || !ampliCustomHeaderHelper.customModification.equals(calendar.getTime())){
+			throw new Exception("Queried custom modification date "+ampliCustomHeaderHelper.customModification+" does not match set custom modification date "+calendar.getTime());
+		}		
 		
 		//
 		//Download 1 of the files
 		//
-		byte[] downloadBytes = AmplistorUtils.getObjectData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential);
+		byte[] downloadBytes = AmplistorUtils.getObjectData(file0url, amplistorCredential);
 		
 		//
 		//Check local and remote files are same
@@ -149,7 +147,7 @@ public class AmplistorUtilsTest {
 		//
 		//Check special SimID parsing for delete
 		//
-		HashSet<KeyValue> doNotDeleteTheseSimKeys = new HashSet<>();
+		HashSet<KeyValue> doNotDeleteTheseSimKeys = new HashSet<KeyValue>();
 		doNotDeleteTheseSimKeys.add(new KeyValue("0"));
 		doNotDeleteTheseSimKeys.add(new KeyValue("1"));
 		long numDeleted = AmplistorUtils.deleteSimFilesNotInHash(dirNameURL, doNotDeleteTheseSimKeys, false,amplistorCredential).size();
