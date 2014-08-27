@@ -22,6 +22,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -930,7 +931,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 					lastHighlightPoint = e.getPoint();
 					saveUndoableROI();
 					if(paintButton.isSelected() || eraseButton.isSelected()){
-						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
 					}
 				}
 				public void mouseReleased(MouseEvent e){
@@ -1009,7 +1010,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 				public void mouseDragged(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
 					if(paintButton.isSelected() || eraseButton.isSelected()){
-						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
 						lastHighlightPoint = e.getPoint();
 //						VirtualFrapLoader.mf.setSaveStatus(true);
 					}else if(cropButton.isSelected()){
@@ -1333,7 +1334,23 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getRoiTimePlotButton(), gridBagConstraints12);
 			
 		}
-		brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,rightPanel,getImagePane());
+		brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,
+			new BrushToolHelper.CursorChanger() {
+				@Override
+				public void changeCursors() {
+					//ignore
+				}
+		});
+		getImagePane().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				super.mouseEntered(e);
+				brushToolHelper.hidePopup();
+			}
+			
+		});
+
 		return rightPanel;
 	}
 
