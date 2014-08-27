@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -30,9 +31,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 import org.vcell.util.Hex;
 import org.vcell.util.document.KeyValue;
 
@@ -52,6 +56,7 @@ public class AmplistorUtils {
 	public static final String DEFAULT_AMPLI_SERVICE_VCELL_URL = 	"http://obj1.cam.uchc.edu:8080/namespace/service_vcell/";
 	public static final String DEFAULT_AMPLI_VCELL_LOGS_URL = 		"http://obj1.cam.uchc.edu:8080/namespace/vcell_logs/";
 	public static final String DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL = "http://archive.cam.uchc.edu/namespace/vcell_logs/";
+	public static final String DEFAULT_AMPLI_VCELL_VCDBBACKUP_URL = "http://obj1.cam.uchc.edu:8080/namespace/vcell_vcdbbackup/";
 	
 	public static class AmplistorCredential {
 		public String userName;
@@ -180,9 +185,9 @@ public class AmplistorUtils {
 		BufferedInputStream bis = null;
 		try{
 			bis = new BufferedInputStream(new FileInputStream(currentFile));
-			uploadStream(new URL(remoteDestinationDirURL.toString()+"/"+currentFile.getName()), amplistorCredential, bis, currentFile.length());
-//			createWithPutXML(remoteDestinationDirURL.toString()+"/"+currentFile.getName(), amplistorCredential,bis,currentFile.length(),null);
-			setFileMetaData(remoteDestinationDirURL.toString()+"/"+currentFile.getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
+			String urlStr = remoteDestinationDirURL.toString()+"/"+currentFile.getName();
+			uploadStream(new URL(urlStr), amplistorCredential, bis, currentFile.length());
+			setFileMetaData(urlStr, amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
 		}finally{
 			try{if(bis != null){bis.close();}}catch(Exception e){System.out.println("bis close error "+e.getMessage());}
 		}
@@ -577,19 +582,20 @@ public class AmplistorUtils {
 		HttpURLConnection urlCon = null;
 		try{
 			urlCon = (HttpURLConnection) url.openConnection();
-			if(contentLength > Integer.MAX_VALUE){//chunk xfer to be implemented
-				throw new IllegalArgumentException("Can't xfer files larger than "+Integer.MAX_VALUE);
-			}
+			urlCon.setChunkedStreamingMode(1048576);
+//			if(contentLength > Integer.MAX_VALUE){//chunk xfer to be implemented
+//				throw new IllegalArgumentException("Can't xfer files larger than "+Integer.MAX_VALUE);
+//			}
 			//
 			//if authorizationRequest == null, try zero length upload to get authorization challenge from server
 			//
-			urlCon.setFixedLengthStreamingMode((authorizationRequest==null?0:(int)contentLength));
+//			urlCon.setFixedLengthStreamingMode((authorizationRequest==null?0:contentLength));
 //			urlCon.setFixedLengthStreamingMode((int)contentLength);
 			urlCon.setDoOutput(true);
 			urlCon.setRequestMethod(AMPLI_OP_METHOD.PUT.toString());
 			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
 			urlCon.setRequestProperty("Content-Type","binary/octet-stream");
-			urlCon.setRequestProperty("Content-Length",(authorizationRequest==null?"0":contentLength+""));
+//			urlCon.setRequestProperty("Content-Length",(authorizationRequest==null?"0":contentLength+""));
 //			urlCon.setRequestProperty("Content-Length",contentLength+"");
 			urlCon.setRequestProperty("Accept","application/xml");
 			if(authorizationRequest != null && !authorizationRequest.equals(TRY_WITH_NO_AUTHENTICATION)){
@@ -598,7 +604,7 @@ public class AmplistorUtils {
 			
 			if(authorizationRequest != null){
 				BufferedOutputStream bos = new BufferedOutputStream(urlCon.getOutputStream());
-				byte[] tempBuffer = new byte[16384];
+				byte[] tempBuffer = new byte[1048576];
 				while(true){
 					int numRead = in.read(tempBuffer);
 					if(numRead == -1){
@@ -606,7 +612,7 @@ public class AmplistorUtils {
 					}
 					bos.write(tempBuffer, 0, numRead);
 				}
-				bos.flush();
+				bos.close();
 			}
 			
 			int responseCode = urlCon.getResponseCode();

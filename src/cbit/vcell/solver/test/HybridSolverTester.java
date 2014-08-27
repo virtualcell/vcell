@@ -347,10 +347,10 @@ public class HybridSolverTester {
 	public static void main(java.lang.String[] args) {
 		VCMongoMessage.enabled = false;
 		boolean bAlternate = false;
-		if(args.length == 8){
+		if(args.length == 9){
 			bAlternate = true;
 		}else if(args.length != 5){
-			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly");
+			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword");
 			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime");
 			System.exit(1);
 		}
@@ -366,9 +366,10 @@ public class HybridSolverTester {
 				File userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
 				File outputDir = new File(args[6]);
 				boolean bCalcOnly = Boolean.parseBoolean(args[7]);
+				String dbPassword = args[8];
 				
 				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
-				UserLoginInfo userLoginInfo = new UserLoginInfo(user, new DigestedPassword("cbittech"));
+				UserLoginInfo userLoginInfo = new UserLoginInfo(user, new DigestedPassword(dbPassword));
 
 				File[] trialList = null;
 				VCellConnection vCellConnection = null;

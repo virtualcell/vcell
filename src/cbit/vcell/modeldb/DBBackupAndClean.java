@@ -9,29 +9,46 @@
  */
 
 package cbit.vcell.modeldb;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Set;
+import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import oracle.jdbc.pool.OracleDataSource;
 
+import org.vcell.util.NumberUtils;
 import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.util.AmplistorUtils;
+import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
 
 public class DBBackupAndClean {
 
+	private static boolean bCheckIntegrity = false;
+	
 	/**
 	 * @param args
 	 */
@@ -93,9 +110,9 @@ public class DBBackupAndClean {
 	}
 	
 	private static void usageExit(){
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
-		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_BACKUP+          " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN+           " dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
+		System.out.println(DBBackupAndClean.class.getName()+" "+OP_CLEAN_AND_BACKUP+" dbHostName vcellSchema password dbSrvcName workingDir exportDir {amplistorUser amplistorPasswd}");
 		System.out.println(DBBackupAndClean.class.getName()+" "+OP_IMPORT+" importServerName dumpFileHostPrefix vcellSchema password importSrvcName workingDir exportDir");
 		System.exit(1);
 	}
@@ -147,9 +164,7 @@ public class DBBackupAndClean {
 		File dumpFilesourceDir = new File(args[6]);
 
 		String baseFileName = OP_IMPORT+"_"+createBaseFileName(importServerName, importDBSrvcName, vcellSchema);;
-		File backupFile = null;
 
-//		File dumpCopy = null;
 		StringBuffer logStringBuffer = new StringBuffer();
 		OracleDataSource oracleDataSource  = null;
 		Connection con = null;
@@ -277,7 +292,7 @@ public class DBBackupAndClean {
 				logStringBuffer.append(sql+"\n");
 				executeUpdate(con, sql, logStringBuffer);
 				
-				sql = "CREATE USER vcell PROFILE \"DEFAULT\" IDENTIFIED BY \"cbittech\" DEFAULT TABLESPACE \"USERS\" TEMPORARY TABLESPACE \"TEMP\" ACCOUNT UNLOCK";
+				sql = "CREATE USER vcell PROFILE \"DEFAULT\" IDENTIFIED BY \""+password+"\" DEFAULT TABLESPACE \"USERS\" TEMPORARY TABLESPACE \"TEMP\" ACCOUNT UNLOCK";
 				executeUpdate(con, sql, logStringBuffer);
 				executeUpdate(con, "GRANT UNLIMITED TABLESPACE TO vcell",logStringBuffer);
 				executeUpdate(con, "GRANT \"CONNECT\" TO vcell",logStringBuffer);
@@ -332,91 +347,300 @@ public class DBBackupAndClean {
 		;
 
 	}
-	private static void backup(String[] args){
-		if(args.length != 6){
-			usageExit();
-		}
-		String dbHostName = args[0];
-		String vcellSchema = args[1];
-		String password = args[2];
-		String dbSrvcName = args[3];
-		File workingDir = new File(args[4]);
-		File exportDir = new File(args[5]);
+	private static class DBBackupHelper{
+		String dbHostName;
+		String vcellSchema;
+		String password;
+		String dbSrvcName;
+		File workingDir;
+		File exportDir;
+//		AmplistorCredential amplistorCredential;
+		
+		File localDMPFile = null;
+		File remoteZipFile = null;
+		File remoteDMPFile = null;
+		
+		Boolean bExportSucceed = null;
+		Boolean bCompressSucceed = null;
+		Boolean bRobocopySucceed = null;
+		Boolean bAmplistorSucceed = null;
 
-		if(!workingDir.exists()){
-			throw new IllegalArgumentException("Working directory"+workingDir.getAbsolutePath()+" does not exist");
-		}
-		if(!exportDir.exists()){
-			throw new IllegalArgumentException("Export directory"+exportDir.getAbsolutePath()+" does not exist");
-		}
-		String baseFileName = null;
-		File backupFile = null;
-		try{
-			baseFileName = createBaseFileName(dbHostName, dbSrvcName, vcellSchema);
-			backupFile = new File(workingDir,baseFileName+".dmp");
-			baseFileName = OP_BACKUP+"_"+baseFileName;
-//			String exportCommand =
-//				"exp "+credentials+"@"+dbName+" FILE="+backupFile.getAbsolutePath()+" OWNER="+userSchema+" CONSISTENT=Y";
-			String exportCommand = createExportCommand(vcellSchema, password, dbHostName, dbSrvcName, backupFile);
-//			System.out.println(exportCommand);
-			//Create export Process
-			ProcessInfo exportProcessInfo = spawnProcess(exportCommand);
-			//Deal with stream listener errors
-			String combinedExportOutput = combineStreamStrings(exportProcessInfo.normalOutput, exportProcessInfo.errorOutput);
-			if(exportProcessInfo.normalOutput.getReaderException() != null || exportProcessInfo.errorOutput.getReaderException() != null){
-				throw new Exception("Error in script StreamRead:\r\n"+combinedExportOutput);
+		ArrayList<String> infoList = new ArrayList<String>();
+		ArrayList<Exception> errorList = new ArrayList<Exception>();
+		
+		public DBBackupHelper(String[] args){
+			if(args.length != 6/* && args.length != 8*/){
+				usageExit();
 			}
-			//Finish
-			String exportCommandWithoutPassword = createExportCommand(vcellSchema, null, dbHostName, dbSrvcName, backupFile);
+			dbHostName = args[0];
+			vcellSchema = args[1];
+			password = args[2];
+			dbSrvcName = args[3];
+			workingDir = new File(args[4]);
+			exportDir = new File(args[5]);
+			
+//			if(args.length == 8){
+//				amplistorCredential = new AmplistorCredential(args[6], args[7]);
+//			}
+			
+			if(!workingDir.exists()){
+				throw new IllegalArgumentException("Working directory"+workingDir.getAbsolutePath()+" does not exist");
+			}
+			if(!exportDir.exists()){
+				throw new IllegalArgumentException("Export directory"+exportDir.getAbsolutePath()+" does not exist");
+			}
+//			actionBaseFileName = action+"_"+createBaseFileName(dbHostName, dbSrvcName, vcellSchema);;
+			localDMPFile = new File(workingDir,createBaseFileName(dbHostName, dbSrvcName, vcellSchema)+".dmp");
+			remoteZipFile = new File(exportDir,localDMPFile.getName()+".zip");
+			remoteDMPFile =  new File(exportDir,localDMPFile.getName());	
+		}
+	}
+	private static String getAmplistorDBBackupURL(){
+		return AmplistorUtils.DEFAULT_AMPLI_VCELL_VCDBBACKUP_URL;
+	}
+	private static void tryExport(DBBackupHelper dbBackupHelper){
+		try{
+			String exportCommand = createExportCommand(dbBackupHelper.vcellSchema, dbBackupHelper.password, dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.localDMPFile);
+			ProcessInfo exportProcessInfo = spawnProcess(exportCommand);
+			String combinedOutput = combineStreamStrings(exportProcessInfo.normalOutput, exportProcessInfo.errorOutput);
+			if(exportProcessInfo.normalOutput.getReaderException() != null || exportProcessInfo.errorOutput.getReaderException() != null){
+				throw new Exception("Error in script StreamRead:\r\n"+combinedOutput);
+			}
 			if(exportProcessInfo.returnCode == 0){
-				ProcessInfo moveProcessInfo = spawnProcess("cmd /c robocopy "+workingDir+" "+exportDir+" "+backupFile.getName()+" /mov");
-				String combinedCopyOutput = combineStreamStrings(moveProcessInfo.normalOutput, moveProcessInfo.errorOutput);
-				String combinedExportCopyOutput = "\r\n-----Export Info-----\r\n"+combinedExportOutput+"\r\n-----Copy Info-----\r\n"+combinedCopyOutput;
-//				spawnProcess("cmd /c MOVE /y "+backupFile+" "+exportDir);
-////				Process moveProcess = Runtime.getRuntime().exec("cmd /c MOVE /y "+backupFile+" "+exportDir);
-////				moveProcess.waitFor();
-////				String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
-				writeFile(workingDir, baseFileName,"Export output:\r\n"+
-						exportCommandWithoutPassword+"\r\n"+combinedExportCopyOutput,false, exportDir);
+				dbBackupHelper.bExportSucceed = true;
+				dbBackupHelper.infoList.add("-----Export Info-----\r\n"+combinedOutput);
 			}else{
-				String delBackupFailMessage = deleteBackup(backupFile);
-//				String combinedOutput = combineStreamStrings(processInfo.normalOutput, processInfo.errorOutput);
-				writeFile(workingDir, baseFileName,
-						"Export Error: (return code="+exportProcessInfo.returnCode+")\r\n"+
-						(delBackupFailMessage==null?"":delBackupFailMessage+"\r\n")+
-						exportCommandWithoutPassword+"\r\n"+combinedExportOutput,true, exportDir);
+				String exportCommandWithoutPassword = createExportCommand(dbBackupHelper.vcellSchema, null, dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.localDMPFile);
+				throw new Exception("Export Error: (return code="+exportProcessInfo.returnCode+")\r\n"+exportCommandWithoutPassword+"\r\n"+combinedOutput);			
 			}
 		}catch(Exception e){
-			String delBackupFailMessage = deleteBackup(backupFile);
-			writeFile(workingDir, baseFileName,
-				"Script Error:\r\n"+e.getClass().getName()+" "+e.getMessage()+
-				(delBackupFailMessage==null?"":"\r\n"+delBackupFailMessage),true, exportDir);
+			dbBackupHelper.bExportSucceed = false;
+			dbBackupHelper.errorList.add(e);
+		}
+	}
+	
+	private static void tryCompress(DBBackupHelper dbBackupHelper){
+		if(!Boolean.TRUE.equals(dbBackupHelper.bExportSucceed)){
+			return;
+		}
+		BufferedInputStream fis = null;
+		ZipOutputStream zos = null;
+		try{
+			fis = new BufferedInputStream(new FileInputStream(dbBackupHelper.localDMPFile),1048576);
+			FileOutputStream fos = new FileOutputStream(dbBackupHelper.remoteZipFile);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			zos = new ZipOutputStream(bos);
+			ZipEntry ze = new ZipEntry(dbBackupHelper.localDMPFile.getName());
+			zos.putNextEntry(ze);
+			byte[] tempBuffer = new byte[1048576];
+			int numRead = -1;
+			while(true){
+				if((numRead = fis.read(tempBuffer)) == -1){
+					break;
+				}
+				zos.write(tempBuffer, 0, numRead);
+			}
+			zos.closeEntry();
+			zos.finish();
+			zos.close();
+			fis.close();
+			
+			//Now check integrity
+			if(bCheckIntegrity){
+				long begintime = System.currentTimeMillis();
+				checkZipIntegrity(dbBackupHelper.localDMPFile, dbBackupHelper.remoteZipFile);
+				dbBackupHelper.infoList.add("Integrity check took "+((System.currentTimeMillis()-begintime)/1000)+" seconds");
+			}
+			
+			dbBackupHelper.bCompressSucceed = true;
+			double compressionPercent = 100 *(1.0 - (double)dbBackupHelper.remoteZipFile.length()/(double)dbBackupHelper.localDMPFile.length());
+			dbBackupHelper.infoList.add("\r\n-----Compress Info-----\r\n"+"Compress succeeded, ratio="+NumberUtils.formatNumber(compressionPercent, 4));
+
+
+		}catch(Exception e){
+			dbBackupHelper.bCompressSucceed = false;
+			dbBackupHelper.errorList.add(e);
+		}finally{
+			if(zos != null){try{zos.close();}catch(Exception e2){dbBackupHelper.errorList.add(e2);}}
+			if(fis != null){try{fis.close();}catch(Exception e2){dbBackupHelper.errorList.add(e2);}}
 		}
 
 	}
-	private static File findExecutableOnPath(String executableName)   
-    {   
-        String systemPath = System.getenv("PATH");
-        if(systemPath == null){
-        	systemPath = System.getenv("path");
-        }
-        if(systemPath == null){
-        	return null;
-        }
-        String[] pathDirs = systemPath.split(File.pathSeparator);   
-    
-        File fullyQualifiedExecutable = null;   
-        for (String pathDir : pathDirs)   
-        {   
-            File file = new File(pathDir, executableName);   
-            if (file.isFile())   
-            {   
-                fullyQualifiedExecutable = file;   
-                break;   
-            }   
-        }   
-        return fullyQualifiedExecutable;   
-    }   
+	
+	public static void checkZipIntegrity(File uncompressedFile,File ZipCompressedFile) throws Exception{
+		BufferedInputStream fis = null;
+		ZipFile zipfile = null;
+		try{
+			fis = (uncompressedFile == null?null:new BufferedInputStream(new FileInputStream(uncompressedFile),1048576));
+			zipfile = new ZipFile(ZipCompressedFile);
+			ZipEntry zipEntry = zipfile.entries().nextElement();
+			InputStream zis = zipfile.getInputStream(zipEntry);
+			int fisInt=  -1;
+			int zisInt = -1;
+			int uncompressIndex = 0;
+			int zipIndex = 0;
+			int uncompressEnd = 0;
+			int zipEnd = 0;
+			byte[] uncompressBuffer = new byte[1048576];
+			byte[] zipBuffer = new byte[1048576];
+			long totalIn = 0;
+			CRC32 crc32 = new CRC32();
+			while(true){
+				if(fis != null && uncompressIndex == uncompressEnd){
+					uncompressIndex = 0;
+					uncompressEnd = fis.read(uncompressBuffer);
+				}
+				if(zipIndex == zipEnd){
+					zipIndex = 0;
+					zipEnd = zis.read(zipBuffer);
+					if(zipEnd != -1){
+						crc32.update(zipBuffer, 0, zipEnd);
+						if(totalIn/100000000 != (totalIn+zipEnd)/100000000){
+							System.out.println((totalIn+zipEnd)/100000000);
+						}
+						totalIn+= zipEnd;
+					}
+				}
+				if((fis == null || uncompressEnd == -1) && zipEnd == -1){
+					if(totalIn != (zipEntry.getSize()==-1?totalIn:zipEntry.getSize()) || crc32.getValue() != (zipEntry.getCrc()==-1?crc32.getValue():zipEntry.getCrc())){
+						throw new Exception("size or crc32 doesn't match");
+					}
+					break;
+				}else if(uncompressEnd != -1 && zipEnd != -1){
+					zisInt = zipBuffer[zipIndex++];
+					fisInt = (fis==null?zisInt:uncompressBuffer[uncompressIndex++]);
+
+					if(fisInt != zisInt){
+						throw new Exception("Erro: Zip compress check, uncompressed bytes differ");
+					}
+				}else{
+					throw new Exception("Error: Zip compress check, One stream ended before the other");
+				}
+			}
+		}finally{
+			if(fis != null){try{fis.close();}catch(Exception e2){}}
+			if(zipfile != null){try{zipfile.close();}catch(Exception e2){}}			
+		}
+	}
+	private static void tryRobocopy(DBBackupHelper dbBackupHelper){
+		if(!Boolean.TRUE.equals(dbBackupHelper.bExportSucceed) || Boolean.TRUE.equals(dbBackupHelper.bCompressSucceed)){
+			return;
+		}
+		try{
+			ProcessInfo moveProcessInfo = spawnProcess("cmd /c robocopy "+dbBackupHelper.workingDir+" "+dbBackupHelper.exportDir+" "+dbBackupHelper.localDMPFile.getName()+" /mov");
+			String combinedOutput = combineStreamStrings(moveProcessInfo.normalOutput, moveProcessInfo.errorOutput);
+			if(moveProcessInfo.normalOutput.getReaderException() != null || moveProcessInfo.errorOutput.getReaderException() != null){
+				throw new Exception("Error in script StreamRead:\r\n"+combinedOutput);
+			}
+			if(moveProcessInfo.returnCode == 0){
+				dbBackupHelper.bRobocopySucceed = true;
+				dbBackupHelper.infoList.add("-----Robocopy Info-----\r\n"+combinedOutput);
+			}else{
+				throw new Exception("Robocopy Error: (return code="+moveProcessInfo.returnCode+")\r\n"+"\r\n"+combinedOutput);
+			}
+		}catch(Exception e){
+			dbBackupHelper.bRobocopySucceed = false;
+			dbBackupHelper.errorList.add(e);
+		}
+
+	}
+	
+	private static void tryAmplistor(DBBackupHelper dbBackupHelper){
+		if(!Boolean.TRUE.equals(dbBackupHelper.bExportSucceed)){
+			return;
+		}
+//		if(dbBackupHelper.amplistorCredential == null){
+//			return;
+//		}
+		try{
+			if(dbBackupHelper.bCompressSucceed && dbBackupHelper.remoteZipFile.exists()){
+				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.remoteZipFile, null/*dbBackupHelper.amplistorCredential*/);
+			}else if(dbBackupHelper.bRobocopySucceed && dbBackupHelper.remoteDMPFile.exists()){
+				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.remoteDMPFile, null/*dbBackupHelper.amplistorCredential*/);
+			}else if(dbBackupHelper.bExportSucceed && dbBackupHelper.localDMPFile.exists()){
+				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()),dbBackupHelper.localDMPFile, null/*dbBackupHelper.amplistorCredential*/);
+			}else{
+				throw new Exception(
+					"Unkown state \n"+
+				"bCompressSucceed="+dbBackupHelper.bCompressSucceed+" reoteCompressExists="+dbBackupHelper.remoteZipFile.exists()+"\n"+
+				"bRobocopySucceed="+dbBackupHelper.bRobocopySucceed+" remoteDMPExists="+dbBackupHelper.remoteDMPFile.exists()+"\n"+
+				"bExportSucceed="+dbBackupHelper.bExportSucceed+" localExportExists="+dbBackupHelper.localDMPFile.exists()+"\n"
+				);
+			}
+			dbBackupHelper.bAmplistorSucceed = true;
+			dbBackupHelper.infoList.add("Amplistor xfer succeeded");
+		}catch(Exception e){
+			dbBackupHelper.bAmplistorSucceed = false;
+			dbBackupHelper.errorList.add(e);
+		}
+
+	}
+	
+	private static void tryCleanup(DBBackupHelper dbBackupHelper){
+		String errorStr = null;
+		if((errorStr = deleteBackup(dbBackupHelper.localDMPFile)) != null){dbBackupHelper.errorList.add(new Exception(errorStr));}
+		if(Boolean.FALSE.equals(dbBackupHelper.bCompressSucceed)){
+			if((errorStr = deleteBackup(dbBackupHelper.remoteZipFile)) != null){dbBackupHelper.errorList.add(new Exception(errorStr));}
+		}if(Boolean.FALSE.equals(dbBackupHelper.bRobocopySucceed)){
+			if((errorStr = deleteBackup(dbBackupHelper.remoteDMPFile)) != null){dbBackupHelper.errorList.add(new Exception(errorStr));}
+		}
+		
+		String baseFileName = OP_BACKUP+"_"+createBaseFileName(dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.vcellSchema);
+
+		StringBuffer infoSB = new StringBuffer();
+		for(String str:dbBackupHelper.infoList){
+			infoSB.append(str+"\r\n");
+		}
+		if(infoSB.length() != 0){
+			try{
+				writeFile(dbBackupHelper.workingDir, baseFileName, infoSB.toString(), false, dbBackupHelper.exportDir);
+				AmplistorUtils.uploadString(getAmplistorDBBackupURL()+getErrorInfoFile(dbBackupHelper.workingDir, baseFileName, false).getName(), null/*dbBackupHelper.amplistorCredential*/,infoSB.toString());
+			}catch(Exception e){
+				dbBackupHelper.errorList.add(e);
+			}
+		}
+		
+		StringBuffer errorSB = new StringBuffer();
+		for(Exception e:dbBackupHelper.errorList){
+			errorSB.append("--- "+e.getClass().getSimpleName()+"---"+e.getMessage()+"\r\n");
+		}
+		if(errorSB.length() != 0){
+			writeFile(dbBackupHelper.workingDir, baseFileName, errorSB.toString(), true, null);
+		}
+
+		
+	}
+	private static void backup(String[] args){
+		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
+		tryExport(dbBackupHelper);
+		tryCompress(dbBackupHelper);
+		tryRobocopy(dbBackupHelper);
+		tryAmplistor(dbBackupHelper);
+		tryCleanup(dbBackupHelper);
+	}
+//	private static File findExecutableOnPath(String executableName)   
+//    {   
+//        String systemPath = System.getenv("PATH");
+//        if(systemPath == null){
+//        	systemPath = System.getenv("path");
+//        }
+//        if(systemPath == null){
+//        	return null;
+//        }
+//        String[] pathDirs = systemPath.split(File.pathSeparator);   
+//    
+//        File fullyQualifiedExecutable = null;   
+//        for (String pathDir : pathDirs)   
+//        {   
+//            File file = new File(pathDir, executableName);   
+//            if (file.isFile())   
+//            {   
+//                fullyQualifiedExecutable = file;   
+//                break;   
+//            }   
+//        }   
+//        return fullyQualifiedExecutable;   
+//    }   
 
 	private static String deleteBackup(File backupFile){
 		if(backupFile == null){
@@ -478,10 +702,13 @@ public class DBBackupAndClean {
 //			return true;
 //		}
 //	}
+	private static File getErrorInfoFile(File workingDir,String baseFileName,boolean isErrorFile){
+		return new File(workingDir,baseFileName+(isErrorFile?"_error":"_info")+".txt");
+	}
 	private static void writeFile(File workingDir,String baseFileName,String fileText,boolean isErrorFile,File exportDir) throws Error{
 		FileOutputStream fos = null;
 		try {
-			File outFile = new File(workingDir,baseFileName+(isErrorFile?"_error":"_info")+".txt");
+			File outFile = getErrorInfoFile(workingDir, baseFileName, isErrorFile);
 			fos = new FileOutputStream(outFile);
 			fos.write(fileText.getBytes());
 			fos.close();
@@ -816,20 +1043,12 @@ public class DBBackupAndClean {
 	}
 
 	private static void clean(String[] args) {
-		if(args.length != 6){
-			usageExit();
-		}
-		String dbHostName = args[0];
-		String vcellSchema = args[1];
-		String password = args[2];
-		String dbSrvcName = args[3];
-		File workingDir = new File(args[4]);
-		File exportDir = new File(args[5]);
+		DBBackupHelper dbBackupHelper = new DBBackupHelper(args);
 		
 		OracleDataSource oracleDataSource  = null;
 		Connection con = null;
 		
-		String baseFileName = createBaseFileName(dbHostName, dbSrvcName, vcellSchema);
+		String baseFileName = createBaseFileName(dbBackupHelper.dbHostName, dbBackupHelper.dbSrvcName, dbBackupHelper.vcellSchema);
 		baseFileName = OP_CLEAN+"_"+baseFileName;
 
 		StringBuffer logStringBuffer = new StringBuffer();
@@ -838,7 +1057,7 @@ public class DBBackupAndClean {
 			oracleDataSource = new OracleDataSource();
 			//jdbc:oracle:<drivertype>:<username/password>@<database>
 			//<database> = <host>:<port>:<SID>
-			String url = "jdbc:oracle:thin:"+vcellSchema+"/"+password+"@//"+dbHostName+":1521/"+dbSrvcName;
+			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			oracleDataSource.setURL(url);
 
 			con = oracleDataSource.getConnection();
@@ -858,11 +1077,17 @@ public class DBBackupAndClean {
 			cleanRemoveUnReferencedModels(con, logStringBuffer);
 			
 			cleanRemoveUnReferencedSotwareVersions(con, logStringBuffer);
+
+			writeFile(dbBackupHelper.workingDir, baseFileName, logStringBuffer.toString(), false, dbBackupHelper.exportDir);
 			
-			writeFile(workingDir, baseFileName, logStringBuffer.toString(), false, exportDir);
+			File remoteCleanfile = getErrorInfoFile(dbBackupHelper.exportDir, baseFileName, false);
+			if(remoteCleanfile.exists()){
+				AmplistorUtils.uploadFile(new URL(getAmplistorDBBackupURL()), remoteCleanfile, null/*dbBackupHelper.amplistorCredential*/);
+			}
+
 
 		}catch(Exception e){
-			writeFile(workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, exportDir);
+			writeFile(dbBackupHelper.workingDir, baseFileName, e.getClass().getName()+"\n"+e.getMessage(),true, dbBackupHelper.exportDir);
 		}finally{
 			if(con != null){
 				try{con.close();}catch(Exception e){logStringBuffer.append("\n"+e.getClass().getName()+"\n"+e.getMessage());}

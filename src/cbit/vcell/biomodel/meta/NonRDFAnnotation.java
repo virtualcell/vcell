@@ -79,8 +79,8 @@ public class NonRDFAnnotation implements Matchable {
 			if (xmlAnnotations.length != nonRDFAnnotation.xmlAnnotations.length) {
 				return false;
 			}
-			TreeSet<String> myXmlAnnots = new TreeSet<>();
-			TreeSet<String> otherXmlAnnots = new TreeSet<>();
+			TreeSet<String> myXmlAnnots = new TreeSet<String>();
+			TreeSet<String> otherXmlAnnots = new TreeSet<String>();
 			for (int i = 0; i < xmlAnnotations.length; i ++) {
 				myXmlAnnots.add(XmlUtil.xmlToString(xmlAnnotations[i]));
 				otherXmlAnnots.add(XmlUtil.xmlToString(nonRDFAnnotation.xmlAnnotations[i]));

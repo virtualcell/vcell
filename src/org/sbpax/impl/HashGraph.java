@@ -73,7 +73,7 @@ public class HashGraph implements Graph {
 			Iterator<Statement> stiter1 = statements.iterator();
 			Iterator<Statement> stiter2 = ((HashGraph) o).statements.iterator();
 			HashMap<String, Statement[]> stmtObjRefHash = new HashMap<String, Statement[]>();
-			ArrayList<String> postLookupArr = new ArrayList<>();
+			ArrayList<String> postLookupArr = new ArrayList<String>();
 			while (stiter1.hasNext()){
 				Statement st1 = stiter1.next();
 				Statement st2 = stiter2.next();
