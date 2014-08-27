@@ -27,6 +27,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -1452,6 +1453,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			imagePane.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseExited(MouseEvent e){
 					imagePane.setCursor(Cursor.getDefaultCursor());
+					imagePane.setBrush(null);
+					imagePane.refreshImage();
 					updateLabel(-1, -1);
 					if(histogramPanel.isVisible()){
 						histogramPanel.setSpecialValue(null);
@@ -1466,13 +1469,16 @@ public class OverlayEditorPanelJAI extends JPanel{
 					lastMousePoint = e.getPoint();
 					if(showConvertPopup(e,true) == SHOWCONVERT.HANDLED){
 						return;
-					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected())){
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
 						if(roiComboBox.getItemCount() == 0){
 							giveROIRequiredWarning("paint or erase");
 							return;
 						}
 						firePropertyChange(FRAP_DATA_PAINTERASE_PROPERTY, null, null);
-						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
+						getImagePane().setBrush(null);
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.startBrushSizeClickDragMode(e);
 					}
 				}
 				public void mouseReleased(MouseEvent e){
@@ -1481,7 +1487,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 					if(showConvertPopup(e,true) == SHOWCONVERT.HANDLED){
 						return;
-					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected())){
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
+						getImagePane().setBrush(brushToolHelper.getBrushShape(e));
 						firePropertyChange(FRAP_DATA_PAINTERASE_FINISH_PROPERTY, null, e);
 					}else if(SwingUtilities.isLeftMouseButton(e) && cropButton.isSelected()){
 						ISize iSize = getISizeDataset();
@@ -1517,6 +1524,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 
 						//tell manager about crop
 						firePropertyChange(FRAP_DATA_CROP_PROPERTY, null, cropRect);
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.stopBrushSizeClickDragMode(e,imagePane);
 					}
 				}
 				@Override
@@ -1546,18 +1555,10 @@ public class OverlayEditorPanelJAI extends JPanel{
 				@Override
 				public void mouseEntered(MouseEvent e) {
 					//Set cursor
-					if(paintButton.isSelected()){
-						imagePane.setCursor(paintCursor);
-					}else if(eraseButton.isSelected()){
-						imagePane.setCursor(eraserCursor);
-					}else if(fillButton.isSelected()){
-						imagePane.setCursor(fillCursor);
-					}else if(cropButton.isSelected()){
-						imagePane.setCursor(cropCursor);
-					}else{
-						imagePane.setCursor(Cursor.getDefaultCursor());
+					changeCursor();
+					if(!paintButton.isSelected() && !eraseButton.isSelected()){
+						getImagePane().setBrush(null);
 					}
-					
 				}
 			});
 			imagePane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {   
@@ -1567,23 +1568,43 @@ public class OverlayEditorPanelJAI extends JPanel{
 					if(!bAllowAddROI){
 						return;
 					}
-					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected())){
-						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushRadius(), eraseButton.isSelected());
+					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
+						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
 						lastMousePoint = e.getPoint();
 					}else if(SwingUtilities.isLeftMouseButton(e) && cropButton.isSelected()){
 						imagePane.setCrop(lastMousePoint, e.getPoint());
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.dragBrushSizeClickDragMode(e, imagePane);
 					}
 				}
 				@Override
 				public void mouseMoved(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
+					if(!brushToolHelper.isBrushSizeClickDragMode() && (paintButton.isSelected() || eraseButton.isSelected())){
+						getImagePane().setBrush(brushToolHelper.getBrushShape(e));
+						getImagePane().refreshImage();
+					}
 				}
 			});
 		}
 		return imagePane;
 	}
 	
-
+	private void changeCursor(){
+		if(brushToolHelper.isBrushSizeClickDragMode()){
+			imagePane.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		}else if(paintButton.isSelected()){
+			imagePane.setCursor(paintCursor);
+		}else if(eraseButton.isSelected()){
+			imagePane.setCursor(eraserCursor);
+		}else if(fillButton.isSelected()){
+			imagePane.setCursor(fillCursor);
+		}else if(cropButton.isSelected()){
+			imagePane.setCursor(cropCursor);
+		}else{
+			imagePane.setCursor(Cursor.getDefaultCursor());
+		}
+	}
 	private Cursor createCursor(String cursorName){
 		URL cursorURL = null;
 		Dimension bestCursorDim = Toolkit.getDefaultToolkit().getBestCursorSize(16, 16);
@@ -1835,29 +1856,24 @@ public class OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
-	public static class BrushToolHelper extends MouseAdapter {
+	
+	public static class BrushToolHelper extends MouseAdapter implements ChangeListener{
+		public interface CursorChanger{
+			void changeCursors();
+		}
+		private boolean bBrushSizeMode = false;
 		private int brushRadius;
 		private AbstractButton[] jButtons;
 		private JPopupMenu jPopupMenu;
-		private Component parentForInputDialog;
-		private Component triggersMenuHideWhenEntered;
-		public BrushToolHelper(AbstractButton[] jButtons,int brushRadius,Component parentForInputDialog,Component triggersMenuHideWhenEntered){
+		CursorChanger cursorChanger;
+		public BrushToolHelper(AbstractButton[] jButtons,int brushRadius,CursorChanger cursorChanger){
 			this.jButtons = jButtons;
 			this.brushRadius = brushRadius;
-			this.parentForInputDialog = parentForInputDialog;
-			this.triggersMenuHideWhenEntered = triggersMenuHideWhenEntered;
+			this.cursorChanger = cursorChanger;
 			
-			triggersMenuHideWhenEntered.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					// TODO Auto-generated method stub
-					super.mouseEntered(e);
-					hidePopup();
-				}
-			});
 			jPopupMenu = new JPopupMenu();
-			JMenuItem size = new JMenuItem("paint/erase brush size...");
-			size.addActionListener(new ActionListener() {
+			JMenuItem sizeManual = new JMenuItem("brush size manual...");
+			sizeManual.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try{
@@ -1874,34 +1890,59 @@ public class OverlayEditorPanelJAI extends JPanel{
 					}
 				}
 			});
+			JMenuItem sizeClickDrag = new JMenuItem("brush size click/drag...");
+			sizeClickDrag.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					bBrushSizeMode = true;
+				}
+			});
 			
-//			jPopupMenu.addMouseListener(new MouseAdapter() {
-//				@Override
-//				public void mouseExited(MouseEvent e) {
-//					// TODO Auto-generated method stub
-//					super.mouseExited(e);
-//					boolean bMouseEnteredItem = false;
-//					for(AbstractButton jButton:BrushToolHelper.this.jButtons){
-//						if(SwingUtilities.getDeepestComponentAt(jPopupMenu, e.getX(), e.getY()) != null){
-//							bMouseEnteredItem = true;
-//							break;
-//						}
-//					}
-//					if(!bMouseEnteredItem){
-//						jPopupMenu.setVisible(false);
-//					}
-//				}				
-//			});
-			jPopupMenu.add(size);
+			jPopupMenu.add(sizeManual);
+			jPopupMenu.add(sizeClickDrag);
 			
 			for(AbstractButton jButton:jButtons){
 				jButton.addMouseListener(this);
+				jButton.addChangeListener(this);
 			}
 		}
-		public int getBrushRadius(){
-			return brushRadius;
+		private MouseEvent clickDragStart;
+//		private MouseEvent clickDragEnd;
+		public void startBrushSizeClickDragMode(MouseEvent e){
+			clickDragStart = e;
+			updateBrushRadius(null);
 		}
-		private void hidePopup(){
+		public void stopBrushSizeClickDragMode(MouseEvent e,OverlayImageDisplayJAI overlayImageDisplayJAI){
+			bBrushSizeMode = false;
+			if(cursorChanger!=null){
+				cursorChanger.changeCursors();
+			}
+			overlayImageDisplayJAI.setBrush(getBrushShape(e));
+			clickDragStart = null;
+			overlayImageDisplayJAI.refreshImage();
+		}
+		public void dragBrushSizeClickDragMode(MouseEvent e,OverlayImageDisplayJAI overlayImageDisplayJAI){
+			updateBrushRadius(e);
+			overlayImageDisplayJAI.setBrush(getBrushShape(e));
+			overlayImageDisplayJAI.refreshImage();
+		}
+		private void updateBrushRadius(MouseEvent clickDragEnd){
+			brushRadius = (int)clickDragStart.getPoint().distance((clickDragEnd==null?clickDragStart.getPoint():clickDragEnd.getPoint()));
+		}
+		public Ellipse2D.Double getBrushShape(MouseEvent e){
+			return new Ellipse2D.Double(
+					e.getPoint().getX()-brushRadius,
+					e.getPoint().getY()-brushRadius,
+					brushRadius*2,brushRadius*2
+				);
+		}
+		public boolean isBrushSizeClickDragMode(){
+			return bBrushSizeMode;
+		}
+		public int getBrushSize(double zoom){
+			return (int)(brushRadius*2/zoom);
+		}
+		public void hidePopup(){
 			if(jPopupMenu.isVisible()){
 				jPopupMenu.setVisible(false);
 			}
@@ -1937,6 +1978,25 @@ public class OverlayEditorPanelJAI extends JPanel{
 			if(e.isPopupTrigger()){
 				doClick(e);
 				jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+			}
+		}
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			// TODO Auto-generated method stub
+			if(bBrushSizeMode){
+				boolean bAllOff = true;
+				for(AbstractButton jButton:jButtons){
+					if(jButton.isSelected()){
+						bAllOff = false;
+						break;
+					}
+				}
+				if(bAllOff){
+					bBrushSizeMode = false;
+					if(cursorChanger != null){
+						cursorChanger.changeCursors();
+					}
+				}
 			}
 		}
 		
@@ -2096,7 +2156,22 @@ public class OverlayEditorPanelJAI extends JPanel{
 			gridBagConstraints_2.gridx = 1;
 			toolButtonPanel.add(eraseButton, gridBagConstraints_2);
 
-			brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,toolButtonPanel,getImagePane());
+			brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,
+				new BrushToolHelper.CursorChanger() {
+					@Override
+					public void changeCursors() {
+						OverlayEditorPanelJAI.this.changeCursor();
+					}
+				});
+			getImagePane().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					// TODO Auto-generated method stub
+					super.mouseEntered(e);
+					brushToolHelper.hidePopup();
+				}
+				
+			});
 
 			fillButton = new JToggleButton(new ImageIcon(getClass().getResource("/images/fill.gif")));
 			fillButton.setName("roiFillBtn");

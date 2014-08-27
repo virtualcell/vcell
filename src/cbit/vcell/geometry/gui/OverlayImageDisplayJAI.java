@@ -18,6 +18,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
@@ -448,6 +450,17 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 	public Rectangle getCrop(){
 		return cropRect;
 	}
+	
+	private Shape brushShape;
+	private final float[] dash = { 3F, 3F };  
+	private final Stroke dashedStroke = new BasicStroke( .5F, BasicStroke.CAP_SQUARE,BasicStroke.JOIN_MITER, 3F, dash, 0F );  
+	public void setBrush(Ellipse2D.Double brushShape){
+		if(brushShape == null){
+			this.brushShape = null;
+			return;
+		}
+		this.brushShape = dashedStroke.createStrokedShape(brushShape);  ;
+	}
 	public void paint(Graphics g){
 		super.paint(g);
 		if(getCrop() != null){
@@ -473,8 +486,10 @@ public class OverlayImageDisplayJAI extends DisplayJAI{
 			}finally{
 				tempG.dispose();
 			}
+		}else if(brushShape != null){
+			g.setColor(Color.green);
+			((Graphics2D)g).draw(brushShape);
 		}
 	}
-
 
 }
