@@ -1912,7 +1912,11 @@ public class OverlayEditorPanelJAI extends JPanel{
 			clickDragStart = e;
 			updateBrushRadius(null);
 		}
-		public void stopBrushSizeClickDragMode(MouseEvent e,OverlayImageDisplayJAI overlayImageDisplayJAI){
+		public interface BrushRefresh {
+			void setBrush(Ellipse2D.Double brushShape);
+			void refreshImage();
+		}
+		public void stopBrushSizeClickDragMode(MouseEvent e,BrushRefresh overlayImageDisplayJAI){
 			bBrushSizeMode = false;
 			if(cursorChanger!=null){
 				cursorChanger.changeCursors();
@@ -1921,7 +1925,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			clickDragStart = null;
 			overlayImageDisplayJAI.refreshImage();
 		}
-		public void dragBrushSizeClickDragMode(MouseEvent e,OverlayImageDisplayJAI overlayImageDisplayJAI){
+		public void dragBrushSizeClickDragMode(MouseEvent e,BrushRefresh overlayImageDisplayJAI){
 			updateBrushRadius(e);
 			overlayImageDisplayJAI.setBrush(getBrushShape(e));
 			overlayImageDisplayJAI.refreshImage();

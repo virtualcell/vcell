@@ -36,11 +36,13 @@ import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
+
 import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  */
-public class OverlayImageDisplayJAI extends DisplayJAI{
+public class OverlayImageDisplayJAI extends DisplayJAI implements BrushRefresh{
 	private BufferedImage underlyingImage = null;
 	private BufferedImage highlightImage = null;
 	private short[] highlightImageWritebackBuffer = null;

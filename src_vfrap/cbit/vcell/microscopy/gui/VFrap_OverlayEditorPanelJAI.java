@@ -12,6 +12,7 @@ package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -24,12 +25,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Hashtable;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,13 +41,18 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
@@ -57,6 +65,7 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -70,7 +79,7 @@ import cbit.vcell.microscopy.VFrap_ROISourceData;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
-public class VFrap_OverlayEditorPanelJAI extends JPanel{
+public class VFrap_OverlayEditorPanelJAI extends JPanel {
 
 	
 	private static final long serialVersionUID = 1L;
@@ -924,24 +933,32 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			//imagePane = new ZoomableOverlayImagePane();
 			imagePane.addMouseListener(new java.awt.event.MouseAdapter() {
 				public void mouseExited(MouseEvent e){
+					imagePane.setBrush(null);
+					imagePane.refreshImage();
+					System.out.println(e);
 					updateLabel(-1, -1);
 				}
 				public void mousePressed(MouseEvent e){
 					updateLabel(e.getX(), e.getY());
 					lastHighlightPoint = e.getPoint();
 					saveUndoableROI();
-					if(paintButton.isSelected() || eraseButton.isSelected()){
+					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
+						getImagePane().setBrush(null);
 						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.startBrushSizeClickDragMode(e);
 					}
 				}
 				public void mouseReleased(MouseEvent e){
 
-					if(paintButton.isSelected()){
-						fireUndoableEditROI(EDITTYPE_PAINT);
-					}else if(eraseButton.isSelected()){
-						fireUndoableEditROI(EDITTYPE_ERASE);
+					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
+						getImagePane().setBrush(brushToolHelper.getBrushShape(e));
+						if(paintButton.isSelected()){ fireUndoableEditROI(EDITTYPE_PAINT);}
+						else if(eraseButton.isSelected()){fireUndoableEditROI(EDITTYPE_ERASE);}
 					}else if(fillButton.isSelected()){
 						//done later in 'click'
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.stopBrushSizeClickDragMode(e,imagePane);
 					}else{
 						fireUndoableEditROI(null);//remove any pending undoableEdit
 					}
@@ -1004,22 +1021,36 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 						}
 					}
 				}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					//Set cursor
+					if(!paintButton.isSelected() && !eraseButton.isSelected()){
+						getImagePane().setBrush(null);
+					}
+				}
+
 			});
 			imagePane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {   
 				@Override
 				public void mouseDragged(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
-					if(paintButton.isSelected() || eraseButton.isSelected()){
+					if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && !brushToolHelper.isBrushSizeClickDragMode()){
 						drawHighlight(e.getX(), e.getY(), brushToolHelper.getBrushSize(getImagePane().getZoom()), eraseButton.isSelected());
 						lastHighlightPoint = e.getPoint();
 //						VirtualFrapLoader.mf.setSaveStatus(true);
 					}else if(cropButton.isSelected()){
 						imagePane.setCrop(lastHighlightPoint, e.getPoint());
+					}else if(SwingUtilities.isLeftMouseButton(e) && (paintButton.isSelected() || eraseButton.isSelected()) && brushToolHelper.isBrushSizeClickDragMode()){
+						brushToolHelper.dragBrushSizeClickDragMode(e, imagePane); 
 					}
 				}
 				@Override
 				public void mouseMoved(java.awt.event.MouseEvent e) {
 					updateLabel(e.getX(), e.getY());
+					if(!brushToolHelper.isBrushSizeClickDragMode() && (paintButton.isSelected() || eraseButton.isSelected())){
+						getImagePane().setBrush(brushToolHelper.getBrushShape(e));
+						getImagePane().refreshImage();
+					}
 				}
 			});
 		}
@@ -1230,6 +1261,7 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 	 * 	
 	 * @return javax.swing.JPanel	
 	 */
+
 	private BrushToolHelper brushToolHelper;
 
 	private JPanel getRightPanel() {
@@ -1313,6 +1345,17 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			gridBagConstraints8.gridx = 0;
 			rightPanel.add(getEraseButton(), gridBagConstraints8);
 
+			brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,null);
+				getImagePane().addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						// TODO Auto-generated method stub
+						super.mouseEntered(e);
+						brushToolHelper.hidePopup();
+					}
+					
+				});
+
 			final GridBagConstraints gridBagConstraints9 = new GridBagConstraints();
 			gridBagConstraints9.gridy = 5;
 			gridBagConstraints9.gridx = 0;
@@ -1334,22 +1377,6 @@ public class VFrap_OverlayEditorPanelJAI extends JPanel{
 			rightPanel.add(getRoiTimePlotButton(), gridBagConstraints12);
 			
 		}
-		brushToolHelper = new BrushToolHelper(new JToggleButton[] {paintButton,eraseButton}, 10,
-			new BrushToolHelper.CursorChanger() {
-				@Override
-				public void changeCursors() {
-					//ignore
-				}
-		});
-		getImagePane().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				super.mouseEntered(e);
-				brushToolHelper.hidePopup();
-			}
-			
-		});
 
 		return rightPanel;
 	}
