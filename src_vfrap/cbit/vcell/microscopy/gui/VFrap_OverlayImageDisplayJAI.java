@@ -10,10 +10,15 @@
 
 package cbit.vcell.microscopy.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -30,12 +35,14 @@ import javax.media.jai.operator.ScaleDescriptor;
 
 import org.vcell.util.Range;
 
+import cbit.vcell.geometry.gui.OverlayEditorPanelJAI.BrushToolHelper.BrushRefresh;
+
 import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  */
 @SuppressWarnings("serial")
-public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
+public class VFrap_OverlayImageDisplayJAI extends DisplayJAI implements BrushRefresh{
 	private BufferedImage underlyingImage = null;
 	private BufferedImage highlightImage = null;
 	private RenderedImage alphaImageUnderlying = null;
@@ -214,7 +221,7 @@ public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
 		if (getHighlightImage()!=null){
 			Graphics graphicsUnscaled = getHighlightImage().getGraphics();
 			graphicsUnscaled.setColor(drawingColor);
-			int size = (int)(radius/zoom/*+radius/zoom*/+1);
+			int size = radius;//(int)(radius/zoom/*+radius/zoom*/+1);
 			//-----Interpolate between paint points for continuous lines
 			double currentX = lastHighlightPoint.x;
 			double currentY = lastHighlightPoint.y;
@@ -227,8 +234,13 @@ public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
 				if(i== 0 || (int)currentX != lastX || (int)currentY != lastY){
 					lastX = (int)currentX;
 					lastY = (int)currentY;
-					graphicsUnscaled.fillOval((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);
-//					graphicsScaled.fillOval(lastX-size, lastY-size, size, size);
+					if(graphicsUnscaled != null){
+						if(size >= 2){
+							graphicsUnscaled.fillOval((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);
+						}else{
+							graphicsUnscaled.drawRect((int)((lastX/zoom-(size/2))),(int)((lastY/zoom-(size/2))), size, size);
+						}
+					}
 				}
 				currentX = lastHighlightPoint.x+(i+1)*delta*dx;
 				currentY = lastHighlightPoint.y+(i+1)*delta*dy;
@@ -274,11 +286,26 @@ public class VFrap_OverlayImageDisplayJAI extends DisplayJAI {
 	public Rectangle getCrop(){
 		return cropRect;
 	}
+	
+	private Shape brushShape;
+	private final float[] dash = { 3F, 3F };  
+	private final Stroke dashedStroke = new BasicStroke( .5F, BasicStroke.CAP_SQUARE,BasicStroke.JOIN_MITER, 3F, dash, 0F );  
+	public void setBrush(Ellipse2D.Double brushShape){
+		if(brushShape == null){
+			this.brushShape = null;
+			return;
+		}
+		this.brushShape = dashedStroke.createStrokedShape(brushShape);  ;
+	}
+
 	public void paint(Graphics g){
 		super.paint(g);
 		if(getCrop() != null){
 			g.setColor(Color.green);
 			g.drawRect(getCrop().x,getCrop().y,getCrop().width,getCrop().height);
+		}else if(brushShape != null){
+			g.setColor(Color.green);
+			((Graphics2D)g).draw(brushShape);
 		}
 	}
 
