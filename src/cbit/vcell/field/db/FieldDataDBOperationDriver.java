@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field;
+package cbit.vcell.field.db;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +20,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import javax.swing.Timer;
 
 import org.vcell.util.DataAccessException;
@@ -30,6 +31,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
 
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationResults.FieldDataReferenceInfo;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;

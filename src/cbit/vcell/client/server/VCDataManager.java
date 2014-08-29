@@ -19,8 +19,8 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
-import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;

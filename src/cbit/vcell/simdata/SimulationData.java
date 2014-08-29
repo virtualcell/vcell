@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 
+
 //import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jdom.Document;
@@ -58,7 +59,6 @@ import org.vcell.vis.io.VCellSimFiles;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -2130,7 +2130,7 @@ public static String createCanonicalResampleFileName(SimResampleInfoProvider sim
 				simResampleInfoProvider.getSimulationKey(),
 				simResampleInfoProvider.getJobIndex(),
 				!simResampleInfoProvider.isParameterScanType())+
-		FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs);
+		SimulationData.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs);
 }
 
 public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
@@ -2323,6 +2323,15 @@ public VCDataIdentifier getVcDataId() {
 		VariableType variableType = VariableType.MEMBRANE;
 		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
 		return data == null ? null : new SimDataBlock(pdeDataInfo,data,variableType);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (9/21/2006 2:51:03 PM)
+	 * @return java.lang.String
+	 */
+	public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) {
+		return fieldFuncArgs.getUniqueID() + SimDataConstants.FIELDDATARESAMP_EXTENSION;
 	}
 
 }

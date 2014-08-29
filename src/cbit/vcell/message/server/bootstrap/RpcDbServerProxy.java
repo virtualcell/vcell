@@ -16,8 +16,8 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VersionableFamily;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.db.FieldDataDBOperationResults;
+import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCellQueue;

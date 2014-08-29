@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field;
+package cbit.vcell.field.io;
 
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;

@@ -37,7 +37,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
