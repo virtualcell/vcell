@@ -67,12 +67,16 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
@@ -81,6 +85,8 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -1106,7 +1112,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			java.util.Vector<String> nameVector = new java.util.Vector<String>();
 	
 			ModelOptimizationSpec modelOptimizationSpec = parameterEstimationTask.getModelOptimizationSpec();
-			ReferenceDataMappingSpec[] mappingSpecs = modelOptimizationSpec.getReferenceDataMappingSpecs();
+			final ReferenceDataMappingSpec[] mappingSpecs = modelOptimizationSpec.getReferenceDataMappingSpecs();
 			int timeIndex = modelOptimizationSpec.getReferenceDataTimeColumnIndex();
 	
 			ReferenceData referenceData = modelOptimizationSpec.getReferenceData();
@@ -1139,6 +1145,116 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}
 			DataSource[] dataSources = (DataSource[])BeanUtils.getArray(dataSourceList,DataSource.class);
 			MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
+			multisourcePlotPane.setSort(new Comparator<SortDataReferenceHelper>() {
+				@Override
+				public int compare(SortDataReferenceHelper o1, SortDataReferenceHelper o2) {
+					DataSource ds01 = o1.dataReference.getDataSource();
+					DataSource ds02 = o2.dataReference.getDataSource();
+//					System.out.println(ds01.getClass().getSimpleName()+" "+o1.dataReference.getIdentifier()+" "+ds02.getClass().getSimpleName()+" "+o2.dataReference.getIdentifier());
+					if(ds01 instanceof DataSource.DataSourceReferenceData){
+						if(ds02 instanceof DataSource.DataSourceReferenceData){//both reference data, sort names
+							boolean b01 = false;
+							boolean b02 = false;
+							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+//								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
+								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
+									continue;
+								}
+								if(o1.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
+									b01 = true;
+									o1.setReferenceDataMappingSpec(rdMappingSpec);
+								}else if(o2.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
+									b02 = true;
+									o2.setReferenceDataMappingSpec(rdMappingSpec);
+								}
+							}
+							if(b01 == b02){
+								return o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
+							}else if(b01 == true && b02 == false){
+								return -1;
+							}else{
+								return 1;
+							}
+						}else{//compare ref to ode
+							ReferenceDataMappingSpec mspec01 = null;
+							ReferenceDataMappingSpec mspec02 = null;
+							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
+								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
+									continue;
+								}
+								if(o1.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
+									mspec01 = rdMappingSpec;
+									o1.setReferenceDataMappingSpec(rdMappingSpec);
+								}else if(o2.dataReference.getIdentifier().equals(var.getName())){
+									mspec02 = rdMappingSpec;
+									o2.setReferenceDataMappingSpec(rdMappingSpec);
+								}
+							}
+							if(mspec01 == null && mspec02 == null){
+								return -1;
+							}else if(mspec01 != null && mspec02 == null){
+								return -1;
+							}else if(mspec02 != null && mspec01 == null){
+									return 1;
+							}else{
+								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
+							}
+						}
+					}else{
+						if(ds02 instanceof DataSource.DataSourceOdeSolverResultSet){//both OdeSolverResultSet data, sort names
+							boolean b01 = false;
+							boolean b02 = false;
+							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
+								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
+									continue;
+								}
+								if(o1.dataReference.getIdentifier().equals(var.getName())){
+									b01 = true;
+									o1.setReferenceDataMappingSpec(rdMappingSpec);
+								}else if(o2.dataReference.getIdentifier().equals(var.getName())){
+									b02 = true;
+									o2.setReferenceDataMappingSpec(rdMappingSpec);
+								}
+							}
+							if(b01 == b02){
+								return o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
+							}else if(b01 == true && b02 == false){
+								return -1;
+							}else{
+								return 1;
+							}
+						}else{//compare ode to ref
+							ReferenceDataMappingSpec mspec01 = null;
+							ReferenceDataMappingSpec mspec02 = null;
+							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
+								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
+								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
+									continue;
+								}
+								if(o2.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
+									mspec02 = rdMappingSpec;
+									o2.setReferenceDataMappingSpec(rdMappingSpec);
+								}else if(o1.dataReference.getIdentifier().equals(var.getName())){
+									mspec01 = rdMappingSpec;
+									o1.setReferenceDataMappingSpec(rdMappingSpec);
+								}
+							}
+							if(mspec01 == null && mspec02 == null){
+								return 1;
+							}else if(mspec01 != null && mspec02 == null){
+								return -1;
+							}else if(mspec02 != null && mspec01 == null){
+									return 1;
+							}else{
+								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
+							}							
+						}
+
+					}
+				}
+			});
 			multisourcePlotPane.setDataSources(dataSources);	
 	
 			String[] nameArray = new String[nameVector.size()];

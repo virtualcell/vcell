@@ -11,25 +11,21 @@
 package cbit.vcell.modelopt.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.Comparator;
 import java.util.Vector;
 
-import org.vcell.util.Range;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
 
 import cbit.plot.Plot2D;
 import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
-
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JPanel;
-import javax.swing.JCheckBox;
+import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -551,4 +547,8 @@ public void forceXYRange(Range xRange,Range yRange) {
 //		}
 //		return chckbxNewCheckBox;
 //	}
+	
+	public void setSort(Comparator<SortDataReferenceHelper> comparatorDataSource){
+		getmultisourcePlotListModel().setSort(comparatorDataSource);
+	}
 }
