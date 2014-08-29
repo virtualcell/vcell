@@ -38,7 +38,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
@@ -59,6 +58,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.LicenseManager;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;

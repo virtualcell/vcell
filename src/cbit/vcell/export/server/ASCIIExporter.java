@@ -22,11 +22,11 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleData;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;

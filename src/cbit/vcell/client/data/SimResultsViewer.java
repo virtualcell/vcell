@@ -29,13 +29,14 @@ import javax.swing.SwingConstants;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.export.ExportMonitorPanel;
+import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;

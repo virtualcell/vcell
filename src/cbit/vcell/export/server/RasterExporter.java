@@ -35,7 +35,6 @@ import org.vcell.vis.vismesh.VisDataset.VisDomain;
 import org.vcell.vis.vtk.VtkGridUtils;
 
 import vtk.vtkUnstructuredGrid;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdWriter;
@@ -43,6 +42,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSummaryDescriptor;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solvers.CartesianMesh;

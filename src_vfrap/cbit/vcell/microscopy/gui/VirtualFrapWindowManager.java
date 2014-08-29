@@ -28,7 +28,6 @@ import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.SimStatusEvent;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.desktop.controls.DataListener;
@@ -36,6 +35,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
 
 
 

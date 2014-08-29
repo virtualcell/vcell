@@ -16,7 +16,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.export.ExportMonitorPanel;
+import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
