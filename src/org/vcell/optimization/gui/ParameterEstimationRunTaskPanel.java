@@ -1145,7 +1145,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}
 			DataSource[] dataSources = (DataSource[])BeanUtils.getArray(dataSourceList,DataSource.class);
 			MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
-			multisourcePlotPane.setSort(new Comparator<SortDataReferenceHelper>() {
+			multisourcePlotPane.setGroupingListSorter(new Comparator<SortDataReferenceHelper>() {
 				@Override
 				public int compare(SortDataReferenceHelper o1, SortDataReferenceHelper o2) {
 					DataSource ds01 = o1.dataReference.getDataSource();

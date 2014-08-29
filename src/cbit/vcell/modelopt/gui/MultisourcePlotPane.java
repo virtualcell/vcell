@@ -11,12 +11,18 @@
 package cbit.vcell.modelopt.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.Comparator;
 import java.util.Vector;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 
+import org.apache.activemq.broker.ft.MasterConnector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
@@ -33,7 +39,7 @@ import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
  */
 public class MultisourcePlotPane extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.JList ivjJList1 = null;
+	private javax.swing.JList<DataReference> ivjJList1 = null;
 	private MultisourcePlotListModel ivjmultisourcePlotListModel = null;
 	private PlotPane ivjplotPane = null;
 	private DataSource[] fieldDataSources = null;
@@ -197,12 +203,71 @@ private DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getJList1() {
+private javax.swing.JList<DataReference> getJList1() {
 	if (ivjJList1 == null) {
 		try {
-			ivjJList1 = new javax.swing.JList();
+			ivjJList1 = new javax.swing.JList<DataReference>();
 			ivjJList1.setName("JList1");
 			ivjJList1.setBounds(0, 0, 255, 480);
+			ivjJList1.setCellRenderer(new ListCellRenderer<DataReference>() {
+				private Color getBG0(){
+					return new Color(180,180,180);
+				}
+				private Color getBG1(){
+					return new Color(200,200,200);
+				}
+				private Boolean isEvenMatchedSet(int index0){
+					if(ivjJList1.getModel().getSize() == 0){
+						return null;
+					}
+					if(getmultisourcePlotListModel().getSortedDataReferences().get(index0).matchCount == null){
+						//create matched set group counts (this happens 1 time)
+						int masterMatchCount = 0;
+						for(int i=0;i<ivjJList1.getModel().getSize();i++){
+							DataSource dataSource = getmultisourcePlotListModel().getSortedDataReferences().get(i).dataReference.getDataSource();
+							if(dataSource instanceof DataSource.DataSourceReferenceData){
+								if(i != ivjJList1.getModel().getSize()-1){
+									SortDataReferenceHelper mySortDataReferenceHelper = getmultisourcePlotListModel().getSortedDataReferences().get(i);
+									SortDataReferenceHelper potentialMatchSortDataReferenceHelper = getmultisourcePlotListModel().getSortedDataReferences().get(i+1);
+									if(potentialMatchSortDataReferenceHelper.getReferenceDataMappingSpec() != null && mySortDataReferenceHelper != null && potentialMatchSortDataReferenceHelper.getReferenceDataMappingSpec().getReferenceDataColumnName().equals(mySortDataReferenceHelper.dataReference.getIdentifier())){
+										mySortDataReferenceHelper.matchCount = masterMatchCount;
+										potentialMatchSortDataReferenceHelper.matchCount = masterMatchCount;
+										masterMatchCount++;
+									}else{
+										mySortDataReferenceHelper.matchCount = -1;
+									}
+								}else{
+									getmultisourcePlotListModel().getSortedDataReferences().get(i).matchCount = -1;
+								}
+							}else if(getmultisourcePlotListModel().getSortedDataReferences().get(i).matchCount == null){
+								getmultisourcePlotListModel().getSortedDataReferences().get(i).matchCount = -1;
+							}
+						}
+					}
+					if(getmultisourcePlotListModel().getSortedDataReferences().get(index0).matchCount == -1){//not part of matched set
+						return null;
+					}
+					return getmultisourcePlotListModel().getSortedDataReferences().get(index0).matchCount % 2  == 0;
+				}
+				DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
+				@Override
+				public Component getListCellRendererComponent(
+						JList<? extends DataReference> list,
+						DataReference value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					Component comp = defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					try{
+						if(bGroupingListSorter && comp instanceof JLabel){
+							JLabel jLabel = (JLabel)comp;
+							Boolean evenMatch = isEvenMatchedSet(index);
+							jLabel.setBackground((evenMatch==null?jLabel.getBackground():(evenMatch?getBG0():getBG1())));
+						}
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					return comp;
+				}
+			});
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -548,7 +613,9 @@ public void forceXYRange(Range xRange,Range yRange) {
 //		return chckbxNewCheckBox;
 //	}
 	
-	public void setSort(Comparator<SortDataReferenceHelper> comparatorDataSource){
+	private boolean bGroupingListSorter = false;
+	public void setGroupingListSorter(Comparator<SortDataReferenceHelper> comparatorDataSource){
+		bGroupingListSorter = (comparatorDataSource==null?false:true);
 		getmultisourcePlotListModel().setSort(comparatorDataSource);
 	}
 }

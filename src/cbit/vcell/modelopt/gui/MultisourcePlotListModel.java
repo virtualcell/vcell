@@ -159,6 +159,7 @@ public static class SortDataReferenceHelper{
 	public int unsortedIndex;
 	public DataReference dataReference;
 	private ReferenceDataMappingSpec referenceDataMappingSpec;
+	public Integer matchCount = null;
 	public SortDataReferenceHelper(int unsortedIndex,DataReference dataReference) {
 		this.unsortedIndex = unsortedIndex;
 		this.dataReference = dataReference;
