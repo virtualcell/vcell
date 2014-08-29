@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 
 import java.util.Enumeration;
 
@@ -103,7 +103,7 @@ private void connPtoP1SetTarget() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP1Aligning = true;
-			setExportMonitorTableModel1((cbit.vcell.export.ExportMonitorTableModel)getScrollPaneTable().getModel());
+			setExportMonitorTableModel1((cbit.vcell.export.gui.ExportMonitorTableModel)getScrollPaneTable().getModel());
 			// user code begin {2}
 			// user code end
 			ivjConnPtoP1Aligning = false;

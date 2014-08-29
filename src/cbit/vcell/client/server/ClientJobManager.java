@@ -10,13 +10,14 @@
 
 package cbit.vcell.client.server;
 import cbit.vcell.client.*;
-import cbit.vcell.client.data.OutputContext;
 
 import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+
 import java.rmi.*;
 
 import cbit.vcell.export.server.*;

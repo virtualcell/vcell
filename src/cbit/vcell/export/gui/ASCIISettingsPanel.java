@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -31,7 +31,7 @@ public class ASCIISettingsPanel extends javax.swing.JPanel implements ExportCons
 	private javax.swing.JLabel ivjJLabelDataType = null;
 	private javax.swing.JRadioButton ivjJRadioButtonParticles = null;
 	private javax.swing.JRadioButton ivjJRadioButtonVariables = null;
-	protected transient cbit.vcell.export.ASCIISettingsPanelListener fieldASCIISettingsPanelListenerEventMulticaster = null;
+	protected transient cbit.vcell.export.gui.ASCIISettingsPanelListener fieldASCIISettingsPanelListenerEventMulticaster = null;
 	private javax.swing.JCheckBox ivjJCheckBoxSwitch = null;
 	private javax.swing.JLabel ivjJLabelAdditional = null;
 	private boolean fieldSwitchRowsColumns = false;
@@ -88,8 +88,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * 
  * @param newListener cbit.vcell.export.ASCIISettingsPanelListener
  */
-public void addASCIISettingsPanelListener(cbit.vcell.export.ASCIISettingsPanelListener newListener) {
-	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.ASCIISettingsPanelListenerEventMulticaster.add(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
+public void addASCIISettingsPanelListener(cbit.vcell.export.gui.ASCIISettingsPanelListener newListener) {
+	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.ASCIISettingsPanelListenerEventMulticaster.add(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
 	return;
 }
 /**
@@ -609,8 +609,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * 
  * @param newListener cbit.vcell.export.ASCIISettingsPanelListener
  */
-public void removeASCIISettingsPanelListener(cbit.vcell.export.ASCIISettingsPanelListener newListener) {
-	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.ASCIISettingsPanelListenerEventMulticaster.remove(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
+public void removeASCIISettingsPanelListener(cbit.vcell.export.gui.ASCIISettingsPanelListener newListener) {
+	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.ASCIISettingsPanelListenerEventMulticaster.remove(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
 	return;
 }
 /**

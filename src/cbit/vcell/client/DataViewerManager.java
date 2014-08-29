@@ -11,10 +11,10 @@
 package cbit.vcell.client;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.
  * Creation date: (11/18/2004 11:25:04 AM)

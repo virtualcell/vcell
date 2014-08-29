@@ -17,7 +17,6 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;

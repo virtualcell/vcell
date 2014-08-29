@@ -17,10 +17,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.MergedDatasetViewer;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.desktop.controls.DataEvent;
 /**
  * Insert the type's description here.

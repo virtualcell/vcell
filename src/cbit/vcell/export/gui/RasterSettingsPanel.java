@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 
 import cbit.vcell.export.server.*;
 /**
@@ -18,13 +18,13 @@ public class RasterSettingsPanel extends javax.swing.JPanel implements ExportCon
 	private javax.swing.JButton ivjJButtonOK = null;
 	private javax.swing.ButtonGroup ivjButtonGroup1 = null;
 	private javax.swing.JLabel ivjJLabelDataType = null;
-	protected transient cbit.vcell.export.ASCIISettingsPanelListener fieldASCIISettingsPanelListenerEventMulticaster = null;
+	protected transient cbit.vcell.export.gui.ASCIISettingsPanelListener fieldASCIISettingsPanelListenerEventMulticaster = null;
 	private javax.swing.JLabel ivjJLabelAdditional = null;
 	private javax.swing.JRadioButton ivjJRadioButtonByTime = null;
 	private javax.swing.JRadioButton ivjJRadioButtonByVariable = null;
 	private javax.swing.JRadioButton ivjJRadioButtonSingle = null;
 	private javax.swing.JCheckBox ivjJCheckBoxSeparateHeader = null;
-	protected transient cbit.vcell.export.RasterSettingsPanelListener fieldRasterSettingsPanelListenerEventMulticaster = null;
+	protected transient cbit.vcell.export.gui.RasterSettingsPanelListener fieldRasterSettingsPanelListenerEventMulticaster = null;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 /**
@@ -76,8 +76,8 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * 
  * @param newListener cbit.vcell.export.RasterSettingsPanelListener
  */
-public void addRasterSettingsPanelListener(cbit.vcell.export.RasterSettingsPanelListener newListener) {
-	fieldRasterSettingsPanelListenerEventMulticaster = cbit.vcell.export.RasterSettingsPanelListenerEventMulticaster.add(fieldRasterSettingsPanelListenerEventMulticaster, newListener);
+public void addRasterSettingsPanelListener(cbit.vcell.export.gui.RasterSettingsPanelListener newListener) {
+	fieldRasterSettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.RasterSettingsPanelListenerEventMulticaster.add(fieldRasterSettingsPanelListenerEventMulticaster, newListener);
 	return;
 }
 /**
@@ -539,8 +539,8 @@ public static void main(java.lang.String[] args) {
  * 
  * @param newListener cbit.vcell.export.RasterSettingsPanelListener
  */
-public void removeRasterSettingsPanelListener(cbit.vcell.export.RasterSettingsPanelListener newListener) {
-	fieldRasterSettingsPanelListenerEventMulticaster = cbit.vcell.export.RasterSettingsPanelListenerEventMulticaster.remove(fieldRasterSettingsPanelListenerEventMulticaster, newListener);
+public void removeRasterSettingsPanelListener(cbit.vcell.export.gui.RasterSettingsPanelListener newListener) {
+	fieldRasterSettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.RasterSettingsPanelListenerEventMulticaster.remove(fieldRasterSettingsPanelListenerEventMulticaster, newListener);
 	return;
 }
 /**

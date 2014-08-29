@@ -8,11 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 /**
  * This is the event multicaster class to support the cbit.vcell.export.RasterSettingsPanelListenerEventMulticaster interface.
  */
-public class RasterSettingsPanelListenerEventMulticaster extends java.awt.AWTEventMulticaster implements cbit.vcell.export.RasterSettingsPanelListener {
+public class RasterSettingsPanelListenerEventMulticaster extends java.awt.AWTEventMulticaster implements cbit.vcell.export.gui.RasterSettingsPanelListener {
 /**
  * Constructor to support multicast events.
  * @param a java.util.EventListener
@@ -29,8 +29,8 @@ protected RasterSettingsPanelListenerEventMulticaster(java.util.EventListener a,
  * @param a cbit.vcell.export.RasterSettingsPanelListener
  * @param b cbit.vcell.export.RasterSettingsPanelListener
  */
-public static cbit.vcell.export.RasterSettingsPanelListener add(cbit.vcell.export.RasterSettingsPanelListener a, cbit.vcell.export.RasterSettingsPanelListener b) {
-	return (cbit.vcell.export.RasterSettingsPanelListener)addInternal(a, b);
+public static cbit.vcell.export.gui.RasterSettingsPanelListener add(cbit.vcell.export.gui.RasterSettingsPanelListener a, cbit.vcell.export.gui.RasterSettingsPanelListener b) {
+	return (cbit.vcell.export.gui.RasterSettingsPanelListener)addInternal(a, b);
 }
 
 
@@ -52,8 +52,8 @@ protected static java.util.EventListener addInternal(java.util.EventListener a, 
  * @param newEvent java.util.EventObject
  */
 public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) {
-	((cbit.vcell.export.RasterSettingsPanelListener)a).JButtonCancelAction_actionPerformed(newEvent);
-	((cbit.vcell.export.RasterSettingsPanelListener)b).JButtonCancelAction_actionPerformed(newEvent);
+	((cbit.vcell.export.gui.RasterSettingsPanelListener)a).JButtonCancelAction_actionPerformed(newEvent);
+	((cbit.vcell.export.gui.RasterSettingsPanelListener)b).JButtonCancelAction_actionPerformed(newEvent);
 }
 
 
@@ -62,8 +62,8 @@ public void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent) 
  * @param newEvent java.util.EventObject
  */
 public void JButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
-	((cbit.vcell.export.RasterSettingsPanelListener)a).JButtonOKAction_actionPerformed(newEvent);
-	((cbit.vcell.export.RasterSettingsPanelListener)b).JButtonOKAction_actionPerformed(newEvent);
+	((cbit.vcell.export.gui.RasterSettingsPanelListener)a).JButtonOKAction_actionPerformed(newEvent);
+	((cbit.vcell.export.gui.RasterSettingsPanelListener)b).JButtonOKAction_actionPerformed(newEvent);
 }
 
 
@@ -72,7 +72,7 @@ public void JButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
  * @return java.util.EventListener
  * @param oldl cbit.vcell.export.RasterSettingsPanelListener
  */
-protected java.util.EventListener remove(cbit.vcell.export.RasterSettingsPanelListener oldl) {
+protected java.util.EventListener remove(cbit.vcell.export.gui.RasterSettingsPanelListener oldl) {
 	if (oldl == a)  return b;
 	if (oldl == b)  return a;
 	java.util.EventListener a2 = removeInternal(a, oldl);
@@ -89,11 +89,11 @@ protected java.util.EventListener remove(cbit.vcell.export.RasterSettingsPanelLi
  * @param l cbit.vcell.export.RasterSettingsPanelListener
  * @param oldl cbit.vcell.export.RasterSettingsPanelListener
  */
-public static cbit.vcell.export.RasterSettingsPanelListener remove(cbit.vcell.export.RasterSettingsPanelListener l, cbit.vcell.export.RasterSettingsPanelListener oldl) {
+public static cbit.vcell.export.gui.RasterSettingsPanelListener remove(cbit.vcell.export.gui.RasterSettingsPanelListener l, cbit.vcell.export.gui.RasterSettingsPanelListener oldl) {
 	if (l == oldl || l == null)
 		return null;
 	if(l instanceof RasterSettingsPanelListenerEventMulticaster)
-		return (cbit.vcell.export.RasterSettingsPanelListener)((cbit.vcell.export.RasterSettingsPanelListenerEventMulticaster) l).remove(oldl);
+		return (cbit.vcell.export.gui.RasterSettingsPanelListener)((cbit.vcell.export.gui.RasterSettingsPanelListenerEventMulticaster) l).remove(oldl);
 	return l;
 }
 }

@@ -16,7 +16,6 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.message.VCMessageSession;
@@ -27,6 +26,7 @@ import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 

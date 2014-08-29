@@ -21,7 +21,6 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;

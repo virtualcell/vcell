@@ -17,9 +17,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.data.DataViewer;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
