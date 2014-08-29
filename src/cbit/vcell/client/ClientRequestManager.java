@@ -172,7 +172,6 @@ import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
@@ -1975,7 +1974,7 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 
 public void updateUserRegistration(final DocumentWindowManager currWindowManager, final boolean bNewUser){
 	try {
-		UserRegistrationOP.registrationOperationGUI(this, currWindowManager, 
+		UserRegistrationManager.registrationOperationGUI(this, currWindowManager, 
 				getClientServerManager().getClientServerInfo(),
 				(bNewUser?LoginManager.USERACTION_REGISTER:LoginManager.USERACTION_EDITINFO),
 				(bNewUser?null:getClientServerManager()));
@@ -1990,7 +1989,7 @@ public void updateUserRegistration(final DocumentWindowManager currWindowManager
 
 public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid){
 	try {
-		UserRegistrationOP.registrationOperationGUI(this, currWindowManager,
+		UserRegistrationManager.registrationOperationGUI(this, currWindowManager,
 				VCellClient.createClientServerInfo(
 					getClientServerManager().getClientServerInfo(), userid, null),
 					LoginManager.USERACTION_LOSTPASSWORD,
