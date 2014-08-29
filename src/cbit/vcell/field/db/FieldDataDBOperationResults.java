@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.field;
+package cbit.vcell.field.db;
 
 import java.io.Serializable;
 import java.util.HashMap;

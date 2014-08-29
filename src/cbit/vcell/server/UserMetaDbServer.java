@@ -10,13 +10,14 @@
 
 package cbit.vcell.server;
 import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.db.FieldDataDBOperationResults;
+import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
 import cbit.vcell.biomodel.BioModelMetaData;
+
 import java.rmi.*;
 
 import org.vcell.util.BigString;

@@ -25,6 +25,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solvers.CartesianMesh;
@@ -96,7 +97,7 @@ public class ROIDataGenerator extends DataGenerator {
 			throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
 		}
 		double[] origData = simDataBlock.getData();
-		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simulationJob.getJobIndex()) + SimulationData.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
 		File fdatFile = new File(userDirectory, filename);
 		DataSet.writeNew(fdatFile,
 				new String[] {fdis.getFieldFuncArgs().getVariableName()},

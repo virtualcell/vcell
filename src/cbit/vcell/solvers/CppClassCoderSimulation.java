@@ -16,7 +16,6 @@ import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -37,6 +36,7 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -545,7 +545,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
 			String fieldName = fieldFuncArgs[i].getFieldName();
 			String varName = fieldFuncArgs[i].getVariableName();
-			File fieldFile = new File(baseDataName + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs[i]));
+			File fieldFile = new File(baseDataName + SimulationData.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs[i]));
 			String fieldDataID = "_VCell_FieldData_" + i;
 			out.println("\t\tsprintf(tempString, \"%s%c" + fieldFile.getName() + "\\0\", outputPath, DIRECTORY_SEPARATOR);");
 			String varType = "";

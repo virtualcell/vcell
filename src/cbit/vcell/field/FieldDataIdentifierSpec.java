@@ -14,7 +14,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.SimDataConstants;
 
 /**
  * Insert the type's description here.
@@ -70,15 +69,6 @@ public String toCSVString() {
 
 public FieldFunctionArguments getFieldFuncArgs() {
 	return fieldFuncArgs;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) {
-	return fieldFuncArgs.getUniqueID() + SimDataConstants.FIELDDATARESAMP_EXTENSION;
 }
 
 @Override

@@ -141,7 +141,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive;

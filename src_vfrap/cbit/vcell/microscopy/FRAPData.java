@@ -63,7 +63,7 @@ import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;

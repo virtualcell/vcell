@@ -24,6 +24,7 @@ import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
+import cbit.vcell.biomodel.VCellNames;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
@@ -32,7 +33,6 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;

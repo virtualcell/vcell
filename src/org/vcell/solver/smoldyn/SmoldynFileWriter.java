@@ -95,6 +95,7 @@ import cbit.vcell.simdata.DataSet;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -654,7 +655,7 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 			throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
 		}
 		double[] origData = simDataBlock.getData();	
-		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simTask.getSimulationJob().getJobIndex()) + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
+		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simTask.getSimulationJob().getJobIndex()) + SimulationData.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
 		
 		File fdatFile = new File(userDirectory, filename);
 		
