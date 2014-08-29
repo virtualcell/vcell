@@ -13,7 +13,7 @@ import org.vcell.util.Range;
 /**
  * This type was created in VisualAge.
  */
-public class DoubleDisplayAdapter extends cbit.image.gui.DisplayAdapter {
+public class DoubleDisplayAdapter extends cbit.image.DisplayAdapter {
 	private Range fieldScale = new Range();
 	private double[] fieldDataValues = new double[1];
 

@@ -36,9 +36,9 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
-import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.image.gui.SourceDataInfo;

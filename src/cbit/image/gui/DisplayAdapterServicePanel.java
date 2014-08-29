@@ -32,6 +32,8 @@ import javax.swing.border.TitledBorder;
 
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
+
+import cbit.image.DisplayAdapterService;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 4:21:48 PM)
@@ -616,7 +618,7 @@ private javax.swing.JLabel getColorMapJLabel() {
 public DisplayAdapterService getDisplayAdapterService() {
 	if (ivjDisplayAdapterService == null) {
 		try {
-			ivjDisplayAdapterService = new cbit.image.gui.DisplayAdapterService();
+			ivjDisplayAdapterService = new cbit.image.DisplayAdapterService();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

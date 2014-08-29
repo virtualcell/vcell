@@ -12,7 +12,7 @@ package cbit.vcell.export.server;
 
 import java.io.Serializable;
 
-import cbit.vcell.simdata.gui.DisplayPreferences;
+import cbit.image.DisplayPreferences;
 /**
  * This type was created in VisualAge.
  */

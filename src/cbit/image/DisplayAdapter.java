@@ -8,8 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image.gui;
-import java.awt.*;
+package cbit.image;
+import java.awt.Color;
 
 import org.vcell.util.Range;
 /**

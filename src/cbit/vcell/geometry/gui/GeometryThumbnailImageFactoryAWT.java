@@ -9,11 +9,11 @@ import java.awt.image.WritableRaster;
 
 import javax.swing.ImageIcon;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
 import cbit.image.ThumbnailImage;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
-import cbit.image.gui.DisplayAdapterService;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 

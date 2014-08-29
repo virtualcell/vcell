@@ -599,7 +599,7 @@ private void setClosedOK(boolean newClosedOK) {
  * @param displayPreferences The new value for the property.
  * @see #getDisplayPreferences
  */
-public void setDisplayPreferences(cbit.vcell.simdata.gui.DisplayPreferences[] displayPreferences,String[] variableNames,int viewZoom) {
+public void setDisplayPreferences(cbit.image.DisplayPreferences[] displayPreferences,String[] variableNames,int viewZoom) {
 	getMediaSettingsPanel1().setDisplayPreferences(displayPreferences, variableNames,viewZoom);
 }
 

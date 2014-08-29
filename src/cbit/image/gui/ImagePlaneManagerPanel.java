@@ -24,6 +24,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NumberUtils;
 
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveSelectionInfo;
