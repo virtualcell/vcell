@@ -18,7 +18,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 public interface RasterSettingsPanelListener extends java.util.EventListener {
 /**
  * 

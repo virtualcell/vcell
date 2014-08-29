@@ -15,9 +15,9 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.ode.ODESimData;
 
 /**

@@ -1,6 +1,5 @@
-package cbit.vcell.solver;
+package cbit.vcell.math;
 
-import cbit.vcell.math.MathDescription;
 
 /**
  * boolean getters of {@link MathDescription} that

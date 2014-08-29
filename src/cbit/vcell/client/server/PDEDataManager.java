@@ -17,11 +17,11 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.data.NewClientPDEDataContext;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;

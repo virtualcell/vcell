@@ -9,8 +9,9 @@
  */
 
 package cbit.vcell.export.server;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
+
 import org.vcell.util.document.User;
 
 import cbit.rmi.event.*;

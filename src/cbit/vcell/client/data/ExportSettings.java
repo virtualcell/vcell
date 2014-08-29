@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.client.data;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,6 +21,11 @@ import javax.swing.JTextField;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.export.gui.ASCIISettingsPanel;
+import cbit.vcell.export.gui.ASCIISettingsPanelListener;
+import cbit.vcell.export.gui.MediaSettingsPanel;
+import cbit.vcell.export.gui.RasterSettingsPanel;
+import cbit.vcell.export.gui.RasterSettingsPanelListener;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.TimeSpecs;
@@ -227,7 +232,7 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 private ASCIISettingsPanel getASCIISettingsPanel1() {
 	if (ivjASCIISettingsPanel1 == null) {
 		try {
-			ivjASCIISettingsPanel1 = new cbit.vcell.export.ASCIISettingsPanel();
+			ivjASCIISettingsPanel1 = new cbit.vcell.export.gui.ASCIISettingsPanel();
 			ivjASCIISettingsPanel1.setName("ASCIISettingsPanel1");
 			// user code begin {1}
 			// user code end
@@ -415,7 +420,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 private RasterSettingsPanel getRasterSettingsPanel1() {
 	if (ivjRasterSettingsPanel1 == null) {
 		try {
-			ivjRasterSettingsPanel1 = new cbit.vcell.export.RasterSettingsPanel();
+			ivjRasterSettingsPanel1 = new cbit.vcell.export.gui.RasterSettingsPanel();
 			ivjRasterSettingsPanel1.setName("RasterSettingsPanel1");
 			// user code begin {1}
 			// user code end

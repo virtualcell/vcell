@@ -20,6 +20,7 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
+import cbit.vcell.math.SolverSelector;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 public class SolverDescriptionRegression {
 	public static final String SOLVER_SEP = "BEGIN Solver";

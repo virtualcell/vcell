@@ -10,8 +10,9 @@
 
 package cbit.vcell.export.server;
 import java.rmi.*;
+
 import cbit.vcell.messaging.db.*;
-import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.
  * Creation date: (6/2/2004 12:56:36 AM)

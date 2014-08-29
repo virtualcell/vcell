@@ -2,6 +2,8 @@ package cbit.vcell.solver;
 
 import org.junit.Test;
 
+import cbit.vcell.math.SolverSelector;
+
 public class TestMathDescription implements SolverSelector {
 
 	/* (non-Javadoc)

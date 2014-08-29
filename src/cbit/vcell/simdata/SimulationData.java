@@ -35,9 +35,9 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
+
 //import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -58,7 +58,6 @@ import org.vcell.vis.io.VCellSimFiles;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.RegionImage;

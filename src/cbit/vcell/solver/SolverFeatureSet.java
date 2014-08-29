@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import cbit.vcell.math.SolverSelector;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 
 //public class SolverFeatureSet extends ArrayList<SolverFeature> {

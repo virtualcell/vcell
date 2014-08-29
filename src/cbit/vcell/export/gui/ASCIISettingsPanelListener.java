@@ -8,12 +8,17 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 
-public interface ExportSettingsListener extends java.util.EventListener {
+public interface ASCIISettingsPanelListener extends java.util.EventListener {
 /**
  * 
  * @param newEvent java.util.EventObject
  */
-void SettingsOK_ActionPerformed(java.util.EventObject newEvent);
+void JButtonCancelAction_actionPerformed(java.util.EventObject newEvent);
+/**
+ * 
+ * @param newEvent java.util.EventObject
+ */
+void JButtonOKAction_actionPerformed(java.util.EventObject newEvent);
 }

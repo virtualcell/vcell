@@ -21,7 +21,6 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
@@ -35,6 +34,7 @@ import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.gui.SpatialSelection;

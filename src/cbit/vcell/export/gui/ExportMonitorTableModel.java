@@ -8,12 +8,15 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.export.gui;
 
 import javax.swing.*;
 import javax.swing.table.*;
+
 import java.util.*;
+
 import cbit.rmi.event.*;
+import cbit.vcell.export.ExportStatus;
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 12:14:46 PM)

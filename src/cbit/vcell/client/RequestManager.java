@@ -21,7 +21,6 @@ import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -33,6 +32,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.gui.SimulationStatus;

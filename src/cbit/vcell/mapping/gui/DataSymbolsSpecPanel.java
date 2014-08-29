@@ -30,7 +30,7 @@ import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
-import cbit.vcell.export.ExportMonitorPanel;
+import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")

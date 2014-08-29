@@ -10,12 +10,13 @@
 
 package cbit.vcell.client.server;
 import cbit.rmi.event.*;
+
 import java.rmi.*;
 
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.server.*;
+import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.
  * Creation date: (6/15/2004 2:15:24 AM)

@@ -33,9 +33,9 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
 
 /**
  * This type was created in VisualAge.
