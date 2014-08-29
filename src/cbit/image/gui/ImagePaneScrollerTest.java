@@ -11,6 +11,8 @@
 package cbit.image.gui;
 import org.vcell.util.Range;
 
+import cbit.image.DisplayAdapterService;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/5/00 6:10:39 PM)

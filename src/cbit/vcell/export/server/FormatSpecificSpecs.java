@@ -42,16 +42,6 @@ public abstract class FormatSpecificSpecs implements Serializable {
 	public final static int CODEC_NONE = 0;
 	public final static int CODEC_JPEG = 1;
 
-	public static boolean isGrayScale(int[] argbData){
-		for (int i = 0; i < argbData.length; i++) {
-			if((argbData[i]&0x000000FF) != ((argbData[i]>>8)&0x000000FF) ||
-				(argbData[i]&0x000000FF) != ((argbData[i]>>16)&0x000000FF)){
-				return false;
-			}
-			
-		}
-		return true;
-	}
 	public static VideoMediaSample getVideoMediaSample(
 			int width,int height,int sampleDuration,boolean isGrayScale,int compressionType,float compressionQuality,int[] argbData) throws Exception{
 			

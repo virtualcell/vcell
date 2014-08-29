@@ -61,8 +61,9 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.wizard.Wizard;
 import org.vcell.wizard.WizardPanelDescriptor;
 
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayPreferences;
 import cbit.image.ImageException;
-import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
@@ -124,7 +125,6 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;

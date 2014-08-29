@@ -10,18 +10,21 @@
 
 package cbit.vcell.geometry.gui;
 import java.util.*;
+
 import cbit.vcell.solvers.CartesianMesh;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+
 import cbit.vcell.geometry.*;
+
 import java.awt.geom.*;
 import java.util.Hashtable;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 
 public class CurveRenderer implements DrawPaneModel {
 	//

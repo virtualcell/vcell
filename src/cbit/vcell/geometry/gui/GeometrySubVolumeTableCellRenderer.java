@@ -16,7 +16,7 @@ import javax.swing.JTable;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.geometry.SubVolume;
 /**
  * Insert the type's description here.

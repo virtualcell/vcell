@@ -8,14 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.simdata.gui;
+package cbit.image;
 import java.util.Arrays;
 import java.util.BitSet;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
-
-import cbit.image.gui.DisplayAdapterService;
-import cbit.vcell.export.server.FormatSpecificSpecs;
 
 /**
  * Insert the type's description here.
@@ -51,7 +49,7 @@ public int[] getSpecialColors(){
 	return specialColors;
 }
 public boolean isGrayScale(){
-	if(colorMode.equals(DisplayAdapterService.GRAY) && (specialColors == null || FormatSpecificSpecs.isGrayScale(specialColors))){
+	if(colorMode.equals(DisplayAdapterService.GRAY) && (specialColors == null || DisplayPreferences.isGrayScale(specialColors))){
 		return true;
 	}
 	return false;
@@ -114,5 +112,16 @@ public int hashCode() {
  */
 public String toString() {
 	return "DisplayPreferences [colorMode: " + colorMode + ", scaleSettings: " + scaleSettings + "]";
+}
+
+public static boolean isGrayScale(int[] argbData){
+	for (int i = 0; i < argbData.length; i++) {
+		if((argbData[i]&0x000000FF) != ((argbData[i]>>8)&0x000000FF) ||
+			(argbData[i]&0x000000FF) != ((argbData[i]>>16)&0x000000FF)){
+			return false;
+		}
+		
+	}
+	return true;
 }
 }

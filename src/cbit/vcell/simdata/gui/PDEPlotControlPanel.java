@@ -50,7 +50,7 @@ import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;

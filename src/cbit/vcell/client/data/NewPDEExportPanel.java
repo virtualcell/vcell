@@ -62,7 +62,8 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayPreferences;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager;
@@ -92,7 +93,6 @@ import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.SpatialSelectionVolume;

@@ -21,10 +21,10 @@ import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.GIFImage;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
-import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.image.gui.SourceDataInfo;
