@@ -33,7 +33,6 @@ import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.UserRegistrationOP;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -318,7 +317,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 		public void registerRequest() {
 			loginManager.close();
 			try {
-				UserRegistrationOP.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginManager.USERACTION_REGISTER,null);
+				UserRegistrationManager.registrationOperationGUI(requestManager,	currWindowManager, clientServerInfo, LoginManager.USERACTION_REGISTER,null);
 			} catch (UserCancelException e) {
 				//do nothing
 			} catch (Exception e) {
@@ -330,7 +329,7 @@ public static void login(final RequestManager requestManager, final ClientServer
 		public void lostPasswordRequest(String userid) {
 			try {
 				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo,userid,null);
-				UserRegistrationOP.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginManager.USERACTION_LOSTPASSWORD,null);
+				UserRegistrationManager.registrationOperationGUI(requestManager, currWindowManager, newClientServerInfo, LoginManager.USERACTION_LOSTPASSWORD,null);
 			} catch (UserCancelException e) {
 				//do nothing
 			} catch (Exception e) {
