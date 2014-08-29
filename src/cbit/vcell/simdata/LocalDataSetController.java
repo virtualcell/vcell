@@ -19,8 +19,8 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.simdata.gui.SpatialSelection;

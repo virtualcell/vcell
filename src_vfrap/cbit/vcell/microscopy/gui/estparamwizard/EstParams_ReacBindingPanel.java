@@ -38,7 +38,7 @@ import cbit.plot.Plot2DPanel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;

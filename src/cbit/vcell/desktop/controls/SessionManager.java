@@ -12,8 +12,8 @@ package cbit.vcell.desktop.controls;
 
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.field.FieldDataFileOperationResults;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.server.SimulationController;
 
 /**

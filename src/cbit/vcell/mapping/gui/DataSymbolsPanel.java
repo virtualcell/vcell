@@ -68,7 +68,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.math.VariableType;

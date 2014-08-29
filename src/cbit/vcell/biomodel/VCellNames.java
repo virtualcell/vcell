@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.model.gui;
+package cbit.vcell.biomodel;
 import java.util.Hashtable;
 /**
  * Insert the type's description here.
