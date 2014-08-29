@@ -18,6 +18,8 @@ import java.util.Comparator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultListModelCivilized;
 
+import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:07:05 PM)
@@ -144,12 +146,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 }
 
 private ArrayList<SortDataReferenceHelper> sortDataReferenceHelpers;
-private boolean bSort = true;
-public void setSort(boolean bSort){
-	if(this.bSort == bSort){
-		return;
-	}
-	this.bSort = bSort;
+Comparator<SortDataReferenceHelper> comparatorDataSource;
+public void setSort(Comparator<SortDataReferenceHelper> comparatorDataSource){
+	this.comparatorDataSource = comparatorDataSource;
 	firePropertyChange("dataSources", null, fieldDataSources);
 }
 public ArrayList<SortDataReferenceHelper> getSortedDataReferences(){
@@ -159,9 +158,19 @@ public ArrayList<SortDataReferenceHelper> getSortedDataReferences(){
 public static class SortDataReferenceHelper{
 	public int unsortedIndex;
 	public DataReference dataReference;
+	private ReferenceDataMappingSpec referenceDataMappingSpec;
 	public SortDataReferenceHelper(int unsortedIndex,DataReference dataReference) {
 		this.unsortedIndex = unsortedIndex;
 		this.dataReference = dataReference;
+	}
+	public void setReferenceDataMappingSpec(ReferenceDataMappingSpec referenceDataMappingSpec){
+		if(this.referenceDataMappingSpec != null && this.referenceDataMappingSpec != referenceDataMappingSpec){
+			throw new RuntimeException("Unexpected this.referenceDataMappingSpec change");
+		}
+		this.referenceDataMappingSpec = referenceDataMappingSpec;
+	}
+	public ReferenceDataMappingSpec getReferenceDataMappingSpec(){
+		return referenceDataMappingSpec;
 	}
 }
 /**
@@ -183,19 +192,24 @@ private void refreshAll() {
 				continue;
 			}
 			sortDataReferenceHelpers.add(new SortDataReferenceHelper(sortDataReferenceHelpers.size(),new DataReference(dataSource, columnNames[j])));
+//			System.out.println("unsort="+(sortDataReferenceHelpers.size()-1)+" i="+i+" j="+j+" columnames[j]="+columnNames[j]);
 		}
 	}
-	if(bSort && sortDataReferenceHelpers.size() > 0){
-		Collections.sort(sortDataReferenceHelpers, new Comparator<SortDataReferenceHelper>() {
-			@Override
-			public int compare(SortDataReferenceHelper o1, SortDataReferenceHelper o2) {
-				int idCompare = o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
-				if(idCompare == 0){
-					return o1.dataReference.getDataSource().getName().compareToIgnoreCase(o2.dataReference.getDataSource().getName());
+	if(sortDataReferenceHelpers.size() > 0){
+		if(comparatorDataSource != null){
+			Collections.sort(sortDataReferenceHelpers,comparatorDataSource);
+		}else{//default sort
+			Collections.sort(sortDataReferenceHelpers,new Comparator<SortDataReferenceHelper>() {
+				@Override
+				public int compare(SortDataReferenceHelper o1, SortDataReferenceHelper o2) {
+					int idCompare = o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
+					if(idCompare == 0){
+						return o1.dataReference.getDataSource().getName().compareToIgnoreCase(o2.dataReference.getDataSource().getName());
+					}
+					return idCompare;
 				}
-				return idCompare;
-			}
-		});
+			});
+		}
 	}
 	if(sortDataReferenceHelpers.size() > 0){
 		DataReference[] dataReferences = new DataReference[sortDataReferenceHelpers.size()];
