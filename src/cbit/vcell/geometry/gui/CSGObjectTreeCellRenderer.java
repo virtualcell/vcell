@@ -10,7 +10,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.CSGHomogeneousTransformation;
 import cbit.vcell.geometry.CSGNode;

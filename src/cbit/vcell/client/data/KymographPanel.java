@@ -28,8 +28,8 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
+import cbit.image.DisplayAdapterService;
 import cbit.image.ZoomEvent;
-import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -120,7 +120,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private double initialLineScanTime = 0;
 	private double[][] timeSeriesDataOrig = null;
 	private double[] accumDistancesDataOrig = null;
-	private cbit.image.gui.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
+	private cbit.image.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
 	private cbit.image.gui.ImagePaneScroller ivjImagePaneScroller1 = null;
 	private cbit.image.gui.ImagePlaneManager ivjImagePlaneManager1 = null;
 	private javax.swing.ImageIcon cmapImageIcon = null;  //  @jve:decl-index=0:
@@ -1158,10 +1158,10 @@ private javax.swing.JMenuItem getCopyTimeDataJMenuItem() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.gui.DisplayAdapterService getDisplayAdapterService1() {
+private cbit.image.DisplayAdapterService getDisplayAdapterService1() {
 	if (ivjDisplayAdapterService1 == null) {
 		try {
-			ivjDisplayAdapterService1 = new cbit.image.gui.DisplayAdapterService();
+			ivjDisplayAdapterService1 = new cbit.image.DisplayAdapterService();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -8,15 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image.gui;
+package cbit.image;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.vcell.util.Range;
-
-import cbit.vcell.simdata.gui.DisplayPreferences;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 6:07:06 PM)

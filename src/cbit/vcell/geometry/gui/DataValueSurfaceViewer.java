@@ -25,7 +25,7 @@ import javax.swing.WindowConstants;
 
 import org.vcell.util.DataAccessException;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;

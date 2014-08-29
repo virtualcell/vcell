@@ -39,14 +39,14 @@ import javax.swing.JTextField;
 
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
+import cbit.image.DisplayPreferences;
 import cbit.image.gui.ImagePaneModel;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.simdata.gui.DisplayPreferences;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class MediaSettingsPanel extends JPanel {

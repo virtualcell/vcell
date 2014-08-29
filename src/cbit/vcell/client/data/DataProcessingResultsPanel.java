@@ -54,7 +54,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
-import cbit.image.gui.DisplayAdapterService;
+import cbit.image.DisplayAdapterService;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.image.gui.SourceDataInfo;
