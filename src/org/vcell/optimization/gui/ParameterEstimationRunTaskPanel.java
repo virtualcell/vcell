@@ -51,6 +51,7 @@ import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodT
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
@@ -1153,24 +1154,26 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 //					System.out.println(ds01.getClass().getSimpleName()+" "+o1.dataReference.getIdentifier()+" "+ds02.getClass().getSimpleName()+" "+o2.dataReference.getIdentifier());
 					if(ds01 instanceof DataSource.DataSourceReferenceData){
 						if(ds02 instanceof DataSource.DataSourceReferenceData){//both reference data, sort names
-							boolean b01 = false;
-							boolean b02 = false;
+							ReferenceDataMappingSpec mspec01 = null;
+							ReferenceDataMappingSpec mspec02 = null;
 							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
 //								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
 								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
 									continue;
 								}
 								if(o1.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
-									b01 = true;
+									mspec01 = rdMappingSpec;
 									o1.setReferenceDataMappingSpec(rdMappingSpec);
 								}else if(o2.dataReference.getIdentifier().equals(rdMappingSpec.getReferenceDataColumnName())){
-									b02 = true;
+									mspec02 = rdMappingSpec;
 									o2.setReferenceDataMappingSpec(rdMappingSpec);
 								}
 							}
-							if(b01 == b02){
+							if(mspec01 == null && mspec02 == null){
 								return o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
-							}else if(b01 == true && b02 == false){
+							}else if(mspec01 != null && mspec02 != null){
+								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
+							}else if(mspec01 != null && mspec02 == null){
 								return -1;
 							}else{
 								return 1;
@@ -1198,29 +1201,36 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 							}else if(mspec02 != null && mspec01 == null){
 									return 1;
 							}else{
+//								System.out.println(
+//										BeanUtils.forceStringSize(mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName())+"", 5, " ", true)
+//										+" "+
+//									BeanUtils.forceStringSize(mspec01.getReferenceDataColumnName(), 25, " ", true)+" "+
+//									BeanUtils.forceStringSize(mspec02.getReferenceDataColumnName(), 25, " ", true));
 								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
 							}
 						}
 					}else{
 						if(ds02 instanceof DataSource.DataSourceOdeSolverResultSet){//both OdeSolverResultSet data, sort names
-							boolean b01 = false;
-							boolean b02 = false;
+							ReferenceDataMappingSpec mspec01 = null;
+							ReferenceDataMappingSpec mspec02 = null;
 							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){
 								Variable var = parameterEstimationTask.getMathSymbolMapping().getVariable(rdMappingSpec.getModelObject());
 								if(rdMappingSpec.getModelObject() instanceof ReservedSymbol){
 									continue;
 								}
 								if(o1.dataReference.getIdentifier().equals(var.getName())){
-									b01 = true;
+									mspec01 = rdMappingSpec;
 									o1.setReferenceDataMappingSpec(rdMappingSpec);
 								}else if(o2.dataReference.getIdentifier().equals(var.getName())){
-									b02 = true;
+									mspec02 = rdMappingSpec;
 									o2.setReferenceDataMappingSpec(rdMappingSpec);
 								}
 							}
-							if(b01 == b02){
+							if(mspec01 == null && mspec02 == null){
 								return o1.dataReference.getIdentifier().compareToIgnoreCase(o2.dataReference.getIdentifier());
-							}else if(b01 == true && b02 == false){
+							}else if(mspec01 != null && mspec02 != null){
+								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
+							}else if(mspec01 != null && mspec02 == null){
 								return -1;
 							}else{
 								return 1;
@@ -1248,6 +1258,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 							}else if(mspec02 != null && mspec01 == null){
 									return 1;
 							}else{
+//								System.out.println(
+//										BeanUtils.forceStringSize(mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName())+"", 5, " ", true)
+//										+" "+
+//									BeanUtils.forceStringSize(mspec01.getReferenceDataColumnName(), 25, " ", true)+" "+
+//									BeanUtils.forceStringSize(mspec02.getReferenceDataColumnName(), 25, " ", true));
 								return mspec01.getReferenceDataColumnName().compareToIgnoreCase(mspec02.getReferenceDataColumnName());
 							}							
 						}
