@@ -477,9 +477,9 @@ protected void refreshInterface() {
 		// physicalEntity::notFeature (***ignored***)
 
 // TODO:  extract the kinetic law, then the SBEntities, then the measurables, units, aso
-		boolean isReactionParticipant = BioPAXUtil.isReactionParticipant(physicalEntity, bioModel);
+		boolean isReactionParticipant = BioPAXUtil.isReactionParticipant(physicalEntity, bioModel.getPathwayModel());
 		String role = "";
-		if(BioPAXUtil.isController(physicalEntity, bioModel)) {
+		if(BioPAXUtil.isController(physicalEntity, bioModel.getPathwayModel())) {
 			role += "Controller";
 			if(isReactionParticipant) {
 				role += ", Participant";
@@ -565,7 +565,7 @@ protected void refreshInterface() {
 			}
 		}
 		// get the kinetic laws (if any)
-		Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, bioModel);
+		Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, bioModel.getPathwayModel());
 		for(Control control : controls) {
 			ArrayList<SBEntity> sbEntities = control.getSBSubEntity();
 			for(SBEntity sbE : sbEntities) {
@@ -709,7 +709,7 @@ private Set<String> getControllersNames(Interaction interaction){
 	if(bioModel == null){
 		return controllersNames;
 	}
-	Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, bioModel);
+	Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, bioModel.getPathwayModel());
 	for(Control control : controls) {
 		if(control.getPhysicalControllers() != null){
 			for(PhysicalEntity ep : control.getPhysicalControllers()){ 

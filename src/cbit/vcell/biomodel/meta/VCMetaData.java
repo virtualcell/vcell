@@ -38,6 +38,7 @@ import org.vcell.sybil.models.annotate.JDOM2Model;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.BioModel;

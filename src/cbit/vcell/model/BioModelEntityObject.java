@@ -10,7 +10,7 @@
 
 package cbit.vcell.model;
 
-import cbit.vcell.biomodel.meta.Identifiable;
+import org.vcell.util.document.Identifiable;
 
 public interface BioModelEntityObject extends Identifiable{
 	String getName();

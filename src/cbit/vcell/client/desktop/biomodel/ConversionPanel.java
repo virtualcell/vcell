@@ -26,8 +26,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.EditorScrollTable;
+
 import cbit.vcell.biomodel.BioModel;
 
 @SuppressWarnings("serial")

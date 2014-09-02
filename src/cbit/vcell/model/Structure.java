@@ -19,9 +19,9 @@ import java.util.Map;
 import org.vcell.util.Cacheable;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;

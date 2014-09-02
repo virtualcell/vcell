@@ -37,6 +37,7 @@ import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.pathway.Transport;
+import org.vcell.relationship.ConversionTableRow;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;

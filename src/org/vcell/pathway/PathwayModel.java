@@ -34,7 +34,7 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 //import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.Identifiable;
+import org.vcell.util.document.Identifiable;
 
 public class PathwayModel {
 	

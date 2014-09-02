@@ -10,6 +10,9 @@
 
 package cbit.vcell.simdata;
 
+import java.util.Comparator;
+import java.util.TreeSet;
+
 import org.vcell.util.Compare;
 
 import cbit.vcell.math.VariableType;
@@ -112,6 +115,36 @@ public String toString() {
 
 public String getDisplayName(){
 	return displayName;	
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/28/2005 11:44:25 AM)
+ */
+public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, DataIdentifier[] dataIDs){
+
+	//Sort variable names, ignore case
+	java.util.TreeSet<DataIdentifier> treeSet = new java.util.TreeSet<DataIdentifier>(
+		new java.util.Comparator<DataIdentifier>(){
+			public int compare(DataIdentifier o1, DataIdentifier o2){
+				int ignoreCaseB = o1.getName().compareToIgnoreCase(o2.getName());
+				if(ignoreCaseB == 0){
+					return o1.getName().compareTo(o2.getName());
+				}
+				return ignoreCaseB;
+			}
+		}
+	);
+	for(int i = 0; i <dataIDs.length; i += 1){
+		if (variable.getVariableType().getVariableDomain().equals(dataIDs[i].getVariableType().getVariableDomain())) {
+			treeSet.add(dataIDs[i]);
+		}
+	}
+
+	DataIdentifier[] results = new DataIdentifier[treeSet.size()];
+	treeSet.toArray(results);
+	return results;
 }
 
 }

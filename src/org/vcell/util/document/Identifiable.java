@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.biomodel.meta;
+package org.vcell.util.document;
 
 public interface Identifiable {
 
