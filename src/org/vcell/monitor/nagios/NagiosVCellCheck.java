@@ -9,6 +9,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
@@ -35,11 +36,11 @@ public class NagiosVCellCheck {
 	
 	public static void main(String[] args) {
 		try{
-			if(args.length != 3){
-				System.out.println("Usage: java -jar "+NagiosVCellCheck.class.getSimpleName()+".jar checkLevel rmiHost rmiPort");
+			if(args.length != 4){
+				System.out.println("Usage: java -jar "+NagiosVCellCheck.class.getSimpleName()+".jar checkLevel rmiHost rmiPort vcellNagiosPassword");
 				System.exit(NAGIOS_STATUS.UNKNOWN.ordinal());
 			}
-			System.out.println(checkVCell(VCELL_CHECK_LEVEL.valueOf(args[0]),args[1], Integer.parseInt(args[2]),"VCellBootstrapServer"));
+			System.out.println(checkVCell(VCELL_CHECK_LEVEL.valueOf(args[0]),args[1], Integer.parseInt(args[2]),"VCellBootstrapServer",args[3]));
 			System.exit(NAGIOS_STATUS.OK.ordinal());
 		}catch(NumberFormatException e){
 			System.out.println(e.getClass().getName()+" "+e.getMessage());
@@ -52,7 +53,7 @@ public class NagiosVCellCheck {
 			System.exit(NAGIOS_STATUS.CRITICAL.ordinal());
 		}
 	}
-	public static String checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName) throws Exception{
+	public static String checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword) throws Exception{
 		String rmiUrl = "//" + rmiHostName + ":" +rmiPort + "/"+rmiBootstrapStubName;
 		VCellBootstrap vcellBootstrap = null;
 		PrintStream sysout = System.out;
@@ -65,7 +66,7 @@ public class NagiosVCellCheck {
 			vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
 			if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.CONNECT_1.ordinal()){
 				VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(
-					new UserLoginInfo("vcellNagios", new UserLoginInfo.DigestedPassword("cbittech")));
+					new UserLoginInfo("vcellNagios", new DigestedPassword(vcellNagiosPassword)));
 				if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.INFOS_2.ordinal()){
 					VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 					if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.LOAD_3.ordinal()){
