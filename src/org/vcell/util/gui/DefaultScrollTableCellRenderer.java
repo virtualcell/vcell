@@ -39,7 +39,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
 	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-	static final Color everyOtherRowColor = new Color(0xe8edff);
+	public static final Color everyOtherRowColor = new Color(0xe8edff);
 	private boolean bEnableUneditableForeground = true;
 	/**
 	 * DefaultTableCellRendererEnhanced constructor comment.
