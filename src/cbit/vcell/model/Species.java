@@ -15,9 +15,9 @@ import java.beans.*;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.Historical;
-import cbit.vcell.biomodel.meta.Identifiable;
 
 @SuppressWarnings("serial")
 public class Species implements	java.beans.VetoableChangeListener,org.vcell.util.Cacheable,

@@ -23,7 +23,8 @@ import java.util.Set;
 import org.openrdf.model.Graph;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import cbit.vcell.biomodel.meta.Identifiable;
+import org.vcell.util.document.Identifiable;
+
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.xml.XMLTags;

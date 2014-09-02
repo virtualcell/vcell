@@ -11,23 +11,17 @@
 package org.vcell.pathway;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.sbpax.util.sets.SetOfOne;
-import org.sbpax.util.sets.SetOfThree;
 import org.sbpax.util.sets.SetOfTwo;
 import org.vcell.pathway.InteractionParticipant.Type;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.sybil.util.JavaUtil;
 import org.vcell.util.TokenMangler;
-
-import cbit.vcell.biomodel.BioModel;
-//import cbit.vcell.client.desktop.biomodel.BioPaxObjectPropertiesPanel.BioPaxObjectProperty;
 
 public class BioPAXUtil {
 
@@ -45,23 +39,6 @@ public class BioPAXUtil {
 		return null;
 	}
 	
-	// internal use only
-	private static Set<Control> getAllControls(BioModel bioModel) {
-		Set<Control> controls = new HashSet<Control>();
-		if(bioModel == null) {
-			return controls;
-		}
-		PathwayModel pathwayModel = bioModel.getPathwayModel();
-		
-		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
-		for(BioPaxObject bpObject : bpObjects) {
-			if(bpObject instanceof Control) {
-				Control c = (Control) bpObject;
-				controls.add(c);
-			}
-		}
-		return controls;
-	}
 	public static Set<Control> getAllControls(PathwayModel pathwayModel) {
 		Set<Control> controls = new HashSet<Control>();
 		if(pathwayModel == null) {
@@ -76,12 +53,11 @@ public class BioPAXUtil {
 		}
 		return controls;
 	}
-	private static Set<Conversion> getAllConversions(BioModel bioModel) {
+	private static Set<Conversion> getAllConversions(PathwayModel pathwayModel) {
 		Set<Conversion> conversion = new HashSet<Conversion>();
-		if(bioModel == null) {
+		if(pathwayModel == null) {
 			return conversion;
 		}
-		PathwayModel pathwayModel = bioModel.getPathwayModel();
 		
 		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
 		for(BioPaxObject bpObject : bpObjects) {
@@ -93,12 +69,12 @@ public class BioPAXUtil {
 		return conversion;
 	}
 	// find the controls for which this physical entity is a controller
-	private static Set<Control> getControlsOfController(PhysicalEntity controller, BioModel bioModel) {
+	private static Set<Control> getControlsOfController(PhysicalEntity controller, PathwayModel pathwayModel) {
 		Set<Control> filteredControls = new HashSet<Control>();
-		if(bioModel == null) {
+		if(pathwayModel == null) {
 			return filteredControls;
 		}
-		Set<Control> allControls = getAllControls(bioModel);
+		Set<Control> allControls = getAllControls(pathwayModel);
 		for(Control c : allControls) {
 			List<PhysicalEntity> controllers = c.getPhysicalControllers();
 			for(PhysicalEntity pE : controllers) {
@@ -110,21 +86,21 @@ public class BioPAXUtil {
 		}
 		return filteredControls;
 	}
-	public static boolean isController(PhysicalEntity controller, BioModel bioModel) {
-		if(bioModel == null) {
+	public static boolean isController(PhysicalEntity controller, PathwayModel pathwayModel) {
+		if(pathwayModel == null) {
 			return false;
 		}
-		if(getControlsOfController(controller, bioModel).isEmpty()) {
+		if(getControlsOfController(controller, pathwayModel).isEmpty()) {
 			return false;	// not a controller since is not part of any control
 		} else {
 			return true;
 		}
 	}
-	public static boolean isReactionParticipant(PhysicalEntity physicalEntity, BioModel bioModel) {
-		if(bioModel == null) {
+	public static boolean isReactionParticipant(PhysicalEntity physicalEntity, PathwayModel pathwayModel) {
+		if(pathwayModel == null) {
 			return false;
 		}
-		Set<Conversion> allConversions = getAllConversions(bioModel);
+		Set<Conversion> allConversions = getAllConversions(pathwayModel);
 		for(Conversion c : allConversions) {
 			List<InteractionParticipant> participants = c.getParticipants();
 			for(InteractionParticipant p : participants) {
@@ -138,12 +114,12 @@ public class BioPAXUtil {
 		return false;
 	}
 	// find the kinetic laws of the controls for which this physical entity is a controller
-	public static Set<SBEntity> getKineticLawsOfController(PhysicalEntity controller, BioModel bioModel) {
+	public static Set<SBEntity> getKineticLawsOfController(PhysicalEntity controller, PathwayModel pathwayModel) {
 		Set<SBEntity> kineticLaws = new HashSet<SBEntity>();
-		if(bioModel == null) {
+		if(pathwayModel == null) {
 			return kineticLaws;
 		}
-		Set<Control> controls = getControlsOfController(controller, bioModel);
+		Set<Control> controls = getControlsOfController(controller, pathwayModel);
 		for(Control c : controls) {
 			ArrayList<SBEntity> kLaws = c.getSBSubEntity();
 			for(SBEntity kL : kLaws) {
@@ -155,12 +131,11 @@ public class BioPAXUtil {
 	
 	// find controls governing this interaction (Catalysis, Modulation or simply Control)
 	// it's all the same for us, in vCell we only have the general concept of Catalysis
-	public static Set<Control> getControlsOfInteraction(Interaction interaction, BioModel bioModel) {
+	public static Set<Control> getControlsOfInteraction(Interaction interaction, PathwayModel pathwayModel) {
 		Set<Control> controls = new HashSet<Control>();
-		if(bioModel == null) {
+		if(pathwayModel == null) {
 			return controls;
 		}
-		PathwayModel pathwayModel = bioModel.getPathwayModel();
 		Set<BioPaxObject> bpObjects = pathwayModel.getBiopaxObjects();
 		for(BioPaxObject bpObject : bpObjects) {
 			if(bpObject instanceof Control) {
@@ -172,12 +147,12 @@ public class BioPAXUtil {
 		}
 		return controls;
 	}
-	public static Set<PhysicalEntity> getControllersOfInteraction(Interaction interaction, BioModel bioModel){
+	public static Set<PhysicalEntity> getControllersOfInteraction(Interaction interaction, PathwayModel pathwayModel){
 		Set<PhysicalEntity> controllers = new HashSet<PhysicalEntity>();
-		if(bioModel == null){
+		if(pathwayModel == null){
 			return controllers;
 		}
-		Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, bioModel);
+		Set<Control> controls = BioPAXUtil.getControlsOfInteraction(interaction, pathwayModel);
 		for(Control control : controls) {
 			if(control.getPhysicalControllers() != null){
 				for(PhysicalEntity ep : control.getPhysicalControllers()){ 
@@ -274,10 +249,10 @@ public class BioPAXUtil {
 		}
 	}
 	
-	public static Set<Process> getAllProcesses(BioModel bioModel, Conversion interaction) {
+	public static Set<Process> getAllProcesses(PathwayModel pathwayModel, Conversion interaction) {
 		HashSet<Process> processes = new HashSet<Process>();
 		
-		Set<Control> controls = getControlsOfInteraction(interaction, bioModel);
+		Set<Control> controls = getControlsOfInteraction(interaction, pathwayModel);
 		if(controls.size() == 0) {
 			processes.add(new Process(interaction));
 			return processes;

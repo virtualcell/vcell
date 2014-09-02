@@ -24,9 +24,9 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;

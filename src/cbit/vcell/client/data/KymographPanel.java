@@ -42,7 +42,6 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.solver.SolverUtilities;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -1903,7 +1902,7 @@ public void initDataManager(
 	
 	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DataIdentifier[] sortedDataIDs = SolverUtilities.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
+			DataIdentifier[] sortedDataIDs = DataIdentifier.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
 			hashTable.put("sortedDataIDs", sortedDataIDs);
 		}
 	};

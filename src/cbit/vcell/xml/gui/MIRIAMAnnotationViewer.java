@@ -23,10 +23,10 @@ import javax.swing.JTextArea;
 
 import org.openrdf.model.Resource;
 import org.openrdf.rio.RDFHandlerException;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.registry.Registry;
 

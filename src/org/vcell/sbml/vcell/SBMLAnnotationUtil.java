@@ -36,8 +36,9 @@ import org.sbpax.util.SesameRioUtil;
 import org.vcell.sybil.rdf.RDFChopper;
 import org.vcell.sybil.rdf.smelt.NamespaceAssimilator;
 import org.vcell.sybil.rdf.smelt.SameAsCrystalizer;
+import org.vcell.util.document.Identifiable;
+
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.rdf.XMLRDFWriter;
 import cbit.vcell.xml.XMLTags;

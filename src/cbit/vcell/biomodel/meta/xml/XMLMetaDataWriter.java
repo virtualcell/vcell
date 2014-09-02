@@ -13,11 +13,12 @@ package cbit.vcell.biomodel.meta.xml;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
 import org.jdom.Element;
 import org.jdom.Text;
 import org.openrdf.model.Resource;
+import org.vcell.util.document.Identifiable;
 
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.NonRDFAnnotation;
 import cbit.vcell.biomodel.meta.VCID;
