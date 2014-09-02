@@ -90,7 +90,7 @@ protected List<SpeciesContextSpec> computeData() {
 	for (SpeciesContextSpec parameter : allParameterList) {
 		if (bSearchInactive
 			|| parameter.getSpeciesContext().getName().toLowerCase().contains(lowerCaseSearchText)
-			|| parameter.getSpeciesContext().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)) {
+			/*|| parameter.getSpeciesContext().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)*/) {
 			parameterList.add(parameter);
 		}
 	}
