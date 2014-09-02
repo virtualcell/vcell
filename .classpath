@@ -15,9 +15,11 @@
 	<classpathentry kind="lib" path="lib/jaxen-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/xom-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.3-freshTrunk-7-21/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
@@ -29,7 +31,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="lib" path="lib/activemq-core-5.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/activemq-core-5.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/camel-jms-2.9.2.jar"/>
 	<classpathentry kind="lib" path="lib/geronimo-j2ee-management_1.1_spec-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/geronimo-jms_1.1_spec-1.1.1.jar"/>
@@ -67,23 +69,23 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-discovery-0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jhall.jar"/>
-	<classpathentry kind="lib" path="lib/netty-3.2.5.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhall.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-3.2.5.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-model-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-api-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-n3-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-rdfxml-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/jamtio.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5.jar"/>
-	<classpathentry kind="lib" path="lib/jhdf5obj.jar"/>
-	<classpathentry kind="lib" path="lib/jhdfobj.jar"/>
-	<classpathentry kind="lib" path="lib/mongo-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jamtio.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5obj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdfobj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mongo-2.8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ucp.jar"/>
 	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sshj-0.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/jlibsedml.jar"/>
-	<classpathentry kind="lib" path="lib/jmathml.jar"/>
-	<classpathentry kind="lib" path="lib/commons-compress-1.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jlibsedml.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmathml.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.8.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
