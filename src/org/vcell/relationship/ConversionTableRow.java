@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.desktop.biomodel;
+package org.vcell.relationship;
 
 import org.vcell.pathway.BioPaxObject;
 

@@ -41,6 +41,8 @@ import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
+import org.vcell.util.document.Identifiable;
+
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 

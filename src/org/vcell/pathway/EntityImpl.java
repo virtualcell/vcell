@@ -16,7 +16,7 @@ import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.pathway.sbpax.SBEntityImpl;
-import cbit.vcell.biomodel.meta.Identifiable;
+import org.vcell.util.document.Identifiable;
 
 public class EntityImpl extends SBEntityImpl implements Entity, Identifiable {
 	

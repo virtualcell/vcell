@@ -16,7 +16,6 @@ import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
@@ -85,11 +84,11 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
 		solver = new GibsonSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.EMIntegrator, bMessaging);
+		solver = new HybridSolver(simTask, directory, sessionLog, HybridSolver.EMIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridMilstein)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.MilsteinIntegrator, bMessaging);
+		solver = new HybridSolver(simTask, directory, sessionLog, HybridSolver.MilsteinIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.HybridMilAdaptive)) {
-		solver = new cbit.vcell.solver.stoch.HybridSolver(simTask, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator, bMessaging);
+		solver = new HybridSolver(simTask, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.Smoldyn)) {
 		solver = new SmoldynSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.Chombo)) {

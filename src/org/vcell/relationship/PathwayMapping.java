@@ -30,8 +30,8 @@ import org.vcell.pathway.Transport;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.util.TokenMangler;
+
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.ConversionTableRow;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
@@ -185,7 +185,10 @@ public class PathwayMapping {
 	
 	private void createReactionStepsFromBioPaxObject(BioModel bioModel, Conversion conversion) throws Exception
 	{
-		for(Process process :BioPAXUtil.getAllProcesses(bioModel, conversion)) {
+		if (bioModel==null){
+			return;
+		}
+		for(Process process :BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion)) {
 			String name = process.getName();
 			if(bioModel.getModel().getReactionStep(name) == null){
 				// create a new reactionStep object
@@ -208,7 +211,10 @@ public class PathwayMapping {
 			{
 		// use user defined id as the name of the reaction name
 		// get participants of this reaction from table rows
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
+		if (bioModel==null){
+			return;
+		}
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows){
 				if(ctr.interactionId().equals(bioPaxObject.getID())){
@@ -242,8 +248,10 @@ public class PathwayMapping {
 	{
 		// use user defined id as the name of the reaction name
 		// get participants from table rows
-//		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
+		if (bioModel==null){
+			return;
+		}
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
 			for(ConversionTableRow ctr : conversionTableRows){
 				if(ctr.interactionId().equals(bioPaxObject.getID())){
@@ -275,7 +283,10 @@ public class PathwayMapping {
 	private void createReactionStepsFromTableRow(BioModel bioModel, Transport bioPaxObject,
 			double stoich, String id, String location, ArrayList<ConversionTableRow> conversionTableRows) throws Exception
 			{
-		for(Process process: BioPAXUtil.getAllProcesses(bioModel, bioPaxObject)) {
+		if (bioModel==null){
+			return;
+		}
+		for(Process process: BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), bioPaxObject)) {
 			// use user defined id as the name of the reaction name
 			// get participants from table rows
 			ArrayList<ConversionTableRow> participants = new ArrayList<ConversionTableRow>();
@@ -379,7 +390,10 @@ public class PathwayMapping {
 			double stoich, String id, String location) throws Exception
 	{
 		// use user defined id as the name of the reaction name
-		Set<Process> processes = BioPAXUtil.getAllProcesses(bioModel, conversion);
+		if (bioModel==null){
+			return;
+		}
+		Set<Process> processes = BioPAXUtil.getAllProcesses(bioModel.getPathwayModel(), conversion);
 		for(Process process : processes) {
 			String name = getSafetyName(process.getName() + "_" + location);
 			if(bioModel.getModel().getReactionStep(name) == null){

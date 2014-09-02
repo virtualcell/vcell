@@ -16,8 +16,7 @@ import java.util.HashSet;
 
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.util.Matchable;
-
-import cbit.vcell.biomodel.meta.Identifiable;
+import org.vcell.util.document.Identifiable;
 
 public interface BioPaxObject extends Identifiable, Matchable {
 

@@ -32,16 +32,14 @@ import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
-import cbit.vcell.client.desktop.biomodel.BioModelEditorApplicationPanel.ApplicationPanelTabID;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
@@ -62,8 +60,8 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -1147,7 +1145,7 @@ public SimulationContext getSimulationContext(String name) {
 		} else if (source instanceof OutputFunctionIssueSource) {
 			SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
 			description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / " 
-				+ ApplicationPanelTabID.simulations.getTitle() + " / " + SimulationsPanelTabID.output_functions.getTitle();
+				+ "Simulations" + " / " + "Output Functions";
 		} else if (source instanceof UnmappedGeometryClass) {
 			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
 			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";

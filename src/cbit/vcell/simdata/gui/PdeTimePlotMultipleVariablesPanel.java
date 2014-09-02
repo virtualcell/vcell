@@ -49,7 +49,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverUtilities;
 
 public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private PDEDataContext pdeDataContext = null;
@@ -220,7 +219,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		
-		DataIdentifier[] dis = SolverUtilities.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
+		DataIdentifier[] dis = DataIdentifier.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
 		Arrays.sort(dis, new Comparator<DataIdentifier>(){
 			public int compare(DataIdentifier o1, DataIdentifier o2) {
 				int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());

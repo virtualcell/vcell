@@ -16,9 +16,9 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;

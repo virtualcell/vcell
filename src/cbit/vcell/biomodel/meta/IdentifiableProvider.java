@@ -12,6 +12,8 @@ package cbit.vcell.biomodel.meta;
 
 import java.util.Set;
 
+import org.vcell.util.document.Identifiable;
+
 public interface IdentifiableProvider {
 	VCID getVCID(Identifiable identifiable);
 	Identifiable getIdentifiableObject(VCID vcid);

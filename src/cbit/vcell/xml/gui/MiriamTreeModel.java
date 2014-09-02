@@ -25,8 +25,8 @@ import org.vcell.sybil.models.dublincore.DublinCoreDate;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier;
 import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
+import org.vcell.util.document.Identifiable;
 
-import cbit.vcell.biomodel.meta.Identifiable;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCID;
