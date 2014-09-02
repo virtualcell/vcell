@@ -22,10 +22,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
-import org.apache.activemq.broker.ft.MasterConnector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.plot.Plot2D;
 import cbit.plot.Plot2DPanel;
@@ -48,7 +48,6 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	
 	private Color[] autoContrastColors;
 	private JPanel panel;
-	private JCheckBox chckbxNewCheckBox;
 	
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -210,12 +209,8 @@ private javax.swing.JList<DataReference> getJList1() {
 			ivjJList1.setName("JList1");
 			ivjJList1.setBounds(0, 0, 255, 480);
 			ivjJList1.setCellRenderer(new ListCellRenderer<DataReference>() {
-				private Color getBG0(){
-					return new Color(180,180,180);
-				}
-				private Color getBG1(){
-					return new Color(200,200,200);
-				}
+				DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
+
 				private Boolean isEvenMatchedSet(int index0){
 					if(ivjJList1.getModel().getSize() == 0){
 						return null;
@@ -249,7 +244,6 @@ private javax.swing.JList<DataReference> getJList1() {
 					}
 					return getmultisourcePlotListModel().getSortedDataReferences().get(index0).matchCount % 2  == 0;
 				}
-				DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
 				@Override
 				public Component getListCellRendererComponent(
 						JList<? extends DataReference> list,
@@ -258,9 +252,14 @@ private javax.swing.JList<DataReference> getJList1() {
 					Component comp = defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 					try{
 						if(bGroupingListSorter && comp instanceof JLabel){
-							JLabel jLabel = (JLabel)comp;
-							Boolean evenMatch = isEvenMatchedSet(index);
-							jLabel.setBackground((evenMatch==null?jLabel.getBackground():(evenMatch?getBG0():getBG1())));
+							if (isSelected) {
+								comp.setBackground(getJList1().getSelectionBackground());
+								comp.setForeground(getJList1().getSelectionForeground());
+							} else {
+								Boolean evenMatch = isEvenMatchedSet(index);
+								comp.setBackground(evenMatch == null || evenMatch ? getJList1().getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+								comp.setForeground(getJList1().getForeground());
+							}
 						}
 					}catch(Exception e){
 						e.printStackTrace();
