@@ -26,11 +26,10 @@ import javax.swing.table.TableModel;
 
 import org.vcell.util.Issue;
 import org.vcell.util.NumberUtils;
+import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ReactionEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
-import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
@@ -80,10 +79,10 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		
 		TableModel tableModel = table.getModel();
-		if (tableModel instanceof VCellSortTableModel) {
-			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssues(row, column);
+		if (tableModel instanceof SortTableModel) {
+			List<Issue> issueList = ((SortTableModel) tableModel).getIssues(row, column);
 			if (issueList.size() > 0) {
-				setToolTipText(IssueManager.getHtmlIssueMessage(issueList));
+				setToolTipText(Issue.getHtmlIssueMessage(issueList));
 				if (column == 0) {
 					setBorder(new MatteBorder(1,1,1,0,Color.red));
 				} else if (column == table.getColumnCount() - 1) {

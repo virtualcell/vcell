@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Commented;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;

@@ -12,11 +12,6 @@ package org.vcell.util;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
 
 /**
  * This type was created in VisualAge.

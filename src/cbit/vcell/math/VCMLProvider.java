@@ -1,5 +1,7 @@
 package cbit.vcell.math;
 
+import org.vcell.util.Commented;
+
 /**
  * {@link Commented} which produces VCML
  * @author gweatherby

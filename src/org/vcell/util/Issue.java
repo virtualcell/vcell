@@ -10,6 +10,8 @@
 
 package org.vcell.util;
 
+import java.util.List;
+
 
 
 /**
@@ -251,5 +253,19 @@ public int hashCode() {
 public String toString() {
 	//return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ": "+getSeverityName()+", "+getCategory()+", '"+getMessage()+"', source="+getSource();
 	return getSeverityName()+": '"+getMessage()+"'";
+}
+
+
+public static String getHtmlIssueMessage(List<Issue> issueList) {
+	if (issueList == null || issueList.size() == 0) {
+		return null;
+	}
+	StringBuilder sb = new StringBuilder();
+	sb.append("<html>");
+	for (Issue issue : issueList) {
+		sb.append("<li>" + issue.getMessage() + "</li>");
+	}
+	sb.append("</html>");
+	return sb.toString();
 }
 }
