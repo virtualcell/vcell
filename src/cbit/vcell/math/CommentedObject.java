@@ -1,5 +1,7 @@
 package cbit.vcell.math;
 
+import org.vcell.util.Commented;
+
 /**
  * a default implementation of Commented
  * @author gweatherby

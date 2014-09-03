@@ -274,6 +274,7 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 		fireTableDataChanged();	
 	}
 
+	@Override
 	public List<Issue> getIssues(int row, int col) {
 		issueList.clear();
 		Object rowAt = getValueAt(row);

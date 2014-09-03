@@ -73,6 +73,7 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
@@ -468,7 +469,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			File exes[] = ResourceUtil.getExes(SolverDescription.Smoldyn);
+			File exes[] = SolverUtilities.getExes(SolverDescription.Smoldyn);
 			assert exes.length == 1 : "one and only one smoldyn solver expected";
 			File smoldynExe = exes[0];
 	
@@ -678,7 +679,7 @@ private Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory,
 		throw new IllegalArgumentException("Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) solver not allowed for quick run of simulations.");
 	}
 	
-	ResourceUtil.prepareSolverExecutable(solverDescription);	
+	SolverUtilities.prepareSolverExecutable(solverDescription);	
 	// create solver from SolverFactory
 	Solver solver = SolverFactory.createSolver(sessionLog, directory, simTask, false);
 
