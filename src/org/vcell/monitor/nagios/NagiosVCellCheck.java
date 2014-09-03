@@ -11,16 +11,19 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
+import cbit.rmi.event.MessageEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
@@ -31,6 +34,17 @@ public class NagiosVCellCheck {
 			super(message, exc);
 		}
 	}
+	private static class UnexpectedTestStateException extends Exception {
+		public UnexpectedTestStateException(String message){
+			super(message);
+		}
+	}
+	private static class WarningTestConditionException extends Exception{
+		public WarningTestConditionException(String message){
+			super(message);
+		}
+	}
+	
 	public static enum NAGIOS_STATUS {OK,WARNING,CRITICAL,UNKNOWN};
 	public static enum VCELL_CHECK_LEVEL {RMI_ONLY_0,CONNECT_1,INFOS_2,LOAD_3,DATA_4,RUN_5};
 	
@@ -48,8 +62,12 @@ public class NagiosVCellCheck {
 		}catch(NamingLookupException e){
 			System.out.println(e.getCause().getClass().getName()+" "+e.getMessage());
 			System.exit(NAGIOS_STATUS.UNKNOWN.ordinal());
-		}catch(Exception e){
+		}catch(WarningTestConditionException e){
 			System.out.println(e.getClass().getName()+" "+e.getMessage());
+			System.exit(NAGIOS_STATUS.WARNING.ordinal());
+		}catch(Exception e){
+//			e.printStackTrace();
+			System.out.println((e.getCause()==null?"":e.getCause().getClass().getSimpleName()+":")+e.getClass().getName()+" "+e.getMessage());
 			System.exit(NAGIOS_STATUS.CRITICAL.ordinal());
 		}
 	}
@@ -63,7 +81,11 @@ public class NagiosVCellCheck {
 		System.setOut(new PrintStream(baos_out));
 		System.setErr(new PrintStream(baos_err));
 		try{
-			vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
+			try{
+				vcellBootstrap = (VCellBootstrap)Naming.lookup(rmiUrl);
+			}catch(Exception e){
+				throw new NamingLookupException(e.getMessage(),e);
+			}
 			if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.CONNECT_1.ordinal()){
 				VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(
 					new UserLoginInfo("vcellNagios", new DigestedPassword(vcellNagiosPassword)));
@@ -71,33 +93,92 @@ public class NagiosVCellCheck {
 					VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 					if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.LOAD_3.ordinal()){
 						KeyValue bioModelKey = null;
+						final String testModelName = "Solver Suite 5.1 (ALPHA only ode)";
 						for(BioModelInfo bioModelInfo:vcInfoContainer.getBioModelInfos()){
-							if(bioModelInfo.getVersion().getName().equals("Solver Suite 5.1 (ALPHA)")){
+							if(bioModelInfo.getVersion().getName().equals(testModelName)){
 								bioModelKey = bioModelInfo.getVersion().getVersionKey();
 								break;
 							}
 						}
 						BigString bioModelXML = vcellConnection.getUserMetaDbServer().getBioModelXML(bioModelKey);
 						BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+						bioModel.refreshDependencies();
 						if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.DATA_4.ordinal()){
-							SimulationContext simulationContext = bioModel.getSimulationContext("3D pde");
-							Simulation simulation = simulationContext.getSimulation("Copy of fully implicit");
+							final String testSimContextName = "non-spatial ODE";
+							SimulationContext simulationContext = bioModel.getSimulationContext(testSimContextName);
+							final String testSimName = "Copy of combined ida/cvode";
+							Simulation simulation = simulationContext.getSimulation(testSimName);
+							if(simulation == null){
+								throw new UnexpectedTestStateException("Couldn't find sim '"+testSimName+"' for "+checkLevel.toString());
+							}
 							VCSimulationDataIdentifier vcSimulationDataIdentifier =
 								new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), 0);
 							ArrayList<AnnotatedFunction> outputFunctionsList = simulationContext.getOutputFunctionContext().getOutputFunctionsList();
 							OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
 							double[] times = vcellConnection.getDataSetController().getDataSetTimes(vcSimulationDataIdentifier);
-							SimDataBlock simDataBlock = vcellConnection.getDataSetController().getSimDataBlock(outputContext, vcSimulationDataIdentifier, "RanC_cyt",times[times.length-1]);
+							ODESimData odeSimData = vcellConnection.getDataSetController().getODEData(vcSimulationDataIdentifier);
+//							SimDataBlock simDataBlock = vcellConnection.getDataSetController().getSimDataBlock(outputContext, vcSimulationDataIdentifier, "RanC_cyt",times[times.length-1]);
 							if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.RUN_5.ordinal()){
-								if(true){throw new RuntimeException("Not Yet Implemented");}
+								KeyValue copy1Key = null;
+								KeyValue copy2Key = null;
+								try{
+									if(simulationContext.getSimulations().length != 1){
+										throw new UnexpectedTestStateException("Expecting only 1 sim to be copied for "+checkLevel.toString());
+									}
+									SimulationStatusPersistent simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(simulation.getVersion().getVersionKey());
+									if(!simulationStatus.isCompleted()){
+										throw new UnexpectedTestStateException("Expecting completed sim to copy for "+checkLevel.toString());
+									}
+									
+									String copyModelName = testModelName+" copy";
+									BigString copyBioModelXMLStr = vcellConnection.getUserMetaDbServer().saveBioModelAs(bioModelXML, copyModelName, null);
+									BioModel copyBioModel = XmlHelper.XMLToBioModel(new XMLSource(copyBioModelXMLStr.toString()));
+									copy1Key = copyBioModel.getVersion().getVersionKey();
+									copyBioModel.refreshDependencies();
+									Simulation copySim = copyBioModel.getSimulationContext(testSimContextName).copySimulation(copyBioModel.getSimulationContext(testSimContextName).getSimulation(testSimName));
+									final String copyTestSimName = "test";
+									copySim.setName(copyTestSimName);
+									copyBioModel.refreshDependencies();
+									copyBioModelXMLStr = new BigString(XmlHelper.bioModelToXML(copyBioModel));
+									copyBioModelXMLStr = vcellConnection.getUserMetaDbServer().saveBioModel(copyBioModelXMLStr, null);
+									copyBioModel = XmlHelper.XMLToBioModel(new XMLSource(copyBioModelXMLStr.toString()));
+									copy2Key = copyBioModel.getVersion().getVersionKey();
+									copyBioModel.refreshDependencies();
+									
+									Simulation newSimulation = copyBioModel.getSimulationContext(testSimContextName).getSimulation(copyTestSimName);
+									simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(newSimulation.getVersion().getVersionKey());
+									if(simulationStatus != null && !simulationStatus.isNeverRan()){
+										throw new UnexpectedTestStateException("Expecting new sim to have 'never ran' status for "+checkLevel.toString());
+									}
+									VCSimulationIdentifier newSimID = new VCSimulationIdentifier(newSimulation.getVersion().getVersionKey(), copyBioModel.getVersion().getOwner());
+									vcellConnection.getSimulationController().startSimulation(newSimID, 1);
+									
+									long startTime = System.currentTimeMillis();
+									SimulationStatusPersistent lastSimStatus = simulationStatus;
+									final int MAX_SIM_TIME = 20;//seconds
+									while(simulationStatus == null || (!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed())){
+										Thread.sleep(200);
+										if((System.currentTimeMillis()-startTime)>(MAX_SIM_TIME*1000)){
+											vcellConnection.getSimulationController().stopSimulation(newSimID);
+											throw new WarningTestConditionException("Sim took too long, >"+MAX_SIM_TIME+" seconds.  Last status="+lastSimStatus.toString());
+										}
+										simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(newSimulation.getVersion().getVersionKey());
+										if(simulationStatus !=null && !simulationStatus.toString().equals((lastSimStatus==null?null:lastSimStatus.toString()))){
+											lastSimStatus = simulationStatus;
+	//										System.out.println("running status="+simulationStatus);
+										}
+										MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+									}
+								}finally{
+									if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}
+									if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}
+								}
 							}
 						}
 					}
 				}
 			}
 			return vcellBootstrap.getVCellSoftwareVersion();
-		}catch(Exception e){
-			throw new NamingLookupException(e.getMessage(),e);
 		}finally{
 			System.setOut(sysout);
 			System.setErr(syserr);
