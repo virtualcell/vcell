@@ -1,4 +1,4 @@
-package cbit.vcell.math;
+package org.vcell.util;
 
 /**
  * Mixin interface to add commenting capability to components of VCML. An interface is

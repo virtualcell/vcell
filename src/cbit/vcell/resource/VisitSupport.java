@@ -1,6 +1,5 @@
 package cbit.vcell.resource;
 
-import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,14 +12,13 @@ import java.util.prefs.BackingStoreException;
 import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.gui.ExecutableFinderDialog;
+
+import cbit.vcell.resource.ResourceUtil.ExecutableFinder;
 
 public class VisitSupport {
 
 	private static final Logger lg = Logger.getLogger(VisitSupport.class);
-	private static final String visitUserMessage = "If VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
+	public static final String visitUserMessage = "If VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
 
 	
 	public static File getVisToolPythonScript()
@@ -43,14 +41,13 @@ public class VisitSupport {
 	}
 
 
-	private static void launchVisToolMac(Component parent) throws IOException, URISyntaxException, BackingStoreException {
+	private static void launchVisToolMac(ExecutableFinder gef) throws IOException, URISyntaxException, BackingStoreException {
 		
 		File visMainCLI = getVisToolPythonScript();
 		File visitExecutable = null;
 
 		String vname = "visit";
 		
-		ExecutableFinderDialog gef = new ExecutableFinderDialog(parent, visitUserMessage); 
 		File visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
 		
 		visitExecutable = new File(visitExecutableRoot,"/Contents/Resources/bin/visit");
@@ -99,11 +96,11 @@ public class VisitSupport {
 		}
 	}
 	
-	public static void launchVisTool(Component parent) throws IOException, ExecutableException, URISyntaxException, BackingStoreException
+	public static void launchVisTool(ExecutableFinder executableFinder) throws IOException, ExecutableException, URISyntaxException, BackingStoreException
 	{
 		
 		if (ResourceUtil.bMac) {
-			launchVisToolMac(parent);
+			launchVisToolMac(executableFinder);
 			return;
 		}
 		
@@ -113,8 +110,7 @@ public class VisitSupport {
 			
 			String vname = "visit";
 			//String msg = "<html>If VisIt is installed (from <a href=\"https://wci.llnl.gov/codes/visit/\">https://wci.llnl.gov/codes/visit/</a>) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
-			ExecutableFinderDialog gef = new ExecutableFinderDialog(parent, visitUserMessage); 
-			visitExecutable = ResourceUtil.getExecutable(vname,false,gef);
+			visitExecutable = ResourceUtil.getExecutable(vname,false,executableFinder);
 			
 			if (!script.exists() || !script.isFile()){
 				throw new IOException("script not found, "+script.getAbsolutePath()); 

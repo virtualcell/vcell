@@ -77,7 +77,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
@@ -87,6 +86,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -718,7 +718,7 @@ public class FRAPStudy implements Matchable{
 		
 		int jobIndex = 0;
 		SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
-		ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
+		SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
 		{
@@ -786,7 +786,7 @@ public class FRAPStudy implements Matchable{
 				simTask.getSimulation().getSolverTaskDescription().setErrorTolerance(new ErrorTolerance(1e-6, 1e-2));
 			}
 			
-			ResourceUtil.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
+			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
 			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,sessionLog,false);		
 			fvSolver.startSolver();

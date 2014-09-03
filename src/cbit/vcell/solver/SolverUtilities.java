@@ -1,9 +1,11 @@
 package cbit.vcell.solver;
 
-import java.util.Comparator;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType;
@@ -13,9 +15,12 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class SolverUtilities {
+
+	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
 
 	public static Expression substituteSizeFunctions(Expression origExp, VariableDomain variableDomain) throws ExpressionException {
 		Expression exp = new Expression(origExp);
@@ -89,6 +94,45 @@ public class SolverUtilities {
 	
 	public static boolean isPowerOf2(int n) {
 		return n != 0 && ((n & (n-1)) == 0);
+	}
+
+	/**
+	 * Ensure solvers extracted from resources and registered as property
+	 * @param cf
+	 * @return array of exes used by provided solver
+	 * @throws IOException, {@link UnsupportedOperationException} if no exe for this solver
+	 */
+	public static File[] getExes(SolverDescription sd) throws IOException {
+		SolverExecutable se = sd.getSolverExecutable(); 
+		if (se != null) {
+			if (loaded.containsKey(se)) {
+				return loaded.get(se);
+			}
+			SolverExecutable.NameInfo nameInfos[] = se.getNameInfo(); 
+			File files[] = new File[nameInfos.length];
+			for (int i = 0; i < nameInfos.length; ++i) {
+				SolverExecutable.NameInfo ni = nameInfos[i];
+				File exe = ResourceUtil.loadSolverExecutable(ni.exeName, sd.licensedLibrary);
+				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
+				files[i] = exe; 
+			}
+			loaded.put(se, files);
+			return files;
+		}
+		throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");
+	}
+
+	/**
+	 * calls {@link #getExes(SolverConfig)} if solver requires executables,
+	 * no-op otherwise
+	 */
+	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
+		if (solverDescription.getSolverExecutable() != null) {
+			if (!ResourceUtil.bWindows && !ResourceUtil.bMac && !ResourceUtil.bLinux) {
+				throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X.");
+			}
+			getExes(solverDescription);
+		}
 	}
 
 }

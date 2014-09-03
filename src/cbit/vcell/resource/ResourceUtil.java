@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +30,6 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCellSoftwareVersion;
 
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverExecutable;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
@@ -272,7 +269,7 @@ public class ResourceUtil {
 	 * @return executable
 	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
 	 */
-	private static File loadExecutable(String basename, LicensedLibrary ll) throws IOException {
+	public static File loadSolverExecutable(String basename, LicensedLibrary ll) throws IOException {
 		if (!ll.isLicensed()) {
 			throw new UnsupportedOperationException("Unable to run " + basename + " because " + ll.toString( ) + " software license not accepted.");
 		}
@@ -321,8 +318,6 @@ public class ResourceUtil {
 		}
 	}
 	
-	private static Map<SolverExecutable,File[]>  loaded = new Hashtable<SolverExecutable,File[]>( );
-
 	public static JavaVersion getJavaVersion() {
 		if ((System.getProperty("java.version")).contains("1.5")) {
 			return JavaVersion.FIVE;
@@ -507,45 +502,6 @@ public class ResourceUtil {
 		}
 		return solversDirectory;
 	}	
-
-	/**
-	 * Ensure solvers extracted from resources and registered as property
-	 * @param cf
-	 * @return array of exes used by provided solver
-	 * @throws IOException, {@link UnsupportedOperationException} if no exe for this solver
-	 */
-	public static File[] getExes(SolverDescription sd) throws IOException {
-		SolverExecutable se = sd.getSolverExecutable(); 
-		if (se != null) {
-			if (loaded.containsKey(se)) {
-				return loaded.get(se);
-			}
-			SolverExecutable.NameInfo nameInfos[] = se.getNameInfo(); 
-			File files[] = new File[nameInfos.length];
-			for (int i = 0; i < nameInfos.length; ++i) {
-				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = loadExecutable(ni.exeName, sd.licensedLibrary);
-				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
-				files[i] = exe; 
-			}
-			loaded.put(se, files);
-			return files;
-		}
-		throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");
-	}
-	
-	/**
-	 * calls {@link #getExes(SolverConfig)} if solver requires executables,
-	 * no-op otherwise
-	 */
-	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
-		if (solverDescription.getSolverExecutable() != null) {
-			if (!bWindows && !bMac && !bLinux) {
-				throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X.");
-			}
-			getExes(solverDescription);
-		}
-	}
 
 	public static File getVCellInstall()
 	{

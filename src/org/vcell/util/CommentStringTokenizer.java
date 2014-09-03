@@ -18,8 +18,6 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
-import cbit.vcell.math.Commented;
-
 
 /**
  * Parse a block of text, including comments  <br>

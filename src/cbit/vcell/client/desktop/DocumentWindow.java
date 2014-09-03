@@ -44,6 +44,7 @@ import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ExecutableFinderDialog;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -899,7 +900,7 @@ private void startVirtualFRAP(){
 
 private void startVCellVisIt() {
 	try {
-		VisitSupport.launchVisTool(this);
+		VisitSupport.launchVisTool(new ExecutableFinderDialog(this, VisitSupport.visitUserMessage)); 
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this, "failed to launch visTool, exception: "+e.getMessage());

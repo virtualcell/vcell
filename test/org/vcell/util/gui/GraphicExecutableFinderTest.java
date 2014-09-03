@@ -36,7 +36,7 @@ public class GraphicExecutableFinderTest {
 	
 	@Test
 	public void vtest( ) throws HeadlessException, IOException, ExecutableException, InterruptedException, URISyntaxException, BackingStoreException {
-		VisitSupport.launchVisTool(new JFrame( ));
+		VisitSupport.launchVisTool(new ExecutableFinderDialog(new JFrame( ), VisitSupport.visitUserMessage));
 		//kill Junit around for a bit
 		Thread.sleep(1000000);
 	}
