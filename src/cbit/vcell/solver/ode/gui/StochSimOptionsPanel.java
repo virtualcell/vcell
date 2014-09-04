@@ -27,8 +27,8 @@ import javax.swing.border.EtchedBorder;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.stoch.StochHybridOptions;

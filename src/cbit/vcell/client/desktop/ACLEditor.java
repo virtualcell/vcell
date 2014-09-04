@@ -23,8 +23,8 @@ import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.User;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.constants.GuiConstants;
 
 /**
  * Insert the type's description here.

@@ -30,9 +30,9 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.vcell.client.ClientTaskManager;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;

@@ -49,7 +49,7 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;

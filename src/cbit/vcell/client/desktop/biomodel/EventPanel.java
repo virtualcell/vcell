@@ -50,7 +50,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;

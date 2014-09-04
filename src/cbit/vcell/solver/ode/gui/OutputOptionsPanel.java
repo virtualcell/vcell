@@ -26,9 +26,9 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;

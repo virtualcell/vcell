@@ -64,13 +64,13 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -348,12 +348,12 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable, VFrap_
 			(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
 			(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
-				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimDataConstants.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
+				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimulationContext.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
 		ArrayList<SourceDataInfo> sdiArr =
 			dataProcessingOutputDataValues.createSourceDataInfos(
-				dataProcessingOutputInfo.getVariableISize(SimDataConstants.FLUOR_DATA_NAME),
-				dataProcessingOutputInfo.getVariableOrigin(SimDataConstants.FLUOR_DATA_NAME),
-				dataProcessingOutputInfo.getVariableExtent(SimDataConstants.FLUOR_DATA_NAME));
+				dataProcessingOutputInfo.getVariableISize(SimulationContext.FLUOR_DATA_NAME),
+				dataProcessingOutputInfo.getVariableOrigin(SimulationContext.FLUOR_DATA_NAME),
+				dataProcessingOutputInfo.getVariableExtent(SimulationContext.FLUOR_DATA_NAME));
 		return createFrapData(sdiArr, dataProcessingOutputInfo.getVariableTimePoints(), 0, maxIntensity, progressListener);
 	}
 
@@ -884,7 +884,7 @@ public void saveImageDatasetAsExternalData(LocalWorkspace localWorkspace, Extern
 	fdos.cartesianMesh = cartesianMesh;
 	fdos.doubleSpecData =  pixData;
 	fdos.specEDI = newImageExtDataID;
-	fdos.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME,"bg_average"};
+	fdos.varNames = new String[] {SimulationContext.FLUOR_DATA_NAME,"bg_average"};
 	fdos.owner = LocalWorkspace.getDefaultOwner();
 	fdos.times = timesArray;
 	fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};

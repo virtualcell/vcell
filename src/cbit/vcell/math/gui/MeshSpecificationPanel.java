@@ -31,7 +31,7 @@ import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 

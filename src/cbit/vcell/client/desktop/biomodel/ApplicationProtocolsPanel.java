@@ -15,7 +15,7 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;

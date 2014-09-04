@@ -71,9 +71,9 @@ import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.psf.PointSpreadFunctionManagement;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -328,7 +328,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 			timeSeriesFieldDataOpSpec.cartesianMesh = cartesianMesh;
 			timeSeriesFieldDataOpSpec.doubleSpecData =  pixData;
 			timeSeriesFieldDataOpSpec.specEDI = null;
-			timeSeriesFieldDataOpSpec.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME};
+			timeSeriesFieldDataOpSpec.varNames = new String[] {SimulationContext.FLUOR_DATA_NAME};
 			timeSeriesFieldDataOpSpec.owner = owner;
 			timeSeriesFieldDataOpSpec.times = imageDataset.getImageTimeStamps();
 			timeSeriesFieldDataOpSpec.variableTypes = new VariableType[] {VariableType.VOLUME};
@@ -376,7 +376,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 //				FieldFunctionArguments fluorFFArgs = new FieldFunctionArguments(timeSeriesEDI.getName(), fluorName, new Expression(time), VariableType.VOLUME);
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.VFRAP_TIMEPOINT, 
 						simulationContext.getDataContext(), simulationContext.getModel().getUnitSystem().getInstance_TBD(),
-						timeSeriesEDI, SimDataConstants.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), time);
+						timeSeriesEDI, SimulationContext.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), time);
 				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 	   		}
 		}

@@ -48,8 +48,8 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.VCellLookAndFeel;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.mapping.MicroscopeMeasurement;
