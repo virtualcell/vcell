@@ -62,8 +62,8 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.VCellLookAndFeel;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

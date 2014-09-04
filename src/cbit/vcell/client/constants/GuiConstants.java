@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client;
+package cbit.vcell.client.constants;
 
 import java.awt.Color;
 
@@ -18,6 +18,31 @@ import javax.swing.border.LineBorder;
 
 public class GuiConstants {
 	
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAY = "Pathway";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL = "Physiology";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_DATA = "Experimental Data";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS = "Applications";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Parameters and Functions";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_SCRIPTING = "Scripting";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_REACTIONS = "Reactions";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM = "Reaction Diagram";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES = "Structures";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_SPECIES = "Species";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYDIAGRAM = "Pathway Diagram";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS = "Pathway Objects";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY = "BioPAX Summary";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXTREE = "BioPAX Tree";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_GEOMETRY = "Geometry";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_SPECIFICATIONS = "Specifications";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PROTOCOLS = "Protocols";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_SIMULATIONS = "Simulations";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_PARAMETERESTIMATION = "Parameter Estimation";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MATH_ANNOTATION = "Annotation";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML = "VCML Editor";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY = "Geometry";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MATH_SIMULATIONS = "Simulations";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS = "Output Functions";
+
 	public static final String ACTIONCMD_OPEN_APPLICATION_SIMULATION = "OpenApplicationSimulation";
 	public static final String ACTIONCMD_OPEN_APPLICATION_GEOMETRY = "OpenApplicationGeometry";
 	public static final String ACTIONCMD_OPEN_APPLICATION_MATH = "OpenApplicationMath";

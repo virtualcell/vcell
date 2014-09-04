@@ -59,35 +59,35 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 	}
 	
 	public enum DocumentEditorTreeFolderClass {
-		PATHWAY_NODE("Pathway"),
-		MODEL_NODE("Physiology"),	
-		DATA_NODE("Experimental Data"),	
-		APPLICATIONS_NODE("Applications"),	
-		BIOMODEL_PARAMETERS_NODE("Parameters and Functions"),	
-		SCRIPTING_NODE("Scripting"),
+		PATHWAY_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAY),
+		MODEL_NODE(					cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MODEL),	
+		DATA_NODE(					cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_DATA),	
+		APPLICATIONS_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS),	
+		BIOMODEL_PARAMETERS_NODE(	cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS),	
+		SCRIPTING_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SCRIPTING),
 
-		REACTIONS_NODE("Reactions"),
-		REACTION_DIAGRAM_NODE("Reaction Diagram"),
-		STRUCTURES_NODE("Structures"),
+		REACTIONS_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_REACTIONS),
+		REACTION_DIAGRAM_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM),
+		STRUCTURES_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES),
 //		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
-		SPECIES_NODE("Species"),
+		SPECIES_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SPECIES),
 		
-		PATHWAY_DIAGRAM_NODE("Pathway Diagram"),
-		PATHWAY_OBJECTS_NODE("Pathway Objects"),
-		BIOPAX_SUMMARY_NODE("BioPAX Summary"),
-		BIOPAX_TREE_NODE("BioPAX Tree"),
+		PATHWAY_DIAGRAM_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYDIAGRAM),
+		PATHWAY_OBJECTS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS),
+		BIOPAX_SUMMARY_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY),
+		BIOPAX_TREE_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOPAXTREE),
 		
-		GEOMETRY_NODE("Geometry"),
-		SPECIFICATIONS_NODE("Specifications"),
-		PROTOCOLS_NODE("Protocols"),
-		SIMULATIONS_NODE("Simulations"),
-		PARAMETER_ESTIMATION_NODE("Parameter Estimation"),
+		GEOMETRY_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_GEOMETRY),
+		SPECIFICATIONS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SPECIFICATIONS),
+		PROTOCOLS_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PROTOCOLS),
+		SIMULATIONS_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SIMULATIONS),
+		PARAMETER_ESTIMATION_NODE(	cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PARAMETERESTIMATION),
 		
-		MATH_ANNOTATION_NODE("Annotation"),
-		MATH_VCML_NODE("VCML Editor"),
-		MATH_GEOMETRY_NODE("Geometry"),
-		MATH_SIMULATIONS_NODE("Simulations"),
-		MATH_OUTPUT_FUNCTIONS_NODE("Output Functions");
+		MATH_ANNOTATION_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_ANNOTATION),
+		MATH_VCML_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML),
+		MATH_GEOMETRY_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY),
+		MATH_SIMULATIONS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_SIMULATIONS),
+		MATH_OUTPUT_FUNCTIONS_NODE(	cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS);
 		
 		private String title = null;
 		DocumentEditorTreeFolderClass(String n) {

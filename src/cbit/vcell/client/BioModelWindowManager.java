@@ -28,6 +28,7 @@ import org.vcell.util.importer.PathwayImporter;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
