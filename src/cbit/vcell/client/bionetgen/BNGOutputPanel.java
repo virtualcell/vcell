@@ -19,6 +19,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.BNGWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Product;
@@ -29,7 +30,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.xml.sbml_transform.BnglSbmlTransformer;
 import cbit.vcell.xml.sbml_transform.SbmlTransformException;
 /**

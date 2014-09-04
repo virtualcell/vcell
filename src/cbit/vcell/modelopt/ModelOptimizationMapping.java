@@ -22,6 +22,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
@@ -40,7 +41,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)

@@ -22,6 +22,7 @@ import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.CSV;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
@@ -31,7 +32,6 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (8/23/2005 4:26:30 PM)
