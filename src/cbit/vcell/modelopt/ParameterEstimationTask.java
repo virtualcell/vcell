@@ -24,6 +24,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Parameter;
@@ -45,7 +46,6 @@ import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.NativeIDASolver;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)

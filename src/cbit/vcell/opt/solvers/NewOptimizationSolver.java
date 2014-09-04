@@ -25,6 +25,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -40,7 +41,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
-import cbit.vcell.util.RowColumnResultSet;
 
 
 public class NewOptimizationSolver implements OptimizationSolver {
