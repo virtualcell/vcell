@@ -33,6 +33,7 @@ import javax.swing.table.TableModel;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -44,7 +45,6 @@ import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 

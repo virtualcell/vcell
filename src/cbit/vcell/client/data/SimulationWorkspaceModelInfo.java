@@ -21,6 +21,7 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
@@ -33,7 +34,6 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 /**

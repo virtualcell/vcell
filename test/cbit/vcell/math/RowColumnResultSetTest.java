@@ -13,7 +13,6 @@ package cbit.vcell.math;
 import org.junit.Test;
 
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 /**
  * Insert the type's description here.
