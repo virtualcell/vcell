@@ -50,11 +50,31 @@ public class NagiosVCellCheck {
 	
 	public static void main(String[] args) {
 		try{
-			if(args.length != 4){
-				System.out.println("Usage: java -jar "+NagiosVCellCheck.class.getSimpleName()+".jar checkLevel rmiHost rmiPort vcellNagiosPassword");
-				System.exit(NAGIOS_STATUS.UNKNOWN.ordinal());
+			String host=null;
+			String rmiPort=null;
+			String digestPW=null;
+			VCELL_CHECK_LEVEL checkLevel=null;
+			for(int i = 0;i < args.length;i++){
+				if(args[i].equals("-H")){
+					i++;
+					host = args[i];
+				}else if(args[i].equals("-i")){
+					i++;
+					rmiPort = args[i];
+				}else if(args[i].equals("-L")){
+					i++;
+					checkLevel = VCELL_CHECK_LEVEL.valueOf(args[i]);
+				}else if(args[i].equals("-p")){
+					i++;
+					digestPW = args[i];
+				}else{
+					usageExit();
+				}
 			}
-			System.out.println(checkVCell(VCELL_CHECK_LEVEL.valueOf(args[0]),args[1], Integer.parseInt(args[2]),"VCellBootstrapServer",args[3]));
+			if(host == null || rmiPort == null || digestPW == null || checkLevel == null){
+				usageExit();
+			}
+			System.out.println(checkVCell(checkLevel,host, Integer.parseInt(rmiPort),"VCellBootstrapServer",digestPW));
 			System.exit(NAGIOS_STATUS.OK.ordinal());
 		}catch(NumberFormatException e){
 			System.out.println(e.getClass().getName()+" "+e.getMessage());
@@ -70,6 +90,10 @@ public class NagiosVCellCheck {
 			System.out.println((e.getCause()==null?"":e.getCause().getClass().getSimpleName()+":")+e.getClass().getName()+" "+e.getMessage());
 			System.exit(NAGIOS_STATUS.CRITICAL.ordinal());
 		}
+	}
+	private static void usageExit(){
+		System.out.println("Usage: java -jar "+NagiosVCellCheck.class.getSimpleName()+".jar -L checkLevel -H rmiHost -i rmiPort -p vcellNagiosPassword");
+		System.exit(NAGIOS_STATUS.UNKNOWN.ordinal());
 	}
 	public static String checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword) throws Exception{
 		String rmiUrl = "//" + rmiHostName + ":" +rmiPort + "/"+rmiBootstrapStubName;
@@ -88,7 +112,7 @@ public class NagiosVCellCheck {
 			}
 			if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.CONNECT_1.ordinal()){
 				VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(
-					new UserLoginInfo("vcellNagios", new DigestedPassword(vcellNagiosPassword)));
+					new UserLoginInfo("vcellNagios", DigestedPassword.createAlreadyDigested(vcellNagiosPassword)));
 				if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.INFOS_2.ordinal()){
 					VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 					if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.LOAD_3.ordinal()){
