@@ -182,6 +182,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.VFrapXmlHelper;
 import cbit.vcell.xml.XMLInfo;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
@@ -2687,7 +2688,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						doc = XmlHelper.importMathCellML(transLogger, xmlInfo);
 					}
 				} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
-					doc = XmlHelper.VFRAPToBioModel(hashTable, xmlInfo, getDocumentManager(), requester);
+					doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlInfo, getDocumentManager(), requester);
 				} else { // unknown XML format
 					throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 				}

@@ -10,13 +10,11 @@
 
 package cbit.vcell.xml;
 
-import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -29,41 +27,30 @@ import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sedml.SEDMLExporter;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
-import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.UtilCancelException;
 
-import static cbit.vcell.xml.VFrapXmlHelper.*;
-import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataReader;
 import cbit.vcell.biomodel.meta.xml.XMLMetaDataWriter;
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
@@ -803,55 +790,6 @@ public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 	return sim;		
 }
 
-
-public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLSource xmlSource, DocumentManager documentManager, final TopLevelWindowManager requester) 
-		throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException, UtilCancelException {
-
-	Component requesterComponent = requester.getComponent();
-	File vFrapFile = xmlSource.getXmlFile();
-// ---	
-	String vFrapFileNameExtended = vFrapFile.getName();			// ex  ccc8.vfrap
-	{	// we want to make sure to reload these strings from the hash later on
-	String initialFieldDataName = vFrapFileNameExtended.substring(0, vFrapFileNameExtended.indexOf(".vfrap"));
-	String mixedFieldDataName = initialFieldDataName + "Mx";	// we'll save here the "special" vFrap images (prebleach_avg, ...)
-	hashTable.put("mixedFieldDataName",mixedFieldDataName);
-	hashTable.put("initialFieldDataName",initialFieldDataName);
-	}
-	if(vFrapFileNameExtended.indexOf(".vfrap") < 0) {
-		throw new RuntimeException("File extension must be .vfrap");
-	}
-//	VFrapXmlHelper vFrapXmlHelper = new VFrapXmlHelper();
-	checkNameAvailability(hashTable, true, documentManager, requesterComponent);
-
-	System.out.println("Loading " + vFrapFileNameExtended + " ...");
-    String xmlString = XmlUtil.getXMLString(vFrapFile.getAbsolutePath());
-	MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-	Element vFrapRoot = XmlUtil.stringToXML(xmlString, null).getRootElement();
-	
-	// ----- read the biomodel from Virtual FRAP xml file ----------
-	BioModel bioModel = null;
-	XmlReader vcellXMLReader = new XmlReader(true);
-	Element bioModelElement = vFrapRoot.getChild(XMLTags.BioModelTag);
-	if (bioModelElement == null){
-		throw new RuntimeException("Unable to load biomodel.");
-	}
-	bioModel = vcellXMLReader.getBioModel(bioModelElement);
-	
-	// ------ locate the special images within the vFrap files and load them in memory
-	if(!LoadVFrapSpecialImages(hashTable, vFrapRoot)) {
-		return bioModel;	// just return the biomodel if image loading fails for some reason
-	}
-
-	// ------- save the special images in the database as field data ------------
-	ExternalDataIdentifier vfrapMisc = SaveVFrapSpecialImagesAsFieldData(hashTable, documentManager);
-	
-	// ------- create and save data symbols for the vFrap "special" images -----------
-	CreateSaveVFrapDataSymbols(hashTable, bioModel, vfrapMisc);
-	
-	// -------- replace vFrap default names in field function arguments with data symbol names -----
-	ReplaceVFrapNamesWithSymbolNames(bioModel);
-	return bioModel;
-}
 
 private static final String SimulationTask_tag = "SimulationTask";
 private static final String FieldFunctionIdentifierSpec_tag = "FieldFunctionIdentifierSpec"; 

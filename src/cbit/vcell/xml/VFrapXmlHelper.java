@@ -39,10 +39,13 @@ import com.ibm.icu.util.StringTokenizer;
 
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
@@ -60,6 +63,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
@@ -364,6 +368,55 @@ public class VFrapXmlHelper {
 			}
 		}
 		hashTable.put("displayROI", displayROI);
+	}
+
+	public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLSource xmlSource, DocumentManager documentManager, final TopLevelWindowManager requester) 
+			throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException, UtilCancelException {
+	
+		Component requesterComponent = requester.getComponent();
+		File vFrapFile = xmlSource.getXmlFile();
+	// ---	
+		String vFrapFileNameExtended = vFrapFile.getName();			// ex  ccc8.vfrap
+		{	// we want to make sure to reload these strings from the hash later on
+		String initialFieldDataName = vFrapFileNameExtended.substring(0, vFrapFileNameExtended.indexOf(".vfrap"));
+		String mixedFieldDataName = initialFieldDataName + "Mx";	// we'll save here the "special" vFrap images (prebleach_avg, ...)
+		hashTable.put("mixedFieldDataName",mixedFieldDataName);
+		hashTable.put("initialFieldDataName",initialFieldDataName);
+		}
+		if(vFrapFileNameExtended.indexOf(".vfrap") < 0) {
+			throw new RuntimeException("File extension must be .vfrap");
+		}
+	//	VFrapXmlHelper vFrapXmlHelper = new VFrapXmlHelper();
+		checkNameAvailability(hashTable, true, documentManager, requesterComponent);
+	
+		System.out.println("Loading " + vFrapFileNameExtended + " ...");
+	    String xmlString = XmlUtil.getXMLString(vFrapFile.getAbsolutePath());
+		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+		Element vFrapRoot = XmlUtil.stringToXML(xmlString, null).getRootElement();
+		
+		// ----- read the biomodel from Virtual FRAP xml file ----------
+		BioModel bioModel = null;
+		XmlReader vcellXMLReader = new XmlReader(true);
+		Element bioModelElement = vFrapRoot.getChild(XMLTags.BioModelTag);
+		if (bioModelElement == null){
+			throw new RuntimeException("Unable to load biomodel.");
+		}
+		bioModel = vcellXMLReader.getBioModel(bioModelElement);
+		
+		// ------ locate the special images within the vFrap files and load them in memory
+		if(!LoadVFrapSpecialImages(hashTable, vFrapRoot)) {
+			return bioModel;	// just return the biomodel if image loading fails for some reason
+		}
+	
+		// ------- save the special images in the database as field data ------------
+		ExternalDataIdentifier vfrapMisc = SaveVFrapSpecialImagesAsFieldData(hashTable, documentManager);
+		
+		// ------- create and save data symbols for the vFrap "special" images -----------
+		CreateSaveVFrapDataSymbols(hashTable, bioModel, vfrapMisc);
+		
+		// -------- replace vFrap default names in field function arguments with data symbol names -----
+		ReplaceVFrapNamesWithSymbolNames(bioModel);
+		return bioModel;
 	}
 }
 	
