@@ -18,6 +18,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.dictionary.*;
+import cbit.vcell.dictionary.db.DBSpeciesTable;
 /**
  * This type was created in VisualAge.
  */

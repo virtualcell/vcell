@@ -10,8 +10,6 @@
 
 package cbit.vcell.xml.gui;
 
-import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -27,7 +25,7 @@ import org.vcell.sybil.models.dublincore.DublinCoreQualifier.DateQualifier;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.document.Identifiable;
 
-import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.IdentifiableComparator;
 import cbit.vcell.biomodel.meta.MiriamManager;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -40,20 +38,6 @@ import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 
 public class MiriamTreeModel extends DefaultTreeModel implements AnnotationEventListener {
-	public static final class IdentifiableComparator implements Comparator<Identifiable>, Serializable {
-		private final IdentifiableProvider identifiableProvider;
-
-		public IdentifiableComparator(IdentifiableProvider identifiableProvider) {
-			this.identifiableProvider = identifiableProvider;
-		}
-
-		public int compare(Identifiable o1, Identifiable o2) {
-			VCID vcid1 = identifiableProvider.getVCID(o1);
-			VCID vcid2 = identifiableProvider.getVCID(o2);
-			return vcid1.toASCIIString().compareTo(vcid2.toASCIIString());
-		}
-	}
-
 	private VCMetaData vcMetaData = null;
 	
 	public static class LinkNode extends BioModelNode {
