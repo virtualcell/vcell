@@ -23,6 +23,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.ReservedVariable;

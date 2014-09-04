@@ -25,10 +25,10 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;

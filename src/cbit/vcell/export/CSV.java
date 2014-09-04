@@ -10,6 +10,8 @@
 
 package cbit.vcell.export;
 
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
+
 /**
  * 	the format assumed by this class should:
  *		-have first line for names of each variable
@@ -89,7 +91,7 @@ public cbit.vcell.math.RowColumnResultSet importFrom(java.io.Reader reader) thro
 	stringTokens = readColumnNames(firstLine, doubleTokens.length);
 		
 	for (int i = 0; i < stringTokens.length; i++){
-		data.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(stringTokens[i]));
+		data.addDataColumn(new ODESolverResultSetColumnDescription(stringTokens[i]));
 	}
 
 	//other rows
