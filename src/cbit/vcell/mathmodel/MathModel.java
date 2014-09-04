@@ -25,7 +25,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.VCellNames;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
@@ -34,9 +34,9 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.solver.OutputFunctionContext;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -729,11 +729,11 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public String getObjectPathDescription(Object object) {
 		if (object instanceof Geometry) {
-			return DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE.getTitle();
+			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY;
 		} else if (object instanceof OutputFunctionIssueSource) {
-			return DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE.getTitle();
+			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS;
 		} else {
-			return DocumentEditorTreeFolderClass.MATH_VCML_NODE.getTitle();
+			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML;
 		}
 	}
 

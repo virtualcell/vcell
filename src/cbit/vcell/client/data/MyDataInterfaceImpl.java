@@ -9,8 +9,8 @@ import java.util.TreeSet;
 import org.vcell.util.ObjectNotFoundException;
 
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.MyDataInterface;
 import cbit.vcell.util.ColumnDescription;

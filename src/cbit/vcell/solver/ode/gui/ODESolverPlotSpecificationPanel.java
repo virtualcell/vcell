@@ -47,13 +47,13 @@ import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 /**

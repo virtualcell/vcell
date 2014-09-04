@@ -21,6 +21,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
@@ -31,7 +32,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;

@@ -12,12 +12,12 @@ package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
