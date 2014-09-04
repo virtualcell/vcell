@@ -53,8 +53,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.TextFieldAutoCompletion;
-import cbit.vcell.client.GuiConstants;
 import cbit.vcell.client.VCellLookAndFeel;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.simdata.DataSetIdentifier;

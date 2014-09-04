@@ -39,7 +39,7 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.gui.ScopedExpression;
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTableEntry;

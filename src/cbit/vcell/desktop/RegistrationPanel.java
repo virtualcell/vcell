@@ -28,7 +28,7 @@ import javax.swing.JTextField;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.client.GuiConstants;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.server.UserRegistrationOP.NewPasswordUserInfo;
 
 

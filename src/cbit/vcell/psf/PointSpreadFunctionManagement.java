@@ -44,7 +44,6 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class PointSpreadFunctionManagement {
@@ -150,7 +149,7 @@ public class PointSpreadFunctionManagement {
 				fdos.cartesianMesh = cartesianMesh;
 				fdos.doubleSpecData =  pixData;
 				fdos.specEDI = null;
-				fdos.varNames = new String[] {SimDataConstants.FLUOR_DATA_NAME};
+				fdos.varNames = new String[] {SimulationContext.FLUOR_DATA_NAME};
 				fdos.times = imageDataset.getImageTimeStamps();
 				fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 				fdos.origin = origin;
@@ -172,7 +171,7 @@ public class PointSpreadFunctionManagement {
 		   		String fluorName = "psf_" + initialFieldDataName;
 				DataSymbol fluorDataSymbol = new FieldDataSymbol( fluorName, DataSymbolType.POINT_SPREAD_FUNCTION, 
 						simulationContext.getDataContext(), simulationContext.getModel().getUnitSystem().getInstance_TBD(),
-						pSFImageEDI, SimDataConstants.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), 0D);
+						pSFImageEDI, SimulationContext.FLUOR_DATA_NAME, VariableType.VOLUME.getTypeName(), 0D);
 				simulationContext.getDataContext().addDataSymbol(fluorDataSymbol); 
 			}
 		};

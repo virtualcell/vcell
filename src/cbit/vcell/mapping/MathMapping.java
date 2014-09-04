@@ -26,7 +26,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
-import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -1183,7 +1183,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 		SpeciesContextMapping scm = getSpeciesContextMapping(sc);
 		if (scm == null) {
 			throw new RuntimeException("Species '" + sc.getName() + "' is referenced in model but may have been deleted. " +
-					"Find its references in '" + DocumentEditorTreeModel.DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE.getTitle() + "'.");
+					"Find its references in '" + GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS + "'.");
 		}		
 		//
 		// for reactions mapped to a subvolume

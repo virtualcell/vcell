@@ -70,7 +70,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -276,10 +275,11 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private boolean bConcentration = true;
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
-	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimDataConstants.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
+	private final MicroscopeMeasurement microscopeMeasurement = new MicroscopeMeasurement(SimulationContext.FLUOR_DATA_NAME,new ProjectionZKernel(), this);
 	
 	// rate rules
 	private RateRule[] fieldRateRules = null;
+	public static final String FLUOR_DATA_NAME = "fluor";
 
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {

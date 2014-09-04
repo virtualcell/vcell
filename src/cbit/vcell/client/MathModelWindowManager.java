@@ -21,6 +21,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
