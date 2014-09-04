@@ -32,6 +32,7 @@ import javax.swing.border.LineBorder;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
@@ -47,7 +48,6 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 @SuppressWarnings("serial")
 public class EstParams_ReactionOffRatePanel extends JPanel 

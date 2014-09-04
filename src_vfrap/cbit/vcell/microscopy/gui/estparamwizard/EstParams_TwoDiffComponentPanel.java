@@ -36,6 +36,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.plot.Plot2DPanel;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPModel;
@@ -50,7 +51,6 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 @SuppressWarnings("serial")
 public class EstParams_TwoDiffComponentPanel extends JPanel {

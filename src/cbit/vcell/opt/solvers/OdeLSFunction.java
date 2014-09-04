@@ -23,6 +23,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.opt.OdeObjectiveFunction;
@@ -38,7 +39,6 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.NativeIDASolver;
 /**

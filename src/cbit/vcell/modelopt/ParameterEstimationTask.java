@@ -23,6 +23,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Parameter;
@@ -35,7 +36,6 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)

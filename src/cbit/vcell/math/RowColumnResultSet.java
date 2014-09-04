@@ -23,7 +23,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionDomainException;
 import cbit.vcell.parser.VariableSymbolTable;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,

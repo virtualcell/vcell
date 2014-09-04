@@ -39,6 +39,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.microscopy.AnalysisParameters;
 import cbit.vcell.microscopy.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.FRAPData;
@@ -57,7 +58,6 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 @SuppressWarnings("serial")
 public class EstParams_ReacBindingPanel extends JPanel {

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver.ode;
+package cbit.vcell.math;
 
 /**
  * Insert the type's description here.
