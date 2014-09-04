@@ -11,7 +11,6 @@
 package cbit.vcell.solver.ode;
 
 import cbit.vcell.util.ColumnDescription;
-import cbit.vcell.util.RowColumnResultSet;
 import cbit.vcell.math.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,

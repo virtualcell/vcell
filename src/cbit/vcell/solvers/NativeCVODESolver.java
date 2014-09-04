@@ -78,7 +78,7 @@ public static void main(String[] args) {
 		*/
 		
 		System.out.println("**************Solve 2************************");
-		cbit.vcell.util.RowColumnResultSet rcrs = nativesolver.solve(input);
+		cbit.vcell.math.RowColumnResultSet rcrs = nativesolver.solve(input);
 		for (int i = 0; i < rcrs.getRowCount(); i ++) {
 			double[] row = rcrs.getRow(i);
 			for (int j = 0; j < row.length; j ++) {
@@ -98,7 +98,7 @@ public static void main(String[] args) {
  * @return double[][]
  * @param idaInput java.lang.String
  */
-private native cbit.vcell.util.RowColumnResultSet nativeSolve(String cvodeInput, double[] paramValues) throws Exception;
+private native cbit.vcell.math.RowColumnResultSet nativeSolve(String cvodeInput, double[] paramValues) throws Exception;
 
 
 /**
@@ -117,7 +117,7 @@ public void setStopRequested(boolean newStopRequested) {
  * @return double[][]
  * @param idaInput java.lang.String
  */
-public cbit.vcell.util.RowColumnResultSet solve(String idaInput) throws Exception {
+public cbit.vcell.math.RowColumnResultSet solve(String idaInput) throws Exception {
 	return nativeSolve(idaInput, null);
 }
 
@@ -128,7 +128,7 @@ public cbit.vcell.util.RowColumnResultSet solve(String idaInput) throws Exceptio
  * @return double[][]
  * @param idaInput java.lang.String
  */
-public cbit.vcell.util.RowColumnResultSet solve(String idaInput, double[] paramValues) throws Exception {
+public cbit.vcell.math.RowColumnResultSet solve(String idaInput, double[] paramValues) throws Exception {
 	return nativeSolve(idaInput, paramValues);
 }
 }

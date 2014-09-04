@@ -8,28 +8,28 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.util;
+package cbit.vcell.math;
 
+import org.junit.Test;
+
+import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.parser.*;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (6/25/2001 3:05:25 PM)
  * @author: John Wagner
  */
 public class RowColumnResultSetTest {
-/**
- * Insert the method's description here.
- * Creation date: (6/25/2001 12:10:58 PM)
- * @param args java.lang.String[]
- */
-public static void main(String[] args) {
+
+	@Test
+public void test() {
 	try {
 		java.util.Random random = new java.util.Random();
 		RowColumnResultSet r = new RowColumnResultSet();
-		r.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription ("t"));
-		r.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription ("x"));
-		r.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription ("y"));
+		r.addDataColumn(new ODESolverResultSetColumnDescription ("t"));
+		r.addDataColumn(new ODESolverResultSetColumnDescription ("x"));
+		r.addDataColumn(new ODESolverResultSetColumnDescription ("y"));
 		int N = 500;
 		double w = 80.0/N;
 		int SAMPLING = 150;    // 50;

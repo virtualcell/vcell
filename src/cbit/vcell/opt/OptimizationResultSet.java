@@ -12,8 +12,8 @@ package cbit.vcell.opt;
 
 import org.vcell.optimization.OptSolverResultSet;
 
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.util.RowColumnResultSet;
 
 /**
  * Insert the type's description here.

@@ -23,6 +23,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
@@ -40,7 +41,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)

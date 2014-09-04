@@ -16,11 +16,11 @@ package cbit.vcell.solver.test;
  * @author: Jim Schaff
  */
 public class SolverODESolution extends Object implements ODESolution {
-	private cbit.vcell.util.RowColumnResultSet fieldRowColumnResultSet = null;
+	private cbit.vcell.math.RowColumnResultSet fieldRowColumnResultSet = null;
 /**
  * SolverODESolution constructor comment.
  */
-public SolverODESolution(cbit.vcell.util.RowColumnResultSet rowColumnResultSet) {
+public SolverODESolution(cbit.vcell.math.RowColumnResultSet rowColumnResultSet) {
 	super();
 	this.fieldRowColumnResultSet = rowColumnResultSet;
 }

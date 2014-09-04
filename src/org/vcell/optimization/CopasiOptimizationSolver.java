@@ -19,6 +19,7 @@ import org.vcell.util.FileUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -30,7 +31,6 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.util.RowColumnResultSet;
 
 
 public class CopasiOptimizationSolver {	
