@@ -82,10 +82,10 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 	private JButton evaluateConfidenceIntervalButton = null;
 	
 	public enum ParameterEstimationPanelTabID {
-		parameters("Parameters"),
-		experimental_data_import("Experimental Data Import"),
-		experimental_data_mapping("Experimental Data Mapping"),
-		run_task("Run Task");
+		parameters(						cbit.vcell.client.constants.GuiConstants.PARAMETER_ESTIMATION_TAB_PARAMETERS),
+		experimental_data_import(		cbit.vcell.client.constants.GuiConstants.PARAMETER_ESTIMATION_TAB_EXPDATAIMPORT),
+		experimental_data_mapping(		cbit.vcell.client.constants.GuiConstants.PARAMETER_ESTIMATION_TAB_EXPDATAMAPPING),
+		run_task(						cbit.vcell.client.constants.GuiConstants.PARAMETER_ESTIMATION_TAB_RUNTASK);
 		
 		private String title = null;
 		ParameterEstimationPanelTabID(String name) {

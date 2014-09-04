@@ -15,6 +15,7 @@ import java.util.List;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.ParameterEstimationPanel.ParameterEstimationPanelTabID;
 
 /**
@@ -216,7 +217,7 @@ public void setModelObject(cbit.vcell.parser.SymbolTableEntry modelObject) throw
 public void gatherIssues(List<Issue> issueList) {
 	if (getModelObject() == null) {
 		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column." +
-				"Go to '" + ParameterEstimationPanelTabID.experimental_data_mapping + "' tab and do the mapping.",Issue.SEVERITY_ERROR));
+				"Go to '" + GuiConstants.PARAMETER_ESTIMATION_TAB_EXPDATAMAPPING + "' tab and do the mapping.",Issue.SEVERITY_ERROR));
 	}
 }
 }

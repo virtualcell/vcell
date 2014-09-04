@@ -74,6 +74,7 @@ import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ParameterEstimationTaskSimulatorIDA;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
@@ -1087,7 +1088,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(parameterEstimationTask);
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask);
 				hashTable.put("Optimiation Result Set", optResultSet);
 			}
 
@@ -1129,7 +1130,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				}
 			}
 	
-			ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
+			ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet(new ParameterEstimationTaskSimulatorIDA());
 
 			if (odeSolverResultSet!=null){
 				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("EST", odeSolverResultSet));
