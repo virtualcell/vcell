@@ -36,7 +36,7 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.field.db.FieldDataDBOperationResults;
 import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;

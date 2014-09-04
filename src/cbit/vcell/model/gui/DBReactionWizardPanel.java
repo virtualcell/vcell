@@ -39,7 +39,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
-import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.graph.BioCartoonTool;
 import cbit.vcell.graph.BioCartoonTool.UserResolvedRxElements;
 import cbit.vcell.model.Catalyst;

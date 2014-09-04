@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary;
+package cbit.vcell.dictionary.db;
 
 import org.vcell.util.document.KeyValue;
 //import cbit.vcell.server.DataAccessException;

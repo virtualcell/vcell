@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary;
+package cbit.vcell.dictionary.db;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.model.SpeciesContext;
@@ -497,7 +497,7 @@ public void swapFluxSCNames() {
  * Creation date: (5/1/2003 2:06:47 PM)
  * @return java.lang.String
  */
-public cbit.vcell.model.gui.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpec() {
+public cbit.vcell.model.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpec() {
 
 	
 	StringBuffer left = new StringBuffer();
@@ -547,8 +547,8 @@ public cbit.vcell.model.gui.ReactionCanvasDisplaySpec toReactionCanvasDisplaySpe
 		}
 	}
 
-	cbit.vcell.model.gui.ReactionCanvasDisplaySpec rcds =
-		new cbit.vcell.model.gui.ReactionCanvasDisplaySpec(left.toString(),right.toString(),center.toString(),null,cbit.vcell.model.gui.ReactionCanvasDisplaySpec.ARROW_RIGHT);
+	cbit.vcell.model.ReactionCanvasDisplaySpec rcds =
+		new cbit.vcell.model.ReactionCanvasDisplaySpec(left.toString(),right.toString(),center.toString(),null,cbit.vcell.model.ReactionCanvasDisplaySpec.ARROW_RIGHT);
 	return rcds;
 }
 

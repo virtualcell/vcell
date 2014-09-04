@@ -390,7 +390,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,Fo
 /**
  * getDictionaryReactions method comment.
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getDictionaryReactions");
 		return dbServerProxy.getDictionaryReactions(reactionQuerySpec);
@@ -730,7 +730,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getUserReactionDescriptions()");
 		return dbServerProxy.getUserReactionDescriptions(reactionQuerySpec);

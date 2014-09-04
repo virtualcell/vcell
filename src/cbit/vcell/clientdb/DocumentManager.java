@@ -28,7 +28,7 @@ import cbit.image.VCImageInfo;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.controls.SessionManager;
-import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.field.db.FieldDataDBOperationResults;
 import cbit.vcell.field.db.FieldDataDBOperationSpec;
 import cbit.vcell.field.gui.FieldDataDBEventListener;
