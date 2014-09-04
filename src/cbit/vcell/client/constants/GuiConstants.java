@@ -18,6 +18,11 @@ import javax.swing.border.LineBorder;
 
 public class GuiConstants {
 	
+	public final static String PARAMETER_ESTIMATION_TAB_PARAMETERS = "Parameters";
+	public final static String PARAMETER_ESTIMATION_TAB_EXPDATAIMPORT = "Experimental Data Import";
+	public final static String PARAMETER_ESTIMATION_TAB_EXPDATAMAPPING = "Experimental Data Mapping";
+	public final static String PARAMETER_ESTIMATION_TAB_RUNTASK = "Run Task";
+	
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAY = "Pathway";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_MODEL = "Physiology";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DATA = "Experimental Data";

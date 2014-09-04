@@ -10,8 +10,6 @@
 
 package cbit.vcell.modelopt;
 import java.beans.PropertyVetoException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Vector;
 
 import org.vcell.optimization.CopasiOptSolverCallbacks;
@@ -26,26 +24,18 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
-import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.NativeIDASolver;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)
@@ -53,6 +43,12 @@ import cbit.vcell.solvers.NativeIDASolver;
  */
 @SuppressWarnings("serial")
 public class ParameterEstimationTask extends AnalysisTask {
+	
+	public interface ParameterEstimationTaskSimulator {
+		RowColumnResultSet getRowColumnRestultSetByBestEstimations(ParameterEstimationTask parameterEstimationTask, String[] paramNames, double[] paramValues) throws Exception;
+	}
+
+
 	
 	public static final String defaultTaskName = "DefaultTask"; 
 	
@@ -188,11 +184,11 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
 	return fieldModelOptimizationSpec;
 }
 
-public ODESolverResultSet getOdeSolverResultSet() throws Exception {
-	return getOdeSolverResultSet(getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
+public ODESolverResultSet getOdeSolverResultSet(ParameterEstimationTaskSimulator parestSimulator) throws Exception {
+	return getOdeSolverResultSet(parestSimulator,getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
 }
 
-public ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws Exception {
+public ODESolverResultSet getOdeSolverResultSet(ParameterEstimationTaskSimulator parestSimulator, OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws Exception {
 	if (optResultSet==null) {
 		return null;
 	}
@@ -206,7 +202,7 @@ public ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, Optimi
 	//check if we have solution or not, if not, generate a solution since we have the best estimates
 	if(optResultSet.getSolutionNames() == null)
 	{
-		RowColumnResultSet rcResultSet = getRowColumnRestultSetByBestEstimations(parameterNames, bestEstimates);
+		RowColumnResultSet rcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(this,parameterNames, bestEstimates);
 		optResultSet.setSolutionFromRowColumnResultSet(rcResultSet);
 	}
 	
@@ -438,37 +434,6 @@ public boolean isEmpty(){
 	//math symboldmapping requires parameters, checking parameters is enough
 	//optimizationResultSet, without parameters it's not meaningful.
 	return false;
-}
-
-public RowColumnResultSet getRowColumnRestultSetByBestEstimations(String[] paramNames, double[] paramValues) throws Exception
-{
-	//create a temp simulation based on math description
-	Simulation simulation = new Simulation(getSimulationContext().getMathDescription());
-	
-	ReferenceData refData = getModelOptimizationSpec().getReferenceData();
-	double[] times = refData.getDataByColumn(0);
-	double endTime = times[times.length-1];
-	ExplicitOutputTimeSpec exTimeSpec = new ExplicitOutputTimeSpec(times);
-	//set simulation ending time and output interval
-	simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, endTime));
-	simulation.getSolverTaskDescription().setOutputTimeSpec(exTimeSpec);
-	//set parameters as math overrides
-	MathOverrides mathOverrides = simulation.getMathOverrides();
-	for (int i = 0; i < paramNames.length; i++){
-		mathOverrides.putConstant(new Constant(paramNames[i],new Expression(paramValues[i])));
-	}
-	//get input model string
-	StringWriter stringWriter = new StringWriter();
-	IDAFileWriter idaFileWriter = new IDAFileWriter(new PrintWriter(stringWriter,true), new SimulationTask(new SimulationJob(simulation, 0, null),0));
-	idaFileWriter.write();
-	stringWriter.close();
-	StringBuffer buffer = stringWriter.getBuffer();
-	String idaInputString = buffer.toString();
-	
-	RowColumnResultSet rcResultSet = null;
-	NativeIDASolver nativeIDASolver = new NativeIDASolver();
-	rcResultSet = nativeIDASolver.solve(idaInputString);
-	return rcResultSet;
 }
 
 }

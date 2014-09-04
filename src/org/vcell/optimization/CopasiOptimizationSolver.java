@@ -21,6 +21,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ParameterEstimationTask;
+import cbit.vcell.modelopt.ParameterEstimationTask.ParameterEstimationTaskSimulator;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
@@ -319,7 +320,7 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
-	public static OptimizationResultSet solve(ParameterEstimationTask parameterEstimationTask) 
+	public static OptimizationResultSet solve(ParameterEstimationTaskSimulator parestSimulator, ParameterEstimationTask parameterEstimationTask) 
 							throws IOException, ExpressionException, OptimizationException {
 		CopasiOptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
 		try {		
@@ -331,7 +332,7 @@ public class CopasiOptimizationSolver {
 			//get ode solution by best estimates
 			String[] parameterNames = newOptResultSet.getParameterNames();
 			double[] parameterVals = newOptResultSet.getBestEstimates();
-			RowColumnResultSet rcResultSet = parameterEstimationTask.getRowColumnRestultSetByBestEstimations(parameterNames, parameterVals);
+			RowColumnResultSet rcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(parameterEstimationTask, parameterNames, parameterVals);
 			
 			OptimizationResultSet optResultSet = new OptimizationResultSet(newOptResultSet, rcResultSet);
 			return optResultSet;
