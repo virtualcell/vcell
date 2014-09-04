@@ -31,7 +31,7 @@ public CSV() {
  * @param outputStream java.io.OutputStream
  * @param data data_structures.UnstructuredData
  */
-public void exportTo(java.io.OutputStream outputStream, cbit.vcell.util.RowColumnResultSet data) throws Exception {
+public void exportTo(java.io.OutputStream outputStream, cbit.vcell.math.RowColumnResultSet data) throws Exception {
 	java.io.BufferedWriter bufferedWriter = new java.io.BufferedWriter(new java.io.OutputStreamWriter(outputStream));
 
 	int varCount = data.getDataColumnCount();
@@ -74,9 +74,9 @@ private void flushString(java.io.BufferedWriter bufferedWriter) {
  * @return data_structures.UnstructuredData
  * @param inputStream java.io.InputStream
  */
-public cbit.vcell.util.RowColumnResultSet importFrom(java.io.Reader reader) throws Exception {
+public cbit.vcell.math.RowColumnResultSet importFrom(java.io.Reader reader) throws Exception {
 	java.io.BufferedReader bufferedReader = new java.io.BufferedReader(reader);
-	cbit.vcell.util.RowColumnResultSet data = new cbit.vcell.util.RowColumnResultSet();
+	cbit.vcell.math.RowColumnResultSet data = new cbit.vcell.math.RowColumnResultSet();
 	
 	String[] stringTokens;
 	double[] doubleTokens;

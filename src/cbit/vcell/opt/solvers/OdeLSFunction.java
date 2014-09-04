@@ -22,6 +22,7 @@ import cbit.function.DefaultScalarFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.ReferenceData;
@@ -40,7 +41,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.NativeIDASolver;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2005 1:32:55 PM)

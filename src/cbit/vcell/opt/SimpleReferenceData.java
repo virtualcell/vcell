@@ -17,8 +17,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.util.ColumnDescription;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 3:07:17 PM)

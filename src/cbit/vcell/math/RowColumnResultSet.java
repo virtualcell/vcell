@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.util;
+package cbit.vcell.math;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -17,10 +17,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -28,6 +25,7 @@ import cbit.vcell.parser.FunctionDomainException;
 import cbit.vcell.parser.VariableSymbolTable;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.util.ColumnDescription;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
  *  and a ReservedVariable is a Variable...also, StateVariables are NOT Variables, but
