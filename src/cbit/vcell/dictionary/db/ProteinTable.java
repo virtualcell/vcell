@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.dictionary;
+package cbit.vcell.dictionary.db;
 import java.util.Vector;
 
 import org.vcell.util.SessionLog;
@@ -16,6 +16,9 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.dictionary.BoundProtein;
+import cbit.vcell.dictionary.FormalProtein;
+import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.model.DBFormalSpecies;
 
 /**

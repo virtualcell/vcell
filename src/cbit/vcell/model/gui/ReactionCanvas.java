@@ -21,6 +21,7 @@ import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionCanvasDisplaySpec;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;

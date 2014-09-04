@@ -172,7 +172,7 @@ public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessExceptio
 public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit, boolean bUserOnly) throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
+public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -325,7 +325,7 @@ cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccess
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  */
-cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
+cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
 
 
 /**

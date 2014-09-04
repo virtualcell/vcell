@@ -44,7 +44,6 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
-import cbit.vcell.xml.gui.MiriamTreeModel;
 
 @SuppressWarnings("serial")
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
@@ -227,7 +226,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 		if (miriamTreeMap==null){
 			final IdentifiableProvider identifiableProvider = vcMetaData.getIdentifiableProvider();
 			miriamTreeMap = new TreeMap<Identifiable,Map<MiriamRefGroup,MIRIAMQualifier>>(
-				new MiriamTreeModel.IdentifiableComparator(identifiableProvider)
+				new IdentifiableComparator(identifiableProvider)
 			);
 			Set<Entry> allEntries = vcMetaData.getRegistry().getAllEntries();
 			for (Entry entry : allEntries){
