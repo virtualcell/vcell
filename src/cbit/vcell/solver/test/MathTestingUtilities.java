@@ -19,7 +19,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocument;
 
 import Jama.Matrix;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
@@ -36,6 +35,7 @@ import cbit.vcell.math.FastSystem;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
@@ -69,7 +69,6 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.ode.SensVariable;

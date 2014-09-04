@@ -5,8 +5,8 @@ import java.beans.PropertyChangeListener;
 import org.vcell.util.ObjectNotFoundException;
 
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.util.ColumnDescription;
 
 public interface MyDataInterface {

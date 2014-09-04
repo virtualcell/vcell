@@ -20,6 +20,7 @@ import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OdeEquation;

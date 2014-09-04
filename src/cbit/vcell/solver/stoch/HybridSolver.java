@@ -22,8 +22,8 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import ucar.ma2.ArrayDouble;
-
 import cbit.vcell.math.Function;
+import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
@@ -39,7 +39,6 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.AbstractCompiledSolver;
