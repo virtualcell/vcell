@@ -50,10 +50,10 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.

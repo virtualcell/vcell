@@ -8,14 +8,11 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.data;
+package cbit.vcell.simdata;
 
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (6/13/2004 3:36:26 PM)

@@ -35,6 +35,7 @@ import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.

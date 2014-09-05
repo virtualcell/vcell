@@ -16,12 +16,14 @@ import java.util.ArrayList;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.simdata.DataEvent;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.MergedDatasetViewer;
-import cbit.vcell.desktop.controls.DataEvent;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 5:26:31 PM)

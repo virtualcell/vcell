@@ -53,7 +53,6 @@ import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.LocalSolverController;
 
 /**

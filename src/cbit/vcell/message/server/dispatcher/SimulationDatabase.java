@@ -17,9 +17,9 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.messaging.db.StateInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 public interface SimulationDatabase {
 

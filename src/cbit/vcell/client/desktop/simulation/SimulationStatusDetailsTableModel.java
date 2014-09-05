@@ -10,7 +10,7 @@
 
 package cbit.vcell.client.desktop.simulation;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.server.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (8/21/2006 9:35:06 AM)

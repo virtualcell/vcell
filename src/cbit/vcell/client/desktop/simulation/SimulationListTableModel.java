@@ -24,6 +24,7 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -31,7 +32,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)

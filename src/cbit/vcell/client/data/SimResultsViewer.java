@@ -31,15 +31,16 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
-import cbit.vcell.client.server.DataManager;
-import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.ClientPDEDataContext;
+import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ODEDataManager;
+import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**

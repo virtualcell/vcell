@@ -8,15 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;

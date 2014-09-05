@@ -26,17 +26,18 @@ import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simdata.DataEvent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 10:52:17 AM)
