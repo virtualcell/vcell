@@ -54,9 +54,9 @@ import cbit.vcell.messaging.db.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.

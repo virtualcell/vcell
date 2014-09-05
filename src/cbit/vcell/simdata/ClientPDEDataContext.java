@@ -15,9 +15,6 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.PlotData;
-import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.desktop.controls.DataEvent;
-import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Function;
 import cbit.vcell.solver.AnnotatedFunction;

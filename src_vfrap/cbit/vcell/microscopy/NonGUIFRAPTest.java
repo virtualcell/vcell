@@ -35,8 +35,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
 import cbit.vcell.modelopt.gui.DataReference;
@@ -44,6 +42,8 @@ import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 

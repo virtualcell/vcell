@@ -41,6 +41,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -55,7 +56,6 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	public static final String PROPERTY_NAME_SIMULATION_STATUS = "status";

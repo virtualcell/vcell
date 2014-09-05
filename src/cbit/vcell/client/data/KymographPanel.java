@@ -35,13 +35,13 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataManager;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -92,7 +92,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private cbit.plot.Plot2D currentTimeSeriesPlot2D = null;
 	private static final String NORMAL_MESSAGE = "Mouse Click, Arrow Keys Change Graph.  Mouse Menu for Options";
 	private String NONE_MESSAGE = NORMAL_MESSAGE;
-	private cbit.vcell.client.server.DataManager dataManager = null;
+	private cbit.vcell.simdata.DataManager dataManager = null;
 	private int[] dataManagerIndices = null;
 	private int[] crossingMembraneIndices = null;
 	private double[] dataManagerAccumDistances = null;

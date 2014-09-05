@@ -8,7 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.desktop.controls;
+package cbit.vcell.simdata;
+
+
 /**
  * The event set listener interface for the simulation feature.
  */

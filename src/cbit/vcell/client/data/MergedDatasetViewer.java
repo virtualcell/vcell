@@ -13,10 +13,10 @@ package cbit.vcell.client.data;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.server.DataManager;
-import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.ODEDataManager;
+import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.

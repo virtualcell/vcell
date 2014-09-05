@@ -11,8 +11,8 @@
 package cbit.vcell.client.server;
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.export.server.*;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.solver.*;

@@ -12,8 +12,8 @@ package cbit.vcell.client;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.

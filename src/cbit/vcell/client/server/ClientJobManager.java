@@ -15,8 +15,8 @@ import javax.swing.event.EventListenerList;
 
 import org.vcell.util.DataAccessException;
 
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 import java.rmi.*;
 

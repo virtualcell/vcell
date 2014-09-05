@@ -15,6 +15,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
@@ -27,7 +28,6 @@ import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
-import cbit.vcell.client.SimStatusEvent;
 import cbit.vcell.client.SimStatusListener;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.message.messages.MessageConstants;

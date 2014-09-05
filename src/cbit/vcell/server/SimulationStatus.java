@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver.ode.gui;
+package cbit.vcell.server;
 import java.util.ArrayList;
 import java.util.HashMap;
 

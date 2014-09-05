@@ -12,8 +12,8 @@ package cbit.vcell.client;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (4/20/2005 1:55:06 PM)

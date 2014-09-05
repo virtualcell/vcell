@@ -15,8 +15,8 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.server.DataManager;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.simdata.DataManager;
 /**
  * Insert the type's description here.
  * Creation date: (6/14/2004 9:48:35 PM)
