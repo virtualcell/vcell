@@ -8,9 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
+package cbit.plot.gui;
 
-import java.awt.geom.*;
+import java.awt.geom.Point2D;
 /**
  * Just a wrapper so we can collect arrays of different lengths.
  * Creation date: (2/9/2001 2:17:26 AM)

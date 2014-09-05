@@ -95,8 +95,8 @@ import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.plot.gui.PlotPane;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
@@ -159,19 +159,19 @@ import cbit.vcell.simdata.PDEDataInfo;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
+import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
+import cbit.vcell.simdata.SpatialSelection.SSHelper;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
-import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
-import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
-import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
@@ -867,7 +867,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	}
 	SymbolTableEntry[] finalSymbolTableEntries = symbolTableEntries;
 	boolean finalBVolume = bVolume;
-	PlotPane plotPane = new cbit.plot.PlotPane();
+	PlotPane plotPane = new cbit.plot.gui.PlotPane();
 	plotPane.setPlot2D(
 		new SingleXPlot2D(finalSymbolTableEntries,"Time",
 		new String[] {

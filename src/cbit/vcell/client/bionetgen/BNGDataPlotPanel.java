@@ -14,8 +14,8 @@ import java.util.Arrays;
 import org.vcell.util.gui.DefaultListSelectionModelFixed;
 
 import cbit.plot.Plot2D;
-import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
 /**
@@ -241,10 +241,10 @@ public boolean getListVisible() {
  * @return cbit.plot.PlotPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.plot.PlotPane getplotPane() {
+private cbit.plot.gui.PlotPane getplotPane() {
 	if (ivjplotPane == null) {
 		try {
-			ivjplotPane = new cbit.plot.PlotPane();
+			ivjplotPane = new cbit.plot.gui.PlotPane();
 			ivjplotPane.setName("plotPane");
 			ivjplotPane.setPreferredSize(new java.awt.Dimension(700, 700));
 			// user code begin {1}

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
+package cbit.plot.gui;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -26,6 +26,8 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.plot.Plot2D;
+import cbit.plot.PlotData;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SimpleSymbolTable;

@@ -29,7 +29,7 @@ import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 /**

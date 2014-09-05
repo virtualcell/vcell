@@ -11,7 +11,7 @@ import org.vcell.util.Range;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.image.gui.SourceDataInfo;
+import cbit.image.SourceDataInfo;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 

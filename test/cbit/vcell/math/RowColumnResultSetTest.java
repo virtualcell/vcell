@@ -54,8 +54,8 @@ public void test() {
 		
 		try {
 			javax.swing.JFrame frame = new javax.swing.JFrame();
-			cbit.plot.Plot2DPanel aPlot2DPanel;
-			aPlot2DPanel = new cbit.plot.Plot2DPanel();
+			cbit.plot.gui.Plot2DPanel aPlot2DPanel;
+			aPlot2DPanel = new cbit.plot.gui.Plot2DPanel();
 			frame.setContentPane(aPlot2DPanel);
 			frame.setSize(aPlot2DPanel.getSize());
 			frame.addWindowListener(new java.awt.event.WindowAdapter() {

@@ -18,7 +18,7 @@ import java.util.Hashtable;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.PlotPane;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;

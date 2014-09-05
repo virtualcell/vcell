@@ -42,7 +42,7 @@ import org.vcell.util.PropertyLoader;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
-import cbit.plot.Plot2DPanel;
+import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;

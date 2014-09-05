@@ -9,8 +9,11 @@
  */
 
 package cbit.plot;
-import java.util.*;
-import javax.swing.event.*;
+import java.util.Arrays;
+import java.util.Enumeration;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.vcell.util.Range;
 

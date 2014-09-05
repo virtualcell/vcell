@@ -28,9 +28,9 @@ import org.vcell.util.gui.DefaultListSelectionModelFixed;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 
 import cbit.plot.Plot2D;
-import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
-import cbit.plot.PlotPane;
+import cbit.plot.gui.Plot2DPanel;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 /**
  * Insert the type's description here.

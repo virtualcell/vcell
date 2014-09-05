@@ -8,20 +8,47 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
+package cbit.plot.gui;
 
-import java.awt.event.*;
-import java.awt.*;
-import javax.swing.*;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.NumberUtils;
-import org.vcell.util.Range;
-import java.awt.geom.*;
-import java.text.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+
+import org.vcell.util.BeanUtils;
+import org.vcell.util.NumberUtils;
+import org.vcell.util.Range;
+
+import cbit.plot.Plot2D;
+import cbit.plot.Plot2DSettings;
+import cbit.plot.PlotData;
 
 /**
  * Insert the type's description here.
@@ -1806,7 +1833,7 @@ private Plot2DSettings getplot2DSettings1() {
 private Plot2DSettingsPanel getPlot2DSettingsPanel1() {
 	if (ivjPlot2DSettingsPanel1 == null) {
 		try {
-			ivjPlot2DSettingsPanel1 = new cbit.plot.Plot2DSettingsPanel();
+			ivjPlot2DSettingsPanel1 = new cbit.plot.gui.Plot2DSettingsPanel();
 			ivjPlot2DSettingsPanel1.setName("Plot2DSettingsPanel1");
 			ivjPlot2DSettingsPanel1.setLocation(328, 460);
 			// user code begin {1}

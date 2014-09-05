@@ -10,7 +10,7 @@
 
 package cbit.vcell.psf;
 
-import static cbit.vcell.xml.VFrapXmlHelper.checkNameAvailability;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
 
 import java.awt.Component;
 import java.io.File;

@@ -6,7 +6,7 @@ import java.util.Vector;
 
 import org.vcell.wizard.WizardPanelDescriptor;
 
-import cbit.image.gui.SourceDataInfo;
+import cbit.image.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.PDEDataManager;

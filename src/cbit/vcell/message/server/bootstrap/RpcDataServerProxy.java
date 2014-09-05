@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import java.rmi.RemoteException;
-
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
@@ -29,6 +27,7 @@ import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SpatialSelection;
 
 /**
  * Insert the type's description here.
@@ -92,7 +91,7 @@ public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputCo
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String variable, double time, cbit.vcell.simdata.gui.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
+public cbit.plot.PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException {
 	return (cbit.plot.PlotData)rpc("getLineScan",new Object[]{outputContext,userLoginInfo.getUser(), vcdID,variable,new Double(time),spatialSelection});
 }
 

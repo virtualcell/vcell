@@ -8,7 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.simdata.gui;
+package cbit.vcell.simdata;
+
 
 /**
  * Insert the type's description here.

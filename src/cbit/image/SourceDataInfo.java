@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.image.gui;
+package cbit.image;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 
