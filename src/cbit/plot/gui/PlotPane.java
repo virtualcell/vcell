@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
+package cbit.plot.gui;
 import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -32,6 +32,9 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EnhancedJLabel;
 import org.vcell.util.gui.JToolBarToggleButton;
+
+import cbit.plot.Plot2D;
+import cbit.plot.SingleXPlot2D;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 4:26:59 AM)

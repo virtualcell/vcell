@@ -37,7 +37,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.plot.TimeFunctionPanel;
+import cbit.plot.gui.TimeFunctionPanel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;

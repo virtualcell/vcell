@@ -27,7 +27,7 @@ import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 /**

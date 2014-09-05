@@ -28,7 +28,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.image.gui.SourceDataInfo;
+import cbit.image.SourceDataInfo;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;

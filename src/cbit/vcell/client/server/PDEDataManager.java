@@ -25,7 +25,7 @@ import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.gui.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.

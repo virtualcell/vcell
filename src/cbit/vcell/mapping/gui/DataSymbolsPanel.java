@@ -9,17 +9,17 @@
  */
 
 package cbit.vcell.mapping.gui;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.CreateSaveVFrapDataSymbols;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.LoadVFrapDisplayRoi;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.LoadVFrapSpecialImages;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.SaveVFrapSpecialImagesAsFieldData;
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
 import static cbit.vcell.data.VFrapConstants.ADD_ASSOCIATE_EXISTING_FD_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_COPY_FROM_BIOMODEL_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_IMAGE_FILE_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_PSF_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
 import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
-import static cbit.vcell.xml.VFrapXmlHelper.CreateSaveVFrapDataSymbols;
-import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapDisplayRoi;
-import static cbit.vcell.xml.VFrapXmlHelper.LoadVFrapSpecialImages;
-import static cbit.vcell.xml.VFrapXmlHelper.SaveVFrapSpecialImagesAsFieldData;
-import static cbit.vcell.xml.VFrapXmlHelper.checkNameAvailability;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;

@@ -55,12 +55,12 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 
 import cbit.image.DisplayAdapterService;
+import cbit.image.SourceDataInfo;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
-import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
-import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.RequestManager;

@@ -8,16 +8,17 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.simdata.gui;
-
-import cbit.vcell.geometry.*;
-import cbit.vcell.math.VariableType;
+package cbit.vcell.simdata;
 
 import java.util.Arrays;
 import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
+
+import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.math.VariableType;
 
 /**
  * Insert the type's description here.

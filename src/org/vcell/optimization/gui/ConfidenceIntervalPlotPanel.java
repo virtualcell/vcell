@@ -25,7 +25,7 @@ import org.vcell.optimization.ProfileSummaryData;
 import org.vcell.util.gui.AdvancedTablePanel;
 import org.vcell.util.gui.StyleTable;
 
-import cbit.plot.PlotPane;
+import cbit.plot.gui.PlotPane;
 /**
  * The panel is used to display the profile distribution for a specific parameter.
  * In this panel, a plot is on top, which contains the profile distribution and confidence

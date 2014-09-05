@@ -29,8 +29,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.image.DisplayAdapterService;
+import cbit.image.SourceDataInfo;
 import cbit.image.ZoomEvent;
-import cbit.image.gui.SourceDataInfo;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
@@ -146,8 +146,8 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private javax.swing.JCheckBox ivjJCheckBox1 = null;
 	private javax.swing.JMenuItem ivjCopyLineScanJMenuItem = null;
 	private javax.swing.JMenuItem ivjCopyTimeDataJMenuItem = null;
-	private cbit.plot.PlotPane ivjPlotPaneLineScan = null;
-	private cbit.plot.PlotPane ivjPlotPaneTimeSeries = null;
+	private cbit.plot.gui.PlotPane ivjPlotPaneLineScan = null;
+	private cbit.plot.gui.PlotPane ivjPlotPaneTimeSeries = null;
 	private javax.swing.JMenuItem ivjScaleImageAllJMenuItem = null;
 	private javax.swing.JMenuItem ivjScaleImageLSJMenuItem = null;
 	private javax.swing.JMenuItem ivjScaleImageTSJMenuItem = null;
@@ -1522,10 +1522,10 @@ private javax.swing.JLabel getMinJLabel() {
  * @return cbit.plot.PlotPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.plot.PlotPane getPlotPaneLineScan() {
+private cbit.plot.gui.PlotPane getPlotPaneLineScan() {
 	if (ivjPlotPaneLineScan == null) {
 		try {
-			ivjPlotPaneLineScan = new cbit.plot.PlotPane();
+			ivjPlotPaneLineScan = new cbit.plot.gui.PlotPane();
 			ivjPlotPaneLineScan.setName("PlotPaneLineScan");
 			ivjPlotPaneLineScan.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}
@@ -1544,10 +1544,10 @@ private cbit.plot.PlotPane getPlotPaneLineScan() {
  * @return cbit.plot.PlotPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.plot.PlotPane getPlotPaneTimeSeries() {
+private cbit.plot.gui.PlotPane getPlotPaneTimeSeries() {
 	if (ivjPlotPaneTimeSeries == null) {
 		try {
-			ivjPlotPaneTimeSeries = new cbit.plot.PlotPane();
+			ivjPlotPaneTimeSeries = new cbit.plot.gui.PlotPane();
 			ivjPlotPaneTimeSeries.setName("PlotPaneTimeSeries");
 			ivjPlotPaneTimeSeries.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}

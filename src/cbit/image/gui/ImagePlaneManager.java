@@ -16,6 +16,7 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.Extent;
 
+import cbit.image.SourceDataInfo;
 import cbit.image.WorldCoordinateCalculator;
 
 /**

@@ -29,9 +29,9 @@ import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.ParticleData;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
-import cbit.vcell.simdata.gui.SpatialSelectionVolume;
+import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
+import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.ode.ODESimData;
 /**
  * Insert the type's description here.

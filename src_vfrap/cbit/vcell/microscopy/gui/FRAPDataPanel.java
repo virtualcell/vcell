@@ -27,7 +27,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.PlotPane;
+import cbit.plot.gui.PlotPane;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
 import cbit.vcell.VirtualMicroscopy.ROI;

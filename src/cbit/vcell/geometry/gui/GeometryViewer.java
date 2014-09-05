@@ -38,10 +38,10 @@ import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
+import cbit.image.SourceDataInfo;
 import cbit.image.VCImage;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
-import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
