@@ -31,7 +31,6 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 /**
  * Specifies the problem to be solved by a solver.
@@ -41,6 +40,7 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  */
 @SuppressWarnings("serial")
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
+	public static final String PSF_FUNCTION_NAME = "__PSF__";
 	public static final String PROPERTY_NAME_SOLVER_TASK_DESCRIPTION = "solverTaskDescription";
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_NON_SPATIAL_TIMEPOINTS = 100000;
@@ -435,7 +435,7 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getDataProcessingInstructions() != null) {
 		requiredFeatures.add(SolverFeature.Feature_DataProcessingInstructions);
 	}
-	if (getMathDescription().getVariable(SimDataConstants.PSF_FUNCTION_NAME) != null) {
+	if (getMathDescription().getVariable(PSF_FUNCTION_NAME) != null) {
 		requiredFeatures.add(SolverFeature.Feature_PSF);
 	}
 	if (isSerialParameterScan()) {
