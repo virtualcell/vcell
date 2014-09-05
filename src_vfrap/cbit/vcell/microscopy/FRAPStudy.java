@@ -339,7 +339,7 @@ public class FRAPStudy implements Matchable{
 		
 		//Add PSF function
 		
-		mathDesc.addVariable(new Function(SimDataConstants.PSF_FUNCTION_NAME, new Expression(psfFDIS.getFieldFuncArgs().infix()), null));
+		mathDesc.addVariable(new Function(Simulation.PSF_FUNCTION_NAME, new Expression(psfFDIS.getFieldFuncArgs().infix()), null));
 		
 		simContext.setMathDescription(mathDesc);
 				

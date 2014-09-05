@@ -22,8 +22,6 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.math.MathSymbolTable;
-import cbit.vcell.math.MathSymbolTableFactory;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -34,6 +32,8 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.math.MathSymbolTable;
+import cbit.vcell.math.MathSymbolTableFactory;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
@@ -44,9 +44,9 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -55,7 +55,6 @@ import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 /**
  * Specifies the problem to be solved by a solver.
@@ -468,7 +467,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
 			!name.endsWith(MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
-			!name.equals(SimDataConstants.PSF_FUNCTION_NAME)){
+			!name.equals(Simulation.PSF_FUNCTION_NAME)){
 			return true;
 		}else{
 			return false;

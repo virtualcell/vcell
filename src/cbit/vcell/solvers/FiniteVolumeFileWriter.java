@@ -1658,15 +1658,15 @@ private void writeFieldData() throws FileNotFoundException, ExpressionException,
 	
 	FieldFunctionArguments psfFieldFunc = null;
 	
-	Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+	Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(Simulation.PSF_FUNCTION_NAME);
 	if (var != null) {
 		FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 		if (ffas == null || ffas.length == 0) {
-			throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+			throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
 		} else {				
 			Expression newexp = new Expression(ffas[0].infix());
 			if (!var.getExpression().compareEqual(newexp)) {
-				throw new DataAccessException("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+				throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
 			}
 			psfFieldFunc = ffas[0];
 		}
