@@ -49,6 +49,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.CSGNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.CSGPrimitive;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.CSGPrimitive.PrimitiveType;
 import cbit.vcell.geometry.CSGRotation;
 import cbit.vcell.geometry.CSGScale;

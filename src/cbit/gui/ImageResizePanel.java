@@ -31,8 +31,8 @@ import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.UserCancelException;
 
+import cbit.image.ImageSizeInfo;
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.ClientRequestManager.ImageSizeInfo;
 
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -285,7 +285,7 @@ public class ImageResizePanel extends JPanel {
 	private JLabel channelCountLabel;
 	private JPanel panel_2;
 	private JButton customScaleButton;
-	public void init(ClientRequestManager.ImageSizeInfo origImageSizeInfo,boolean bFullMode){
+	public void init(ImageSizeInfo origImageSizeInfo,boolean bFullMode){
 		this.origImageSizeInfo = origImageSizeInfo;
 		ImageNameLabel.setText(origImageSizeInfo.getImagePath());
 		originalSizeLabel.setText(origImageSizeInfo.getiSize().toString());

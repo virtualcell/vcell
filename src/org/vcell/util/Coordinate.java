@@ -363,4 +363,24 @@ public static final boolean isCoordinateInBounds(Coordinate coord, org.vcell.uti
 public String toString() {
 	return "X="+x+" Y="+y+" Z="+z;
 }
+/**
+ * Insert the method's description here.
+ * Creation date: (8/12/2005 1:06:21 PM)
+ * @return cbit.vcell.geometry.Coordinate
+ * @param orig cbit.util.Origin
+ * @param ext cbit.util.Extent
+ * @param dimensionFlag int
+ */
+public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Extent argExtent, int argAxisFlag) {
+	
+	if(argAxisFlag == X_AXIS){
+		return argExtent.getX()/2.0 + argOrigin.getX();
+	}else if(argAxisFlag == Y_AXIS){
+		return argExtent.getY()/2.0 + argOrigin.getY();
+	}else if(argAxisFlag == Z_AXIS){
+		return argExtent.getZ()/2.0 + argOrigin.getZ();
+	}
+
+	throw new IllegalArgumentException("Unknown Axis Flag="+argAxisFlag);
+}
 }

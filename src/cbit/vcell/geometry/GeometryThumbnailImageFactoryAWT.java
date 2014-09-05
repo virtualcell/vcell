@@ -1,4 +1,4 @@
-package cbit.vcell.geometry.gui;
+package cbit.vcell.geometry;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -14,8 +14,6 @@ import cbit.image.ImageException;
 import cbit.image.ThumbnailImage;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.GeometryThumbnailImageFactory;
 
 
 public class GeometryThumbnailImageFactoryAWT implements GeometryThumbnailImageFactory {

@@ -95,6 +95,7 @@ import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.gui.ImageResizePanel;
 import cbit.image.ImageException;
+import cbit.image.ImageSizeInfo;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.image.VCImageUncompressed;
@@ -147,8 +148,8 @@ import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.RayCaster;
@@ -186,8 +187,8 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.XMLInfo;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
-import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:42:55 AM)
@@ -559,8 +560,8 @@ private XmlTreeDiff compareDocuments(final VCDocument doc1, final VCDocument doc
 
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
-	if (!TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting) && 
-		!TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
+	if (!XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting) && 
+		!XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
 		throw new RuntimeException("Unsupported comparison setting: " + comparisonSetting);
 	} 
 	if (doc1.getDocumentType() != doc2.getDocumentType()) { 
@@ -613,7 +614,7 @@ public XmlTreeDiff compareWithOther(final VCDocumentInfo docInfo1, final VCDocum
 		} else {
 			throw new IllegalArgumentException("The two documents are invalid or of different types.");
 		}
-		return compareDocuments(document1, document2, TMLPanel.COMPARE_DOCS_OTHER);
+		return compareDocuments(document1, document2, XmlTreeDiff.COMPARE_DOCS_OTHER);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
@@ -651,7 +652,7 @@ public XmlTreeDiff compareWithSaved(VCDocument document) {
 				break;
 			}
 		}
-		return compareDocuments(savedVersion, document, TMLPanel.COMPARE_DOCS_SAVED);
+		return compareDocuments(savedVersion, document, XmlTreeDiff.COMPARE_DOCS_SAVED);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
@@ -1003,39 +1004,6 @@ private static void throwImportWholeDirectoryException(File invalidFile,String e
 			(extraInfo==null?"":"\n"+extraInfo));
 
 }
-
-public static class ImageSizeInfo{
-	private String imagePath;
-	private ISize iSize;
-	private int numChannels;
-	private double[] timePoints;
-	private Integer selectedTimeIndex;
-	public ImageSizeInfo(String imagePath, ISize iSize, int numChannels,double[] timePoints,Integer selectedTimeIndex) {
-		super();
-		this.imagePath = imagePath;
-		this.iSize = iSize;
-		this.numChannels = numChannels;
-		this.timePoints = timePoints;
-		this.selectedTimeIndex = selectedTimeIndex;
-	}
-	public String getImagePath() {
-		return imagePath;
-	}
-	public ISize getiSize() {
-		return iSize;
-	}
-	public int getNumChannels() {
-		return numChannels;
-	}
-	public double[] getTimePoints(){
-		return timePoints;
-	}
-	public Integer getSelectedTimeIndex(){
-		return selectedTimeIndex;
-	}
-	
-}
-
 
 private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage) throws ImageException{
 	int[] temp = new int[256];
@@ -1541,8 +1509,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			ImageSizeInfo newImageSizeInfo = (ImageSizeInfo)hashTable.get(NEW_IMAGE_SIZE_INFO);
 			FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec)hashTable.get(FDFOS);
-			if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.iSize)){
-				resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.iSize,documentCreationInfo.getOption());
+			if(newImageSizeInfo != null && fdfos != null && !fdfos.isize.compareEqual(newImageSizeInfo.getiSize())){
+				resizeImage((FieldDataFileOperationSpec)hashTable.get(FDFOS), newImageSizeInfo.getiSize(),documentCreationInfo.getOption());
 			}
 		}
 	};

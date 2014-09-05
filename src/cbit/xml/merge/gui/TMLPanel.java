@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.xml.merge;
+package cbit.xml.merge.gui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -30,6 +30,9 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlReader;
+import cbit.xml.merge.ChangedNodeInfo;
+import cbit.xml.merge.NodeInfo;
+import cbit.xml.merge.XmlTreeDiff;
 
 /**
 The panel that processes the XML compare and merge feature of VC
@@ -64,8 +67,6 @@ public class TMLPanel extends javax.swing.JPanel {
 	private XmlTreeDiff fieldDiffTree;
 	private String fieldBaselineVersionDescription = new String();
 	private String fieldModifiedVersionDescription = new String();
-	public static final String COMPARE_DOCS_SAVED = "compare_wth_saved_version";
-	public static final String COMPARE_DOCS_OTHER = "compare_with_other";
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.TreeSelectionListener {
@@ -135,7 +136,7 @@ private void associate() {
 				NodeInfo result = null;
 				try {
 					//this diff tree is different from the instance variable.
-					XmlTreeDiff partialDiffTree = XmlHelper.compareMerge(firstNode.toXmlString(),secondNode.toXmlString(), TMLPanel.COMPARE_DOCS_SAVED, fieldDiffTree.isIgnoringVersionInfo());
+					XmlTreeDiff partialDiffTree = XmlHelper.compareMerge(firstNode.toXmlString(),secondNode.toXmlString(), XmlTreeDiff.COMPARE_DOCS_SAVED, fieldDiffTree.isIgnoringVersionInfo());
 					result = partialDiffTree.getMergedRootNode();
 				}catch (Throwable e){
 					//
@@ -1178,7 +1179,7 @@ private javax.swing.JTree getTree() {
 			ivjTree.setName("Tree");
 			ivjTree.setShowsRootHandles(true);
 			ivjTree.setModel(null);
-			ivjTree.setCellRenderer(new cbit.xml.merge.MyRenderer());
+			ivjTree.setCellRenderer(new cbit.xml.merge.gui.MyRenderer());
 			ivjTree.setBounds(0, 0, 78, 72);
 			// user code begin {1}
 			// user code end

@@ -55,6 +55,7 @@ import cbit.vcell.client.task.ExportToXML;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;

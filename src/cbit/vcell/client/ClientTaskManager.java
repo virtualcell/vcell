@@ -24,7 +24,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;

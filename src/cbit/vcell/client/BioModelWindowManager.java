@@ -37,7 +37,7 @@ import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.server.SimulationStatus;

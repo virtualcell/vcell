@@ -34,7 +34,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryOwner;
-import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mapping.SimulationContext;
 
 @SuppressWarnings("serial")

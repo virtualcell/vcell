@@ -118,16 +118,15 @@ import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.gui.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
@@ -158,6 +157,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.StructureSorter;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -2063,7 +2063,7 @@ public void translateSBMLModel() {
 	// Add Reactions
 	addReactions(vcMetaData);
 	// Sort VCell-model Structures in structure array according to reaction adjacency and parentCompartment.
-	Structure[] sortedStructures = AllStructureSuite.sortStructures(simContext.getModel());
+	Structure[] sortedStructures = StructureSorter.sortStructures(simContext.getModel());
 	try {
 		simContext.getModel().setStructures(sortedStructures);
 	} catch (PropertyVetoException e1) {
