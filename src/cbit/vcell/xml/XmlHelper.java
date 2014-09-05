@@ -57,7 +57,6 @@ import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.xml.merge.NodeInfo;
-import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
 
 /**
@@ -144,7 +143,7 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
 	                          String comparisonSetting, boolean ignoreVersionInfo) throws XmlParseException {
 	try {
 		if (xmlBaseString == null || xmlModifiedString == null || xmlBaseString.length() == 0 || xmlModifiedString.length() == 0 ||
-		    (!TMLPanel.COMPARE_DOCS_SAVED.equals(comparisonSetting) && !TMLPanel.COMPARE_DOCS_OTHER.equals(comparisonSetting)) ) {
+		    (!XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting) && !XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) ) {
 	        throw new XmlParseException("Invalid XML comparison params.");
 	    }
 		XMLSource xmlBaseSource = new XMLSource(xmlBaseString);

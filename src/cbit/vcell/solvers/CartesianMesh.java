@@ -666,16 +666,7 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
  * @param dimensionFlag int
  */
 public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Extent argExtent, int argAxisFlag) {
-	
-	if(argAxisFlag == Coordinate.X_AXIS){
-		return argExtent.getX()/2.0 + argOrigin.getX();
-	}else if(argAxisFlag == Coordinate.Y_AXIS){
-		return argExtent.getY()/2.0 + argOrigin.getY();
-	}else if(argAxisFlag == Coordinate.Z_AXIS){
-		return argExtent.getZ()/2.0 + argOrigin.getZ();
-	}
-
-	throw new IllegalArgumentException("Unknown Axis Flag="+argAxisFlag);
+	return Coordinate.coordComponentFromSinglePlanePolicy(argOrigin, argExtent,	argAxisFlag);
 }
 
 
@@ -846,15 +837,15 @@ public Coordinate getCoordinate(CoordinateIndex coordIndex) {
 	// if N is 1, then take middle of that dimension
 	//
 	//
-	double x = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS);//extent.getX()/2.0 + origin.getX();
+	double x = Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS);//extent.getX()/2.0 + origin.getX();
 	if (getSizeX()>1){
 		x = (((double)coordIndex.x)/(getSizeX()-1))*extent.getX()+origin.getX();
 	}
-	double y = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS);//extent.getY()/2.0 + origin.getY();
+	double y = Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS);//extent.getY()/2.0 + origin.getY();
 	if (getSizeY()>1){
 		y = (((double)coordIndex.y)/(getSizeY()-1))*extent.getY()+origin.getY();
 	}
-	double z = coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS);//extent.getZ()/2.0 + origin.getZ();
+	double z = Coordinate.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS);//extent.getZ()/2.0 + origin.getZ();
 	if (getSizeZ()>1){
 		z = (((double)coordIndex.z)/(getSizeZ()-1))*extent.getZ()+origin.getZ();
 	}

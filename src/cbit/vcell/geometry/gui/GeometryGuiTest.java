@@ -11,6 +11,7 @@ import cbit.vcell.geometry.CSGPrimitive;
 import cbit.vcell.geometry.CSGRotation;
 import cbit.vcell.geometry.CSGScale;
 import cbit.vcell.geometry.CSGSetOperator;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.CSGSetOperator.OperatorType;
 import cbit.vcell.geometry.CSGTranslation;
 import cbit.vcell.geometry.Geometry;

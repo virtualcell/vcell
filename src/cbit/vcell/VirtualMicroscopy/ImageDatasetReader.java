@@ -5,11 +5,11 @@ import java.io.File;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ISize;
 
-import cbit.vcell.client.ClientRequestManager;
+import cbit.image.ImageSizeInfo;
 
 public interface ImageDatasetReader {
 
-	public abstract ClientRequestManager.ImageSizeInfo getImageSizeInfo(
+	public abstract ImageSizeInfo getImageSizeInfo(
 			String fileName, Integer forceZSize) throws Exception;
 
 	public abstract ImageDataset readImageDataset(String imageID,

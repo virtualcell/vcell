@@ -29,6 +29,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 /**
  * This type was created in VisualAge.
  */

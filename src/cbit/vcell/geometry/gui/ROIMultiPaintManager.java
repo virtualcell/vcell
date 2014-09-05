@@ -73,6 +73,7 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
+import cbit.image.ImageSizeInfo;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
@@ -82,7 +83,6 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.ClientRequestManager.ImageSizeInfo;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
