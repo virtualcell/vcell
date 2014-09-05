@@ -10,7 +10,6 @@
 
 package cbit.vcell.opt;
 
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.util.Matchable;
 
 /**

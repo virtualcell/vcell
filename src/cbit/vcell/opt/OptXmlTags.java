@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.optimization;
+package cbit.vcell.opt;
 
 public class OptXmlTags {
 	

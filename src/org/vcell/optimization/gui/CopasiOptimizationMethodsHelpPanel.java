@@ -30,8 +30,9 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import org.vcell.optimization.CopasiOptimizationMethodsDescription;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
 import org.vcell.util.gui.HyperLinkLabel;
+
+import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
 
 
 /**

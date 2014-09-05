@@ -10,8 +10,6 @@
 
 package cbit.vcell.opt;
 
-import org.vcell.optimization.OptSolverResultSet;
-
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.parser.ExpressionException;
 

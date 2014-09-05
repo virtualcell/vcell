@@ -10,7 +10,6 @@
 
 package cbit.vcell.opt;
 
-import org.vcell.optimization.OptXmlTags;
 
 /**
  * Insert the type's description here.

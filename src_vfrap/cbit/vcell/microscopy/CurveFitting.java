@@ -14,11 +14,11 @@ import java.io.IOException;
 
 import org.vcell.optimization.DefaultOptSolverCallbacks;
 import org.vcell.optimization.OptSolverCallbacks;
-import org.vcell.optimization.OptSolverResultSet;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
+import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;

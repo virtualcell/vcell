@@ -10,25 +10,24 @@
 
 package cbit.vcell.modelopt;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameterType;
-import org.vcell.optimization.OptSolverResultSet;
-import org.vcell.optimization.OptSolverResultSet.OptRunResultSet;
-import org.vcell.optimization.OptXmlTags;
 import org.vcell.util.CommentStringTokenizer;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.opt.CopasiOptimizationMethod;
+import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
+import cbit.vcell.opt.CopasiOptimizationParameter;
+import cbit.vcell.opt.CopasiOptimizationParameter.CopasiOptimizationParameterType;
+import cbit.vcell.opt.OptSolverResultSet;
+import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
+import cbit.vcell.opt.OptXmlTags;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.ReferenceData;
