@@ -21,7 +21,6 @@ import java.util.Vector;
 import java.util.zip.InflaterInputStream;
 
 import org.jdom.Element;
-import org.vcell.optimization.OptXmlTags;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -39,6 +38,7 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
+import cbit.vcell.opt.OptXmlTags;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.xml.XMLTags;

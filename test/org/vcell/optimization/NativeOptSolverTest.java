@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.resource.NativeLib;
 
 public class NativeOptSolverTest {
