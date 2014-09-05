@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
-import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
 
 /**
  * Insert the type's description here.

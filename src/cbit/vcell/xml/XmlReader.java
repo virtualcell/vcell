@@ -30,7 +30,6 @@ import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipReader;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
@@ -243,14 +242,15 @@ import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.StochHybridOptions;
+import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.SundialsSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.units.VCUnitDefinition;
 
 

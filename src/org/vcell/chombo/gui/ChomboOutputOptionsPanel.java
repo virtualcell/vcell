@@ -1,4 +1,4 @@
-package org.vcell.chombo;
+package org.vcell.chombo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -15,6 +15,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.vcell.chombo.ChomboSolverSpec;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.SolverTaskDescription;

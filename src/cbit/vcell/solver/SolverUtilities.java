@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.math.MathFunctionDefinitions;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.parser.Expression;
@@ -16,7 +15,6 @@ import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solvers.CartesianMesh;
 
 public class SolverUtilities {
 
@@ -43,31 +41,6 @@ public class SolverUtilities {
 			}
 		}
 		return exp;
-	}
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (10/3/00 2:48:55 PM)
-	 * @return cbit.vcell.simdata.PDEVariableType
-	 * @param mesh cbit.vcell.solvers.CartesianMesh
-	 * @param dataLength int
-	 */
-	public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, int dataLength) {
-		VariableType result = null;
-		if (mesh.getDataLength(VariableType.VOLUME) == dataLength) {
-			result = VariableType.VOLUME;
-		} else if (mesh.getDataLength(VariableType.MEMBRANE) == dataLength) {
-			result = VariableType.MEMBRANE;
-		} else if (mesh.getDataLength(VariableType.CONTOUR) == dataLength) {
-			result = VariableType.CONTOUR;
-		} else if (mesh.getDataLength(VariableType.VOLUME_REGION) == dataLength) {
-			result = VariableType.VOLUME_REGION;
-		} else if (mesh.getDataLength(VariableType.MEMBRANE_REGION) == dataLength) {
-			result = VariableType.MEMBRANE_REGION;
-		} else if (mesh.getDataLength(VariableType.CONTOUR_REGION) == dataLength) {
-			result = VariableType.CONTOUR_REGION;
-		}
-		return result;
 	}
 
 	public static Set<FunctionInvocation> getSizeFunctionInvocations(Expression expression) {

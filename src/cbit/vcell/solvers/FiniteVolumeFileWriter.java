@@ -122,11 +122,11 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.server.SolverFileWriter;
 
 /**
  * Insert the type's description here.

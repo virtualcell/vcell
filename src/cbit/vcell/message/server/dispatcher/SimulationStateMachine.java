@@ -32,9 +32,9 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 
 public class SimulationStateMachine {
 	

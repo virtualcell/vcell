@@ -8,7 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver;
+package cbit.vcell.solver.server;
+
+import cbit.vcell.solver.SimulationJob;
 
 /**
  * Any kind of a solver.  Its implementors implement specific

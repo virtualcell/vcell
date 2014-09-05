@@ -1,4 +1,4 @@
-package org.vcell.chombo;
+package org.vcell.chombo.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,6 +30,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementLevel;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;

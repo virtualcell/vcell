@@ -19,7 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.vcell.chombo.ChomboOutputOptionsPanel;
+import org.vcell.chombo.gui.ChomboOutputOptionsPanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.Range;

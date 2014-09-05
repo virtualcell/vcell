@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.solver.smoldyn;
+package cbit.vcell.solver;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -24,7 +24,6 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
-import cbit.vcell.solver.SolverUtilities;
 
 public class SmoldynSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 

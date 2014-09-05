@@ -35,8 +35,8 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
 /**
