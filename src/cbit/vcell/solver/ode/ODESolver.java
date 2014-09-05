@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.solver.Solver;
+import cbit.vcell.solver.server.Solver;
 
 /**
  * Interface that must be implemented by all ODESolver classes.

@@ -1342,7 +1342,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		e.printStackTrace(System.out);
 		System.out.println("invalid varTypeInt = "+varTypeInt+" for variable "+varName+" at time "+time);
 		try {
-			variableType = SolverUtilities.getVariableTypeFromLength(getMesh(),data.length);
+			variableType = SimulationData.getVariableTypeFromLength(getMesh(),data.length);
 		} catch (MathException ex) {
 			ex.printStackTrace(System.out);
 			throw new DataAccessException(ex.getMessage());
@@ -1576,7 +1576,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				try {
 					varType = VariableType.getVariableTypeFromInteger(varTypeInts[i]);
 				}catch (Throwable e){
-					varType = SolverUtilities.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
+					varType = SimulationData.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
 				Domain domain = Variable.getDomainFromCombinedIdentifier(varNames[i]);
 				String varName = Variable.getNameFromCombinedIdentifier(varNames[i]);
@@ -2323,6 +2323,31 @@ public VCDataIdentifier getVcDataId() {
 		VariableType variableType = VariableType.MEMBRANE;
 		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
 		return data == null ? null : new SimDataBlock(pdeDataInfo,data,variableType);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (10/3/00 2:48:55 PM)
+	 * @return cbit.vcell.simdata.PDEVariableType
+	 * @param mesh cbit.vcell.solvers.CartesianMesh
+	 * @param dataLength int
+	 */
+	public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, int dataLength) {
+		VariableType result = null;
+		if (mesh.getDataLength(VariableType.VOLUME) == dataLength) {
+			result = VariableType.VOLUME;
+		} else if (mesh.getDataLength(VariableType.MEMBRANE) == dataLength) {
+			result = VariableType.MEMBRANE;
+		} else if (mesh.getDataLength(VariableType.CONTOUR) == dataLength) {
+			result = VariableType.CONTOUR;
+		} else if (mesh.getDataLength(VariableType.VOLUME_REGION) == dataLength) {
+			result = VariableType.VOLUME_REGION;
+		} else if (mesh.getDataLength(VariableType.MEMBRANE_REGION) == dataLength) {
+			result = VariableType.MEMBRANE_REGION;
+		} else if (mesh.getDataLength(VariableType.CONTOUR_REGION) == dataLength) {
+			result = VariableType.CONTOUR_REGION;
+		}
+		return result;
 	}
 
 	/**

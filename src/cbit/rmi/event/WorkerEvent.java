@@ -15,9 +15,9 @@ import org.vcell.util.document.User;
 import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 
 /**
  * Insert the type's description here.

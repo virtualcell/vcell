@@ -31,8 +31,8 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
+import cbit.vcell.solver.StochHybridOptions;
+import cbit.vcell.solver.StochSimOptions;
 
 @SuppressWarnings("serial")
 public class StochSimOptionsPanel extends CollapsiblePanel {

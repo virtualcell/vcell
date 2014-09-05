@@ -14,8 +14,8 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 
 /**
  * Insert the type's description here.

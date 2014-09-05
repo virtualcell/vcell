@@ -25,8 +25,8 @@ import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.modeldb.VersionTable;
-import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
 
 public class SimulationJobTable extends Table {
 	private static final String TABLE_NAME = "vc_simulationjob";

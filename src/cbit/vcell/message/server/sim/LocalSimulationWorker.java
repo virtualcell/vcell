@@ -47,11 +47,11 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.Solver;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverListener;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverListener;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -116,7 +116,7 @@ private void initQueueConsumer() {
 }
 
 private void doSolverJob(final SimulationTask currentTask, File userdir) throws SolverException {
-	Solver currentSolver = cbit.vcell.solver.SolverFactory.createSolver(log,userdir,currentTask, true);
+	Solver currentSolver = cbit.vcell.solver.server.SolverFactory.createSolver(log,userdir,currentTask, true);
 	currentSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {
 			try {

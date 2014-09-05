@@ -22,12 +22,12 @@ import cbit.rmi.event.WorkerEventListener;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverListener;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solver.server.SolverStatus;
 /**
  * This type was created in VisualAge.
  */

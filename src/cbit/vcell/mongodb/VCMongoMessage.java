@@ -29,12 +29,12 @@ import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessagePersistent;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
+import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solvers.AbstractSolver;
 
 import com.mongodb.BasicDBObject;

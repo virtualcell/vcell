@@ -43,10 +43,10 @@ import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 

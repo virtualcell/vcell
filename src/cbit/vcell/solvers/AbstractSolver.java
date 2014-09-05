@@ -25,17 +25,17 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.Solver;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverListener;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solver.ode.StateVariable;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solver.server.SolverStatus;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 2:48:23 PM)
@@ -76,8 +76,8 @@ public AbstractSolver(SimulationTask simTask, File directory, SessionLog session
  * Creation date: (3/29/2001 5:18:16 PM)
  * @param listener cbit.vcell.solver.SolverListener
  */
-public synchronized void addSolverListener(cbit.vcell.solver.SolverListener listener) {
-	listenerList.add(cbit.vcell.solver.SolverListener.class, listener);
+public synchronized void addSolverListener(cbit.vcell.solver.server.SolverListener listener) {
+	listenerList.add(cbit.vcell.solver.server.SolverListener.class, listener);
 }
 
 

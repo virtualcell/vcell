@@ -15,8 +15,8 @@ import java.util.Date;
 import org.vcell.util.Compare;
 import org.vcell.util.document.VCellServerID;
 
-import cbit.vcell.solver.SimulationMessagePersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
 
 /**
  * Insert the type's description here.
