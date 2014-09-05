@@ -10,6 +10,8 @@
 
 package cbit.vcell.simdata;
 
+import cbit.vcell.solver.Simulation;
+
 /**
  * This type was created in VisualAge.
  */
@@ -67,7 +69,7 @@ public interface SimDataConstants {
 	public static final int PARTICLE_DATA = 2;
 	public static final int STOCH_DATA = 3; //stoch
 	
-	public static final String PSF_FUNCTION_NAME = "__PSF__";
+	public static final String PSF_FUNCTION_NAME = Simulation.PSF_FUNCTION_NAME;
 	
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
