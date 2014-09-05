@@ -1,6 +1,6 @@
 package org.vcell.rest.common;
 
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.server.SimulationStatus;
 
 public class SimulationStatusRepresentation {
 	
