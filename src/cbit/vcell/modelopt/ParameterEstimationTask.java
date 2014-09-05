@@ -11,7 +11,6 @@
 package cbit.vcell.modelopt;
 import java.beans.PropertyVetoException;
 
-import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 
@@ -19,7 +18,6 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -42,7 +40,6 @@ public class ParameterEstimationTask extends AnalysisTask {
 	
 	private transient ModelOptimizationMapping fieldModelOptimizationMapping = null; //objective function, constraints, model vars/parameters mapping, math symbol mapping
 	private transient MathSymbolMapping fieldMathSymbolMapping = null; //MathSymbolMapping is a field in ModelOptimizationMapping too.
-	private transient CopasiOptSolverCallbacks fieldOptSolverCallbacks = new CopasiOptSolverCallbacks();
 	private transient java.lang.String fieldSolverMessageText = new String();
 	private SimulationContext simulationContext = null;
 
@@ -184,16 +181,6 @@ public cbit.vcell.opt.OptimizationResultSet getOptimizationResultSet() {
  */
 public cbit.vcell.opt.OptimizationSolverSpec getOptimizationSolverSpec() {
 	return fieldOptimizationSolverSpec;
-}
-
-
-/**
- * Gets the optSolverCallbacks property (cbit.vcell.opt.solvers.OptSolverCallbacks) value.
- * @return The optSolverCallbacks property value.
- * @see #setOptSolverCallbacks
- */
-public CopasiOptSolverCallbacks getOptSolverCallbacks() {
-	return fieldOptSolverCallbacks;
 }
 
 
