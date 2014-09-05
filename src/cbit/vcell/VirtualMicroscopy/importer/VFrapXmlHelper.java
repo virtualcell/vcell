@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.xml;
+package cbit.vcell.VirtualMicroscopy.importer;
 
 import static cbit.vcell.data.VFrapConstants.tokenNames;
 
@@ -35,21 +35,16 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
-import com.ibm.icu.util.StringTokenizer;
-
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
-import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
+import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.VFrapConstants.SymbolEquivalence;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -70,7 +65,12 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
+
+import com.ibm.icu.util.StringTokenizer;
 
 /**
 Useful stuff for importing vFrap biomodels and the associated images into vCell

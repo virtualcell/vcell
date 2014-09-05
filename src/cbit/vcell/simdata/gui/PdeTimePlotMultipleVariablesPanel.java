@@ -35,8 +35,8 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.plot.Plot2D;
-import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -48,6 +48,9 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
+import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 
 public class PdeTimePlotMultipleVariablesPanel extends JPanel {

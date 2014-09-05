@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.KeyValue;
 
-import cbit.image.gui.SourceDataInfo;
+import cbit.image.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;

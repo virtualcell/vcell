@@ -8,10 +8,16 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
-import javax.swing.*;
+package cbit.plot.gui;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.vcell.util.Range;
+
+import cbit.plot.Plot2DSettings;
 /**
  * Insert the type's description here.
  * Creation date: (2/15/2001 10:12:19 AM)

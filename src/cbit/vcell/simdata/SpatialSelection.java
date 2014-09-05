@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.simdata.gui;
+package cbit.vcell.simdata;
 import org.vcell.util.Coordinate;
 
 import cbit.vcell.math.VariableType;

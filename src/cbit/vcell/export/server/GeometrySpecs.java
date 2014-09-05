@@ -10,7 +10,10 @@
 
 package cbit.vcell.export.server;
 import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.gui.*;
+
 import java.io.*;
 
 import org.vcell.util.BeanUtils;

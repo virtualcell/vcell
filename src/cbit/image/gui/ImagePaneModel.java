@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.image.*;
 
 import cbit.image.DisplayAdapterService;
+import cbit.image.SourceDataInfo;
 
 /**
  * Insert the type's description here.

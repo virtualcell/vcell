@@ -102,10 +102,6 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputTimeSeriesOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
-import cbit.vcell.simdata.gui.SpatialSelection;
-import cbit.vcell.simdata.gui.SpatialSelectionContour;
-import cbit.vcell.simdata.gui.SpatialSelectionMembrane;
-import cbit.vcell.simdata.gui.SpatialSelectionVolume;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.plot;
+package cbit.plot.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -25,6 +25,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.plot.Plot2D;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;

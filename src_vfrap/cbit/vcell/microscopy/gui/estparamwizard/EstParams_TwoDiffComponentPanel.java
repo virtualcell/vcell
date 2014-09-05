@@ -33,7 +33,7 @@ import javax.swing.border.LineBorder;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.Plot2DPanel;
+import cbit.plot.gui.Plot2DPanel;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;

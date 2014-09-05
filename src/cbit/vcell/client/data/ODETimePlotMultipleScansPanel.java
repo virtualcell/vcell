@@ -27,8 +27,8 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.PlotPane;
 import cbit.plot.SingleXPlot2D;
+import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;

@@ -29,8 +29,8 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
+import cbit.image.SourceDataInfo;
 import cbit.image.gui.ImagePaneModel;
-import cbit.image.gui.SourceDataInfo;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.math.VariableType;

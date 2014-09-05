@@ -24,7 +24,6 @@ import org.vcell.util.document.VCDataIdentifier;
 import cbit.plot.PlotData;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Function;
-import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 /**

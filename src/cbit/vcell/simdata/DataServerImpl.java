@@ -21,7 +21,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 

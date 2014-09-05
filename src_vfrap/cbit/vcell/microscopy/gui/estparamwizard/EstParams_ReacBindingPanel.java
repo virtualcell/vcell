@@ -34,7 +34,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.plot.Plot2DPanel;
+import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

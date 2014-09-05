@@ -18,7 +18,6 @@ import cbit.vcell.math.*;
 import cbit.plot.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
-import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.export.server.*;
 import cbit.vcell.solver.*;
 /**
