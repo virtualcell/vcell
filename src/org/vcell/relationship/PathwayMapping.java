@@ -12,12 +12,12 @@ package org.vcell.relationship;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPAXUtil.Process;
@@ -28,7 +28,6 @@ import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Transport;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
-import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
@@ -45,8 +44,6 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
-
-import com.ibm.icu.util.StringTokenizer;
 
 public class PathwayMapping {
 	
