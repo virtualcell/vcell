@@ -41,10 +41,10 @@ import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverFileWriter;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.server.SolverFileWriter;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

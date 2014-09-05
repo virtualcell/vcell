@@ -49,10 +49,10 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.LocalSolverController;
 
 /**

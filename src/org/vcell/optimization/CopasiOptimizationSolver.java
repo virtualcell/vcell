@@ -23,7 +23,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.modelopt.ParameterEstimationTask.ParameterEstimationTaskSimulator;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
@@ -320,7 +319,7 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
-	public static OptimizationResultSet solve(ParameterEstimationTaskSimulator parestSimulator, ParameterEstimationTask parameterEstimationTask) 
+	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask) 
 							throws IOException, ExpressionException, OptimizationException {
 		CopasiOptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
 		try {		

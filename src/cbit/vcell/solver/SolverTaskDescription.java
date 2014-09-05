@@ -13,7 +13,6 @@ import java.beans.PropertyVetoException;
 
 import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.solver.smoldyn.SmoldynSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -24,8 +23,6 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.stoch.StochHybridOptions;
-import cbit.vcell.solver.stoch.StochSimOptions;
 
 /**
  * Insert the class' description here.

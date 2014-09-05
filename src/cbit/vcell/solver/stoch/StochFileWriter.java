@@ -31,8 +31,9 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverFileWriter;
+import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.server.SolverFileWriter;
 
 /**
  * The function reads model information from simulation and

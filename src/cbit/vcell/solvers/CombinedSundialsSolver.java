@@ -14,6 +14,9 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.IDASolverStandalone;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverListener;
+
 import java.io.*;
 import java.util.Vector;
 

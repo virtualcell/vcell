@@ -26,7 +26,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.vcell.chombo.ChomboSolverSpecPanel;
+import org.vcell.chombo.gui.ChomboSolverSpecPanel;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;

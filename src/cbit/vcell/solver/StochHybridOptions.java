@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver.stoch;
+package cbit.vcell.solver;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;

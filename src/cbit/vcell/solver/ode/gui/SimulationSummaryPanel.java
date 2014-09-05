@@ -39,8 +39,8 @@ import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.stoch.StochSimOptions;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2001 12:17:49 PM)

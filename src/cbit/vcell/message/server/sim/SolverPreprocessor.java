@@ -32,9 +32,9 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.solver.SolverListener;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.solvers.HTCSolver;
 import cbit.vcell.xml.XmlHelper;
 /**

@@ -19,10 +19,10 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SolverStatus;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)

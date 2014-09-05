@@ -21,10 +21,10 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverFactory;
-import cbit.vcell.solver.SolverListener;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.server.SolverListener;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 

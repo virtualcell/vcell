@@ -10,7 +10,6 @@
 
 package cbit.vcell.modelopt;
 import java.beans.PropertyVetoException;
-import java.util.Vector;
 
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.util.Compare;
@@ -19,23 +18,13 @@ import org.vcell.util.Issue;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.FunctionColumnDescription;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)
@@ -43,12 +32,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
  */
 @SuppressWarnings("serial")
 public class ParameterEstimationTask extends AnalysisTask {
-	
-	public interface ParameterEstimationTaskSimulator {
-		RowColumnResultSet getRowColumnRestultSetByBestEstimations(ParameterEstimationTask parameterEstimationTask, String[] paramNames, double[] paramValues) throws Exception;
-	}
-
-
 	
 	public static final String defaultTaskName = "DefaultTask"; 
 	
@@ -183,88 +166,6 @@ public ModelOptimizationMapping getModelOptimizationMapping() {
 public ModelOptimizationSpec getModelOptimizationSpec() {
 	return fieldModelOptimizationSpec;
 }
-
-public ODESolverResultSet getOdeSolverResultSet(ParameterEstimationTaskSimulator parestSimulator) throws Exception {
-	return getOdeSolverResultSet(parestSimulator,getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
-}
-
-public ODESolverResultSet getOdeSolverResultSet(ParameterEstimationTaskSimulator parestSimulator, OptimizationSpec optSpec, OptimizationResultSet optResultSet) throws Exception {
-	if (optResultSet==null) {
-		return null;
-	}
-	String[] parameterNames = optResultSet.getOptSolverResultSet().getParameterNames();
-	double[] bestEstimates = optResultSet.getOptSolverResultSet().getBestEstimates();
-	//if we don't have parameter names or best estimates, return null. if we have them, we can run a simulation and generate a solution
-	if (parameterNames == null || parameterNames.length == 0  || bestEstimates ==null || bestEstimates.length == 0)
-	{
-		return null;
-	}
-	//check if we have solution or not, if not, generate a solution since we have the best estimates
-	if(optResultSet.getSolutionNames() == null)
-	{
-		RowColumnResultSet rcResultSet = parestSimulator.getRowColumnRestultSetByBestEstimations(this,parameterNames, bestEstimates);
-		optResultSet.setSolutionFromRowColumnResultSet(rcResultSet);
-	}
-	
-	String[] solutionNames = optResultSet.getSolutionNames();
-	if (solutionNames!=null && solutionNames.length>0){
-		ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
-		// add data column descriptions
-		for (int i = 0; i < solutionNames.length; i++){
-			odeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(solutionNames[i]));
-		}
-		
-		
-		
-		
-		//
-		// add row data
-		//
-		int numRows = optResultSet.getSolutionValues(0).length;
-		for (int i = 0; i < numRows; i++){
-			odeSolverResultSet.addRow(optResultSet.getSolutionRow(i));
-		}
-		//
-		// make temporary simulation (with overrides for parameter values)
-		//
-		MathDescription mathDesc = simulationContext.getMathDescription();
-		Simulation simulation = new Simulation(mathDesc);
-		SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
-		//
-		// set math overrides with initial guess
-		//
-		for (int i = 0; i < optSpec.getParameters().length; i++){
-			cbit.vcell.opt.Parameter parameter = optSpec.getParameters()[i];
-			simulation.getMathOverrides().putConstant(new Constant(parameter.getName(),new Expression(parameter.getInitialGuess())));
-		}
-		
-		//
-		// correct math overrides with parameter solution
-		//
-		for (int i = 0; i < parameterNames.length; i++){
-			simulation.getMathOverrides().putConstant(new Constant(parameterNames[i],new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[i])));
-		}
-
-		//
-		// add functions (evaluating them at optimal parameter)
-		//
-		Vector <AnnotatedFunction> annotatedFunctions = simSymbolTable.createAnnotatedFunctionsList(mathDesc);
-		for (AnnotatedFunction f: annotatedFunctions){
-			Expression funcExp = f.getExpression();
-			for (int j = 0; j < parameterNames.length; j ++) {
-				funcExp.substituteInPlace(new Expression(parameterNames[j]), new Expression(optResultSet.getOptSolverResultSet().getBestEstimates()[j]));
-			}
-			odeSolverResultSet.addFunctionColumn(new FunctionColumnDescription(funcExp,f.getName(),null,f.getName(),false));
-		}
-
-		return odeSolverResultSet;
-	}else{
-		return null;
-	}
-
-}
-
-
 
 /**
  * Gets the optimizationResultSet property (cbit.vcell.opt.OptimizationResultSet) value.

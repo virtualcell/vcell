@@ -67,16 +67,16 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverFactory;
-import cbit.vcell.solver.SolverListener;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solver.server.SolverStatus;
 
 /**
  * Insert the type's description here.

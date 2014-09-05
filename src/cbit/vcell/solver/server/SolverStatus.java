@@ -8,7 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver;
+package cbit.vcell.solver.server;
+
 
 /**
  * Indicates the status of a solver.

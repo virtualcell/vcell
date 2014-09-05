@@ -85,11 +85,11 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 

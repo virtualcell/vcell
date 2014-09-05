@@ -36,13 +36,13 @@ import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.solver.SimulationMessage;
-import cbit.vcell.solver.Solver;
-import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverFactory;
-import cbit.vcell.solver.SolverListener;
-import cbit.vcell.solver.SolverStatus;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverEvent;
+import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.server.SolverListener;
+import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.xml.XmlHelper;
 
 public class JavaSimulationExecutable  {
@@ -192,7 +192,7 @@ private void runSimulation() throws SolverException {
 		} catch (InterruptedException e) {
 		}
 
-		cbit.vcell.solver.SolverStatus solverStatus = solver.getSolverStatus();
+		cbit.vcell.solver.server.SolverStatus solverStatus = solver.getSolverStatus();
 		if (solverStatus != null) {
 			if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
 				solverStatus.getStatus() != SolverStatus.SOLVER_READY &&

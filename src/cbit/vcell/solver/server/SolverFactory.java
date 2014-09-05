@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.solver;
+package cbit.vcell.solver.server;
 
 import java.io.File;
 
@@ -17,6 +17,8 @@ import org.vcell.util.SessionLog;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
 import cbit.vcell.solver.ode.ForwardEulerSolver;

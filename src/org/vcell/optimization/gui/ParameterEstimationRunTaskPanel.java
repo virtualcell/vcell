@@ -45,6 +45,7 @@ import javax.swing.border.TitledBorder;
 
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
+import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptProgressType;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
 import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
@@ -74,7 +75,6 @@ import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import cbit.vcell.modelopt.ParameterEstimationTaskSimulatorIDA;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
@@ -1130,7 +1130,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				}
 			}
 	
-			ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet(new ParameterEstimationTaskSimulatorIDA());
+			ParameterEstimationTaskSimulatorIDA parestSimulator = new ParameterEstimationTaskSimulatorIDA();
+			ODESolverResultSet odeSolverResultSet = parestSimulator.getOdeSolverResultSet(parameterEstimationTask);
 
 			if (odeSolverResultSet!=null){
 				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("EST", odeSolverResultSet));
