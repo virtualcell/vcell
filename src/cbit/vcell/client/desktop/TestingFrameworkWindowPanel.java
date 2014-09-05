@@ -75,8 +75,8 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 2:36:18 PM)

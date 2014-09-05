@@ -8,12 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package cbit.vcell.simdata;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.AnnotatedFunction;
 
 public interface DataManager {

@@ -14,6 +14,8 @@ import java.beans.PropertyChangeListener;
 
 import cbit.vcell.client.data.*;
 import cbit.vcell.desktop.controls.*;
+import cbit.vcell.simdata.DataListener;
+
 import org.vcell.util.DataAccessException;
 
 /**

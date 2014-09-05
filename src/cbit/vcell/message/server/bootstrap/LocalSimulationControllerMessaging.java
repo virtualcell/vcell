@@ -19,8 +19,8 @@ import org.vcell.util.document.UserLoginInfo;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.

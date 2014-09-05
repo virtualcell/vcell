@@ -26,11 +26,11 @@ import org.vcell.wizard.Wizard;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 

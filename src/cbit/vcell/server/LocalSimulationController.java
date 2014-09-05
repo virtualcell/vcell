@@ -20,7 +20,6 @@ import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/01 12:55:29 PM)

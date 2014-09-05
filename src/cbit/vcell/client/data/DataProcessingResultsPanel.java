@@ -74,6 +74,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;

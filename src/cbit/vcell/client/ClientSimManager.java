@@ -43,12 +43,8 @@ import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.client.server.DataManager;
 import cbit.vcell.client.server.DataViewerController;
-import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.SimResultsViewerController;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -57,9 +53,14 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.LicenseManager;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.Simulation;
@@ -76,7 +77,6 @@ import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.

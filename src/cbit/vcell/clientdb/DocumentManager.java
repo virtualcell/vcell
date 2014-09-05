@@ -50,8 +50,8 @@ import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)

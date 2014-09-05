@@ -27,7 +27,6 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -36,6 +35,7 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
+import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 

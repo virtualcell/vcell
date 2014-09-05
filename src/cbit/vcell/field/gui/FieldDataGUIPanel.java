@@ -76,11 +76,11 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class FieldDataGUIPanel extends JPanel{

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client;
+package cbit.vcell.client.server;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**

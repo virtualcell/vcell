@@ -20,8 +20,8 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 import cbit.vcell.messaging.db.SimpleJobStatus;
 import cbit.vcell.modeldb.SimpleJobStatusQuerySpec;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 
 /**
  * Insert the type's description here.
