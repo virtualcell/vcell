@@ -319,9 +319,8 @@ public class CopasiOptimizationSolver {
 	
 	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
-	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask) 
+	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks) 
 							throws IOException, ExpressionException, OptimizationException {
-		CopasiOptSolverCallbacks optSolverCallbacks = parameterEstimationTask.getOptSolverCallbacks();
 		try {		
 			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
 			String inputXML = XmlUtil.xmlToString(optProblemXML);

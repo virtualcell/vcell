@@ -110,6 +110,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	private ScrollTable optimizationMethodParameterTable = null;
 	private OptimizationMethodParameterTableModel optimizationMethodParameterTableModel;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
+	private CopasiOptSolverCallbacks optSolverCallbacks = new CopasiOptSolverCallbacks();
 	private JComboBox numberOfRunComboBox = null;
 	private JLabel numberOfRunLabel = new JLabel("Number of Runs: ");
 	
@@ -519,16 +520,15 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == parameterEstimationTask && (evt.getPropertyName().equals("optimizationResultSet"))) 
 				optimizationResultSet_This();
-			if (evt.getSource() == parameterEstimationTask.getOptSolverCallbacks() 
-					&& (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
-				getRunStatusDialog().setNumEvaluations(parameterEstimationTask.getOptSolverCallbacks().getEvaluationCount());
-				getRunStatusDialog().setObjectFunctionValue(parameterEstimationTask.getOptSolverCallbacks().getObjectiveFunctionValue());
-				getRunStatusDialog().setNumRunMessage(parameterEstimationTask.getOptSolverCallbacks().getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
+			if (evt.getSource() == optSolverCallbacks && (evt.getPropertyName().equals(CopasiOptSolverCallbacks.COPASI_EVALUATION_HOLDER))) { 
+				getRunStatusDialog().setNumEvaluations(optSolverCallbacks.getEvaluationCount());
+				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
+				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
 				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Progress) {
-					getRunStatusDialog().setProgress(parameterEstimationTask.getOptSolverCallbacks().getPercent());
+					getRunStatusDialog().setProgress(optSolverCallbacks.getPercent());
 				}
 				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Current_Value) {
-					getRunStatusDialog().setCurrentValue(parameterEstimationTask.getOptSolverCallbacks().getCurrentValue());
+					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
 				}
 			}
 		}
@@ -975,15 +975,18 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		ParameterEstimationTask oldValue = parameterEstimationTask;
 		parameterEstimationTask = newValue;
 		/* Stop listening for events from the current object */
+		
+		optSolverCallbacks.removePropertyChangeListener(eventHandler);
+		optSolverCallbacks = new CopasiOptSolverCallbacks();
+		optSolverCallbacks.addPropertyChangeListener(eventHandler);
+		
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(eventHandler);
-			oldValue.getOptSolverCallbacks().removePropertyChangeListener(eventHandler);
 		}
 
 		/* Listen for events from the new object */
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(eventHandler);
-			newValue.getOptSolverCallbacks().addPropertyChangeListener(eventHandler);
 		}
 		getOptimizeResultsTextPane().setText(this.getSolverMessageText());
 		// set table data
@@ -1051,9 +1054,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 		parameterEstimationTask.setOptimizationSolverSpec(optSolverSpec);
 		parameterEstimationTask.getModelOptimizationSpec().setComputeProfileDistributions(computeProfileDistributionsCheckBox.isSelected());
-		parameterEstimationTask.getOptSolverCallbacks().reset();
+		optSolverCallbacks.reset();
 		Double endValue = com.getEndValue();
-		parameterEstimationTask.getOptSolverCallbacks().setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
+		optSolverCallbacks.setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
@@ -1088,7 +1091,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask);
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks);
 				hashTable.put("Optimiation Result Set", optResultSet);
 			}
 
@@ -1311,8 +1314,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	}
 
 	private void stop() {
-		if (parameterEstimationTask!=null && parameterEstimationTask.getOptSolverCallbacks()!=null){
-			parameterEstimationTask.getOptSolverCallbacks().setStopRequested(true);
+		if (parameterEstimationTask!=null && optSolverCallbacks!=null){
+			optSolverCallbacks.setStopRequested(true);
 		}
 	}
 
