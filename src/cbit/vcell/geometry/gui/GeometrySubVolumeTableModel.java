@@ -25,6 +25,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.xml.merge;
+package cbit.xml.merge.gui;
 
 /**
  * Insert the type's description here.
@@ -16,6 +16,8 @@ package cbit.xml.merge;
  * @author: 
  */
 import javax.swing.*;
+
+import cbit.xml.merge.NodeInfo;
  
 public class MyRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	private javax.swing.ImageIcon fieldAttributeIcon = null;

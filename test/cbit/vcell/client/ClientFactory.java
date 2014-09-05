@@ -60,8 +60,8 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.gui.TMLPanel;
 /**
  * This type was created in VisualAge.
  */
