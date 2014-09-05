@@ -13,8 +13,8 @@ package org.vcell.optimization;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameterType;
+import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
+import cbit.vcell.opt.CopasiOptimizationParameter.CopasiOptimizationParameterType;
 
 /**
  * The Copasi optimization method description is a shortened description from Copasi User Manual.

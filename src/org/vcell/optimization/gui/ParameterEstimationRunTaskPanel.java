@@ -46,15 +46,9 @@ import javax.swing.border.TitledBorder;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptProgressType;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethod;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationMethodType;
-import org.vcell.optimization.CopasiOptimizationSolver.CopasiOptimizationParameter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
-import org.vcell.util.NumberUtils;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.HyperLinkLabel;
@@ -69,26 +63,25 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
-import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel.SortDataReferenceHelper;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.opt.OdeObjectiveFunction;
+import cbit.vcell.opt.CopasiOptSettings;
+import cbit.vcell.opt.CopasiOptimizationMethod;
+import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
+import cbit.vcell.opt.CopasiOptimizationParameter;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -524,10 +517,10 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				getRunStatusDialog().setNumEvaluations(optSolverCallbacks.getEvaluationCount());
 				getRunStatusDialog().setObjectFunctionValue(optSolverCallbacks.getObjectiveFunctionValue());
 				getRunStatusDialog().setNumRunMessage(optSolverCallbacks.getRunNumber(), parameterEstimationTask.getOptimizationSolverSpec().getNumOfRuns());
-				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Progress) {
+				if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Progress) {
 					getRunStatusDialog().setProgress(optSolverCallbacks.getPercent());
 				}
-				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptProgressType.Current_Value) {
+				else if (optimizationMethodParameterTableModel.copasiOptimizationMethod.getType().getProgressType() == CopasiOptSettings.CopasiOptProgressType.Current_Value) {
 					getRunStatusDialog().setCurrentValue(optSolverCallbacks.getCurrentValue());
 				}
 			}

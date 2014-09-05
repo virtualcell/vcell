@@ -15,9 +15,7 @@ import java.io.IOException;
 import org.jdom.Element;
 import org.vcell.optimization.NativeOptSolver;
 import org.vcell.optimization.OptSolverCallbacks;
-import org.vcell.optimization.OptSolverResultSet;
 import org.vcell.optimization.OptXmlReader;
-import org.vcell.optimization.OptXmlTags;
 import org.vcell.optimization.OptXmlWriter;
 
 import cbit.util.xml.XmlUtil;
@@ -29,6 +27,8 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.opt.OdeObjectiveFunction;
+import cbit.vcell.opt.OptSolverResultSet;
+import cbit.vcell.opt.OptXmlTags;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;

@@ -8,11 +8,9 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.optimization;
+package cbit.vcell.opt;
 
 import java.util.ArrayList;
-
-import cbit.vcell.opt.OptimizationStatus;
 
 public class OptSolverResultSet implements java.io.Serializable {
 	//field variables
