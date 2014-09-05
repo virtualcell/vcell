@@ -69,8 +69,6 @@ public interface SimDataConstants {
 	public static final int PARTICLE_DATA = 2;
 	public static final int STOCH_DATA = 3; //stoch
 	
-	public static final String PSF_FUNCTION_NAME = Simulation.PSF_FUNCTION_NAME;
-	
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";
 	public static final String SMOLDYN_HIGH_RES_VOLUME_SAMPLES_EXTENSION = ".hrvs";

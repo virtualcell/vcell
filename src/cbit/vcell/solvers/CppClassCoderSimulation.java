@@ -35,7 +35,6 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
@@ -525,15 +524,15 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		FieldFunctionArguments psfFieldFunc = null;
 		
-		Variable var = simSymbolTable.getVariable(SimDataConstants.PSF_FUNCTION_NAME);
+		Variable var = simSymbolTable.getVariable(Simulation.PSF_FUNCTION_NAME);
 		if (var != null) {
 			FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
 			if (ffas == null || ffas.length == 0) {
-				throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+				throw new Exception("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
 			} else {				
 				Expression newexp = new Expression(ffas[0].infix());
 				if (!var.getExpression().compareEqual(newexp)) {
-					throw new Exception("Point Spread Function " + SimDataConstants.PSF_FUNCTION_NAME + " can only be a single field function.");
+					throw new Exception("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
 				}
 				psfFieldFunc = ffas[0];
 			}
