@@ -30,13 +30,13 @@ import org.vcell.util.StdoutSessionLog;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.gui.estparamwizard.FRAPReactionDiffusionParamPanel;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.gui.DataReference;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
@@ -328,7 +328,7 @@ public class NonGUIFRAPTest {
 		cellROI.getRoiImages()[0].setExtent(extent);
 		backgroundROI.getRoiImages()[0].setExtent(extent);
 		
-		FRAPData frapData = FRAPData.importFRAPDataFromImageDataSet(frapDataImageDataSet);
+		FRAPData frapData = FrapDataUtils.importFRAPDataFromImageDataSet(frapDataImageDataSet);
 		frapData.addReplaceRoi(bleachROI);
 		frapData.addReplaceRoi(cellROI);
 		frapData.addReplaceRoi(backgroundROI);	

@@ -18,8 +18,8 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.image.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.simdata.SimDataConstants;
 
 public abstract class FRAPWorkspace 
@@ -30,7 +30,7 @@ public abstract class FRAPWorkspace
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		ImageDataset imageDataset = ImageDatasetReaderFactory.createImageDatasetReader().readImageDataset(inputFile.getAbsolutePath(), clientTaskStatusSupport);
-		newFrapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
+		newFrapData = FrapDataUtils.importFRAPDataFromImageDataSet(imageDataset);
 		newFrapStudy.setFrapData(newFrapData);
 		
 		return newFrapStudy;
@@ -42,7 +42,7 @@ public abstract class FRAPWorkspace
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		try {
-			newFrapData = FRAPData.importFRAPDataFromVCellSimulationData(inputFile, identifierName, bleachedMaskVarName, maxIntensity, bNoise, clientTaskStatusSupport);
+			newFrapData = FrapDataUtils.importFRAPDataFromVCellSimulationData(inputFile, identifierName, bleachedMaskVarName, maxIntensity, bNoise, clientTaskStatusSupport);
 		} catch (Exception e) {
 			throw new Exception(e.getMessage());
 		}
@@ -57,7 +57,7 @@ public abstract class FRAPWorkspace
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
 		try {
-			newFrapData = FRAPData.importFRAPDataFromHDF5Data(inputFile, maxIntensity, clientTaskStatusSupport);
+			newFrapData = FrapDataUtils.importFRAPDataFromHDF5Data(inputFile, maxIntensity, clientTaskStatusSupport);
 		} catch (Exception e) {
 			throw new Exception(e.getMessage());
 		}
@@ -70,7 +70,7 @@ public abstract class FRAPWorkspace
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		FRAPData newFrapData = null;
 		newFrapStudy.setXmlFilename(null);
-		newFrapData = FRAPData.createFrapData(sdInfo, times, slice, maxIntensity, clientTaskStatusSupport);
+		newFrapData = FrapDataUtils.createFrapData(sdInfo, times, slice, maxIntensity, clientTaskStatusSupport);
 		newFrapStudy.setFrapData(newFrapData);
 		return newFrapStudy;
 	}

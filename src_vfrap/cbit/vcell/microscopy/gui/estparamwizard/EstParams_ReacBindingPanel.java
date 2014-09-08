@@ -52,6 +52,7 @@ import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.SpatialAnalysisResults;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -425,7 +426,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 		
 	public void setData(final FRAPData fData, Parameter[] modelParams,final double[] frapDataTimeStamps,int startIndexForRecovery, boolean[] selectedROIs) throws Exception
 	{
-		double[] prebleachAverage = FRAPData.calculatePreBleachAverageXYZ(fData, startIndexForRecovery);
+		double[] prebleachAverage = FrapDataUtils.calculatePreBleachAverageXYZ(fData, startIndexForRecovery);
 		spatialAnalysisResults = FRAPStudy.spatialAnalysis(null, startIndexForRecovery, frapDataTimeStamps[startIndexForRecovery], modelParams, fData, prebleachAverage);
 		//allDataHash use AnalysisParameters as key, the value is dataSource[] which should have length as 2: expDataSource & simDataSouce
 		allDataHash = spatialAnalysisResults.createSummaryReportSourceData(frapDataTimeStamps, startIndexForRecovery, selectedROIs, false);

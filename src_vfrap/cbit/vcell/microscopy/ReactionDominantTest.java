@@ -21,13 +21,13 @@ import org.vcell.optimization.DefaultOptSolverCallbacks;
 import org.vcell.optimization.OptSolverCallbacks;
 
 import cbit.vcell.opt.ExplicitFitObjectiveFunction;
+import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
+import cbit.vcell.opt.OptSolverResultSet.ProfileDistribution;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
-import cbit.vcell.opt.OptSolverResultSet.ProfileDistribution;
 import cbit.vcell.opt.solvers.NewOptimizationSolver;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;

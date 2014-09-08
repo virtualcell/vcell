@@ -27,6 +27,7 @@ import cbit.plot.PlotData;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -722,7 +723,7 @@ public class FRAPOptimizationUtils {
 		int startIndexRecovery = frapStudy.getStartingIndexForRecovery();
 		int roiLen = FRAPData.VFRAP_ROI_ENUM.values().length;
 		double[][] sigma = new double[roiLen][timeStamp.length - startIndexRecovery];
-		double[] prebleachAvg = FRAPData.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
+		double[] prebleachAvg = FrapDataUtils.calculatePreBleachAverageXYZ(fData, startIndexRecovery);
 		for(int roiIdx =0; roiIdx<roiLen; roiIdx++)
 		{
 			ROI roi = fData.getRoi((FRAPData.VFRAP_ROI_ENUM.values()[roiIdx]).name());
