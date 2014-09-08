@@ -65,6 +65,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
@@ -973,7 +974,7 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{
-		getFrapData().saveImageDatasetAsExternalData(localWorkspace, newImageExtDataID, startingIndexForRecovery, getCartesianMesh());
+		FrapDataUtils.saveImageDatasetAsExternalData(getFrapData(), localWorkspace, newImageExtDataID, startingIndexForRecovery, getCartesianMesh());
 	}
 	
 	public CartesianMesh getCartesianMesh() throws Exception{
@@ -1002,7 +1003,7 @@ public class FRAPStudy implements Matchable{
 	{
 		double accum = 0;
 		int counter = 0;
-		double[] prebleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(arg_frapData, arg_startingIndexForRecovery);
+		double[] prebleachAvgXYZ = FrapDataUtils.calculatePreBleachAverageXYZ(arg_frapData, arg_startingIndexForRecovery);
 		ROI cellROI = arg_frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name());
 		for(int i=0; i<prebleachAvgXYZ.length; i++)
 		{
@@ -1016,7 +1017,7 @@ public class FRAPStudy implements Matchable{
 	}
 	
 	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
-		getFrapData().saveROIsAsExternalData(localWorkspace, newROIExtDataID, startingIndexForRecovery, getCartesianMesh());
+		FrapDataUtils.saveROIsAsExternalData(getFrapData(), localWorkspace, newROIExtDataID, startingIndexForRecovery, getCartesianMesh());
 	}
 	
 	public ROIDataGenerator getROIDataGenerator(LocalWorkspace localWorkspace)
@@ -1430,7 +1431,7 @@ public class FRAPStudy implements Matchable{
 		if(dimensionReducedExpData == null)
 		{
 			int startRecoveryIndex = getStartingIndexForRecovery();
-			double[] prebleachAvg = FRAPData.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
+			double[] prebleachAvg = FrapDataUtils.calculatePreBleachAverageXYZ(getFrapData(), startRecoveryIndex);
 			dimensionReducedExpData = FRAPOptimizationUtils.dataReduction(getFrapData(),startRecoveryIndex, getFrapData().getRois(), prebleachAvg);
 		}
 		return dimensionReducedExpData;
