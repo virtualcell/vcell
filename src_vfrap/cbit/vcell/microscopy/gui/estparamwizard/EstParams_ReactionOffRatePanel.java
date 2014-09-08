@@ -39,6 +39,7 @@ import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
@@ -218,7 +219,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 			double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 			//Experiment - Cell ROI Average
 			double[] temp_background = frapData.getAvgBackGroundIntensity();
-			double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
+			double[] preBleachAvgXYZ = FrapDataUtils.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
 			/*double[] cellRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()),preBleachAvgXYZ,temp_background);
 			ReferenceData expCellAvgData = new SimpleReferenceData(new String[] { ReservedSymbol.TIME.getName(), "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] {frapDataTimeStamps, cellRegionData });
 			DataSource expCellAvgDataSource = new DataSource.DataSourceReferenceData("exp", expCellAvgData);

@@ -117,6 +117,7 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_MultiFileDescriptor
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_PostProcessingDataDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SingleFileDescriptor;
 import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
@@ -2010,7 +2011,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	{
 		FRAPStudy frapStudy = getFrapWorkspace().getWorkingFrapStudy();
 		FRAPData frapData = frapStudy.getFrapData();
-		frapData.saveImageDatasetAsExternalMatlabData(getLocalWorkspace(), matFileName, frapStudy.getStartingIndexForRecovery(), frapStudy.getCartesianMesh());
+		FrapDataUtils.saveImageDatasetAsExternalMatlabData(frapData, getLocalWorkspace(), matFileName, frapStudy.getStartingIndexForRecovery(), frapStudy.getCartesianMesh());
 	}
 	
 }

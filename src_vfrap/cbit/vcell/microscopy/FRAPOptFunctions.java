@@ -18,6 +18,7 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -117,7 +118,7 @@ public class FRAPOptFunctions
 		//Experiment - Cell ROI Average
 		double[] temp_background = frapData.getAvgBackGroundIntensity();
 		int startIndexRecovery = getExpFrapStudy().getStartingIndexForRecovery();
-		double[] preBleachAvgXYZ = FRAPData.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
+		double[] preBleachAvgXYZ = FrapDataUtils.calculatePreBleachAverageXYZ(frapData, startIndexRecovery);
 		double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(frapData, frapData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
 		Expression bleachedAvgExp = new Expression(FRAPOptFunctions.FUNC_RECOVERY_BLEACH_REACTION_DOMINANT);
 		// substitute parameter values 

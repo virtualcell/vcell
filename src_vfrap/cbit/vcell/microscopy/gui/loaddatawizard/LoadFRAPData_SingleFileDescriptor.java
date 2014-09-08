@@ -30,13 +30,13 @@ import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPWorkspace;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.microscopy.gui.VirtualFrapMainFrame;
+import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 
@@ -96,7 +96,7 @@ public class LoadFRAPData_SingleFileDescriptor extends WizardPanelDescriptor {
 					{
     					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)) //.log (vcell log file) 
     					{
-							DataIdentifier[] dataIdentifiers = FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
+							DataIdentifier[] dataIdentifiers = FrapDataUtils.getDataIdentiferListFromVCellSimulationData(inFile, 0);
 							ArrayList<String> selectedIdentifiers = new ArrayList<String> ();
 							for (int i = 0; i < dataIdentifiers.length; i++) {
 								if(dataIdentifiers[i].getVariableType().equals(VariableType.VOLUME)){

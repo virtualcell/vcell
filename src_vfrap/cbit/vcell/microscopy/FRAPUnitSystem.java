@@ -11,7 +11,6 @@
 
 package cbit.vcell.microscopy;
 
-import java.io.Serializable;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
