@@ -3502,10 +3502,22 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 				argMin[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getMinimums()[0][0];
 				argMax[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getMaximums()[0][0];
 				argUnweightedMean[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getUnweightedMean()[0][0];
-				argWeightedMean[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedMean()[0][0];
+				if(((TSJobResultsSpaceStats)tsjr).getWeightedMean()==null){
+					argWeightedMean = null;
+				}else{
+					argWeightedMean[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedMean()[0][0];					
+				}
 				argUnweightedSum[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getUnweightedSum()[0][0];
-				argWeightedSum[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedSum()[0][0];
-				argTotalSpace[varNameIndex] = ((TSJobResultsSpaceStats)tsjr).getTotalSpace()[0];
+				if(((TSJobResultsSpaceStats)tsjr).getWeightedSum() == null){
+					argWeightedSum = null;
+				}else{
+					argWeightedSum[varNameIndex][timeIndex] = ((TSJobResultsSpaceStats)tsjr).getWeightedSum()[0][0];					
+				}
+				if(((TSJobResultsSpaceStats)tsjr).getTotalSpace() == null){
+					argTotalSpace = null;
+				}else{
+					argTotalSpace[varNameIndex] = ((TSJobResultsSpaceStats)tsjr).getTotalSpace()[0];			
+				}
 			}
 		}
 		tsjr = new TSJobResultsSpaceStats(
