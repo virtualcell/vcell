@@ -197,6 +197,7 @@ public abstract void refreshIdentifiers();
  * This method is called from SimResultsViewer.updateScanParamChoices(),
  * which is going to update results view upon a choice of scaned parameters.
  */
+public static final String PDE_DATA_MANAGER_CHANGED = "PDE_DATA_MANAGER_CHANGED";
 public void setDataManager(PDEDataManager newDataManager) throws DataAccessException{
 	VCDataIdentifier oldid = dataManager.getVCDataIdentifier();
 	VCDataIdentifier newid = newDataManager.getVCDataIdentifier();
@@ -204,6 +205,7 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 		newid instanceof VCSimulationDataIdentifier &&
 		((VCSimulationDataIdentifier)oldid).getVcSimID().equals(((VCSimulationDataIdentifier)newid).getVcSimID())
 	) {	
+		PDEDataManager oldPDataManager = dataManager;
 		dataManager = newDataManager;
 		DataIdentifier[] dis = getDataManager().getDataIdentifiers();
 		double[] times = getDataManager().getDataSetTimes();
@@ -211,6 +213,7 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 		setTimePoints(times);
 		externalRefresh();
 		setVCDataIdentifier(dataManager.getVCDataIdentifier());
+		firePropertyChange(PDE_DATA_MANAGER_CHANGED, oldPDataManager, newDataManager);
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);
 	}

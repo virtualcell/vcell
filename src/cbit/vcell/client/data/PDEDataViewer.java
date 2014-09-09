@@ -359,6 +359,11 @@ public class PDEDataViewer extends DataViewer {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
+				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(ClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
+					if(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME) == getJTabbedPane1().getSelectedIndex()){
+						dataProcessingResultsPanel.update(getPdeDataContext());
+					}
+				}
 				if (evt.getSource() == PDEDataViewer.this &&
 						(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals("pdeDataContext"))) {
 					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
@@ -396,7 +401,6 @@ public class PDEDataViewer extends DataViewer {
 							viewDataTabbedPane.setEnabledAt(viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()), false);
 						}
 					}
-//					dataProcessingResultsPanel.setPdeDataContext(getPdeDataContext());
 					
 					if (getPdeDataContext() != null) {
 						// for local sim, get location of sim file and update log file location label
