@@ -44,6 +44,7 @@ import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation.SimulationIssueSource;
 import cbit.vcell.solver.SimulationOwner;
@@ -141,6 +142,9 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							setSelectedObjects(new Object[] {simulationIssueSource.getSimulation()});
 						} else if (object instanceof GeometryContext) {
 							setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
+						} else if (object instanceof SimpleReaction) {
+							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions));
+							setSelectedObjects(new Object[] {object});
 						} else {
 							boolean bInMathModelEditor = false;
 							for (Component c = IssuePanel.this; c != null; c = c.getParent()) {
