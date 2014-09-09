@@ -24,6 +24,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
@@ -262,6 +263,13 @@ public void gatherIssues(List<Issue> issueList) {
 	if (fieldKinetics!=null){
 		fieldKinetics.gatherIssues(issueList);
 	}
+	if (structure instanceof Membrane){
+		if(fieldKinetics instanceof MassActionKinetics) {
+			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
+				issueList.add(new Issue(this, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", Issue.SEVERITY_WARNING));
+			}
+		}
+	}
 }
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry localSTE = getLocalEntry(identifier);
@@ -416,6 +424,32 @@ public final int getStoichiometry(SpeciesContext speciesContext) {
 		}
 	}
 	return totalStoich;
+}
+public int getNumReactants() {
+	if(!hasReactant()) {
+		return 0;
+	}
+	int count = 0;
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Reactant) {
+			count++;
+		}
+	}
+	return count;
+}
+public int getNumProducts() {
+	if(!hasProduct()) {
+		return 0;
+	}
+	int count = 0;
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Product) {
+			count++;
+		}
+	}
+	return count;
 }
 /**
  * This method was created by a SmartGuide.
