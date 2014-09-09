@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.UIManager;
@@ -59,7 +60,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 
 	private javax.swing.JComboBox ivjSolverComboBox = null;
 	private javax.swing.JButton ivjQuestionButton = null;
-	private javax.swing.DefaultComboBoxModel fieldSolverComboBoxModel = null;
+	private javax.swing.DefaultComboBoxModel<String> fieldSolverComboBoxModel = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
 	private Object ivjSolverComboBoxModel = null;
@@ -279,10 +280,9 @@ private void connPtoP7SetTarget() {
  * @see #setSolverTaskDescription
  new javax.swing.DefaultComboBoxModel()
  */
-@SuppressWarnings("unchecked")
-private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDescription newSolverTaskDescription) {
+private javax.swing.DefaultComboBoxModel<String> createSolverComboBoxModel(SolverTaskDescription newSolverTaskDescription) {
 	if (fieldSolverComboBoxModel == null) {
-		fieldSolverComboBoxModel = new javax.swing.DefaultComboBoxModel();
+		fieldSolverComboBoxModel = new DefaultComboBoxModel<String>();
 	}
 	// remember cuurent solver so we can put it back as the selected one after creating the list
 	// otherwise, iterating while adding elements will fire events that wil change it on the TornoffSolverTaskDescription...
@@ -295,7 +295,9 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	if(getSolverTaskDescription() != null) {
 		MathDescription mathDescription = getSolverTaskDescription().getSimulation().getMathDescription();
 		for (SolverDescription sd : SolverDescription.getSupportingSolverDescriptions(mathDescription)) {
-			fieldSolverComboBoxModel.addElement(sd.getDisplayLabel());
+			if (!sd.deprecated) {
+				fieldSolverComboBoxModel.addElement(sd.getDisplayLabel());
+			}
 		}
 	}
 	//
