@@ -26,6 +26,12 @@ public class VCellCodeVersion implements Comparable<VCellCodeVersion>{
 		this.minor = minor;
 	}
 	
+	/***
+	 * convenience method; equivalent to {@link #compare(int, int)}
+	 * @param major
+	 * @param minor
+	 * @return {@link #compare(int, int)} value 
+	 */
 	public int compare(int major, int minor) {
 		return compareTo(new VCellCodeVersion(major, minor));
 	}
