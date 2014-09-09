@@ -61,6 +61,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -920,8 +921,10 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
-			toolMenu.add(new JSeparator());
-			toolMenu.add(getRunVCellVisItItem());
+		    if (VCellCodeVersion.CURRENT.compare(5,4) >= 0) { 
+				toolMenu.add(new JSeparator());
+				toolMenu.add(getRunVCellVisItItem());
+		    }
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getTransMAMenuItem());
 		} catch (Throwable ivjExc) {
