@@ -280,7 +280,7 @@ public class Event extends CommentedBlockObject implements Matchable, Serializab
 	
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(VCML.Event + " " + name + " " + VCML.BeginBlock + "\n");
+		buffer.append(VCML.Event + " " + getName() + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t" + VCML.Trigger + " " + triggerExpression.infix() + ";\n");
 		if (delay != null) {
 			buffer.append(delay.getVCML());
@@ -336,9 +336,5 @@ public class Event extends CommentedBlockObject implements Matchable, Serializab
 			eventAssignment.bind(mathDescription);
 		}
 		
-	}
-	
-	public String getName() {
-		return name;
 	}
 }

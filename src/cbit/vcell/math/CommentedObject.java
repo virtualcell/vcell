@@ -1,5 +1,7 @@
 package cbit.vcell.math;
 
+import java.io.Serializable;
+
 import org.vcell.util.Commented;
 
 /**
@@ -7,7 +9,7 @@ import org.vcell.util.Commented;
  * @author gweatherby
  *
  */
-public abstract class CommentedObject implements Commented {
+public abstract class CommentedObject implements Serializable, Commented {
 	
 	private String beforeComment;
 	private String afterComment;
