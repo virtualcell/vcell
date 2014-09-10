@@ -306,6 +306,8 @@ public String getBioModelUnresolved(QueryHashtable dbc, User user, KeyValue bioM
 		//
 		try {
 			scArray[i] = (SimulationContext)BeanUtils.cloneSerializable(sc);
+			scArray[i].getModel().refreshDependencies();
+			scArray[i].refreshDependencies();
 			scArray[i].setModel(model);
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
