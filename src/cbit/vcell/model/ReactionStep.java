@@ -21,6 +21,7 @@ import java.util.Map;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
@@ -695,13 +696,15 @@ public void setPhysicsOptions(int physicsOptions) throws java.beans.PropertyVeto
 	fieldPhysicsOptions = physicsOptions;
 	firePropertyChange("physicsOptions", new Integer(oldValue), new Integer(physicsOptions));
 }
+
+public abstract void setReactionParticipantsFromDatabase(Model model, ReactionParticipant[] reactionParticipants) throws PropertyVetoException, DataAccessException;
 /**
  * Sets the reactionParticipants property (cbit.vcell.model.ReactionParticipant[]) value.
  * @param reactionParticipants The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getReactionParticipants
  */
-public void setReactionParticipants(ReactionParticipant[] reactionParticipants) throws java.beans.PropertyVetoException {
+public final void setReactionParticipants(ReactionParticipant[] reactionParticipants) throws java.beans.PropertyVetoException {
 	ReactionParticipant[] oldValue = fieldReactionParticipants;
 	fireVetoableChange("reactionParticipants", oldValue, reactionParticipants);
 	

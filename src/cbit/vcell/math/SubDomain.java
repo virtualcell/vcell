@@ -180,7 +180,7 @@ protected boolean compareEqual0(Object object) {
 	//
 	// compare name
 	//
-	if (!Compare.isEqualOrNull(name,subDomain.name)){
+	if (!Compare.isEqualOrNull(getName(),subDomain.getName())){
 		return false;
 	}
 	//
@@ -313,14 +313,6 @@ public List<ParticleProperties> getParticleProperties() {
  */
 public List<JumpProcess> getJumpProcesses() {
 	return Collections.unmodifiableList(listOfJumpProcesses);
-}
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getName() {
-	return name;
 }
 
 /**
