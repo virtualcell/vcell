@@ -2014,6 +2014,21 @@ public void refreshDependencies() {
 		fieldStructures[i].setModel(this);
 	}
 	
+	for (int i=0;i<fieldSpecies.length;i++){
+		fieldSpecies[i].removeVetoableChangeListener(this);
+		fieldSpecies[i].addVetoableChangeListener(this);
+		fieldSpecies[i].refreshDependencies();
+	}
+	
+	for (int i=0;i<fieldSpeciesContexts.length;i++){
+		fieldSpeciesContexts[i].removePropertyChangeListener(this);
+		fieldSpeciesContexts[i].removeVetoableChangeListener(this);
+		fieldSpeciesContexts[i].addPropertyChangeListener(this);
+		fieldSpeciesContexts[i].addVetoableChangeListener(this);
+		fieldSpeciesContexts[i].setModel(this);
+		fieldSpeciesContexts[i].refreshDependencies();
+	}
+	
 	for (int i=0;i<fieldReactionSteps.length;i++){
 		fieldReactionSteps[i].removePropertyChangeListener(this);
 		fieldReactionSteps[i].removeVetoableChangeListener(this);
@@ -2030,21 +2045,6 @@ public void refreshDependencies() {
 			e.printStackTrace(System.out);
 		}
 		fieldReactionSteps[i].refreshDependencies();
-	}
-	
-	for (int i=0;i<fieldSpeciesContexts.length;i++){
-		fieldSpeciesContexts[i].removePropertyChangeListener(this);
-		fieldSpeciesContexts[i].removeVetoableChangeListener(this);
-		fieldSpeciesContexts[i].addPropertyChangeListener(this);
-		fieldSpeciesContexts[i].addVetoableChangeListener(this);
-		fieldSpeciesContexts[i].setModel(this);
-		fieldSpeciesContexts[i].refreshDependencies();
-	}
-	
-	for (int i=0;i<fieldSpecies.length;i++){
-		fieldSpecies[i].removeVetoableChangeListener(this);
-		fieldSpecies[i].addVetoableChangeListener(this);
-		fieldSpecies[i].refreshDependencies();
 	}
 	
 	for (int i=0;i<fieldModelParameters.length;i++){
