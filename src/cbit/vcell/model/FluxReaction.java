@@ -13,8 +13,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
+import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.modeldb.ReactStepDbDriver.Flux;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlParseException;
 
 public class FluxReaction extends ReactionStep {
 //	private Species fieldFluxCarrier = null;
@@ -120,6 +125,37 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 public String toString() {
 	return "FluxReaction@"+Integer.toHexString(hashCode())+"("+getKey()+", "+getName()+", "+getReactionParticipants().length+" reactParticipants, physicsOption="+getPhysicsOptions()+")";
 
+}
+
+@Override
+public void setReactionParticipantsFromDatabase(Model model, ReactionParticipant[] reactionParticipants) throws DataAccessException, PropertyVetoException {
+	ArrayList<ReactionParticipant> participants = new ArrayList<ReactionParticipant>();
+	Membrane membrane = (Membrane)getStructure();
+	for (ReactionParticipant participant : reactionParticipants){
+		if (participant instanceof Flux){
+			// replace "Flux" objects with Reactants and Products.
+			Flux flux = (Flux)participant;
+			Structure structure = flux.getStructure();
+			if (model.getStructureTopology()!=null){
+				if (model.getStructureTopology().getInsideFeature(membrane) == structure){
+					Product product = new Product(null, this);
+					product.setSpeciesContext(flux.getSpeciesContext());
+					participants.add(product);
+				}else if (model.getStructureTopology().getOutsideFeature(membrane) == structure){
+					Reactant reactant = new Reactant(null, this);
+					reactant.setSpeciesContext(flux.getSpeciesContext());
+					participants.add(reactant);
+				}else{
+					throw new DataAccessException("unable to translate Flux reaction \""+getName()+"\" saved prior to version 5.3, can't reconcile structure topology");
+				}
+			}else{
+				throw new DataAccessException("unable to translate Flux reaction \""+getName()+"\" saved prior to version 5.3, has no structure topology");
+			}
+		}else{
+			participants.add(participant);
+		}
+	}
+	setReactionParticipants(participants.toArray( new ReactionParticipant[participants.size()] ));
 }
 
 }

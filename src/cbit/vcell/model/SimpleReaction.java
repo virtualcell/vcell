@@ -10,6 +10,8 @@
 
 package cbit.vcell.model;
 
+import java.beans.PropertyVetoException;
+
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
@@ -118,6 +120,11 @@ public boolean isMembrane() {
  */
 public String toString() {
 	return "SimpleReaction@"+Integer.toHexString(hashCode())+"("+getName()+")";
+}
+@Override
+public void setReactionParticipantsFromDatabase(Model model, ReactionParticipant[] reactionParticipants) throws PropertyVetoException {
+	// no special logic needed here.
+	setReactionParticipants(reactionParticipants);
 }
 
 }

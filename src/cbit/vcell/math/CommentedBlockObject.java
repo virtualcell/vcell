@@ -1,5 +1,7 @@
 package cbit.vcell.math;
 
+import java.io.Serializable;
+
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Token;
 
@@ -12,16 +14,20 @@ import cbit.vcell.parser.ExpressionException;
  */
 public abstract class CommentedBlockObject extends CommentedObject {
 	
-	protected String name;
+	private final String name;
 	
 	protected CommentedBlockObject(String name) {
 		super();
 		this.name = name;
 	}
+	
+	public final String getName(){
+		return this.name;
+	}
 	/**
 	 * no-arg constructor to support serialized subclasses
 	 */
-	protected CommentedBlockObject() { }
+//	protected CommentedBlockObject() { }
 
 	/**
 	 * partially construct -- verify tag and set name

@@ -351,7 +351,7 @@ private ReactionStep getReactionStep(QueryHashtable dbc, Connection con, ResultS
 	// add reaction participants for this reactionStep
 	//	
 	ReactionParticipant rp_Array[] = getReactionParticipants(dbc, con,rsKey,rs);
-	rs.setReactionParticipants(rp_Array);
+	rs.setReactionParticipantsFromDatabase(model, rp_Array);
 
 	try {
 		rs.getKinetics().bind(rs);
