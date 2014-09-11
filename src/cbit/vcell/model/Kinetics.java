@@ -146,10 +146,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	 * provide appropriate warning message to user
 	 */
 	private static final String UnsupportedFutureRoleTags[] = {
-		"ChargeValence"
+//		"ChargeValence" ... now it is supported (by translating to ReactionStep.getChargeValence())
 	};
 	
 
+	//
+	// parameter role for charge valence (supported only upon reading from database or XML).
+	// in VCell 5.3 and later, this is an explicit parameter.
+	// in VCell 5.2 and earlier, this is stored in ReactionStep.ChargeCarrierValence
+	//
+	// 
+	private static final String ChargeValenceRoleName_FROM_DATABASE = "ChargeValence";
+	
+	
 	private static final String DefaultNames[] = {
 		null,
 		"J",
@@ -1047,6 +1056,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 			}
 		}
 		
+//		KineticsParameter chargeValenceParameter = new KineticsParameter(argName, expression, argRole, unitDefinition)
 		if (parameterForRole == null) {
 			//something is wrong -- check for future role tag to improve error message
 			for (int i = 0; i < UnsupportedFutureRoleTags.length; i++){
@@ -1054,7 +1064,38 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 					throw new DataAccessException("Model was saved in newer version of virtual cell.");
 				}
 			}
-			throw new DataAccessException("unrecognized token " + firstTokenOfLine + " in kinetic law " + this.getKineticsDescription().getName());
+			if (firstTokenOfLine.equals(ChargeValenceRoleName_FROM_DATABASE)){
+				//
+				// forward compatability with VCell 5.3 and later (which has explicit valence parameter).
+				//
+				// assumes we are parsing the following form:
+				//
+				// Kinetics GeneralKinetics { 
+				//		Parameter J (kfl * (RanC_cyt - RanC_nuc)); [uM.um.s-1]
+				//		Parameter I 0.0; [pA.um-2]
+				//		Parameter valence 1.0; [1]
+				//		Parameter kfl 2.0; [um.s-1]
+				//		Rate J;
+				//		CurrentDensity I;
+				//		ChargeValence valence;
+				//	} 
+				//
+				String valenceParameterName = tokens.nextToken().replace(";",""); // token should be "valence;" (as above)
+				KineticsParameter valenceParameter = null;
+				for (KineticsParameter kp : localParameters){
+					if (kp.getName().equals(valenceParameterName)){
+						valenceParameter = kp;
+					}
+				}
+				if (valenceParameter!=null){
+					getReactionStep().getChargeCarrierValence().setExpression(valenceParameter.getExpression());
+					continue;
+				}else{
+					throw new DataAccessException("unable to reconcile charge valence parameter, open model with VCell 5.3 or later");
+				}
+			}else{
+				throw new DataAccessException("unrecognized token " + firstTokenOfLine + " in kinetic law " + this.getKineticsDescription().getName());
+			}
 		}
 		
 
