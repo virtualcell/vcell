@@ -54,6 +54,10 @@ public abstract class VCellIcons {
 	public final static Icon nextPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/next_page.png"));
 	public final static Icon lastPageIcon = new ImageIcon(VCellIcons.class.getResource("/icons/last_page.png"));
 	
+	public final static Icon issueErrorIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueError.png"));
+	public final static Icon issueWarningIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueWarning.png"));
+	public final static Icon issueGoodIcon = new ImageIcon(VCellIcons.class.getResource("/icons/issueGood.png"));
+
 	// pathway
 	public final static Icon pathwaySelectIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/select.gif"));
 	public final static Icon pathwayZoomInIcon = new ImageIcon(VCellIcons.class.getResource("/sybil/images/layout/zoomin.gif"));
