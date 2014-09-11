@@ -23,5 +23,5 @@ public interface SortTableModel extends javax.swing.table.TableModel {
 	public void setSortPreference(SortPreference sortPreference);
 	public SortPreference getSortPreference();
 	public boolean isSortable(int col);
-	public List<Issue> getIssues(int row, int col);
+	public List<Issue> getIssues(int row, int col, int severity);
 }
