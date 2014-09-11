@@ -3,7 +3,7 @@
 <page title="How to use parameter estimation in Virtual Cell">
 
 	<introduction>
-	<para>This section describes about how to do COPASI based parameter estimation in the Virtual Cell Beta version.</para>
+	<para>This section describes about how to use COPASI based parameter estimation in the Virtual Cell.</para>
 	If you have a non-spatial deterministic model and have questions on some model paramters (say kinetic rate constants), you can run a parameter estimation to 
 	get model parameters estimated. To start your parameter estimation, select your non-spatial deterministic application and click on the "Parameter Estimation" tab.
 	</introduction>
