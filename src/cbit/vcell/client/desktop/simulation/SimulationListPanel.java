@@ -530,7 +530,7 @@ private void initConnections() throws java.lang.Exception {
 			if (value instanceof OutputTimeSpec) {
 				setText(((OutputTimeSpec) value).getDescription());
 			} else if (value instanceof Double) {
-				setText(value + "s");
+				setText(value+"");
 			}
 			if (value instanceof SolverDescription) {
 				SolverDescription solverDescription = (SolverDescription) value;
