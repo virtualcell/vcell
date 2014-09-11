@@ -316,7 +316,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table
 			renderer.setToolTipText(null);
 		}
 		if (tableModel instanceof VCellSortTableModel) {
-			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssues(row, column);
+			List<Issue> issueList = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
 			if (issueList.size() > 0) {
 				renderer.setToolTipText(Issue.getHtmlIssueMessage(issueList));
 				if (column == 0) {

@@ -157,7 +157,7 @@ public class StructureMappingTableRenderer extends DefaultScrollTableCellRendere
 				setText(((BoundaryConditionType)value).boundaryTypeStringValue());
 			}
 
-			List<Issue> issueList = structureMappingTableModel.getIssues(row, column);
+			List<Issue> issueList = structureMappingTableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
 			if (issueList.size() > 0) {
 				setToolTipText(Issue.getHtmlIssueMessage(issueList));
 				if (column == 0) {
