@@ -23,6 +23,7 @@ import java.util.List;
 public class Issue implements java.io.Serializable, Matchable {
 	private java.util.Date date = new java.util.Date();
 	private String message = null;
+	private String tooltip = null;
 	private IssueCategory category = null;
 	private Object source = null;
 	private int severity = -1;
@@ -105,16 +106,19 @@ public class Issue implements java.io.Serializable, Matchable {
  * AbstractIssue constructor comment.
  */
 public Issue(Object argSource, IssueCategory argCategory, String argMessage, int argSeverity) {
+	this(argSource, argCategory, argMessage, null, argSeverity);
+}
+public Issue(Object argSource, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 	super();
 	if (argSeverity<0 || argSeverity>MAX_SEVERITY){
 		throw new IllegalArgumentException("unexpected severity="+argSeverity);
 	}
 	this.source = argSource;
 	this.message = argMessage;
+	this.tooltip = argTooltip;
 	this.category = argCategory;
 	this.severity = argSeverity;
 }
-
 
 /**
  * Checks for internal representation of objects, not keys from database
@@ -131,6 +135,9 @@ public boolean compareEqual(Matchable obj) {
 			return false;
 		}
 		if (!other.message.equals(message)){
+			return false;
+		}
+		if (!other.tooltip.equals(tooltip)){
 			return false;
 		}
 		if (other.severity != severity){
@@ -162,6 +169,9 @@ public boolean equal(Object object) {
 			return false;
 		}
 		if (!message.equals(otherIssue.message)){
+			return false;
+		}
+		if (!tooltip.equals(otherIssue.tooltip)){
 			return false;
 		}
 		if (severity != otherIssue.severity){
@@ -203,6 +213,9 @@ public java.util.Date getDate() {
  */
 public java.lang.String getMessage() {
 	return message;
+}
+public java.lang.String getTooltip() {
+	return tooltip;
 }
 
 
@@ -263,7 +276,11 @@ public static String getHtmlIssueMessage(List<Issue> issueList) {
 	StringBuilder sb = new StringBuilder();
 	sb.append("<html>");
 	for (Issue issue : issueList) {
-		sb.append("<li>" + issue.getMessage() + "</li>");
+		if(issue.getTooltip() == null || issue.getTooltip().isEmpty()) {
+			sb.append("<li>" + issue.getMessage() + "</li>");
+		} else {
+			sb.append("<li>" + issue.getTooltip() + "</li>");
+		}
 	}
 	sb.append("</html>");
 	return sb.toString();
