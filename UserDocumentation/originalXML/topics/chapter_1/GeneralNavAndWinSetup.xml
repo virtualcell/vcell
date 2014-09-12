@@ -4,7 +4,7 @@
 
 	
 	<introduction>
-	Virtual Cell 5.0 has a completely redesigned easy-to-use GUI, with improved mechanisms to add <def target = "def_species">species</def>, <def target = "def_reactions"> reactions</def>, and model <def target = "def_structure" >structures</def>.
+	Virtual Cell 5.1 has a redesigned easy-to-use GUI, with improved mechanisms to add <def target = "def_species">species</def>, <def target = "def_reactions"> reactions</def>, and model <def target = "def_structure" >structures</def>.
 	The document view displays the model at a glance, with intuitive tabs and tree structures that allows the user to navigate with ease.
 	</introduction>
 	
@@ -47,7 +47,7 @@
 		<item>
 		<para><bold>Properties panel (Panel C)</bold></para>
 		<para>
-		This is the panel on the bottom left of the VCell document window. This panel contains the following 3 tabs.
+		This is the panel on the bottom right of the VCell document window. This panel contains the following 3 tabs.
 		The <bold>Object Properties</bold> tab displays the properties of any entity (species, reaction, structure) selected in any of the tabs in the "View" panel (refer to section <link target="PropertiesPaneOverview">Properties Pane</link>) panel.
 		The <bold>Problems</bold> tab lists the errors and warnings in the model that has been created. The user is not allowed to save the model if there are any errors.
 		The <bold>Database File Info</bold> tab provides a brief database summary of the selected model in the "Database" panel. 
