@@ -3,14 +3,18 @@
 <page title="Parameter Estimation Overview">
 
 	<introduction>
-	<para> NOTE: Running parameter estimation is not available in the Virtual Cell release version. If you have old parameter estimation tasks saved,
-	you may still be able to view the results under "Fitting"->"Parameter Estimation". New COPASI based parameter estimation is available in the
-	Virtual Cell Beta version. You may get it from Virtual Cell Web site (http://vcell.org).
+	<para> Parameter Estimation in the Virtual Cell uses the COPASI optimization method. The following sections provide details on the COPASI optimization and how to use this in the Virtual Cell.
 	</para>
-	<para>   
-	A detailed description of <link target = "parameterEstimationMethods">COPASI optimization methods</link> is introduced.
-	And followed by a section to guide user on <link target = "parameterEstimationUsage">how to do parameter estimation</link> in the Virtual Cell Beta version. 
-	</para>
+	
+	<list>
+	<item>
+		<link target = "parameterEstimationMethods">COPASI optimization method</link> is introduced.
+	</item>
+	<item>
+		<link target = "parameterEstimationUsage">How to use parameter estimation</link> in the Virtual Cell.
+	</item>
+	</list>
+	
 	</introduction>
 	
 </page>

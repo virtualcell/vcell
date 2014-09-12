@@ -25,22 +25,23 @@
 	
 	<operations>
 	<para>
-	To create a new analytic geometry, navigate to the Geometry Viewer by clicking (Model panel)Applications->"application name"->Geometry->(Values panel)Geometry->"geometry Definition"->"Add/Replace Geometry"->New...->choose analytic (1,2,3) dimensional.
-	An Analytic Geometry editor will appear, Start by defining the overall boundaries (origin and size) of the geometry that analytic function domains will be evaluated on.
-	The geometry boundary is defined by clicking the "Edit Domain..." button and filling in the appropriate values.
-	Analytic domain functions are entered by clicking the “Add Subdomain…” button.
-	A Function defines all the points within the geometry boundary where a subdomain is to be assigned.
-	Simple definitions are provided for commonly used analytic function shapes or functions can be entered completely manually.
-	The simple definitions (e.g. circle) can be used as is or are useful as templates for more complicated shapes.
-	Simple definitions require the user to enter only a few parameters (e.g. center and radius) that define a particular shape.
-	Clicking “Add New Subdomain” places the current function definition at the top of the subdomain table list in the Analytic Geometry editor.
-	Selected function entries can be moved within the list by pressing the “front” or “back” buttons.
-	The overall analytic geometry is created from the subdomain list by evaluating each function at values of x, y, z starting at the bottom of the list.
-	Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function’s subdomain.
-	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.
-	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
-	Press "OK" to set the new analytic geometry in the model.
-	If the current model geometry is already an analytic type, analytic functions can be edited within the geometry viewer.
+	<bold>Create a new analytic geometry</bold> within an application from the Geometry tab of the view Panel.  Select the "Geometry Definition" view and select "Add/Replace Geometry"->New. and from the popup window choose Analytic Equations (1D,2D,3D).
+	The view will switch to the  Analytic Geometry editor.
+	</para>
+	<para>
+	<bold>Define overall boundaries</bold> (origin and size) of the geometry by selecting the "Edit Domain..." button and filling in the size of the domain and the position of the origion within the domain.  The default geometry has a single subdomain (subdomain0) that encompass the entire geometry.  
+	</para>
+	<para>
+	<bold>Create a new domain</bold> based on an analytic function by clicking the “Add Subdomain…” button. A function defines all the points within the geometry boundary where a subdomain is to be assigned. Simple definitions are provided for commonly used analytic function shapes or functions can be entered completely manually. The simple definitions (e.g. circle) can be used as is or are useful as templates for more complicated shapes. Simple definitions require the user to enter only a few parameters (e.g. center and radius) that define a particular shape.
+	</para>
+	<para>
+	<bold>Re-Order the list</bold> of subdomains by selecting a specific subdomain and pressing the  “front” or “back” buttons.  A new subdomain is placed at the top of the subdomain table list.
+	</para>
+	<para>
+	<bold>Create the overall analytic geometry</bold> by pressing "OK" to set the new analytic geometry in the model.  The final geometry is created from the subdomain list by evaluating each function at values of x, y, z starting at the bottom of the list.  Non-zero function values at a particular x, y, z coordinate mark a point in the geometry as being part of that function’s subdomain.  	Non-zero subdomain values that come from functions higher in the table list functions replace any previous subdomain values as the evaluation proceeds.  	A display of the overall geometry defined by the current set of subdomain functions is displayed below the table list.
+	</para>
+	<para>
+	<bold>Edit analytic functions </bold> within the geometry viewer if the current model geometry is already an analytic type.
 	</para>
 	</operations>
 	

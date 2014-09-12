@@ -17,6 +17,9 @@
 	     <link target = "LaunchBioNetGen">Launch BioNetGen</link> - launches the BioNetGen software.  
 	  </item>
  	  <item>
+	     <link target = "LaunchVirtualFRAP">Launch Virtual FRAP</link> - launches the Virtual FRAP software.  
+	  </item>
+ 	  <item>
 	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, if possible.  
 	  </item>
 	</list>	
