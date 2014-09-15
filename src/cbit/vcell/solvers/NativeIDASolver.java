@@ -37,7 +37,6 @@ public class NativeIDASolver {
 public NativeIDASolver() {
 	super();
 	JNISupport.verifyPackage(RowColumnResultSet.class, "cbit.vcell.math");
-	System.out.println(jniLibraryVersion());
 	if (lg.isInfoEnabled()) {
 		lg.info(jniLibraryVersion());
 	}
