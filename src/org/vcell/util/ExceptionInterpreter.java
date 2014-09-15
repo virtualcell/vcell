@@ -31,7 +31,7 @@ public class ExceptionInterpreter {
 		
 		Pattern getPattern( ) {
 			if (pattern == null) {
-				pattern = Pattern.compile(regex);
+				pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 			}
 			return pattern;
 		}
@@ -52,7 +52,7 @@ public class ExceptionInterpreter {
 	
 	/**
 	 * @param key simple matching key for quick scanning
-	 * @param regex possibly more complex regular expression to match
+	 * @param regex possibly more complex regular expression to match (case-insensitive)
 	 * @param suggestions one or more suggested solutions
 	 * @throws IllegalArgumentException if any argument null
 	 */
