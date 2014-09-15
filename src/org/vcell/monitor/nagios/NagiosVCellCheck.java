@@ -58,7 +58,7 @@ public class NagiosVCellCheck {
 
 			String host=null;
 			int rmiPort = -1;
-			String digestPW=null;
+			String password=null;
 			VCELL_CHECK_LEVEL checkLevel=null;
 			int warningTimeout = -1; //seconds
 			int criticalTimeout = -1; //seconds
@@ -75,7 +75,7 @@ public class NagiosVCellCheck {
 					}
 				}else if(args[i].equals("-p")){
 					i++;
-					digestPW = args[i];
+					password = args[i];
 				}else if(args[i].equals("-L")){
 					i++;
 					checkLevel = VCELL_CHECK_LEVEL.valueOf(args[i]);
@@ -101,10 +101,10 @@ public class NagiosVCellCheck {
 						VCELL_CHECK_LEVEL.LOAD_3.toString()+","+
 						VCELL_CHECK_LEVEL.DATA_4.toString()+","+
 						VCELL_CHECK_LEVEL.RUN_5.toString()+
-						"} -H vcellRMIHost -i rmiPort -p vcellNagios_DigestedPassword -w warningTimeout -c criticalTimeout");
+						"} -H vcellRMIHost -i rmiPort -p vcellNagiosPassword -w warningTimeout -c criticalTimeout");
 				}
 			}
-			sysout.println(checkVCell(checkLevel,host, rmiPort,"VCellBootstrapServer",digestPW,warningTimeout,criticalTimeout));
+			sysout.println(checkVCell(checkLevel,host, rmiPort,"VCellBootstrapServer",password,warningTimeout,criticalTimeout));
 			return NAGIOS_STATUS.OK;
 		}catch(UnexpectedTestStateException e){
 			sysout.println(e.getMessage());
@@ -136,9 +136,9 @@ public class NagiosVCellCheck {
 		}
 		if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.CONNECT_1.ordinal()){
 			if(vcellNagiosPassword == null){
-				throw new UnexpectedTestStateException("vcellNagios digestedPassword required for "+VCELL_CHECK_LEVEL.CONNECT_1.toString()+" and above");
+				throw new UnexpectedTestStateException("vcellNagios Password required for "+VCELL_CHECK_LEVEL.CONNECT_1.toString()+" and above");
 			}
-			VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(new UserLoginInfo("vcellNagios", DigestedPassword.createAlreadyDigested(vcellNagiosPassword)));
+			VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(new UserLoginInfo("vcellNagios", new DigestedPassword(vcellNagiosPassword)));
 			if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.INFOS_2.ordinal()){
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.LOAD_3.ordinal()){
