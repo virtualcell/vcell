@@ -22,7 +22,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
