@@ -22,8 +22,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -49,6 +51,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -224,11 +227,11 @@ public class DialogUtils {
 			}
 		}.dispatchWrapRuntime();
 	}
+
 	
-	
-public static void openURLWithExternalBrowser(String url) throws Exception {
-	Desktop.getDesktop().browse(new URL(url).toURI());
-}
+	public static void openURLWithExternalBrowser(String url) throws Exception {
+		Desktop.getDesktop().browse(new URL(url).toURI());
+	}
 	
 	
 /**
@@ -602,7 +605,8 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 
 					}
 				};
-			}
+			}			
+			
 			if(listSelectionListener != null){
 				table.getSelectionModel().addListSelectionListener(listSelectionListener);
 			}
@@ -788,6 +792,12 @@ public static void showErrorDialog(final Component requester, final String messa
 			if (goingToEmail && haveContext) {
 				initialCheckState = errorContext.userPreferences.getGenPrefBoolean(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT);
 				addModelSendInformation(panel, initialCheckState);
+			}
+			Collection<String> suggestions = ExceptionInterpreter.instance().suggestions(message);
+			if (suggestions != null) {
+				SuggestionPanel sp = new SuggestionPanel();
+				sp.setSuggestedSolution(suggestions);
+				panel.add(sp,BorderLayout.NORTH);
 			}
 				
 			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
@@ -1080,12 +1090,12 @@ public static String showWarningDialog(final Component parentComponent,final Str
 }
 
 public static String showOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
+	if (parentComponent==null){
+		throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
+	}
 	return (String)
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			if (parentComponent==null){
-				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
-			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
 			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
 		}
