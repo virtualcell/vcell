@@ -33,7 +33,6 @@ import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 @SuppressWarnings("serial")
 public abstract class VCellSortTableModel<T> extends AbstractTableModel  implements SortTableModel, IssueEventListener {
 	protected IssueManager issueManager;
-	protected List<Issue> issueList = new ArrayList<Issue>();
 	protected ScrollTable ownerTable = null;
 	protected int currentPageIndex = 0;
 	private int MAX_ROWS_PER_PAGE = 200;
@@ -274,22 +273,22 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 		fireTableDataChanged();	
 	}
 
-	public List<Issue> getIssues(int row, int col) {
-		issueList.clear();
+	public List<Issue> getIssues(int row, int col, int severity) {
+		List<Issue> iL = new ArrayList<Issue>();
 		Object rowAt = getValueAt(row);
 		if (rowAt != null && issueManager != null) {
 			List<Issue> allIssueList = issueManager.getIssueList();
 			for (Issue issue: allIssueList) {
 				Object source = issue.getSource();
-				if (issue.getSeverity() == Issue.SEVERITY_ERROR) {
+				if (issue.getSeverity() == severity) {
 					if (rowAt == source || 
 							source instanceof OutputFunctionIssueSource && ((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) {
-						issueList.add(issue);
+						iL.add(issue);
 					}
 				}
 			}
 		}
-		return issueList;
+		return iL;
 	}
 	
 	public final void setIssueManager(IssueManager newValue) {
