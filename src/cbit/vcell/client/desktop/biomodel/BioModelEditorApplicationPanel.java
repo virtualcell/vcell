@@ -154,6 +154,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		if (simulationContext == newValue) {
 			return;
 		}
+		final Object[] selectedObj = selectionManager.getSelectedObjects();
 		SimulationContext oldValue = simulationContext;
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(eventHandler);
@@ -177,7 +178,10 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				applicationSpecificationsPanel.setSimulationContext(simulationContext);
 				applicationProtocolsPanel.setSimulationContext(simulationContext);
 				applicationSimulationsPanel.setSimulationContext(simulationContext);
+				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
+				parameterEstimationPanel.setSelectionManager(selectionManager);
+				selectionManager.setSelectedObjects(selectedObj);
 			}
 		};		
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
@@ -240,7 +244,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		super.onActiveViewChange(activeView);
 		SimulationContext selectedSimContext = activeView.getSimulationContext();
 		DocumentEditorTreeFolderClass folderClass = activeView.getDocumentEditorTreeFolderClass();
-		if (selectedSimContext != this.simulationContext || folderClass == null) {
+		if (folderClass == null) {
 			return;
 		}		
 		switch (folderClass) {

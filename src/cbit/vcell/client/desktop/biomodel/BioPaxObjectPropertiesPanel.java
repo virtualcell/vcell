@@ -261,8 +261,7 @@ private void initialize() {
 			    	if (bioPaxObject == null) {
 			    		BioModelEntityObject bioModelEntityObject = property.bioModelEntityObject;
 						if (bioModelEntityObject != null) {
-							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
-							selectionManager.setSelectedObjects(new Object[]{bioModelEntityObject});
+							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram),new Object[]{bioModelEntityObject});
 						}else if(((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames() == null || ((Entity)BioPaxObjectPropertiesPanel.this.bioPaxObject).getFormalNames().size() == 0){
 							lookupFormalName(crow);
 						}

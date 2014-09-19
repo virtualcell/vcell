@@ -38,8 +38,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.mathmodel.MathModel;
@@ -104,47 +106,47 @@ public class IssuePanel extends DocumentEditorSubPanel {
 						Issue issue = issueTableModel.getValueAt(row);
 						Object object = issue.getSource();
 						if (object instanceof Parameter) {
-							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions));
-							setSelectedObjects(new Object[] {object});
+							followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
 						} else if (object instanceof StructureMapping) {
 							StructureMapping structureMapping = (StructureMapping) object;
 							StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
 							SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
-							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
-							setSelectedObjects(new Object[] {object});
+							followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
 						} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
 							UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
 							SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
-							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping));
-							setSelectedObjects(new Object[] {object});
+							followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
 						} else if (object instanceof MicroscopeMeasurement) {
 							SimulationContext simulationContext = ((MicroscopeMeasurement) object).getSimulationContext();
-							setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments));
-							setSelectedObjects(new Object[] {object});
+							followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments),new Object[] {object});
 						} else if (object instanceof OutputFunctionIssueSource) {
 							SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
 							if (simulationOwner instanceof SimulationContext) {
 								SimulationContext simulationContext = (SimulationContext) simulationOwner;
-								setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions));								
+								followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
 							} else if (simulationOwner instanceof MathModel) {
-								setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
+								followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
 							}
-							setSelectedObjects(new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
 						} else if (object instanceof SimulationIssueSource) {
 							SimulationIssueSource simulationIssueSource = (SimulationIssueSource)object;
 							SimulationOwner simulationOwner = simulationIssueSource.getSimulationOwner();
 							if (simulationOwner instanceof SimulationContext) {
 								SimulationContext simulationContext = (SimulationContext) simulationOwner;
-								setActiveView(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations));								
+								followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations),new Object[] {simulationIssueSource.getSimulation()});
 							} else if (simulationOwner instanceof MathModel) {
-								setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.simulations));
+								followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.simulations),new Object[] {simulationIssueSource.getSimulation()});
 							}
-							setSelectedObjects(new Object[] {simulationIssueSource.getSimulation()});
 						} else if (object instanceof GeometryContext) {
 							setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
 						} else if (object instanceof SimpleReaction) {
-							setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions));
-							setSelectedObjects(new Object[] {object});
+							followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions),new Object[] {object});
+						} else if (object instanceof SpeciesContextSpec) {
+							SpeciesContextSpec scs = (SpeciesContextSpec)object;
+							ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
+							followHyperlink(av,new Object[] {object});
+						} else if (object instanceof ReactionCombo) {
+							ReactionCombo rc = (ReactionCombo)object;
+							followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
 						} else {
 							boolean bInMathModelEditor = false;
 							for (Component c = IssuePanel.this; c != null; c = c.getParent()) {
