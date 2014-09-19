@@ -1173,8 +1173,7 @@ implements PathwayEditor, ActionBuilder.Generator {
 //				} else if (selectedBioPaxObjects.get(0) instanceof SpeciesContext) {
 //					selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species));
 //				}
-				selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram));
-				selectionManager.setSelectedObjects(selectedBioModelEntityObjects.toArray(new BioModelEntityObject[0]));
+				selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram),selectedBioModelEntityObjects.toArray(new BioModelEntityObject[0]));
 			}
 		}
 	}

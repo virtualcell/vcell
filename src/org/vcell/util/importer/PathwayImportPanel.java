@@ -252,9 +252,13 @@ public class PathwayImportPanel extends JPanel {
 						if(selectedFileAsObject instanceof File) {
 							File selectedFile = (File) selectedFileAsObject;
 							FileWriter wr = new FileWriter(selectedFile);
-							System.out.println(importer.getPreviouslyReadData());
-							wr.write(importer.getPreviouslyReadData());
-							wr.flush();
+							try {
+								System.out.println(importer.getPreviouslyReadData());
+								wr.write(importer.getPreviouslyReadData());
+								wr.flush();
+							}finally{
+								wr.close();
+							}
 						}
 					}
 				};

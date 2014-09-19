@@ -217,7 +217,7 @@ public void gatherIssues(List<Issue> issueVector) {
 		fieldSpeciesContextSpecs[i].gatherIssues(issueVector);
 	}
 	for (int i = 0; fieldReactionSpecs!=null && i < fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i].gatherIssues(issueVector);
+		fieldReactionSpecs[i].gatherIssues(issueVector, this);
 	}
 }
 
