@@ -111,7 +111,7 @@ public class SelectionManager {
 	private Object[] selectedObjects = null;
 	private ActiveView activeView = null;
 	private transient java.beans.PropertyChangeSupport propertyChange;
-	private boolean bBusy = false;
+	private boolean bSelectionBusy = false;
 	private boolean bActiveViewBusy = false;
 	
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -133,11 +133,31 @@ public class SelectionManager {
 		getPropertyChange().removePropertyChangeListener(listener);
 	}
 	
-	public final void setSelectedObjects(Object[] newValue) {
-		if (bBusy) {
+	public final void followHyperlink(ActiveView newActiveView, Object[] newSelection){
+		if (bSelectionBusy || bActiveViewBusy){
 			return;
 		}
-		bBusy = true;
+		try {
+			bSelectionBusy = true;
+			bActiveViewBusy = true;
+			Object[] oldSelection = this.selectedObjects;
+			this.selectedObjects = newSelection;
+			ActiveView oldActiveView = this.activeView;
+			this.activeView = newActiveView;
+			
+			firePropertyChange(PROPERTY_NAME_ACTIVE_VIEW, oldSelection, this.selectedObjects);
+			firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldActiveView, newActiveView);
+		}finally{
+			bSelectionBusy = false;
+			bActiveViewBusy = false;
+		}
+	}
+	
+	public final void setSelectedObjects(Object[] newValue) {
+		if (bSelectionBusy) {
+			return;
+		}
+		bSelectionBusy = true;
 		try {
 			Object[] oldValue = this.selectedObjects;
 			if (oldValue == newValue) {
@@ -149,7 +169,7 @@ public class SelectionManager {
 			this.selectedObjects = newValue;
 			firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldValue, newValue);
 		} finally {
-			bBusy = false;
+			bSelectionBusy = false;
 		}
 	}
 	

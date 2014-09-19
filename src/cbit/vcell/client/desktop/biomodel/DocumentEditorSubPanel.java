@@ -94,6 +94,12 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 		}
 	}
 	
+	protected void followHyperlink(ActiveView newActiveView, Object[] newSelection) {
+		if (selectionManager != null) {
+			selectionManager.followHyperlink(newActiveView, newSelection);
+		}
+	}
+	
 	public void issueChange(IssueEvent issueEvent) {
 	}
 }
