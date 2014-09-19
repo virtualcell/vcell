@@ -574,8 +574,7 @@ private String listLinkedPathwayObjects(){
 			label.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					if (e.getClickCount() == 2) {
-						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
-						selectionManager.setSelectedObjects(new Object[]{bpObject});
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{bpObject});
 					}
 				}
 			});

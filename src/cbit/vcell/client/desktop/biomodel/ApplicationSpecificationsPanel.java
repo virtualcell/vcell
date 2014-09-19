@@ -19,6 +19,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -156,6 +157,20 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		initialConditionsPanel.setSelectionManager(selectionManager);
 	}
 	
+	@Override
+	protected void onActiveViewChange(ActiveView activeView) {
+		super.onActiveViewChange(activeView);
+		if (DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
+			if (activeView.getActiveViewID() != null) {
+				if (activeView.getActiveViewID().equals(ActiveViewID.species_settings)) {
+					tabbedPane.setSelectedIndex(SettingsPanelTabID.species_settings.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.reaction_setting)) {
+					tabbedPane.setSelectedIndex(SettingsPanelTabID.reaction_settings.ordinal());
+				}
+			}
+		}
+	}
+
 	@Override
 	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();

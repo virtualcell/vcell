@@ -44,7 +44,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.math.MathDescription;
@@ -1155,6 +1158,12 @@ public SimulationContext getSimulationContext(String name) {
 			description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getNameScope().getPathDescription() + ") / Parameter Estimation";
 		} else if (source instanceof MicroscopeMeasurement) {
 			description = "App(" + ((MicroscopeMeasurement)source).getSimulationContext().getNameScope().getPathDescription() + ") / Microscope Measurements";
+		} else if (source instanceof SpeciesContextSpec) {
+			SpeciesContextSpec scs = (SpeciesContextSpec)source;
+			description = "App(" + scs.getSimulationContext().getNameScope().getPathDescription() + ") / Specifications / Species";
+		} else if (source instanceof ReactionCombo) {
+			ReactionCombo rc = (ReactionCombo)source;
+			description = "App(" + rc.getReactionContext().getSimulationContext().getNameScope().getPathDescription() + ") / Specifications / Reactions";
 		}
 		return description;
 	}
@@ -1187,6 +1196,12 @@ public SimulationContext getSimulationContext(String name) {
 			description = "Geometry";
 		}else if (object instanceof ModelOptimizationSpec) {
 			description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
+		} else if (object instanceof SpeciesContextSpec) {
+			SpeciesContextSpec scs = (SpeciesContextSpec)object;
+			description = scs.getSpeciesContext().getName();
+		} else if (object instanceof ReactionCombo) {
+			ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
+			description = rs.getReactionStep().getName();
 		}
 		return description;
 	}

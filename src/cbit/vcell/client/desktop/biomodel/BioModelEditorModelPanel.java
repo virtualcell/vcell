@@ -15,7 +15,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -27,7 +26,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -36,15 +34,12 @@ import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -56,13 +51,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.Entity;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.UserCancelException;
@@ -77,13 +69,11 @@ import cbit.gui.ReactionEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ChildWindowListener;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
-import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -227,16 +217,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Object reactionTableSelection = reactionsTable.getValueAt(reactionsTable.getSelectedRow(),reactionsTable.getSelectedColumn());
 						if(reactionTableSelection instanceof BioPaxObject){
 	//						System.out.println(reactionTableSelection);
-							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
-							selectionManager.setSelectedObjects(new Object[]{reactionTableSelection});
+							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{reactionTableSelection});
 						}
 					}
 				}else if(e.getSource() == speciesTable){
 					Object speciesTableSelection = speciesTable.getValueAt(speciesTable.getSelectedRow(),speciesTable.getSelectedColumn());
 					if(speciesTableSelection instanceof BioPaxObject){
 //						System.out.println(reactionTableSelection);
-						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
-						selectionManager.setSelectedObjects(new Object[]{speciesTableSelection});
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{speciesTableSelection});
 					}					
 				}
 			}
@@ -908,8 +896,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				for(RelationshipObject re: relationshipSet){
 					selectedBioPaxObjects.add(re.getBioPaxObject());
 				}
-				selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
-				selectionManager.setSelectedObjects(selectedBioPaxObjects.toArray(new BioPaxObject[0]));
+				selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway),selectedBioPaxObjects.toArray(new BioPaxObject[0]));
 			}
 		}
 	}
