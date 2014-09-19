@@ -17,13 +17,18 @@ import java.util.Map;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.Flux;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -94,7 +99,21 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return NamescopeType.reactionSpecType;
 		}
 	}
-
+	public class ReactionCombo {	// used only for Issue reporting stuff
+		final ReactionSpec rs;
+		final ReactionContext rc;
+		
+		public ReactionCombo(ReactionSpec rs, ReactionContext rc) {
+			this.rs = rs;
+			this.rc = rc;
+		}
+		public ReactionSpec getReactionSpec() {
+			return rs;
+		}
+		public ReactionContext getReactionContext() {
+			return rc;
+		}
+	}
 	public class ReactionSpecParameter extends Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
@@ -342,8 +361,32 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:06:04 AM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {}
-
+public void gatherIssues(List<Issue> issueList, ReactionContext rc) {
+	ReactionCombo r = new ReactionCombo(this, rc);
+	ReactionStep step = getReactionStep();
+	if(!isExcluded() && rc.getSimulationContext().isStoch() && (rc.getSimulationContext().getGeometry().getDimension()>0)) {
+		boolean haveParticle = false;
+		boolean haveContinuous = false;
+		for(ReactionParticipant p : step.getReactionParticipants()) {
+			if(p instanceof Product || p instanceof Reactant || p instanceof Flux) {
+				SpeciesContextSpec candidate = rc.getSpeciesContextSpec(p.getSpeciesContext());
+				if(candidate.isForceContinuous() && !candidate.isConstant()) {
+					haveParticle = true;
+				} 
+				else if(!candidate.isForceContinuous() && !candidate.isConstant()) {
+					haveContinuous = true;
+				} 
+			}
+		}
+		if(haveParticle && haveContinuous) {
+			String msg = "Reaction " + step.getName() + " has both continuous and particle Participants.";
+			String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. \n" +
+					"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate \n" +
+					"the continuous species in those reactions as modifiers (i.e. catalysys) in the physiology.";
+			issueList.add(new Issue(r, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
+		}
+	}
+}
 
 /**
  * getEntry method comment.

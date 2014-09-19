@@ -225,16 +225,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						Object reactionTableSelection = reactionsTable.getValueAt(reactionsTable.getSelectedRow(),reactionsTable.getSelectedColumn());
 						if(reactionTableSelection instanceof BioPaxObject){
 	//						System.out.println(reactionTableSelection);
-							selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
-							selectionManager.setSelectedObjects(new Object[]{reactionTableSelection});
+							selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{reactionTableSelection});
 						}
 					}
 				}else if(e.getSource() == speciesTable){
 					Object speciesTableSelection = speciesTable.getValueAt(speciesTable.getSelectedRow(),speciesTable.getSelectedColumn());
 					if(speciesTableSelection instanceof BioPaxObject){
 //						System.out.println(reactionTableSelection);
-						selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram));
-						selectionManager.setSelectedObjects(new Object[]{speciesTableSelection});
+						selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_DIAGRAM_NODE, ActiveViewID.pathway_diagram),new Object[]{speciesTableSelection});
 					}					
 				}
 			}
@@ -878,8 +876,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				for(RelationshipObject re: relationshipSet){
 					selectedBioPaxObjects.add(re.getBioPaxObject());
 				}
-				selectionManager.setActiveView(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway));
-				selectionManager.setSelectedObjects(selectedBioPaxObjects.toArray(new BioPaxObject[0]));
+				selectionManager.followHyperlink(new ActiveView(null,DocumentEditorTreeFolderClass.PATHWAY_NODE, ActiveViewID.pathway),selectedBioPaxObjects.toArray(new BioPaxObject[0]));
 			}
 		}
 	}

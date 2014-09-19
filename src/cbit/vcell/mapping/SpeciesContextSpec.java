@@ -21,6 +21,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -28,11 +29,16 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Flux;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Product;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -680,8 +686,51 @@ public void gatherIssues(List<Issue> issueVector) {
 			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
+	if(bForceContinuous && !bConstant && getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {	// if it's particle or constant we're good
+//		SpeciesContext sc = getSpeciesContext();
+		ReactionContext rc = getSimulationContext().getReactionContext();
+		ReactionSpec[] rsArray = rc.getReactionSpecs();
+		for(ReactionSpec rs : rsArray) {
+			if(!rs.isExcluded()) {	// we only care about reactions which are not excluded
+				boolean iAmParticipant = false;	// true if "this" is part of current reaction
+				boolean haveParticle = false;	// true if current reaction has at least a particle participant
+				ReactionStep step = rs.getReactionStep();
+				for(ReactionParticipant p : step.getReactionParticipants()) {
+					if(p instanceof Product || p instanceof Reactant || p instanceof Flux) {
+						SpeciesContextSpec candidate = rc.getSpeciesContextSpec(p.getSpeciesContext());
+						if(candidate == this) {
+							iAmParticipant = true;
+						}
+						else if(!candidate.isForceContinuous() && !candidate.isConstant()) {
+							haveParticle = true;
+						} 
+					}
+				}
+				if(iAmParticipant && haveParticle) {
+					String msg = "Continuous Species won't conserve mass in particle reaction "+rs.getReactionStep().getName()+".";
+					String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. \n" +
+						"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate \n" +
+						"the continuous species in those reactions as modifiers (i.e. catalysts) in the physiology.";
+					issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
+					break;	// we issue warning as soon as we found the first reaction which satisfies criteria
+				}
+			}
+		}
+	}
+	if(!bForceContinuous && bConstant) {
+		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {
+			String msg = "Clamped Species must be continuous rather than particles.";
+			String tip = "If choose 'clamped', must also choose 'forceContinuous'";
+			issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_ERROR));
+		}
+	}
+	if(bForceContinuous && !bConstant) {
+		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()==0)) {
+			String msg = "Non-constant species is forced continuous, not supported for nonspatial stochastic applications.";
+			issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+		}
+	}
 }
-
 
 /**
  * @return cbit.vcell.parser.Expression
