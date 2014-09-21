@@ -1,4 +1,4 @@
-package org.vcell.sbml.vcell;
+package org.vcell.sbml;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -9,8 +9,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
+import org.vcell.sbml.vcell.VCellSBMLSolver;
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
@@ -37,7 +38,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
-public class SbmlConverter {
+public class SbmlVcmlConverter {
 	private static double endTime = 10.0;
 	private static int numTimeSteps = 1000;
 
