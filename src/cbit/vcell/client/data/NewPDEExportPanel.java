@@ -159,7 +159,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private static final String EXPORT_NRRD = "Nearly raw raster data (*.nrrd)";
 	private static final String EXPORT_UCD = "UCD (*.ucd)";
 	private static final String EXPORT_VTK_IMAGE = "VTK Image (*.vtk)";
-	private static final String EXPORT_VTK_UNSTRUCT = "VTK Unstructured (*.vtk)";
+	private static final String EXPORT_VTK_UNSTRUCT = "VTK Unstructured (*.vtu)";
 
 
 
