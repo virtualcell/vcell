@@ -28,6 +28,7 @@ import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.Extent;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
 
 import cbit.image.VCImage;
@@ -99,7 +100,7 @@ public class XmlHelper {
 				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
 			}
 			// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-			String vcmlVersion = "0.4";
+			String vcmlVersion = TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
 			// create root vcml element 
 			Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
 			vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
