@@ -90,7 +90,9 @@ public class XmlHelper {
 		return bioModelToXML(bioModel, true);
 	}
 
-
+	static String getEscapedSoftwareVersion(){
+		return TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
+	}
 	static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
 
 		String xmlString = null;
@@ -100,10 +102,9 @@ public class XmlHelper {
 				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
 			}
 			// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-			String vcmlVersion = TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
 			// create root vcml element 
 			Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-			vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+			vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
 			// get biomodel element from xmlProducer and add it to vcml root element
 			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 			Element biomodelElement = xmlProducer.getXML(bioModel);
@@ -112,7 +113,7 @@ public class XmlHelper {
 			vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));	
 			// create xml doc with vcml root element and convert to string
 			Document bioDoc = new Document();
-			Comment docComment = new Comment("This biomodel was generated in VCML Version 0.4"); 
+			Comment docComment = new Comment("This biomodel was generated in VCML Version "+getEscapedSoftwareVersion()); 
 			bioDoc.addContent(docComment);
 			bioDoc.setRootElement(vcmlElement);
 			xmlString = XmlUtil.xmlToString(bioDoc, false);
@@ -321,10 +322,9 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 		}
 
 		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-		String vcmlVersion = "0.4";
 		// create the root vcml element
 		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-		vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+		vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
 		// get the geometry element from xmlProducer
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 		Element geometryElement = xmlProducer.getXML(geometry);
@@ -334,7 +334,7 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 		vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
 		// create xml doc using vcml root element and convert to string
 		Document geoDoc = new Document();
-		Comment docComment = new Comment("This geometry was generated in VCML Version 0.4"); 
+		Comment docComment = new Comment("This geometry was generated in VCML Version "+getEscapedSoftwareVersion()); 
 		geoDoc.addContent(docComment);
 		geoDoc.setRootElement(vcmlElement);
 		geometryString = XmlUtil.xmlToString(geoDoc, false);
@@ -455,10 +455,9 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 			throw new XmlParseException("Invalid input for BioModel: " + mathModel);
 		}
 		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
-		String vcmlVersion = "0.4";
 		// create root vcml element 
 		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag);
-		vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+		vcmlElement.setAttribute(XMLTags.VersionTag, getEscapedSoftwareVersion());
 		// get mathmodel element from xmlProducer and add it to vcml root element
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 		Element mathElement = xmlProducer.getXML(mathModel);
@@ -467,7 +466,7 @@ public static String mathModelToXML(MathModel mathModel) throws XmlParseExceptio
 		vcmlElement = XmlUtil.setDefaultNamespace(vcmlElement, Namespace.getNamespace(XMLTags.VCML_NS));
 		// create xml doc with vcml root element and convert to string
 		Document mathDoc = new Document();
-		Comment docComment = new Comment("This mathmodel was generated in VCML Version 0.4"); 
+		Comment docComment = new Comment("This mathmodel was generated in VCML Version "+getEscapedSoftwareVersion()); 
 		mathDoc.addContent(docComment);
 		mathDoc.setRootElement(vcmlElement);
 		xmlString = XmlUtil.xmlToString(mathDoc, false);
