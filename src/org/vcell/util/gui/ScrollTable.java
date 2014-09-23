@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.EventObject;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -48,9 +49,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+
+import org.vcell.util.Issue;
 
 import cbit.gui.ReactionEquation;
 import cbit.gui.ScopedExpression;
@@ -136,41 +140,74 @@ public class ScrollTable extends JTable {
 		}
 	}
 	
-	static class ScrollTableBooleanCellRenderer extends JCheckBox implements TableCellRenderer {
-		public ScrollTableBooleanCellRenderer() {
-			super();
-			setHorizontalAlignment(JLabel.CENTER);
-			setBorderPainted(true);
-		}
-
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row,  int column) {
-			if (isSelected) {
-				setBackground(table.getSelectionBackground());
-				setForeground(table.getSelectionForeground());
-			} else {
-				if (table instanceof ScrollTable && ((ScrollTable)table).getHoverRow() == row) {
-					setBackground(DefaultScrollTableCellRenderer.hoverColor);
-				} else { 
-					setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
-				}
-				setForeground(table.getForeground());
-			}
-			if (table.isEnabled() && table.getModel().isCellEditable(row, column)) {
-				setEnabled(true);
-			} else {
-				setEnabled(false);
-			}
-			 
-			setSelected((value != null && ((Boolean) value).booleanValue()));			
-			if (hasFocus) {
-				setBorder(DefaultScrollTableCellRenderer.focusHighlightBorder);
-			} else {
-				setBorder(DefaultScrollTableCellRenderer.noFocusBorder);
-			}
-
-			return this;
-		}
+public static class ScrollTableBooleanCellRenderer extends JCheckBox implements TableCellRenderer {
+	public ScrollTableBooleanCellRenderer() {
+		super();
+		setHorizontalAlignment(JLabel.CENTER);
+		setBorderPainted(true);
 	}
+
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row,  int column) {
+		if (isSelected) {
+			setBackground(table.getSelectionBackground());
+			setForeground(table.getSelectionForeground());
+		} else {
+			if (table instanceof ScrollTable && ((ScrollTable)table).getHoverRow() == row) {
+				setBackground(DefaultScrollTableCellRenderer.hoverColor);
+			} else { 
+				setBackground(row % 2 == 0 ? table.getBackground() : DefaultScrollTableCellRenderer.everyOtherRowColor);
+			}
+			setForeground(table.getForeground());
+		}
+		if (table.isEnabled() && table.getModel().isCellEditable(row, column)) {
+			setEnabled(true);
+		} else {
+			setEnabled(false);
+		}
+			 
+		setSelected((value != null && ((Boolean) value).booleanValue()));			
+		if (hasFocus) {
+			setBorder(DefaultScrollTableCellRenderer.focusHighlightBorder);
+		} else {
+			setBorder(DefaultScrollTableCellRenderer.noFocusBorder);
+		}
+		issueRenderer(this, table, row, column, table.getModel());
+		return this;
+	}
+	private static void issueRenderer(ScrollTableBooleanCellRenderer renderer, JTable table, int row, int column, TableModel tableModel) {
+		List<Issue> issueListError = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
+		List<Issue> issueListWarning = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_WARNING);
+		Icon icon = null;
+		if (issueListError.size() > 0) {
+			if (column == 0) {
+				icon = VCellIcons.issueErrorIcon;
+				renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListError));
+				renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
+			} else if (column == table.getColumnCount() - 1) {
+				renderer.setBorder(new MatteBorder(1,0,1,1,Color.red));
+			} else {
+				renderer.setBorder(new MatteBorder(1,0,1,0,Color.red));
+			}
+		} else if(issueListWarning.size() > 0) {
+			if (column == 0) {
+				icon = VCellIcons.issueWarningIcon;
+				renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListWarning));
+				renderer.setBorder(new MatteBorder(1,1,1,0,Color.orange));
+			} else if (column == table.getColumnCount() - 1) {
+				renderer.setBorder(new MatteBorder(1,0,1,1,Color.orange));
+			} else {
+				renderer.setBorder(new MatteBorder(1,0,1,0,Color.orange));
+			}
+		} else {
+			if(column == 0) {
+				icon = VCellIcons.issueGoodIcon;
+			}
+			renderer.setToolTipText(null);
+			renderer.setBorder(DefaultScrollTableCellRenderer.DEFAULT_GAP);
+		}
+		renderer.setIcon(icon);
+	}
+}
 	
 	public ScrollTable() {
 		super();		

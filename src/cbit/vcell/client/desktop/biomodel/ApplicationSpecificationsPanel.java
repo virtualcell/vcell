@@ -158,6 +158,13 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	}
 	
 	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		reactionSpecsPanel.setIssueManager(issueManager);
+		initialConditionsPanel.setIssueManager(issueManager);
+	}
+	
+	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
 		if (DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
