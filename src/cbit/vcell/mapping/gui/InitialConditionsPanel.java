@@ -23,17 +23,21 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
+import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -428,15 +432,20 @@ private void initialize() {
 			{
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				setIcon(null);
+				defaultToolTipText = null;
+
 				if (value instanceof Species) {
 					setText(((Species)value).getCommonName());
-					setToolTipText(getText());
+					defaultToolTipText = getText();
+					setToolTipText(defaultToolTipText);
 				} else if (value instanceof SpeciesContext) {
 					setText(((SpeciesContext)value).getName());
-					setToolTipText(getText());
+					defaultToolTipText = getText();
+					setToolTipText(defaultToolTipText);
 				} else if (value instanceof Structure) {
 					setText(((Structure)value).getName());
-					setToolTipText(getText());
+					defaultToolTipText = getText();
+					setToolTipText(defaultToolTipText);
 				} else if (value instanceof ScopedExpression) {
 					SpeciesContextSpec scSpec = tableModel.getValueAt(row);
 					VCUnitDefinition unit = null;
@@ -452,9 +461,17 @@ private void initialize() {
 						setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
 					}
 					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
-					String tooltip = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
-					setToolTipText(tooltip);
+					defaultToolTipText = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
+					setToolTipText(defaultToolTipText);
 				}
+				
+				TableModel tableModel = table.getModel();
+				if (!(tableModel instanceof SortTableModel)) {
+					return this;
+				}
+				
+				DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
+				setHorizontalTextPosition(JLabel.TRAILING);
 				return this;
 			}
 		};
@@ -462,9 +479,16 @@ private void initialize() {
 		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
+		getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+@Override
+public void setIssueManager(IssueManager issueManager) {
+	super.setIssueManager(issueManager);
+	tableModel.setIssueManager(issueManager);
 }
 
 /**
