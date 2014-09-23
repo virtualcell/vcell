@@ -14,11 +14,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JTable;
+import javax.swing.table.TableModel;
 
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
+import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
 
@@ -140,13 +143,29 @@ private void initConnections() throws java.lang.Exception {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			defaultToolTipText = null;
 			if (value instanceof ReactionStep) {
 				setText(((ReactionStep)value).getName());
+				defaultToolTipText = getText();
+				setToolTipText(defaultToolTipText);
 			}
+			
+			TableModel tableModel = table.getModel();
+			if (!(tableModel instanceof SortTableModel)) {
+				return this;
+			}
+			
+			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
 			return this;
 		}
 	});
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
+}
+
+@Override
+public void setIssueManager(IssueManager issueManager) {
+	super.setIssueManager(issueManager);
+	ivjReactionSpecsTableModel.setIssueManager(issueManager);
 }
 
 /**
