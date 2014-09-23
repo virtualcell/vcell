@@ -708,9 +708,9 @@ public void gatherIssues(List<Issue> issueVector) {
 				}
 				if(iAmParticipant && haveParticle) {
 					String msg = "Continuous Species won't conserve mass in particle reaction "+rs.getReactionStep().getName()+".";
-					String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. \n" +
-						"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate \n" +
-						"the continuous species in those reactions as modifiers (i.e. catalysts) in the physiology.";
+					String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. <br>" +
+							"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate <br>" +
+							"the continuous species in those reactions as modifiers (i.e. 'catalysts') in the physiology.";
 					issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
 					break;	// we issue warning as soon as we found the first reaction which satisfies criteria
 				}
