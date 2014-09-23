@@ -132,6 +132,7 @@ public class XMLTags {
     public final static String HiddenTag				= "IsHidden";
     public final static String FromVersionableTag		= "FromVersionable";
     public final static String ParentSimRefTag			= "ParentSimRef";
+    public final static String SoftwareVersionAttrTag 	= "Version";
     //VERSION-TAGS END
 
     //Tags related to simulation

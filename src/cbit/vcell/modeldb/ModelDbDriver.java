@@ -22,6 +22,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.document.VersionableType;
@@ -43,6 +44,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.ReactStepDbDriver.StructureKeys;
+import cbit.vcell.xml.XmlReader;
 /**
  * This type was created in VisualAge.
  */
@@ -136,12 +138,14 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	String sql;
 	
 	sql = 	" SELECT *" + 
-			" FROM " + diagramTable.getTableName() + 
+			" FROM " + diagramTable.getTableName() + "," + SoftwareVersionTable.table.getTableName() +
 			" WHERE " + diagramTable.modelRef + " = " + modelKey +
+			" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
 			" ORDER BY "+diagramTable.id;
 			
 	Statement stmt = con.createStatement();
 	Vector<Diagram> diagramList = new Vector<Diagram>();
+	String softwareVersion = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		
@@ -153,7 +157,11 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 		while (rset.next()) {
 			Diagram diagram = getDiagram(dbc, con,rset, structureTopology);
 			diagramList.addElement(diagram);
-		}
+			softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.getUnqualifiedColName());
+			if(rset.wasNull()){
+				softwareVersion = null;
+			}
+		}		
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
@@ -163,6 +171,9 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 	Diagram diagramArray[] = new Diagram[diagramList.size()];
 	diagramList.copyInto(diagramArray);
 	
+	VCellSoftwareVersion vCellSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
+	XmlReader.reorderDiagramsInPlace_UponRead(vCellSoftwareVersion, diagramArray, structureTopology);
+
 //	//Check this----------------------------
 //	System.out.println("-------------------------------------------Starting Diagram check------------------------------------------------------------------------");
 //	int count = 0;

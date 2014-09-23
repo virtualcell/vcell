@@ -32,6 +32,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
 
@@ -401,7 +402,8 @@ public class VFrapXmlHelper {
 		if (bioModelElement == null){
 			throw new RuntimeException("Unable to load biomodel.");
 		}
-		bioModel = vcellXMLReader.getBioModel(bioModelElement);
+		String docSoftwareVersion = vFrapRoot.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+		bioModel = vcellXMLReader.getBioModel(bioModelElement,(docSoftwareVersion==null?null:VCellSoftwareVersion.fromString(docSoftwareVersion)));
 		
 		// ------ locate the special images within the vFrap files and load them in memory
 		if(!LoadVFrapSpecialImages(hashTable, vFrapRoot)) {
