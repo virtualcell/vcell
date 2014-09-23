@@ -376,9 +376,9 @@ public void gatherIssues(List<Issue> issueList, ReactionContext rc) {
 		}
 		if(haveParticle && haveContinuous) {
 			String msg = "Reaction " + step.getName() + " has both continuous and particle Participants.";
-			String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. \n" +
-					"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate \n" +
-					"the continuous species in those reactions as modifiers (i.e. “catalysts”) in the physiology.";
+			String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. <br>" +
+					"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate <br>" +
+					"the continuous species in those reactions as modifiers (i.e. 'catalysts') in the physiology.";
 			issueList.add(new Issue(r, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
 		}
 	}

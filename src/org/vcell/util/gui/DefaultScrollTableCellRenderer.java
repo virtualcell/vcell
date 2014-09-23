@@ -12,11 +12,13 @@ package org.vcell.util.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
 import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -35,14 +37,16 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
+	private static final int LEFT_ICON_MARGIN = 1;
 	public static final Color hoverColor = new Color(0xFDFCDC);
 //	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(2,4,2,4);
-	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(1,1,1,1);
+	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(1,LEFT_ICON_MARGIN,1,1);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
 	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
 	static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 	public static final Color everyOtherRowColor = new Color(0xe8edff);
 	private boolean bEnableUneditableForeground = true;
+	public String defaultToolTipText = null;
 	/**
 	 * DefaultTableCellRendererEnhanced constructor comment.
 	 */
@@ -69,6 +73,8 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		setBorder(DEFAULT_GAP);
+		defaultToolTipText = null;
+		
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -82,39 +88,6 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		
 		TableModel tableModel = table.getModel();
-		if (tableModel instanceof SortTableModel) {
-			List<Issue> issueListError = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
-			List<Issue> issueListWarning = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_WARNING);
-			Icon icon = null;
-			if (issueListError.size() > 0) {
-				setToolTipText(Issue.getHtmlIssueMessage(issueListError));
-				if (column == 0) {
-					icon = VCellIcons.issueErrorIcon;
-					setBorder(new MatteBorder(1,1,1,0,Color.red));
-				} else if (column == table.getColumnCount() - 1) {
-					setBorder(new MatteBorder(1,0,1,1,Color.red));
-				} else {
-					setBorder(new MatteBorder(1,0,1,0,Color.red));
-				}
-			} else if(issueListWarning.size() > 0) {
-				setToolTipText(Issue.getHtmlIssueMessage(issueListWarning));
-				if (column == 0) {
-					icon = VCellIcons.issueWarningIcon;
-					setBorder(new MatteBorder(1,1,1,0,Color.orange));
-				} else if (column == table.getColumnCount() - 1) {
-					setBorder(new MatteBorder(1,0,1,1,Color.orange));
-				} else {
-					setBorder(new MatteBorder(1,0,1,0,Color.orange));
-				}
-			} else {
-				if(column == 0) {
-					icon = VCellIcons.issueGoodIcon;
-				}
-				setToolTipText(null);
-				setBorder(DEFAULT_GAP);
-			}
-			setIcon(icon);
-		}
 		if (bEnableUneditableForeground && (!table.isEnabled() || !tableModel.isCellEditable(row, column))) {
 			if (!isSelected) {
 				setForeground(uneditableForeground);
@@ -142,6 +115,56 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		} else if (value instanceof ReactionEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ReactionEquation)value).toString())) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
 		}
+		if (tableModel instanceof SortTableModel) {
+			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
+		}
 		return this;
+	}
+	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, TableModel tableModel) {
+		List<Issue> issueListError = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
+		List<Issue> issueListWarning = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_WARNING);
+		Icon icon = null;
+		Point mousePosition = table.getMousePosition();
+		
+		if (issueListError.size() > 0) {
+			if (column == 0) {
+				icon = VCellIcons.issueErrorIcon;
+				if(mousePosition !=null && mousePosition.getX()>LEFT_ICON_MARGIN && mousePosition.getX()<=(icon.getIconWidth()+LEFT_ICON_MARGIN)) {
+					renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListError));
+				} else {
+					renderer.setToolTipText(defaultToolTipText);
+				}
+				renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
+			} else if (column == table.getColumnCount() - 1) {
+				renderer.setBorder(new MatteBorder(1,0,1,1,Color.red));
+			} else {
+				renderer.setBorder(new MatteBorder(1,0,1,0,Color.red));
+			}
+		} else if(issueListWarning.size() > 0) {
+			if (column == 0) {
+				icon = VCellIcons.issueWarningIcon;
+				if(mousePosition !=null && mousePosition.getX()>LEFT_ICON_MARGIN && mousePosition.getX()<=(icon.getIconWidth()+LEFT_ICON_MARGIN)) {
+					renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListWarning));
+				} else {
+					renderer.setToolTipText(defaultToolTipText);
+				}
+				renderer.setBorder(new MatteBorder(1,1,1,0,Color.orange));
+			} else if (column == table.getColumnCount() - 1) {
+				renderer.setBorder(new MatteBorder(1,0,1,1,Color.orange));
+			} else {
+				renderer.setBorder(new MatteBorder(1,0,1,0,Color.orange));
+			}
+		} else {
+			if(column == 0) {
+				icon = VCellIcons.issueGoodIcon;
+			}
+			if(defaultToolTipText != null && !defaultToolTipText.isEmpty()) {
+				renderer.setToolTipText(defaultToolTipText);
+			} else {
+				renderer.setToolTipText(null);
+			}
+			renderer.setBorder(DEFAULT_GAP);
+		}
+		renderer.setIcon(icon);
 	}
 }
