@@ -30,6 +30,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.Extent;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.image.VCImage;
 import cbit.util.xml.VCLogger;
@@ -569,7 +570,7 @@ public static BioModel cloneBioModelWithNewUnitSystem(BioModel origBiomodel, Mod
 		if (forcedModelUnitSystem != null) {
 			reader.setForcedModelUnitSystem(forcedModelUnitSystem);
 		} 
-		bioModel = reader.getBioModel(root);
+		bioModel = reader.getBioModel(root,VCellSoftwareVersion.fromString(root.getAttributeValue(XMLTags.SoftwareVersionAttrTag,ns)));
 
 		//long l1 = System.currentTimeMillis();
 		bioModel.refreshDependencies();

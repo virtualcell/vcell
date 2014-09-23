@@ -11,6 +11,8 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -37,6 +39,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -45,6 +48,7 @@ import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 
@@ -209,6 +213,7 @@ import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
@@ -370,6 +375,7 @@ private AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExc
 	return  newsubvolume;
 }
 
+private VCellSoftwareVersion docVCellSoftwareVersion = null;
 
 /**
  * This method returns a Biomodel object from a XML Element.
@@ -377,7 +383,8 @@ private AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExc
  * @return cbit.vcell.biomodel.BioModel
  * @param param org.jdom.Element
  */
-public BioModel getBioModel(Element param) throws XmlParseException{
+public BioModel getBioModel(Element param,VCellSoftwareVersion docVcellSoftwareVersion) throws XmlParseException{
+	this.docVCellSoftwareVersion = docVcellSoftwareVersion;
 //long l1 = System.currentTimeMillis();
 	//Get metadata information Version (if available)
 	Version version = getVersion(param.getChild(XMLTags.VersionTag, vcNamespace));
@@ -3882,6 +3889,17 @@ private Model getModel(Element param) throws XmlParseException {
 				newdiagrams[diagramCounter] = getDiagram(diagramElement, newmodel);
 				diagramCounter ++;
 			}
+			reorderDiagramsInPlace_UponRead(docVCellSoftwareVersion, newdiagrams, newmodel.getStructureTopology());
+//			if(docVCellSoftwareVersion != null && !docVCellSoftwareVersion.isValid() && docVCellSoftwareVersion.getMajorVersion()<=5 && docVCellSoftwareVersion.getMinorVersion() <=2){
+//				//In Vcell 5.2 and previous we need to order diagrams topologically, in 5.3 and later the diagrams are displayed as they are ordered when read from document
+//				final StructureTopology structureTopology = newmodel.getStructureTopology();
+//				Arrays.sort(newdiagrams, new Comparator<Diagram>() {
+//					@Override
+//					public int compare(Diagram o1, Diagram o2) {
+//						return getStructureLevel(o1.getStructure(), structureTopology) - getStructureLevel(o2.getStructure(), structureTopology);
+//					}
+//				});
+//			}
 			newmodel.setDiagrams(newdiagrams);
 		}
 	} catch (java.beans.PropertyVetoException e) {
@@ -3905,6 +3923,28 @@ private Model getModel(Element param) throws XmlParseException {
 	return newmodel;
 }
 
+public static void reorderDiagramsInPlace_UponRead(VCellSoftwareVersion docVCellSoftwareVersion,final Diagram[] diagramArr,final StructureTopology structureTopology){
+	if(docVCellSoftwareVersion != null && !docVCellSoftwareVersion.isValid() && docVCellSoftwareVersion.getMajorVersion()<=5 && docVCellSoftwareVersion.getMinorVersion() <=2){
+		//In Vcell 5.2 and previous we need to order diagrams topologically, in 5.3 and later the diagrams are displayed as they are ordered when read from document
+		Arrays.sort(diagramArr, new Comparator<Diagram>() {
+			@Override
+			public int compare(Diagram o1, Diagram o2) {
+				return getStructureLevel(o1.getStructure(), structureTopology) - getStructureLevel(o2.getStructure(), structureTopology);
+			}
+		});
+	}
+}
+
+
+private static Integer getStructureLevel(Structure s,StructureTopology structureTopology) {
+	Structure s0 = s;
+	int level = 0;
+	while (s0 != null) {
+		level += 1;
+		s0 = structureTopology.getParentStructure(s0);
+	}
+	return level;
+}
 
 public ModelUnitSystem getUnitSystem(Element unitSystemNode) {
 
