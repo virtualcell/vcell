@@ -28,6 +28,7 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
@@ -283,7 +284,8 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 				Object source = issue.getSource();
 				if (issue.getSeverity() == severity) {
 					if (rowAt == source || 
-							source instanceof OutputFunctionIssueSource && ((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) {
+							(source instanceof OutputFunctionIssueSource && ((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) ||
+							(source instanceof ReactionCombo && ((ReactionCombo)source).getReactionSpec() == rowAt)) {
 						iL.add(issue);
 					}
 				}
