@@ -25,6 +25,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XMLTags;
@@ -1398,7 +1399,8 @@ private void keepModified(Object object) {
 			Document doc = rootElement.getDocument();
 			VCDocument vcDoc = null;
 			if (rootName.equals(XMLTags.BioModelTag)) {
-				vcDoc = reader.getBioModel(rootElement);
+				String docSoftwareVersion = rootElement.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+				vcDoc = reader.getBioModel(rootElement,(docSoftwareVersion==null?null:VCellSoftwareVersion.fromString(docSoftwareVersion)));
 			} else if (rootName.equals(XMLTags.MathModelTag)) {
 				vcDoc = reader.getMathModel(rootElement);
 			} else if (rootName.equals(XMLTags.GeometryTag)) {

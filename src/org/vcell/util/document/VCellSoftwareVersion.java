@@ -147,5 +147,9 @@ public class VCellSoftwareVersion implements Serializable {
 	public int getBuildInt() {
 		return buildInt;
 	}
+	
+	public boolean isValid(){
+		return getSite() != VCellSite.unknown;
+	}
 
 }

@@ -24,6 +24,7 @@ import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -381,6 +382,10 @@ private static Element getXML(FRAPStudy.ReactionDiffusionModelParameters param) 
 		if (param.getName()!=null){
 			String name = param.getName();
 			frapStudyNode.setAttribute(XMLTags.NameAttrTag, name);
+		}
+		VCellSoftwareVersion vCellSoftwareVersion = VCellSoftwareVersion.fromSystemProperty();
+		if(vCellSoftwareVersion != null && vCellSoftwareVersion.getSoftwareVersionString() != null){
+			frapStudyNode.setAttribute(XMLTags.SoftwareVersionAttrTag,vCellSoftwareVersion.getSoftwareVersionString());
 		}
 		//originalImageFilePath
 		if (param.getOriginalImageFilePath()!=null && param.getOriginalImageFilePath().length()>0) {

@@ -30,6 +30,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
@@ -90,7 +91,8 @@ public class MicroscopyXmlReader {
 		ExternalDataInfo roiExtDataInfo = null;
 		Element bioModelElement = param.getChild(XMLTags.BioModelTag);
 		if (bioModelElement!=null){
-			BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
+			String docSoftwareVersion = param.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+			BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement,(docSoftwareVersion==null?null:VCellSoftwareVersion.fromString(docSoftwareVersion)));
 			if(bioModel != null && bioModel.getSimulations()!=null && bioModel.getSimulations().length > 0){
 				simulationKeyValue = bioModel.getSimulations()[0].getKey();
 			}
@@ -369,7 +371,8 @@ public class MicroscopyXmlReader {
 	    //bioModel
 		Element bioModelElement = param.getChild(XMLTags.BioModelTag);
 		if (bioModelElement!=null){
-			frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement));
+			String docSoftwareVersion = param.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
+			frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement,(docSoftwareVersion==null?null:VCellSoftwareVersion.fromString(docSoftwareVersion))));
 		}
 		Element frapDataElement = param.getChild(MicroscopyXMLTags.FRAPDataTag);
 		if (frapDataElement!=null){
