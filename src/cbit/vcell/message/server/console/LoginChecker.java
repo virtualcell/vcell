@@ -51,6 +51,7 @@ public class LoginChecker {
 		add(new SiteInfo("rel", "rel",8080));
 		add(new SiteInfo("rel", "rel",40105));
 		add(new SiteInfo("beta", "beta",40105));
+		add(new SiteInfo("beta", "beta",8080));
 		add(new SiteInfo("alpha", "alpha",40106));
 		add(new SiteInfo("test", "alpha",40110));
 		add(new SiteInfo("test2", "alpha",40111));
