@@ -116,13 +116,13 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
 		}
 		if (tableModel instanceof SortTableModel) {
-			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
+			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
 		return this;
 	}
-	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, TableModel tableModel) {
-		List<Issue> issueListError = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
-		List<Issue> issueListWarning = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_WARNING);
+	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, SortTableModel tableModel) {
+		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
+		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
 		Icon icon = null;
 		Point mousePosition = table.getMousePosition();
 		

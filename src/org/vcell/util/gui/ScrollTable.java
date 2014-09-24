@@ -53,6 +53,7 @@ import javax.swing.border.MatteBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import org.vcell.util.gui.sorttable.SortTableModel;
 
 import org.vcell.util.Issue;
 
@@ -171,12 +172,15 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		} else {
 			setBorder(DefaultScrollTableCellRenderer.noFocusBorder);
 		}
-		issueRenderer(this, table, row, column, table.getModel());
+		TableModel tableModel = table.getModel();
+		if(tableModel instanceof SortTableModel) {
+			issueRenderer(this, table, row, column, (SortTableModel)tableModel);
+		}
 		return this;
 	}
-	private static void issueRenderer(ScrollTableBooleanCellRenderer renderer, JTable table, int row, int column, TableModel tableModel) {
-		List<Issue> issueListError = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_ERROR);
-		List<Issue> issueListWarning = ((VCellSortTableModel<?>) tableModel).getIssues(row, column, Issue.SEVERITY_WARNING);
+	private static void issueRenderer(ScrollTableBooleanCellRenderer renderer, JTable table, int row, int column, SortTableModel tableModel) {
+		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
+		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
 		Icon icon = null;
 		if (issueListError.size() > 0) {
 			if (column == 0) {
