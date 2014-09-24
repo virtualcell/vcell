@@ -10,8 +10,19 @@
 	   <imgReference target="ImportPathwaySubMenu.PNG"/>
 	</appearance>
 	
-	<operations>  Selecting the Import Pathway menu item yields a submenu to choose between importing a biochemical reaction pathway from an web database (e.g. Sabio-RK), a local file, or to try one of several built-in examples.  
-	   </operations>
+	<operations> 
+	<para> Selecting the Import Pathway menu item yields a submenu to choose between <bold>importing</bold> a biochemical reaction pathway from an web database (e.g. Sabio-RK), a local file, or to try one of several built-in examples. </para>
+	<para> Using the example to illustrate, <bold>select</bold> a pathway.</para>
+	<para><imgReference target="SelectPathwayFromExample.PNG"/></para>
+	<para>
+	Once selected, the example pathway can then be either <bold>Previewed</bold> or <bold>imported</bold></para>
+	<para>Preview in either raw data markup or tree view is available:</para>
+	<para>
+	<imgReference target="PathwayPreview.PNG"/>
+	<imgReference target="PathwayPreviewTreeView.PNG"/>
+	</para>
+	
+	</operations>
 	
 </page>
 
