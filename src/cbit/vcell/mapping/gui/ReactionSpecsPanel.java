@@ -148,11 +148,9 @@ private void initConnections() throws java.lang.Exception {
 			}
 			
 			TableModel tableModel = table.getModel();
-			if (!(tableModel instanceof SortTableModel)) {
-				return this;
+			if (tableModel instanceof SortTableModel) {
+				DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 			}
-			
-			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
 			return this;
 		}
 	});

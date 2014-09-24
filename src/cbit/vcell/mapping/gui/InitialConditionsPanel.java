@@ -463,12 +463,10 @@ private void initialize() {
 				}
 				
 				TableModel tableModel = table.getModel();
-				if (!(tableModel instanceof SortTableModel)) {
-					return this;
+				if (tableModel instanceof SortTableModel) {
+					DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
+					setHorizontalTextPosition(JLabel.TRAILING);
 				}
-				
-				DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, tableModel);
-				setHorizontalTextPosition(JLabel.TRAILING);
 				return this;
 			}
 		};
