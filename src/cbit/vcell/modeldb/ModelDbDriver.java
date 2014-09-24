@@ -141,7 +141,7 @@ private cbit.vcell.model.Diagram[] getDiagramsFromModel(QueryHashtable dbc, Conn
 			" FROM " + diagramTable.getTableName() + "," + SoftwareVersionTable.table.getTableName() +
 			" WHERE " + diagramTable.modelRef + " = " + modelKey +
 			" AND " + diagramTable.modelRef + " = " + SoftwareVersionTable.table.versionableRef.getUnqualifiedColName() +"(+)" +
-			" ORDER BY "+diagramTable.id;
+			" ORDER BY "+diagramTable.id.getQualifiedColName();
 			
 	Statement stmt = con.createStatement();
 	Vector<Diagram> diagramList = new Vector<Diagram>();
