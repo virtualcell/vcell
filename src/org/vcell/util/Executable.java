@@ -36,6 +36,7 @@ public class Executable {
 	private File workingDir = null;
 	private Thread runThread = null;
 	private CountDownLatch stoppingLatch = null;
+	private AtomicBoolean active = new AtomicBoolean(false);
 	
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -101,6 +102,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
+		active.set(true);
 		runThread = Thread.currentThread(); //record for interruption via #stop
 		// reset just in case
 		setOutputString("");
@@ -117,6 +119,8 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 		// will update the fields from StdOut and StdErr
 		// will return the exit code once the process terminates
 		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
+		active.set(false);
+		Thread.interrupted(); //clear interrupted status
 		setExitValue(new Integer(exitCode));
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
@@ -295,6 +299,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 			if (getStatus( ) == ExecutableStatus.STOPPED) {
 				close( );
 				getLatch( ).countDown();
+				Thread.interrupted( );
 				return -1;
 			}
 		}
@@ -422,14 +427,18 @@ public final void start(int[] expectedReturnCodes) throws org.vcell.util.Executa
  * This method was created in VisualAge.
  */
 public final void stop() {
-	try {
-		CountDownLatch cdl = getLatch(); //get local copy to avoid race issues
-		setStatus(ExecutableStatus.STOPPED);
-		runThread.interrupt();
-		cdl.await(1, TimeUnit.SECONDS);
-	} catch (InterruptedException e) { }
-	if (getProcess() != null) {
-		System.out.println("Executable.stop( ) failed to clean up properly");
+	if (active.get( )) {
+		try {
+			CountDownLatch cdl = getLatch(); //get local copy to avoid race issues
+			setStatus(ExecutableStatus.STOPPED);
+			runThread.interrupt();
+			cdl.await(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) { 
+			Thread.interrupted();
+		}
+		if (getProcess() != null) {
+			System.out.println("Executable.stop( ) failed to clean up properly");
+		}
 	}
 }
 
