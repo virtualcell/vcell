@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Database Sources">
+
+	<introduction> The Virtual Cell provides access to a few database repositories, internal and external. The internal Virtual Cell database repository stores the models created in the Virtual Cell in its native format.
+	In addition, access to external databases such as <link target="http://www.ebi.ac.uk/biomodels-main/">BioModels Database</link> and <link target="http://www.pathwaycommons.org/pc/">Pathway Commons</link> is provided.
+	</introduction>
+	
+	<appearance>
+		<imgReference target = "DatabaseSources.png"/>  
+	</appearance>
+	
+	<operations>
+	<para>
+	The database sources in the Virtual Cell are accessed from the 'Database' panel on the lower left corner of any VCell document window. This panel has 3 tabs:
+	</para>
+	<list>
+		<item> <link target="VCellDatabase">VCell Database</link> </item>
+		<item> <link target="BioModelsNet">BioModels.net Database</link> </item>
+		<item> <link target="PathwayCommonsPanel">Pathway Commons Database</link> </item>
+	</list>
+	</operations>
+</page>
+
+</vcelldoc>
