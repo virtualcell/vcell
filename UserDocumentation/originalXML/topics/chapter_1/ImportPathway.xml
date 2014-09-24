@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vcelldoc>
+<page title="Import Pathway">
+
+	
+	<introduction> Import a biochemical pathway network from a local file or from an online database of biochemical reactions and kinetics </introduction>
+	
+	<appearance>
+	   <imgReference target="ImportPathwaySubMenu.PNG"/>
+	</appearance>
+	
+	<operations>  Selecting the Import Pathway menu item yields a submenu to choose between importing a biochemical reaction pathway from an web database (e.g. Sabio-RK), a local file, or to try one of several built-in examples.  
+	   </operations>
+	
+</page>
+
+</vcelldoc>
