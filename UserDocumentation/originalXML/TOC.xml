@@ -16,6 +16,7 @@
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu"/>
     			<tocitem target="Export" text="File->Export Menu"/>
+    			<tocitem target="ImportPathway" text="File->Import Pathway"/>
     		</tocitem>
     		<tocitem target="View" text="View Menu"/>
     		<tocitem target="Server" text="Server Menu">
