@@ -471,7 +471,8 @@ public class DocumentCompiler {
 					docComponent.add(new DocLink(linkTarget,linkText));
 				}else if (childElement.getName().equals(VCellDocTags.img_ref_tag)){
 					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
-					docComponent.add(new DocImageReference(linkTarget));
+					boolean bInline = Boolean.parseBoolean(childElement.getAttributeValue(VCellDocTags.inline_attr));
+					docComponent.add(new DocImageReference(linkTarget,bInline));
 				}else if (childElement.getName().equals(VCellDocTags.definition_tag)){ //definition link
 					String linkText = childElement.getText();
 					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
@@ -684,8 +685,12 @@ public class DocumentCompiler {
 			 }
 			 File imageFile = getTargetFile(targetImage.getSourceFile());
 			 String relativePathToTarget = getHelpRelativePath(directory, imageFile);
-			 pw.println("<br><br>");
-			 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
+			 if (!imageReference.isInline()){
+				 pw.println("<br><br>");
+			 	 pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
+			 } else {
+			 	 pw.println("&nbsp;<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">&nbsp;");
+			 }
 		 }else if (docComp instanceof DocDefinitionReference){
 			 DocDefinitionReference defReference = (DocDefinitionReference)docComp;
 			 DocumentDefinition targetDef = documentation.getDocumentDefinition(defReference);
