@@ -56,7 +56,7 @@
 	
 	<para> <bold>Boundary Conditions</bold></para>
 	<para>
-	For spatial models, the type of Boundary Condition is set in <link target="geom_structure_mapping">Structure Mapping</link>. 
+	For spatial models, the type of Boundary Condition is set in <link target="geom_spatial_mapping">Structure Mapping</link>. 
 	The default Boundary Conditions for a given species at each boundary (X-,X+, Y-, Y+, Z-, Z+) are fixed at either zero, when using <bold>Flux</bold>, or the concentration set in the Initial Condition field, when using <bold>Value</bold> type. 
 	You can provide a numerical value or expressions for each boundary to provide a rate of flux ('Flux') or a clamped concentration different from that entered in the Initial Conditions field ('Value').
 	</para>
