@@ -121,7 +121,7 @@
 	</para>
 
 	<para>
-	Once the geometry has been created, the domains of the <bold>geometry must be mapped</bold> to the  structures defined in the model using the <link target = "geom_structure_mapping" >Structure Mapping</link> tab.
+	Once the geometry has been created, the domains of the <bold>geometry must be mapped</bold> to the  structures defined in the model using the <link target = "geom_spatial_mapping" >Structure Mapping</link> tab.
 	</para>
 
 	</operations>
