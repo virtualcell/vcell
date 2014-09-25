@@ -50,6 +50,7 @@
     		<tocitem target="GeometryOverview" text="Geometry">
     	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
    	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
+   	 	  		<tocitem target="geom_from_surface" text="Geometry from Surface"/>
    		   		<tocitem target="geom_structure_mapping" text="Geometry Structure Mapping"/>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
