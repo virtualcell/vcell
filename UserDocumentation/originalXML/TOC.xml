@@ -103,6 +103,7 @@
    	   		<tocitem target="PathwayDiagramView" text="Entities Diagram View"/>
    	   		<tocitem target="PathwayObjectsView" text="Entities Table View"/>
    			<tocitem target="BiopaxSummaryView" text="Entities Detailed View"/>
+   			<tocitem target="BiopaxTreeView" text="Entities Tree View"/>
    			<tocitem target="GroupOperationsPanel" text="Entities Management"/>
    		</tocitem>
     	<tocitem target="DatabaseOverview" text="Database Sources">
