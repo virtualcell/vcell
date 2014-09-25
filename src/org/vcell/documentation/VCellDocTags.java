@@ -15,6 +15,7 @@ public class VCellDocTags {
 	public final static String page_tag = "page";
 	public final static String page_title_attr = "title";
 	public final static String target_attr = "target";//target for imageReference, pagelinks
+	public final static String inline_attr = "inline";//inline for imageReference (true means don't <br>)
 	public final static String introduction_tag = "introduction";
 	public final static String appearance_tag = "appearance";
 	public final static String operations_tag = "operations";
