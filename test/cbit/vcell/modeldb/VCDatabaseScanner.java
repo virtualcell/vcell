@@ -284,11 +284,6 @@ public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 }
 
 public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFilePrintStream, User users[], KeyValue singleMathmodelKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
-	BadMathVisitor badMathVisitor = null;
-	if (databaseVisitor instanceof BadMathVisitor) {
-		badMathVisitor = (BadMathVisitor) databaseVisitor;
-	}
-	final boolean isBadMathVisitor = badMathVisitor != null;
 	if (users==null){
 		users = getAllUsers();
 	}
@@ -318,18 +313,12 @@ public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 				if (!databaseVisitor.filterMathModel(mathInfos[j])){
 					continue;
 				}
-				KeyValue vk = null; 
 				try {
-					vk = mathInfos[j].getVersion().getVersionKey();
 					BigString mathModelXML = dbServerImpl.getMathModelXML(user, mathInfos[j].getVersion().getVersionKey());
 					MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
 					mathModel.refreshDependencies();
 					databaseVisitor.visitMathModel(mathModel,logFilePrintStream);
 				}catch (Exception e2){
-					if (isBadMathVisitor) {
-						badMathVisitor.unableToLoad(vk, e2);
-					}
-					
 					log.exception(e2);
 					if (bAbortOnDataAccessException){
 						throw e2;
