@@ -12,10 +12,12 @@ package org.vcell.documentation;
 
 public class DocImageReference extends DocTextComponent {
 	private String imageTarget;
+	private boolean bInline;
 
-	public DocImageReference(String imageTarget) {
+	public DocImageReference(String imageTarget, boolean bInline) {
 		super();
 		this.imageTarget = imageTarget;
+		this.bInline = bInline;
 		DocumentCompiler.referencedImageFiles.add(imageTarget);
 	}
 
@@ -23,6 +25,10 @@ public class DocImageReference extends DocTextComponent {
 		return imageTarget;
 	}
 
+	public boolean isInline(){
+		return bInline;
+	}
+	
 	@Override
 	public void add(DocTextComponent docComponent) {
 		throw new RuntimeException("children not supported");
