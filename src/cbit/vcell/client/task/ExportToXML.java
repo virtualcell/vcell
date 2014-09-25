@@ -159,8 +159,9 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				// SBML or CellML; get application name
 				if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML_12)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_21)) || 
 					(fileFilter.equals(FileFilters.FILE_FILTER_SBML_22)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) || 
-					(fileFilter.equals(FileFilters.FILE_FILTER_SBML_24)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_CORE)) || 
-					(fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL)) ) {
+					(fileFilter.equals(FileFilters.FILE_FILTER_SBML_24)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_CORE)) 
+				//	(fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL)) 
+					) {
 					SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
 					Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 					int sbmlLevel = 0;
@@ -185,11 +186,13 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_CORE)) {
 						sbmlLevel = 3;
 						sbmlVersion = 1;
+						/*
 					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL)) {
 						sbmlLevel = 3;
 						sbmlVersion = 1;
 						sbmlPkgVersion = 1;
 						bIsSpatial = true;
+						*/
 					}
 					if (selectedSim == null) {
 						resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, bIsSpatial, selectedSimContext, null);
