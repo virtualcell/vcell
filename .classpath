@@ -7,6 +7,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.2/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
