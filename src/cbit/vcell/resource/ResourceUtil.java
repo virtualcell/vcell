@@ -59,9 +59,13 @@ public class ResourceUtil {
 	private static File libDir = null;
 	private static File localSimDir = null;
 	private static File localRootDir = null;
-	
+	private static File logDir = null;
+
 	private static File solversDirectory = null;
 	
+	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
+		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+
 	public enum SolverExecutable {
 		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
 		SundialsOde("SundialsSolverStandalone" + EXE_SUFFIX),
@@ -138,6 +142,19 @@ public class ResourceUtil {
 		}
 		
 		return userHome; 
+	}
+	
+	public static File getLogDir()
+	{
+		if(logDir == null)
+		{
+			logDir = new File(getVcellHome(), "logs");
+			if (!logDir.exists()) {
+				logDir.mkdirs();
+			}
+		}
+
+		return logDir; 
 	}
 	
 	public static File getLocalRootDir()
@@ -269,6 +286,10 @@ public class ResourceUtil {
 		}
 	}
 	
+	public static boolean isRunningInDebugger( ) {
+		return IS_DEBUG;
+	}
+
 	public static void loadCopasiSolverLibrary () {
 		if (!bWindows && !bMac && !bLinux || bMacPpc) {
 			throw new RuntimeException("Parameter Estimation is supported on Windows, Linux and Mac OS X (excluding PowerPC) at this time.");

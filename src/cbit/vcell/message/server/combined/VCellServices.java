@@ -21,6 +21,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.VCellServerID;
+import org.vcell.util.logging.Logging;
 
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportListener;
@@ -149,6 +150,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
+		Logging.init();
 		if (args.length != 3 && args.length != 6) {
 			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
 			System.exit(1);

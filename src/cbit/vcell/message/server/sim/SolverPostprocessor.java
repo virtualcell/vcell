@@ -19,6 +19,8 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.logging.Logging;
+import org.vcell.util.logging.Logging.ConsoleDestination;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -44,6 +46,8 @@ public class SolverPostprocessor  {
 			System.exit(1);
 		}
 
+		Logging.init();
+		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT); 
 		SessionLog log = new StdoutSessionLog("solverPostprocessor");
 		VCMessagingService vcMessagingService = null;
 		try {

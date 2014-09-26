@@ -128,7 +128,8 @@ public class PropertyLoader {
 	public final static String mongodbDatabase					= "vcell.mongodb.database";
 	public final static String mongodbLoggingCollection			= "vcell.mongodb.loggingCollection";
 	public final static String mongodbThreadSleepMS				= "vcell.mongodb.threadSleepMS";
-	
+	public static final String autoflushStandardOutAndErr = "vcell.autoflushlog";
+
 	public static final String amplistorVCellUsersRootPath = "vcell.amplistor.usersDir.root";
 	
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {

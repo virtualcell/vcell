@@ -16,6 +16,7 @@ import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -46,6 +47,7 @@ public class SbmlVcmlConverter {
 	 * @param args
 	 */
 public static void main(String[] args) {
+	Logging.init( );
 	if (args.length < 2 || args.length > 3) {
 		System.out.println("Usage:\n\t -export path_of_input_file\n\tOR\n\t -import path_of_input_file [-simulate]" );
         System.exit(1);
