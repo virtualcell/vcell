@@ -39,12 +39,12 @@
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
-    		<tocitem target="PhysStructDiagView" text="Physiology Structures Diagram View"/>
-    		<tocitem target="PhysStructTabView" text="Physiology Structures Table View"/>
-    		<tocitem target="Species" text="Species"/>
-    		<tocitem target="Reactions" text="Reactions"/>
-    		<tocitem target="ReactDiagView" text="Reactions Diagram View"/>
-    		<tocitem target="ReactTabView" text="Reactions Table View"/>
+    		<tocitem target="PhysStructDiagView" text="Structure Diagram"/>
+    		<tocitem target="ReactDiagView" text="Reactions Diagram"/>
+	   		<!-- tocitem target="Reactions" text="Reactions"/-->
+    		<tocitem target="ReactTabView" text="Reactions Table"/>
+    		<tocitem target="PhysStructTabView" text="Structures Table"/>
+    		<tocitem target="Species" text="Species Table"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="GeometryOverview" text="Geometry">

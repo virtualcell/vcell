@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Pathway Links">
+
+	<introduction> Pathway Links	
+	</introduction>
+	
+	<appearance>
+	<imgReference target = "ShowPathwayLinks.png"> </imgReference>	
+	</appearance>
+	
+	<operations>
+	<imgReference target = "LinkedPathwayObject.png"> </imgReference>
+	</operations>
+	
+</page>
+
+</vcelldoc>
