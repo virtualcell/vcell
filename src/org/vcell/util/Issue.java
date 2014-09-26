@@ -83,6 +83,9 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_SpatialModel_PostProcessingBlock,
 		MathDescription_StochasticModel,
 		
+		Simulation_Override_NotFound,
+		Simulation_SensAnal_And_FastSystem,
+		
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 		Smoldyn_Geometry_3DWarning,
 		

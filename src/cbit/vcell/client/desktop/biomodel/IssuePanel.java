@@ -48,8 +48,9 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.Simulation.SimulationIssueSource;
 
 @SuppressWarnings("serial")
 public class IssuePanel extends DocumentEditorSubPanel {
@@ -123,9 +124,18 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
 							if (simulationOwner instanceof SimulationContext) {
 								SimulationContext simulationContext = (SimulationContext) simulationOwner;
-								followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});								
+								followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
 							} else if (simulationOwner instanceof MathModel) {
 								followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
+							}
+						} else if (object instanceof SimulationIssueSource) {
+							SimulationIssueSource simulationIssueSource = (SimulationIssueSource)object;
+							SimulationOwner simulationOwner = simulationIssueSource.getSimulationOwner();
+							if (simulationOwner instanceof SimulationContext) {
+								SimulationContext simulationContext = (SimulationContext) simulationOwner;
+								followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations),new Object[] {simulationIssueSource.getSimulation()});
+							} else if (simulationOwner instanceof MathModel) {
+								followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.simulations),new Object[] {simulationIssueSource.getSimulation()});
 							}
 						} else if (object instanceof GeometryContext) {
 							setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
