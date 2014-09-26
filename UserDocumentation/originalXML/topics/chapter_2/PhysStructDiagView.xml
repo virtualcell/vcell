@@ -26,6 +26,10 @@
 	<def target = "def_prop_pane"> object properties pane</def> </para>
 	<para><bold>Delete</bold> a compartment or species by selecting the compartment, then select the "delete 
 	selected" button at the bottom right of the window. </para>
+	<para>The view is mouse right-click sensitive. Depending on the selected area, a variety of popup menus are available.
+	<imgReference target = "StructureDiagramPopup.png"/>
+	</para>
+	Various capabilities are available depending on the nature of the object at the cursor location (species, membrane, compartment).
 	<para>The bottom pane of the window displays a <link target = "PP_Structures"> structure properties</link> 
 	pane or a <link target = "PP_Species"> species properties pane</link> depending on the current selection.</para>
 	</operations>

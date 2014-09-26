@@ -16,7 +16,7 @@ The table view lists structures and their properties (Type of Structure, Inside 
 <para> <bold> Edit </bold> the structure name by double clicking in the table, or within the <link target = "PP_Structures"> Properties pane  </link></para>
 <para> <bold> Delete </bold> compartments by selecting one or more compartments and using the "delete selected" button.  Compartments that contain species cannot be deleted.</para>
 
-The bottom pane of the window displays the  <link target = "PP_Species"> Species Properties  </link> or the  <link target = "PP_Structures">Structure Properties </link> depending on on the current selection.
+The bottom pane of the window displays the <link target = "PP_Structures">Structure Properties </link> depending on on the current selection.
 	</operations>
 
 

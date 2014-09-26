@@ -3,13 +3,18 @@
 <page title="Reactions Table View" target="ReactTabView">
 
 	<introduction>
-	A table of reactions and membrane fluxes can be used to create and edit reactions. 
+	A table of <link target="Reactions"> reactions</link> and membrane fluxes can be used to create and edit reactions. 
 	</introduction>
 	
 	<appearance>
 	The table shows the reaction, a user defined name for the reaction, the structure where the reaction occurs
-	 and the type of kinetic law governing the reaction.  The bottom pane of the window displays a <link target = "PP_Reactions"> Reaction Properties Pane</link>,
-	or <link target = "PP_MemFlux"> Membrane Flux property pane</link>, depending on the current selection. 
+	and the type of kinetic law governing the reaction.
+	If the reaction is linked to a pathway object, a link to that object will be shown in the Link column. 
+	Mousing over a link will open a tooltip box with additional information about the linked object.
+	Double click on that link to navigate to the Pathway Diagram and highlight the object linked to the reaction. 	
+	 
+	 <para>The bottom pane of the window displays a <link target = "PP_Reactions"> Reaction Properties Pane</link>,
+	or <link target = "PP_MemFlux"> Membrane Flux property pane</link>, depending on the current selection. </para>
 	</appearance>
 	
 	<operations>
