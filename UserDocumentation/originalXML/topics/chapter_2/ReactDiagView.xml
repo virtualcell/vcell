@@ -3,7 +3,7 @@
 <page title="Reactions Diagram View" target="ReactDiagView">
 
 	<introduction> 
-	The <link target="Reactions"> reaction</link> diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
+	The <link target="Reactions"> reactions</link> diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
 	compartments, and connected by lines showing which species participates in which reaction.
 	</introduction>
 	
