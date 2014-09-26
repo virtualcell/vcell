@@ -12,13 +12,14 @@
 	or downloaded to the user’s computer in a variety of formats.
 	</para>
 	
-	<para>The Virtual Cell supports 4 categories of simulations.</para>
+	<para>The Virtual Cell supports 5 categories of simulations.</para>
 	
 	<list>
 	<item>Deterministic non-spatial</item>
 	<item>Stochastic non-spatial</item>
 	<item>Deterministic spatial</item>
 	<item>Stochastic spatial</item>
+	<item>Hybrid stochastic spatial</item> 
 	</list>
 	
 	The appropriate solver will automatically be chosen when a simulation is created. 
@@ -81,7 +82,7 @@
 	<list>
 	<item>Run <imgReference target = "sim_run.png" inline = "true"/> Starts the simulation. Note the BioModel will be saved automatically 
 			upon running a simulation.</item>
-	<item>Stop <imgReference target = "sim_stop.png" inline = "true"/> Terminates the simulation.</item>
+	<item>Stop <imgReference target = "sim_stop.png" inline = "true"/> Terminates the simulation.</item>																																																																				
 	<item>Results <imgReference target = "sim_results.png" inline = "true"/> Once a simulation has started and/or is complete, press the 
 			Results button to view the simulation results.</item>
 	<item>Status Details <imgReference target = "sim_status_details.png" inline = "true"/> This shows more detailed simulation status, 
