@@ -65,6 +65,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.Simulation.SimulationIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -339,6 +340,15 @@ public void gatherIssues(List<Issue> issueList) {
 	getModel().gatherIssues(issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		simulationContext.gatherIssues(issueList);
+	}
+	for (Simulation simulation : fieldSimulations) {
+		SimulationContext simulationContext = null;
+		try {
+			simulationContext = getSimulationContext(simulation);
+		} catch (ObjectNotFoundException e) {
+			e.printStackTrace();
+		}
+		simulation.gatherIssues(issueList,simulationContext);
 	}
 }
 
@@ -1149,6 +1159,16 @@ public SimulationContext getSimulationContext(String name) {
 			SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
 			description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / " 
 				+ "Simulations" + " / " + "Output Functions";
+		} else if (source instanceof SimulationIssueSource) {
+			SimulationIssueSource simulationIssueSource = (SimulationIssueSource)source;
+			Simulation simulation = simulationIssueSource.getSimulation();
+			try {
+				SimulationContext simulationContext = getSimulationContext(simulation);
+				description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / Simulations";
+			} catch (ObjectNotFoundException e) {
+				e.printStackTrace();
+				description = "App(" + "unknown" + ") / Simulations";
+			}
 		} else if (source instanceof UnmappedGeometryClass) {
 			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
 			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
@@ -1196,6 +1216,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = "Geometry";
 		}else if (object instanceof ModelOptimizationSpec) {
 			description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
+		}else if (object instanceof SimulationIssueSource) {
+			description = ((SimulationIssueSource) object).getSimulation().getName();
 		} else if (object instanceof SpeciesContextSpec) {
 			SpeciesContextSpec scs = (SpeciesContextSpec)object;
 			description = scs.getSpeciesContext().getName();
