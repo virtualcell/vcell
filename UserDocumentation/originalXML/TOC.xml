@@ -45,6 +45,7 @@
     		<tocitem target="ReactTabView" text="Reactions Table"/>
     		<tocitem target="PhysStructTabView" text="Structures Table"/>
     		<tocitem target="Species" text="Species Table"/>
+    		<tocitem target="PathLink" text="Pathway Links"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="GeometryOverview" text="Geometry">
@@ -99,12 +100,13 @@
    		</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
-   	   		<tocitem target="PathwayImportTable" text="The Imported Pathway View"/>
-   	   		<tocitem target="PathwayDiagramView" text="Entities Diagram View"/>
-   	   		<tocitem target="PathwayObjectsView" text="Entities Table View"/>
-   			<tocitem target="BiopaxSummaryView" text="Entities Detailed View"/>
-   			<tocitem target="BiopaxTreeView" text="Entities Tree View"/>
-   			<tocitem target="GroupOperationsPanel" text="Entities Management"/>
+   	   		<tocitem target="PathwayImportTable" text="Pathway Preview"/>
+   	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram"/>
+   	   		<tocitem target="PathwayObjectsView" text="Pathway Objects"/>
+   			<tocitem target="BiopaxSummaryView" text="BioPAX Summary"/>
+   			<tocitem target="BiopaxTreeView" text="BioPAX Tree"/>
+   			<tocitem target="PP_Pathways" text="Pathway Object Properties Pane"/>
+   			<tocitem target="GroupOperationsPanel" text="Operations on Pathway Entities"/>		
    		</tocitem>
     	<tocitem target="DatabaseOverview" text="Database Sources">
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>

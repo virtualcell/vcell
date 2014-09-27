@@ -1,27 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="BioPAX Tree View" target="BiopaxTreeView">
+<page title="BioPAX Tree" target="BiopaxTreeView">
 
 	<introduction>
-Displays the entities within the 
-<link target = "PathwayDiagramView"> Entities Diagram View</link> 
-in text format.
+Displays the pathway entities within the 
+<link target = "PathwayDiagramView"> Pathway Diagram</link>.  All the information in this view is read-only.
 	</introduction>
 	
 	<appearance>
-<para>
 The view is presenting the data using a tree format.
-</para>
-<para>
 		<imgReference target = "BiopaxTreeView.png">
 		</imgReference>
-</para>
 	</appearance>
 	
 	<operations>
-<para>
-All the information in this view is read-only, no user actions can be performed.
-</para>
 	</operations>
 </page>
 
