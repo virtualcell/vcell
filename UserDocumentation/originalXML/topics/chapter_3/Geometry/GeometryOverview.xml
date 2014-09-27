@@ -24,7 +24,7 @@ Geometries can be viewed as:
 </list>
 The Geometry domain (origin and extent) can be edited. The geometry can be exported in different surface mesh formats by clicking the <bold>Export...</bold> button.  
 Analytic geometries functions can be edited in place by double-clicking the table cell containing the analytic expression.
-An nalytic geometry can be converted to an <link target="geom_from_images">Image Geometry</link> by clicking the <bold>Edit Image</bold> button.
+An analytic geometry can be converted to an <link target="geom_from_images">Image Geometry</link> by clicking the <bold>Edit Image</bold> button.
 The currently defined geometry can be changed (replaced).  
 <imgReference target = "frm_geometry_overview.png"/>
 </introduction>

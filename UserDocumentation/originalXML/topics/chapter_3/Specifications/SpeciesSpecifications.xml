@@ -13,9 +13,14 @@
 		<imgReference target = "SpeciesSpecifications.GIF"/>
 		<para><bold>Stochastic (spatial and non-spatial)</bold></para>
 		<imgReference target = "SpeciesSpecifications_stoch.png"/>
+	<para>
+	<imgReference target = "speciesSpecificationMenu.png"/>
+	</para>
+	Columns values for a selected species row can be changed with the rt-click menu.  Initial condition expressions and values can be copied/pasted using the rt-click menu.
 	</appearance>
 	
 	<operations>
+	
 	<para> <bold>Viewing/Editing Species Specifications</bold></para>
 	<para>
 	<bold>Specifications</bold> can be accessed by selecting the 'Specifications' item under the application node in the 'Navigation' panel tree structure.
@@ -60,6 +65,7 @@
 	The default Boundary Conditions for a given species at each boundary (X-,X+, Y-, Y+, Z-, Z+) are fixed at either zero, when using <bold>Flux</bold>, or the concentration set in the Initial Condition field, when using <bold>Value</bold> type. 
 	You can provide a numerical value or expressions for each boundary to provide a rate of flux ('Flux') or a clamped concentration different from that entered in the Initial Conditions field ('Value').
 	</para>
+	
 
 	<para> <bold>Velocity</bold></para>
 	<para>
