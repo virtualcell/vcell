@@ -694,16 +694,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 			popupMenu.add(importIntoModelMenuItem1);	
 			popupMenu.addSeparator();
 			
-			collapseMenuItem1 = new JMenuItem("Collapse");
-			collapseMenuItem1.addActionListener(eventHandler);
-			expandMenuItem1 = new JMenuItem("Expand");
-			expandMenuItem1.addActionListener(eventHandler);
+	//		collapseMenuItem1 = new JMenuItem("Collapse");
+	//		collapseMenuItem1.addActionListener(eventHandler);
+	//		expandMenuItem1 = new JMenuItem("Expand");
+	//		expandMenuItem1.addActionListener(eventHandler);
 			groupMenuItem1 = new JMenuItem("Group");
 			groupMenuItem1.addActionListener(eventHandler);			
 			ungroupMenuItem1 = new JMenuItem("Ungroup");
 			ungroupMenuItem1.addActionListener(eventHandler);
-			popupMenu.add(collapseMenuItem1);
-			popupMenu.add(expandMenuItem1);
+	//		popupMenu.add(collapseMenuItem1);
+	//		popupMenu.add(expandMenuItem1);
 			popupMenu.add(groupMenuItem1);
 			popupMenu.add(ungroupMenuItem1);
 		}
@@ -714,16 +714,16 @@ implements PathwayEditor, ActionBuilder.Generator {
 	private JPopupMenu getGroupPopupMenu() {
 		if (groupPopupMenu == null) {
 			groupPopupMenu = new JPopupMenu();
-			collapseMenuItem = new JMenuItem("Collapse");
-			collapseMenuItem.addActionListener(eventHandler);
-			expandMenuItem = new JMenuItem("Expand");
-			expandMenuItem.addActionListener(eventHandler);
+	//		collapseMenuItem = new JMenuItem("Collapse");
+	//		collapseMenuItem.addActionListener(eventHandler);
+	//		expandMenuItem = new JMenuItem("Expand");
+	//		expandMenuItem.addActionListener(eventHandler);
 			groupMenuItem = new JMenuItem("Group");
 			groupMenuItem.addActionListener(eventHandler);			
 			ungroupMenuItem = new JMenuItem("Ungroup");
 			ungroupMenuItem.addActionListener(eventHandler);
-			groupPopupMenu.add(collapseMenuItem);
-			groupPopupMenu.add(expandMenuItem);
+	//		groupPopupMenu.add(collapseMenuItem);
+	//		groupPopupMenu.add(expandMenuItem);
 			groupPopupMenu.add(groupMenuItem);
 			groupPopupMenu.add(ungroupMenuItem);	
 		}
@@ -892,12 +892,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if (ungroupMenuItem != null) {
 			ungroupMenuItem.setEnabled(false);
 		}
-		if (expandMenuItem != null) {
-			expandMenuItem.setEnabled(false);
-		}
-		if (collapseMenuItem != null) {
-			collapseMenuItem.setEnabled(false);
-		}
+//		if (expandMenuItem != null) {
+//			expandMenuItem.setEnabled(false);
+//		}
+//		if (collapseMenuItem != null) {
+//			collapseMenuItem.setEnabled(false);
+//		}
 		if (showPhysiologyLinksMenuItem1 != null) {
 			showPhysiologyLinksMenuItem1.setEnabled(false);
 		}
@@ -913,12 +913,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 		if (ungroupMenuItem1 != null) {
 			ungroupMenuItem1.setEnabled(false);
 		}
-		if (expandMenuItem1 != null) {
-			expandMenuItem1.setEnabled(false);
-		}
-		if (collapseMenuItem1 != null) {
-			collapseMenuItem1.setEnabled(false);
-		}
+	//	if (expandMenuItem1 != null) {
+	//		expandMenuItem1.setEnabled(false);
+	//	}
+	//	if (collapseMenuItem1 != null) {
+	//		collapseMenuItem1.setEnabled(false);
+	//	}
 		if (deleteMenuItem != null) {
 			deleteMenuItem.setEnabled(false);
 		}
@@ -975,12 +975,12 @@ implements PathwayEditor, ActionBuilder.Generator {
 						//	(selectedObjects.get(0) instanceof Protein) ||  // collapse function for Protein
 							(selectedObjects.get(0) instanceof Interaction)){
 						groupButton.setEnabled(true);
-						if(collapseMenuItem != null ){
-							collapseMenuItem.setEnabled(true);
-						}
-						if(collapseMenuItem1 != null ){
-							collapseMenuItem1.setEnabled(true);
-						}
+			//			if(collapseMenuItem != null ){
+			//				collapseMenuItem.setEnabled(true);
+			//			}
+			//			if(collapseMenuItem1 != null ){
+			//				collapseMenuItem1.setEnabled(true);
+				//		}
 					}
 				}
 				if(selectedObjects.size() > 1){ // only provide the "group" function when users select more than one object
