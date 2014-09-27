@@ -88,7 +88,7 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	<para>1. Run parameter Scan Serially.</para>
 	<para>2. Stop at Spatial Uniform: stop the simulation when the system reaches spatial uniform based on the error tolerance.</para>
 	<para>3. Data processing script: display particle count in specified regions of interest.</para>
-	<para><imgReference target="sim_soverSetting1.gif"/></para>
+	<para><imgReference target="sim_SolverSetting1.png"/></para>
 	<para></para>
 	<item>General Settings for Non-spatial Stochastic Solvers</item>
 	<para>The following settings are applicable for all non-spatial stochastic simulations.</para>
