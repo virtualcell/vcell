@@ -8,7 +8,10 @@
 	
 	<appearance>
 	<imgReference target = "ShowPathwayLinks.png"> </imgReference>	
-	<par></par>
+	</appearance>
+	
+	<operations>
+	<para>
 	Selecting a single species or a single reaction in a Reaction Diagram, Reactions Table View, Structure Diagram or 
 	Species Table view enables <bold>Pathway Links</bold> button. 
 	If a species or reaction is already linked to a pathway object, 
@@ -16,9 +19,8 @@
 	the user will be transfered to <link target = "PathwayDiagramView">Pathway Diagram</link> view where
 	linked objects will be shown in red.
 	<imgReference target = "LinkedPathwayObject.png"> </imgReference>
-	</appearance>
+	</para>
 	
-	<operations>
 	The user can <bold>Edit Pathway Links...</bold>  
 	
 	</operations>
