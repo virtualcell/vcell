@@ -97,7 +97,4 @@ resultset_crawler_memoryMB=3000
 #--------------------------------------
 check_vcell_alive_mainclass=GENERATED
 check_vcell_alive_memoryMB=20
-check_vcell_alive_checktype=CONNECT_1
 check_vcell_alive_nagiospw=GENERATED
-check_vcell_alive_warntimeout=30
-check_vcell_alive_crittimeout=60

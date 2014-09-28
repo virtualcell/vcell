@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.rmi.Naming;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import org.vcell.util.BigString;
 import org.vcell.util.document.BioModelInfo;
@@ -57,7 +58,7 @@ public class NagiosVCellCheck {
 			System.setErr(new PrintStream(baos_err));
 
 			String host=null;
-			int rmiPort = -1;
+			ArrayList<Integer> rmiPorts = new ArrayList<Integer>();
 			String password=null;
 			VCELL_CHECK_LEVEL checkLevel=null;
 			int warningTimeout = -1; //seconds
@@ -68,10 +69,17 @@ public class NagiosVCellCheck {
 					host = args[i];
 				}else if(args[i].equals("-i")){
 					i++;
+					String latestToken = null;
 					try{
-						rmiPort = Integer.parseInt(args[i]);
+						StringTokenizer st  = new StringTokenizer(args[i], ":");
+						latestToken = st.nextToken();
+						rmiPorts.add(Integer.parseInt(latestToken));
+						if(st.hasMoreTokens()){
+							latestToken = st.nextToken();
+							rmiPorts.add(Integer.parseInt(latestToken));
+						}
 					}catch(NumberFormatException e){
-						throw new UnexpectedTestStateException("Error parsing rmiPort Integer "+args[i]);
+						throw new UnexpectedTestStateException("Error parsing rmiPort Integer "+latestToken);
 					}
 				}else if(args[i].equals("-p")){
 					i++;
@@ -104,7 +112,22 @@ public class NagiosVCellCheck {
 						"} -H vcellRMIHost -i rmiPort -p vcellNagiosPassword -w warningTimeout -c criticalTimeout");
 				}
 			}
-			sysout.println(checkVCell(checkLevel,host, rmiPort,"VCellBootstrapServer",password,warningTimeout,criticalTimeout));
+			//Test multiple ports if present, both return the same result
+			String result = null;
+			for(Integer rmiPort:rmiPorts){
+				if(rmiPort == -1){
+					continue;
+				}
+				String temp = checkVCell(checkLevel,host, rmiPort,"VCellBootstrapServer",password,warningTimeout,criticalTimeout);
+				if(result != null && !result.equals(temp)){
+					throw new UnexpectedTestStateException("Not expecting rmiport="+rmiPorts.get(0)+" result="+result+" and rmiport="+rmiPort+" result="+temp+" to be different");
+				}
+				result = temp;
+			}
+			if(result == null){
+				throw new UnexpectedTestStateException("test result not expected to be null");
+			}
+			sysout.println(result);
 			return NAGIOS_STATUS.OK;
 		}catch(UnexpectedTestStateException e){
 			sysout.println(e.getMessage());
@@ -125,7 +148,7 @@ public class NagiosVCellCheck {
 		SimulationStatusPersistent lastSimStatus = null;
 
 		if(rmiHostName == null || rmiPort == -1){
-			throw new UnexpectedTestStateException("Host name/ip and rmiPort required for "+VCELL_CHECK_LEVEL.RMI_ONLY_0+" and above");
+			throw new UnexpectedTestStateException("Host name/ip and rmiPort required for testing, rmihostname="+rmiHostName+" rmiport="+rmiPort);
 		}
 		String rmiUrl = "//" + rmiHostName + ":" +rmiPort + "/"+rmiBootstrapStubName;
 		VCellBootstrap vcellBootstrap = null;
