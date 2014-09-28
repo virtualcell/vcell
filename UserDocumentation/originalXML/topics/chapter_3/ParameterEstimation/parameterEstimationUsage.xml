@@ -32,9 +32,10 @@ you click “OK”, the newly created task will show up in the drop down menu na
 	<para>
 	Click on the "OK" button. The selected parameters will show up in a table. In this table, you can change initial guess, lower
 	and upper bounds of the parameters just by double clicking the corresponding table cells. 
+	Right-click menu allows copy/paste of "Initial Guess" values and items to edit other table values. 
 	</para>
 	<para>
-	<imgReference target = "pe_parameterTable.gif"/>
+	<imgReference target = "pe_parameterTable.png"/>
 	</para>
 	<para></para>
 	<item>
