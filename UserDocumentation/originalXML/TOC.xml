@@ -72,12 +72,7 @@
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
-    	    </tocitem>
-    	    <tocitem target="PEOverview" text="Fitting">
-    	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
-   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
-        	</tocitem>
-   		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
+	    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
    		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
     	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results Slice View"/>
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
@@ -93,6 +88,11 @@
 				<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies">
 				</tocitem>
    			</tocitem>
+    	    </tocitem>
+    	    <tocitem target="PEOverview" text="Fitting">
+    	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
+   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
+        	</tocitem>
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
    	   		<tocitem target="ParametersAndFunctions" text="Parameters And Functions"/>
