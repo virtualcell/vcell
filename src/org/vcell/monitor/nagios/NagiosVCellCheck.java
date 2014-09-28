@@ -166,7 +166,7 @@ public class NagiosVCellCheck {
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.LOAD_3.ordinal()){
 					KeyValue bioModelKey = null;
-					final String testModelName = "Solver Suite 5.1 (ALPHA only ode)";
+					final String testModelName = "Solver Suite 5.1 (BETA only ode)";
 					for(BioModelInfo bioModelInfo:vcInfoContainer.getBioModelInfos()){
 						if(bioModelInfo.getVersion().getName().equals(testModelName)){
 							bioModelKey = bioModelInfo.getVersion().getVersionKey();
