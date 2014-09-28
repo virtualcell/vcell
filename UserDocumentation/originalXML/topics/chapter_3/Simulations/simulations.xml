@@ -59,7 +59,7 @@
 	For example, sensitivity analysis parameter is only available for non spatial simulations. 
 	<item>Mesh/Geometry Size</item>
 	Spatial models are simulated within a geometric mesh. The mesh specifies the number of points used to sample the geometry. 
-	The geometry size is the domain size based on the geometry created or imported in the application.
+	The geometry size is the domain size based on the geometry created or imported in the application. (see <def target = "def_Mesh">Mesh</def>)
 	<item>Parameters with values changed from default</item>
 	the simulation panel allows you to modify parameter values in your simulation without modifying your model directly. If changes are made
 	they are indicated in red in this section of the simulation summary.

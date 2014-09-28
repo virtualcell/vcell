@@ -51,7 +51,7 @@ and thus take many different values.
 	</para>
 	</list>
 	
-	<para><bold>Mesh</bold></para>
+	<para><bold>Mesh</bold> (see definition <def target = "def_Mesh">Mesh</def>)</para>
 	<para>This tab is only available in spatial models with resolved geometries. Specify Geometry size and Mesh size for spatial models.</para>
 	<list>
 	<item>Geometry Size</item>
