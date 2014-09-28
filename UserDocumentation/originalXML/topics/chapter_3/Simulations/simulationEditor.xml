@@ -5,9 +5,10 @@
 	
 	<introduction>
 	In the "Simulation" tab, highlight the simulation you want to edit and clicking the "Edit Simulation" button leads to you a simulation editor.
-	The simulation editor has two tabs, which are "Parameters" and "Solvers".
+	The simulation editor will have 2 or 3 tabs depending on whether the simulation is non-spatial or spatial. "Parameters" and "Solver" tabs always appear 
+	while "Mesh" is only present for spatial simulations.
 	</introduction>
-	<appearance><imgReference target="sim_simEditor.gif"/></appearance>
+	<appearance><imgReference target="sim_simEditor.png"/></appearance>
 	
 	<operations>
 	<para><bold>Parameters</bold></para>
@@ -17,7 +18,8 @@ possible values. Altering parameter values allows you to quickly and easily modi
 having to make a complete new BioModel or access the BioModel dialog. Parameter scans enable the user to do
 “brute force” exploration of the parameter space of a model in a single simulation specification without
 having to manually create, edit, and run many individual simulations that would test the different combinations
-of parameter values.</para>
+of parameter values.  <bold>Right-click menu</bold> allows for copying and pasting parameter values.
+</para>
 	<list>
 	<item>Change Value</item>
 	<para>The Simulation Editor window allows the user to override the default value of any parameter by specifying a
