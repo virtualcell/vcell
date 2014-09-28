@@ -83,3 +83,11 @@ javasolver_memoryMB=1000
 #--------------------------------------
 resultset_crawler_mainclass=GENERATED
 resultset_crawler_memoryMB=3000
+
+#--------------------------------------
+# Check VCell Alive Nagios Monitor
+#--------------------------------------
+check_vcell_alive_mainclass=GENERATED
+check_vcell_alive_memoryMB=20
+check_vcell_alive_nagiospw=GENERATED
+
