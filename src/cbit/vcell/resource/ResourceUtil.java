@@ -15,15 +15,22 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.solver.SolverDescription;
 
 public class ResourceUtil {
+	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 	private static final String system_osname = System.getProperty("os.name");
 	public final static boolean bWindows = system_osname.contains("Windows");
 	public final static boolean bMac = system_osname.contains("Mac");
@@ -65,6 +72,7 @@ public class ResourceUtil {
 	
 	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
 		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+    private static final Logger lg = Logger.getLogger(ResourceUtil.class);
 
 	public enum SolverExecutable {
 		FiniteVolume("FiniteVolume" + EXE_SUFFIX),
@@ -262,7 +270,12 @@ public class ResourceUtil {
 		}
 		return vcellHome;
 	}	
-		
+
+	/**
+	 * create Solvers Directory, if necessary
+	 * check last version of software which used directory, delete contents of directory if different
+	 * @return directory of locally run solvers
+	 */
 	public static File getSolversDirectory() 
 	{
 		if(solversDirectory == null)
@@ -271,9 +284,48 @@ public class ResourceUtil {
 			if (!solversDirectory.exists()) {
 				solversDirectory.mkdirs();
 			}
+			else {
+				if (!validManifest(solversDirectory)) {
+					try {
+						//delete existing files
+						DirectoryStream<Path> ds = Files.newDirectoryStream(solversDirectory.toPath());
+						for (Path entry : ds) {
+							entry.toFile().delete();
+						}
+						//write manifest
+						String versionString = VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString();
+						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),versionString.getBytes());
+					} catch (IOException e) {
+						lg.warn("Error cleaning solvers directory",e); 
+					}
+				}
+			}
 		}
 		return solversDirectory;
 	}	
+	
+	/**
+	 * see if a directory has a readable manifest file and if it matches current software version 
+	 * @param testDir
+	 * @return true if all conditions met
+	 */
+	private static boolean validManifest(File testDir) {
+		try {
+			File existingManifest = new File(testDir,MANIFEST_FILE_NAME);
+			if (existingManifest.canRead()) {
+				List<String> lines = Files.readAllLines(existingManifest.toPath(), StandardCharsets.UTF_8);
+				if (!lines.isEmpty()) {
+					String manifest = lines.get(0);
+					VCellSoftwareVersion sv = VCellSoftwareVersion.fromSystemProperty();
+					return sv.getSoftwareVersionString().equals(manifest);
+				}
+			}
+		} catch (IOException e) {
+			lg.warn("Error getting manifest", e);
+		}
+		return false;
+	}
+
 	
 	public static void loadNativeSolverLibrary () {
 		try {
