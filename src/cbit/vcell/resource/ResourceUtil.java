@@ -38,7 +38,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
-	private static final String MANIFEST_FILE_NAME = ".versionManifest";
+	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 	private static final String system_osname = System.getProperty("os.name");
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
