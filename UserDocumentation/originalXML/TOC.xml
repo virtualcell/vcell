@@ -65,6 +65,7 @@
     		<tocitem target="ProtocolsOverview" text="Protocols">
     	   		<tocitem target="Events" text="Events"/>
    	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
+   	 	  		<tocitem target="MicroscopeMeasurement" text="Microscope Measurements"/>
     		</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
