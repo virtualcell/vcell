@@ -75,6 +75,7 @@
 	    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
    		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
     	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results Slice View"/>
+    	   			<tocitem target="SpatialSimResultsDrawingTools" text="Region of Interest Selection Tools"/>
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
