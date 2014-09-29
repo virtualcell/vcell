@@ -26,23 +26,31 @@ Drawing Tools:
 <imgReference target = "SimResultsDrawingTools.png"/>
 </para>
 <para>
-Selection, Creating Regions of Interest (ROI):
-Choose from selection arrow, point, line, spline or add an additional control point. The line and points are gray when deselected; control nodes and points are white when selected. Use the line or spline tools to create a ROI by clicking to drop nodes and create an enclosed region. For data associated with ROI, see Statistics.
+<bold>Selecting/Creating Regions of Interest (ROI):</bold>
+Choose tool type from 
+<imgReference target = "roi_selection_tool.png"/> <bold>selection</bold>,
+<imgReference target = "roi_point_tool.png"/> <bold>point</bold>, 
+<imgReference target = "roi_line_tool.png"/> <bold>line</bold>, 
+<imgReference target = "roi_spline_tool.png"/> <bold>spline/curve</bold>,
+<imgReference target = "roi_controlpoint_tool.png"/> <bold>add line/spline control point</bold> .  
+User created ROI line and points are gray when deselected; control nodes and points are white when selected.  
+Use the point, line or spline tools to create a ROI by clicking to add single points or extend line segmentsand.  
+An enclosed region ROI can be created with the line tool by overlapping the end point with the start point.
+For data associated with ROI, see <bold>Statistics</bold> (below).
 </para>
 <para>
-Line tool -- Enables show spatial plot button which displays values of the selected variable along the line created with two successive clicks of the line tool.
- </para>
-<para>Spline/Curve tool -- Creates a region of interest along the line and enables show spatial plot button. which displays values of the selected variable parametrically by distance along a spline curve defined by two or more successive clicks of the curve tool.
+<imgReference target = "roi_line_tool.png"/> Line tool -- Enables show spatial plot button which displays values of the selected variable along the line created with two successive clicks of the line tool.
+</para>
+<para><imgReference target = "roi_spline_tool.png"/> Spline/Curve tool -- Creates a region of interest along the line and enables show spatial plot button. which displays values of the selected variable parametrically by distance along a spline curve defined by two or more successive clicks of the curve tool.
 </para><para>
 Deleting Points, Lines, or Curves</para>
 <para>
-Use the selection tool to select the item and then use either Backspace or the Delete key to delete it.
-</para><para>Image Zoom:
-Use the image zoom feature to ease in
-the selection of lines and/or points. Select the Magnification icon and press your left mouse button while you move the mouse across the image to
-increase and decrease the image zoom. Alternatively you
-can press the alt key and drag the mouse across the image to zoom up or down.</para>
-<para>Pan Tool:
+Use the selection tool <imgReference target = "roi_selection_tool.png"/> to select the item and then use either Backspace or the Delete key to delete it.
+</para>
+<para>Select the <imgReference target = "roi_zoom_tool.png"/> Image Zoom: <bold>image magnification</bold> tool and drag the mouse across the image to
+increase and decrease the image zoom.
+</para>
+<para><imgReference target = "roi_pan_tool.png"/> Pan Tool: 
 Use the pan tool, while the image is zoomed up, to move across the image. With the Hand icon depressed, hold down the left mouse button and drag the mouse across the image to move it.
 </para>
 <para>Slice
@@ -56,7 +64,7 @@ The Axis is provided as an additional means of viewing your 3-D image data.</par
 </list>
 
 <para>
-Statistics
+<bold>Statistics</bold>
 </para>
 
 <para>
