@@ -69,7 +69,9 @@
 	of the finite volume method is a little slower but gives better error messages.
 	</para>
 	<list>
-
+    <item>Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step)(DISABLED)</item>
+	<para><bold>(NOT SUPPORTED IN FUTURE RELEASES OF VCELL - use Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)</bold> instead).  The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.</para>
+    <para></para>
 	<item>Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)</item>
 	<para>This is our interpreted standalone version of the finite volume method. It is a little slower but gives better error messages.The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.</para>
 	<para></para>
