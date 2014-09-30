@@ -199,7 +199,7 @@ public class ResourceUtil {
 			//anything to standard error,The BNG script aborts
 			//The setting below prevents the cygwin "MS-DOS style path detected" warning from 
 			//being issued
-			env.put("nodosfilewarning", Boolean.TRUE.toString()); 
+			env.put("CYGWIN","nodosfilewarning"); 
 		}
 	}
 	
