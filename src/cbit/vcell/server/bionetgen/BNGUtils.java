@@ -144,7 +144,8 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		}
 		throw new org.vcell.util.ExecutableException(executable.getStderrString(),ex);
 	} finally {
-		if (lg.getLevel( ).isGreaterOrEqual(Level.INFO) ) {
+		executable = null;		
+		if (lg.getEffectiveLevel( ).isGreaterOrEqual(Level.INFO) ) {
 			if (workingDir != null && workingDir.exists()) {
 				File[] files = workingDir.listFiles();
 
@@ -155,7 +156,6 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		}
 
 		workingDir = null;
-		executable = null;		
 	}
 
 	return bngOutput;
