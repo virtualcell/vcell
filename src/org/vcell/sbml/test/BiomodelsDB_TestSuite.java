@@ -9,7 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -17,7 +20,9 @@ import java.util.StringTokenizer;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.junit.Test;
 import org.vcell.sbml.SimSpec;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.logging.Logging;
@@ -34,7 +39,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import cbit.vcell.util.NativeLoader;
 
 public class BiomodelsDB_TestSuite {
 	
@@ -73,15 +77,19 @@ public class BiomodelsDB_TestSuite {
 	public static void main(String[] args){
 		
 		try {
-			if (args.length!=1){
-				System.out.println("usage: BiomodelsDB_TestSuite outputDirectory");
+			if (args.length<1){
+				System.out.println("usage: BiomodelsDB_TestSuite outputDirectory [starting model (integer)]");
 				System.exit(-1);
+			}
+			Logging.init();
+			int minimumModel = 0;
+			if (args.length>1) {
+				minimumModel = Integer.parseInt(args[1]);
 			}
 			File outDir = new File(args[0]);
 			if (!outDir.exists()){
 				outDir.mkdirs();
 			}
-			Logging.init();
 			
 			PropertyLoader.loadProperties();
 			/**
@@ -101,14 +109,17 @@ public class BiomodelsDB_TestSuite {
 			String[] modelIDs = service.getAllCuratedModelsId();
 			Arrays.sort(modelIDs);
 			
-			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log")));
+			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
 				for (String modelID : modelIDs){
 					
 					// TEMP - SKIP MODELS WITH ID xxxx
-					String id = modelID.substring(modelID.length()-3);
+					String id = modelID.substring(modelID.length()-6);
 					int idInt = Integer.parseInt(id);
+					if (idInt < minimumModel) {
+						continue;
+					}
 //
 //					// run only select models:
 //					if ((idInt != 60) && (idInt != 79) && (idInt != 90) && (idInt != 91) && (idInt != 111) && (idInt != 144) && (idInt != 178) && (idInt != 195) && (idInt != 203) && (idInt != 204) && (idInt != 209) && (idInt != 214) &&
@@ -176,12 +187,13 @@ public class BiomodelsDB_TestSuite {
 						String[] varsToTest = simSpec.getVarsList();
 						
 						printWriter.println("ModelId: " + modelID);
+						printWriter.flush();
 						try {
 							//
 							// get COPASI solution (time and species concentrations)
 							//
 							ODESolverResultSet copasiResults = null;
-							/*
+							
 							
 							try {
 								CopasiSBMLSolver copasiSBMLSolver = new CopasiSBMLSolver();
@@ -203,7 +215,7 @@ public class BiomodelsDB_TestSuite {
 
 								bioModelInfo.setAttribute("COPASI_ran","false");
 							}
-							*/
+							
 
 							//
 							// get mSBML solution (time and species concentrations)
@@ -492,6 +504,7 @@ public class BiomodelsDB_TestSuite {
 			}
 		);
 		Document supportedDocument = new Document(new Element("Supported_BioModelsNet"));
+		List<Element> supportedElements = new ArrayList<Element>();
 		for (int i = 0; i < xmlReportFiles.length; i++) {
 			byte[] xmlBytes = new byte[(int)xmlReportFiles[i].length()];
 			FileInputStream fis = new FileInputStream(xmlReportFiles[i]);
@@ -502,21 +515,50 @@ public class BiomodelsDB_TestSuite {
 			Document document = XmlUtil.stringToXML(new String(xmlBytes), null);
 			Element bioModelElement = document.getRootElement().getChild(BioModelsNetPanel.BIOMODELINFO_ELEMENT_NAME);
 			Attribute supportedAttribute = bioModelElement.getAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME);
-			if(!supportedAttribute.getBooleanValue()){
+			if(supportedAttribute.getBooleanValue()){
 				Element newBioModelElement = new Element(BioModelsNetPanel.BIOMODELINFO_ELEMENT_NAME);
+				@SuppressWarnings("unchecked")
 				List<Attribute> attrList = bioModelElement.getAttributes();
 				Iterator<Attribute> iterAttr = attrList.iterator();
 				while(iterAttr.hasNext()){
 					newBioModelElement.setAttribute((Attribute)iterAttr.next().clone());
 				}
-				supportedDocument.getRootElement().addContent(newBioModelElement);
+				supportedElements.add(newBioModelElement);
 			}
 		}
+		Collections.sort(supportedElements, new ElementComparer());
+		Element root = supportedDocument.getRootElement();
+		for (Element e: supportedElements) {
+			root.addContent(e);
+		}
 		if(saveSupportedXMLPathname != null){
-			String supportedXML = XmlUtil.xmlToString(supportedDocument, true);
-			XmlUtil.writeXMLStringToFile(supportedXML, saveSupportedXMLPathname.getAbsolutePath(), true);
+			try (FileWriter fw = new FileWriter(saveSupportedXMLPathname.getAbsolutePath( ))) {
+			Format format = Format.getPrettyFormat( );
+			
+			XMLOutputter out = new XMLOutputter(format);
+			out.output(supportedDocument,fw);
+			}
 		}
 		return supportedDocument;
+	}
+	
+	private static class ElementComparer implements Comparator<Element> {
+
+		@Override
+		public int compare(Element lhs, Element rhs) {
+			Attribute left = lhs.getAttribute("Name");
+			Attribute right= rhs.getAttribute("Name");
+			return left.getValue().compareTo(right.getValue());
+		}
+
+		
+	}
+	
+	@Test
+	public void writeXml( ) throws Exception {
+		File dir = new File("SBMLOutputDirectory");
+		File out = new File("bioModelsNetInfo.xml");
+		writeSupportedModelsReport(dir, out);
 	}
 
 }
