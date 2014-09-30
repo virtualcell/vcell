@@ -75,6 +75,11 @@ is linked.
 		<imgReference target = "PathwayDeleteObjectDlg.png">
 		</imgReference>
 <para></para>	
+
+		<imgReference target = "PathwayEditLinks.png"></imgReference>
+		<imgReference target = "PathwayEditLinks2.png"></imgReference>
+		<imgReference target = "PathwayEditLinksFilter.png"></imgReference>
+
 </operations>
 </page>
 
