@@ -102,26 +102,29 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
-		active.set(true);
-		runThread = Thread.currentThread(); //record for interruption via #stop
-		// reset just in case
-		setOutputString("");
-		setErrorString("");
-		setExitValue(null);
-		ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
-		ResourceUtil.setEnvForOperatingSystem(pb.environment());
-		pb.directory(workingDir);
-		// start the process
-		Process p = pb.start();
-		setProcess(p);
-		
-		// monitor the process; blocking call
-		// will update the fields from StdOut and StdErr
-		// will return the exit code once the process terminates
-		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
-		active.set(false);
-		Thread.interrupted(); //clear interrupted status
-		setExitValue(new Integer(exitCode));
+		try {
+			active.set(true);
+			runThread = Thread.currentThread(); //record for interruption via #stop
+			// reset just in case
+			setOutputString("");
+			setErrorString("");
+			setExitValue(null);
+			ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
+			ResourceUtil.setEnvForOperatingSystem(pb.environment());
+			pb.directory(workingDir);
+			// start the process
+			Process p = pb.start();
+			setProcess(p);
+
+			// monitor the process; blocking call
+			// will update the fields from StdOut and StdErr
+			// will return the exit code once the process terminates
+			int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
+			Thread.interrupted(); //clear interrupted status
+			setExitValue(new Integer(exitCode));
+		} finally {
+			active.set(false);
+		}
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
