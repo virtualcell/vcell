@@ -26,8 +26,7 @@ Following this process, new species and/or reactions will be created within the 
 link will preserve the relationship between the BioModel and the Pathway entities. 
 To do this, select one or more pathway
 entities and press the <bold>Physiology Links</bold> button, then use the option <bold>Import into physiology...</bold>
-<para></para>
-The <bold>Import into physiology</bold> Dialog box is opened. Here the user is allowed to edit the 
+In the Dialog box the user is allowed to edit the 
 values for the compartment, ID and stoichiometric coefficient. The Location/Compartment column provides the drop-down list of compartments specified in Physiology.
 If no compartments are specified, it shows the default compartment c0. In the 
 example below, the reactants are located in c1 while the product is located on the membrane. 
@@ -46,6 +45,14 @@ Returning to the Pathway Diagram View it can be noticed that the linked entities
 small 'L' mark within their circle representation, indicating their linked status.
 		<imgReference target = "PathwayDiagramLinked1.png">
 		</imgReference>
+<para></para>
+
+<bold>Editing Physiology Links.</bold> The user can link/unlink every pathway object to every object in the physiology (reactions or species).
+Selecting <bold>Physiology Links -> Edit Physiology Links...</bold> will start a dialog box with the list of all objects that can be linked
+(species for a physical entity or reactions for an interaction). The user can create new links or deleted existing links by checking/unchecking 
+checkboxes in the dialog. As usual, Search field is provided for easy filtering.
+		<imgReference target = "PhysiologyEditLinks.png"></imgReference>
+
 <para></para>
 <bold>Grouping.</bold> Selecting multiple entities either 
 in a <link target = "PathwayDiagramView">Pathway Diagram</link> view or in a 
@@ -66,19 +73,15 @@ follows:
 <para>
 Existing groups can be grouped in even larger groups. Also groups can be broken down into 
 their original subcomponents using the Ungroup option.
-</para>
-<bold>Deleting.</bold> Single / multiple entities can be deleted from the view using the Delete Selected button. Note 
+</para><para>
+<bold>Deleting.</bold> Single / multiple entities can be deleted from the view using the <bold>Delete Selected</bold> button. Note 
 that linked entities cannot be deleted as long as the link exists. In the case of selections 
 where some entities can be deleted and some others can not, a warning dialog box will display 
 pertinent information. In the example below the user tried to delete two reactions one of which 
 is linked.
 		<imgReference target = "PathwayDeleteObjectDlg.png">
 		</imgReference>
-<para></para>	
-
-		<imgReference target = "PathwayEditLinks.png"></imgReference>
-		<imgReference target = "PathwayEditLinks2.png"></imgReference>
-		<imgReference target = "PathwayEditLinksFilter.png"></imgReference>
+</para>	
 
 </operations>
 </page>

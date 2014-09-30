@@ -3,14 +3,12 @@
 <page title="Pathway Commons Database" target="PathwayCommonsPanel">
 
 	<introduction>
-	<para>
 	The <bold>Pathway Commons</bold> panel allows to query and download biological pathways from Pathway Commons in BioPAX Level 2.
 	Pathway Commons aggregates and integrates the content of nine major pathway databases (BioGRID, MSKCC Cancer Cell Map,
 	Human Protein Database, HumanCyc, SBCNY IMID, IntAct, MINT, NCI/Nature PID, Reactome). 
 	As of October 2011, Pathway Commons contains 1,623 pathways, 585,237 interactions, 105,949 physical entities and 564 organisms.
 	Downloaded pathways can be used to build and annotate models based on the pathways and their links to terminologies and databases
 	about proteins, small molecules, genes, anatomical features, organisms and publications.
-	</para>
 	</introduction>
 	
 	<appearance>
@@ -24,10 +22,9 @@
 	</appearance>
 	
 	<operations>
-	<para>
-	To begin, a search text is entered in the search text field and the <bold>Search</bold> button is pressed to send a request to Pathway Commons.
+	To begin, enter a search text in the search text field and press the <bold>Search</bold> 
+	button (or just press Enter on your keyboard) to send a request to Pathway Commons.
 	The result of this query is a list of pathways in which the search term participates.
-	</para>
 	<para>
 	Each pathway listed in the search results can be selected and then 
 	<link target = "PathwayImportTable"> previewed</link> in the VCell

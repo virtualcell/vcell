@@ -3,7 +3,7 @@
 <page title="Pathway Preview" target="PathwayImportTable">
 
 	<introduction>
-	After pressing <bold>Preview</bold> button the <bold>Pathway Preview</bold> table shows the interactions (i.e. biochemical reaction,
+	After pressing <bold>Preview</bold> button or <bold>double clicking</bold> the pathway the <bold>Pathway Preview</bold> table shows the interactions (i.e. biochemical reaction,
 	transport, transport with biochemical reaction) and the physical entities (i.e. proteins, small molecules, complexes,
 	DNA, RNA) it contains. 
 	</introduction>
