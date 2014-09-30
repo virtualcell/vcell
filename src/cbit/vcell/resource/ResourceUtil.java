@@ -190,9 +190,16 @@ public class ResourceUtil {
 				return;
 			}
 			else {
-				existing += FileUtils.PATHSEP + getSolversDirectory().getAbsolutePath(); 
 				env.put(LIBPATH,existing);
 			}
+		}
+		if (bWindows) {
+			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
+			//calls a cygwin compile "run_network" program. If run_network prints
+			//anything to standard error,The BNG script aborts
+			//The setting below prevents the cygwin "MS-DOS style path detected" warning from 
+			//being issued
+			env.put("nodosfilewarning", Boolean.TRUE.toString()); 
 		}
 	}
 	
