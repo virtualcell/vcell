@@ -181,10 +181,10 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	private static void issueRenderer(ScrollTableBooleanCellRenderer renderer, JTable table, int row, int column, SortTableModel tableModel) {
 		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
-		Icon icon = null;
+		Icon icon = null;	// we don't set any icon if column is boolean, it interferes with checkbox paint on screen
 		if (issueListError.size() > 0) {
 			if (column == 0) {
-				icon = VCellIcons.issueErrorIcon;
+				//icon = VCellIcons.issueErrorIcon;
 				renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListError));
 				renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
 			} else if (column == table.getColumnCount() - 1) {
@@ -194,7 +194,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 			}
 		} else if(issueListWarning.size() > 0) {
 			if (column == 0) {
-				icon = VCellIcons.issueWarningIcon;
+				//icon = VCellIcons.issueWarningIcon;
 				renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListWarning));
 				renderer.setBorder(new MatteBorder(1,1,1,0,Color.orange));
 			} else if (column == table.getColumnCount() - 1) {
@@ -204,7 +204,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 			}
 		} else {
 			if(column == 0) {
-				icon = VCellIcons.issueGoodIcon;
+				//icon = VCellIcons.issueGoodIcon;
 			}
 			renderer.setToolTipText(null);
 			renderer.setBorder(DefaultScrollTableCellRenderer.DEFAULT_GAP);
