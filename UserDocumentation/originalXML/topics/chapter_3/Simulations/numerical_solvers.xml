@@ -50,17 +50,20 @@
 	</para>
 	<list>
 	<item>Gibson (Next Reaction Stochastic Method)</item>
-	<para>Gibson-Bruck is an improved exact stochastic method based on Gllespie's SSA. It uses only a single random number per simulation event and takes time proportional to the logarithm of the number of reactions. Better performance is also acheived by utilizing a dependency graph and an indexed priority queue.</para>
+	<para>Gibson-Bruck is an improved exact stochastic method based on Gillespie's SSA. It uses only a single random number per simulation event and takes time proportional to the logarithm of the number of reactions. Better performance is also acheived by utilizing a dependency graph and an indexed priority queue.</para>
 	<para></para>
 	<item>Hybrid (Gibson + Euler-Maruyama Method)</item>
 	<para>This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes the slow dynamics using the Gibson algorithm. Fixed time step Euler-Maruyama is used for approximate numerical solution of CLE.</para>
-
+    <para></para>
 	<item>Hybrid (Gibson + Milstein Method)</item>
 	<para>This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes the slow dynamics using the Gibson algorithm. Fixed time step Milstein is used for approximate numerical solution of CLE.</para>
 	<para></para>
 	<item>Hybrid (Adaptive Gibson + Milstein Method)</item>
 	<para>This is a hybrid stochastic method. It partitions the system into subsets of fast and slow reactions and approximates the fast reactions as a continuous Markov process, using a chemical Langevin equation, and accurately describes the slow dynamics using the Gibson algorithm. Adaptive time step Milstein is used for approximate numerical solution of CLE.</para>
 	</list>
+	<para>
+	Note: to exercise hybrid solvers you need to go to species specifications and check the checkbox for "Force Continuous" for at least one species.  See <link target = "SpeciesSpecifications" label = "Species">Species Specifications.</link>
+	</para>
 	<para>
 	<bold>Deterministic Spatial Solvers</bold>
 	</para>
