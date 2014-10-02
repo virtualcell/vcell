@@ -57,7 +57,7 @@
 	 
 	<imgReference target="simulations_toolbar.jpg"/>
 	<para>Here is the simulation tool bar. On the left are the controls that create/edit/delete the simulations. on the right are the controls that run/stop simulations and view the results.
-	Note most of buttons are only enabled when one or more simulations are selected.
+	Note most of buttons are only enabled when one or more simulations are selected.  One can edit the name of a simulation by double-clicking on the Name field to select for editing.  Pressing enter commits any edits to the simulation name.
 	</para>
 	<para>On the left:</para>
 	<list>
