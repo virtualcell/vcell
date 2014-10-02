@@ -43,8 +43,9 @@
 	For help determining appropriate values, select "Volume and Surface Calculator" to bring up a calculator to provide volume and surface area information for common geometries (e.g. sphere or cube) based on radius or side lengths. 
 	Click "Volume and Surface Calculator" again to hide the calculator.  See <link target="geom_nonspatial_old_mapping">Non-Spatial Legacy Mapping</link> for older model non-spatial geometry mapping.
 	</para>
-	
-	
+	<para>
+	If one creates a new non-spatial application by copying a spatial application as nonspatial, the equivalent compartment sizes will be pre-computed and automatically entered into the appropriate fields.
+	</para>
 	</operations>
 	
 </page>
