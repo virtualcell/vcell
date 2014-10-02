@@ -50,6 +50,8 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
@@ -70,6 +72,9 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	private JLabel minTimeLabel;
 	private JLabel maxTimeLabel;
 	private JPanel cardLayoutPanel;
+	private JLabel lblNewLabel;
+	private JLabel lblNewLabel_1;
+	private JLabel lblNewLabel_2;
 	
 	public DataProcessingResultsPanel() {
 		super();
@@ -77,7 +82,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	}
 	private void initialize() {		
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowWeights = new double[]{0.0, 0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0, 0.0, 0.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{0, 0};
 		setLayout(gridBagLayout);
 		varJList = new JList();
@@ -95,10 +100,17 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 				onVariablesChange();
 			}
 		});
+		
+		lblNewLabel = new JLabel("Post Process Variable Statistics");
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.insets = new Insets(4, 4, 0, 4);
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = 0;
+		add(lblNewLabel, gbc_lblNewLabel);
 		GridBagConstraints gbc_graphScrollPane = new GridBagConstraints();
 		gbc_graphScrollPane.weighty = 0.3;
 		gbc_graphScrollPane.gridx = 0;
-		gbc_graphScrollPane.gridy = 0;
+		gbc_graphScrollPane.gridy = 1;
 		gbc_graphScrollPane.insets = new Insets(4, 4, 4, 4);
 		gbc_graphScrollPane.fill = GridBagConstraints.BOTH;
 		graphScrollPane = new JScrollPane(varJList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -108,7 +120,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		GridBagConstraints gbc_cardLayoutPanel = new GridBagConstraints();
 		gbc_cardLayoutPanel.weightx = 1.0;
 		gbc_cardLayoutPanel.weighty = 1.0;
-		gbc_cardLayoutPanel.gridheight = 3;
+		gbc_cardLayoutPanel.gridheight = 6;
 		gbc_cardLayoutPanel.insets = new Insets(4, 4, 4, 4);
 		gbc_cardLayoutPanel.fill = GridBagConstraints.BOTH;
 		gbc_cardLayoutPanel.gridx = 1;
@@ -137,6 +149,13 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 
 		cardLayoutPanel.add(imagePlaneManagerPanel, "imagePlaneManagerPanel1");
 		
+		lblNewLabel_1 = new JLabel("Post Process Image Data");
+		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+		gbc_lblNewLabel_1.insets = new Insets(4, 4, 0, 4);
+		gbc_lblNewLabel_1.gridx = 0;
+		gbc_lblNewLabel_1.gridy = 2;
+		add(lblNewLabel_1, gbc_lblNewLabel_1);
+		
 		imageScrollPane = new JScrollPane();
 		imageScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		imageScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -145,7 +164,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		gbc_imageScrollPane.insets = new Insets(4, 4, 4, 4);
 		gbc_imageScrollPane.fill = GridBagConstraints.BOTH;
 		gbc_imageScrollPane.gridx = 0;
-		gbc_imageScrollPane.gridy = 1;
+		gbc_imageScrollPane.gridy = 3;
 		add(imageScrollPane, gbc_imageScrollPane);
 		
 		imageList = new JList();
@@ -164,11 +183,19 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		imageList.setVisibleRowCount(5);
 		imageScrollPane.setViewportView(imageList);
 		
+		lblNewLabel_2 = new JLabel("Post Process Image Time Slider");
+		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+		gbc_lblNewLabel_2.insets = new Insets(4, 4, 0, 4);
+		gbc_lblNewLabel_2.gridx = 0;
+		gbc_lblNewLabel_2.gridy = 4;
+		add(lblNewLabel_2, gbc_lblNewLabel_2);
+		
 		timePanel = new JPanel();
+		timePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagConstraints gbc_timePanel = new GridBagConstraints();
 		gbc_timePanel.insets = new Insets(4, 4, 4, 4);
 		gbc_timePanel.gridx = 0;
-		gbc_timePanel.gridy = 2;
+		gbc_timePanel.gridy = 5;
 		add(timePanel, gbc_timePanel);
 		
 		GridBagLayout gbl_timePanel = new GridBagLayout();
