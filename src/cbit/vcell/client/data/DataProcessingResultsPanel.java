@@ -183,7 +183,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		imageList.setVisibleRowCount(5);
 		imageScrollPane.setViewportView(imageList);
 		
-		lblNewLabel_2 = new JLabel("Post Process Image Time Slider");
+		lblNewLabel_2 = new JLabel("Post Process Image Time");
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
 		gbc_lblNewLabel_2.insets = new Insets(4, 4, 0, 4);
 		gbc_lblNewLabel_2.gridx = 0;
