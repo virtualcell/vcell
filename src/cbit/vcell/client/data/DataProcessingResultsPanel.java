@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
@@ -50,8 +51,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
+
 import javax.swing.border.LineBorder;
+
 import java.awt.Color;
+import java.awt.Dimension;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
@@ -74,7 +78,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	private JPanel cardLayoutPanel;
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
-	private JLabel lblNewLabel_2;
+	private JLabel postProcessImageTimeLabel;
 	
 	public DataProcessingResultsPanel() {
 		super();
@@ -94,6 +98,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					return;
 				}
 				if(varJList.getSelectedIndex() != -1){
+					enableTimePanel(false);
 					imageList.clearSelection();
 					((CardLayout)cardLayoutPanel.getLayout()).show(cardLayoutPanel, "plotPane1");
 				}
@@ -108,10 +113,10 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		gbc_lblNewLabel.gridy = 0;
 		add(lblNewLabel, gbc_lblNewLabel);
 		GridBagConstraints gbc_graphScrollPane = new GridBagConstraints();
-		gbc_graphScrollPane.weighty = 0.3;
+		gbc_graphScrollPane.weighty = 0.5;
 		gbc_graphScrollPane.gridx = 0;
 		gbc_graphScrollPane.gridy = 1;
-		gbc_graphScrollPane.insets = new Insets(4, 4, 4, 4);
+		gbc_graphScrollPane.insets = new Insets(2, 4, 4, 4);
 		gbc_graphScrollPane.fill = GridBagConstraints.BOTH;
 		graphScrollPane = new JScrollPane(varJList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		add(graphScrollPane, gbc_graphScrollPane);
@@ -160,8 +165,8 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		imageScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		imageScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		GridBagConstraints gbc_imageScrollPane = new GridBagConstraints();
-		gbc_imageScrollPane.weighty = 0.3;
-		gbc_imageScrollPane.insets = new Insets(4, 4, 4, 4);
+		gbc_imageScrollPane.weighty = 0.5;
+		gbc_imageScrollPane.insets = new Insets(2, 4, 4, 4);
 		gbc_imageScrollPane.fill = GridBagConstraints.BOTH;
 		gbc_imageScrollPane.gridx = 0;
 		gbc_imageScrollPane.gridy = 3;
@@ -175,33 +180,35 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					if(imageList.getSelectedIndex() != -1){
 						varJList.clearSelection();
 						((CardLayout)cardLayoutPanel.getLayout()).show(cardLayoutPanel, "imagePlaneManagerPanel1");
-						updateImageDisplay();
 					}
+					updateImageDisplay();
 				}
 			}
 		});
 		imageList.setVisibleRowCount(5);
 		imageScrollPane.setViewportView(imageList);
 		
-		lblNewLabel_2 = new JLabel("Post Process Image Time");
-		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-		gbc_lblNewLabel_2.insets = new Insets(4, 4, 0, 4);
-		gbc_lblNewLabel_2.gridx = 0;
-		gbc_lblNewLabel_2.gridy = 4;
-		add(lblNewLabel_2, gbc_lblNewLabel_2);
+		postProcessImageTimeLabel = new JLabel("Post Process Image Time");
+		GridBagConstraints gbc_postProcessImageTimeLabel = new GridBagConstraints();
+		gbc_postProcessImageTimeLabel.insets = new Insets(4, 4, 0, 4);
+		gbc_postProcessImageTimeLabel.gridx = 0;
+		gbc_postProcessImageTimeLabel.gridy = 4;
+		add(postProcessImageTimeLabel, gbc_postProcessImageTimeLabel);
 		
 		timePanel = new JPanel();
+		timePanel.setMinimumSize(new Dimension(250, 60));
 		timePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagConstraints gbc_timePanel = new GridBagConstraints();
-		gbc_timePanel.insets = new Insets(4, 4, 4, 4);
+		gbc_timePanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_timePanel.insets = new Insets(2, 4, 4, 4);
 		gbc_timePanel.gridx = 0;
 		gbc_timePanel.gridy = 5;
 		add(timePanel, gbc_timePanel);
 		
 		GridBagLayout gbl_timePanel = new GridBagLayout();
-		gbl_timePanel.columnWidths = new int[]{150, 0};
-		gbl_timePanel.rowHeights = new int[]{241, 0};
-		gbl_timePanel.columnWeights = new double[]{0.0, 0.0};
+		gbl_timePanel.columnWidths = new int[]{0, 0, 0};
+		gbl_timePanel.rowHeights = new int[]{0, 0};
+		gbl_timePanel.columnWeights = new double[]{0.0, 0.0, 0.0};
 		gbl_timePanel.rowWeights = new double[]{0.0, 0.0};
 		timePanel.setLayout(gbl_timePanel);
 		
@@ -216,34 +223,34 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		});
 		spatialTimeSlider.setPaintTicks(true);
 		spatialTimeSlider.setValue(5);
-		spatialTimeSlider.setInverted(true);
 		spatialTimeSlider.setMaximum(10);
 		spatialTimeSlider.setMajorTickSpacing(1);
-		spatialTimeSlider.setOrientation(SwingConstants.VERTICAL);
 		GridBagConstraints gbc_spatialTimeSlider = new GridBagConstraints();
-		gbc_spatialTimeSlider.gridheight = 3;
-		gbc_spatialTimeSlider.weighty = 1.0;
-		gbc_spatialTimeSlider.fill = GridBagConstraints.VERTICAL;
-		gbc_spatialTimeSlider.insets = new Insets(0, 0, 5, 5);
+		gbc_spatialTimeSlider.weightx = 1.0;
+		gbc_spatialTimeSlider.gridwidth = 3;
+		gbc_spatialTimeSlider.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spatialTimeSlider.insets = new Insets(4, 4, 4, 4);
 		gbc_spatialTimeSlider.gridx = 0;
 		gbc_spatialTimeSlider.gridy = 0;
 		timePanel.add(spatialTimeSlider, gbc_spatialTimeSlider);
 		
-		minTimeLabel = new JLabel("New label");
+		minTimeLabel = new JLabel("Min Time");
 		GridBagConstraints gbc_minTimeLabel = new GridBagConstraints();
-		gbc_minTimeLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_minTimeLabel.anchor = GridBagConstraints.NORTHWEST;
-		gbc_minTimeLabel.gridx = 1;
-		gbc_minTimeLabel.gridy = 0;
+		gbc_minTimeLabel.anchor = GridBagConstraints.WEST;
+		gbc_minTimeLabel.insets = new Insets(4, 4, 4, 4);
+		gbc_minTimeLabel.gridx = 0;
+		gbc_minTimeLabel.gridy = 1;
 		timePanel.add(minTimeLabel, gbc_minTimeLabel);
 		
-		maxTimeLabel = new JLabel("New label");
+		maxTimeLabel = new JLabel("Max Time");
 		GridBagConstraints gbc_maxTimeLabel = new GridBagConstraints();
-		gbc_maxTimeLabel.anchor = GridBagConstraints.SOUTHWEST;
-		gbc_maxTimeLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_maxTimeLabel.gridx = 1;
+		gbc_maxTimeLabel.anchor = GridBagConstraints.EAST;
+		gbc_maxTimeLabel.insets = new Insets(4, 4, 4, 4);
+		gbc_maxTimeLabel.gridx = 2;
 		gbc_maxTimeLabel.gridy = 1;
 		timePanel.add(maxTimeLabel, gbc_maxTimeLabel);
+		
+		enableTimePanel(false);
 	}
 	
 //	private JSlider getJSliderTime(){
@@ -289,8 +296,9 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		if(selectedVarName == null){
 			imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(null);
 			imagePlaneManagerPanel.setSourceDataInfo(null);
-			
+			enableTimePanel(false);
 		}else{
+			enableTimePanel(true);
 			Vector<SourceDataInfo> dataV = dpo.getDataGenerators().get(selectedVarName);
 			int timeIndex = spatialTimeSlider.getValue();
 			SourceDataInfo sdi = dataV.get(timeIndex);
@@ -299,6 +307,12 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		}
 	}
 	
+	private void enableTimePanel(boolean bEnable){
+		if(postProcessImageTimeLabel.isEnabled() != bEnable){
+			postProcessImageTimeLabel.setEnabled(bEnable);
+			BeanUtils.enableComponents(timePanel, bEnable);
+		}
+	}
 //	public void setPdeDataContext(PDEDataContext newValue) {
 //		if (this.pdeDataContext == newValue) {
 //			return;
