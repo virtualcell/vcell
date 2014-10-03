@@ -78,13 +78,17 @@ public class BiomodelsDB_TestSuite {
 		
 		try {
 			if (args.length<1){
-				System.out.println("usage: BiomodelsDB_TestSuite outputDirectory [starting model (integer)]");
+				System.out.println("usage: BiomodelsDB_TestSuite outputDirectory [starting model (integer)]  [only model number]");
 				System.exit(-1);
 			}
 			Logging.init();
 			int minimumModel = 0;
 			if (args.length>1) {
 				minimumModel = Integer.parseInt(args[1]);
+			}
+			Integer only = null;
+			if (args.length > 2) {
+				only = Integer.parseInt(args[2]);
 			}
 			File outDir = new File(args[0]);
 			if (!outDir.exists()){
@@ -116,8 +120,13 @@ public class BiomodelsDB_TestSuite {
 					
 					// TEMP - SKIP MODELS WITH ID xxxx
 					String id = modelID.substring(modelID.length()-6);
-					int idInt = Integer.parseInt(id);
-					if (idInt < minimumModel) {
+					int model = Integer.parseInt(id);
+					if (only != null) {
+						if (model != only) {
+							continue;
+						}
+					}
+					else if (model < minimumModel) {
 						continue;
 					}
 //
@@ -421,7 +430,7 @@ public class BiomodelsDB_TestSuite {
 							}
 */						
 							if ((bCOPASI_VCELL_matched!=null && bCOPASI_VCELL_matched.booleanValue())) {
-//								|| /*(bmSBML_VCELL_matched!=null && bmSBML_VCELL_matched.booleanValue()) */ )  {
+//								|| /*(bmSBML_VCELL_matched!=null && bmSBML_VCELL_matched.booleanValue()) */ )  
 								bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"true");
 							}else{
 								bioModelInfo.setAttribute(BioModelsNetPanel.SUPPORTED_ATTRIBUTE_NAME,"false");
@@ -447,7 +456,8 @@ public class BiomodelsDB_TestSuite {
 					}
 					write(bioModelInfo,new File(outDir,modelID+"_report.xml")); // write for each model just in case files get corrupted (it happened).
 				}
-			}finally{
+			}
+			finally{
 				printWriter.close();
 			}
 		}catch (Throwable e){
@@ -526,7 +536,7 @@ public class BiomodelsDB_TestSuite {
 				supportedElements.add(newBioModelElement);
 			}
 		}
-		Collections.sort(supportedElements, new ElementComparer());
+		//Collections.sort(supportedElements, new ElementComparer());
 		Element root = supportedDocument.getRootElement();
 		for (Element e: supportedElements) {
 			root.addContent(e);
@@ -556,8 +566,8 @@ public class BiomodelsDB_TestSuite {
 	
 	@Test
 	public void writeXml( ) throws Exception {
-		File dir = new File("SBMLOutputDirectory");
-		File out = new File("bioModelsNetInfo.xml");
+		File dir = new File("../VCell_5.2/SBMLOutputDirectory52d");
+		File out = new File("../VCell_5.2/bioModelsNetInfo.xml");
 		writeSupportedModelsReport(dir, out);
 	}
 
