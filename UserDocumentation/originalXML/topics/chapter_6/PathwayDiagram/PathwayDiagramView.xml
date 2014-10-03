@@ -37,7 +37,8 @@ More entities can be added from the
 		<para>
 		Selected entities can be imported into the BioModel and be either created new or linked to existing
 		species and reactions in Physiology 
-		using <link target = "GroupOperationsPanel">Physiology Links</link> button.
+		using <link target = "GroupOperationsPanel">Physiology Links</link> button. The same functionality  
+		can be accessed as well by mouse right click an entity in the diagram view.
 		</para>
 <para>		
 To simplify operations, the items in the diagram can be filtered in real time by typing a string 
