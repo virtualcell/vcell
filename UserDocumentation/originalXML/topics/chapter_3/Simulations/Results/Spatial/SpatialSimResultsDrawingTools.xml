@@ -11,7 +11,7 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Region of Interest Selection Tools">
+<page title="Region of Interest Tools, Data Plots and Statistics">
 
 <introduction>
 Drawing and selection tools are available for spatial simulation results to create regions of interest>
@@ -68,13 +68,18 @@ The Axis is provided as an additional means of viewing your 3-D image data.</par
 </para>
 
 <para>
-Spatial plot of variables:Spatial plots button becomes active once you use the line or spline tools to define a region. Select the region and then press Spatial plot which displays values of the selected variable parametrically by dis- tance along a line or spline curve defined by two or more successive clicks of either tool. The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
+<bold>Spatial Plot:</bold> The Plot->Spatial menu item is enabled once you use the line or spline tools to define a region.  
+Select the created line or spline, select Plot->Spatial to display a plot of the data along the line or spline.  
+The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
     </para>
 <para>
 Toggle Plot/Values Display: Once plots are generated the results can be displayed as graphs or a table of data values (see <link target = "SimCompartmentResults">compartment results viewer</link>).
 </para>
 <para>
-Time Plot: This will become active when you use the point tool to define a point or series of points. Press Time plot to view the graph of the selected point(s). Points are listed in the top left corner of the Time Plot frame and plotted as indi- vidual data series for each variable. The initially selected variable will be plotted over time for each point. Use the variable list to plot multiple variables for each point.
+<bold>Time Plot:</bold> The Plot->Time menu item is enabled once you use the point tool to define a point or series of points.  
+Select Plot->Time to view a line graph of currently selected simulation data variable at each timepoint over time.  
+Point coordinates are listed in the top left corner of the Time Plot frame.  
+Use the 'Y Axis' list to select 1 or more variables to plot.
 </para>
 <para>
 Toggle Plot/Values Display:Once plots are generated the results can be displayed as graphs or a table of data values (see <link target = "SimCompartmentResults">compartment results viewer</link>).
