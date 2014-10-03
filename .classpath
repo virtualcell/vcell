@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jta.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="/VCell_Rest/lib/gson-2.2.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib/vtk.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/libKiSAO.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jdom-contrib-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/jaxen-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/xom-1.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.3-freshTrunk-7-21/nativelibs/win64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="UserDocumentation"/>
+	<classpathentry kind="src" path="resources_vfrap"/>
+	<classpathentry kind="src" path="src_vfrap">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry exported="true" kind="lib" path="lib/activemq-core-5.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/camel-jms-2.9.2.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-j2ee-management_1.1_spec-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jms_1.1_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-jta_1.0.1B_spec-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib/kahadb-5.6.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/icu4j-3.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/iri-0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-2.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/stax-api-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/wstx-asl-3.2.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/new_activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/NetCDF2_2_20_VCell.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/new_mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/GlgGraphLayoutNG.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/thirdParty.jar" sourcepath="lib/vcellClientThirdParty.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jai_codec.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jai_core.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/js.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/script-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/script-js.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/libsbmlj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmf.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/axis.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxrpc.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-discovery-0.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhall.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/netty-3.2.5.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-model-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-api-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-n3-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-rdfxml-2.6.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jamtio.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdf5obj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jhdfobj.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mongo-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ucp.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/sshj-0.8.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jlibsedml.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmathml.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.8.1.jar"/>
+	<classpathentry kind="lib" path="testlib/copasi_build30.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
