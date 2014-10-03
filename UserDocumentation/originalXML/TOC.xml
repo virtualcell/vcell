@@ -80,11 +80,13 @@
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
+					<tocitem target="PostProcessing" text="Post Processing"/>
 				</tocitem>
     	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
 					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
 				</tocitem>
+				
 				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
 				</tocitem>
 				<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies">

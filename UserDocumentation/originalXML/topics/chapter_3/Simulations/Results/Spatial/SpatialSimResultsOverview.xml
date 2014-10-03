@@ -20,9 +20,8 @@
 	<list>
 	<item> <link target = "SimResSpatialSliceView">View Data</link> </item>
 	<item> <link target = "ExportingSimResults">Export Results</link> </item>
-<!--
-	<item> <link target = "PostProcessingData">Post Processing Data</link> </item>
--->
+	<item> <link target = "PostProcessing">Post Processing Data</link> </item>
+
     	</list>
 
 	<para>
