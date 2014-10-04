@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <vcelldoc>
-<page title="Exporting Simulation Results">
+<page title="Exporting Spatial Simulation Results">
 
 	
 	<introduction> Results from simulations are automatically stored on the remote database server. Simulation results may be exported immediately after the simulation or at your leisure by using the Export option located on the bottom of the Results dialog.
@@ -17,11 +17,6 @@
 	
 	<operations> 
 <para>
-Compartmental Results Time Interval: 
-Select a single time point or a range of time by moving the sliders to time points shown in the left window.
-
-</para>
-<para>
 Variables
 You can export data for a single variable, combination of variables, or all
 the variables. Only data pertaining to your selected variables will be ex-
@@ -34,7 +29,7 @@ hold down the Shift key to select additional variables. To select the entire lis
 
 <para>
 Export Format: 
-Compartmental data is limited to export as Comma delimited ASCII files (.csv files). Comma delimited ASCII files are used for organizing data in a spread-
+Spatial data is limited to export as Comma delimited ASCII files (.csv files). Comma delimited ASCII files are used for organizing data in a spread-
 sheet format.
 </para>
 <para>

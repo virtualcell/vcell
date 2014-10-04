@@ -90,7 +90,7 @@ will become active on the results panel once a line is
 drawn over the image data. 
 </para>
 <para>
-Export Data: Export feature for data. See <link target = "ExportingSimResults"> Export</link> for more information.
+Export Data: Export feature for data. See <link target = "ExportingSpatialSimResults"> Export</link> for more information.
 </para>
 <para>
 

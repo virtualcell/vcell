@@ -26,7 +26,7 @@
 	<para>
 	<bold>View</bold> simulation results by selecting a simulation and pressing the simulation results button. 
 	A different results viewer appears for <link target = "SimResSpatialSliceView">Spatial</link> and 
-	<link target = "SimCompartmentResults">Non-spatial</link>(compartmental)results.
+	<link target = "SimCompartmentResults">Non-spatial</link>(compartmental) results.
 	</para>
 	</operations>
 	

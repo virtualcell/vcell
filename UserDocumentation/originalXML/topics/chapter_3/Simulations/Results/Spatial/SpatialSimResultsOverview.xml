@@ -19,7 +19,7 @@
 	In the Simulation Results Viewer there are three options selected by tabs
 	<list>
 	<item> <link target = "SimResSpatialSliceView">View Data</link> </item>
-	<item> <link target = "ExportingSimResults">Export Results</link> </item>
+	<item> <link target = "ExportingSpatialSimResults">Export Results</link> </item>
 	<item> <link target = "PostProcessing">Post Processing Data</link> </item>
 
     	</list>

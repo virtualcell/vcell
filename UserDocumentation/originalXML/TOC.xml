@@ -81,16 +81,15 @@
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
 					<tocitem target="PostProcessing" text="Post Processing"/>
+					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies"/>
 				</tocitem>
     	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
 					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
 				</tocitem>
 				
-				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
-				</tocitem>
-				<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies">
-				</tocitem>
+				
    			</tocitem>
     	    </tocitem>
     	    <tocitem target="PEOverview" text="Fitting">
