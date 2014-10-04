@@ -28,12 +28,14 @@ drawn over the image data. The kymograph dialog displays the data in a visual im
 Variable - Select data variable.
 </item>
 <item>
-Zoom In/Out - Select either button to change
-zoom display of image data.
+Zoom In/Out - Select either button to change zoom display of image data.
 </item>
 <item>
-Copy all - Use this function to paste data into a
-program other than the Virtual Cell.
+Copy all - Use this function to paste data into a program other than the Virtual Cell.
+</item>
+<item>
+Local Scaling - Select this checkbox to change the minimum and maximum y-axis values used to plot the 'Line Scan' and Time Series' graphs.  
+The y-axis min and max are calculated separately for 'Line Scan' and 'Time Series' using only the data to be plotted instead of the whole kymograph data set.
 </item>
 <item>
 Image Data Mouse Menu - Use the right mouse button, over the image data to access the following options: 
