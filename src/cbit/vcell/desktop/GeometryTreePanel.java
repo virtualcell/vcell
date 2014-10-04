@@ -26,6 +26,7 @@ import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
@@ -51,8 +52,9 @@ private class IvjEventHandler implements java.awt.event.ActionListener, java.bea
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemCreateNewGeometry()) 
 				refireActionPerformed(e);
-			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen()) 
-				refireActionPerformed(e);
+			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen())
+				DocumentWindow.showGeometryCreationWarning(GeometryTreePanel.this);
+//				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemDelete()) 
 				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemNew()) 
@@ -196,8 +198,8 @@ private javax.swing.JPopupMenu getGeometryPopupMenu() {
 			ivjGeometryPopupMenu.add(getJMenuItemDelete());
 			ivjGeometryPopupMenu.add(getJMenuItemPermission());
 			ivjGeometryPopupMenu.add(getJMenuItemGeomRefs());
-			ivjGeometryPopupMenu.add(getJSeparator2());
-			ivjGeometryPopupMenu.add(getJMenuItemNew());
+//			ivjGeometryPopupMenu.add(getJSeparator2());
+//			ivjGeometryPopupMenu.add(getJMenuItemNew());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
