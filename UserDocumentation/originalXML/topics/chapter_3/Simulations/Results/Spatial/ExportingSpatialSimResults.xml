@@ -51,8 +51,8 @@ The Export Monitor displays job ID, file Format, Progress bar, Completed/Not Com
 
 <para>
 Spatial Results: 
-Spatial simulation data may be exported in multiple file formats: Comma Delimited ASCII files, Quick Time movie files, GIF89a image files, animated GIF files, Nearly Raw Raster Data (nrrd),
-AVS-UCD and VTK. You can select one to multiple variables over time within the entire geometry, slices within a 3D geometry or specified ROIs. You can also specify the time range for data export. The default setting is no variables selected, a *.csv file, and a list of your previously defined ROIs.
+Spatial simulation data may be exported in multiple file formats: Comma Delimited ASCII files, Quick Time movie files, GIF89a image files, animated GIF files, Nearly Raw Raster Data (nrrd, simple data format,readable by external programs such as 'ImageJ'),
+AVS-UCD(Unstructured Cell Data format, readable by external programs such as 'ParaView') and VTK(Visualization Toolkit format,unstructured mesh,readable by external programs such as 'VisIt'). You can select one to multiple variables over time within the entire geometry, slices within a 3D geometry or specified ROIs. You can also specify the time range for data export. The default setting is no variables selected, a *.csv file, and a list of your previously defined ROIs.
 </para>
 <para>
 Export Format: 
