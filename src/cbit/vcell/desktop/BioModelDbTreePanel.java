@@ -288,8 +288,8 @@ private javax.swing.JPopupMenu getBioModelPopupMenu() {
 			ivjBioModelPopupMenu.add(getJMenuItemArchive());
 			ivjBioModelPopupMenu.add(getJMenuItemPublish());
 			ivjBioModelPopupMenu.add(getCompareWithMenu());
-			ivjBioModelPopupMenu.add(getJSeparator3());
-			ivjBioModelPopupMenu.add(getJMenuItemExport());
+//			ivjBioModelPopupMenu.add(getJSeparator3());
+//			ivjBioModelPopupMenu.add(getJMenuItemExport());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

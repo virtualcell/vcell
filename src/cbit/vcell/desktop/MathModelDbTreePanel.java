@@ -542,8 +542,8 @@ private javax.swing.JPopupMenu getMathModelPopupMenu() {
 			ivjMathModelPopupMenu.add(getJMenuItemArchive());
 			ivjMathModelPopupMenu.add(getJMenuItemPublish());
 			ivjMathModelPopupMenu.add(getJMenuCompare());
-			ivjMathModelPopupMenu.add(getJSeparator3());
-			ivjMathModelPopupMenu.add(getJMenuItemExport());
+//			ivjMathModelPopupMenu.add(getJSeparator3());
+//			ivjMathModelPopupMenu.add(getJMenuItemExport());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
