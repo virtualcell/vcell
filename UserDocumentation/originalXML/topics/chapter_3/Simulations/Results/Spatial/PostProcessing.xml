@@ -4,7 +4,10 @@
 <page title="Post Processing Data">
 
 	
-	<introduction>The Post Processing panel, accessed as a tab in 3D simulation results, gives access to derivative information from result data sets such as average values of spatial variables within a compartment over time and simulated "microscope" images derived from 3D data through Z-projections or gaussian convolution.</introduction>
+	<introduction>
+	The Post Processing panel, accessed as a tab in 3D simulation results, gives access to derivative information from result data sets such as average values of spatial variables within a compartment over time and simulated "microscope" images derived from 3D data through Z-projections or gaussian convolution.  
+	(Note: A Post Processing Data error dialog will appear if the data you are viewing was generated from a simulation run on a version of VCell earlier then 5.2)
+	</introduction>
 	
 	<appearance>  </appearance>
 	
