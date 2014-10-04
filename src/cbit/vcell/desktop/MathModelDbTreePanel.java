@@ -11,7 +11,6 @@
 package cbit.vcell.desktop;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
 
@@ -25,13 +24,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
@@ -41,63 +39,62 @@ import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class BioModelDbTreePanel extends VCDocumentDbTreePanel {
+public class MathModelDbTreePanel extends VCDocumentDbTreePanel {
 	private JMenuItem ivjJMenuItemDelete = null;
 	private JMenuItem ivjJMenuItemOpen = null;
-	protected transient ActionListener aActionListener = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JPopupMenu ivjBioModelPopupMenu = null;
-	private BioModelMetaDataPanel ivjBioModelMetaDataPanel = null;
-	
-	private JMenuItem ivjAnotherEditionMenuItem = null;
-	private JMenuItem ivjAnotherModelMenuItem = null;
-	private JMenu compareWithMenu = null;
-	private JMenuItem ivjLatestEditionMenuItem = null;
+	private JPopupMenu ivjMathModelPopupMenu = null;
+	private MathModelMetaDataPanel ivjMathModelMetaDataPanel = null;
 	private JMenuItem ivjJMenuItemPermission = null;
+	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JMenuItem ivjJMenuItemExport = null;
 	private JSeparator ivjJSeparator3 = null;
+	private JMenu ivjJMenuCompare = null;
+	private JMenuItem ivjJMenuItemAnother = null;
+	private JMenuItem ivjJAnotherEditionMenuItem = null;
+	private JMenuItem ivjJLatestEditionMenuItem = null;
 	private JMenuItem ivjJPreviousEditionMenuItem = null;
+	private boolean fieldPopupMenuDisabled = false;
 	private JMenuItem ivjJMenuItemArchive = null;
-	private JMenuItem ivjJMenuItemPublish = null;
-	
+	private JMenuItem ivjJMenuItemPublish = null;	
+
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemDelete())
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemDelete())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemOpen()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemOpen())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemPermission()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemPermission())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getLatestEditionMenuItem()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemExport())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getAnotherEditionMenuItem()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemAnother())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getAnotherModelMenuItem()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJPreviousEditionMenuItem())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemExport()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJLatestEditionMenuItem())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJPreviousEditionMenuItem()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJAnotherEditionMenuItem())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemArchive()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemArchive())
 				refireActionPerformed(e);
-			if (e.getSource() == BioModelDbTreePanel.this.getJMenuItemPublish()) 
+			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemPublish())
 				refireActionPerformed(e);
-		};
+		}
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == BioModelDbTreePanel.this && (evt.getPropertyName().equals("selectedVersionInfo"))) {
-				getBioModelMetaDataPanel().setBioModelInfo((BioModelInfo)getSelectedVersionInfo());
+			if (evt.getSource() == MathModelDbTreePanel.this && (evt.getPropertyName().equals("selectedVersionInfo"))) {
+				getMathModelMetaDataPanel().setMathModelInfo((MathModelInfo)getSelectedVersionInfo());
 			}
 		}
 	}
 
+	public MathModelDbTreePanel() {
+		this(true);
+	}
+	
 /**
  * BioModelTreePanel constructor comment.
  */
-public BioModelDbTreePanel() {
-	this(true);
-}
-
-public BioModelDbTreePanel(boolean bMetadata) {
+public MathModelDbTreePanel(boolean bMetadata) {
 	super(bMetadata);
 	initialize();
 }
@@ -106,11 +103,11 @@ public BioModelDbTreePanel(boolean bMetadata) {
  * Comment
  */
 protected void actionsOnClick(MouseEvent mouseEvent) {
-	if (mouseEvent.getClickCount() == 2 && getSelectedVersionInfo() instanceof BioModelInfo) {
+	if (mouseEvent.getClickCount() == 2 && getSelectedVersionInfo() instanceof MathModelInfo) {
 		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
 		return;
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && getSelectedVersionInfo() instanceof BioModelInfo && (! getPopupMenuDisabled())) {
+	}	
+	if (SwingUtilities.isRightMouseButton(mouseEvent) && getSelectedVersionInfo() instanceof MathModelInfo && (! getPopupMenuDisabled())) {
 		Version version = getSelectedVersionInfo().getVersion();
 		boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
 		configureArhivePublishMenuState(version,isOwner);
@@ -119,14 +116,8 @@ protected void actionsOnClick(MouseEvent mouseEvent) {
 			!version.getFlag().compareEqual(VersionFlag.Archived) &&
 			!version.getFlag().compareEqual(VersionFlag.Published));
 		compareWithMenuItemEnable(getSelectedVersionInfo());
-		getBioModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+		getMathModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 	}
-}
-
-
-public void addActionListener(ActionListener newListener) {
-	aActionListener = java.awt.AWTEventMulticaster.add(aActionListener, newListener);
-	return;
 }
 
 
@@ -138,21 +129,15 @@ private void configureArhivePublishMenuState(Version version,boolean isOwner) {
 	
 	getJMenuItemArchive().setEnabled(
 		isOwner
-		&&
-		!version.getFlag().isArchived()
-		&&
-		!version.getFlag().isPublished());
+		&& !version.getFlag().isArchived()
+		&& !version.getFlag().isPublished());
 	
 	getJMenuItemPublish().setEnabled(
 		isOwner
-		&&
-		version.getFlag().isArchived()
-		&&
-		(version.getGroupAccess() instanceof GroupAccessAll)
-		&&
-		!version.getFlag().isPublished()
-		&&
-		version.getOwner().isPublisher());
+		&& version.getFlag().isArchived()
+		&& (version.getGroupAccess() instanceof GroupAccessAll)
+		&& !version.getFlag().isPublished()
+		&& version.getOwner().isPublisher());
 }
 
 
@@ -160,10 +145,10 @@ private void configureArhivePublishMenuState(Version version,boolean isOwner) {
  * Comment
  */
 protected void documentManager_DatabaseDelete(DatabaseEvent event) {
-	if (event.getOldVersionInfo() instanceof BioModelInfo && getSelectedVersionInfo() instanceof BioModelInfo) {
-		BioModelInfo selectedBMInfo = (BioModelInfo)getSelectedVersionInfo();
-		BioModelInfo eventBMInfo = (BioModelInfo)event.getOldVersionInfo();
-		if (eventBMInfo.getVersion().getVersionKey().equals(selectedBMInfo.getVersion().getVersionKey())){
+	if (event.getOldVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
+		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
+		MathModelInfo eventMMInfo = (MathModelInfo)event.getOldVersionInfo();
+		if (eventMMInfo.getVersion().getVersionKey().equals(selectedMMInfo.getVersion().getVersionKey())){
 			setSelectedVersionInfo(null);
 			getJTree1().getSelectionModel().clearSelection();
 		}		
@@ -175,39 +160,27 @@ protected void documentManager_DatabaseDelete(DatabaseEvent event) {
  * Comment
  */
 protected void documentManager_DatabaseUpdate(DatabaseEvent event) {
-	if (event.getNewVersionInfo() instanceof BioModelInfo && getSelectedVersionInfo() instanceof BioModelInfo) {
-		BioModelInfo selectedBMInfo = (BioModelInfo)getSelectedVersionInfo();
-		BioModelInfo eventBMInfo = (BioModelInfo)event.getNewVersionInfo();
-		if (eventBMInfo.getVersion().getVersionKey().equals(selectedBMInfo.getVersion().getVersionKey())){
+	if (event.getNewVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
+		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
+		MathModelInfo eventMMInfo = (MathModelInfo)event.getNewVersionInfo();
+		if (eventMMInfo.getVersion().getVersionKey().equals(selectedMMInfo.getVersion().getVersionKey())){
 			setSelectedVersionInfo(event.getNewVersionInfo());
 		}		
 	}
 }
 
-
 /**
- * Method to support listener events.
- */
-protected void fireActionPerformed(ActionEvent e) {
-	if (aActionListener == null) {
-		return;
-	};
-	aActionListener.actionPerformed(e);
-}
-
-
-/**
- * Return the AnotherEditionMenuItem property value.
+ * Return the JAnotherEditionMenuItem property value.
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getAnotherEditionMenuItem() {
-	if (ivjAnotherEditionMenuItem == null) {
+private javax.swing.JMenuItem getJAnotherEditionMenuItem() {
+	if (ivjJAnotherEditionMenuItem == null) {
 		try {
-			ivjAnotherEditionMenuItem = new javax.swing.JMenuItem();
-			ivjAnotherEditionMenuItem.setName("AnotherEditionMenuItem");
-			ivjAnotherEditionMenuItem.setText("Another Edition...");
-			ivjAnotherEditionMenuItem.setEnabled(true);
+			ivjJAnotherEditionMenuItem = new javax.swing.JMenuItem();
+			ivjJAnotherEditionMenuItem.setName("JAnotherEditionMenuItem");
+			ivjJAnotherEditionMenuItem.setMnemonic('E');
+			ivjJAnotherEditionMenuItem.setText("Another Edition...");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -216,20 +189,21 @@ private javax.swing.JMenuItem getAnotherEditionMenuItem() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjAnotherEditionMenuItem;
+	return ivjJAnotherEditionMenuItem;
 }
 
 /**
- * Return the AnotherModelMenuItem property value.
+ * Return the JLatestEditionMenuItem property value.
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getAnotherModelMenuItem() {
-	if (ivjAnotherModelMenuItem == null) {
+private javax.swing.JMenuItem getJLatestEditionMenuItem() {
+	if (ivjJLatestEditionMenuItem == null) {
 		try {
-			ivjAnotherModelMenuItem = new javax.swing.JMenuItem();
-			ivjAnotherModelMenuItem.setName("AnotherModelMenuItem");
-			ivjAnotherModelMenuItem.setText("Another Model...");
+			ivjJLatestEditionMenuItem = new javax.swing.JMenuItem();
+			ivjJLatestEditionMenuItem.setName("JLatestEditionMenuItem");
+			ivjJLatestEditionMenuItem.setMnemonic('L');
+			ivjJLatestEditionMenuItem.setText("Latest Edition");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -238,141 +212,58 @@ private javax.swing.JMenuItem getAnotherModelMenuItem() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjAnotherModelMenuItem;
-}
-
-/**
- * Return the BioModelDbTreeModel property value.
- * @return cbit.vcell.desktop.BioModelDbTreeModel
- */
-protected BioModelDbTreeModel createTreeModel() {
-	return new BioModelDbTreeModel(getJTree1());
+	return ivjJLatestEditionMenuItem;
 }
 
 
 /**
- * Return the BioModelMetaDataPanel property value.
- * @return cbit.vcell.desktop.BioModelMetaDataPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private BioModelMetaDataPanel getBioModelMetaDataPanel() {
-	if (ivjBioModelMetaDataPanel == null) {
-		try {
-			ivjBioModelMetaDataPanel = new BioModelMetaDataPanel();
-			ivjBioModelMetaDataPanel.setName("BioModelMetaDataPanel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjBioModelMetaDataPanel;
-}
-
-
-/**
- * Return the JPopupMenu1 property value.
- * @return javax.swing.JPopupMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPopupMenu getBioModelPopupMenu() {
-	if (ivjBioModelPopupMenu == null) {
-		try {
-			ivjBioModelPopupMenu = new javax.swing.JPopupMenu();
-			ivjBioModelPopupMenu.setName("BioModelPopupMenu");
-			ivjBioModelPopupMenu.add(getJMenuItemOpen());
-			ivjBioModelPopupMenu.add(getJMenuItemDelete());
-			ivjBioModelPopupMenu.add(getJMenuItemPermission());
-			ivjBioModelPopupMenu.add(getJMenuItemArchive());
-			ivjBioModelPopupMenu.add(getJMenuItemPublish());
-			ivjBioModelPopupMenu.add(getCompareWithMenu());
-//			ivjBioModelPopupMenu.add(getJSeparator3());
-			//ivjBioModelPopupMenu.add(getJMenuItemExport());   //removed 10/3/14 per Jim, as was not functional.
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjBioModelPopupMenu;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (10/3/2002 10:34:00 AM)
- */
-private BioModelInfo[] getBioModelVersionDates(BioModelInfo thisBioModelInfo) throws DataAccessException {
-	//
-	// Get list of BioModelInfos in workspace
-	//
-    if (thisBioModelInfo==null){
-	    return new BioModelInfo[0];
-    }
-    
-	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();
-
-	//
-	// From the list of biomodels in the workspace, get list of biomodels with the same branch ID.
-	// This is the list of different versions of the same biomodel.
-	//
- 	Vector<BioModelInfo> bioModelBranchList = new Vector<BioModelInfo>();
- 	for (int i = 0; i < bioModelInfos.length; i++) {
-	 	BioModelInfo bioModelInfo = bioModelInfos[i];
-	 	if (bioModelInfo.getVersion().getBranchID().equals(thisBioModelInfo.getVersion().getBranchID())) {
-		 	bioModelBranchList.add(bioModelInfo);
-	 	}
- 	}
-
- 	if (bioModelBranchList.size() == 0) {
-		JOptionPane.showMessageDialog(this,"No Versions in biomodel","Error comparing BioModels",JOptionPane.ERROR_MESSAGE);
-	 	throw new NullPointerException("No Versions in biomodel!");
- 	}
-
- 	BioModelInfo bioModelInfosInBranch[] = new BioModelInfo[bioModelBranchList.size()];
- 	bioModelBranchList.copyInto(bioModelInfosInBranch);
-
- 	//
- 	// From the versions list, remove the currently selected version and return the remaining list of
- 	// versions for the biomodel
- 	//
-
- 	BioModelInfo revisedBMInfosInBranch[] = new BioModelInfo[bioModelInfosInBranch.length-1];
- 	int j=0;
- 	
- 	for (int i = 0; i < bioModelInfosInBranch.length; i++) {
-		if (!thisBioModelInfo.getVersion().getDate().equals(bioModelInfosInBranch[i].getVersion().getDate())) {
-			revisedBMInfosInBranch[j] = bioModelInfosInBranch[i];
-			j++;
-		}
- 	}
-			 	
-	return revisedBMInfosInBranch;	
-}
-
-
-/**
- * Return the JMenu1 property value.
+ * Return the JMenuCompare property value.
  * @return javax.swing.JMenu
  */
-private javax.swing.JMenu getCompareWithMenu() {
-	if (compareWithMenu == null) {
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenu getJMenuCompare() {
+	if (ivjJMenuCompare == null) {
 		try {
-			compareWithMenu = new javax.swing.JMenu();
-			compareWithMenu.setName("JMenu1");
-			compareWithMenu.setText("Compare With");
-			compareWithMenu.add(getJPreviousEditionMenuItem());
-			compareWithMenu.add(getLatestEditionMenuItem());
-			compareWithMenu.add(getAnotherEditionMenuItem());
-			compareWithMenu.add(getAnotherModelMenuItem());
+			ivjJMenuCompare = new javax.swing.JMenu();
+			ivjJMenuCompare.setName("JMenuCompare");
+			ivjJMenuCompare.setMnemonic('C');
+			ivjJMenuCompare.setText("Compare with..");
+			ivjJMenuCompare.add(getJPreviousEditionMenuItem());
+			ivjJMenuCompare.add(getJLatestEditionMenuItem());
+			ivjJMenuCompare.add(getJAnotherEditionMenuItem());
+			ivjJMenuCompare.add(getJMenuItemAnother());
+			// user code begin {1}
+			// user code end
 		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
 			handleException(ivjExc);
 		}
 	}
-	return compareWithMenu;
+	return ivjJMenuCompare;
+}
+
+/**
+ * Return the JMenuItemAnother property value.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenuItem getJMenuItemAnother() {
+	if (ivjJMenuItemAnother == null) {
+		try {
+			ivjJMenuItemAnother = new javax.swing.JMenuItem();
+			ivjJMenuItemAnother.setName("JMenuItemAnother");
+			ivjJMenuItemAnother.setMnemonic('A');
+			ivjJMenuItemAnother.setText("Another Model...");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAnother;
 }
 
 /**
@@ -469,7 +360,7 @@ private javax.swing.JMenuItem getJMenuItemOpen() {
 }
 
 /**
- * Return the JMenuItemUnpublish property value.
+ * Return the JMenuItemPublish property value.
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -478,7 +369,7 @@ private javax.swing.JMenuItem getJMenuItemPermission() {
 		try {
 			ivjJMenuItemPermission = new javax.swing.JMenuItem();
 			ivjJMenuItemPermission.setName("JMenuItemPermission");
-			ivjJMenuItemPermission.setMnemonic('u');
+			ivjJMenuItemPermission.setMnemonic('p');
 			ivjJMenuItemPermission.setText("Permissions...");
 			ivjJMenuItemPermission.setActionCommand("Permission");
 			// user code begin {1}
@@ -519,6 +410,7 @@ private javax.swing.JMenuItem getJMenuItemPublish() {
  * Return the JPanel2 property value.
  * @return javax.swing.JPanel
  */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
 protected javax.swing.JPanel getBottomPanel() {
 	if (bottomPanel == null) {
 		try {
@@ -529,7 +421,7 @@ protected javax.swing.JPanel getBottomPanel() {
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
 			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
 			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			bottomPanel.add(new JLabel("Selected BioModel Summary"), constraintsJLabel2);
+			bottomPanel.add(new JLabel("Selected MathModel Summary"), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane2.gridx = 0; constraintsJScrollPane2.gridy = 1;
@@ -537,7 +429,7 @@ protected javax.swing.JPanel getBottomPanel() {
 			constraintsJScrollPane2.weightx = 1.0;
 			constraintsJScrollPane2.weighty = 1.0;
 			constraintsJScrollPane2.insets = new java.awt.Insets(0, 4, 4, 4);
-			bottomPanel.add(getBioModelMetaDataPanel(), constraintsJScrollPane2);
+			bottomPanel.add(getMathModelMetaDataPanel(), constraintsJScrollPane2);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -550,7 +442,7 @@ protected javax.swing.JPanel getBottomPanel() {
 }
 
 /**
- * Return the JMenuItem1 property value.
+ * Return the JPreviousEditionMenuItem property value.
  * @return javax.swing.JMenuItem
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -559,8 +451,8 @@ private javax.swing.JMenuItem getJPreviousEditionMenuItem() {
 		try {
 			ivjJPreviousEditionMenuItem = new javax.swing.JMenuItem();
 			ivjJPreviousEditionMenuItem.setName("JPreviousEditionMenuItem");
+			ivjJPreviousEditionMenuItem.setMnemonic('P');
 			ivjJPreviousEditionMenuItem.setText("Previous Edition");
-			ivjJPreviousEditionMenuItem.setEnabled(true);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -571,6 +463,7 @@ private javax.swing.JMenuItem getJPreviousEditionMenuItem() {
 	}
 	return ivjJPreviousEditionMenuItem;
 }
+
 
 /**
  * Return the JSeparator3 property value.
@@ -592,21 +485,35 @@ private javax.swing.JSeparator getJSeparator3() {
 	}
 	return ivjJSeparator3;
 }
+
+/**
+ * Return the JTree1 property value.
+ * @return javax.swing.JTree
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
 protected VCDocumentDbCellRenderer createTreeCellRenderer() {
-	return new BioModelCellRenderer();
+	return new MathModelCellRenderer();
 }
 
 /**
- * Return the LatestEditionMenuItem property value.
- * @return javax.swing.JMenuItem
+ * Return the MathModelDbTreeModel property value.
+ * @return cbit.vcell.desktop.MathModelDbTreeModel
  */
-private javax.swing.JMenuItem getLatestEditionMenuItem() {
-	if (ivjLatestEditionMenuItem == null) {
+protected VCDocumentDbTreeModel createTreeModel() {
+	return new MathModelDbTreeModel(getJTree1());
+}
+
+
+/**
+ * Return the MathModelMetaDataPanel property value.
+ * @return cbit.vcell.desktop.MathModelMetaDataPanel
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private MathModelMetaDataPanel getMathModelMetaDataPanel() {
+	if (ivjMathModelMetaDataPanel == null) {
 		try {
-			ivjLatestEditionMenuItem = new javax.swing.JMenuItem();
-			ivjLatestEditionMenuItem.setName("LatestEditionMenuItem");
-			ivjLatestEditionMenuItem.setText("Latest Edition");
-			ivjLatestEditionMenuItem.setEnabled(true);
+			ivjMathModelMetaDataPanel = new MathModelMetaDataPanel();
+			ivjMathModelMetaDataPanel.setName("MathModelMetaDataPanel");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -615,8 +522,88 @@ private javax.swing.JMenuItem getLatestEditionMenuItem() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjLatestEditionMenuItem;
+	return ivjMathModelMetaDataPanel;
 }
+
+
+/**
+ * Return the JPopupMenu1 property value.
+ * @return javax.swing.JPopupMenu
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JPopupMenu getMathModelPopupMenu() {
+	if (ivjMathModelPopupMenu == null) {
+		try {
+			ivjMathModelPopupMenu = new javax.swing.JPopupMenu();
+			ivjMathModelPopupMenu.setName("MathModelPopupMenu");
+			ivjMathModelPopupMenu.add(getJMenuItemOpen());
+			ivjMathModelPopupMenu.add(getJMenuItemDelete());
+			ivjMathModelPopupMenu.add(getJMenuItemPermission());
+			ivjMathModelPopupMenu.add(getJMenuItemArchive());
+			ivjMathModelPopupMenu.add(getJMenuItemPublish());
+			ivjMathModelPopupMenu.add(getJMenuCompare());
+//			ivjMathModelPopupMenu.add(getJSeparator3());
+//			ivjMathModelPopupMenu.add(getJMenuItemExport());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjMathModelPopupMenu;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/7/2002 3:06:29 PM)
+ */
+private MathModelInfo[] getMathModelVersionDates(MathModelInfo thisMathModelInfo) throws DataAccessException {
+	//
+	// Get list of MathModelInfos in workspace
+	//
+
+	MathModelInfo mathModelInfos[] = getDocumentManager().getMathModelInfos();
+
+	//
+	// From the list of mathmodels in the workspace, get list of mathmodels with the same branch ID.
+	// This is the list of different versions of the same mathmodel.
+	//
+ 	Vector<MathModelInfo> mathModelBranchList = new Vector<MathModelInfo>();
+ 	for (int i = 0; i < mathModelInfos.length; i++) {
+	 	MathModelInfo mathModelInfo = mathModelInfos[i];
+	 	if (mathModelInfo.getVersion().getBranchID().equals(thisMathModelInfo.getVersion().getBranchID())) {
+		 	mathModelBranchList.add(mathModelInfo);
+	 	}
+ 	}
+
+ 	if (mathModelBranchList.size() == 0) {
+		JOptionPane.showMessageDialog(this,"No Versions in Mathmodel","Error comparing MathModels",JOptionPane.ERROR_MESSAGE);
+	 	throw new NullPointerException("No Versions in Mathmodel!");
+ 	}
+
+ 	MathModelInfo mathModelInfosInBranch[] = new MathModelInfo[mathModelBranchList.size()];
+ 	mathModelBranchList.copyInto(mathModelInfosInBranch);
+
+ 	//
+ 	// From the versions list, remove the currently selected version and return the remaining list of
+ 	// versions for the mathmodel
+ 	//
+
+ 	MathModelInfo revisedMMInfosInBranch[] = new MathModelInfo[mathModelInfosInBranch.length-1];
+ 	int j=0;
+ 	
+ 	for (int i = 0; i < mathModelInfosInBranch.length; i++) {
+		if (!thisMathModelInfo.getVersion().getDate().equals(mathModelInfosInBranch[i].getVersion().getDate())) {
+			revisedMMInfosInBranch[j] = mathModelInfosInBranch[i];
+			j++;
+		}
+ 	}
+			 	
+	return revisedMMInfosInBranch;	
+}
+
 
 /**
  * Initialize the class.
@@ -625,15 +612,15 @@ private javax.swing.JMenuItem getLatestEditionMenuItem() {
 protected void initialize() {
 	try {
 		super.initialize();
-		addPropertyChangeListener(ivjEventHandler);
+		this.addPropertyChangeListener(ivjEventHandler);
 		getJMenuItemDelete().addActionListener(ivjEventHandler);
 		getJMenuItemOpen().addActionListener(ivjEventHandler);
 		getJMenuItemPermission().addActionListener(ivjEventHandler);
-		getLatestEditionMenuItem().addActionListener(ivjEventHandler);
-		getAnotherEditionMenuItem().addActionListener(ivjEventHandler);
-		getAnotherModelMenuItem().addActionListener(ivjEventHandler);
 		getJMenuItemExport().addActionListener(ivjEventHandler);
+		getJMenuItemAnother().addActionListener(ivjEventHandler);
 		getJPreviousEditionMenuItem().addActionListener(ivjEventHandler);
+		getJLatestEditionMenuItem().addActionListener(ivjEventHandler);
+		getJAnotherEditionMenuItem().addActionListener(ivjEventHandler);
 		getJMenuItemArchive().addActionListener(ivjEventHandler);
 		getJMenuItemPublish().addActionListener(ivjEventHandler);
 	} catch (java.lang.Throwable ivjExc) {
@@ -675,61 +662,77 @@ private void compareWithMenuItemEnable(VersionInfo vInfo) {
 	boolean bPreviousEditionMenuItem = false;
 	boolean bLatestEditionMenuItem = false;
 	boolean bAnotherEditionMenuItem = false;
-	BioModelInfo thisBioModelInfo = (BioModelInfo)vInfo;
-	//
-	// Get the other versions of the Biomodel
-	//	
-	try {
-		BioModelInfo bioModelVersionsList[] = getBioModelVersionDates(thisBioModelInfo);
-	
-		if (bioModelVersionsList != null && bioModelVersionsList.length > 0) {
-			bAnotherEditionMenuItem = true;
+	if (vInfo!=null){
+		MathModelInfo thisMathModelInfo = (MathModelInfo)vInfo;
+
+		try {
 			//
-			// Obtaining the previous version of the current biomodel.
-			//		
-			BioModelInfo previousBioModelInfo = bioModelVersionsList[0];
-			boolean bPrevious = false;
+			// Get the other versions of the Mathmodel
+			//
+			MathModelInfo mathModelVersionsList[] = getMathModelVersionDates(thisMathModelInfo);
+			
+			if (mathModelVersionsList != null && mathModelVersionsList.length > 0) {
+				bAnotherEditionMenuItem = true;			
+		
+				//
+				// Obtaining the previous version of the current biomodel
+				//
+			
+				MathModelInfo previousMathModelInfo = mathModelVersionsList[0];
+				boolean bPrevious = false;
 	
-			for (int i = 0; i < bioModelVersionsList.length; i++) {
-				if (bioModelVersionsList[i].getVersion().getDate().before(thisBioModelInfo.getVersion().getDate())) {
-					bPrevious = true;
-					previousBioModelInfo = bioModelVersionsList[i];
+				for (int i = 0; i < mathModelVersionsList.length; i++) {
+					if (mathModelVersionsList[i].getVersion().getDate().before(thisMathModelInfo.getVersion().getDate())) {
+						bPrevious = true;
+						previousMathModelInfo = mathModelVersionsList[i];
+					} else {
+						break;
+					}
+				}
+	
+				if (previousMathModelInfo.equals(mathModelVersionsList[0]) && !bPrevious) {
+					bPreviousEditionMenuItem = false;
 				} else {
-					break;
+					bPreviousEditionMenuItem = true;
+				}
+				
+				//
+				// Obtaining the latest version of the current mathmodel
+				//
+				MathModelInfo latestMathModelInfo = mathModelVersionsList[mathModelVersionsList.length-1];
+
+				for (int i = 0; i < mathModelVersionsList.length; i++) {
+					if (mathModelVersionsList[i].getVersion().getDate().after(latestMathModelInfo.getVersion().getDate())) {
+						latestMathModelInfo = mathModelVersionsList[i];
+					}
+				}
+
+				if (thisMathModelInfo.getVersion().getDate().after(latestMathModelInfo.getVersion().getDate())) {
+					bLatestEditionMenuItem = false;
+				} else {
+					bLatestEditionMenuItem = true;
 				}
 			}
-	
-			if (previousBioModelInfo.equals(bioModelVersionsList[0]) && !bPrevious) {
-				bPreviousEditionMenuItem = false;
-			} else {
-				bPreviousEditionMenuItem = true;
-			}
-			
-			//
-			// Obtaining the latest version of the current biomodel
-			//
-			
-			BioModelInfo latestBioModelInfo = bioModelVersionsList[bioModelVersionsList.length-1];
-	
-			for (int i = 0; i < bioModelVersionsList.length; i++) {
-				if (bioModelVersionsList[i].getVersion().getDate().after(latestBioModelInfo.getVersion().getDate())) {
-					latestBioModelInfo = bioModelVersionsList[i];
-				}
-			}
-	
-			if (thisBioModelInfo.getVersion().getDate().after(latestBioModelInfo.getVersion().getDate())) {
-				bLatestEditionMenuItem = false;
-			} else {
-				bLatestEditionMenuItem = true;
-			}
+		} catch (DataAccessException ex) {
+			ex.printStackTrace();
 		}
-	} catch (DataAccessException e) {
-		e.printStackTrace();
 	}
 	getJPreviousEditionMenuItem().setEnabled(bPreviousEditionMenuItem);
-	getLatestEditionMenuItem().setEnabled(bLatestEditionMenuItem);
-	getAnotherEditionMenuItem().setEnabled(bAnotherEditionMenuItem);
+	getJLatestEditionMenuItem().setEnabled(bLatestEditionMenuItem);
+	getJAnotherEditionMenuItem().setEnabled(bAnotherEditionMenuItem);
 }
+
+/**
+ * Sets the popupMenuDisabled property (boolean) value.
+ * @param popupMenuDisabled The new value for the property.
+ * @see #getPopupMenuDisabled
+ */
+public void setPopupMenuDisabled(boolean popupMenuDisabled) {
+	boolean oldValue = fieldPopupMenuDisabled;
+	fieldPopupMenuDisabled = popupMenuDisabled;
+	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
+}
+
 
 /**
  * Comment
@@ -742,14 +745,11 @@ protected void treeSelection() {
 	}
 	BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
 	Object object = bioModelNode.getUserObject();
-	if (object instanceof BioModelInfo){
+	if (object instanceof VersionInfo){
 		setSelectedVersionInfo((VersionInfo)object);
-	}else if (object instanceof VCDocumentInfoNode && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof BioModelInfo){
-		BioModelInfo bioModelInfo = (BioModelInfo)((BioModelNode)bioModelNode.getChildAt(0)).getUserObject();
-		setSelectedVersionInfo(bioModelInfo);
-	}else if (object instanceof BioModelMetaData) {
-		BioModelInfo bioModelInfo = (BioModelInfo)((BioModelNode)bioModelNode.getParent()).getUserObject();
-		setSelectedVersionInfo(bioModelInfo);
+	}else if (object instanceof VCDocumentInfoNode && bioModelNode.getChildCount()>0 && ((BioModelNode)bioModelNode.getChildAt(0)).getUserObject() instanceof MathModelInfo){
+		MathModelInfo mathModelInfo = (MathModelInfo)((BioModelNode)bioModelNode.getChildAt(0)).getUserObject();
+		setSelectedVersionInfo(mathModelInfo);
 	}else{
 		setSelectedVersionInfo(null);
 	}

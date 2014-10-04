@@ -65,8 +65,6 @@
 		In the dialog that appears, the user can select the model he/she wishes to compare against the selected baseline model and press the <bold>Open</bold> button.
 		Please refer to the section <link target= "ManageDBCompareWith">Compare With</link>.
 		</item>
-		<item> <bold>Export</bold> - Please refer to the section on <link target="Export">File -> Export</link>
-		</item>		
 	</list>
 	<para>
 	Selecting a model of any document type in the VCell Database displays the database information for the model in the <bold>Database File Info</bold> tab in the 'Properties' panel on the lower right hand corner of any VCell document. 
