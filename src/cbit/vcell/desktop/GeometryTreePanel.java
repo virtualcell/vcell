@@ -26,6 +26,7 @@ import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
@@ -52,7 +53,8 @@ private class IvjEventHandler implements java.awt.event.ActionListener, java.bea
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemCreateNewGeometry()) 
 				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen()) 
-				refireActionPerformed(e);
+				DocumentWindow.showGeometryCreationWarning(GeometryTreePanel.this);
+//				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemDelete()) 
 				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemNew()) 
