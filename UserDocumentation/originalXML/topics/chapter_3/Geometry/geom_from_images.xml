@@ -16,6 +16,7 @@
 	
 	<introduction>
 	Image-based geometries are created using the Image Geometry Editor, which is accessible from both BioModel and MathModel workspaces. A geometry is created separately for each spatial application associated with a single model.  For VCell to use images to create geometries, the image must be segmented so that different segments of the image can be mapped to the different structures defined in the model. The Image Geometry Editor can load either segmented or unsegmented images using the Bioformats Library, and for unsegmented images provides tools to crop and segment the image within VCell.
+	(Note: The first time a VCell user makes use of the BioFormats library, a dialog will appear prompting the user to give a one time approval for downloading and installation of this software due to licensing issues.)
 	</introduction>
 	
 	<appearance>
@@ -121,7 +122,7 @@
 	</para>
 
 	<para>
-	Once the geometry has been created, the domains of the <bold>geometry must be mapped</bold> to the  structures defined in the model using the <link target = "geom_structure_mapping" >Structure Mapping</link> tab.
+	Once the geometry has been created, the domains of the <bold>geometry must be mapped</bold> to the  structures defined in the model using the <link target = "geom_spatial_mapping" >Structure Mapping</link> tab.
 	</para>
 
 	</operations>

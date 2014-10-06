@@ -3,12 +3,12 @@
 <page title="Reactions Diagram View" target="ReactDiagView">
 
 	<introduction> 
-	The reaction diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
+	The <link target="Reactions"> reactions</link> diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
 	compartments, and connected by lines showing which species participates in which reaction.
 	</introduction>
 	
 	<appearance> 
-	<imgReference target = "ReactDiagView.png"/> 
+	<imgReference target = "ReactDiagView1.png"/> 
 	<para> 
 	Compartments are depicted as connected rectangles, with membrane compartments separating adjacent volume compartments. 
 	Species are green balls and reactions are yellow squares placed into the compartments. Lines each connect one 
@@ -19,7 +19,9 @@
 	A toolbar above the graph provides buttons for editing, adjusting zoom, and changing the layout of the elements.
 	</para>
 	<para>
-	A toolbar at the bottom of graph provides a means to search a text field, delete items, or search for pathways using the <link target= "PathwayOverview"> Pathway Links </link>.
+	A toolbar at the bottom of graph provides a means to search a text field, delete items, or 
+	use the <link target = "PathwayOverview"> Pathways Commons</link> database to select species and use the 
+	<link target = "PathLink"> Pathway Links</link> button.
 	</para>
 	</appearance>
 	
@@ -80,7 +82,7 @@
 	delete the reaction or disconnect the species from the reaction.
 	</para>
 	<para>
-	The <link target="PathwayOverview"> pathway links button</link> allows the user to follow links from model elements (species, reactions or fluxes) to pathway elements, or to 
+	The <link target="PathLink"> Pathway Links</link> button allows the user to follow links from model elements (species, reactions or fluxes) to pathway elements, or to 
 	edit pathway links.
     	</para>
    <para>
