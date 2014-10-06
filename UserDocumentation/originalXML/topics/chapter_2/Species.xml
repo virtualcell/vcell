@@ -11,7 +11,12 @@
 	</introduction>
 	
 	<appearance>
-	The Species Tab displays a table of the species name and the <def target = "def_structure"> structure </def> that contains it.  The <link target = "PP_Species"> Species Properties pane </link> is shown in the bottom right pane
+	The Species Tab displays a table of the species name and the <def target = "def_structure"> structure </def> that contains it.  
+	If the species is linked to a pathway object, a link to that object will be shown in the Link column. 
+	Mousing over a link will open a tooltip box with additional information about the linked object.	
+	Double click on that link to navigate to the Pathway Diagram and highlight the object linked to the species. 
+	<para>The <link target = "PP_Species"> Species Properties pane </link> is shown in the bottom right pane
+	<imgReference target = "SpeciesTable.png"> </imgReference>	</para>
 	</appearance>
 	
 	<operations>
@@ -19,7 +24,8 @@
 	 in the lower window.</para>
 	<para> <bold>Filter</bold> the list of species using the Search Box to enter a species name or a structure name.</para>
 	<para><bold>Delete</bold> species by highlighting and using the "Delete Selected" button below the table.</para>
-	<para>The <link target = "PathLink"> Pathway Link </link> button is available to retrieve information from pathway databases.</para>
+	<para>If you wish to use <link target = "PathwayOverview"> Pathways Commons</link> data, select the species and use the 
+	<link target = "PathLink"> Pathway Links</link> button.</para>
 	<para><bold>Add annotation </bold> about the species within the <link target = "PP_Species"> Species Properties pane </link> in the bottom window.</para>
 	</operations>
 	

@@ -16,6 +16,7 @@
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu"/>
     			<tocitem target="Export" text="File->Export Menu"/>
+    			<tocitem target="ImportPathway" text="File->Import Pathway"/>
     		</tocitem>
     		<tocitem target="View" text="View Menu"/>
     		<tocitem target="Server" text="Server Menu">
@@ -38,18 +39,22 @@
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
-    		<tocitem target="PhysStructDiagView" text="Physiology Structures Diagram View"/>
-    		<tocitem target="PhysStructTabView" text="Physiology Structures Table View"/>
-    		<tocitem target="Species" text="Species"/>
-    		<tocitem target="Reactions" text="Reactions"/>
-    		<tocitem target="ReactDiagView" text="Reactions Diagram View"/>
-    		<tocitem target="ReactTabView" text="Reactions Table View"/>
+    		<tocitem target="PhysStructDiagView" text="Structure Diagram"/>
+    		<tocitem target="ReactDiagView" text="Reactions Diagram"/>
+	   		<!-- tocitem target="Reactions" text="Reactions"/-->
+    		<tocitem target="ReactTabView" text="Reactions Table"/>
+    		<tocitem target="PhysStructTabView" text="Structures Table"/>
+    		<tocitem target="Species" text="Species Table"/>
+    		<tocitem target="PathLink" text="Pathway Links"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="GeometryOverview" text="Geometry">
     	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
    	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
-   		   		<tocitem target="geom_structure_mapping" text="Geometry Structure Mapping"/>
+   	 	  		<tocitem target="geom_from_surface" text="Geometry from Surface"/>
+   		   		<tocitem target="geom_spatial_mapping" text="Geometry Structure Mapping"/>
+   		   		<tocitem target="geom_nonspatial_mapping" text="Geometry Non-Spatial Structure Mapping"/>
+   		   		<tocitem target="geom_nonspatial_old_mapping" text="Geometry Non-Spatial Legacy Structure Mapping"/>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species Specifications">
@@ -60,6 +65,7 @@
     		<tocitem target="ProtocolsOverview" text="Protocols">
     	   		<tocitem target="Events" text="Events"/>
    	 	  		<tocitem target="Electrical" text="Electrical Mapping"/>
+   	 	  		<tocitem target="MicroscopeMeasurement" text="Microscope Measurements"/>
     		</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
@@ -67,27 +73,29 @@
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
-    	    </tocitem>
-    	    <tocitem target="PEOverview" text="Fitting">
-    	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
-   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
-        	</tocitem>
-   		    <tocitem target="SimulationViewerOverview" text="Simulation Results">
+	    		<tocitem target="SimulationViewerOverview" text="Simulation Results">
    		       <tocitem target="SpatialSimResultsOverview" text="Spatial Simulation Results">
     	   			<tocitem target="SimResSpatialSliceView" text="Spatial Simulation Results Slice View"/>
+    	   			<tocitem target="SpatialSimResultsDrawingTools" text="Region of Interest Tools, Data Plots and Statistics"/>
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
+					<tocitem target="PostProcessing" text="Post Processing"/>
+					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies"/>
 				</tocitem>
     	   		<tocitem target="SimCompartmentResults" text="Non-spatial (Compartmental) Simulation Results">		
 					<tocitem target="SimResultsNonSpatialPlotSettings" text="Plot Settings"/>	    
 					<tocitem target="SimResultsNonSpatialStochHistogram" text="Stochastic Results Histograms"/>
 				</tocitem>
-				<tocitem target="ExportingSimResults" text="Exporting Simulation Results">		
-				</tocitem>
-				<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies">
-				</tocitem>
+				
+				
    			</tocitem>
+    	    </tocitem>
+    	    <tocitem target="PEOverview" text="Fitting">
+    	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
+   	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
+        	</tocitem>
         </tocitem>
         <tocitem target="ParametersAndFunctionsOverview" text="Parameters and Functions">
    	   		<tocitem target="ParametersAndFunctions" text="Parameters And Functions"/>
@@ -95,11 +103,13 @@
    		</tocitem>
     	<tocitem target="PathwayOverview" text="Biological Pathways">
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
-   	   		<tocitem target="PathwayImportTable" text="The Imported Pathway View"/>
-   	   		<tocitem target="PathwayDiagramView" text="Entities Diagram View"/>
-   	   		<tocitem target="PathwayObjectsView" text="Entities Table View"/>
-   			<tocitem target="BiopaxSummaryView" text="Entities Detailed View"/>
-   			<tocitem target="GroupOperationsPanel" text="Entities Management"/>
+   	   		<tocitem target="PathwayImportTable" text="Pathway Preview"/>
+   	   		<tocitem target="PathwayDiagramView" text="Pathway Diagram"/>
+   	   		<tocitem target="PathwayObjectsView" text="Pathway Objects"/>
+   			<tocitem target="BiopaxSummaryView" text="BioPAX Summary"/>
+   			<tocitem target="BiopaxTreeView" text="BioPAX Tree"/>
+   			<tocitem target="PP_Pathways" text="Pathway Object Properties Pane"/>
+   			<tocitem target="GroupOperationsPanel" text="Operations on Pathway Entities"/>		
    		</tocitem>
     	<tocitem target="DatabaseOverview" text="Database Sources">
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>

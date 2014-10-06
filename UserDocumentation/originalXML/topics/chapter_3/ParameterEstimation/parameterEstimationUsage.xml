@@ -32,9 +32,10 @@ you click “OK”, the newly created task will show up in the drop down menu na
 	<para>
 	Click on the "OK" button. The selected parameters will show up in a table. In this table, you can change initial guess, lower
 	and upper bounds of the parameters just by double clicking the corresponding table cells. 
+	Right-click menu allows copy/paste of "Initial Guess" values and items to edit other table values. 
 	</para>
 	<para>
-	<imgReference target = "pe_parameterTable.gif"/>
+	<imgReference target = "pe_parameterTable.png"/>
 	</para>
 	<para></para>
 	<item>
@@ -52,11 +53,11 @@ plot view or table in data view in the Reference Data tab.
 	<imgReference target = "pe_loadData.gif"/>
 	</para>
 	<para>
-	If the variables (i.e. species) in the imported data have different names than in the model, you must use the “associate...” button in data/model
-	mapping to match Data Names to Model Association, i.e. model variable. Click on the "Experimental Data Mapping" tab to do the mapping.
+	<bold>Experimental Data Mapping</bold> tab shows the association of experimental data with model variables.  Select a row from the 'Experimental Data' column and click 
+	the 'Map Experimental Data...' button, choose a model variable from the list dialog that appears.
 	</para>
 	<para>
-	<imgReference target = "pe_mapData.gif"/>
+	<imgReference target = "pe_mapData.png"/>
 	</para>
 	<para></para>
 	<item>
@@ -82,11 +83,11 @@ plot view or table in data view in the Reference Data tab.
 	</para>
 	<para></para>
 	<item>
-	<bold>Change Annotation</bold>
+	<bold>Object Properties</bold>
 	</item>
 	<para>
-	At the bottom of the window, there is a property pane. you can change the name of the parameter estimation task and add an annotation, or check the problems
-	in the model.
+	At the bottom of the window, there is an 'Object Properties' pane. you can change the name of the parameter estimation task and add an annotation.  
+	click the 'Problems' tab to see more information about any problems in the model.
 	</para>
 	<para></para>
 	<item>

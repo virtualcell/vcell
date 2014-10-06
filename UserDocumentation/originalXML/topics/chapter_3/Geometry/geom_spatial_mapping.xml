@@ -23,19 +23,17 @@
 	<imgReference target = "frm_Structure_Mapping.gif"/>
 	<para>
 	From a selected application click on "Geometry and click the "Structure Mapping" tab.
-	The left panel depicts the "physiology (structures)", the right depicts the "Geometry (subdomains)" and the bottom diplays a table of the structure mapping assignments.</para>
+	The left panel depicts the "physiology (structures)", the right depicts the "Geometry (subdomains)" and the bottom displays a table of the structure mapping assignments.  
+	</para>
 	</appearance>
 	
 	<operations>
 	<para>
-	Compartmental (non-spatial) BioModel structure mapping</para>
+	<bold>Compartmental (non-spatial)</bold> BioModel structure mapping.  (See <link target="geom_nonspatial_mapping">Non-Spatial Mapping</link> for non-spatial geometry mapping)
+	</para>
+	
 	<para>
-	Compartmental BioModel structure mapping (to an empty geometry) is created automatically. However, it is necessary to define the size (in micrometers cubed) of each compartment.</para>
-	<para><bold>Edit or Enter</bold> structure volume within the Structure Mapping table in the bottom panel by editing the "Size" column.  Select "Volume and Surface Calculator" to bring up a calculator provide volume and surface area information for common geometries (e.g. sphere or cube) based on radius or side lengths. Click "Volume and Surface Calculator" again to hide the calculator.</para>
-	<para>
-	Once the volume has been entered, the table will report either the size ratio of volume compartment to the parent compartment in which it is contained (volume:volume) column, or the ratio of a membrane compartment surface to the total enclosed volume (surface:volume).  These two columns cannot be edited.</para>
-	<para>
-	Spatial BioModel structure mapping</para>
+	<bold>Spatial</bold> BioModel structure mapping</para>
 	<para>
 	Spatial BioModel structure mappings are defined by the user within an "Application" after all physiology compartments and a spatial geometry have been added.</para>
 	<para>
