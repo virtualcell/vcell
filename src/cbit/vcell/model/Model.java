@@ -87,6 +87,36 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private StructureTopology structureTopology = new StructureTopology();
 	private ElectricalTopology electricalTopology = new ElectricalTopology();
 
+	public interface ElectricalTopologyListener {
+		public void electricalTopologyChanged(ElectricalTopology electricalTopology);
+	}
+
+	private transient ArrayList<ElectricalTopologyListener> transientElectricalTopologyListeners = null;
+	
+	private ArrayList<ElectricalTopologyListener> getElectricalTopologyListeners(){
+		if (transientElectricalTopologyListeners==null){
+			transientElectricalTopologyListeners = new ArrayList<ElectricalTopologyListener>();
+		}
+		return transientElectricalTopologyListeners;
+	}
+	
+	public void addElectricalTopologyListener(ElectricalTopologyListener listener){
+		if (!getElectricalTopologyListeners().contains(listener)){
+			getElectricalTopologyListeners().add(listener);
+		}
+	}
+
+	public void removeElectricalTopologyListener(ElectricalTopologyListener listener){
+		getElectricalTopologyListeners().remove(listener);
+	}
+
+	private void fireElectricalTopologyChanged(ElectricalTopology argElectricalTopology){
+		List<ElectricalTopologyListener> listeners = getElectricalTopologyListeners();
+		for (ElectricalTopologyListener listener : listeners){
+			listener.electricalTopologyChanged(argElectricalTopology);
+		}
+	}
+
 	public class StructureTopology implements Serializable, Matchable {
 		private HashMap<Membrane,Feature> insideFeatures = new HashMap<Membrane, Feature>();
 		private HashMap<Membrane,Feature> outsideFeatures = new HashMap<Membrane, Feature>();
@@ -292,9 +322,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}*/
 		
 	}
-
-	public class ElectricalTopology implements Serializable, Matchable {
-		
+	
+	public class ElectricalTopology implements Serializable, Matchable { 
+				
 		private HashMap<Membrane,Feature> positiveFeatures = new HashMap<Membrane, Feature>();
 		private HashMap<Membrane,Feature> negativeFeatures = new HashMap<Membrane, Feature>();
 		
@@ -303,9 +333,11 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 		public void setPositiveFeature(Membrane membrane, Feature insideFeature){
 			positiveFeatures.put(membrane, insideFeature);
+			fireElectricalTopologyChanged(this);
 		}
 		public void setNegativeFeature(Membrane membrane, Feature outsideFeature){
 			negativeFeatures.put(membrane, outsideFeature);
+			fireElectricalTopologyChanged(this);
 		}
 
 		public Feature getPositiveFeature(Membrane membrane) {
@@ -321,24 +353,44 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			for (Structure struct : getStructures()) {
 				if (struct instanceof Membrane) {
 					Membrane membrane = (Membrane)struct;
+					ArrayList<ReactionStep> electricalReactions = new ArrayList<ReactionStep>();
+					for (ReactionStep reactionStep : getReactionSteps()){
+						if (reactionStep.getStructure() == membrane){
+							if (reactionStep.hasElectrical()){
+								electricalReactions.add(reactionStep);
+							}
+						}
+					}
 					String issueMsgPrefix = "Membrane '" + membrane.getName() + "' ";
 					Feature positiveFeature = getPositiveFeature(membrane);
-					if (positiveFeature == null) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
-					}
 					Feature negativeFeature = getNegativeFeature(membrane);
-					if (negativeFeature == null) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Negative feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
+
+					if (electricalReactions.size()>0){
+						
+						StringBuilder reactionNames = new StringBuilder();
+						for (ReactionStep rs : electricalReactions){
+							reactionNames.append(rs.getName()).append(",");
+						}
+						reactionNames.deleteCharAt(reactionNames.length()-1);
+						
+						if (positiveFeature == null) {
+							issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+						}
+						if (negativeFeature == null) {
+							issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+						}
 					}
 					if (positiveFeature != null && negativeFeature != null && positiveFeature.compareEqual(negativeFeature)) {
 						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
 					}
+
 				}
 			}
 		}
 		
 		public void populateFromStructureTopology() {
 			// if the positive & negative features for the membranes are already set, do not override using struct topology.
+			boolean bChanged = false;
 			Structure[] structures = getStructures();
 			for (Structure struct : structures) {
 				if (struct instanceof Membrane) {
@@ -348,15 +400,18 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					if (positiveFeatureFromStructTopology != null) {
 						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
 							// if there is an entry in the positiveFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
-							electricalTopology.positiveFeatures.remove(membrane);
+							positiveFeatures.remove(membrane);
+							bChanged = true;
 						} else {
 							// if positiveFeature from structTopology != null, and the membrane does not have an entry in positiveFeatures hashMap, add it.
-							electricalTopology.setPositiveFeature(membrane, positiveFeatureFromStructTopology);
+							setPositiveFeature(membrane, positiveFeatureFromStructTopology);
+							bChanged = true;
 						}
 					} else {
 						// if there is no positiveFeature from structTopology, and the membrane's entry in positiveFeatures hashMap is not in the model, remove the entry.
 						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
-							electricalTopology.positiveFeatures.remove(membrane);
+							positiveFeatures.remove(membrane);
+							bChanged = true;
 						}
 					} 
 					
@@ -365,29 +420,37 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					if (negativeFeatureFromStructTopology != null) {
 						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
 							// if there is an entry in the negativeFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
-							electricalTopology.negativeFeatures.remove(membrane);
+							negativeFeatures.remove(membrane);
+							bChanged = true;
 						} else {
 							// if negativeFeature from structTopology != null, and the membrane does not have an entry in negativeFeatures hashMap, add it.
-							electricalTopology.setNegativeFeature(membrane, negativeFeatureFromStructTopology);
+							setNegativeFeature(membrane, negativeFeatureFromStructTopology);
+							bChanged = true;
 						}
 					} else {
 						// if there is no negativeFeature from structTopology, and the membrane's entry in negativeFeatures hashMap is not in the model, remove the entry.
 						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
-							electricalTopology.negativeFeatures.remove(membrane);
+							negativeFeatures.remove(membrane);
+							bChanged = true;
 						}
 					} 
 				}
+			}
+			if (bChanged){
+				fireElectricalTopologyChanged(this);
 			}
 		}
 		
 		public void refresh() {
 			// if any membrane has been removed, remove its entry in the positiveFetures and negativeFeatures hashMap (separately?)
+			boolean bChanged = false;
 			Set<Membrane> membranesSet = positiveFeatures.keySet();
 			Iterator<Membrane> membranesIter = membranesSet.iterator();
 			while (membranesIter.hasNext()) {
 				Membrane membrane = membranesIter.next();
 				if (!contains(membrane)) {
 					membranesIter.remove();
+					bChanged = true;
 					// positiveFeatures.remove(membrane);
 				}
 			}
@@ -397,10 +460,14 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				Membrane membrane = membranesIter.next();
 				if (!contains(membrane)) {
 					membranesIter.remove();
+					bChanged = true;
 					// negativeFeatures.remove(membrane);
 				}
 			}
 
+			if (bChanged){
+				fireElectricalTopologyChanged(this);
+			}
 			// now populate electrical topology (+ve features and -ve features hashMap based on structureTopology, if a heirarchy exists.
 			populateFromStructureTopology();
 		}

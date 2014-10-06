@@ -39,7 +39,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -175,7 +174,6 @@ import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
-import cbit.vcell.math.VCMLProvider;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
@@ -1572,7 +1570,7 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
-				KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getChargeValenceParameter();
 				if (chargeValenceParameter!=null){
 					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 				}
@@ -2342,21 +2340,21 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentKinetics) ) {
 			//Create GeneralCurrentKinetics
 			newKinetics = new GeneralCurrentKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMassAction) ) {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMassAction) && reaction instanceof SimpleReaction) {
 			//create a Mass Action kinetics
-			newKinetics = new MassActionKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeNernst) ) {
+			newKinetics = new MassActionKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeNernst) && reaction instanceof FluxReaction) {
 			// create NernstKinetics
-			newKinetics = new NernstKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGHK) ) {
+			newKinetics = new NernstKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGHK) && reaction instanceof FluxReaction) {
 			//create GHKKinetics
-			newKinetics = new GHKKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Irr) ) {
+			newKinetics = new GHKKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Irr) && reaction instanceof SimpleReaction) {
 			//create HMM_IrrKinetics
-			newKinetics = new HMM_IRRKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Rev) ) {
+			newKinetics = new HMM_IRRKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Rev) && reaction instanceof SimpleReaction) {
 			//create HMM_RevKinetics
-			newKinetics = new HMM_REVKinetics(reaction);
+			newKinetics = new HMM_REVKinetics((SimpleReaction)reaction);
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralTotal_oldname) ) {
 			//create GeneralTotalKinetics
 			newKinetics = new GeneralLumpedKinetics(reaction);
@@ -2366,15 +2364,15 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentLumped) ) {
 			//create GeneralCurrentLumpedKinetics
 			newKinetics = new GeneralCurrentLumpedKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) ) {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) && reaction instanceof FluxReaction) {
 			// create GeneralPermeabilityKinetics
-			newKinetics = new GeneralPermeabilityKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) ) {
+			newKinetics = new GeneralPermeabilityKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) && reaction instanceof SimpleReaction) {
 			// create Macroscopic_IRRKinetics
-			newKinetics = new Macroscopic_IRRKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) ) {
+			newKinetics = new Macroscopic_IRRKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) && reaction instanceof SimpleReaction) {
 			// create Microscopic_IRRKinetics
-			newKinetics = new Microscopic_IRRKinetics(reaction);
+			newKinetics = new Microscopic_IRRKinetics((SimpleReaction)reaction);
 		}else {
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}
@@ -2438,7 +2436,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 			}
 			Kinetics.KineticsParameter tempParam = null;
 			if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
-				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDesc(role));
+				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDefaultDesc(role));
 			}else{
 				continue;
 			}
@@ -2449,6 +2447,10 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				} else if (role.equals(VCMODL.TotalRate_oldname)) {
 					tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
 				}
+			}
+			// hack from bringing in chargeValence parameters without breaking
+			if (tempParam == null && Kinetics.getParamRoleFromDefaultDesc(role) == Kinetics.ROLE_ChargeValence){
+				tempParam = newKinetics.getChargeValenceParameter();
 			}
 					
 			if (tempParam == null) {
@@ -4531,7 +4533,7 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
-				KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getChargeValenceParameter();
 				if (chargeValenceParameter!=null){
 					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 				}

@@ -23,17 +23,17 @@ import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure.StructureSize;
-import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -52,9 +52,11 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  * @since   VCELL1.0
  */
 @SuppressWarnings("serial")
-public abstract class ReactionStep implements BioModelEntityObject,
+public abstract class ReactionStep implements BioModelEntityObject, Model.ElectricalTopologyListener,
 		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable
 {
+
+	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";
 
 	public static final String PROPERTY_NAME_KINETICS = "kinetics";
 	
@@ -493,7 +495,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 			// setting physicsOptions to "Molecular&Electrical", must have a non-zero chargeValence
 			//
 			try {
-				KineticsParameter chargeValence = getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				KineticsParameter chargeValence = getKinetics().getChargeValenceParameter();
 				if (chargeValence.getConstantValue()==0){
 					chargeValence.setExpression(new Expression(1.0));
 				}
@@ -629,7 +631,7 @@ public void setKinetics(Kinetics kinetics) {
 	// then if "zero" valence is incompatable with new kinetic type and new physicsOptions, then force to 1
 	//
 	try {
-		KineticsParameter chargeValenceParameter = getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+		KineticsParameter chargeValenceParameter = getKinetics().getChargeValenceParameter();
 		if (kinetics.getKineticsDescription().isElectrical()){
 			if (getPhysicsOptions() == PHYSICS_MOLECULAR_ONLY){
 				if (chargeValenceParameter!=null && !chargeValenceParameter.getExpression().isZero()){
@@ -661,13 +663,28 @@ public void setKinetics(Kinetics kinetics) {
 	
 	firePropertyChange(PROPERTY_NAME_KINETICS, oldValue, kinetics);
 }
+
+
+@Override
+public final void electricalTopologyChanged(ElectricalTopology electricalTopology) {
+	getKinetics().electricalTopologyChanged(electricalTopology);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/23/00 1:45:57 PM)
  * @param model cbit.vcell.model.Model
  */
 public void setModel(Model model) {
+	Model oldValue = this.model;
+	if (oldValue != null){
+		model.removeElectricalTopologyListener(this);
+	}
 	this.model = model;
+	if (this.model != null){
+		model.addElectricalTopologyListener(this);
+	}
+	firePropertyChange("model", oldValue, model);
 }
 /**
  * Sets the name property (java.lang.String) value.
@@ -706,7 +723,7 @@ public abstract void setReactionParticipantsFromDatabase(Model model, ReactionPa
  */
 public final void setReactionParticipants(ReactionParticipant[] reactionParticipants) throws java.beans.PropertyVetoException {
 	ReactionParticipant[] oldValue = fieldReactionParticipants;
-	fireVetoableChange("reactionParticipants", oldValue, reactionParticipants);
+	fireVetoableChange(PROPERTY_NAME_REACTION_PARTICIPANTS, oldValue, reactionParticipants);
 	
 	if (oldValue!=null){
 		for (int i = 0; i < oldValue.length; i++){
@@ -726,7 +743,7 @@ public final void setReactionParticipants(ReactionParticipant[] reactionParticip
 
 	}
 	
-	firePropertyChange("reactionParticipants", oldValue, reactionParticipants);
+	firePropertyChange(PROPERTY_NAME_REACTION_PARTICIPANTS, oldValue, reactionParticipants);
 }
 /**
  * This method was created in VisualAge.
@@ -962,6 +979,22 @@ public boolean hasReactant()
 			return true;
 		}
 	}
+	return false;
+}
+
+public boolean hasElectrical() {
+	// declares currents?
+	if (getStructure() instanceof Membrane && getPhysicsOptions() == PHYSICS_ELECTRICAL_ONLY || getPhysicsOptions() == PHYSICS_MOLECULAR_AND_ELECTRICAL){
+		return true;
+	}
+	
+	// is voltage dependent?
+	for (Kinetics.KineticsProxyParameter proxyParameter : getKinetics().getProxyParameters()){
+		if (proxyParameter.getTarget() instanceof Membrane.MembraneVoltage){
+			return true;
+		}
+	}
+	
 	return false;
 }
 
