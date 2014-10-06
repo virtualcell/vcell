@@ -79,7 +79,7 @@ public void setKinetics(Kinetics kinetics) throws IllegalArgumentException {
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 	super.vetoableChange(e);
 		
-	if (e.getSource() == this && e.getPropertyName().equals("reactionParticipants")) {
+	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_REACTION_PARTICIPANTS)) {
 		ArrayList<Reactant> reactants = new ArrayList<Reactant>();
 		ArrayList<Product> products = new ArrayList<Product>();
 		ReactionParticipant[] newReactionParticipants = (ReactionParticipant[])e.getNewValue();
