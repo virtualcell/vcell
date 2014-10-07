@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -543,7 +544,20 @@ public class RayCaster {
 		Origin origin = geometry.getOrigin();
 		Extent extent = geometry.getExtent();
 		
-		VolumeSamples volumeSamples = volumeSampleSurface(geometry.getGeometrySurfaceDescription().getSurfaceCollection(), sampleSize, origin, extent, bCellCentered);
+		SurfaceCollection surfaceCollection = geometry.getGeometrySurfaceDescription().getSurfaceCollection();
+		int surfaceCount = surfaceCollection.getSurfaceCount();
+		//
+		// handles the case where there is nothing to sample.
+		//
+		if (surfaceCount==0 && geometry.getGeometrySpec().getNumSubVolumes()==1){
+			byte[] pixels = new byte[numX*numY*numZ];
+			SubVolume subVolume = geometry.getGeometrySpec().getSubVolumes()[0];
+			Arrays.fill(pixels,(byte)subVolume.getHandle());
+			VCImageUncompressed vcImage = new VCImageUncompressed(null,pixels,extent,numX,numY,numZ);
+			return vcImage;
+		}		
+		
+		VolumeSamples volumeSamples = volumeSampleSurface(surfaceCollection, sampleSize, origin, extent, bCellCentered);
 		// for each mask bit, find union of masks which contain that bit ... iterate until no change.
 		HashSet<Long> uniqueMasks = volumeSamples.getUniqueMasks();
 
@@ -580,7 +594,8 @@ public class RayCaster {
 			byte pixelValue = (byte)subvolume.getHandle();
 			
 			for (int i=0;i<volumeSamples.getNumXYZ();i++){
-				if ((volumeSamples.getMask(i) & mask) != 0){
+				long sampleMask = volumeSamples.getMask(i);
+				if ((sampleMask & mask) != 0){
 					pixels[i] = (byte)pixelValue;
 				}
 			}
@@ -1650,3 +1665,11 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 	}
 	
 }
+
+//for (int i=0;i<volumeSamples.getNumXYZ();i++){
+//	long sampleMask = volumeSamples.getMask(i);
+//	if ((sampleMask == mask) || ((sampleMask & mask) != 0)){
+//		pixels[i] = (byte)pixelValue;
+//	}
+//}
+
