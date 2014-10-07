@@ -3,7 +3,7 @@
 <page title="Introduction" target="GeneralOverview">
 
 	<introduction>
-The Virtual Cell Modeling and Simulation Framework (VCell) version 5.1
+The Virtual Cell Modeling and Simulation Framework (VCell) version 5.3
 was developed by the National Resource for Cell Analysis and 
 Modeling. This unique software platform has been designed to model cell
 biological processes. Biochemical and electrophysiological data describing
@@ -21,7 +21,7 @@ Models can be reused, updated and published so they are available to the scienti
 addition, models may also be privately shared amongst collaborating groups. The data from
 simulations are stored on the Virtual Cell database server and are easily exported in a variety of formats.
 Access to the Virtual Cell modeling software is available via the internet using a JAVA based interface.
-Version 5.1. of the Virtual Cell has been developed using the latest supported Java technology.
+Version 5.3. of the Virtual Cell has been developed using the latest supported Java technology.
 	</introduction>
 	
 </page>
