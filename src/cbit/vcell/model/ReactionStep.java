@@ -678,11 +678,11 @@ public final void electricalTopologyChanged(ElectricalTopology electricalTopolog
 public void setModel(Model model) {
 	Model oldValue = this.model;
 	if (oldValue != null){
-		model.removeElectricalTopologyListener(this);
+		oldValue.removeElectricalTopologyListener(this);
 	}
 	this.model = model;
 	if (this.model != null){
-		model.addElectricalTopologyListener(this);
+		this.model.addElectricalTopologyListener(this);
 	}
 	firePropertyChange("model", oldValue, model);
 }
