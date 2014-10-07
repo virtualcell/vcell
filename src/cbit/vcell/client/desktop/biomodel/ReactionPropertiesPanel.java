@@ -519,6 +519,9 @@ private void updateKineticChoice() {
 }
 
 private void updateToggleButtonLabel(){
+	if(reactionStep.getModel() == null){
+		return;
+	}
 	if (reactionStep.getKinetics() instanceof DistributedKinetics){
 		getJToggleButton().setText("Convert to ["+reactionStep.getModel().getUnitSystem().getLumpedReactionRateUnit().getSymbolUnicode()+"]");
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of molecules rather than concentration");
