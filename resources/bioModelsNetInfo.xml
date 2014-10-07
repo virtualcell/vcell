@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Supported_BioModelsNet>
+  <BioModelInfo ID="BIOMD0000000001" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Edelstein1996 - EPSP ACh event" COPASI_VCELL_maxRelErr="5.11472024724844E-6" />
+  <BioModelInfo ID="BIOMD0000000002" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Edelstein1996 - EPSP ACh species" COPASI_VCELL_maxRelErr="4.925784899242874E-7" />
+  <BioModelInfo ID="BIOMD0000000003" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Goldbeter1991 - Min Mit Oscil" COPASI_VCELL_maxRelErr="0.041867467562166874" />
+  <BioModelInfo ID="BIOMD0000000004" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Goldbeter1991 - Min Mit Oscil, Expl Inact" COPASI_VCELL_maxRelErr="0.04186747310810172" />
+  <BioModelInfo ID="BIOMD0000000005" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson1991 - Cell Cycle 6 var" COPASI_VCELL_maxRelErr="0.04861593386799077" />
+  <BioModelInfo ID="BIOMD0000000008" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Gardner1998 - Cell Cycle Goldbeter" COPASI_VCELL_maxRelErr="0.20800042053801304" />
+  <BioModelInfo ID="BIOMD0000000010" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kholodenko2000 - Ultrasensitivity and negative feedback bring oscillations in MAPK cascade" COPASI_VCELL_maxRelErr="0.4602287358399842" />
+  <BioModelInfo ID="BIOMD0000000011" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Levchenko2000_MAPK_noScaffold" COPASI_VCELL_maxRelErr="0.0434446200049815" />
+  <BioModelInfo ID="BIOMD0000000014" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Levchenko2000_MAPK_Scaffold" COPASI_VCELL_maxRelErr="0.04274593292822687" />
+  <BioModelInfo ID="BIOMD0000000026" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_orderedElementary" COPASI_VCELL_maxRelErr="0.44134051692979537" />
+  <BioModelInfo ID="BIOMD0000000027" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_orderedMM" COPASI_VCELL_maxRelErr="0.2382362786288024" />
+  <BioModelInfo ID="BIOMD0000000028" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_phosphoRandomElementary" COPASI_VCELL_maxRelErr="0.49517547256675637" />
+  <BioModelInfo ID="BIOMD0000000029" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_phosphoRandomMM" COPASI_VCELL_maxRelErr="0.4213222082158158" />
+  <BioModelInfo ID="BIOMD0000000030" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_AllRandomElementary" COPASI_VCELL_maxRelErr="0.3839813454785282" />
+  <BioModelInfo ID="BIOMD0000000031" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Markevich2004_MAPK_orderedMM2kinases" COPASI_VCELL_maxRelErr="0.22006840899280958" />
+  <BioModelInfo ID="BIOMD0000000040" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Field1974_Oregonator" COPASI_VCELL_maxRelErr="0.009154750340563369" />
+  <BioModelInfo ID="BIOMD0000000046" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Olsen2003_peroxidase" COPASI_VCELL_maxRelErr="0.20465082917137736" />
+  <BioModelInfo ID="BIOMD0000000048" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kholodenko1999 - EGFR signaling" COPASI_VCELL_maxRelErr="0.49158553891759255" />
+  <BioModelInfo ID="BIOMD0000000049" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sasagawa2005_MAPK" COPASI_VCELL_maxRelErr="0.058817647759831414" />
+  <BioModelInfo ID="BIOMD0000000051" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Chassagnole2002_Carbon_Metabolism" COPASI_VCELL_maxRelErr="0.22634310410263728" />
+  <BioModelInfo ID="BIOMD0000000057" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sneyd2002_IP3_Receptor" COPASI_VCELL_maxRelErr="0.05556667594278608" />
+  <BioModelInfo ID="BIOMD0000000058" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bindschadler2001_coupled_Ca_oscillators" COPASI_VCELL_maxRelErr="0.41183189867672204" />
+  <BioModelInfo ID="BIOMD0000000067" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Fung2005_Metabolic_Oscillator" COPASI_VCELL_maxRelErr="0.22434154450374527" />
+  <BioModelInfo ID="BIOMD0000000068" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Curien2003_MetThr_synthesis" COPASI_VCELL_maxRelErr="0.1815908071408045" />
+  <BioModelInfo ID="BIOMD0000000069" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Fuss2006_MitoticActivation" COPASI_VCELL_maxRelErr="0.043265894857447446" />
+  <BioModelInfo ID="BIOMD0000000080" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Thomsen1989_AdenylateCyclase" COPASI_VCELL_maxRelErr="4.767882414278297E-7" />
+  <BioModelInfo ID="BIOMD0000000082" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Thomsen1988_AdenylateCyclase_Inhibition" COPASI_VCELL_maxRelErr="4.995365172625998E-7" />
+  <BioModelInfo ID="BIOMD0000000085" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Maurya2005_GTPaseCycle_reducedOrder" COPASI_VCELL_maxRelErr="1.280321572629531E-4" />
+  <BioModelInfo ID="BIOMD0000000086" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bornheimer2004_GTPaseCycle" COPASI_VCELL_maxRelErr="1.255232961709417E-4" />
+  <BioModelInfo ID="BIOMD0000000088" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Maeda2006_MyosinPhosphorylation" COPASI_VCELL_maxRelErr="0.3183891384677371" />
+  <BioModelInfo ID="BIOMD0000000093" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Yamada2003_JAK_STAT_pathway" COPASI_VCELL_maxRelErr="0.23181773505361064" />
+  <BioModelInfo ID="BIOMD0000000094" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Yamada2003_JAK_STAT_SOCS1_knockout" COPASI_VCELL_maxRelErr="0.23181773505361064" />
+  <BioModelInfo ID="BIOMD0000000102" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Legewie2006_apoptosis_WT" COPASI_VCELL_maxRelErr="0.37874166226932854" />
+  <BioModelInfo ID="BIOMD0000000103" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Legewie2006_apoptosis_NC" COPASI_VCELL_maxRelErr="0.38142422329699927" />
+  <BioModelInfo ID="BIOMD0000000108" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kowald2006_SOD" COPASI_VCELL_maxRelErr="1.264917175920173E-7" />
+  <BioModelInfo ID="BIOMD0000000116" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="McClean2007_CrossTalk" COPASI_VCELL_maxRelErr="0.15688615375407805" />
+  <BioModelInfo ID="BIOMD0000000123" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Fisher2006_NFAT_Activation" COPASI_VCELL_maxRelErr="0.026954884911718786" />
+  <BioModelInfo ID="BIOMD0000000143" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Olsen2003_neutrophil_oscillatory_metabolism" COPASI_VCELL_maxRelErr="0.3896957461752026" />
+  <BioModelInfo ID="BIOMD0000000146" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Hatakeyama2003_MAPK" COPASI_VCELL_maxRelErr="0.4316624106281495" />
+  <BioModelInfo ID="BIOMD0000000150" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Morris2002_CellCycle_CDK2Cyclin" COPASI_VCELL_maxRelErr="6.355617678420608E-8" />
+  <BioModelInfo ID="BIOMD0000000152" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Fernandez2006_ModelA" COPASI_VCELL_maxRelErr="8.025475881072446E-7" />
+  <BioModelInfo ID="BIOMD0000000153" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Fernandez2006_ModelB" COPASI_VCELL_maxRelErr="1.0120846515493281E-6" />
+  <BioModelInfo ID="BIOMD0000000161" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Eungdamrong2007_Ras_Activation" COPASI_VCELL_maxRelErr="0.5078032620917531" />
+  <BioModelInfo ID="BIOMD0000000165" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Saucerman2006_PKA" COPASI_VCELL_maxRelErr="0.22772661523476156" />
+  <BioModelInfo ID="BIOMD0000000169" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Aguda1999_CellCycle" COPASI_VCELL_maxRelErr="0.3181859427045781" />
+  <BioModelInfo ID="BIOMD0000000174" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Del_Conte_Zerial2008_Rab5_Rab7_cut_out_switch" COPASI_VCELL_maxRelErr="0.11924794717989814" />
+  <BioModelInfo ID="BIOMD0000000182" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Neves2008 - Role of cell shape and size in controlling intracellular signalling" COPASI_VCELL_maxRelErr="0.42721304216301814" />
+  <BioModelInfo ID="BIOMD0000000183" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Stefan2008 - calmodulin allostery" COPASI_VCELL_maxRelErr="0.0010158351046755556" />
+  <BioModelInfo ID="BIOMD0000000186" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ibrahim2008 - Mitotic Spindle Assembly Checkpoint - Dissociation variant" COPASI_VCELL_maxRelErr="5.379516113657756E-8" />
+  <BioModelInfo ID="BIOMD0000000187" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ibrahim2008 - Mitotic Spindle Assembly Checkpoint - Convey variant" COPASI_VCELL_maxRelErr="5.379516113657756E-8" />
+  <BioModelInfo ID="BIOMD0000000193" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ibrahim2008_MCC_assembly_model_KDM" COPASI_VCELL_maxRelErr="5.691718586438273E-8" />
+  <BioModelInfo ID="BIOMD0000000194" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ibrahim2008_Cdc20_Sequestring_Template_Model" COPASI_VCELL_maxRelErr="7.218542746740575E-8" />
+  <BioModelInfo ID="BIOMD0000000200" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bray1995_chemotaxis_receptorlinkedcomplex" COPASI_VCELL_maxRelErr="5.069658661535273E-7" />
+  <BioModelInfo ID="BIOMD0000000205" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ung2008_EGFR_Endocytosis" COPASI_VCELL_maxRelErr="0.43962373304216273" />
+  <BioModelInfo ID="BIOMD0000000208" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Deineko2003_CellCycle" COPASI_VCELL_maxRelErr="0.2326602765945487" />
+  <BioModelInfo ID="BIOMD0000000210" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Chickarmane2008 - Stem cell lineage - NANOG GATA-6 switch" COPASI_VCELL_maxRelErr="0.25449443190100807" />
+  <BioModelInfo ID="BIOMD0000000212" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Curien2009_Aspartate_Metabolism" COPASI_VCELL_maxRelErr="0.41202992510686204" />
+  <BioModelInfo ID="BIOMD0000000213" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Nijhout2004_Folate_Cycle" COPASI_VCELL_maxRelErr="0.18392560202576722" />
+  <BioModelInfo ID="BIOMD0000000220" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Albeck2008_extrinsic_apoptosis" COPASI_VCELL_maxRelErr="0.2504271133073197" />
+  <BioModelInfo ID="BIOMD0000000221" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Singh2006_TCA_Ecoli_acetate" COPASI_VCELL_maxRelErr="0.12046239428520499" />
+  <BioModelInfo ID="BIOMD0000000224" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Meyer1991_CalciumSpike_ICC" COPASI_VCELL_maxRelErr="0.5046667411218214" />
+  <BioModelInfo ID="BIOMD0000000225" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Westermark2003_Pancreatic_GlycOsc_basic" COPASI_VCELL_maxRelErr="0.1098532160827035" />
+  <BioModelInfo ID="BIOMD0000000226" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Radulescu2008_NFkB_hierarchy_M_14_25_28_Lipniacky" COPASI_VCELL_maxRelErr="0.004690032234706234" />
+  <BioModelInfo ID="BIOMD0000000227" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Radulescu2008_NFkB_hierarchy_M_39_65_90" COPASI_VCELL_maxRelErr="4.990652813311001E-5" />
+  <BioModelInfo ID="BIOMD0000000229" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ma2002_cAMP_oscillations" COPASI_VCELL_maxRelErr="0.43723725348585585" />
+  <BioModelInfo ID="BIOMD0000000230" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ihekwaba2004_NFkB_Sensitivity" COPASI_VCELL_maxRelErr="0.04199089708307749" />
+  <BioModelInfo ID="BIOMD0000000231" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Valero2006_Adenine_TernaryCycle" COPASI_VCELL_maxRelErr="0.2891325773808465" />
+  <BioModelInfo ID="BIOMD0000000233" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Wilhelm2009_BistableReaction" COPASI_VCELL_maxRelErr="0.44164129084681475" />
+  <BioModelInfo ID="BIOMD0000000236" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Westermark2003_Pancreatic_GlycOsc_extended" COPASI_VCELL_maxRelErr="0.1281912805931011" />
+  <BioModelInfo ID="BIOMD0000000237" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Schaber2006_Pheromone_Starvation_Crosstalk" COPASI_VCELL_maxRelErr="0.40536299777529455" />
+  <BioModelInfo ID="BIOMD0000000242" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bai2003_G1phaseRegulation" COPASI_VCELL_maxRelErr="0.21436778454617758" />
+  <BioModelInfo ID="BIOMD0000000257" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Piedrafita2010_MR_System" COPASI_VCELL_maxRelErr="0.2404540479434773" />
+  <BioModelInfo ID="BIOMD0000000258" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ortega2006_bistability_doublePhosphorylation" COPASI_VCELL_maxRelErr="0.3007294709621406" />
+  <BioModelInfo ID="BIOMD0000000259" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeDeficient" COPASI_VCELL_maxRelErr="0.4339107218582925" />
+  <BioModelInfo ID="BIOMD0000000260" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeAdequate" COPASI_VCELL_maxRelErr="0.4407008384282762" />
+  <BioModelInfo ID="BIOMD0000000261" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tiago2010_FeMetabolism_FeLoaded" COPASI_VCELL_maxRelErr="0.4587989316601394" />
+  <BioModelInfo ID="BIOMD0000000281" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Chance1960_Glycolysis_Respiration" COPASI_VCELL_maxRelErr="4.994355914314006E-4" />
+  <BioModelInfo ID="BIOMD0000000287" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Passos2010_DNAdamage_CellularSenescence" COPASI_VCELL_maxRelErr="0.139164088195216" />
+  <BioModelInfo ID="BIOMD0000000292" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Rovers1995_Photsynthetic_Oscillations" COPASI_VCELL_maxRelErr="0.2189598379430052" />
+  <BioModelInfo ID="BIOMD0000000303" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Liu2011_Complement_System" COPASI_VCELL_maxRelErr="0.19117602437548534" />
+  <BioModelInfo ID="BIOMD0000000306" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson2003_Activator_Inhibitor" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000307" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson2003_Substrate_Depletion_Osc" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000308" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson2003_NegFB_Oscillator" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000310" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson2003_Mutual_Inhibition" COPASI_VCELL_maxRelErr="3.3306690738754683E-11" />
+  <BioModelInfo ID="BIOMD0000000311" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tyson2003_Mutual_Activation" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000325" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Palini2011_Minimal_2_Feedback_Model" COPASI_VCELL_maxRelErr="0.02458727784363752" />
+  <BioModelInfo ID="BIOMD0000000332" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bungay2006_Plasma" COPASI_VCELL_maxRelErr="0.45490172441135246" />
+  <BioModelInfo ID="BIOMD0000000333" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bungay2006_FollicularFluid" COPASI_VCELL_maxRelErr="0.4537899807580143" />
+  <BioModelInfo ID="BIOMD0000000334" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bungay2003_Thrombin_Generation" COPASI_VCELL_maxRelErr="0.401926076263333" />
+  <BioModelInfo ID="BIOMD0000000335" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Hockin2002_BloodCoagulation" COPASI_VCELL_maxRelErr="4.984926101446969E-8" />
+  <BioModelInfo ID="BIOMD0000000351" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" COPASI_VCELL_maxRelErr="0.4306932763624123" />
+  <BioModelInfo ID="BIOMD0000000352" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" COPASI_VCELL_maxRelErr="0.448592034598529" />
+  <BioModelInfo ID="BIOMD0000000357" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm_reduced" COPASI_VCELL_maxRelErr="0.024576392088717144" />
+  <BioModelInfo ID="BIOMD0000000362" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Butenas2004_BloodCoagulation" COPASI_VCELL_maxRelErr="4.990574211795437E-7" />
+  <BioModelInfo ID="BIOMD0000000363" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm_minimal" COPASI_VCELL_maxRelErr="0.02492071113344095" />
+  <BioModelInfo ID="BIOMD0000000364" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm" COPASI_VCELL_maxRelErr="0.025222109054596698" />
+  <BioModelInfo ID="BIOMD0000000365" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Hockin1999_BloodCoagulation_VaInactivation" COPASI_VCELL_maxRelErr="5.2998174261583274E-8" />
+  <BioModelInfo ID="BIOMD0000000394" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sivakumar2011 - EGF Receptor Signaling Pathway" COPASI_VCELL_maxRelErr="0.8327200610824963" />
+  <BioModelInfo ID="BIOMD0000000395" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sivakumar2011 - Hedgehog Signaling Pathway" COPASI_VCELL_maxRelErr="0.24194797755859962" />
+  <BioModelInfo ID="BIOMD0000000396" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sivakumar2011 - Notch Signaling Pathway" COPASI_VCELL_maxRelErr="0.2433578085869787" />
+  <BioModelInfo ID="BIOMD0000000397" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sivakumar2011_WntSignalingPathway" COPASI_VCELL_maxRelErr="0.23498759088048177" />
+  <BioModelInfo ID="BIOMD0000000398" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sivakumar2011_NeuralStemCellDifferentiation_Crosstalk" COPASI_VCELL_maxRelErr="0.22009275412332932" />
+  <BioModelInfo ID="BIOMD0000000406" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Moriya2011_CellCycle_FissionYeast" COPASI_VCELL_maxRelErr="0.1590559510078128" />
+  <BioModelInfo ID="BIOMD0000000409" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Queralt2006_MitoticExit_Cdc55DownregulationBySeparase" COPASI_VCELL_maxRelErr="0.07419568713307606" />
+  <BioModelInfo ID="BIOMD0000000413" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Band2012_DII-Venus_FullModel" COPASI_VCELL_maxRelErr="0.34535255178180646" />
+  <BioModelInfo ID="BIOMD0000000414" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Band2012_DII-Venus_ReducedModel" COPASI_VCELL_maxRelErr="0.0659307381406593" />
+  <BioModelInfo ID="BIOMD0000000417" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ratushny2012_NF" COPASI_VCELL_maxRelErr="0.38313818988481957" />
+  <BioModelInfo ID="BIOMD0000000422" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Middleton2012_GibberellinSignalling" COPASI_VCELL_maxRelErr="0.2227966579522615" />
+  <BioModelInfo ID="BIOMD0000000423" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Nyman2012_InsulinSignalling" COPASI_VCELL_maxRelErr="0.23331959541641634" />
+  <BioModelInfo ID="BIOMD0000000425" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Tan2012 - Antibiotic Treatment, Inoculum Effect" COPASI_VCELL_maxRelErr="0.04952526575347804" />
+  <BioModelInfo ID="BIOMD0000000427" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bianconi2012 - EGFR and IGF1R pathway in lung cancer" COPASI_VCELL_maxRelErr="0.5326360564365523" />
+  <BioModelInfo ID="BIOMD0000000430" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Interaction topologies of MAPK cascade (M4_K2_USEQ)" COPASI_VCELL_maxRelErr="0.4226718883754868" />
+  <BioModelInfo ID="BIOMD0000000431" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Interaction topologies of MAPK cascade (M4_K2_PSEQ)" COPASI_VCELL_maxRelErr="0.4884142621185021" />
+  <BioModelInfo ID="BIOMD0000000438" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Saeidi2012 - Quorum sensing device that produces GFP" COPASI_VCELL_maxRelErr="4.997302933464622E-7" />
+  <BioModelInfo ID="BIOMD0000000440" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S1)" COPASI_VCELL_maxRelErr="0.3704940873011255" />
+  <BioModelInfo ID="BIOMD0000000441" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S2)" COPASI_VCELL_maxRelErr="0.33716103988264856" />
+  <BioModelInfo ID="BIOMD0000000442" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S2), inclusion of external signalling module" COPASI_VCELL_maxRelErr="0.3371614333647093" />
+  <BioModelInfo ID="BIOMD0000000443" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S1n)" COPASI_VCELL_maxRelErr="0.37049405787781775" />
+  <BioModelInfo ID="BIOMD0000000444" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sarma2012 - Oscillations in MAPK cascade (S2n)" COPASI_VCELL_maxRelErr="0.33716147161182286" />
+  <BioModelInfo ID="BIOMD0000000447" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Venkatraman2012 - Interplay between PLS and TSP1 in TGF-β1 activation" COPASI_VCELL_maxRelErr="0.04267555889296408" />
+  <BioModelInfo ID="BIOMD0000000448" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Brännmark2013 - Insulin signalling in human adipocytes (normal condition)" COPASI_VCELL_maxRelErr="0.4022263535734028" />
+  <BioModelInfo ID="BIOMD0000000449" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Brännmark2013 - Insulin signalling in human adipocytes (diabetic condition)" COPASI_VCELL_maxRelErr="0.4556842819826701" />
+  <BioModelInfo ID="BIOMD0000000452" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bidkhori2012 - normal EGFR signalling" COPASI_VCELL_maxRelErr="0.04346617002401339" />
+  <BioModelInfo ID="BIOMD0000000453" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Bidkhori2012 - EGFR signalling in NSCLC" COPASI_VCELL_maxRelErr="0.24268479542332969" />
+  <BioModelInfo ID="BIOMD0000000458" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Smallbone2013 - Serine biosynthesis" COPASI_VCELL_maxRelErr="0.05050768505717023" />
+  <BioModelInfo ID="BIOMD0000000462" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Proctor2012 - Role of Amyloid-beta dimers in aggregation formation" COPASI_VCELL_maxRelErr="1.7980509261702573E-4" />
+  <BioModelInfo ID="BIOMD0000000465" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Koo2013 - Shear stress induced AKT and eNOS phosphorylation - Model 2" COPASI_VCELL_maxRelErr="0.5769319531138484" />
+  <BioModelInfo ID="BIOMD0000000466" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Koo2013 - Shear stress induced eNOS expression - Model 3" COPASI_VCELL_maxRelErr="0.5860979937775005" />
+  <BioModelInfo ID="BIOMD0000000467" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Koo2013 - Shear stress induced NO production - Model 4" COPASI_VCELL_maxRelErr="0.4175618568053479" />
+  <BioModelInfo ID="BIOMD0000000483" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Cao2008 - Network of a toggle switch" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000484" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Cao2013 - Application of ABSIS method in birth-death process" COPASI_VCELL_maxRelErr="0.14099338479588838" />
+  <BioModelInfo ID="BIOMD0000000485" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Cao2013 - Application of ABSIS method in the bistable Schlögl model" COPASI_VCELL_maxRelErr="0.1524948755791037" />
+  <BioModelInfo ID="BIOMD0000000486" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Cao2013 - Application of ABSIS method in the reversible isomerization model" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000487" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Cao2013 - Application of ABSIS in the the enzymatic futile cycle" COPASI_VCELL_maxRelErr="0.0" />
+  <BioModelInfo ID="BIOMD0000000489" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Sharp2013 - Lipopolysaccharide induced NFkB activation" COPASI_VCELL_maxRelErr="0.024845449905977562" />
+  <BioModelInfo ID="BIOMD0000000493" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Schittler2010 - Cell fate of progenitor cells, osteoblasts or chondrocytes" COPASI_VCELL_maxRelErr="0.38329702976492563" />
+  <BioModelInfo ID="BIOMD0000000502" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Messiha2013 - Pentose phosphate pathway model" COPASI_VCELL_maxRelErr="0.2388175724688334" />
+  <BioModelInfo ID="BIOMD0000000523" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, CD95 HeLa cells (cis/trans variant)" COPASI_VCELL_maxRelErr="0.36924320083301404" />
+  <BioModelInfo ID="BIOMD0000000524" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, wild-type HeLa cells (cis/trans variant)" COPASI_VCELL_maxRelErr="0.3855039454461574" />
+  <BioModelInfo ID="BIOMD0000000525" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, CD95 HeLa cells (cis/trans-cis/trans variant)" COPASI_VCELL_maxRelErr="0.37112931424630763" />
+  <BioModelInfo ID="BIOMD0000000526" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Kallenberger2014 - CD95L induced apoptosis initiated by caspase-8, wild-type HeLa cells (cis/trans-cis/trans variant)" COPASI_VCELL_maxRelErr="0.3914195219383832" />
+  <BioModelInfo ID="BIOMD0000000530" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Schmitz2014 - RNA triplex formation" COPASI_VCELL_maxRelErr="0.04468695374213358" />
+  <BioModelInfo ID="BIOMD0000000545" Supported="true" vcell_ran="true" COPASI_ran="true" mSBML_ran="false" Name="Ouyang2014 - photomorphogenic UV-B signalling network" COPASI_VCELL_maxRelErr="0.3861035479089908" />
+</Supported_BioModelsNet>
+
