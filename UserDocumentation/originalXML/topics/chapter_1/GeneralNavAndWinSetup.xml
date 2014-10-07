@@ -4,7 +4,7 @@
 
 	
 	<introduction>
-	Virtual Cell 5.1 has a redesigned easy-to-use GUI, with improved mechanisms to add <def target = "def_species">species</def>, <def target = "def_reactions"> reactions</def>, and model <def target = "def_structure" >structures</def>.
+	Virtual Cell 5.2 has a redesigned easy-to-use GUI, with improved mechanisms to add <def target = "def_species">species</def>, <def target = "def_reactions"> reactions</def>, and model <def target = "def_structure" >structures</def>.
 	The document view displays the model at a glance, with intuitive tabs and tree structures that allows the user to navigate with ease.
 	</introduction>
 	
