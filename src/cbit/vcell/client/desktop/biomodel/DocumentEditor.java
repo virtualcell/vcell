@@ -37,6 +37,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
+import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -44,9 +45,11 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.Issue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
@@ -135,6 +138,63 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenu menuSpatialCopyAsSpatial = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialStochastic = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
+	private ProblemSignalling problemSignalling = null;
+	
+	private class ProblemSignalling {
+		private Timer timer = null;
+		private int counter = 0;
+		private final int MaxBlinks = 5;
+		
+		private final String title;
+		private final int oldNumWarnings;
+		private final int oldNumErrors;
+		
+		public ProblemSignalling(String title, int oldNumErrors, int oldNumWarnings) {
+			this.title = title;
+			this.oldNumErrors = oldNumErrors;
+			this.oldNumWarnings = oldNumWarnings;
+		}
+		public void start(Timer timer) {
+			this.timer = timer;
+			timer.start(); 
+		}
+		private void blink() {
+			if(counter == 0) {			// first tick, we set up the icon
+				if(oldNumErrors < issueManager.getNumErrors()) {
+					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), VCellIcons.issueErrorIcon);
+				} else if(oldNumWarnings < issueManager.getNumWarnings()) {
+					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), VCellIcons.issueWarningIcon);
+				} else {				// nothing to flash if the number of errors or warnings did not increase
+					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+					problemSignalling.timer.stop();
+					System.out.println("Unable to flash, the number of errors or warnings did not increase.");
+					return;				// clean up and exit
+				}
+			}
+			if(counter >= MaxBlinks) {	// last tick, we clean up and leave
+				rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+				problemSignalling.timer.stop();
+				System.out.println("Done flashing.");
+				return;
+			}
+			// text
+			if(counter%2 == 0) {		// even ticks, display title in colored background
+				if(oldNumErrors < issueManager.getNumErrors()) {
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html><body bgcolor=\"#FFB0B0\">" + title + "</body></html>");
+				} else if(oldNumWarnings < issueManager.getNumWarnings()) {
+					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html><body bgcolor=\"#FFEFD0\">" + title + "</body></html>");
+				}
+			} else if(counter%2 == 1) {	// off ticks, display title in normal background
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+			}
+			counter++;
+		}
+		public Object getTimer() {
+			return timer;
+		}
+	}
 
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener, IssueEventListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -183,6 +243,8 @@ public abstract class DocumentEditor extends JPanel {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());	
 			} else if (e.getSource() == menuItemNewBiomodelFromApp){
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.app_new_biomodel, e.getActionCommand());
+			} else if((problemSignalling != null) && (e.getSource() == problemSignalling.getTimer())) {
+				problemSignalling.blink();
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -235,17 +297,34 @@ public abstract class DocumentEditor extends JPanel {
 			boolean bHtml = false;
 			if (issueManager.getNumErrors() > 0) {
 				bHtml = true;
-				errString = "<font color=red>" + errString + "</font>";
+				errString = "<font color=#9B0000>" + errString + "</font>";
 			}
 			if (issueManager.getNumWarnings() > 0) {
 				bHtml = true;
-				warnString = "<font color=#C35617>" + warnString + "</font>";
+				warnString = "<font color=#BA5C00>" + warnString + "</font>";	// 0xff8c00
 			}
-			String title = "Problems (" + errString + ", " + warnString + ")";
-			if (bHtml) {
-				title = "<html>" + title + "</html>";
+			String title = " Problems (" + errString + ", " + warnString + ") ";
+			if(bHtml) {
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
+				warningBarUpdate(issueEvent, title);
+			} else {
+				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
 			}
-			rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
+		}
+		
+		public void warningBarUpdate(IssueEvent issueEvent, String title) {
+			int oldNumErrors = 0;
+			int oldNumWarnings = 0;
+			for(Issue issue : issueEvent.getOldValue()) {
+				int severity = issue.getSeverity();
+				if (severity == Issue.SEVERITY_ERROR) {
+					oldNumErrors ++;
+				} else if (severity == Issue.SEVERITY_WARNING) {
+					oldNumWarnings ++;
+				}
+			}
+			problemSignalling = new ProblemSignalling(title, oldNumErrors, oldNumWarnings);
+			problemSignalling.start(new Timer(200, this));
 		}
 	};
 
