@@ -39,7 +39,6 @@
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
-    		<tocitem target="PhysStructDiagView" text="Structure Diagram"/>
     		<tocitem target="ReactDiagView" text="Reactions Diagram"/>
 	   		<!-- tocitem target="Reactions" text="Reactions"/-->
     		<tocitem target="ReactTabView" text="Reactions Table"/>
