@@ -1963,6 +1963,8 @@ public void sendLostPassword(final DocumentWindowManager currWindowManager, fina
 					getClientServerManager().getClientServerInfo(), userid, null),
 					LoginManager.USERACTION_LOSTPASSWORD,
 				null);
+	} catch (UserCancelException e) {
+		return;
 	} catch (Exception e) {
 		e.printStackTrace();
 		PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n" + e.getMessage(), e);
