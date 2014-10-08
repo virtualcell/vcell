@@ -9,7 +9,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "VCellMain.gif"/> 
+		<imgReference target = "VCellMain.png"/> 
 	</appearance>
 	
 	<operations>
@@ -35,8 +35,7 @@
 		<item>
 		<para><bold>View panel (Panel B)</bold></para>
 		<para>
-		The top right panel in the figure above is the 'View' panel. This panel has the following 5 tabs that allow the user to create a physiological model before he/she can run simulations. 
-		<bold>Structure Diagram</bold> is used to view/add cellular structures or compartments to the model. 
+		The top right panel in the figure above is the 'View' panel. This panel has the following 4 tabs that allow the user to create a physiological model before he/she can run simulations. 
 		<bold>Reaction Diagram</bold> is used to view the reaction network and add species or reactions and fluxes to the model. 
 		<bold>Reactions</bold> lists the reactions in the model in a tabular form. The user can also add/delete reactions here. 
 		<bold>Structures</bold> lists the compartments in the model as a table. Compartments can also be added or deleted in this table.
