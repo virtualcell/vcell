@@ -54,6 +54,8 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -2298,6 +2300,20 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 				return rr;
 			}
 		}
+	}
+	return null;
+}
+
+@Override
+public Issue gatherIssueForMathOverride(Simulation simulation, String overriddenConstantName) {
+	ReservedSymbol reservedSymbol = getModel().getReservedSymbolByName(overriddenConstantName);
+	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.KMOLE){
+		String msg = "overriding unit factor KMOLE is no longer supported, unit conversion has been completely redesigned";
+		return new Issue(simulation,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+	}
+	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.N_PMOLE){
+		String msg = "overriding unit factor N_PMOLE is no longer supported, unit conversion has been completely redesigned";
+		return new Issue(simulation,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
 	}
 	return null;
 }

@@ -65,7 +65,6 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.Simulation.SimulationIssueSource;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -342,13 +341,7 @@ public void gatherIssues(List<Issue> issueList) {
 		simulationContext.gatherIssues(issueList);
 	}
 	for (Simulation simulation : fieldSimulations) {
-		SimulationContext simulationContext = null;
-		try {
-			simulationContext = getSimulationContext(simulation);
-		} catch (ObjectNotFoundException e) {
-			e.printStackTrace();
-		}
-		simulation.gatherIssues(issueList,simulationContext);
+		simulation.gatherIssues(issueList);
 	}
 }
 
@@ -694,6 +687,7 @@ public void refreshDependencies() {
 		fieldSimulations[i].addVetoableChangeListener(this);
 		fieldSimulations[i].refreshDependencies();
 	}
+	updateSimulationOwners();
 }
 
 
@@ -810,6 +804,7 @@ public void setSimulationContexts(SimulationContext[] simulationContexts) throws
 //		simulationContexts[i].addVetoableChangeListener(this);
 		simulationContexts[i].setBioModel(this);
 	}
+	updateSimulationOwners();
 	firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
 }
 
@@ -826,13 +821,26 @@ public void setSimulations(Simulation[] simulations) throws java.beans.PropertyV
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);
 		oldValue[i].removeVetoableChangeListener(this);
+		oldValue[i].setSimulationOwner(null); // make sure old simulation instances have null simulationOwners
 	}
 	fieldSimulations = simulations;
 	for (int i = 0; simulations!=null && i < simulations.length; i++){
 		simulations[i].addPropertyChangeListener(this);
 		simulations[i].addVetoableChangeListener(this);
 	}
+	updateSimulationOwners();
 	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+}
+
+private void updateSimulationOwners(){
+	for (Simulation sim : fieldSimulations){
+		try {
+			sim.setSimulationOwner(getSimulationContext(sim));
+		} catch (ObjectNotFoundException e) {
+			sim.setSimulationOwner(null);
+			e.printStackTrace();
+		}
+	}
 }
 
 
@@ -1159,9 +1167,8 @@ public SimulationContext getSimulationContext(String name) {
 			SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
 			description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / " 
 				+ "Simulations" + " / " + "Output Functions";
-		} else if (source instanceof SimulationIssueSource) {
-			SimulationIssueSource simulationIssueSource = (SimulationIssueSource)source;
-			Simulation simulation = simulationIssueSource.getSimulation();
+		} else if (source instanceof Simulation) {
+			Simulation simulation = (Simulation)source;
 			try {
 				SimulationContext simulationContext = getSimulationContext(simulation);
 				description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / Simulations";
@@ -1216,8 +1223,8 @@ public SimulationContext getSimulationContext(String name) {
 			description = "Geometry";
 		}else if (object instanceof ModelOptimizationSpec) {
 			description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
-		}else if (object instanceof SimulationIssueSource) {
-			description = ((SimulationIssueSource) object).getSimulation().getName();
+		}else if (object instanceof Simulation) {
+			description = ((Simulation) object).getName();
 		} else if (object instanceof SpeciesContextSpec) {
 			SpeciesContextSpec scs = (SpeciesContextSpec)object;
 			description = scs.getSpeciesContext().getName();

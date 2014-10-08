@@ -84,6 +84,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_StochasticModel,
 		
 		Simulation_Override_NotFound,
+		Simulation_Override_NotSupported,
 		Simulation_SensAnal_And_FastSystem,
 		
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,

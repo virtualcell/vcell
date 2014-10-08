@@ -69,7 +69,7 @@ public AbstractSolver(SimulationTask simTask, File directory, SessionLog session
 	this.saveDirectory = directory;
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
 	simTask.getSimulation().getMathDescription().gatherIssues(issueList);
-	simTask.getSimulation().gatherIssues(issueList,null);
+	simTask.getSimulation().gatherIssues(issueList);
 	for (Issue issue : issueList) {
 		if (issue.getSeverity() == Issue.SEVERITY_ERROR){
 			throw new SolverException(issue.getMessage());

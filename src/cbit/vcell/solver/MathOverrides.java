@@ -855,7 +855,7 @@ public void refreshDependencies() {
  * This method was created in VisualAge.
  * @return boolean
  */
-public void gatherIssues(List<Issue> issueList, SimulationOwner simulationOwner) {
+public void gatherIssues(List<Issue> issueList) {
 	
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
@@ -874,8 +874,15 @@ public void gatherIssues(List<Issue> issueList, SimulationOwner simulationOwner)
 	while (mathOverrideNamesEnum.hasMoreElements()){
 		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
-			Issue issue = new Issue(new Simulation.SimulationIssueSource(simulationOwner,getSimulation()), IssueCategory.Simulation_Override_NotFound, VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_OVERRIDE_NOTFOUND, name, getSimulation().getName()), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(getSimulation(), IssueCategory.Simulation_Override_NotFound, VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_OVERRIDE_NOTFOUND, name, getSimulation().getName()), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
+		}
+		Variable var = mathDescription.getVariable(name);
+		if (getSimulation().getSimulationOwner()!=null){
+			Issue issue = getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name);
+			if (issue!=null){
+				issueList.add(issue);
+			}
 		}
 	}	
 }
@@ -899,6 +906,10 @@ public void removeUnusedOverrides(){
 	while (mathOverrideNamesEnum.hasMoreElements()){
 		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
+			// constant 'name' no longer part of mathDescription
+			overridesToDelete.add(name);
+		}else if (getSimulation().getSimulationOwner()!=null && getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name)!=null){
+			// constant 'name' is part of math, but simulation owner doesn't want you to override it.
 			overridesToDelete.add(name);
 		}
 	}
@@ -909,9 +920,9 @@ public void removeUnusedOverrides(){
 
 public boolean hasUnusedOverrides() {
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
-	gatherIssues(issueList,null);
+	gatherIssues(issueList);
 	for (Issue issue : issueList) {
-		if (issue.getSeverity()==Issue.SEVERITY_ERROR && issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound)){
+		if (issue.getSeverity()==Issue.SEVERITY_ERROR && (issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound) || issue.getCategory().equals(IssueCategory.Simulation_Override_NotSupported))){
 			return true;
 		}
 	}
@@ -922,6 +933,9 @@ public boolean hasUnusedOverrides() {
 public boolean isUnusedParameter(String name) {
 	Variable var = getSimulation().getMathDescription().getVariable(name);
 	if (var instanceof Constant){
+		if (getSimulation().getSimulationOwner()!=null && getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name)!=null){
+			return true;
+		}
 		return false;
 	}else{
 		return true;

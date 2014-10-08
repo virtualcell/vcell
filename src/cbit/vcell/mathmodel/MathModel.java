@@ -36,7 +36,6 @@ import cbit.vcell.model.VCMODL;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.Simulation.SimulationIssueSource;
 import cbit.vcell.solver.SimulationOwner;
 /**
  * Insert the type's description here.
@@ -556,7 +555,7 @@ public void refreshDependencies() {
 		fieldSimulations[i].removePropertyChangeListener(this);
 		fieldSimulations[i].addVetoableChangeListener(this);
 		fieldSimulations[i].addPropertyChangeListener(this);
-		//fieldSimulations[i].refreshDependencies();
+		fieldSimulations[i].setSimulationOwner(this);
 	}
 }
 
@@ -640,7 +639,21 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
 public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException {
 	Simulation[] oldValue = fieldSimulations;
 	fireVetoableChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+
+	if (oldValue!=null){
+		for (Simulation sim : oldValue){
+			sim.setSimulationOwner(null);
+		}
+	}
+
 	fieldSimulations = simulations;
+
+	if (fieldSimulations!=null){
+		for (Simulation sim : fieldSimulations){
+			sim.setSimulationOwner(this);
+		}
+	}
+
 	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
 }
 
@@ -727,7 +740,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		fieldMathDescription.gatherIssues(issueList);
 		outputFunctionContext.gatherIssues(issueList);
 		for (Simulation simulation : fieldSimulations){
-			simulation.gatherIssues(issueList,this);
+			simulation.gatherIssues(issueList);
 		}
 	}
 
@@ -736,8 +749,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY;
 		} else if (object instanceof OutputFunctionIssueSource) {
 			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS;
-		} else if (object instanceof SimulationIssueSource){
-			return "Simulation("+((SimulationIssueSource)object).getSimulation().getName()+")";
+		} else if (object instanceof Simulation){
+			return "Simulation("+((Simulation)object).getName()+")";
 		} else {
 			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML;
 		}
@@ -756,8 +769,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
 		} else if (object instanceof MathDescription) {
 			return "math";
-		} else if (object instanceof SimulationIssueSource) {
-			return "Simulation "+((SimulationIssueSource)object).getSimulation().getName()+"";
+		} else if (object instanceof Simulation) {
+			return "Simulation "+((Simulation)object).getName()+"";
 		}
 		return description;		
 	}
@@ -771,6 +784,13 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 				return sim;
 			}
 		}
+		return null;
+	}
+
+
+	@Override
+	public Issue gatherIssueForMathOverride(Simulation simulation, String overriddenConstantName) {
+		// no semantics for another override
 		return null;
 	}
 }

@@ -79,6 +79,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	/**
 	 * Settings that override those specified in the MathDescription.
 	 */
+	private transient SimulationOwner simulationOwner = null;
 	private DataProcessingInstructions dataProcessingInstructions = null;
 	private MathOverrides fieldMathOverrides = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -89,21 +90,6 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private boolean fieldIsDirty = false;
 	
 	
-	public static class SimulationIssueSource {
-		private SimulationOwner simulationOwner;
-		private Simulation simulation;
-		public SimulationIssueSource(SimulationOwner simulationOwner, Simulation simulation){
-			this.simulationOwner = simulationOwner;
-			this.simulation = simulation;
-		}
-		public final SimulationOwner getSimulationOwner() {
-			return simulationOwner;
-		}
-		public final Simulation getSimulation() {
-			return simulation;
-		}
-	}
-
 /**
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
@@ -231,6 +217,16 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
 	refreshDependencies();
+}
+
+
+public SimulationOwner getSimulationOwner() {
+	return simulationOwner;
+}
+
+
+public void setSimulationOwner(SimulationOwner simulationOwner) {
+	this.simulationOwner = simulationOwner;
 }
 
 
@@ -374,9 +370,9 @@ public boolean isSpatial() {
 }
 
 
-public void gatherIssues(List<Issue> issueList, SimulationOwner simulationOwner) {
+public void gatherIssues(List<Issue> issueList) {
 	
-	getMathOverrides().gatherIssues(issueList, simulationOwner);
+	getMathOverrides().gatherIssues(issueList);
 	
 	//
 	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
@@ -384,8 +380,7 @@ public void gatherIssues(List<Issue> issueList, SimulationOwner simulationOwner)
 	//
 	if (fieldMathDescription != null && getSolverTaskDescription() != null) {
 		if (getMathDescription().hasFastSystems() && (getSolverTaskDescription().getSensitivityParameter() != null)) {
-			Issue issue = new Issue(new SimulationIssueSource(simulationOwner, this),
-									IssueCategory.Simulation_SensAnal_And_FastSystem,
+			Issue issue = new Issue(this, IssueCategory.Simulation_SensAnal_And_FastSystem,
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_SENSANAL_FASTSYSTEM,getName()),
 									Issue.SEVERITY_ERROR);
 			issueList.add(issue);
@@ -414,7 +409,7 @@ public void gatherIssues(List<Issue> issueList, SimulationOwner simulationOwner)
 				text += sd.getDisplayLabel() + "\n";
 			}
 		}
-		Issue issue = new Issue(new SimulationIssueSource(simulationOwner, this),IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this,IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 }
