@@ -33,6 +33,7 @@ public class DocumentWindowAboutBox extends JPanel {
 
 	private static final String COPASI_WEB_URL = "http://www.copasi.org";
 	private static final String SMOLDYN_WEB_URL = "http://www.smoldyn.org";
+	private static final String BIONETGEN_WEB_URL = "http://bionetgen.org";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
 	private JLabel copyright = null;
@@ -133,7 +134,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2011 UCHC");
+				copyright.setText("(c) Copyright 1998-2014 UCHC");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -190,6 +191,25 @@ public class DocumentWindowAboutBox extends JPanel {
 			}
 		
 		return smoldynText;
+	}
+	
+	
+	private JLabel getBioNetGenAttribution() {
+		JLabel bioNetGenText = new JLabel();
+			try {
+				
+				bioNetGenText.setName("BioNetGen");
+				bioNetGenText.setText("<html>Featuring rule-based simulation powered by <font color=blue><u>BioNetGen</u></font></html>");
+				bioNetGenText.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, BIONETGEN_WEB_URL, "Failed to open BioNetGen webpage ("+BIONETGEN_WEB_URL+")", false);
+					}
+				});
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		
+		return bioNetGenText;
 	}
 	
 	public JLabel getVersion() {
@@ -282,6 +302,16 @@ public class DocumentWindowAboutBox extends JPanel {
 			gbc.anchor = GridBagConstraints.LINE_START;
 			add(getSmoldynAttribution(), gbc);
 			
+
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getBioNetGenAttribution(), gbc);
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
