@@ -12,7 +12,7 @@
 	
 	<operations>
 	<para>
-	Selecting a single species or a single reaction in a Reaction Diagram, Reactions Table View, Structure Diagram or 
+	Selecting a single species or a single reaction in a Reaction Diagram, Reactions Table View or 
 	Species Table view enables <bold>Pathway Links</bold> button.
 	</para><para> 
 	If a species or reaction is already linked to a pathway object, 
