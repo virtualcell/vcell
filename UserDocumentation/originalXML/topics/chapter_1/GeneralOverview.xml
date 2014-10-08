@@ -15,7 +15,7 @@ the direct comparison of model predictions with experiment.
 VCell consists of a biological and mathematical framework. Scientists can create 
 biological models from which the software will generate the mathematical code 
 needed to run simulations.  Mathematicians may opt to use the math framework, 
-based on the Virtual Cell Math Language, for creating their own mathematical descriptions. 
+based on the Virtual Cell Markup Language, for creating their own mathematical descriptions. 
 <para></para>
 Models can be reused, updated and published so they are available to the scientific community. In
 addition, models may also be privately shared amongst collaborating groups. The data from
