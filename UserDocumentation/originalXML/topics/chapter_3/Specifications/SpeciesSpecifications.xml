@@ -9,10 +9,14 @@
 	</introduction>
 	
 	<appearance>
-		<para><bold>Deterministic</bold></para>
+		<bold>Deterministic</bold>
 		<imgReference target = "SpeciesSpecifications.GIF"/>
-		<para><bold>Stochastic (spatial and non-spatial)</bold></para>
-		<imgReference target = "SpeciesSpecifications_stoch.png"/>
+		<para><bold>Spatial Stochastic</bold>
+		<imgReference target = "SpeciesSpecifications_spatial_stoch.png"/>
+		</para>
+		<para><bold>Non-Spatial Stochastic</bold>
+		<imgReference target = "SpeciesSpecifications_nonspatial_stoch.png"/>
+		</para>
 	<para>
 	<imgReference target = "speciesSpecificationMenu.png"/>
 	</para>

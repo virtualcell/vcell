@@ -11,7 +11,11 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "ReactionsSpecifications.png"/>  
+		<bold>Deterministic</bold>
+		<imgReference target = "ReactionsSpecifications_determ.png"/>  
+		<para><bold>Stochastic</bold>
+		<imgReference target = "ReactionsSpecifications_stoch.png"/> 
+		</para>
 	</appearance>
 		
 	<operations>
