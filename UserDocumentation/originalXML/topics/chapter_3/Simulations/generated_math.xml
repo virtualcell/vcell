@@ -30,13 +30,13 @@
 	<para>
 	Use the name/value radio buttons to display parameters in an equation as a name or as a value.
 	</para>
-	<imgReference target = "generated_math_main.gif"/>
+	<imgReference target = "generated_math_main.PNG"/>
 	<para></para>	
 	<item>Choose View - Math Description Language</item>
 	<para>The Math Description Language view displays the math used in the simulation. A search
 	tool is available at the bottom.
 	</para>
-	<imgReference target = "generated_math_lang.gif"/>
+	<imgReference target = "generated_math_lang.PNG"/>
 	<item>Refresh Math</item>
 		<para>
 		The math is not constantly updated as you create your model therefore if you wish to view a current math you
