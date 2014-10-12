@@ -18,7 +18,7 @@
 	On top of the "Parameter Esimation" tab, click “New…” button. A window will pop up to prompt you to enter a name for the new task. After
 you click “OK”, the newly created task will show up in the drop down menu named "Select a Task". 
 	</para>
-	<para><imgReference target = "pe_new.gif"/></para>
+	<para><imgReference target = "pe_new.png"/></para>
 	<para></para>
 	<item>
 	<bold>Add parameter to be estimated</bold>
@@ -79,7 +79,7 @@ plot view or table in data view in the Reference Data tab.
     as a newly created simulation under the Simulation tab.
 	</para>
 	<para>
-	<imgReference target = "pe_results.gif"/>
+	<imgReference target = "pe_results.png"/>
 	</para>
 	<para></para>
 	<item>
