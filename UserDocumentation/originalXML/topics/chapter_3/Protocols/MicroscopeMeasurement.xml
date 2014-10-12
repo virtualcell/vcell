@@ -44,7 +44,7 @@
 	</appearance>
 	
 	<operations>
-	This feature is only available for spatial deterministic simulation. Inside the panel, the user can choose which species should be treated 
+	This feature is only available for spatial deterministic applications. Inside the panel, the user can choose which species should be treated 
 	as being "fluorescent" and enter the desired point spread function attributes.
 	<para>
 		In a future release we plan to also offer the capability of directly importing airy disc experimental images.
