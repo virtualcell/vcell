@@ -30,7 +30,7 @@
 	If the user wishes to switch from the voltage/current clamp to any other clamp options, a warning message will be displayed indicating that the present clamp settings will be lost.
 	</para>
 	
-	<imgReference target = "ElectricalWarning.gif"/>
+	<imgReference target = "ElectricalWarning.png"/>
 	
 	<para>
 	When 'Voltage' or 'Current' clamps (stimuli) is chosen, the required attributes that can be specified are displayed in a table. The available electrical stimulus options are:
@@ -74,7 +74,7 @@
 	Choosing a feature from the list and clicking <bold>OK</bold> will set the electrode (Patch or Ground) to that feature.
 	</para>
 	
-	<imgReference target = "ElectricalSetElectrode.gif"/>
+	<imgReference target = "ElectricalSetElectrode.png"/>
 	
 	<para>
 	The <bold>Preview Electrical Stimulus</bold> button can be used to preview the chosen electrical stimulus. It displays the stimulus as a time plot. 
@@ -82,7 +82,7 @@
 	Clicking <bold>Refresh Plot</bold> button will refresh the display to reflect the modified 'Time Function'.
 	</para>
 	
-	<imgReference target = "PreviewElectricalStim.gif"/>
+	<imgReference target = "PreviewElectricalStim.png"/>
 	</operations>
 	
 </page>
