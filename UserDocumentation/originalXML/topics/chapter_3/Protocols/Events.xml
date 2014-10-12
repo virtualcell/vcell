@@ -5,8 +5,8 @@
 	
 	<introduction>
 	<para>
-	<bold>Events</bold> can be created within non-spatial models such that a variable or time-dependent expression can trigger a predefined reset or change in the value of other variables during simulation. 
-	Essentially, an event can be used to describe anything that is discontinuous. This can be convenient to specify protocols, for example, to open a channel from time t1 to time t2, etc, ). 
+	<bold>Events</bold> can be created within non-spatial deterministic models such that a variable or time-dependent expression can trigger a predefined reset or change in the value of other variables during simulation. 
+	Essentially, an event can be used to describe anything that is discontinuous. This can be convenient to specify protocols (e.g. to open a channel from time t1 to time t2). 
 	</para>
 	
 	<para>
