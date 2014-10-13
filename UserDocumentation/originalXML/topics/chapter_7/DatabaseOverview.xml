@@ -3,7 +3,10 @@
 <page title="Database Sources">
 
 	<introduction> The Virtual Cell provides access to a few database repositories, internal and external. The internal Virtual Cell database repository stores the models created in the Virtual Cell in its native format.
-	In addition, access to external databases such as <link target="http://www.ebi.ac.uk/biomodels-main/">BioModels Database</link> and <link target="http://www.pathwaycommons.org/pc/">Pathway Commons</link> is provided.
+	In addition, access to external databases such as 
+	<link target="http://www.ebi.ac.uk/biomodels-main/">BioModels Database</link>, 
+	<link target="http://www.pathwaycommons.org/pc/">Pathway Commons</link> and 
+	<link target="http://sabio.h-its.org/">Sabio-RK</link> is provided.
 	</introduction>
 	
 	<appearance>
@@ -18,6 +21,7 @@
 		<item> <link target="VCellDatabase">VCell Database</link> </item>
 		<item> <link target="BioModelsNet">BioModels.net Database</link> </item>
 		<item> <link target="PathwayCommonsPanel">Pathway Commons Database</link> </item>
+		<item> <link target="SabioRK">Sabio-RK Database</link> </item>
 	</list>
 	</operations>
 </page>

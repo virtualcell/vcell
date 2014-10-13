@@ -115,6 +115,7 @@
    	   		<tocitem target="VCellDatabase" text="VCell Database"/>
    	   		<tocitem target="BioModelsNet" text="BioModels.net Database"/>
    	   		<tocitem target="PathwayCommonsPanel" text="Pathway Commons Database"/>
+   	   		<tocitem target="SabioRK" text="SABIO-RK Database"/>
    		</tocitem>
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_Structures" text="Physiology Structures Properties Pane"/>
