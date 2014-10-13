@@ -31,7 +31,7 @@
 <page title="VCell Model Units">
 
 	
-	<introduction>Model units establish the base system of measurement for VCell quantities.</introduction>
+	<introduction>Model units establish the base system of measurement for VCell quantities.  Some units can be changed (e.g. Time, Length, Diffusion, ...).  Electrical units are fixed and cannot be changed (voltage mV, current pA, capacitance pF, conductance nS).</introduction>
 	
 	<appearance>
 	<imgReference target = "modelUnitMain.png"/>  
