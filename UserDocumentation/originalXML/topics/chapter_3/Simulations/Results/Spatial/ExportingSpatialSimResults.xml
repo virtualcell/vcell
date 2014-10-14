@@ -83,7 +83,7 @@ D data as QuickTime movie files and animated GIF files.
 </para>
 <para>
 Time Interval: 
-Select a single time point or a range of time by moving the sliders to time points shown in the left win- dow. A range must be selected for movie files whereas a single time point may be used for .csv files and individual image files. Type a value in the text field and/ or use the slider on the time line. Click once on the selector. Use the left and right or up and down arrow keys on your keyboard to select the time point.
+Select a single time point or a range of time by moving the sliders to time points shown in the left window. A range must be selected for movie files whereas a single time point may be used for .csv files and individual image files. Type a value in the text field and/ or use the slider on the time line. Click once on the selector. Use the left and right or up and down arrow keys on your keyboard to select the time point.
 </para>
 <para>
 <imgReference target = "SimResultsDefineExportTimeInterval.png"/>
@@ -186,10 +186,12 @@ data. You can select to export a Single NRRD file, Fileset by Time or Fileset by
 </para>
 <para>
 Making Use of NRRD: 
-ImageJ can import .nrrd files using the Bio-Formats library created by LOCI in conjunction with the Open Microscopy Environment. The plugin containing the LOCI ImageJ tools, which includes a Bio- Formats importer and exporter, is required to import the files into ImageJ. For data that contains more than 3 dimensions (e.g. x,y,z and time, or x,y,time , variable 1, variable2), you will also need the Image5D plugin, which allows you to easily scroll through multidimensional data.
+ImageJ can import .nrrd files using the Bio-Formats library created by LOCI in conjunction with the Open Microscopy Environment. The plugin containing the LOCI ImageJ tools, which includes a BioFormats importer and exporter, is required to import the files into ImageJ. For data that contains more than 3 dimensions (e.g. x,y,z and time, or x,y,time , variable 1, variable2), you will also need the Image5D plugin, which allows you to easily scroll through multidimensional data.
 (Note: The first time a VCell user makes use of the BioFormats library, a dialog will appear prompting the user to give a one time approval for downloading and installation of this software due to licensing issues.)
 </para>
-
+<para>
+VTK Unstructured Grid export produces *.vtu files that can be opened with VisIt or ParaView or other VTK based image processing applications
+</para>
 	 </operations>
 	
 </page>
