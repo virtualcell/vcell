@@ -96,7 +96,8 @@ This button becomes active when each specification for the export format has bee
 <item>.gif: select variable, default slice;</item>
 <item>.mov: select variable, default slice;</item>
 <item>.nrrd: select variable, default slice with Full 3D data set option;</item>
-<item>.ucd: *.vtk:</item>
+<item>.ucd: select variable, default slice with Full 3D data set option;</item>
+<item>.vtu: select variable, default slice with Full 3D data set option;</item>
 </list>
 
 Press to initiate your export once you have made your Time, Variable, Spatial and Export Format selections. Once the export process is complete, a Save dialog will appear. Navigate to an area on your local drive to store the .zip file.
@@ -138,7 +139,7 @@ Hide Membrane Outlines Display option for membrane.
 <para>
 Extend images by mirroring: 
 Select the Mirroring option to extend the image size of symmetric data sets.
-￼￼</para>
+</para>
 <para>
 Image Scale: 
 This allows for you to increase the size of the overall image set within the movie.
@@ -185,9 +186,10 @@ data. You can select to export a Single NRRD file, Fileset by Time or Fileset by
 </para>
 <para>
 Making Use of NRRD: 
-ImageJ can import .nrrd files using the Bio-Formats library created by LOCI in conjunction with the Open Microscopy Environment. The plugin containing the LOCI ImageJ tools, which includes a Bio- Formats importer and exporter, is required to import the files into ImageJ. For data that contains more than 3 dimensions (e.g. x,y,z and time, or x,y,time , variable 1, variable2), you will also need the Im- age5D plugin, which allows you to easily scroll through multidimensional data.
+ImageJ can import .nrrd files using the Bio-Formats library created by LOCI in conjunction with the Open Microscopy Environment. The plugin containing the LOCI ImageJ tools, which includes a Bio- Formats importer and exporter, is required to import the files into ImageJ. For data that contains more than 3 dimensions (e.g. x,y,z and time, or x,y,time , variable 1, variable2), you will also need the Image5D plugin, which allows you to easily scroll through multidimensional data.
 (Note: The first time a VCell user makes use of the BioFormats library, a dialog will appear prompting the user to give a one time approval for downloading and installation of this software due to licensing issues.)
 </para>
+
 	 </operations>
 	
 </page>
