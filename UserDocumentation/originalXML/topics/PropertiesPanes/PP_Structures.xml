@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Structure Properties Pane" target="PP_Structure">
+
+	<introduction>
+	The structure properties pane allows editing of the structure name and free text annotations. It is also 
+	shows size variable name and voltge variable name (for membranes).
+	</introduction>
+	
+	<appearance>
+	</appearance>
+	
+	<operations>
+	<bold>Compartment Structure Properties</bold>
+	<imgReference target = "pp_structure_comp.png"/>
+	<list>
+	<item>structure name: Name of selected structure in the model.</item>
+	<item>size variable name: Variable having numerical value equal to selected compartment's size in a simulation geometry.</item>
+	<item>annotation: User notes associated with selected compartment structure.</item>
+	</list>
+	
+	<para>
+	<bold>Membrane Structure Properties</bold>
+	<imgReference target = "pp_structure_memb.png"/>
+	<list>
+	<item>structure name: Name of selected structure in the model.</item>
+	<item>size variable name: Variable having numerical value equal to this compartment's size in a simulation geometry.</item>
+	<item>Voltage variable name: Variable having numerical value equal to (voltage(positive feature) - voltage(negative feature))</item>
+	<item>Positive (inside feature): Compartment (non-membrane) used in calculation of "voltage variable"</item>
+	<item>Negative (outside feature): Compartment (non-membrane) used in calculation of "voltage variable"</item>
+	<item>annotation: User notes associated with selected membrane structure.</item>
+	</list>
+	</para>
+
+	</operations>	
+
+
+</page>
+
+</vcelldoc>
