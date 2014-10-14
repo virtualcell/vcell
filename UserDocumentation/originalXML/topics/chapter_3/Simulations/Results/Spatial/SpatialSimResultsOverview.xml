@@ -18,11 +18,11 @@
 	<imgReference target = "SimResSpatialSliceView.png"/>
 	In the Simulation Results Viewer there are three options selected by tabs
 	<list>
-	<item> <link target = "SimResSpatialSliceView">View Data</link> </item>
-	<item> <link target = "ExportingSpatialSimResults">Export Results</link> </item>
-	<item> <link target = "PostProcessing">Post Processing Data</link> </item>
-
-    	</list>
+		<item> <link target = "SimResSpatialSliceView">View Data</link> </item>
+		<item> <link target = "ExportingSpatialSimResults">Export Results</link> </item>
+		<item> <link target = "PostProcessingStats">Post Processing Statistics Data</link> </item>
+		<item> <link target = "PostProcessingImage">Post Processing Statistics Image</link> </item>
+    </list>
 
 	<para>
 The image data from spatial simulations are displayed in the results dialog. You can also generate a Spatial Plot, using defined regions, a Time Plot, using points, or a Kymograph, which displays a line scan over time.

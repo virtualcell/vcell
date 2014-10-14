@@ -79,7 +79,8 @@
     	   			<tocitem target="SimResultsSpatialSurfaceView" text="Spatial Simulation Results 3D Membrane View"/>
     	   			<tocitem target="SimResultsSpatialROIandStatistics" text="Regions of Interest (ROI) and Statistics"/>		
 					<tocitem target="SimResultsKymograph" text="Kymographs"/>
-					<tocitem target="PostProcessing" text="Post Processing"/>
+					<tocitem target="PostProcessingStats" text="Post Processing Statistics Data"/>
+					<tocitem target="PostProcessingImage" text="Post Processing Image Data"/>
 					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
 					<tocitem target="ExportingQuicktimeMovies" text="Exporting Quicktime Movies"/>
 				</tocitem>
