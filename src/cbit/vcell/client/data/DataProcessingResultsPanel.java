@@ -78,6 +78,7 @@ import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import java.awt.Dimension;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
@@ -121,6 +122,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		gbc_graphScrollPane.insets = new Insets(4, 4, 4, 4);
 		gbc_graphScrollPane.fill = GridBagConstraints.BOTH;
 		graphScrollPane = new JScrollPane(varJList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		graphScrollPane.setMinimumSize(new Dimension(150, 150));
 		add(graphScrollPane, gbc_graphScrollPane);
 		
 		cardLayoutPanel = new JPanel();
