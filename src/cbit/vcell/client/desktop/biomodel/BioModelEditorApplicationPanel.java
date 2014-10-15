@@ -154,6 +154,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		if (simulationContext == newValue) {
 			return;
 		}
+		final boolean respondingToSelectionManager = selectionManager.isBusy();
 		final Object[] selectedObj = selectionManager.getSelectedObjects();
 		SimulationContext oldValue = simulationContext;
 		if (oldValue != null) {
@@ -181,7 +182,10 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
 				parameterEstimationPanel.setSelectionManager(selectionManager);
-				selectionManager.setSelectedObjects(selectedObj);
+				if (respondingToSelectionManager){
+					selectionManager.setSelectedObjects(new Object[0]);
+					selectionManager.setSelectedObjects(selectedObj);
+				}
 			}
 		};		
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
