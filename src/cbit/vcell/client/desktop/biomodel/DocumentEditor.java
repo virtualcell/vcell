@@ -45,6 +45,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -54,6 +55,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
@@ -168,7 +170,6 @@ public abstract class DocumentEditor extends JPanel {
 					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
 					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
 					problemSignalling.timer.stop();
-					System.out.println("Unable to flash, the number of errors or warnings did not increase.");
 					return;				// clean up and exit
 				}
 			}
@@ -176,7 +177,6 @@ public abstract class DocumentEditor extends JPanel {
 				rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
 				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
 				problemSignalling.timer.stop();
-				System.out.println("Done flashing.");
 				return;
 			}
 			// text
@@ -341,10 +341,17 @@ protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction a
 public void onSelectedObjectsChange() {
 	Object[] selectedObjects = selectionManager.getSelectedObjects();
 	setRightBottomPanelOnSelection(selectedObjects);
+//	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+//	if (documentWindow!=null){
+//		documentWindow.getWarningBar().setText(selectionManager.getStatusText());
+//	}
 }
 
 private void onActiveViewChange() {
-	selectionManager.setSelectedObjects(new Object[0]);	
+//	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+//	if (documentWindow!=null){
+//		documentWindow.getWarningBar().setText(selectionManager.getStatusText());
+//	}
 }
 
 private void selectClickPath(MouseEvent e) {
@@ -547,8 +554,8 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			}
 			ActiveView activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
 			selectionManager.setActiveView(activeView);
-			if (selectedObject instanceof SimulationContext 
-					|| selectedObject instanceof BioModel
+			if (/*selectedObject instanceof SimulationContext 
+					|| */ selectedObject instanceof BioModel
 					|| selectedObject instanceof MathModel) { 
 				selectionManager.setSelectedObjects(new Object[]{selectedObject});
 			}
