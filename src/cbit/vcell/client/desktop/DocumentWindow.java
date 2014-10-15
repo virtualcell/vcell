@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -139,6 +140,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
+	private JLabel warningText = null;
 	
 	private JMenu menuImportPathway = null;
 	private JMenuItem menuItemImportPathwayWebLocation = null;
@@ -2032,6 +2034,16 @@ private javax.swing.JPanel getStatusBarPane() {
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
+			panel.add(getWarningBar(), gbc);
+			ivjStatusBarPane.add(panel, BorderLayout.CENTER);
+
+			panel = new JPanel(new GridBagLayout());
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weighty = 1;
+			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
 			panel.add(getJProgressBarMemory(), gbc);
 			ivjStatusBarPane.add(panel, BorderLayout.EAST);
 
@@ -2041,6 +2053,19 @@ private javax.swing.JPanel getStatusBarPane() {
 	}
 	return ivjStatusBarPane;
 }
+
+public JLabel getWarningBar() {
+	if (warningText == null) {
+		try {
+			warningText = new JLabel();
+			warningText.setName("");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return warningText;
+}
+
 
 /**
  * Return the TestingFrameworkMenuItem property value.
