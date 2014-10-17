@@ -81,6 +81,7 @@ public class LoginChecker {
 		if (!good) {
 			System.exit(1);
 		}
+		System.exit(0);
 	}
 	
 	private static boolean attemptLogin(SiteInfo si, String user, String password) {
