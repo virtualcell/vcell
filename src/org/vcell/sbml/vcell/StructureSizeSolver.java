@@ -134,6 +134,8 @@ public class StructureSizeSolver {
 				String varName = TokenMangler.mangleToSName("size_"+sm.getStructure().getName());
 				if (sizeParam.getExpression()!=null){
 					priorKnownValue = sizeParam.getExpression().evaluateConstant();
+				}else if (sm.getStructure() == struct){
+					priorKnownValue = structSize;
 				}else{
 					unknownVars.add(varName);
 				}
@@ -187,6 +189,11 @@ public class StructureSizeSolver {
 			if (expressions.size()!=unknownVars.size()){
 				throw new RuntimeException("number of unknowns is "+unknownVars.size()+", number of equations is "+expressions.size());
 			}
+			if (unknownVars.size()==0 && expressions.size()==0){
+				StructureMappingParameter sizeParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
+				sizeParam.setExpression(new Expression(structSize));
+				return;
+			}
 			RationalExp[][] rowColData = new RationalExp[unknownVars.size()][unknownVars.size()+1];
 			for (int row=0; row<unknownVars.size(); row++){
 				//
@@ -219,6 +226,7 @@ public class StructureSizeSolver {
 				rowColData[row][unknownVars.size()] = RationalExpUtils.getRationalExp(constantTerm).minus();
 			}
 			RationalExpMatrix rationalExpMatrix = new RationalExpMatrix(rowColData);
+			//rationalExpMatrix.show();
 			RationalExp[] solutions = rationalExpMatrix.solveLinearExpressions();
 			double[] solutionValues = new double[solutions.length];
 			for (int i=0; i<unknownVars.size(); i++){
@@ -241,6 +249,12 @@ public class StructureSizeSolver {
 				SolverParameter p = solverParameters.get(unknownVars.get(i));
 				p.parameter.setExpression(new Expression(solutionValues[i]));
 			}
+			//
+			// set the one known value (if not set already by the gui).
+			//
+			StructureMappingParameter sizeParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
+			sizeParam.setExpression(new Expression(structSize));
+			
 			System.out.println("done");
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
