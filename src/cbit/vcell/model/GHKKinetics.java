@@ -11,9 +11,11 @@
 package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.model.Model.ElectricalTopology;
@@ -72,9 +74,10 @@ public boolean compareEqual(Matchable obj) {
  * Creation date: (5/12/2004 3:11:16 PM)
  * @return cbit.util.Issue[]
  */
-public void gatherIssues(java.util.Vector<Issue> issueList) {
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	
-	super.gatherIssues(issueList);
+	super.gatherIssues(issueContext, issueList);
 
 	//
 	// check for correct number of reactants and products
@@ -91,10 +94,10 @@ public void gatherIssues(java.util.Vector<Issue> issueList) {
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(), issueContext, IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 	if (productCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(getReactionStep(), issueContext, IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
 	}
 }
 /**

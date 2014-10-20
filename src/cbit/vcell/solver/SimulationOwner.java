@@ -12,6 +12,7 @@ package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
 
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.MathDescription;
@@ -31,6 +32,6 @@ public interface SimulationOwner extends GeometryOwner {
 	MathDescription getMathDescription();
 	void refreshMathDescription();
 	String getName();
-	public Issue gatherIssueForMathOverride(Simulation simulation, String overriddenConstantName);
+	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName);
 }
 

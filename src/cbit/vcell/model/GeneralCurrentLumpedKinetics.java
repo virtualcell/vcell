@@ -10,13 +10,13 @@
 
 package cbit.vcell.model;
 import java.beans.PropertyVetoException;
-import java.util.Vector;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -80,12 +80,13 @@ public boolean compareEqual(Matchable obj) {
  * Creation date: (5/12/2004 3:08:25 PM)
  * @return cbit.util.Issue[]
  */
-public void gatherIssues(Vector<Issue> issueList){
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
 
-	super.gatherIssues(issueList);
+	super.gatherIssues(issueContext,issueList);
 	
 	if (getReactionStep() instanceof SimpleReaction){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"General Current Kinetics expected within a flux reaction only",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.KineticsApplicability,"General Current Kinetics expected within a flux reaction only",Issue.SEVERITY_ERROR));
 	}
 }
 

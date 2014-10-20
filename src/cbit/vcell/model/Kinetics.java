@@ -25,6 +25,8 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.matrix.RationalNumber;
@@ -1239,12 +1241,13 @@ private boolean isEquivalentRoleFromKineticsVCMLTokens(int role1, int role2) {
  * Insert the method's description here.
  * Creation date: (5/12/2004 2:53:13 PM)
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.Kinetics,this);
 	//
 	// for each user unresolved parameter, make an issue
 	//
 	for (int i = 0; fieldUnresolvedParameters!=null && i < fieldUnresolvedParameters.length; i++){
-		issueList.add(new Issue(fieldUnresolvedParameters[i],IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(fieldUnresolvedParameters[i],issueContext, IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for each user defined parameter, see if it is used, if not make an issue
@@ -1253,12 +1256,12 @@ public void gatherIssues(List<Issue> issueList) {
 		if (fieldKineticsParameters[i].getRole()==ROLE_UserDefined){
 			try {
 				if (!isReferenced(fieldKineticsParameters[i],0)){
-					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i],issueContext, IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
 				}
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],issueContext,IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ModelException e){
-				issueList.add(new Issue(this,IssueCategory.CyclicDependency,"cyclic dependency in the parameter definitions", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.CyclicDependency,"cyclic dependency in the parameter definitions", Issue.SEVERITY_ERROR));
 			}
 		}
 	}
@@ -1269,7 +1272,7 @@ public void gatherIssues(List<Issue> issueList) {
 	if (fieldKineticsParameters!=null) {
 		for (KineticsParameter kineticsParameter : fieldKineticsParameters){
 			if (kineticsParameter.getExpression()==null){
-				issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
+				issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
 			}else{
 				Expression exp = kineticsParameter.getExpression();
 				String symbols[] = exp.getSymbols();
@@ -1281,17 +1284,17 @@ public void gatherIssues(List<Issue> issueList) {
 							ste = ((KineticsProxyParameter) ste).getTarget();
 						}
 						if (ste == null) {
-							issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 						} else if (ste instanceof SpeciesContext) {
 							if (!getReactionStep().getModel().contains((SpeciesContext)ste)) {
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 							}
 							if (reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 							}
 						} else if (ste instanceof ModelParameter) {
 							if (!getReactionStep().getModel().contains((ModelParameter)ste)) {
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 							}
 						}
 					}
@@ -1311,22 +1314,22 @@ public void gatherIssues(List<Issue> issueList) {
 				VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD()){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD())){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],issueContext,IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 
 	//
@@ -1336,7 +1339,7 @@ public void gatherIssues(List<Issue> issueList) {
 		RealInterval simpleBounds = bounds[fieldKineticsParameters[i].getRole()];
 		if (simpleBounds!=null){
 			String parmName = reactionStep.getNameScope().getName()+"."+fieldKineticsParameters[i].getName();
-			issueList.add(new SimpleBoundsIssue(fieldKineticsParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+			issueList.add(new SimpleBoundsIssue(fieldKineticsParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
 	

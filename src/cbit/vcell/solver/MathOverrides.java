@@ -21,6 +21,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.MathMapping;
@@ -855,7 +857,7 @@ public void refreshDependencies() {
  * This method was created in VisualAge.
  * @return boolean
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
@@ -874,12 +876,12 @@ public void gatherIssues(List<Issue> issueList) {
 	while (mathOverrideNamesEnum.hasMoreElements()){
 		String name = mathOverrideNamesEnum.nextElement();
 		if (!mathDescriptionHash.contains(name)){
-			Issue issue = new Issue(getSimulation(), IssueCategory.Simulation_Override_NotFound, VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_OVERRIDE_NOTFOUND, name, getSimulation().getName()), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(getSimulation(), issueContext, IssueCategory.Simulation_Override_NotFound, VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_OVERRIDE_NOTFOUND, name, getSimulation().getName()), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		Variable var = mathDescription.getVariable(name);
 		if (getSimulation().getSimulationOwner()!=null){
-			Issue issue = getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name);
+			Issue issue = getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext, getSimulation(),name);
 			if (issue!=null){
 				issueList.add(issue);
 			}
@@ -887,6 +889,9 @@ public void gatherIssues(List<Issue> issueList) {
 	}	
 }
 
+/**
+ * explicit user action invokes this method (currently pressing a button), this is not automatic cleanup of old/obsolete models ... we want the user to address the issues.
+ */
 public void removeUnusedOverrides(){
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
@@ -908,9 +913,12 @@ public void removeUnusedOverrides(){
 		if (!mathDescriptionHash.contains(name)){
 			// constant 'name' no longer part of mathDescription
 			overridesToDelete.add(name);
-		}else if (getSimulation().getSimulationOwner()!=null && getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name)!=null){
-			// constant 'name' is part of math, but simulation owner doesn't want you to override it.
-			overridesToDelete.add(name);
+		}else if (getSimulation().getSimulationOwner()!=null){
+			IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+			if (getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext,getSimulation(),name)!=null){
+				// constant 'name' is part of math, but simulation owner doesn't want you to override it.
+				overridesToDelete.add(name);
+			}
 		}
 	}
 	for (String deletedName : overridesToDelete) {
@@ -920,7 +928,8 @@ public void removeUnusedOverrides(){
 
 public boolean hasUnusedOverrides() {
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
-	gatherIssues(issueList);
+	IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+	gatherIssues(issueContext,issueList);
 	for (Issue issue : issueList) {
 		if (issue.getSeverity()==Issue.SEVERITY_ERROR && (issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound) || issue.getCategory().equals(IssueCategory.Simulation_Override_NotSupported))){
 			return true;
@@ -933,8 +942,11 @@ public boolean hasUnusedOverrides() {
 public boolean isUnusedParameter(String name) {
 	Variable var = getSimulation().getMathDescription().getVariable(name);
 	if (var instanceof Constant){
-		if (getSimulation().getSimulationOwner()!=null && getSimulation().getSimulationOwner().gatherIssueForMathOverride(getSimulation(),name)!=null){
-			return true;
+		if (getSimulation().getSimulationOwner()!=null){
+			IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+			if (getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext,getSimulation(),name)!=null){
+				return true;
+			}
 		}
 		return false;
 	}else{

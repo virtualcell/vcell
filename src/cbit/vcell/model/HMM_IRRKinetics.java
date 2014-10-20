@@ -11,10 +11,11 @@
 package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
-import java.util.Vector;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
@@ -78,9 +79,10 @@ public boolean compareEqual(Matchable obj) {
  * Creation date: (5/12/2004 3:23:27 PM)
  * @return cbit.util.Issue[]
  */
-public void gatherIssues(Vector<Issue> issueList) {
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 
-	super.gatherIssues(issueList);
+	super.gatherIssues(issueContext, issueList);
 
 	//
 	// check for correct number of reactants
@@ -93,7 +95,7 @@ public void gatherIssues(Vector<Issue> issueList) {
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"HMM_IRRKinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.KineticsApplicability,"HMM_IRRKinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 }
 
@@ -156,10 +158,6 @@ protected void refreshUnits() {
 				R0 = (Reactant)reactionParticipants[i];
 			}
 		}
-		if (reactantCount!=1){
-			System.out.println("HMM_IRRKinetics.refreshUnits(): HMM_IRRKinetics must have exactly one reactant");
-			return;
-		}
 
 		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
 		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
@@ -183,7 +181,11 @@ protected void refreshUnits() {
 					vmaxParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
 				}
 				if (kmParm!=null){
-					kmParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					if (R0!=null){
+						kmParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmParm.setUnitDefinition(modelUnitSystem.getMembraneConcentrationUnit());
+					}
 				}
 			}else{
 				if (rateParm!=null){
@@ -193,7 +195,11 @@ protected void refreshUnits() {
 					vmaxParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
 				}
 				if (kmParm!=null){
-					kmParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					if (R0==null){
+						kmParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmParm.setUnitDefinition(modelUnitSystem.getVolumeConcentrationUnit());
+					}
 				}
 			}
 		}

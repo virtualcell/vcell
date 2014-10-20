@@ -16,6 +16,8 @@ import java.util.ArrayList;
 
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Constant;
@@ -68,8 +70,9 @@ public AbstractSolver(SimulationTask simTask, File directory, SessionLog session
 	}		 
 	this.saveDirectory = directory;
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
-	simTask.getSimulation().getMathDescription().gatherIssues(issueList);
-	simTask.getSimulation().gatherIssues(issueList);
+	IssueContext issueContext = new IssueContext(ContextType.Simulation,simTask.getSimulation(),null);
+	simTask.getSimulation().getMathDescription().gatherIssues(issueContext,issueList);
+	simTask.getSimulation().gatherIssues(issueContext,issueList);
 	for (Issue issue : issueList) {
 		if (issue.getSeverity() == Issue.SEVERITY_ERROR){
 			throw new SolverException(issue.getMessage());

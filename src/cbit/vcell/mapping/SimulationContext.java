@@ -27,6 +27,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
@@ -872,18 +874,19 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (11/1/2005 9:30:09 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
-	getReactionContext().gatherIssues(issueVector);
-	getGeometryContext().gatherIssues(issueVector);
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
+	getReactionContext().gatherIssues(issueContext, issueVector);
+	getGeometryContext().gatherIssues(issueContext, issueVector);
 	if (fieldAnalysisTasks != null) {
 		for (AnalysisTask analysisTask : fieldAnalysisTasks) {
-			analysisTask.gatherIssues(issueVector);
+			analysisTask.gatherIssues(issueContext, issueVector);
 		}
 	}
-	getOutputFunctionContext().gatherIssues(issueVector);
-	getMicroscopeMeasurement().gatherIssues(issueVector);
+	getOutputFunctionContext().gatherIssues(issueContext, issueVector);
+	getMicroscopeMeasurement().gatherIssues(issueContext, issueVector);
 	if (getMathDescription()!=null){
-		getMathDescription().gatherIssues(issueVector);
+		getMathDescription().gatherIssues(issueContext, issueVector);
 	}
 }
 
@@ -2305,15 +2308,16 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 }
 
 @Override
-public Issue gatherIssueForMathOverride(Simulation simulation, String overriddenConstantName) {
+public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
+	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
 	ReservedSymbol reservedSymbol = getModel().getReservedSymbolByName(overriddenConstantName);
 	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.KMOLE){
 		String msg = "overriding unit factor KMOLE is no longer supported, unit conversion has been completely redesigned";
-		return new Issue(simulation,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
 	}
 	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.N_PMOLE){
 		String msg = "overriding unit factor N_PMOLE is no longer supported, unit conversion has been completely redesigned";
-		return new Issue(simulation,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
 	}
 	return null;
 }

@@ -26,6 +26,7 @@ import javax.swing.ListSelectionModel;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
@@ -385,7 +386,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 
 			@Override
-			public Issue gatherIssueForMathOverride(Simulation simulation, String name) {
+			public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String name) {
 				// TODO Auto-generated method stub
 				return null;
 			}
@@ -442,19 +443,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 
 			@Override
-			public String getObjectPathDescription(Object object) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public String getObjectDescription(Object object) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void gatherIssues(List<Issue> issueList) {
+			public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				// TODO Auto-generated method stub
 				
 			}

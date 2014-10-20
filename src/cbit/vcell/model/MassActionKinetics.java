@@ -97,6 +97,7 @@ public KineticsParameter getReverseRateParameter() {
  * Insert the method's description here.
  * Creation date: (3/31/2004 3:56:05 PM)
  */
+@Override
 protected void refreshUnits() {
 	if (bRefreshingUnits){
 		return;

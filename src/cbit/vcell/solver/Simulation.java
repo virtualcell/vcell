@@ -22,6 +22,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -370,9 +371,9 @@ public boolean isSpatial() {
 }
 
 
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	
-	getMathOverrides().gatherIssues(issueList);
+	getMathOverrides().gatherIssues(issueContext, issueList);
 	
 	//
 	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
@@ -380,14 +381,14 @@ public void gatherIssues(List<Issue> issueList) {
 	//
 	if (fieldMathDescription != null && getSolverTaskDescription() != null) {
 		if (getMathDescription().hasFastSystems() && (getSolverTaskDescription().getSensitivityParameter() != null)) {
-			Issue issue = new Issue(this, IssueCategory.Simulation_SensAnal_And_FastSystem,
+			Issue issue = new Issue(this, issueContext, IssueCategory.Simulation_SensAnal_And_FastSystem,
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_SENSANAL_FASTSYSTEM,getName()),
 									Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 	}
 	if (fieldMathDescription==null || !fieldMathDescription.isValid()){
-		Issue issue = new Issue(this,IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 	
@@ -409,7 +410,7 @@ public void gatherIssues(List<Issue> issueList) {
 				text += sd.getDisplayLabel() + "\n";
 			}
 		}
-		Issue issue = new Issue(this,IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 }
