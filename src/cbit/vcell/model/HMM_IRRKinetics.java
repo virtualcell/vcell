@@ -195,7 +195,7 @@ protected void refreshUnits() {
 					vmaxParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
 				}
 				if (kmParm!=null){
-					if (R0==null){
+					if (R0!=null){
 						kmParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
 					}else{
 						kmParm.setUnitDefinition(modelUnitSystem.getVolumeConcentrationUnit());
