@@ -2903,7 +2903,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
-			Expression initCond = scs.getInitialConditionParameter() == null? null : scs.getInitialConditionParameter().getExpression();
+			Expression initCond = scs.getInitialConditionParameter() == null? null : new Expression(scs.getInitialConditionParameter(),getNameScope());
 			scm.setDependencyExpression(initCond);
 			////
 			//// determine if a Function is necessary
