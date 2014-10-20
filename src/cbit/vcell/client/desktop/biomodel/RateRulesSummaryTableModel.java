@@ -82,8 +82,12 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 						return rateRule.getName();
 					} 
 					case COLUMN_RATERULE_VAR: {
-						return rateRule.getRateRuleVar().getName();
-					} 
+						if (rateRule.getRateRuleVar() == null){
+							return null;
+						} else {
+							return rateRule.getRateRuleVar().getName();
+						}
+					}	
 					case COLUMN_RATERULE_EXPR: {
 						if (rateRule.getRateRuleExpression() == null) {
 							return null; 
@@ -104,7 +108,9 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	}
 
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return columnIndex == COLUMN_RATERULE_NAME;
+		return false;
+		//Make none of the fields editable until code for adding new rate rules is fixed. 10/20/2014
+		//return columnIndex == COLUMN_RATERULE_NAME; 
 	}
 
 	@Override
@@ -191,6 +197,7 @@ public class RateRulesSummaryTableModel extends BioModelEditorApplicationRightSi
 	
 	@Override
 	public int getRowCount() {
-		return getRowCountWithAddNew();
+		// -1 added 10/20/2014 to suppress extra row for adding new rule until adding rate rules framework is fixed.  Had been return getRowCountWithAddNew();
+		return getRowCountWithAddNew()-1;  
 	}
 }
