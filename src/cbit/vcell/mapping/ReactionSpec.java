@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.model.BioNameScope;
@@ -357,7 +358,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:06:04 AM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList, ReactionContext rc) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
 	ReactionCombo r = new ReactionCombo(this, rc);
 	ReactionStep step = getReactionStep();
 	if(!isExcluded() && rc.getSimulationContext().isStoch() && (rc.getSimulationContext().getGeometry().getDimension()>0)) {
@@ -379,7 +380,7 @@ public void gatherIssues(List<Issue> issueList, ReactionContext rc) {
 			String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. <br>" +
 					"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate <br>" +
 					"the continuous species in those reactions as modifiers (i.e. 'catalysts') in the physiology.";
-			issueList.add(new Issue(r, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
 		}
 	}
 }

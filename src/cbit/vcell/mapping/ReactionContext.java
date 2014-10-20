@@ -21,6 +21,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -212,12 +213,12 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 9:44:36 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	for (int i = 0; fieldSpeciesContextSpecs!=null && i < fieldSpeciesContextSpecs.length; i++){
-		fieldSpeciesContextSpecs[i].gatherIssues(issueVector);
+		fieldSpeciesContextSpecs[i].gatherIssues(issueContext,issueVector);
 	}
 	for (int i = 0; fieldReactionSpecs!=null && i < fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i].gatherIssues(issueVector, this);
+		fieldReactionSpecs[i].gatherIssues(issueContext,issueVector, this);
 	}
 }
 

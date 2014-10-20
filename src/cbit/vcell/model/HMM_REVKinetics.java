@@ -11,10 +11,11 @@
 package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
-import java.util.Vector;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -77,9 +78,10 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * Creation date: (5/12/2004 3:26:54 PM)
  * @return cbit.util.Issue[]
  */
-public void gatherIssues(Vector<Issue> issueList){
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
 	
-	super.gatherIssues(issueList);
+	super.gatherIssues(issueContext, issueList);
 	
 	//
 	// check for correct number of reactants and products
@@ -96,10 +98,10 @@ public void gatherIssues(Vector<Issue> issueList){
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"HMM Reversible Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.KineticsApplicability,"HMM Reversible Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 	if (productCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"HMM Reversible Kinetics must have exactly one product",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.KineticsApplicability,"HMM Reversible Kinetics must have exactly one product",Issue.SEVERITY_ERROR));
 	}
 }
 /**
@@ -168,14 +170,6 @@ protected void refreshUnits() {
 				P0 = (Product)reactionParticipants[i];
 			}
 		}
-		if (reactantCount!=1){
-			System.out.println("HMM_IRRKinetics.refreshUnits(): HMM_IRRKinetics must have exactly one reactant");
-			return;
-		}
-		if (productCount!=1){
-			System.out.println("HMM_IRRKinetics.refreshUnits(): HMM_IRRKinetics must have exactly one product");
-			return;
-		}
 
 		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
 		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
@@ -204,10 +198,18 @@ protected void refreshUnits() {
 					vmaxRevParm.setUnitDefinition(modelUnitSystem.getMembraneReactionRateUnit());
 				}
 				if (kmFwdParm!=null){
-					kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					if (R0!=null){
+						kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmFwdParm.setUnitDefinition(modelUnitSystem.getMembraneConcentrationUnit());
+					}
 				}
 				if (kmRevParm!=null){
-					kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+					if (P0!=null){
+						kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmRevParm.setUnitDefinition(modelUnitSystem.getMembraneConcentrationUnit());
+					}
 				}
 			}else{
 				if (rateParm!=null){
@@ -220,10 +222,18 @@ protected void refreshUnits() {
 					vmaxRevParm.setUnitDefinition(modelUnitSystem.getVolumeReactionRateUnit());
 				}
 				if (kmFwdParm!=null){
-					kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					if (R0!=null){
+						kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmFwdParm.setUnitDefinition(modelUnitSystem.getVolumeConcentrationUnit());
+					}
 				}
 				if (kmRevParm!=null){
-					kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+					if (P0!=null){
+						kmRevParm.setUnitDefinition(P0.getSpeciesContext().getUnitDefinition());
+					}else{
+						kmRevParm.setUnitDefinition(modelUnitSystem.getVolumeConcentrationUnit());
+					}
 				}
 			}
 		}

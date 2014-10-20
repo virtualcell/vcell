@@ -22,6 +22,8 @@ import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
@@ -161,6 +163,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
 	private PotentialMapping potentialMapping = null;  // null if don't need it
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
+	protected final IssueContext issueContext;
 
 	
 	protected MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
@@ -435,6 +438,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
  */
 protected MathMapping(SimulationContext simContext) {
 	this.simContext = simContext;
+	this.issueContext = new IssueContext(ContextType.SimContext,simContext,null).newChildContext(ContextType.MathMapping,this);
 }
 
 
@@ -752,31 +756,31 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		if (desiredExpUnitDef == null){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are null");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', evaluated Units are null");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -827,8 +831,8 @@ private static Expression getRelativeSizeExpression(SimulationContext simulation
  */
 public Issue[] getIssues() {	
 	Vector<Issue> issueList = new Vector<Issue>();
-	getSimulationContext().gatherIssues(issueList);
-	getSimulationContext().getModel().gatherIssues(issueList);
+	getSimulationContext().gatherIssues(issueContext,issueList);
+	getSimulationContext().getModel().gatherIssues(issueContext,issueList);
 	issueList.addAll(localIssueList);
 	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
 }

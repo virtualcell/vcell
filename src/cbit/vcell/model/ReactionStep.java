@@ -24,6 +24,8 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
@@ -261,15 +263,15 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * Creation date: (5/12/2004 10:26:42 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {
-	
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.ReactionStep,this);
 	if (fieldKinetics!=null){
-		fieldKinetics.gatherIssues(issueList);
+		fieldKinetics.gatherIssues(issueContext,issueList);
 	}
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
-				issueList.add(new Issue(this, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", Issue.SEVERITY_WARNING));
 			}
 		}
 	}

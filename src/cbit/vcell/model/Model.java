@@ -32,6 +32,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -348,7 +350,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return negativeFeatures.get(membrane);
 		}
 		
-		public void gatherIssues(List<Issue> issueList) {
+		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			// check if membranes in model have positive and negative features set.
 			for (Structure struct : getStructures()) {
 				if (struct instanceof Membrane) {
@@ -374,14 +376,14 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 						reactionNames.deleteCharAt(reactionNames.length()-1);
 						
 						if (positiveFeature == null) {
-							issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
 						}
 						if (negativeFeature == null) {
-							issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
 						}
 					}
 					if (positiveFeature != null && negativeFeature != null && positiveFeature.compareEqual(negativeFeature)) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
 					}
 
 				}
@@ -1254,7 +1256,8 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.Model, this);
 	//
 	// check for unknown units (TBD) and unit consistency
 	//
@@ -1267,14 +1270,14 @@ public void gatherIssues(List<Issue> issueList) {
 				for (int j = 0; j < symbols.length; j++){
 					SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
 					if (ste == null) {
-						issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 					} else if (ste instanceof SpeciesContext) {
 						if (!contains((SpeciesContext)ste)) {
-							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 						}						
 					} else if (ste instanceof ModelParameter) {
 						if (!contains((ModelParameter)ste)) {
-							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 						}
 					}
 				}
@@ -1289,29 +1292,30 @@ public void gatherIssues(List<Issue> issueList) {
 				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				} else if (expUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				} else if (paramUnitDef.isTBD()) {
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
 				} else if (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],issueContext, IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],issueContext, IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
+		e.printStackTrace(System.out);
+		issueList.add(new Issue(this,issueContext, IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	
 	//
 	// get issues from all ReactionSteps
 	//
 	for (int i = 0; i < fieldReactionSteps.length; i++){
-		fieldReactionSteps[i].gatherIssues(issueList);
+		fieldReactionSteps[i].gatherIssues(issueContext,issueList);
 	}
 	
 	//
@@ -1325,7 +1329,7 @@ public void gatherIssues(List<Issue> issueList) {
 		SymbolTableEntry ste = iter.next();
 		SymbolTableEntry existingSTE = symbolHashtable.get(ste.getName());
 		if (existingSTE!=null){
-			issueList.add(new Issue(this,IssueCategory.Identifiers, "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,issueContext, IssueCategory.Identifiers, "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
 		}else{
 			symbolHashtable.put(ste.getName(),ste);
 		}
@@ -1334,7 +1338,7 @@ public void gatherIssues(List<Issue> issueList) {
 	//
 	// gather issues for electrical topology (unspecified +ve or -ve features, or +ve feature == -ve feature
 	//
-	getElectricalTopology().gatherIssues(issueList);
+	getElectricalTopology().gatherIssues(issueContext, issueList);
 }
 
 

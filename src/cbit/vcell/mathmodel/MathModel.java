@@ -17,6 +17,8 @@ import java.util.List;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.MathModelChildSummary;
@@ -25,16 +27,12 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.VCellNames;
-import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 /**
@@ -732,49 +730,19 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		// do nothing. math description always exists		
 	}
 	
-	public void gatherIssues(List<Issue> issueList) {
+	@Override
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		issueContext = issueContext.newChildContext(ContextType.MathModel, this);
 		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 		if (geometrySpec != null) {
-			geometrySpec.gatherIssues(getGeometry(), issueList);
+			geometrySpec.gatherIssues(issueContext,getGeometry(), issueList);
 		}
-		fieldMathDescription.gatherIssues(issueList);
-		outputFunctionContext.gatherIssues(issueList);
+		fieldMathDescription.gatherIssues(issueContext,issueList);
+		outputFunctionContext.gatherIssues(issueContext,issueList);
 		for (Simulation simulation : fieldSimulations){
-			simulation.gatherIssues(issueList);
+			simulation.gatherIssues(issueContext,issueList);
 		}
 	}
-
-	public String getObjectPathDescription(Object object) {
-		if (object instanceof Geometry) {
-			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY;
-		} else if (object instanceof OutputFunctionIssueSource) {
-			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS;
-		} else if (object instanceof Simulation){
-			return "Simulation("+((Simulation)object).getName()+")";
-		} else {
-			return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML;
-		}
-	}
-
-
-	public String getObjectDescription(Object object) {
-		String description = "";
-		if (object instanceof Variable) {
-			description = ((Variable)object).getName();
-		} else if (object instanceof SubDomain) {
-			description = ((SubDomain)object).getName();
-		} else if (object instanceof Geometry) {
-			description = "Geometry";
-		} else if (object instanceof OutputFunctionIssueSource) {
-			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
-		} else if (object instanceof MathDescription) {
-			return "math";
-		} else if (object instanceof Simulation) {
-			return "Simulation "+((Simulation)object).getName()+"";
-		}
-		return description;		
-	}
-
 
 	public Simulation getSimulation(String chosenSimulationName) {
 		for(Simulation sim: getSimulations())
@@ -789,7 +757,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 
 	@Override
-	public Issue gatherIssueForMathOverride(Simulation simulation, String overriddenConstantName) {
+	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
+		//issueContext = issueContext.newChildContext(ContextType.MathModel, this);
 		// no semantics for another override
 		return null;
 	}
