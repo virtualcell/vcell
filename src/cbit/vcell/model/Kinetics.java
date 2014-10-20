@@ -1078,6 +1078,10 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 					addKineticsParameter(unitFactorParm);
 					parameterForRole = unitFactorParm;
 				}
+				// be forgiving while parsing charge parameter variants from the database - to support legacy models.
+				if (parameterForRole == null && (i == ROLE_ChargeValence || i == ROLE_NetChargeValence || i == ROLE_CarrierChargeValence) ){
+					parameterForRole = getChargeValenceParameter();
+				}
 				if (parameterForRole == null) {
 					throw new RuntimeException("parameter for role "+RoleTags[i]+" not found in kinetic law "+this.getKineticsDescription().getName());
 				}	
