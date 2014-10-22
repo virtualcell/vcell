@@ -33,6 +33,11 @@ public class LoginChecker {
 		String bootStrapUrl( ) {
 			return "//" + host   + ":" + port + SERVICE;
 		}
+		
+		@Override
+		public String toString( ) {
+			return name + " on " + bootStrapUrl( );
+		}
 	}
 	
 	private static Collection<SiteInfo>  sites = new ArrayList<LoginChecker.SiteInfo>();
@@ -56,6 +61,7 @@ public class LoginChecker {
 		add(new SiteInfo("test", "alpha",40110));
 		add(new SiteInfo("test2", "alpha",40111));
 		add(new SiteInfo("test3", "alpha",40112));
+		add(new SiteInfo("test4", "alpha",40113));
 	}
 	
 	public static void main(String[] args) {
@@ -71,7 +77,11 @@ public class LoginChecker {
 		for (SiteInfo si : sites) {
 			if (site.equals(si.name)) {
 				match = true;
-				good &= attemptLogin(si, args[1],args[2]);
+				final boolean attempt =  attemptLogin(si, args[1],args[2]);
+				if (!attempt) {
+					System.out.println("login failed " + si);
+				}
+				good &= attempt;
 			}
 		}
 		if (!match) {
