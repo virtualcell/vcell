@@ -9,7 +9,12 @@
  */
 
 package cbit.vcell.mapping;
+import java.util.List;
+
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -118,7 +123,9 @@ public Expression getNormalizedConcentrationCorrection(SimulationContext simulat
 			Expression exp = new Expression(getSizeParameter(),simulationContext.getNameScope());
 			return exp;
 		} else {
-			throw new MappingException("explicit compartment sizes are needed");
+			throw new MappingException("\nIn non-spatial application '" + simulationContext.getName() + "', " +
+					"size of structure '" + getStructure().getName() + "' must be assigned a " +
+					"positive value if referenced in the model.\n\nPlease go to 'Structure Mapping' tab to check the size.");
 		}
 	}else if (getGeometryClass() instanceof SubVolume){
 		//
@@ -182,6 +189,18 @@ public StructureMappingParameter getUnitSizeParameter() {
 		return getVolumePerUnitAreaParameter();
 	}
 	return null;
+}
+
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	super.gatherIssues(issueContext, issueVector);
+	if (simulationContext.getGeometry().getDimension() == 0) {
+		if (!simulationContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
+			String tooltip = "\nIn non-spatial application, size of structure '" + getStructure().getName() + 
+					"' must be assigned a positive value if referenced in the model.";
+			String message = "In non-spatial application, size of structure '" + getStructure().getName() + "' must be assigned a positive value.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotSet, message, Issue.SEVERITY_WARNING));
+		}
+	}
 }
 
 }
