@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.jdom.Attribute;
+import org.jdom.DataConversionException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -496,11 +497,25 @@ public class BiomodelsDB_TestSuite {
 		}		
 		return odeResultSet;
 	}
+	
+	private static boolean boolAttribute(Element e, String name) throws DataConversionException {
+		Attribute attr = e.getAttribute(name);
+		if (attr != null) {
+			return attr.getBooleanValue();
+		}
+		throw new IllegalArgumentException("no attribute " + name + " on " + e.getName());
+		
+	}
 
-	public static Document writeSupportedModelsReport(File supportInfoDir,File saveSupportedXMLPathname) throws Exception{
+	public static Document writeSupportedModelsReport(File supportInfoDir,File saveSupportedXMLPathname, File failureReport) throws Exception{
 		if(!supportInfoDir.isDirectory()){
 			throw new IllegalArgumentException("File "+supportInfoDir.getAbsolutePath()+" must be a directory.");
 		}
+		final boolean wantFailReport = failureReport != null;
+		PrintWriter failWriter = null;
+		 if (wantFailReport) {
+			 failWriter = new PrintWriter(new FileWriter(failureReport));
+		 }
 		File[] xmlReportFiles = supportInfoDir.listFiles(
 			new FileFilter() {
 				public boolean accept(File pathname) {
@@ -535,6 +550,41 @@ public class BiomodelsDB_TestSuite {
 				}
 				supportedElements.add(newBioModelElement);
 			}
+			else if (wantFailReport){
+				StringBuilder sb = new StringBuilder();
+				boolean vcellRan = boolAttribute(bioModelElement,"vcell_ran");
+				boolean copasiRan = boolAttribute(bioModelElement,"COPASI_ran");
+				if (!vcellRan && !copasiRan) {
+					sb.append("both failed:");
+				}
+				else if (!vcellRan) {
+					sb.append("vcell fail: ");
+					Element report = bioModelElement.getChild("SolverReport");
+					if (report != null) {
+						String solver = report.getAttributeValue("solverName");
+						String message = report.getAttributeValue("errorMessage");
+						sb.append(solver + " failed " + message);
+					}
+					else {
+						sb.append("no report");
+					}
+				}
+				else if (!copasiRan){
+					sb.append("copasi failed:");
+				}
+				else {
+					Element comparision = bioModelElement.getChild("SolverComparison");
+					if (comparision != null) {
+						String solver1 = comparision.getAttributeValue("solver1");
+						String solver2 = comparision.getAttributeValue("solver2");
+						sb.append("compare failed: " + solver1 + " and " + solver2);
+					}
+					else {
+						sb.append("other:");
+					}
+				}
+				failWriter.println(sb.toString( ));
+			}
 		}
 		//Collections.sort(supportedElements, new ElementComparer());
 		Element root = supportedDocument.getRootElement();
@@ -551,7 +601,11 @@ public class BiomodelsDB_TestSuite {
 		}
 		return supportedDocument;
 	}
+	public static Document writeSupportedModelsReport(File supportInfoDir,File saveSupportedXMLPathname) throws Exception{
+		return writeSupportedModelsReport(supportInfoDir, saveSupportedXMLPathname);
+	}
 	
+	/*
 	private static class ElementComparer implements Comparator<Element> {
 
 		@Override
@@ -560,15 +614,14 @@ public class BiomodelsDB_TestSuite {
 			Attribute right= rhs.getAttribute("Name");
 			return left.getValue().compareTo(right.getValue());
 		}
-
-		
 	}
+	*/
 	
 	@Test
 	public void writeXml( ) throws Exception {
-		File dir = new File("../VCell_5.2/SBMLOutputDirectory52d");
-		File out = new File("../VCell_5.2/bioModelsNetInfo.xml");
-		writeSupportedModelsReport(dir, out);
+		File dir = new File("SBMLOutputDirectory");
+		File out = new File("info.xml");
+		writeSupportedModelsReport(dir, out, new File("failure.txt"));
 	}
 
 }
