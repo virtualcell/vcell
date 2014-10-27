@@ -134,8 +134,8 @@ public class TableCellEditorAutoCompletion extends DefaultCellEditor {
 				textFieldAutoCompletion.setSymbolTable(scopedExpression.getNameScope().getScopedSymbolTable());
 				textFieldAutoCompletion.setAutoCompleteSymbolFilter(scopedExpression.getAutoCompleteSymbolFilter());
 			}
-		} else if (value instanceof ReactionEquation) {
-			ReactionEquation reactionEquation = (ReactionEquation)value;
+		} else if (value instanceof ModelProcessEquation) {
+			ModelProcessEquation reactionEquation = (ModelProcessEquation)value;
 			if (reactionEquation.getNameScope() != null) {
 				textFieldAutoCompletion.setSymbolTable(reactionEquation.getNameScope().getScopedSymbolTable());
 				textFieldAutoCompletion.setAutoCompleteSymbolFilter(reactionEquation.getAutoCompleteSymbolFilter());

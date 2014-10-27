@@ -23,6 +23,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderNode;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
  
 @SuppressWarnings("serial")
@@ -103,7 +104,11 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    			if (bioModel == null) {
 	    				labelText = folder.getName() + "(00000)";
 	    			} else {
-	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumReactions() + ")";
+	    				int numReactions = bioModel.getModel().getNumReactions();
+	    				if(bioModel.getModel().getRbmModelContainer() != null) {
+	    					numReactions += bioModel.getModel().getRbmModelContainer().getReactionRuleList().size();
+	    				}
+	    				labelText = folder.getName() + " (" + numReactions + ")";
 	    			}
 	    			break;
 	    		case STRUCTURES_NODE:
@@ -120,6 +125,32 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    				labelText = folder.getName() + "(00000)";
 	    			} else {
 	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumSpeciesContexts() + ")";
+	    			}
+	    			break;
+	    		case SPECIES_TYPES_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "(00000)";
+	    			} else {
+	    				RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
+	    				if(rbmModelContainer == null) {
+	    					labelText = folder.getName() + "(00000)";
+	    				} else {
+		    				labelText = folder.getName() + " (" + rbmModelContainer.getMolecularTypeList().size() + ")";
+	    				}
+	    			}
+	    			break;
+	    		case OBSERVABLES_NODE:
+	    			icon = VCellIcons.tableIcon;
+	    			if (bioModel == null) {
+	    				labelText = folder.getName() + "(00000)";
+	    			} else {
+	    				RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
+	    				if(rbmModelContainer == null) {
+	    					labelText = folder.getName() + "(00000)";
+	    				} else {
+		    				labelText = folder.getName() + " (" + rbmModelContainer.getObservableList().size() + ")";
+	    				}
 	    			}
 	    			break;
 	    		case APPLICATIONS_NODE:

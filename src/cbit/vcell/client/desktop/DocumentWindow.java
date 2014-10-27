@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -42,6 +43,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
@@ -67,7 +69,9 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
+import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.microscopy.gui.VirtualFrapLoader;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;
@@ -139,6 +143,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenu toolMenu = null;
 	private JMenuItem transMAMenuItem = null;
 	private JMenuItem jMenuItemPermissions  = null;
+	private JLabel warningText = null;
 	
 	private JMenu menuImportPathway = null;
 	private JMenuItem menuItemImportPathwayWebLocation = null;
@@ -165,7 +170,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC14(e);
 			try {
 				if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
-					DocumentWindow.this.importXMLDocument();
+					DocumentWindow.this.importExternalDocument();
 				if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
 					DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
 				else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
@@ -2032,6 +2037,16 @@ private javax.swing.JPanel getStatusBarPane() {
 			gbc.weighty = 1;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			gbc.insets = new Insets(4, 4, 4, 4);
+			panel.add(getWarningBar(), gbc);
+			ivjStatusBarPane.add(panel, BorderLayout.CENTER);
+
+			panel = new JPanel(new GridBagLayout());
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weighty = 1;
+			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
 			panel.add(getJProgressBarMemory(), gbc);
 			ivjStatusBarPane.add(panel, BorderLayout.EAST);
 
@@ -2041,6 +2056,19 @@ private javax.swing.JPanel getStatusBarPane() {
 	}
 	return ivjStatusBarPane;
 }
+
+public JLabel getWarningBar() {
+	if (warningText == null) {
+		try {
+			warningText = new JLabel();
+			warningText.setName("");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return warningText;
+}
+
 
 /**
  * Return the TestingFrameworkMenuItem property value.
@@ -2193,8 +2221,8 @@ private void handleException(java.lang.Throwable exception) {
 	exception.printStackTrace(System.out);
 }
 
-private void importXMLDocument() {
-	getWindowManager().openDocument(VCDocument.XML_DOC);
+private void importExternalDocument() {
+	getWindowManager().openDocument(VCDocumentType.EXTERNALFILE_DOC);
 }
 
 private void importPathway(PathwayImportOption pathwayImportOption) {
@@ -2321,16 +2349,16 @@ public static void main(java.lang.String[] args) {
 private void newDocument(java.awt.event.ActionEvent actionEvent) {
 	AsynchClientTask[] taskArray = null;
 	if (actionEvent.getActionCommand().equals("BioModel")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
 	} else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
 	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_EXISTING)) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_EXISTS));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_EXISTS));
 	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_CREATENEW)) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_NEW));
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_NEW));
 		return;
 	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
+		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
 	}else {
 		return;
 	}
@@ -2354,11 +2382,11 @@ private void notYet() {
  */
 private void openDocument(java.awt.event.ActionEvent actionEvent) {
 	if (actionEvent.getActionCommand().equals("BioModel...")) {
-		getWindowManager().openDocument(VCDocument.BIOMODEL_DOC);
+		getWindowManager().openDocument(VCDocumentType.BIOMODEL_DOC);
 	} else if (actionEvent.getActionCommand().equals("MathModel...")) {
-		getWindowManager().openDocument(VCDocument.MATHMODEL_DOC);
+		getWindowManager().openDocument(VCDocumentType.MATHMODEL_DOC);
 	} else if (actionEvent.getActionCommand().equals("Geometry...")) {
-		getWindowManager().openDocument(VCDocument.GEOMETRY_DOC);
+		getWindowManager().openDocument(VCDocumentType.GEOMETRY_DOC);
 	}
 }
 
@@ -2716,8 +2744,9 @@ public void showTransMADialog()
 	}
 	
 	BioModel biomodel = null;
-	if (getWindowManager().getVCDocument() instanceof BioModel)
+	if (getWindowManager().getVCDocument() instanceof BioModel) {
 		biomodel = (BioModel)getWindowManager().getVCDocument();
+	}
 	TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
 	transMAPanel.setModel(biomodel.getModel());
 	int choice = DialogUtils.showComponentOKCancelDialog(this, transMAPanel, "Transform to Stochastic Capable Model");

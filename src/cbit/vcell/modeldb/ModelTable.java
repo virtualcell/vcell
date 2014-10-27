@@ -10,8 +10,13 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
+import org.jdom.Document;
+import org.jdom.Element;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.TokenMangler;
@@ -20,9 +25,14 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.model.*;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelInfo;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
 /**
@@ -34,7 +44,10 @@ public class ModelTable extends cbit.vcell.modeldb.VersionTable {
 
 	public final Field unitSystemXML	= new Field("unitSystemXML",	"VARCHAR2(4000)",	"");
 	
-	private final Field fields[] = { unitSystemXML };
+	public final Field rbmLarge	= new Field("rbmLRG",	"CLOB",				"");
+	public final Field rbmSmall	= new Field("rbmSML",	"VARCHAR2(4000)",	"");
+
+	private final Field fields[] = { unitSystemXML,rbmLarge,rbmSmall };
 	
 	public static final ModelTable table = new ModelTable();
 	
@@ -44,6 +57,48 @@ public class ModelTable extends cbit.vcell.modeldb.VersionTable {
 private ModelTable() {
 	super(TABLE_NAME,ModelTable.REF_TYPE);
 	addFields(fields);
+}
+
+public static String getRbmForDatabase(Model model) {
+	// add the rbmModelContainer elements
+	RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+	if(rbmModelContainer != null && !rbmModelContainer.isEmpty()) {
+		Xmlproducer xmlProducer = new Xmlproducer(false);
+		Element rbmModelContainerElement = xmlProducer.getXML(rbmModelContainer);
+		Document doc = new Document();
+		Element clone = (Element)rbmModelContainerElement.clone();
+		doc.setRootElement(clone);
+		String xmlString = XmlUtil.xmlToString(doc, false);
+		return xmlString;
+//		System.out.println(xmlString);
+	}
+	return null;
+}
+public static void readRbmElement(Connection con,Model model) throws SQLException, DataAccessException {
+	Statement stmt = null;
+	try{
+		stmt = con.createStatement();
+		ResultSet rset =
+			stmt.executeQuery(
+				"SELECT * FROM "+ModelTable.table.getTableName() +
+				" WHERE "+
+				ModelTable.table.id.getUnqualifiedColName()+" = "+model.getVersion().getVersionKey().toString());
+		if(rset.next()){
+			String rbmXMLStr = DbDriver.varchar2_CLOB_get(rset, ModelTable.table.rbmSmall, ModelTable.table.rbmLarge);
+			rset.close();
+			if(rbmXMLStr != null){
+				Element rbmElement = XmlUtil.stringToXML(rbmXMLStr, null).getRootElement();
+				XmlReader reader = new XmlReader(false);
+				try{
+					reader.getRbmModelContainer(rbmElement, model);
+				}catch(ModelException e){
+					throw new DataAccessException(e.getMessage(),e);
+				}
+			}
+		}
+	}finally{
+		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+	}
 }
 /**
  * This method was created in VisualAge.
@@ -106,14 +161,22 @@ public Model getModel(ResultSet rset, Connection con,SessionLog log) throws SQLE
  * @param key KeyValue
  * @param modelName java.lang.String
  */
-public String getSQLValueList(Model model, Version version) {
+public String getSQLValueList(Model model,String rbm, Version version) {
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	String modelUnitSystemXML = TokenMangler.getSQLEscapedString(XmlUtil.xmlToString(xmlProducer.getXML(model.getUnitSystem())));
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(getVersionGroupSQLValue(version) + ",");
-	buffer.append("'"+modelUnitSystemXML+"'");
-	buffer.append(")");
+	buffer.append("'"+modelUnitSystemXML+"'" + ",");
+	
+	if (rbm==null){
+		buffer.append("null,null");
+	}else if (DbDriver.varchar2_CLOB_is_Varchar2_OK(rbm)){
+		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
+	}else{
+		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+	}buffer.append(")");
+	
 	return buffer.toString();
 }
 }

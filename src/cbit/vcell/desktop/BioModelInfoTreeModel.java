@@ -12,6 +12,7 @@ package cbit.vcell.desktop;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.BioModelInfo;
 /**
  * Insert the type's description here.
@@ -59,7 +60,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bioModelInfo) throws Data
 		String scAnnot[] = bioModelChildSummary.getSimulationContextAnnotations();
 		int geomDims[] = bioModelChildSummary.getGeometryDimensions();
 		String geomNames[] = bioModelChildSummary.getGeometryNames();
-		String appTypes[] = bioModelChildSummary.getAppTypes();
+		MathType appTypes[] = bioModelChildSummary.getAppTypes();
  		for (int i = 0; i < scNames.length; i++){
 			BioModelNode scNode = new BioModelNode(scNames[i],true);
 			scNode.setRenderHint("type","SimulationContext");

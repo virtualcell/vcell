@@ -460,4 +460,17 @@ interface SolverLongDesc {
 	  			"</ul></li>"
 	  		 + "</ul>"	
 	     + "</html>";
+    
+    static final String NFSIM =
+   	     "<html>"
+   	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
+   	     "NFsim is a free, open-source, biochemical reaction simulator designed to handle systems" +
+   	     " that have a large or even infinite number of possible molecular interactions or states." +
+   	     " NFsim also has advanced and flexible options for simulating coarse-grained representations" +
+   	     " of complex nonlinear reaction mechanisms. A publication describing NFsim can be found at" +
+   	     " <a href='http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html'>http://www.nature.com/nmeth/journal/v8/n2/full/nmeth.1546.html</a>"
+   	     + Description_PARAMETERS_TO_BE_SET +
+   			"<li>" + Description_Stochastic_RANDOM_SEED + "</li>"
+   	     + "</html>";
+    		
 }

@@ -16,8 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Date;
 
 import org.jdom.Element;
 import org.vcell.util.DataAccessException;
@@ -157,8 +155,9 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User u
 		KeyValue mathKey = new KeyValue(mathKeyValue);
 		mathDesc  = (MathDescription)mathDB.getVersionable(dbc, con,user, VersionableType.MathDescription,mathKey);
 	}
-	
-	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, mathDesc.isNonSpatialStoch() || mathDesc.isSpatialStoch() || mathDesc.isSpatialHybrid());
+	boolean bStochastic = mathDesc.isNonSpatialStoch() || mathDesc.isSpatialStoch() || mathDesc.isSpatialHybrid();
+	boolean bRuleBased = mathDesc.isRuleBased();
+	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, bStochastic, bRuleBased);
 	if (characteristicSize!=null){
 		simContext.setCharacteristicSize(characteristicSize);
 	}

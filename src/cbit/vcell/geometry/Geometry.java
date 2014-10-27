@@ -16,6 +16,7 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 import org.vcell.util.document.KeyValue;
@@ -269,8 +270,8 @@ public int getDimension() {
  * Creation date: (5/28/2004 3:13:20 PM)
  * @return int
  */
-public int getDocumentType() {
-	return GEOMETRY_DOC;
+public VCDocumentType getDocumentType() {
+	return VCDocumentType.GEOMETRY_DOC;
 }
 
 
@@ -460,18 +461,8 @@ public void precomputeAll(GeometryThumbnailImageFactory geometryThumbnailImageFa
 	}
 }
 
-
-public String getObjectPathDescription(Object object) {
-	return "";
-}
-
-
-public String getObjectDescription(Object object) {
-	return "";
-}
-
-
-public void gatherIssues(List<Issue> issueList) {
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 }
 
 }

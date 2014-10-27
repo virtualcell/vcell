@@ -33,9 +33,11 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -110,6 +112,13 @@ protected List<Parameter> computeData() {
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
 			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getUnresolvedParameters()));
 			allParameterList.addAll(Arrays.asList(reactionStep.getKinetics().getKineticsParameters()));		
+		}
+		if(!bioModel.getModel().getRbmModelContainer().isEmpty()) {
+			for(ReactionRule reactionRule : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
+				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getKineticsParameters()));
+				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
+				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
+			}
 		}
 	}
 	if (bApplications) {
@@ -271,6 +280,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					}
 				}
 				refreshData();
+			} else if (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)) {
+				List<ReactionRule> oldValue = (List<ReactionRule>) evt.getOldValue();
+				if (oldValue != null) {
+					for (ReactionRule rs : oldValue) {
+						rs.removePropertyChangeListener(this);
+					}
+				}
+				List<ReactionRule> newValue = (List<ReactionRule>)  evt.getNewValue();
+				if (newValue != null) {
+					for (ReactionRule rs : newValue) {
+						rs.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
 			}
 		} else if (evt.getSource() == bioModel) {
 			if (propertyName.equals(BioModel.PROPERTY_NAME_SIMULATION_CONTEXTS)) {
@@ -386,6 +409,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 			refreshData();
+//		} else if(evt.getSource() instanceof ReactionRuleEmbedded) {
+//			ReactionRuleEmbedded reactionRule = (ReactionRuleEmbedded) evt.getSource();
+//			int changeRow = getRowIndex(reactionRule);
+//			if (changeRow >= 0) {
+//				fireTableRowsUpdated(changeRow, changeRow);
+//			}
 		}
 	}
 }

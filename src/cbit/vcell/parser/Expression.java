@@ -775,6 +775,20 @@ public static Expression function(FunctionType funcType, Expression... expressio
 	return function(funcType.getName(), expressions);
 }
 
+public static Expression relational(String logicalOperation, Expression exp1, Expression exp2) {
+	Expression exp = new Expression();
+	ASTRelationalNode relNode = new ASTRelationalNode();
+	relNode.setOperationFromToken(logicalOperation);
+
+	Node operand1 = exp1.rootNode.copyTree();
+	relNode.jjtAddChild(operand1);
+	Node operand2 = exp2.rootNode.copyTree();
+	relNode.jjtAddChild(operand2);
+   	
+	exp.rootNode = relNode;
+	return exp;
+}
+
 public static Expression function(String functionName, Expression... expressions) {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();

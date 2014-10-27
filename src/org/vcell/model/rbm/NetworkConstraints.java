@@ -1,9 +1,15 @@
 package org.vcell.model.rbm;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class NetworkConstraints extends RbmElement {
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Matchable;
+
+public class NetworkConstraints extends RbmElementAbstract implements Matchable {
 	public static final String PROPERTY_NAME_MAX_STOICHIOMETRY = "maxStoichiometry";
 	public static final String PROPERTY_NAME_MAX_ITERATION = "maxIteration";
 	public static final String PROPERTY_NAME_MOLECULES_PER_SPECIES = "maxMoleculesPerSpecies";
@@ -46,6 +52,9 @@ public class NetworkConstraints extends RbmElement {
 		firePropertyChange(PROPERTY_NAME_MAX_STOICHIOMETRY, oldValue, newValue);
 	}
 	
+	public Map<MolecularType, Integer> getMaxStoichiometry() {
+		return maxStoichiometryMap;
+	}
 	public Integer getMaxStoichiometry(MolecularType molecularType) {
 		return maxStoichiometryMap.get(molecularType);
 	}
@@ -55,4 +64,46 @@ public class NetworkConstraints extends RbmElement {
 		maxIteration = 10;
 		maxMoleculesPerSpecies = 10;
 	}
+	
+	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof NetworkConstraints)) {
+			return false;
+		}
+		NetworkConstraints that = (NetworkConstraints)aThat;
+
+		if (!Compare.isEqual(maxIteration, that.maxIteration)) {
+			return false;
+		}
+		if (!Compare.isEqual(maxMoleculesPerSpecies, that.maxMoleculesPerSpecies)) {
+			return false;
+		}
+		Map<MolecularType, Integer> thatMaxStoichiometryMap = new HashMap<MolecularType, Integer>(maxStoichiometryMap);
+		for(Map.Entry<MolecularType, Integer> var1 : maxStoichiometryMap.entrySet()) {
+			boolean found = false;
+			for(Map.Entry<MolecularType, Integer> var2 : thatMaxStoichiometryMap.entrySet()) {
+				if(Compare.isEqual(var1.getKey(),var2.getKey()) && Compare.isEqual(var1.getValue(),var2.getValue())) {
+					found = true;
+					thatMaxStoichiometryMap.remove(var2);
+					break;
+				}
+			}
+			if(found == false) {
+				return false;
+			}
+		}
+		if(!thatMaxStoichiometryMap.isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		// TODO Auto-generated method stub
+	}
+
 }

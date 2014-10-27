@@ -23,7 +23,7 @@ public class BNGOutputFileParserTest {
  */
 public static void main(String[] args) {
 	BNGOutputFileParser bngNetFileParser = new BNGOutputFileParser(); 
-	File bngNetFile = new java.io.File("C:\\BioNetGen\\BioNetGen_1.1.1j\\NEW\\NET\\map1.net");
+	File bngNetFile = new java.io.File("C:\\TEMP\\ddd\\BioNetGen.net");
 	BNGOutputSpec outputSpec = null;
 	try {
 		outputSpec = bngNetFileParser.createBngOutputSpec(bngNetFile);
@@ -33,5 +33,7 @@ public static void main(String[] args) {
 		throw new RuntimeException("could not read BNG .net file : "+e2.getMessage());
 	}
 	bngNetFileParser.printBNGNetOutput(outputSpec);
+	
+	
 }
 }

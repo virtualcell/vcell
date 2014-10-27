@@ -84,8 +84,9 @@ public abstract CartesianMesh getMesh() throws DataAccessException, MathExceptio
  * Insert the method's description here.
  * Creation date: (1/14/00 2:28:47 PM)
  * @return cbit.vcell.simdata.ODEDataBlock
+ * @throws IOException 
  */
-public abstract ODEDataBlock getODEDataBlock() throws DataAccessException;
+public abstract ODEDataBlock getODEDataBlock() throws DataAccessException, IOException;
 
 
 /**

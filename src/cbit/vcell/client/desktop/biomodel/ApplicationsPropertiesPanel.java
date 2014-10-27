@@ -25,7 +25,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.BioModel;
@@ -158,7 +157,7 @@ private void updateInterface() {
 			}
 			JLabel geometryLabel = new JLabel(geometryText);
 			geometryLabel.setIcon(geometryIcon);
-			JLabel detStochLabel = new JLabel((simContext.isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR));
+			JLabel detStochLabel = new JLabel(simContext.getMathType().getDescription());
 			detStochLabel.setIcon(appTypeIcon);
 			
 			gbc.insets = new Insets(2, 20, 2, 2);

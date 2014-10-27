@@ -9,13 +9,14 @@
  */
 
 package cbit.vcell.client.task;
-import cbit.vcell.client.server.*;
-import java.util.*;
 import java.awt.Component;
-import java.io.*;
+import java.io.File;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
@@ -28,13 +29,18 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
 
-import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.client.*;
-import cbit.vcell.mapping.*;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -103,6 +109,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_BNGL);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_NFSIM);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
@@ -133,7 +141,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			}
 			///
 			String selectedFileName = selectedFile.getPath();
-			if (selectedFileName.lastIndexOf(".") > 0) {
+			int fileNameStartIndex = 0;
+			fileNameStartIndex = Math.max(fileNameStartIndex, selectedFileName.lastIndexOf("/", fileNameStartIndex));
+			fileNameStartIndex = Math.max(fileNameStartIndex, selectedFileName.lastIndexOf("\\", fileNameStartIndex));
+			if (selectedFileName.lastIndexOf(".",fileNameStartIndex) > 0) {
 				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
 			}
 			String n = selectedFile.getPath().toLowerCase();
@@ -149,6 +160,10 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				if((!n.endsWith(".sedml") && (!n.endsWith(".sedx")))) {
 					selectedFile = new File(selectedFileName + ".sedml");
 				}
+			} else if (fileFilter == FileFilters.FILE_FILTER_BNGL && !n.endsWith(".bngl")) {
+				selectedFile = new File(selectedFileName + ".bngl");
+			} else if (fileFilter == FileFilters.FILE_FILTER_NFSIM && !n.endsWith(".xml")) {
+				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {

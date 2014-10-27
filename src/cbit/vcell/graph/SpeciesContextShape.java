@@ -52,7 +52,11 @@ public class SpeciesContextShape extends ElipseShape {
 	public SpeciesContextShape(SpeciesContext speciesContext, GraphModel graphModel) {
 		super(graphModel);
 		this.speciesContext = speciesContext;
-		defaultBG = java.awt.Color.green;
+		if(this.speciesContext.getSpeciesPattern() == null) {
+			defaultBG = java.awt.Color.green;
+		} else {
+			defaultBG = java.awt.Color.blue;
+		}
 		defaultFGselect = java.awt.Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -137,6 +141,14 @@ public class SpeciesContextShape extends ElipseShape {
 		}
 		Area movedIcon = icon.createTransformedArea(
 			AffineTransform.getTranslateInstance(absPosX, absPosY));
+
+		if(sc.getSpeciesPattern() == null) {
+			defaultBG = java.awt.Color.green;
+		} else {
+			defaultBG = java.awt.Color.blue;
+		}
+		backgroundColor = defaultBG;
+		darkerBackground = backgroundColor.darker().darker();
 
 		g.setColor((!isBound && !isSelected()?darkerBackground:backgroundColor));
 		g2D.fill(movedIcon);

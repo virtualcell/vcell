@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import org.vcell.util.document.BioModelChildSummary.MathType;
+
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
@@ -46,7 +48,7 @@ private void populateRootNode() {
 		rootNode.setUserObject(simulationContext);
 			
 		//add application type node
-		String typeInfo = simulationContext.getMathType();
+		MathType typeInfo = simulationContext.getMathType();
 		
 		BioModelNode appTypeNode = new BioModelNode(typeInfo,false);
 		appTypeNode.setRenderHint("type","AppType");

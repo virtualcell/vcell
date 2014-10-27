@@ -26,7 +26,8 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_JPEG 		= new ExtensionFilter(".jpeg",	"JPEG Files (*.jpeg)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
-	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap"}, "XML Files (.xml .vcml .sbml .cellml .vfrap)");
+	public static final FileFilter FILE_FILTER_EXTERNALDOC	= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap", ".bngl"}, "Model Formats (.xml .vcml .sbml .cellml .vfrap .bngl)");
+	public static final FileFilter FILE_FILTER_XML2 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml", ".cellml", ".vfrap"}, "XML Files (.xml .vcml .sbml .cellml .vfrap)");
 	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(new String[] {".vcml"},"VCML format (.vcml)");
 	public static final FileFilter FILE_FILTER_SBML_12	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_SBML_21	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)");
@@ -42,6 +43,7 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
 	public static final FileFilter FILE_FILTER_PLY		= new ExtensionFilter(".ply", 	"Stanford Polygon Format(*.ply)");
 	public static final FileFilter FILE_FILTER_BNGL		= new ExtensionFilter(".bngl", 	"BioNetGen (BNGL) file (*.bngl)");
+	public static final FileFilter FILE_FILTER_NFSIM	= new ExtensionFilter(".xml", 	"NFSim (BNGL) file (*.xml)");
 	public static final FileFilter FILE_FILTER_GEOMIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip"},"images (.gif .tif .tiff .zip)");
 	public static final FileFilter FILE_FILTER_FIELDIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip", ".lsm"},"images/datasets (.gif .tif .tiff .zip .lsm)");
 }

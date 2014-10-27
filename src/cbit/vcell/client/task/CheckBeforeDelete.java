@@ -261,15 +261,15 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	// we saved a new one, now check for lost simulation data and warn the user
 	Simulation[] simulationsWithLostResults = null;
 	switch (currentDocument.getDocumentType()) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			simulationsWithLostResults = checkLostResults((BioModel)currentDocument, (BioModel)savedDocument, documentManager, simulations);
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			simulationsWithLostResults = checkLostResults((MathModel)currentDocument, (MathModel)savedDocument, documentManager, simulations);
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			return; // nothing to check for in this case
 		}
 	}

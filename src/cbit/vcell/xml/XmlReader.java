@@ -26,6 +26,16 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementLevel;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -39,7 +49,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
@@ -162,11 +171,20 @@ import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParticleComponentStateDefinition;
+import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleMolecularComponent;
+import cbit.vcell.math.ParticleMolecularComponentPattern;
+import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
+import cbit.vcell.math.ParticleMolecularType;
+import cbit.vcell.math.ParticleMolecularTypePattern;
+import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
+import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
@@ -175,7 +193,6 @@ import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
-import cbit.vcell.math.VCMLProvider;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
@@ -184,6 +201,8 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleObservable;
+import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
@@ -212,6 +231,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelException;
@@ -219,8 +239,13 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -272,7 +297,7 @@ public class XmlReader extends XmlBase{
 	private boolean readKeysFlag = false;
     private Namespace vcNamespace = Namespace.getNamespace(XMLTags.VCML_NS_BLANK);	// default - blank namespace
     private ModelUnitSystem forcedModelUnitSystem = null;
-    	
+	    	
 /**
  * This constructor takes a parameter to specify if the KeyValue should be ignored
  * Creation date: (3/13/2001 12:16:30 PM)
@@ -1572,7 +1597,7 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
-				KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getChargeValenceParameter();
 				if (chargeValenceParameter!=null){
 					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 				}
@@ -2342,21 +2367,21 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentKinetics) ) {
 			//Create GeneralCurrentKinetics
 			newKinetics = new GeneralCurrentKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMassAction) ) {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMassAction) && reaction instanceof SimpleReaction) {
 			//create a Mass Action kinetics
-			newKinetics = new MassActionKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeNernst) ) {
+			newKinetics = new MassActionKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeNernst) && reaction instanceof FluxReaction) {
 			// create NernstKinetics
-			newKinetics = new NernstKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGHK) ) {
+			newKinetics = new NernstKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGHK) && reaction instanceof FluxReaction) {
 			//create GHKKinetics
-			newKinetics = new GHKKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Irr) ) {
+			newKinetics = new GHKKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Irr) && reaction instanceof SimpleReaction) {
 			//create HMM_IrrKinetics
-			newKinetics = new HMM_IRRKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Rev) ) {
+			newKinetics = new HMM_IRRKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Rev) && reaction instanceof SimpleReaction) {
 			//create HMM_RevKinetics
-			newKinetics = new HMM_REVKinetics(reaction);
+			newKinetics = new HMM_REVKinetics((SimpleReaction)reaction);
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralTotal_oldname) ) {
 			//create GeneralTotalKinetics
 			newKinetics = new GeneralLumpedKinetics(reaction);
@@ -2366,15 +2391,15 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentLumped) ) {
 			//create GeneralCurrentLumpedKinetics
 			newKinetics = new GeneralCurrentLumpedKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) ) {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralPermeability) && reaction instanceof FluxReaction) {
 			// create GeneralPermeabilityKinetics
-			newKinetics = new GeneralPermeabilityKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) ) {
+			newKinetics = new GeneralPermeabilityKinetics((FluxReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMacroscopic_Irr) && reaction instanceof SimpleReaction) {
 			// create Macroscopic_IRRKinetics
-			newKinetics = new Macroscopic_IRRKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) ) {
+			newKinetics = new Macroscopic_IRRKinetics((SimpleReaction)reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeMicroscopic_Irr) && reaction instanceof SimpleReaction) {
 			// create Microscopic_IRRKinetics
-			newKinetics = new Microscopic_IRRKinetics(reaction);
+			newKinetics = new Microscopic_IRRKinetics((SimpleReaction)reaction);
 		}else {
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}
@@ -2438,7 +2463,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 			}
 			Kinetics.KineticsParameter tempParam = null;
 			if (!role.equals(XMLTags.ParamRoleUserDefinedTag)) {
-				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDesc(role));
+				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDefaultDesc(role));
 			}else{
 				continue;
 			}
@@ -2449,6 +2474,10 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				} else if (role.equals(VCMODL.TotalRate_oldname)) {
 					tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
 				}
+			}
+			// hack from bringing in chargeValence parameters without breaking
+			if (tempParam == null && Kinetics.getParamRoleFromDefaultDesc(role) == Kinetics.ROLE_ChargeValence){
+				tempParam = newKinetics.getChargeValenceParameter();
 			}
 					
 			if (tempParam == null) {
@@ -2724,6 +2753,36 @@ MathDescription getMathDescription(Element param) throws XmlParseException {
 		try {
 			varHash.addVariable(getMembraneParticalVariable(tempelement));
 		}catch (MathException e){
+			e.printStackTrace();
+			throw new XmlParseException(e);
+		}
+	}
+	
+	// ParticleMolecularTypeTag       getParticleMolecularTypes
+	// has to be done before VolumeParticleSpeciesPattern and VolumeParticleObservable
+	iterator = param.getChildren(XMLTags.ParticleMolecularTypeTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		mathdes.addParticleMolecularType(getParticleMolecularType(tempelement));
+	}
+	// VolumeParticleSpeciesPatternTag
+	iterator = param.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getVolumeParticleSpeciesPattern(tempelement, mathdes));
+		}catch (MathException e){
+			e.printStackTrace();
+			throw new XmlParseException(e);
+		}
+	}
+	// VolumeParticleObservableTag    getParticleObservables
+	iterator = param.getChildren(XMLTags.VolumeParticleObservableTag, vcNamespace).iterator();
+	while ( iterator.hasNext() ){
+		tempelement = (Element)iterator.next();
+		try {
+			varHash.addVariable(getVolumeParticleObservable(tempelement, varHash));
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e);
 		}
@@ -3840,6 +3899,14 @@ private Model getModel(Element param) throws XmlParseException {
 			newmodel.setStructures( structarray );			
 		}
 
+		// retrieve the RbmModelContainer, if present - must be done before we retrieve species context!
+		Element element = param.getChild(XMLTags.RbmModelContainerTag, vcNamespace);
+		if(element != null) {
+			getRbmModelContainer(element, newmodel);
+		} else {
+			System.out.println("RbmModelContainer is missing.");
+		}
+
 		//Add SpeciesContexts
 		children = param.getChildren(XMLTags.SpeciesContextTag, vcNamespace);
 		SpeciesContext[] newspeccon = new SpeciesContext[children.size()];
@@ -3905,6 +3972,8 @@ private Model getModel(Element param) throws XmlParseException {
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e);
+	} catch (ModelException e) {
+		e.printStackTrace();
 	}
 
 	// model param expresions are not bound when they are read in, since they could be functions of each other or structures/speciesContexts.
@@ -3918,11 +3987,157 @@ private Model getModel(Element param) throws XmlParseException {
 			throw new RuntimeException("Error binding global parameter '" + modelParameters[i].getName() + "' to model."  + e.getMessage());
 		}
 	}
-
-	
 	return newmodel;
 }
 
+@SuppressWarnings("unchecked")
+public void getRbmModelContainer(Element param, Model newModel) throws ModelException {
+	Element element = param.getChild(XMLTags.RbmMolecularTypeListTag, vcNamespace);
+	getRbmMolecularTypeList(element, newModel);
+//	element = param.getChild(XMLTags.RbmSeedSpeciesListTag, vcNamespace);
+//	getRbmSeedSpeciesList(element, newModel);
+	element = param.getChild(XMLTags.RbmObservableListTag, vcNamespace);
+	getRbmObservableList(element, newModel);
+	element = param.getChild(XMLTags.RbmReactionRuleListTag, vcNamespace);
+	getRbmReactionRuleList(element, newModel);
+	element = param.getChild(XMLTags.RbmNetworkConstraintsTag, vcNamespace);
+	getRbmNetworkConstraints(element, newModel);	// one network constraint element
+}
+private void getRbmMolecularTypeList(Element param, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	List<MolecularType> mtl = mc.getMolecularTypeList();
+	List<Element> children = param.getChildren(XMLTags.RbmMolecularTypeTag, vcNamespace);
+	for (Element element : children) {
+		MolecularType t = getRbmMolecularType(element, newModel);
+		if(t != null) { mtl.add(t); }
+	}
+}
+//private void getRbmSeedSpeciesList(Element param, Model newModel) {
+//	RbmModelContainer mc = newModel.getRbmModelContainer();
+//	List<SeedSpecies> ssl = mc.getSeedSpeciesList();
+//	List<Element> children = param.getChildren(XMLTags.RbmSeedSpeciesTag, vcNamespace);
+//	for (Element element : children) {
+//		SeedSpecies s = getRbmSeedSpecies(element, newModel);
+//		if(s != null) { ssl.add(s); }
+//	}
+//}
+private void getRbmObservableList(Element param, Model newModel) throws ModelException {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	List<Element> children = new ArrayList<Element>();
+	children = param.getChildren(XMLTags.RbmObservableTag, vcNamespace);
+	for (Element element : children) {
+		RbmObservable o = getRbmObservables(element, newModel);
+		if(o != null) { mc.addObservable(o); }
+	}
+}
+private void getRbmReactionRuleList(Element param, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	List<ReactionRule> rrl = mc.getReactionRuleList();
+	List<Element> children = new ArrayList<Element>();
+	children = param.getChildren(XMLTags.RbmReactionRuleTag, vcNamespace);
+	for (Element element : children) {
+		ReactionRule r = getRbmReactionRule(element, newModel);
+		if(r != null) { rrl.add(r); }
+	}
+}
+private MolecularType getRbmMolecularType(Element e, Model newModel) {
+	String s = e.getAttributeValue(XMLTags.NameAttrTag);
+	if(s == null || s.isEmpty()) {
+		System.out.println("XMLReader: getRBMMolecularType: name is missing.");
+		return null;
+	}
+	MolecularType mt = new MolecularType(s);
+	List<Element> children = e.getChildren(XMLTags.RbmMolecularComponentTag, vcNamespace);
+	for (Element element : children) {
+		MolecularComponent mc = getRbmMolecularComponent(element, newModel);
+		if(mc != null) { mt.addMolecularComponent(mc); }
+	}
+	return mt;
+}
+private MolecularComponent getRbmMolecularComponent(Element e, Model newModel) {
+	String s = e.getAttributeValue(XMLTags.NameAttrTag);
+	if(s == null || s.isEmpty()) {
+		System.out.println("XMLReader: getRbmMolecularComponent: name is missing.");
+		return null;
+	}
+	MolecularComponent mc = new MolecularComponent(s);
+	s = e.getAttributeValue(XMLTags.RbmIndexAttrTag);
+	if(s == null || s.isEmpty()) {
+		System.out.println("XMLReader: getRbmMolecularComponent: index is missing.");
+		return null;
+	}
+	int index = Integer.parseInt(s);
+	mc.setIndex(index);
+	List<Element> children = e.getChildren(XMLTags.RbmMolecularTypeAllowableStateTag, vcNamespace);
+	for (Element element : children) {
+		ComponentStateDefinition cs = getRbmComponentStateDefinition(element, newModel);
+		if(cs != null) { mc.addComponentStateDefinition(cs); }
+	}
+	return mc;
+}
+private ComponentStateDefinition getRbmComponentStateDefinition(Element e, Model newModel) {
+	String s = e.getAttributeValue(XMLTags.NameAttrTag);
+	if(s == null || s.isEmpty()) {
+		System.out.println("XMLReader: getRbmComponentState: name is missing.");
+		return null;
+	}
+	ComponentStateDefinition cs = new ComponentStateDefinition(s);
+//	s = e.getAttributeValue(XMLTags.RbmMolecularTypeAnyTag);
+//	if(s!=null && !s.isEmpty()) {
+//		boolean any = Boolean.parseBoolean(s);
+//		cs.setAny(any);
+//	}
+	return cs;
+}
+//private SeedSpecies getRbmSeedSpecies(Element e, Model newModel) {
+//	String s = e.getAttributeValue(XMLTags.RbmInitialConditionTag);
+//	if(s == null || s.isEmpty()) {
+//		System.out.println("XMLReader: getRbmSeedSpecies: initial condition is missing.");
+//		return null;
+//	}
+//	Expression exp = unMangleExpression(s);
+//	Element element = e.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+//	SpeciesPattern sp = getSpeciesPattern(element, newModel);
+//	if(sp == null) {
+//		System.out.println("XMLReader: getRbmSeedSpecies: SpeciesPattern is missing.");
+//		return null;
+//	}
+//	SeedSpecies ss = new SeedSpecies(sp, exp);
+//	return ss;
+//}
+private SpeciesPattern getSpeciesPattern(Element e, Model newModel) {
+	
+	SpeciesPattern sp = new SpeciesPattern();
+	List<Element> children = e.getChildren(XMLTags.RbmMolecularTypePatternTag, vcNamespace);
+	for (Element element : children) {
+		MolecularTypePattern tp = getRbmMolecularTypePattern(element, newModel);
+		if(tp != null) { sp.addMolecularTypePattern(tp); }
+	}
+	return sp;
+}
+private MolecularTypePattern getRbmMolecularTypePattern(Element e, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	Element e1 = e.getChild(XMLTags.RbmMolecularTypeTag, vcNamespace);
+	String molecularTypeName = e1.getAttributeValue(XMLTags.NameAttrTag);
+	MolecularType mt = mc.getMolecularType(molecularTypeName);
+	if(mt == null) {
+		System.out.println("XMLReader: getRbmMolecularTypePattern: encountered reference to non-existing MolecularType.");
+		return null;
+	}
+	MolecularTypePattern tp = new MolecularTypePattern(mt);
+	String index = e.getAttributeValue(XMLTags.RbmIndexAttrTag);
+	if(index!=null && !index.isEmpty()) {
+		tp.setIndex(Integer.parseInt(index));
+	}
+	List<MolecularComponentPattern> cpl = new ArrayList<MolecularComponentPattern>();
+	List<Element> children = e.getChildren(XMLTags.RbmMolecularComponentPatternTag, vcNamespace);
+	for (Element e2 : children) {
+		MolecularComponentPattern cp = getRbmMolecularComponentPattern(e2, tp, mt, newModel);
+		if(cp != null) { cpl.add(cp); }
+	}
+	tp.setComponentPatterns(cpl);
+	return tp;
+}
 public static void reorderDiagramsInPlace_UponRead(VCellSoftwareVersion docVCellSoftwareVersion,final Diagram[] diagramArr,final StructureTopology structureTopology){
 	if(docVCellSoftwareVersion != null && !docVCellSoftwareVersion.isValid() && docVCellSoftwareVersion.getMajorVersion()<=5 && docVCellSoftwareVersion.getMinorVersion() <=2){
 		//In Vcell 5.2 and previous we need to order diagrams topologically, in 5.3 and later the diagrams are displayed as they are ordered when read from document
@@ -3934,8 +4149,6 @@ public static void reorderDiagramsInPlace_UponRead(VCellSoftwareVersion docVCell
 		});
 	}
 }
-
-
 private static Integer getStructureLevel(Structure s,StructureTopology structureTopology) {
 	Structure s0 = s;
 	int level = 0;
@@ -3945,6 +4158,243 @@ private static Integer getStructureLevel(Structure s,StructureTopology structure
 	}
 	return level;
 }
+private MolecularComponentPattern getRbmMolecularComponentPattern(Element e, MolecularTypePattern mtp, MolecularType mt, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	String s = e.getAttributeValue(XMLTags.RbmMolecularComponentTag);
+	if(s == null || s.isEmpty()) {
+		System.out.println("XMLReader: getRbmMolecularComponentPattern: MolecularComponent name is missing.");
+		return null;
+	}
+	MolecularComponent c = mt.getMolecularComponent(s);
+	if(c == null) {
+		System.out.println("XMLReader: getRbmMolecularComponentPattern: encountered reference " + s + " to non-existing MolecularComponent.");
+		return null;
+	}
+	ComponentStatePattern csp = new ComponentStatePattern();
+	MolecularComponentPattern mcp = new MolecularComponentPattern(c);
+	s = e.getAttributeValue(XMLTags.RbmMolecularComponentStatePatternTag);
+	if(s != null && !s.isEmpty()) {		// state may be missing, we set it only if is present
+		ComponentStateDefinition cs = c.getComponentStateDefinition(s);
+		if(cs == null) {
+			System.out.println("XMLReader: getRbmMolecularComponentPattern: encountered reference " + s + " to non-existing MolecularComponentState.");
+			return null;
+		}
+		csp = new ComponentStatePattern(cs);
+		mcp.setComponentStatePattern(csp);
+	}
+//	s = e.getAttributeValue(XMLTags.RbmMolecularTypeAnyTag);
+//	if(s!=null && !s.isEmpty()) {
+//		boolean any = Boolean.parseBoolean(s);
+//		csp.setAny(any);
+//	}
+
+	s = e.getAttributeValue(XMLTags.RbmBondTypeAttrTag);
+	BondType bondType = BondType.fromSymbol(s);
+	if (bondType == BondType.Specified){
+		int bondId = Integer.parseInt(s);
+		mcp.setBondId(bondId);
+	}
+	mcp.setBondType(bondType);
+	// sanity check, we only read the names here and make sure they make sense
+	Element bondElement = e.getChild(XMLTags.RbmBondTag, vcNamespace);
+	if(bondElement != null) {
+		String molecularTypeName = bondElement.getAttributeValue(XMLTags.RbmMolecularTypePatternTag);	// it's actually the name of the MolecularType inside this pattern
+		String molecularComponentName = bondElement.getAttributeValue(XMLTags.RbmMolecularComponentPatternTag);
+		if(molecularTypeName == null || molecularTypeName.isEmpty()) {
+			System.out.println("XMLReader: getRbmMolecularComponentPattern: Bond Attribute molecularTypeName missing.");
+			return mcp;
+		}
+		if(molecularComponentName == null || molecularComponentName.isEmpty()) {
+			System.out.println("XMLReader: getRbmMolecularComponentPattern: Bond Attribute molecularComponentName missing.");
+			return mcp;
+		}
+		Bond bond = new Bond();		// we'll have a bond here, it will be properly initialized during RbmObservable.resolveBonds() call  !!!
+		mcp.setBond(bond);
+	}
+	return mcp;
+}
+private RbmObservable getRbmObservables(Element e, Model newModel) {
+	String n = e.getAttributeValue(XMLTags.NameAttrTag);
+	if(n == null || n.isEmpty()) {
+		System.out.println("XMLReader: getRbmObservables: name is missing.");
+		return null;
+	}
+	String t = e.getAttributeValue(XMLTags.RbmObservableTypeTag);
+	if(t == null || t.isEmpty()) {
+		System.out.println("XMLReader: getRbmObservables: type is missing.");
+		return null;
+	}
+	RbmObservable.ObservableType ot = RbmObservable.ObservableType.Molecules;
+	if(!t.equals(ot.name())) {
+		ot = RbmObservable.ObservableType.Species;
+	}
+	
+	Structure structure = null;
+	int size = newModel.getNumStructures();
+	if(size == 1) {
+		structure = newModel.getStructure(0);
+	} else if(size > 1) {
+		System.out.println("XMLReader: getRbmObservables: expected no more than one Structure.");
+	}
+	RbmObservable o = new RbmObservable(newModel, n, structure, ot);
+	
+//	Element element = e.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+//	SpeciesPattern sp = getSpeciesPattern(element, newModel);
+	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+	for (Element e2 : children) {
+		SpeciesPattern sp = getSpeciesPattern(e2, newModel);
+		if(sp != null) { o.addSpeciesPattern(sp); }		// setSpeciesPattern() will call resolveBonds()
+	}
+	return o;
+}
+private ReactionRule getRbmReactionRule(Element e, Model newModel) {
+	String n = e.getAttributeValue(XMLTags.NameAttrTag);
+	if(n == null || n.isEmpty()) {
+		System.out.println("XMLReader: getRbmReactionRule: name is missing.");
+		return null;
+	}
+	boolean reversible = Boolean.valueOf(e.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
+	ReactionRule r = new ReactionRule(newModel, n, reversible);
+	String l = e.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now
+
+	boolean bKineticLawFound = false;
+	String massActionForwardRate = e.getAttributeValue(XMLTags.RbmMassActionKfTag);
+	if(massActionForwardRate == null || massActionForwardRate.isEmpty()) {
+		System.out.println("XMLReader: getRbmReactionRule: mass action forward rate is missing.");
+	} else {
+		Expression massActionKfExp = unMangleExpression(massActionForwardRate);
+		try {
+			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, massActionKfExp);
+			bKineticLawFound = true;
+		} catch (ExpressionBindingException | PropertyVetoException e3) {
+			e3.printStackTrace();
+		}
+		if(reversible == true) {
+			String massActionReverseRate = e.getAttributeValue(XMLTags.RbmMassActionKrTag);
+			if(massActionReverseRate == null || massActionReverseRate.isEmpty()) {
+				throw new RuntimeException("XMLReader: getRbmReactionRule: Mass Action: Reverse Rate is missing.");
+			} else {
+				Expression massActionKrExp = unMangleExpression(massActionReverseRate);
+				try {
+					r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, massActionKrExp);
+					bKineticLawFound = true;
+				} catch (ExpressionBindingException | PropertyVetoException e3) {
+					e3.printStackTrace();
+					throw new RuntimeException("XMLReader: getRbmReactionRule: Mass Action: Bad Reverse Rate: " + e3.getMessage());
+				}
+			}
+		}
+	}
+
+	if(bKineticLawFound == false) {		// it's not mass action, let's try MM
+	String MM_Kcat = e.getAttributeValue(XMLTags.RbmMichaelisMentenKcatTag);
+	if(MM_Kcat == null || MM_Kcat.isEmpty()) {
+		;
+	} else {
+		Expression MM_Kcat_exp = unMangleExpression(MM_Kcat);
+		try {
+			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat, MM_Kcat_exp);
+			bKineticLawFound = true;
+		} catch (ExpressionBindingException | PropertyVetoException e3) {
+			e3.printStackTrace();
+		}
+		String MM_Km = e.getAttributeValue(XMLTags.RbmMichaelisMentenKmTag);
+		if(MM_Km == null || MM_Km.isEmpty()) {
+			System.out.println("XMLReader: getRbmReactionRule: MM_Km is missing.");
+		} else {
+			Expression MM_Km_exp = unMangleExpression(MM_Km);
+			try {
+				r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm, MM_Km_exp);
+				bKineticLawFound = true;
+			} catch (ExpressionBindingException | PropertyVetoException e3) {
+				e3.printStackTrace();
+			}
+		}
+		}
+	}
+
+	if(bKineticLawFound == false) {		// still not found, let's try this
+	String Sat_Ks = e.getAttributeValue(XMLTags.RbmSaturableKsTag);
+	if(Sat_Ks == null || Sat_Ks.isEmpty()) {
+		;
+	} else {
+		Expression Sat_Ks_exp = unMangleExpression(Sat_Ks);
+		try {
+			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.SaturableKs, Sat_Ks_exp);
+			bKineticLawFound = true;
+		} catch (ExpressionBindingException | PropertyVetoException e3) {
+			e3.printStackTrace();
+		}
+		String Sat_Vmax = e.getAttributeValue(XMLTags.RbmSaturableVmaxTag);
+		if(Sat_Vmax == null || Sat_Vmax.isEmpty()) {
+			System.out.println("XMLReader: getRbmReactionRule: Sat_Vmax is missing.");
+		} else {
+			Expression Sat_Vmax_exp = unMangleExpression(Sat_Vmax);
+			try {
+				r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.SaturableVmax, Sat_Vmax_exp);
+				bKineticLawFound = true;
+			} catch (ExpressionBindingException | PropertyVetoException e3) {
+				e3.printStackTrace();
+			}
+		}
+		}
+	}
+	if(bKineticLawFound == false) {
+		throw new RuntimeException("Kinetic law unsupported or missing. Must be Mass Action, Michaelis Menten or Saturable.");
+	}
+
+	Element e1 = e.getChild(XMLTags.RbmReactantPatternsListTag, vcNamespace);
+	getRbmReactantPatternsList(e1, r, newModel);
+	Element e2 = e.getChild(XMLTags.RbmProductPatternsListTag, vcNamespace);
+	getRbmProductPatternsList(e2, r, newModel);
+	return r;	
+}
+private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newModel) {
+	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+	for (Element element : children) {
+		SpeciesPattern s = getSpeciesPattern(element, newModel);
+		if(s != null) { r.addReactant(new ReactantPattern(s)); }
+	}
+}
+private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel) {
+	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+	for (Element element : children) {
+		SpeciesPattern s = getSpeciesPattern(element, newModel);
+		if(s != null) { r.addProduct(new ProductPattern(s)); }
+	}
+}
+private void getRbmNetworkConstraints(Element e, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	NetworkConstraints nc = mc.getNetworkConstraints();
+	String s = e.getAttributeValue(XMLTags.RbmMaxIterationTag);
+	if(s!=null && !s.isEmpty()) {
+		int maxIteration = Integer.parseInt(s);
+		nc.setMaxIteration(maxIteration);
+	}
+	s = e.getAttributeValue(XMLTags.RbmMaxMoleculesPerSpeciesTag);
+	if(s!=null && !s.isEmpty()) {
+		int maxMoleculesPerSpecies = Integer.parseInt(s);
+		nc.setMaxMoleculesPerSpecies(maxMoleculesPerSpecies);
+	}
+	List<Element> children = e.getChildren(XMLTags.RbmMaxStoichiometryTag, vcNamespace);
+	for (Element element : children) {
+		Integer i = 1;
+		MolecularType mt = null;
+		s = element.getAttributeValue(XMLTags.RbmIntegerAttrTag);
+		if(s!=null && !s.isEmpty()) {
+			i = Integer.getInteger(s);
+		}
+		s = element.getAttributeValue(XMLTags.RbmMolecularTypeTag);
+		if(s!=null && !s.isEmpty()) {
+			mt = mc.getMolecularType(s);
+		}
+		if(mt != null) {
+			nc.setMaxStoichiometry(mt, i);
+		}
+	}
+}
+
+// --------------------------------------------------------------------
 
 public ModelUnitSystem getUnitSystem(Element unitSystemNode) {
 
@@ -4531,7 +4981,7 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
-				KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+				KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getChargeValenceParameter();
 				if (chargeValenceParameter!=null){
 					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 				}
@@ -4633,11 +5083,13 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	//get the attributes
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
+	boolean bRuleBased = false;
 	boolean bUseConcentration = true;
 	boolean bRandomizeInitCondition = false;
 	
-	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true")))
+	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true"))){
 		bStoch = true;
+	}
 	if(bStoch)
 	{
 		// stochastic and using concentration vs amount
@@ -4650,6 +5102,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 			bRandomizeInitCondition = true;
 		}
 
+	}
+	if ((param.getAttributeValue(XMLTags.RuleBasedAttrTag)!= null) && (param.getAttributeValue(XMLTags.RuleBasedAttrTag).equals("true"))){
+		bRuleBased = true;
 	}
 	//Retrieve Geometry
 	Geometry newgeometry = null;
@@ -4696,7 +5151,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	SimulationContext newsimcontext = null;
 	
 	try {
-		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch);
+		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch, bRuleBased);
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException("A propertyveto exception was generated when creating the new SimulationContext " + name, e);
@@ -5325,7 +5780,6 @@ private Species getSpecies(Element param) throws XmlParseException {
 	return newspecie;
 }
 
-
 /**
  * This method returns a Speciecontext object from a XML Element.
  * Creation date: (4/16/2001 6:32:23 PM)
@@ -5356,11 +5810,19 @@ private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlP
 	if (keystring!=null && keystring.length()>0 && this.readKeysFlag) {
 		key = new KeyValue(keystring);
 	}
-
+	
+	SpeciesPattern sp = null;
+	Element element = param.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+	if(element != null) {
+		sp = getSpeciesPattern(element, model);
+		sp.resolveBonds();
+		if(sp == null) {
+			throw new XmlParseException("XMLReader: getSpeciesContext: SpeciesPattern is missing.");
+		}
+	}
 	//---try to create the speciesContext---
 	SpeciesContext speciecontext = null;
-	speciecontext = new SpeciesContext( key, name, specieref, structureref);
-	
+	speciecontext = new SpeciesContext( key, name, specieref, structureref, sp);
 	return speciecontext;
 }
 
@@ -6260,6 +6722,132 @@ private VolVariable getVolVariable(Element param) {
 	transcribeComments(param, volVariable);
 
 	return volVariable;
+}
+
+private VolumeParticleObservable getVolumeParticleObservable(Element param, VariableHash varHash) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	String molecularTypeString = unMangle( param.getAttributeValue(XMLTags.ParticleMolecularTypePatternTag) );
+	ObservableType observableType = ObservableType.fromString(molecularTypeString);
+	VolumeParticleObservable var = new VolumeParticleObservable( name, domain, observableType );
+	
+	Element volumeParticleSpeciesPatternsElement = param.getChild(XMLTags.VolumeParticleSpeciesPatternsTag, vcNamespace);
+	List<Element> volumeParticleSpeciesPatternList = volumeParticleSpeciesPatternsElement.getChildren(XMLTags.VolumeParticleSpeciesPatternTag, vcNamespace);
+	for (Element volumeParticleSpeciesPattern : volumeParticleSpeciesPatternList) {
+		String volumeParticleSpeciesPatternName = unMangle( volumeParticleSpeciesPattern.getAttributeValue(XMLTags.NameAttrTag));
+		
+		Variable v = varHash.getVariable(volumeParticleSpeciesPatternName);
+		if(v == null) {
+			throw new XmlParseException("failed to find VolumeParticleSpeciesPattern named " + volumeParticleSpeciesPatternName);
+		}
+		if(v instanceof ParticleSpeciesPattern) {
+			var.addParticleSpeciesPattern((ParticleSpeciesPattern)v);
+		} else {
+			throw new XmlParseException("Variable " + volumeParticleSpeciesPatternName + " is not a ParticleSpeciesPattern");
+		}
+	}
+	return var;
+}
+
+private ParticleMolecularComponent getParticleMolecularComponent(String pmtName, Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
+	ParticleMolecularComponent var = new ParticleMolecularComponent(pmtName + "_" + name, name);
+	List<Element> componentStateList = param.getChildren(XMLTags.ParticleMolecularTypeAllowableStateTag, vcNamespace);
+	for (Element componentState : componentStateList) {
+		String componentStateName = unMangle( componentState.getAttributeValue(XMLTags.NameAttrTag));
+		if(!componentStateName.equals("*")) {
+			ParticleComponentStateDefinition p = var.getComponentStateDefinition(componentStateName);
+			if(p == null) {
+				p = new ParticleComponentStateDefinition(componentStateName);
+				var.addComponentStateDefinition(p);
+			}
+		}
+	}
+	return var;
+}
+private ParticleMolecularType getParticleMolecularType(Element param) {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	ParticleMolecularType var = new ParticleMolecularType( name );
+	
+	List<Element> molecularComponentList = param.getChildren(XMLTags.ParticleMolecularComponentPatternTag, vcNamespace);
+	for (Element molecularComponent : molecularComponentList) {
+		ParticleMolecularComponent p = getParticleMolecularComponent(name, molecularComponent);
+		var.addMolecularComponent(p);
+	}
+	return var;
+}
+
+private ParticleMolecularComponentPattern getParticleMolecularComponentPattern(Element param, ParticleMolecularType particleMolecularType)  throws XmlParseException {
+	String molecularComponentName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
+	ParticleMolecularComponent particleMolecularComponent = particleMolecularType.getMolecularComponent(molecularComponentName);
+	if (particleMolecularComponent != null){
+		ParticleMolecularComponentPattern var = new ParticleMolecularComponentPattern(particleMolecularComponent);
+		ParticleComponentStatePattern pcsp = null;
+		String componentStateName = unMangle( param.getAttributeValue(XMLTags.StateAttrTag));
+		if(componentStateName.equals("*")) {
+			pcsp = new ParticleComponentStatePattern();
+		} else {
+			//ParticleComponentStateDefinition pcsd = new ParticleComponentStateDefinition(componentStateName);		// bad??
+			ParticleComponentStateDefinition pcsd = particleMolecularComponent.getComponentStateDefinition(componentStateName);
+			if(pcsd == null) {
+				throw new XmlParseException("failed to find ParticleComponentStateDefinition named " + molecularComponentName);
+			}
+			pcsp = new ParticleComponentStatePattern(pcsd);
+		}
+		var.setComponentStatePattern(pcsp);
+		String bondString = unMangle( param.getAttributeValue(XMLTags.BondAttrTag));
+		
+		ParticleBondType bondType = ParticleBondType.fromSymbol(bondString);
+		if (bondType == ParticleBondType.Specified){
+			int bondId = Integer.parseInt(bondString);
+			var.setBondId(bondId);
+		}
+		var.setBondType(bondType);
+		return var;
+	} else {
+		throw new XmlParseException("failed to find ParticleMolecularComponent named " + molecularComponentName);
+	}
+}
+private ParticleMolecularTypePattern getParticleMolecularTypePattern(Element param, MathDescription mathDescription) throws XmlParseException {
+	String molecularTypeName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
+	ParticleMolecularType particleMolecularType = mathDescription.getParticleMolecularType(molecularTypeName);
+	if (particleMolecularType != null){
+		ParticleMolecularTypePattern var = new ParticleMolecularTypePattern(particleMolecularType);
+		List<Element> componentPatternList = param.getChildren(XMLTags.ParticleMolecularComponentPatternTag, vcNamespace);
+		for (Element componentPattern : componentPatternList) {
+			ParticleMolecularComponentPattern p = getParticleMolecularComponentPattern(componentPattern, particleMolecularType);
+			var.addMolecularComponentPattern(p);
+		}
+		return var;
+	}else{
+		throw new XmlParseException("failed to find ParticleMolecularType named " + molecularTypeName);
+	}
+}
+private VolumeParticleSpeciesPattern getVolumeParticleSpeciesPattern(Element param, MathDescription mathdes) throws XmlParseException {
+	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	String domainStr = unMangle( param.getAttributeValue(XMLTags.DomainAttrTag) );
+	Domain domain = null;
+	if (domainStr!=null){
+		domain = new Domain(domainStr);
+	}
+	VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern( name, domain );
+	
+	List<Element> molecularTypeList = param.getChildren(XMLTags.ParticleMolecularTypePatternTag, vcNamespace);
+	for (Element molecularType : molecularTypeList) {
+		ParticleMolecularTypePattern p = getParticleMolecularTypePattern(molecularType, mathdes);
+		var.addMolecularTypePattern(p);
+	}
+
+	
+//	Element meshRefineElement = param.getChild(XMLTags.ParticleMolecularTypePatternTag, vcNamespace);		
+//	if (meshRefineElement != null) {
+//		List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
+//		for (Element levelElement : levelElementList) {
+	return var;
 }
 
 private VolumeParticleVariable getVolumeParticalVariable(Element param) {

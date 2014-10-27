@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 
-
 //import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.jdom.Document;
@@ -78,9 +77,9 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP;
-import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -181,7 +180,7 @@ public class SimulationData extends VCData {
 					File logfile = getLogFile();
 					fis = new FileInputStream(logfile);
 					String log3Bytes = new String(new char[] {(char)fis.read(),(char)fis.read(),(char)fis.read()});
-					if(log3Bytes.equals("IDA") || log3Bytes.equals("ODE")){
+					if(log3Bytes.equals("IDA") || log3Bytes.equals("ODE") || log3Bytes.equals("NFS")){
 						bNonSpatial = true;
 					}
 				}catch(Exception e){
@@ -524,6 +523,7 @@ public class SimulationData extends VCData {
 
 	private boolean particleDataExists = false;
 	private boolean isODEData = false;
+	private boolean isRulesData = false;
 	
 	private boolean bZipFormat2 = false;
 	private boolean bZipFormat1 = false;
@@ -1039,7 +1039,7 @@ private synchronized File getMeshFile() throws FileNotFoundException {
  * Creation date: (1/14/00 2:28:47 PM)
  * @return cbit.vcell.simdata.ODEDataBlock
  */
-public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
+public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, IOException {
 	File file = getODEDataFile();
 	long lastModified = file.lastModified();
 	ODESimData odeSimData = null;
@@ -1054,6 +1054,10 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 		else if (odeIdentifier.equals(NETCDF_DATA_IDENTIFIER))
 		{
 			odeSimData = ODESimData.readNCDataFile(vcDataId, getODEDataFile(), getJobFunctionsFile());
+		}
+		else if (odeIdentifier.equals(NFSIM_DATA_IDENTIFIER))
+		{
+			odeSimData = ODESimData.readNFSIMDataFile(vcDataId, getODEDataFile());
 		}
 		else
 		{
@@ -1557,7 +1561,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		throw new DataAccessException(e.getMessage());
 	}
 	
-	if (!getIsODEData() && dataFilenames != null) {
+	if (!isRulesData && !getIsODEData() && dataFilenames != null) {
 		// read variables only when I have never read the file since variables don't change
 		if (dataSetIdentifierList.size() == 0) {
 			File file = getPDEDataFile(0.0);
@@ -1596,7 +1600,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		getFunctionDataIdentifiers(outputContext);
 	}
 
-	if (getIsODEData() && dataSetIdentifierList.size() == 0){
+	if ((isRulesData || getIsODEData()) && dataSetIdentifierList.size() == 0){
 		ODEDataBlock odeDataBlock = getODEDataBlock();
 		if (odeDataBlock == null) {
 			throw new DataAccessException("Results are not availabe yet. Please try again later.");
@@ -1782,6 +1786,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(logfileContent,newLineDelimiters);
 		isODEData = true;
+		isRulesData = false;
 		//memorize format
 		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
 		
@@ -1795,6 +1800,21 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 				odeKeepMost = Integer.parseInt(st.nextToken());
 			}
 		}		
+	} else 	if ((logfileContent.startsWith(NFSIM_DATA_IDENTIFIER))) {
+//		String newLineDelimiters = "\n\r";
+//		StringTokenizer lineTokenizer = new StringTokenizer(logfileContent,newLineDelimiters);
+		StringTokenizer st = new StringTokenizer(logfileContent);
+		isODEData = false;
+		isRulesData = true;
+		//memorize format
+		st.nextToken();
+		odeIdentifier = NFSIM_DATA_IDENTIFIER;
+		String s2 = st.nextToken();
+		String filename = st.nextToken();
+		System.out.println("filename: " + filename);
+		String xxx = (new File(filename)).getName();
+		dataFilenames = new String[1];
+		dataFilenames[0] = xxx;
 	} else {
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays

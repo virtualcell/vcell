@@ -110,6 +110,7 @@ public class XMLTags {
     public final static String VarNameAttrTag = "VarName"; //stoch
     public final static String OperationAttrTag = "Operation"; //stoch
     public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
+    public static final String RuleBasedAttrTag = "RuleBased"; //rule-based , used with simulationspec Tag as an attribute
     public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
     public final static String RandomizeInitConditionTag = "RandomizeInitCondition"; //used for stochastic application. store boolean for randomizing initial condition
     //END-MATHMODEL
@@ -535,6 +536,57 @@ public class XMLTags {
 	public static final String FieldItemTypeTag = "FieldItemType";
 	public static final String FieldItemTimeTag = "FieldItemTime";
 	
+	// bngl (rbm)
+	public static final String RbmModelContainerTag = "RbmModelContainer";
+	public static final String RbmMolecularTypeListTag = "MolecularTypeList";
+	public static final String RbmSeedSpeciesListTag = "SeedSpeciesList";
+	public static final String RbmObservableListTag = "RbmObservableList";
+	public static final String RbmReactionRuleListTag = "ReactionRuleList";
+	public static final String RbmMolecularTypeTag = "MolecularType";
+	public static final String RbmMolecularTypePatternTag = "MolecularTypePattern";
+	public static final String RbmMolecularComponentTag = "MolecularComponent";
+	public static final String RbmMolecularComponentStatePatternTag = "ComponentStatePattern";
+	public static final String RbmMolecularComponentStateDefinitionTag = "ComponentStateDefinition";
+	public static final String RbmMolecularComponentPatternTag = "ComponentPattern";
+	public static final String RbmStateAttrTag = "State";
+	public static final String RbmBondTag = "Bond";
+	public static final String RbmBondTypeAttrTag = "BondType";
+	public static final String RbmMolecularTypeAllowableStateTag = "AllowableState";
+	public static final String RbmMolecularTypeAnyTag = "Any";
+	public static final String RbmSeedSpeciesTag = "SeedSpecies";
+	public static final String RbmInitialConditionTag = "InitialCondition";
+	public static final String RbmSpeciesPatternTag = "SpeciesPattern";
+	public static final String RbmObservableTag = "Observable";
+	public static final String RbmObservableTypeTag = "ObservableType";
+	public static final String RbmReactionRuleTag = "ReactionRule";
+	public static final String RbmNetworkConstraintsTag = "NetworkConstraints";
+	public static final String RbmMaxIterationTag = "RbmMaxIteration";
+	public static final String RbmMaxMoleculesPerSpeciesTag = "RbmMaxMoleculesPerSpecies";
+	public static final String RbmMaxStoichiometryTag = "MaxStoichiometry";
+	public static final String RbmIntegerAttrTag = "Integer";
+	public static final String RbmIndexAttrTag = "Index";
+	public static final String RbmReactionRuleLabelTag = "ReactionRuleLabel";
+	public static final String RbmReactionRuleReversibleTag = "ReactionRuleReversible";
+	public static final String RbmMassActionKfTag = "MassActionKf";
+	public static final String RbmMassActionKrTag = "MassActionKr";
+	public static final String RbmMichaelisMentenKcatTag = "MichaelisMentenKcat";
+	public static final String RbmMichaelisMentenKmTag = "MichaelisMentenKm";
+	public static final String RbmSaturableVmaxTag = "SaturableVmax";
+	public static final String RbmSaturableKsTag = "SaturableKs";
+	public static final String RbmReactantPatternsListTag = "ReactantPatternsList";
+	public static final String RbmProductPatternsListTag = "ProductPatternsList";
+	// bngl (math)
+	public static final String StateAttrTag = "State";
+	public static final String BondAttrTag = "Bond";
+	public static final String ParticleMolecularTypeAllowableStateTag = "AllowableState";
+	public static final String ParticleMolecularComponentPatternTag = "Component";
+	public static final String ParticleMolecularTypePatternTag = "MolecularType";
+	public static final String VolumeParticleSpeciesPatternTag = "VolumeParticleSpeciesPattern";
+	public static final String VolumeParticleSpeciesPatternsTag = "VolumeParticleSpeciesPatterns";
+	public static final String VolumeParticleObservableTag = "VolumeParticleObservable";
+	public static final String MembraneParticleObservableTag = "MembraneParticleObservable";
+	public static final String ParticleObservableTag = "ParticleObservable";
+	public static final String ParticleMolecularTypeTag = "ParticleMolecularType";
 	// Smoldyn
 	public final static String VolumeParticleVariableTag = "VolumeParticleVariable";
 	public final static String MembraneParticleVariableTag = "MembraneParticleVariable";

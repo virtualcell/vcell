@@ -2,7 +2,7 @@
 
 package org.vcell.model.bngl;
 
-import org.vcell.model.rbm.RBMSymbolTable;
+import org.vcell.model.rbm.common.RBMSymbolTable;
 
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships

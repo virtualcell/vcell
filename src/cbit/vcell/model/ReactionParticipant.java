@@ -12,7 +12,7 @@ package cbit.vcell.model;
 import org.vcell.util.Compare;
 import org.vcell.util.document.KeyValue;
 
-public abstract class ReactionParticipant implements org.vcell.util.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
+public abstract class ReactionParticipant implements ModelProcessParticipant, org.vcell.util.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	private KeyValue key = null;
 	protected SpeciesContext speciesContext = null;
 	protected ReactionStep parent = null;

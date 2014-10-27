@@ -14,11 +14,15 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.vcell.model.rbm.RbmUtils;
+
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -28,6 +32,7 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
+import cbit.vcell.server.bionetgen.BNGUtils;
 
 import com.ibm.icu.util.StringTokenizer;
 
@@ -36,19 +41,19 @@ import com.ibm.icu.util.StringTokenizer;
  * Creation date: (9/2/2003 3:26:19 PM)
  * @author: Jim Schaff
  */
-public class ReactionEquation {
+public class ModelProcessEquation {
 	public static final String REACTION_GOESTO = "->";
 	
-	private ReactionStep reactionStep = null;
+	private ModelProcess modelProcess = null;
 	private Model model = null;
 	private String equationString = null;
 	private String equationleftHand = null;
 	private String equationRightHand = null;
 	private ExpressionBindingException expressionBindingException = null;
 	
-	public ReactionEquation(ReactionStep reactionStep, Model model) {
+	public ModelProcessEquation(ModelProcess modelProcess, Model model) {
 		super();
-		this.reactionStep = reactionStep;
+		this.modelProcess = modelProcess;
 		this.model = model;
 	}
 
@@ -67,7 +72,7 @@ public NameScope getNameScope() {
  * @return java.lang.String
  */
 public String toString() {
-	if (reactionStep == null) {
+	if (modelProcess == null) {
 		return BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT;
 	} else {
 		if (equationString == null) {
@@ -78,56 +83,67 @@ public String toString() {
 }
 
 private void computeEquationString() {	
-	ReactionParticipant[] reactantParticipants = reactionStep.getReactionParticipants();
-	ArrayList<ReactionParticipant> reactantList = new ArrayList<ReactionParticipant>();
-	ArrayList<ReactionParticipant> productList = new ArrayList<ReactionParticipant>();
-//	if (reactionStep instanceof SimpleReaction) {
-		for (ReactionParticipant rp : reactantParticipants) {
-			if (rp instanceof Reactant) {
-				reactantList.add(rp);
-			} else if (rp instanceof Product) {
-				productList.add(rp);
+	if (modelProcess instanceof ReactionStep){
+		ReactionStep reactionStep = (ReactionStep)modelProcess;
+		ReactionParticipant[] reactantParticipants = reactionStep.getReactionParticipants();
+		ArrayList<ReactionParticipant> reactantList = new ArrayList<ReactionParticipant>();
+		ArrayList<ReactionParticipant> productList = new ArrayList<ReactionParticipant>();
+	//	if (reactionStep instanceof SimpleReaction) {
+			for (ReactionParticipant rp : reactantParticipants) {
+				if (rp instanceof Reactant) {
+					reactantList.add(rp);
+				} else if (rp instanceof Product) {
+					productList.add(rp);
+				}
 			}
+	//	} else {
+	//		Membrane membrane = (Membrane) ((FluxReaction)reactionStep).getStructure();
+	//		StructureTopology structTopology = reactionStep.getModel().getStructureTopology();
+	//		for (ReactionParticipant rp : reactantParticipants) {
+	//			if (rp instanceof Flux) {
+	//				Flux flux = (Flux)rp;
+	//				Feature scf = (Feature) flux.getSpeciesContext().getStructure();
+	//				if (structTopology.getInsideFeature(membrane) == scf) {
+	//					productList.add(rp);
+	//				} else {
+	//					reactantList.add(rp);
+	//				}
+	//			}
+	//		}
+	//	}
+		StringBuffer sb = new StringBuffer();
+		for (ReactionParticipant r : reactantList) {
+			if (sb.length() > 0) {
+				sb.append(" + ");
+			}
+			int stoichiometry = r.getStoichiometry();
+			sb.append((stoichiometry>1?stoichiometry:"") + r.getName());
 		}
-//	} else {
-//		Membrane membrane = (Membrane) ((FluxReaction)reactionStep).getStructure();
-//		StructureTopology structTopology = reactionStep.getModel().getStructureTopology();
-//		for (ReactionParticipant rp : reactantParticipants) {
-//			if (rp instanceof Flux) {
-//				Flux flux = (Flux)rp;
-//				Feature scf = (Feature) flux.getSpeciesContext().getStructure();
-//				if (structTopology.getInsideFeature(membrane) == scf) {
-//					productList.add(rp);
-//				} else {
-//					reactantList.add(rp);
-//				}
-//			}
-//		}
-//	}
-	StringBuffer sb = new StringBuffer();
-	for (ReactionParticipant r : reactantList) {
-		if (sb.length() > 0) {
-			sb.append(" + ");
+		equationleftHand = sb.toString();
+		sb = new StringBuffer();
+		for (ReactionParticipant p : productList) {
+			if (sb.length() > 0) {
+				sb.append(" + ");
+			}
+			int stoichiometry = p.getStoichiometry();
+			sb.append((stoichiometry>1?stoichiometry:"") + p.getName());
 		}
-		int stoichiometry = r.getStoichiometry();
-		sb.append((stoichiometry>1?stoichiometry:"") + r.getName());
+		equationRightHand = sb.toString();
+		equationString = equationleftHand + " " + REACTION_GOESTO + " " + equationRightHand;
+	}else if (modelProcess instanceof ReactionRule){
+		ReactionRule reactionRuleEmbedded = (ReactionRule)modelProcess;
+		equationString = RbmUtils.toBnglStringShort(reactionRuleEmbedded);
 	}
-	equationleftHand = sb.toString();
-	sb = new StringBuffer();
-	for (ReactionParticipant p : productList) {
-		if (sb.length() > 0) {
-			sb.append(" + ");
-		}
-		int stoichiometry = p.getStoichiometry();
-		sb.append((stoichiometry>1?stoichiometry:"") + p.getName());
-	}
-	equationRightHand = sb.toString();
-	equationString = equationleftHand + " " + REACTION_GOESTO + " " + equationRightHand;
-
 }
 
 public final AutoCompleteSymbolFilter getAutoCompleteSymbolFilter() {
-	return reactionStep == null ? null : reactionStep.getAutoCompleteSymbolFilter();
+	if(modelProcess instanceof ReactionStep) {
+		ReactionStep reactionStep = (ReactionStep)modelProcess;
+		return reactionStep == null ? null : reactionStep.getAutoCompleteSymbolFilter();
+	} else {
+		return null;
+	}
+	
 }
 public final ExpressionBindingException getExpressionBindingException() {
 	return expressionBindingException;

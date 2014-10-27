@@ -32,7 +32,6 @@ import javax.swing.SwingConstants;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
@@ -401,7 +400,7 @@ private void updateInterface() {
 			}
 			JLabel geometryLabel = new JLabel(geometryText);
 			geometryLabel.setIcon(VCellIcons.geometryIcon);
-			JLabel detStochLabel = new JLabel((simContext.isStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR));
+			JLabel detStochLabel = new JLabel(simContext.getMathType().getDescription());
 			detStochLabel.setIcon(VCellIcons.mathTypeIcon);
 			
 			gbc.insets = new Insets(2, 20, 2, 2);

@@ -1,6 +1,8 @@
 package org.vcell.model.rbm;
 
-public class MolecularTypeMapping {
+import java.io.Serializable;
+
+public class MolecularTypeMapping  implements Serializable {
 	/**
 	 * either reactant or product molecular type may be null
 	 * 

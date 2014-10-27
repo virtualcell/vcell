@@ -8,14 +8,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -25,23 +29,36 @@ import com.ibm.icu.util.StringTokenizer;
 
 public class RbmNetworkGenerator {
 	
-	private static final String BEGIN_REACTIONS = "begin reactions";
-	private static final String END_REACTIONS = "end reactions";
+	private static final String BEGIN_MODEL = "begin model";
+	private static final String END_MODEL = "end model";
+	private static final String BEGIN_REACTIONS = "begin reaction rules";
+	private static final String END_REACTIONS = "end reaction rules";
+	private static final String BEGIN_OBSERVABLES = "begin observables";
+	private static final String END_OBSERVABLES = "end observables";
+	private static final String BEGIN_FUNCTIONS = "begin functions";
+	private static final String END_FUNCTIONS = "end functions";
 	private static final String END_MOLECULE_TYPES = "end molecule types";
 	private static final String BEGIN_MOLECULE_TYPES = "begin molecule types";
-	private static final String BEGIN_SPECIES = "begin species";
-	private static final String END_SPECIES = "end species";
+	private static final String BEGIN_SPECIES = "begin seed species";
+	private static final String END_SPECIES = "end seed species";
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
 
-	public static void writeBngl(RbmModelContainer rbmModelContainer, PrintWriter writer) {
-		writer.println("begin model");
+	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
+		SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
+		writeBngl(sc, writer);
+	}
+	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer) {
+		Model model = simulationContext.getModel();
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		
+		writer.println(BEGIN_MODEL);
 		writer.println();
 		
 		writer.println(BEGIN_PARAMETERS);
-		List<RbmParameter> paramList = rbmModelContainer.getParameterList();
-		for (RbmParameter param : paramList) {
-			writer.println(RbmUtils.toBnglString(param));
+		List<Parameter> paramList = rbmModelContainer.getParameterList();
+		for (Parameter param : paramList) {
+			writer.println(RbmUtils.toBnglString(param,false));
 		}
 		writer.println(END_PARAMETERS);
 		writer.println();
@@ -54,23 +71,40 @@ public class RbmNetworkGenerator {
 		writer.println(END_MOLECULE_TYPES);
 		writer.println();
 		
-		writer.println("begin seed species");
-		List<SeedSpecies> seedSpeciesList = rbmModelContainer.getSeedSpeciesList();
-		for (SeedSpecies ss : seedSpeciesList) {
-			writer.println(RbmUtils.toBnglString(ss));
+		writer.println(BEGIN_SPECIES);
+		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+		for(SpeciesContext sc : speciesContexts) {
+			if(!sc.hasSpeciesPattern()) { continue; }
+			writer.println(RbmUtils.toBnglString(simulationContext, sc));
 		}
-		writer.println("end seed species");
+		writer.println(END_SPECIES);
 		writer.println();
-		
-		writer.println("begin reaction rules");
+				
+		writer.println(BEGIN_OBSERVABLES);
+		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
+		for (RbmObservable oo : observablesList) {
+			writer.println(RbmUtils.toBnglString(oo));
+		}
+		writer.println(END_OBSERVABLES);
+		writer.println();
+
+		writer.println(BEGIN_FUNCTIONS);
+		List<Parameter> functionList = rbmModelContainer.getFunctionList();
+		for (Parameter function : functionList) {
+			writer.println(RbmUtils.toBnglString(function,true));
+		}
+		writer.println(END_FUNCTIONS);
+		writer.println();
+
+		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
 		for (ReactionRule rr : reactionList) {
 			writer.println(RbmUtils.toBnglStringLong(rr));
 		}
-		writer.println("end reaction rules");	
+		writer.println(END_REACTIONS);	
 		writer.println();
 		
-		writer.println("end model");	
+		writer.println(END_MODEL);	
 		writer.println();
 		
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
@@ -91,6 +125,7 @@ public class RbmNetworkGenerator {
 		if (max_stoich.length() > 0) {
 			writer.print(",max_stoich={" + max_stoich + "}");
 		}
+		writer.print(",overwrite=>1");
 		writer.println("})");
 		writer.println();
 	}

@@ -138,6 +138,8 @@ public Variable[] getAlphabeticallyOrderedVariables() {
 	
 	List<Variable> pvList = new ArrayList<Variable>();
 	List<Variable> constList = new ArrayList<Variable>();
+	List<Variable> pspList = new ArrayList<Variable>();
+	List<Variable> poList = new ArrayList<Variable>();
 	List<Variable> varList = new ArrayList<Variable>();
 	List<Variable> funcList = new ArrayList<Variable>();
 	
@@ -146,6 +148,10 @@ public Variable[] getAlphabeticallyOrderedVariables() {
 			pvList.add(var);
 		} else if (var instanceof Constant) {
 			constList.add(var);
+		} else if (var instanceof ParticleSpeciesPattern) {
+			pspList.add(var);
+		} else if (var instanceof ParticleObservable) {
+			poList.add(var);
 		} else if (var instanceof Function) {
 			funcList.add(var);
 		} else {
@@ -154,11 +160,15 @@ public Variable[] getAlphabeticallyOrderedVariables() {
 	}
 	Collections.sort(pvList, comparator);
 	Collections.sort(constList, comparator);
+	Collections.sort(pspList, comparator);
+	Collections.sort(poList, comparator);
 	Collections.sort(varList, comparator);
 	Collections.sort(funcList, comparator);	
 	Vector<Variable> orderedVars = new Vector<Variable>();
 	orderedVars.addAll(pvList);
 	orderedVars.addAll(constList);
+	orderedVars.addAll(pspList);
+	orderedVars.addAll(poList);
 	orderedVars.addAll(varList);
 	orderedVars.addAll(funcList);
 	return orderedVars.toArray(new Variable[orderedVars.size()]);

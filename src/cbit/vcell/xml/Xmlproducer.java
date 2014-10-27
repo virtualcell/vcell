@@ -18,13 +18,25 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementLevel;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayProducerBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -46,6 +58,7 @@ import org.vcell.util.document.Versionable;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCPixelClass;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.IdentifiableProvider;
@@ -135,31 +148,42 @@ import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneRegionEquation;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleMolecularComponent;
+import cbit.vcell.math.ParticleMolecularComponentPattern;
+import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
+import cbit.vcell.math.ParticleMolecularType;
+import cbit.vcell.math.ParticleMolecularTypePattern;
+import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
-import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
+import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ProjectionDataGenerator;
 import cbit.vcell.math.RandomVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.UniformDistribution;
 import cbit.vcell.math.VCMLProvider;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniPoissonExpectedCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeParticleObservable;
+import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
@@ -188,13 +212,19 @@ import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -1468,6 +1498,12 @@ private Element getXML(SimulationContext param, BioModel bioModel) throws XmlPar
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
 		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
 	}
+	if (param.isRuleBased()){
+		simulationcontext.setAttribute(XMLTags.RuleBasedAttrTag, "true");
+	}else{
+		simulationcontext.setAttribute(XMLTags.RuleBasedAttrTag, "false");
+	}
+
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
@@ -2256,6 +2292,11 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
     	math.addContent(annotationElem);
     }
     
+    List <ParticleMolecularType> particleMolecularTypes = mathdes.getParticleMolecularTypes();
+    for (ParticleMolecularType particleMolecularType : particleMolecularTypes) {
+    	math.addContent(getXML(particleMolecularType));
+    }
+    
     //Add Constant subelements
     Enumeration<Variable> enum1 = mathdes.getVariables();
     //extra reordering added here, temporary
@@ -2308,10 +2349,15 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
         }
         else if (var instanceof VolVariable) {
             element = getXML((VolVariable) var);
-        } else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
+        } 
+        else if (var instanceof StochVolVariable) { //added for stochastic volumn variables
             element = getXML((StochVolVariable) var);
-        } else if (var instanceof ParticleVariable) {
+        } 
+        else if (var instanceof ParticleVariable) {
         	element = getXML((ParticleVariable) var);
+        }
+        else if (var instanceof ParticleObservable) {
+        	element = getXML((ParticleObservable) var);
         }
         else {
 	        throw new XmlParseException("An unknown variable type "+var.getClass().getName()+" was found when parsing the mathdescription "+ mathdes.getName() +"!");
@@ -2319,7 +2365,7 @@ Element getXML(MathDescription mathdes) throws XmlParseException {
         transcribeComments(var, element);
         math.addContent(element);
     }
-    
+
     //this was moved to the simspec!
     /*	buffer.append("\n");
     	if (geometry != null){
@@ -2903,9 +2949,95 @@ private Element getXML(StochVolVariable param) {
 	return stochVar;
 }
 
+private Element getXML(ParticleComponentStateDefinition param) {
+	Element e = new Element(XMLTags.ParticleMolecularTypeAllowableStateTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	return e;
+}
+private Element getXML(ParticleMolecularComponent param) {
+	Element e = new Element(XMLTags.ParticleMolecularComponentPatternTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	for (ParticleComponentStateDefinition pp : param.getComponentStateDefinitions()){
+		e.addContent(getXML(pp));
+	}
+	return e;
+}
+private Element getXML(ParticleMolecularType param) {
+	Element e = new Element(XMLTags.ParticleMolecularTypeTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	for (ParticleMolecularComponent pp : param.getComponentList()){
+		e.addContent(getXML(pp));
+	}
+	return e;
+}
+
+private Element getXML(ParticleMolecularTypePattern param) {
+	Element e = new Element(XMLTags.ParticleMolecularTypePatternTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getMolecularType().getName()));
+	for(ParticleMolecularComponentPattern cp : param.getMolecularComponentPatternList()) {
+		e.addContent(getXML(cp));
+	}
+	return e;
+}
+private Element getXML(ParticleMolecularComponentPattern param) {
+	Element e = new Element(XMLTags.ParticleMolecularComponentPatternTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getMolecularComponent().getName()));
+	String state = "";
+	if(param.getComponentStatePattern().isAny()) {
+		state = "*";
+	} else {
+		state = param.getComponentStatePattern().getParticleComponentStateDefinition().getName();
+	}
+	e.setAttribute(XMLTags.StateAttrTag, mangle(state));
+	if(param.getBondType().equals(ParticleBondType.Specified)) {
+		String s = Integer.toString(param.getBondId());
+		e.setAttribute(XMLTags.BondAttrTag, s);
+	} else {
+		String s = param.getBondType().symbol;
+		e.setAttribute(XMLTags.BondAttrTag, s);
+	}
+	return e;
+}
+
+private Element getXML(ParticleObservable param) {
+	Element e = null;
+	if(param instanceof VolumeParticleObservable) {
+		e = new org.jdom.Element(XMLTags.VolumeParticleObservableTag);
+	} else {
+		e = new org.jdom.Element(XMLTags.ParticleObservableTag);	
+	}
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getDomain()!=null){
+		e.setAttribute(XMLTags.DomainAttrTag, mangle(param.getDomain().getName()));
+	}
+	e.setAttribute(XMLTags.ParticleMolecularTypePatternTag, mangle(param.getType().name()));
+	e.addContent(getVolumeParticleSpeciesPatternList(param));
+	return e;
+}
+private Element getVolumeParticleSpeciesPatternList(ParticleObservable param) {
+	org.jdom.Element e = null;
+	e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternsTag);
+	for (ParticleSpeciesPattern pp : param.getParticleSpeciesPatterns()){
+		org.jdom.Element e1 = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
+		e1.setAttribute(XMLTags.NameAttrTag, mangle(pp.getName()));
+		e.addContent(e1);
+	}
+	return e;
+}
 private Element getXML(ParticleVariable param) {
-	org.jdom.Element e = new org.jdom.Element(param instanceof VolumeParticleVariable ? XMLTags.VolumeParticleVariableTag : XMLTags.MembraneParticleVariableTag);
-	
+	org.jdom.Element e = null;
+	if(param instanceof VolumeParticleVariable) {
+		e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
+	} else if(param instanceof VolumeParticleSpeciesPattern) {
+		e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
+		for (ParticleMolecularTypePattern pp : ((VolumeParticleSpeciesPattern)param).getParticleMolecularTypePatterns()){
+			e.addContent(getXML(pp));
+		}
+	} else if(param instanceof MembraneParticleVariable){
+		e = new org.jdom.Element(XMLTags.MembraneParticleVariableTag);
+	} else {
+		System.out.println("Unexpected element" + param);
+	}
 	//Add atribute
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	if (param.getDomain()!=null){
@@ -3350,6 +3482,203 @@ private Element getXML(ModelParameter modelParam) {
 	}
 	return glParamElement;
 }
+// ============================================================================================================
+public Element getXML(RbmModelContainer rbmModelContainer) {
+	Element rbmModelContainerElement = new Element(XMLTags.RbmModelContainerTag);
+	List<MolecularType> molecularTypeList = rbmModelContainer.getMolecularTypeList();
+	if(!molecularTypeList.isEmpty()) {
+		Element molecularTypeListElement = new Element(XMLTags.RbmMolecularTypeListTag);
+		for (MolecularType mt : molecularTypeList) {
+			molecularTypeListElement.addContent(getXML(mt));
+		}
+		rbmModelContainerElement.addContent(molecularTypeListElement);
+	}
+	List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
+	if(!observablesList.isEmpty()) {
+		Element observablesListElement = new Element(XMLTags.RbmObservableListTag);
+		for (RbmObservable oo : observablesList) {
+			observablesListElement.addContent(getXML(oo));
+		}
+		rbmModelContainerElement.addContent(observablesListElement);
+	}
+	List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
+	if(!reactionList.isEmpty()) {
+		Element reactionListElement = new Element(XMLTags.RbmReactionRuleListTag);
+		for (ReactionRule rr : reactionList) {
+			reactionListElement.addContent(getXML(rr));
+		}
+		rbmModelContainerElement.addContent(reactionListElement);
+	}
+	NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
+	if(constraints != null) {
+		rbmModelContainerElement.addContent(getXML(constraints));
+	}
+	return rbmModelContainerElement;
+}
+private Element getXML(NetworkConstraints param) {
+	Element e = new Element(XMLTags.RbmNetworkConstraintsTag);
+	e.setAttribute(XMLTags.RbmMaxIterationTag, Integer.toString(param.getMaxIteration()));
+	e.setAttribute(XMLTags.RbmMaxMoleculesPerSpeciesTag, Integer.toString(param.getMaxMoleculesPerSpecies()));
+	Map<MolecularType, Integer> sm = param.getMaxStoichiometry();
+	for (Map.Entry<MolecularType, Integer> m : sm.entrySet()) {
+		MolecularType mt = m.getKey();
+		Integer value = m.getValue();
+		Element e1 = new Element(XMLTags.RbmMaxStoichiometryTag);
+		e1.setAttribute(XMLTags.RbmMolecularTypeTag, mangle(mt.getName()));
+		e1.setAttribute(XMLTags.RbmIntegerAttrTag, Integer.toString(value));
+		e.addContent(e1);
+	}
+	return e;
+}
+private Element getXML(ReactionRule param) {
+	Element e = new Element(XMLTags.RbmReactionRuleTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	e.setAttribute(XMLTags.RbmReactionRuleLabelTag, mangle(param.getName()));
+	boolean reversible = param.isReversible();
+	e.setAttribute(XMLTags.RbmReactionRuleReversibleTag, String.valueOf(reversible));
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKfTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate)));
+	}
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKrTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate)));
+	}
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKcatTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat)));
+	}
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKmTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm)));
+	}
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableKs)!=null){
+		e.setAttribute(XMLTags.RbmSaturableKsTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableKs)));
+	}
+	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableVmax)!=null){
+		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableVmax)));
+	}
+	List<ReactantPattern> reactantPatterns = param.getReactantPatterns();
+	if(!reactantPatterns.isEmpty()) {
+		Element reactantPatternsListElement = new Element(XMLTags.RbmReactantPatternsListTag);
+		for (ReactantPattern sp : reactantPatterns) {
+			reactantPatternsListElement.addContent(getXML(sp.getSpeciesPattern()));
+		}
+		e.addContent(reactantPatternsListElement);
+	}
+	List<ProductPattern> productPatterns = param.getProductPatterns();
+	if(!productPatterns.isEmpty()) {
+		Element productPatternsListElement = new Element(XMLTags.RbmProductPatternsListTag);
+		for (ProductPattern sp : productPatterns) {
+			productPatternsListElement.addContent(getXML(sp.getSpeciesPattern()));
+		}
+		e.addContent(productPatternsListElement);
+	}
+	// apparently the molecularTypeMapping list is not being used
+	return e;
+}
+//private Element getXMLShort(SpeciesPattern param) {
+//	Element e = new Element(XMLTags.RbmSpeciesPatternTag);
+//	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+//	return e;
+//}
+private Element getXML(RbmObservable param) {
+	// if RbmObservableEmbedded we don't save the model or the structure
+	// we know which they are once we use the XmlReader to recreate the object
+	Element e = new Element(XMLTags.RbmObservableTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	RbmObservable.ObservableType ot = param.getType();
+	e.setAttribute(XMLTags.RbmObservableTypeTag, mangle(ot.name()));
+//	SpeciesPattern sp = param.getSpeciesPattern(0);
+//	Element e1 = new Element(XMLTags.RbmSpeciesPatternTag);
+//	e1.setAttribute(XMLTags.NameAttrTag, mangle(sp.getId()));
+//	e.addContent(getXML(sp));
+	List<SpeciesPattern> spl = param.getSpeciesPatternList();
+	for(SpeciesPattern sp : spl) {
+		e.addContent(getXML(sp));
+	}
+	return e;
+}
+//private Element getXML(SeedSpecies param) {
+//	Element e = new Element(XMLTags.RbmSeedSpeciesTag);
+////	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+//	e.setAttribute(XMLTags.RbmInitialConditionTag, mangleExpression(param.getInitialCondition()));
+//	SpeciesPattern sp = param.getSpeciesPattern();
+//	e.addContent(getXML(sp));
+//	return e;	
+//}
+private Element getXML(SpeciesPattern param) {
+	Element e = new Element(XMLTags.RbmSpeciesPatternTag);
+//	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+	for(MolecularTypePattern mp : param.getMolecularTypePatterns()) {
+		e.addContent(getXML(mp));
+	}
+	return e;
+}
+private Element getXML(MolecularTypePattern param) {
+	Element e = new Element(XMLTags.RbmMolecularTypePatternTag);
+	//e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+	e.setAttribute(XMLTags.RbmIndexAttrTag, Integer.toString(param.getIndex()));
+	Element e1 = new Element(XMLTags.RbmMolecularTypeTag);
+	MolecularType mt = param.getMolecularType();
+	e1.setAttribute(XMLTags.NameAttrTag, mangle(mt.getName()));
+	e.addContent(e1);
+	for(MolecularComponentPattern cp : param.getComponentPatternList()) {
+		e.addContent(getXML(cp));
+	}
+	return e;
+}
+private Element getXML(MolecularComponentPattern param) {
+	Element e = new Element(XMLTags.RbmMolecularComponentPatternTag);
+	//e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+	e.setAttribute(XMLTags.RbmMolecularComponentTag, mangle(param.getMolecularComponent().getName()));
+	ComponentStatePattern cs = param.getComponentStatePattern();
+	if(cs != null) {
+		e.setAttribute(XMLTags.RbmMolecularComponentStatePatternTag, mangle(cs.getComponentStateDefinition().getName()));
+		if(cs.isAny()) {
+			e.setAttribute(XMLTags.RbmMolecularTypeAnyTag, String.valueOf(cs.isAny()));
+		}
+	}
+	Bond b = param.getBond();
+	if(b != null) {
+		Element e1 = new Element(XMLTags.RbmBondTag);
+		String test = mangle(b.molecularTypePattern.getMolecularType().getName());
+		e1.setAttribute(XMLTags.RbmMolecularTypePatternTag, test);
+		e1.setAttribute(XMLTags.RbmMolecularComponentPatternTag, mangle(b.molecularComponentPattern.getMolecularComponent().getName()));
+		e.addContent(e1);
+	}
+	BondType bt = param.getBondType();
+	if(bt == null) {
+		return e;
+	}
+	if(bt.equals(BondType.Specified)) {
+		String s = Integer.toString(param.getBondId());
+		e.setAttribute(XMLTags.RbmBondTypeAttrTag, s);
+	} else {
+		String s = bt.symbol;
+		e.setAttribute(XMLTags.RbmBondTypeAttrTag, s);
+	}
+	return e;
+}
+private Element getXML(MolecularType param) {
+	Element e  = new Element(XMLTags.RbmMolecularTypeTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	for (MolecularComponent pp : param.getComponentList()){
+		e.addContent(getXML(pp));
+	}
+	return e;
+}
+private Element getXML(MolecularComponent param) {
+	Element e = new Element(XMLTags.RbmMolecularComponentTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	String s = Integer.toString(param.getIndex());
+	e.setAttribute(XMLTags.RbmIndexAttrTag, s);
+	for (ComponentStateDefinition pp : param.getComponentStateDefinitions()){
+		e.addContent(getXML(pp));
+	}
+	return e;
+}
+private Element getXML(ComponentStateDefinition param) {
+	Element e = new Element(XMLTags.RbmMolecularTypeAllowableStateTag);
+	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	return e;
+}
 
 
 /**
@@ -3376,7 +3705,6 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 	if (modelGlobals != null && modelGlobals.length > 0) {
 		modelnode.addContent(getXML(modelGlobals));
 	}
-
 
 	//Get Species
 	Species[] array = param.getSpecies();
@@ -3410,6 +3738,21 @@ private Element getXML(Model param) throws XmlParseException/*, cbit.vcell.parse
 	ReactionStep[] reactarray = param.getReactionSteps();
 	for (int i=0 ; i < reactarray.length ; i++ ){
 		modelnode.addContent( getXML(reactarray[i]) );
+	}
+	
+	// add the rbmModelContainer elements
+	RbmModelContainer rbmModelContainer = param.getRbmModelContainer();
+	if(rbmModelContainer != null && !rbmModelContainer.isEmpty()) {
+		Element rbmModelContainerElement = getXML(rbmModelContainer);
+
+		{	// for testing purposes only
+			Document doc = new Document();
+			Element clone = (Element)rbmModelContainerElement.clone();
+			doc.setRootElement(clone);
+			String xmlString = XmlUtil.xmlToString(doc, false);
+			System.out.println(xmlString);
+		}
+		modelnode.addContent(rbmModelContainerElement);
 	}
 	
 //	// Add rate rules
@@ -3672,10 +4015,13 @@ private Element getXML(SpeciesContext param) {
 	if (param.getKey() !=null && this.printKeysFlag) {
 		speciecontext.setAttribute(XMLTags.KeyValueAttrTag, param.getKey().toString());
 	}
+	SpeciesPattern sp = param.getSpeciesPattern();
+	if(sp != null) {
+		speciecontext.addContent(getXML(sp));
+	}
 		
 	return speciecontext;
 }
-
 
 /**
  * This method identifies if the structure as a parameter is a Feature or a Membrane, and then calls the respective getXML method.

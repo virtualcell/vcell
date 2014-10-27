@@ -86,7 +86,7 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public AsynchClientTask[] createNewGeometryTasks(TopLevelWindowManager requester, DocumentCreationInfo documentCreationInfo, AsynchClientTask[] finalTasks, String okButtonText) { return null; }
 	@Override
-	public void openDocument(int documentType, DocumentWindowManager requester) {}
+	public void openDocument(VCDocument.VCDocumentType documentType, DocumentWindowManager requester) {}
 	@Override
 	public void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, boolean inNewWindow) {}
 	@Override
@@ -126,5 +126,5 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void accessPermissions(Component requester,VCDocument vcDocument) {}
 	@Override
-	public boolean isDifferentFromBlank(int documentType,VCDocument vcDocument) {return false;}
+	public boolean isDifferentFromBlank(VCDocument.VCDocumentType documentType,VCDocument vcDocument) {return false;}
 };

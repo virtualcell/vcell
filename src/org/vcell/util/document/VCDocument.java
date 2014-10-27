@@ -13,6 +13,7 @@ package org.vcell.util.document;
 import java.util.List;
 
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 
 /**
  * Insert the type's description here.
@@ -21,15 +22,22 @@ import org.vcell.util.Issue;
  */
 public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchable {
 	// document types
-	public static final int BIOMODEL_DOC = 0;
+	public enum VCDocumentType {
+		BIOMODEL_DOC,
+		MATHMODEL_DOC,
+		GEOMETRY_DOC,
+		LEGACYIMAGE_DOC,
+		EXTERNALFILE_DOC
+	}
+//	public static final int BIOMODEL_DOC = 0;
 		public static final int BIO_OPTION_DEFAULT = 0;
-	public static final int MATHMODEL_DOC = 1;
+//	public static final int MATHMODEL_DOC = 1;
 		public static final int MATH_OPTION_NONSPATIAL = 0;
 		public static final int MATH_OPTION_SPATIAL_EXISTS = 1;
 		public static final int MATH_OPTION_FROMBIOMODELAPP = 2;
 		public static final int MATH_OPTION_SPATIAL_NEW = 3;
 
-	public static final int GEOMETRY_DOC = 2;
+//	public static final int GEOMETRY_DOC = 2;
 		public static final int GEOM_OPTION_1D = 1;
 		public static final int GEOM_OPTION_2D = 2;
 		public static final int GEOM_OPTION_3D = 3;
@@ -39,17 +47,17 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		public static final int GEOM_OPTION_CSGEOMETRY_3D = 8;
 		public static final int GEOM_OPTION_FROM_WORKSPACE_IMAGE = 9;
 		public static final int GEOM_OPTION_FROM_WORKSPACE_ANALYTIC = 10;
-	public static final int XML_DOC = 3;
+//	public static final int XML_DOC = 3;
 	//Document Creation Info
 	public static class DocumentCreationInfo {
-		private int documentType;
+		private VCDocumentType documentType;
 		private int option;
 		private VCDocument preCreatedDocument;
-		public DocumentCreationInfo(int documentType,int option){
+		public DocumentCreationInfo(VCDocumentType documentType,int option){
 			this.documentType = documentType;
 			this.option = option;
 		}
-		public int getDocumentType(){
+		public VCDocumentType getDocumentType(){
 			return documentType;
 		}
 		public int getOption(){
@@ -67,7 +75,7 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		private ExternalDataIdentifier externalDataID = null;
 		private String varName = null;
 		public GeomFromFieldDataCreationInfo(ExternalDataIdentifier edi, String v) {
-			super(GEOMETRY_DOC,GEOM_OPTION_FIELDDATA);
+			super(VCDocumentType.GEOMETRY_DOC,GEOM_OPTION_FIELDDATA);
 			externalDataID = edi;
 			varName = v;
 		}
@@ -90,7 +98,7 @@ String getDescription();
  * Creation date: (5/28/2004 3:10:46 PM)
  * @return int
  */
-int getDocumentType();
+VCDocumentType getDocumentType();
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2004 1:03:55 PM)
@@ -121,7 +129,5 @@ void setDescription(String description) throws java.beans.PropertyVetoException;
  */
 void setName(String newName) throws java.beans.PropertyVetoException;
 
-String getObjectPathDescription(Object object);
-String getObjectDescription(Object object);
-void gatherIssues(List<Issue> issueList);
+void gatherIssues(IssueContext issueContext, List<Issue> issueList);
 }

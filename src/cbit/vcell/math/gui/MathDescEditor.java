@@ -356,7 +356,19 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.UniformDistribution_Maximum);
 		autoCompletionWords.add(getTemplate_GaussianDistribution());
 		autoCompletionWords.add(VCML.GaussianDistribution_Mean);
-		autoCompletionWords.add(VCML.GaussianDistribution_StandardDeviation);	
+		autoCompletionWords.add(VCML.GaussianDistribution_StandardDeviation);
+		
+		autoCompletionWords.add(VCML.VolumeParticleObservable);
+		autoCompletionWords.add(VCML.VolumeParticleSpeciesPattern);
+		autoCompletionWords.add(VCML.ParticleDistribution);
+		autoCompletionWords.add(VCML.VolumeParticleSpeciesPatterns);
+		autoCompletionWords.add(VCML.ParticleMolecularType);
+		autoCompletionWords.add(VCML.ParticleMolecularComponent);
+		autoCompletionWords.add(VCML.ParticleMolecularTypePattern);
+		autoCompletionWords.add(VCML.ParticleComponentStatePattern);
+		autoCompletionWords.add(VCML.ParticleComponentBondPattern);
+		autoCompletionWords.add(VCML.ParticleComponentAllowableState);
+	
 		autoCompletionWords.add(VCML.VolumeParticleVariable);	
 		autoCompletionWords.add(VCML.MembraneParticleVariable);
 		
@@ -568,6 +580,17 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.GaussianDistribution_Mean);
 		keywords.add(VCML.GaussianDistribution_StandardDeviation);
 		
+		keywords.add(VCML.VolumeParticleObservable);
+		keywords.add(VCML.VolumeParticleSpeciesPattern);
+		keywords.add(VCML.ParticleDistribution);
+		keywords.add(VCML.VolumeParticleSpeciesPatterns);
+		keywords.add(VCML.ParticleMolecularType);
+		keywords.add(VCML.ParticleMolecularComponent);
+		keywords.add(VCML.ParticleMolecularTypePattern);
+		keywords.add(VCML.ParticleComponentStatePattern);
+		keywords.add(VCML.ParticleComponentBondPattern);
+		keywords.add(VCML.ParticleComponentAllowableState);
+
 		keywords.add(VCML.VolumeParticleVariable);
 		keywords.add(VCML.MembraneParticleVariable);
 		keywords.add(VCML.ParticleJumpProcess);

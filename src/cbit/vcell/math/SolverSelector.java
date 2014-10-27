@@ -21,6 +21,8 @@ public interface SolverSelector {
 	
 	public abstract boolean hasFastSystems();
 	
+	public abstract boolean isRuleBased();
+	
 	/**
 	 * validator
 	 */

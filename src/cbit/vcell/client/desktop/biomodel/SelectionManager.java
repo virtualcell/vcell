@@ -12,11 +12,11 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.util.ArrayList;
 
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 
 public class SelectionManager {
 	public static enum ActiveViewID {
@@ -33,6 +33,8 @@ public class SelectionManager {
 		reactions,
 		structures,
 		species,
+		species_definitions,
+		observables,
 		reaction_diagram,
 		structure_diagram,
 		
@@ -103,7 +105,19 @@ public class SelectionManager {
 		}
 		public final ActiveViewID getActiveViewID() {
 			return activeViewID;
-		}		
+		}	
+		
+//		public String toString(){
+//			String simContextText = "no simContext";
+//			if (simulationContext!=null){
+//				simContextText = simulationContext.getName();
+//			}
+//			String docEditorTreeClass = "no TreeClass";
+//			if (documentEditorTreeFolderClass!=null){
+//				docEditorTreeClass = documentEditorTreeFolderClass.toString();
+//			}
+//			return "id="+getActiveViewID()+":tab="+docEditorTreeClass+":sc=\""+simContextText+"\"";
+//		}
 	}
 	
 	public static final String PROPERTY_NAME_ACTIVE_VIEW = "activeView";
@@ -111,8 +125,7 @@ public class SelectionManager {
 	private Object[] selectedObjects = null;
 	private ActiveView activeView = null;
 	private transient java.beans.PropertyChangeSupport propertyChange;
-	private boolean bSelectionBusy = false;
-	private boolean bActiveViewBusy = false;
+	private boolean bBusy = false;
 	
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
@@ -134,66 +147,52 @@ public class SelectionManager {
 	}
 	
 	public final void followHyperlink(ActiveView newActiveView, Object[] newSelection){
-		if (bSelectionBusy || bActiveViewBusy){
+//		System.out.println("========== followHyperlink (enter) thread="+Thread.currentThread().getName());
+//		showStack();
+		followHyperlink0(newActiveView, newSelection);
+//		System.out.println("========== followHyperlink (leave) thread="+Thread.currentThread().getName());
+//		show();
+	}
+	
+	public final void setSelectedObjects(Object[] newValue) {
+//		System.out.println("----- setSelectedObjects (enter) thread="+Thread.currentThread().getName());
+//		showStack();
+		followHyperlink0(getActiveView(), newValue);
+//		System.out.println("----- setSelectedObjects (leave) thread="+Thread.currentThread().getName());
+//		show();
+	}
+	
+	public final void setActiveView(ActiveView newValue) {
+//		System.out.println("===== setActiveView (enter) thread="+Thread.currentThread().getName());
+//		showStack();
+		followHyperlink0(newValue, new Object[0]);
+//		System.out.println("===== setActiveView (leave) thread="+Thread.currentThread().getName());
+//		show();
+	}
+	
+	public final void followHyperlink0(ActiveView newActiveView, Object[] newSelection){
+		if (bBusy){
+//			System.out.println("     busy...");
 			return;
 		}
 		try {
-			bSelectionBusy = true;
-			bActiveViewBusy = true;
+			bBusy = true;
 			Object[] oldSelection = this.selectedObjects;
 			this.selectedObjects = newSelection;
 			ActiveView oldActiveView = this.activeView;
 			this.activeView = newActiveView;
 			
-			firePropertyChange(PROPERTY_NAME_ACTIVE_VIEW, oldSelection, this.selectedObjects);
-			firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldActiveView, newActiveView);
+			if (newActiveView != oldActiveView){
+				firePropertyChange(PROPERTY_NAME_ACTIVE_VIEW, oldActiveView, newActiveView);
+			}
+			//if (newSelection != oldSelection){
+				firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldSelection, newSelection);
+			//}
 		}finally{
-			bSelectionBusy = false;
-			bActiveViewBusy = false;
+			bBusy = false;
 		}
 	}
 	
-	public final void setSelectedObjects(Object[] newValue) {
-		if (bSelectionBusy) {
-			return;
-		}
-		bSelectionBusy = true;
-		try {
-			Object[] oldValue = this.selectedObjects;
-			if (oldValue == newValue) {
-				return;
-			}
-			if (oldValue != null && newValue != null && oldValue.length == 0 && newValue.length == 0) {
-				return;
-			}
-			this.selectedObjects = newValue;
-			firePropertyChange(PROPERTY_NAME_SELECTED_OBJECTS, oldValue, newValue);
-		} finally {
-			bSelectionBusy = false;
-		}
-	}
-	
-	public final void setActiveView(ActiveView newValue) {
-		if (bActiveViewBusy) {
-			return;
-		}
-		bActiveViewBusy = true;
-		try {
-			ActiveView oldValue = this.activeView;
-			if (Compare.isEqualOrNull(oldValue, newValue)) {
-				return;
-			}
-			this.activeView = newValue;
-			firePropertyChange(PROPERTY_NAME_ACTIVE_VIEW, oldValue, newValue);
-		} finally {
-			bActiveViewBusy = false;
-		}
-	}
- 
-	public final Object[] getSelectedObjects() {
-		return selectedObjects;
-	}
-
 	public final ArrayList<Object> getSelectedObjects(Class<?> cls) {
 		ArrayList<Object> objectList = new ArrayList<Object>();
 		if (selectedObjects != null) {
@@ -208,8 +207,54 @@ public class SelectionManager {
 		}
 		return objectList;
 	}
-	
+	public final Object[] getSelectedObjects() {
+		return selectedObjects;
+	}
 	public final ActiveView getActiveView() {
 		return activeView;
 	}
+	public boolean isBusy() {
+		return bBusy;
+	}
+
+//	private void show() {
+//		showStack();
+//		System.out.println("  active view:     " + activeView);
+//		for(Object so : this.selectedObjects) {
+//			if(so instanceof SpeciesContextSpec) {
+//				SpeciesContextSpec scs = (SpeciesContextSpec)so;
+//				System.out.println(" selected object:  " + scs.getSpeciesContext().toString());
+//			} else {
+//				System.out.println(" selected object:  " + so);
+//			}
+//		}
+//		if(this.selectedObjects==null) {
+//			System.out.println("   selectedObjects is a null array");
+//		}else if (this.selectedObjects.length == 0) {
+//			System.out.println("   no object selected");
+//		}
+//		System.out.println("---------------------------------------------------------------------------");
+//	}
+//	public String getStatusText() {
+//		StringBuffer buffer = new StringBuffer();
+//		if (activeView!=null){
+//			buffer.append("view: ("+activeView.toString()+"), ");
+//		}else{
+//			buffer.append("view: (none), ");
+//		}
+//		if (selectedObjects==null || selectedObjects.length==0){
+//			buffer.append("selected(0): ");
+//		}else{
+//			buffer.append("selected("+selectedObjects.length+"): s[0] = ("+selectedObjects[0]+")");
+//		}
+//		return buffer.toString();
+//	}
+//	private void showStack() {
+//	StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+//	System.out.println("..... from .... "+stackTraceElements[1].toString());
+//	System.out.println("..... from .... "+stackTraceElements[2].toString());
+//	System.out.println("..... from .... "+stackTraceElements[3].toString());
+//	System.out.println("..... from .... "+stackTraceElements[4].toString());
+//}
+
 }

@@ -2,7 +2,7 @@
 
 package org.vcell.model.bngl;
 
-import org.vcell.model.rbm.RBMSymbolTable;
+import org.vcell.model.rbm.common.RBMSymbolTable;
 
 public abstract class SimpleNode implements Node {
   protected Node parent;

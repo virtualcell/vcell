@@ -87,6 +87,7 @@ public abstract class DocumentEditor extends JPanel {
 		add_new,
 		add_new_app_deterministic,
 		add_new_app_stochastic,
+		add_new_app_rulebased,
 		copy_app,
 		rename,
 		delete,
@@ -106,6 +107,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem removeAppsMenu = null;
 	private JMenuItem addNewAppDeterministicMenuItem = null;
 	private JMenuItem addNewAppStochasticMenuItem = null;
+	private JMenuItem addNewAppRulebasedMenuItem = null;
 	private JMenuItem expandAllMenuItem = null;
 	private JMenuItem collapseAllMenuItem = null;
 	private JMenuItem addNewMenuItem;
@@ -131,14 +133,17 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenu menuAppCopyAs = null;
 	private JMenuItem menuItemNonSpatialCopyStochastic = null;
 	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
+	private JMenuItem menuItemNonSpatialCopyRulebased = null;
 	
 	private JMenu menuSpatialCopyAsNonSpatial = null;
 	private JMenuItem menuItemSpatialCopyAsNonSpatialStochastic = null;
 	private JMenuItem menuItemSpatialCopyAsNonSpatialDeterministic = null;
+	private JMenuItem menuItemSpatialCopyAsNonSpatialRulebased = null;
 	private JMenu menuSpatialCopyAsSpatial = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialStochastic = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
 	private ProblemSignalling problemSignalling = null;
+	private JMenuItem menuItemSpatialCopyAsSpatialRulebased = null;
 	
 	private class ProblemSignalling {
 		private Timer timer = null;
@@ -168,7 +173,6 @@ public abstract class DocumentEditor extends JPanel {
 					rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
 					rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
 					problemSignalling.timer.stop();
-					System.out.println("Unable to flash, the number of errors or warnings did not increase.");
 					return;				// clean up and exit
 				}
 			}
@@ -176,7 +180,6 @@ public abstract class DocumentEditor extends JPanel {
 				rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
 				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), "<html>" + title + "</html>");
 				problemSignalling.timer.stop();
-				System.out.println("Done flashing.");
 				return;
 			}
 			// text
@@ -195,7 +198,7 @@ public abstract class DocumentEditor extends JPanel {
 			return timer;
 		}
 	}
-
+	
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener,TreeSelectionListener, MouseListener, IssueEventListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == expandAllMenuItem) {
@@ -233,13 +236,18 @@ public abstract class DocumentEditor extends JPanel {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_deterministic, e.getActionCommand());
 			} else if (e.getSource() == addNewAppStochasticMenuItem) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_stochastic, e.getActionCommand());
+			} else if (e.getSource() == addNewAppRulebasedMenuItem) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.add_new_app_rulebased, e.getActionCommand());
 			} else if (e.getSource() == menuItemAppCopy
 						|| e.getSource() == menuItemNonSpatialCopyStochastic
 						|| e.getSource() == menuItemNonSpatialCopyDeterministic
+						|| e.getSource() == menuItemNonSpatialCopyRulebased
 						|| e.getSource() == menuItemSpatialCopyAsNonSpatialDeterministic
 						|| e.getSource() == menuItemSpatialCopyAsNonSpatialStochastic
+						|| e.getSource() == menuItemSpatialCopyAsNonSpatialRulebased
 						|| e.getSource() == menuItemSpatialCopyAsSpatialDeterministic
-						|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic) {
+						|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic
+						|| e.getSource() == menuItemSpatialCopyAsSpatialRulebased ) {
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());	
 			} else if (e.getSource() == menuItemNewBiomodelFromApp){
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.app_new_biomodel, e.getActionCommand());
@@ -341,10 +349,17 @@ protected abstract void popupMenuActionPerformed(DocumentEditorPopupMenuAction a
 public void onSelectedObjectsChange() {
 	Object[] selectedObjects = selectionManager.getSelectedObjects();
 	setRightBottomPanelOnSelection(selectedObjects);
+//	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+//	if (documentWindow!=null){
+//		documentWindow.getWarningBar().setText(selectionManager.getStatusText());
+//	}
 }
 
 private void onActiveViewChange() {
-	selectionManager.setSelectedObjects(new Object[0]);	
+//	DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+//	if (documentWindow!=null){
+//		documentWindow.getWarningBar().setText(selectionManager.getStatusText());
+//	}
 }
 
 private void selectClickPath(MouseEvent e) {
@@ -547,8 +562,8 @@ private void treeSelectionChanged0(TreeSelectionEvent treeSelectionEvent) {
 			}
 			ActiveView activeView = new ActiveView(getSelectedSimulationContext(), folderClass, null);
 			selectionManager.setActiveView(activeView);
-			if (selectedObject instanceof SimulationContext 
-					|| selectedObject instanceof BioModel
+			if (/*selectedObject instanceof SimulationContext 
+					|| */ selectedObject instanceof BioModel
 					|| selectedObject instanceof MathModel) { 
 				selectionManager.setSelectedObjects(new Object[]{selectedObject});
 			}
@@ -627,6 +642,8 @@ private void construcutPopupMenu() {
 			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE
 				) {
 				bAddNew = (selectedPaths.length == 1);
@@ -649,8 +666,11 @@ private void construcutPopupMenu() {
 			addNewAppDeterministicMenuItem.addActionListener(eventHandler);
 			addNewAppStochasticMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 			addNewAppStochasticMenuItem.addActionListener(eventHandler);
+			addNewAppRulebasedMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+			addNewAppRulebasedMenuItem.addActionListener(eventHandler);
 			addNewAppMenu.add(addNewAppDeterministicMenuItem);
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
+			addNewAppMenu.add(addNewAppRulebasedMenuItem);
 		}
 		popupMenu.add(addNewAppMenu);
 	}
@@ -703,9 +723,14 @@ private void construcutPopupMenu() {
 					menuItemNonSpatialCopyDeterministic = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 					menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
 					menuItemNonSpatialCopyDeterministic.addActionListener(eventHandler); 
+
+					menuItemNonSpatialCopyRulebased = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+					menuItemNonSpatialCopyRulebased.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION);
+					menuItemNonSpatialCopyRulebased.addActionListener(eventHandler); 
 				}
 				menuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
 				menuAppCopyAs.add(menuItemNonSpatialCopyStochastic);
+				menuAppCopyAs.add(menuItemNonSpatialCopyRulebased);
 			} else {
 				if (menuSpatialCopyAsNonSpatial == null) {
 					menuSpatialCopyAsNonSpatial = new JMenu(GuiConstants.MENU_TEXT_NON_SPATIAL_APPLICATION);
@@ -715,8 +740,12 @@ private void construcutPopupMenu() {
 					menuItemSpatialCopyAsNonSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 					menuItemSpatialCopyAsNonSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION);
 					menuItemSpatialCopyAsNonSpatialStochastic.addActionListener(eventHandler);
+					menuItemSpatialCopyAsNonSpatialRulebased = new JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialRulebased.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_RULEBASED_APPLICATION);
+					menuItemSpatialCopyAsNonSpatialRulebased.addActionListener(eventHandler);
 					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialDeterministic);
 					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialStochastic);
+					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsNonSpatialRulebased);
 					
 					menuSpatialCopyAsSpatial = new JMenu(GuiConstants.MENU_TEXT_SPATIAL_APPLICATION);
 					menuItemSpatialCopyAsSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
@@ -725,8 +754,12 @@ private void construcutPopupMenu() {
 					menuItemSpatialCopyAsSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 					menuItemSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
 					menuItemSpatialCopyAsSpatialStochastic.addActionListener(eventHandler);
+					menuItemSpatialCopyAsSpatialRulebased = new JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+					menuItemSpatialCopyAsSpatialRulebased.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION);
+					menuItemSpatialCopyAsSpatialRulebased.addActionListener(eventHandler);
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialDeterministic);
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialStochastic);
+					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsSpatialRulebased);
 				}
 				menuAppCopyAs.add(menuSpatialCopyAsNonSpatial);
 				menuAppCopyAs.add(menuSpatialCopyAsSpatial);
@@ -781,3 +814,41 @@ public void updateConnectionStatus(ConnectionStatus newValue) {
 }
 public SelectionManager getSelectionManager() { return selectionManager; }
 }
+
+//
+//how to obtain the main frame from anywhere in the code 
+//
+//		Container previousParent = null;
+//		Container parent = getParent();
+//		while(parent != null) {
+//			previousParent = parent;
+//			parent = parent.getParent();
+//		}
+//		if(previousParent != null && previousParent instanceof DocumentWindow) {
+//			DocumentWindow mainFrame = (DocumentWindow)previousParent;
+//			JLabel warningBar = mainFrame.getWarningBar();	// a label on the Status Bar of the application window
+//			warningBar.setText(text);
+//			warningBar.setIcon(icon);
+//			// the thread will change the icon and the text after a few seconds
+//			Runnable r = new CleanupThread(mainFrame);
+//			new Thread(r).start();
+//		}
+//		Runnable r = new CleanupThread(text);
+//		new Thread(r).start();
+//
+//	public class CleanupThread implements Runnable {
+//		private String title;
+//		public CleanupThread(String title) {
+//			this.title = title;
+//		}
+//		public void run() {
+//			try {
+//				System.out.println("in thread");
+//				Thread.sleep(2000);
+//				rightBottomTabbedPane.setIconAt(DocumentEditorTabID.problems.ordinal(), null);
+//				rightBottomTabbedPane.setTitleAt(DocumentEditorTabID.problems.ordinal(), title);
+//			} catch ( Throwable th ) {
+//				throw new RuntimeException(th);
+//			}
+//		}
+//	}

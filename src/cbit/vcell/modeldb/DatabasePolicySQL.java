@@ -96,7 +96,8 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 															(String) valueData[1],
 															version));
 	}else if (vTable instanceof ModelTable) {
-		sb.append(((ModelTable) vTable).getSQLValueList(	(cbit.vcell.model.Model) valueData[0], 
+		sb.append(((ModelTable) vTable).getSQLValueList(	(cbit.vcell.model.Model) valueData[0],
+															(String) valueData[1],
 															version));
 	}
 	if (!bSilent){

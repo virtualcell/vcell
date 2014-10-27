@@ -6,6 +6,8 @@ public interface BNGLParserVisitor
 {
   public Object visit(SimpleNode node, Object data);
   public Object visit(ASTModel node, Object data);
+  public Object visit(ASTFunctionsBlock node, Object data);
+  public Object visit(ASTFunctionDecl node, Object data);
   public Object visit(ASTParameterBlock node, Object data);
   public Object visit(ASTParameter node, Object data);
   public Object visit(ASTMolecularDefinitionBlock node, Object data);
@@ -26,4 +28,18 @@ public interface BNGLParserVisitor
   public Object visit(ASTBondState node, Object data);
   public Object visit(ASTBondExist node, Object data);
   public Object visit(ASTBondPossible node, Object data);
+  public Object visit(ASTExpression node, Object data);
+  public Object visit(ASTOrNode node, Object data);
+  public Object visit(ASTAndNode node, Object data);
+  public Object visit(ASTRelationalNode node, Object data);
+  public Object visit(ASTAddNode node, Object data);
+  public Object visit(ASTMinusTermNode node, Object data);
+  public Object visit(ASTMultNode node, Object data);
+  public Object visit(ASTInvertTermNode node, Object data);
+  public Object visit(ASTPowerNode node, Object data);
+  public Object visit(ASTNotNode node, Object data);
+  public Object visit(ASTFuncNode node, Object data);
+  public Object visit(ASTFloatNode node, Object data);
+  public Object visit(ASTIdNode node, Object data);
+  public Object visit(ASTLiteralNode node, Object data);
 }

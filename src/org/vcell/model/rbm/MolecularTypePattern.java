@@ -3,17 +3,26 @@ package org.vcell.model.rbm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Matchable;
 
-public class MolecularTypePattern extends RbmElement implements PropertyChangeListener {
+public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener {
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
+	
 	private MolecularType molecularType;
 	private List<MolecularComponentPattern> componentPatternList = new ArrayList<MolecularComponentPattern>();
 	private int index = 0; // purely for displaying purpose, since molecule can bind to itself
-
+	private Map<String,ArrayList<MolecularComponent>> processedMolecularComponentsMultiMap = new HashMap<String,ArrayList<MolecularComponent>>();
+	 
 	public MolecularTypePattern(MolecularType molecularType) {
 		this.molecularType = molecularType;
 		for (MolecularComponent mc : this.molecularType.getComponentList()) {
@@ -27,7 +36,10 @@ public class MolecularTypePattern extends RbmElement implements PropertyChangeLi
 				return mcp;
 			}
 		}
-		throw new RuntimeException("All components are added in the constructor, so here it can never be null");
+		MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+		componentPatternList.add(mcp);
+		return mcp;
+		//throw new RuntimeException("All components are added in the constructor, so here it can never be null");
 	}
 	
 	public void removeMolecularComponentPattern(MolecularComponentPattern molecularComponentPattern) {
@@ -79,7 +91,7 @@ public class MolecularTypePattern extends RbmElement implements PropertyChangeLi
 		Iterator<MolecularComponentPattern> iter = newValue.iterator();
 		while (iter.hasNext()) {
 			MolecularComponentPattern mcp = iter.next();
-			if (mcp.getBondType() == BondType.Possible && mcp.getComponentState() == null) {
+			if (mcp.getBondType() == BondType.Possible && mcp.getComponentStatePattern() == null) {
 				iter.remove();
 			}
 		}
@@ -98,5 +110,69 @@ public class MolecularTypePattern extends RbmElement implements PropertyChangeLi
 
 	public final void setIndex(int index) {
 		this.index = index;
-	}	
+	}
+
+	public MolecularComponent getFirstUnprocessedMolecularComponent(String name, MolecularComponent[] molecularComponents) {
+
+		if(molecularComponents.length == 0) {
+			return null;
+		}
+		ArrayList<MolecularComponent> processedMolecularComponents = processedMolecularComponentsMultiMap.get(name);
+		if(processedMolecularComponents == null) {
+			processedMolecularComponents = new ArrayList<MolecularComponent>();
+		}
+		for (MolecularComponent mc : molecularComponents) {
+			if(!processedMolecularComponents.contains(mc)) {
+				processedMolecularComponents.add(mc);
+				processedMolecularComponentsMultiMap.put(name, processedMolecularComponents);
+				return mc;
+			}
+		}
+		return null;
+	}
+	
+	public void ClearProcessedMolecularComponentsMultiMap() {
+		processedMolecularComponentsMultiMap.clear();
+	}
+	
+	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof MolecularTypePattern)) {
+			return false;
+		}
+		MolecularTypePattern that = (MolecularTypePattern)aThat;
+
+		if (!Compare.isEqual(molecularType, that.molecularType)){
+			return false;
+		}
+		if (!Compare.isEqual(componentPatternList, that.componentPatternList)){
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		if(componentPatternList == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is null", Issue.SEVERITY_ERROR));
+		} else if(componentPatternList.isEmpty()) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is empty", Issue.SEVERITY_INFO));
+		} else {
+//			if(!isFullyDefined()) {
+//				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is not fully defined", Issue.SEVERITY_WARNING));
+//			}
+			for (MolecularComponentPattern entity : componentPatternList) {
+				entity.gatherIssues(issueContext, issueList);
+			}
+		}			
+	}
+
+//	public String getId() {
+//		System.err.println("MolecularTypePattern id generated badly");
+//		return "MolecularTypePattern_" + hashCode();
+//	}
+	
 }

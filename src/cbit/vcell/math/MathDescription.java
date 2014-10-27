@@ -11,6 +11,7 @@
 package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,9 +31,11 @@ import org.vcell.util.Commented;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
-import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
@@ -44,6 +47,7 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.MathCompareResults.Decision;
+import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
 import cbit.vcell.math.Variable.Domain;
@@ -89,6 +93,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
 
 	private static final char NEWLINE_CHAR = '\n';
 
+	private ArrayList<ParticleMolecularType> particleMolecularTypes = new ArrayList<ParticleMolecularType>();
 	
 /**
  * MathDescription constructor comment.
@@ -303,7 +308,13 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqual(eventList, mathDesc.eventList)) {
 		return false;
 	}
-	
+	//
+	// compare particleMolecularTypes
+	//
+	if (!Compare.isEqual(particleMolecularTypes, mathDesc.particleMolecularTypes)) {
+		return false;
+	}
+
 	if (!Compare.isEqualOrNull(postProcessingBlock, mathDesc.postProcessingBlock)) {
 		return false;
 	}
@@ -1540,6 +1551,19 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	addVariablesOfType(StochVolVariable.class,buffer, false);
 	addVariablesOfType(VolumeParticleVariable.class,buffer, false);
 	addVariablesOfType(MembraneParticleVariable.class,buffer, false);
+	// ParticleMolecularType
+	boolean bSpaceNeeded = false;
+	for (ParticleMolecularType particleMolecularType : particleMolecularTypes){
+		buffer.append(particleMolecularType.getVCML());
+		bSpaceNeeded = true;
+	}
+	if (bSpaceNeeded){
+		buffer.append("\n");
+		bSpaceNeeded = false;
+	}
+
+	addVariablesOfType(ParticleSpeciesPattern.class,buffer, false);
+	addVariablesOfType(ParticleObservable.class,buffer, false);
 	addVariablesOfType(Function.class,buffer, true);
 	addVariablesOfType(RandomVariable.class,buffer, true);
 	
@@ -1815,6 +1839,14 @@ public boolean isNonSpatialStoch() {
 	return false;	
 }
 
+
+public boolean isRuleBased(){
+	if (particleMolecularTypes.size()>0){
+		return true;
+	}
+	return false;
+}
+
 public boolean isSpatialHybrid() {
 	if (getGeometry().getDimension() == 0) {
 		return false;
@@ -1855,8 +1887,9 @@ public boolean isSpatialStoch() {
 }
 
 public boolean isValid() {
+	IssueContext issueContext = new IssueContext(ContextType.MathDescription,this,null);
 	ArrayList<Issue> issueList = new ArrayList<Issue>();
-	gatherIssues(issueList);
+	gatherIssues(issueContext, issueList);
 	if (issueList.size() > 0) {
 		setWarning(issueList.get(0).getMessage());
 	}
@@ -1866,16 +1899,17 @@ public boolean isValid() {
  * This method was created in VisualAge.
  * @return boolean
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.MathDescription, this);
 	setWarning(null);
 	if (geometry==null){
-		Issue issue = new Issue(this, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_NoGeometry, VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_1, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 
 	if(isSpatialStoch() && geometry.getDimension() != 3)
 	{
-		Issue issue = new Issue(geometry, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(geometry, issueContext, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 	
@@ -1887,7 +1921,7 @@ public void gatherIssues(List<Issue> issueList) {
 				((Constant)var).getExpression().evaluateConstant();
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
-				Issue issue = new Issue(var, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_Constant_NotANumber, VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_CONSTANT, var.getExpression().infix()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 		}
@@ -1980,13 +2014,13 @@ public void gatherIssues(List<Issue> issueList) {
 				}
 			}	
 		}catch (ExpressionBindingException e){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_ExpressionBindingException, e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_ExpressionBindingException, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);	
 		}catch (ExpressionException e){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_ExpressionException, e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_ExpressionException, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);	
 		}catch (MathException e){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_MathException, e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);	
 		}
 	}
@@ -1998,11 +2032,11 @@ public void gatherIssues(List<Issue> issueList) {
 		// Check that only 1 subdomain is defined and that it is a volumeSubdomain
 		//
 		if (subDomainList.size()!=1){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_1, Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_1, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		} else if (subDomainList.size() == 1) {
 			if (!(subDomainList.elementAt(0) instanceof CompartmentSubDomain)){
-				Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_2, Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_2, Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 			CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
@@ -2010,12 +2044,12 @@ public void gatherIssues(List<Issue> issueList) {
 			if(isNonSpatialStoch())
 			{
 				if(stochVarCount == 0) {
-					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_1, Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_1, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}	
 				if(subDomain.getJumpProcesses().size() == 0)
 				{
-					Issue issue = new Issue(this, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2, Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_StochasticModel, VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_STOCHASTIC_MODEL_2, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				//check variable initial condition
@@ -2038,9 +2072,8 @@ public void gatherIssues(List<Issue> issueList) {
 						setWarning(ex.getMessage());
 					}
 				}
-			}
-			else
-			{
+			} else if (isRuleBased()) {
+			} else {
 				// ODE model
 				//
 				// Check that all equations are ODEs 
@@ -2052,44 +2085,44 @@ public void gatherIssues(List<Issue> issueList) {
 					if (equ instanceof OdeEquation){
 						odeCount ++;
 					} else {
-						Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+						Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 								VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_3, Issue.SEVERITY_ERROR);
 						issueList.add(issue);
 					}
 				}
 				if (odeCount==0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_4, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 	
 				if (volVarCount!=odeCount){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_5, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (memVarCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (filVarCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (volRegionVarCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.VolumeRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (memRegionVarCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.MembraneRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (filRegionVarCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_CompartmentalModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_COMPARTMENT_MODEL_6, VCML.FilamentRegionVariable), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2110,7 +2143,7 @@ public void gatherIssues(List<Issue> issueList) {
 			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
 			if (subDomain instanceof CompartmentSubDomain){
 				if (geometry.getGeometrySpec().getSubVolume(subDomain.getName()) == null) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_1, subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2120,13 +2153,13 @@ public void gatherIssues(List<Issue> issueList) {
 			}else if (subDomain instanceof FilamentSubDomain){
 				filamentCount++;
 			}else{
-				Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+				Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_2, subDomain.getName()), Issue.SEVERITY_ERROR);
 				issueList.add(issue);
 			}
 		}
 		if (geometry.getGeometrySpec().getNumSubVolumes()!=compartmentCount){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 				VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_3, geometry.getGeometrySpec().getNumSubVolumes(), compartmentCount), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
@@ -2135,12 +2168,12 @@ public void gatherIssues(List<Issue> issueList) {
 //			return false;
 		}
 		if (filamentCount==0 && (filVarCount>0 || filRegionVarCount>0)){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 					VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_4, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		if (membraneCount==0 && (memVarCount>0 || memRegionVarCount>0)){
-			Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+			Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 					VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_5, Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
@@ -2153,7 +2186,7 @@ public void gatherIssues(List<Issue> issueList) {
 				if (i!=j){
 					SubDomain subDomain2 = (SubDomain)subDomainList.elementAt(j);
 					if (subDomain1.getName().equals(subDomain2.getName())){
-						Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+						Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_6, subDomain1.getName(), subDomain2.getName()), Issue.SEVERITY_ERROR);
 						issueList.add(issue);
 					}
@@ -2162,7 +2195,7 @@ public void gatherIssues(List<Issue> issueList) {
 						MembraneSubDomain memSubDomain2 = (MembraneSubDomain)subDomain2;
 						if ((memSubDomain1.getInsideCompartment()==memSubDomain2.getInsideCompartment() && memSubDomain1.getOutsideCompartment()==memSubDomain2.getOutsideCompartment()) ||
 							(memSubDomain1.getInsideCompartment()==memSubDomain2.getOutsideCompartment() && memSubDomain1.getOutsideCompartment()==memSubDomain2.getInsideCompartment())){
-							Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+							Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_7, memSubDomain1.getInsideCompartment().getName(), memSubDomain1.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
@@ -2171,7 +2204,7 @@ public void gatherIssues(List<Issue> issueList) {
 						CompartmentSubDomain compartmentSubDomain1 = (CompartmentSubDomain)subDomain1;
 						CompartmentSubDomain compartmentSubDomain2 = (CompartmentSubDomain)subDomain2;
 						if (compartmentSubDomain1.getPriority()==compartmentSubDomain2.getPriority()){
-							Issue issue = new Issue(subDomain1, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+							Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_8, compartmentSubDomain1.getName(), compartmentSubDomain2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
@@ -2188,21 +2221,21 @@ public void gatherIssues(List<Issue> issueList) {
 				BoundaryConditionType bctM = compartmentSubDomain.getBoundaryConditionXm();
 				BoundaryConditionType bctP = compartmentSubDomain.getBoundaryConditionXp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = compartmentSubDomain.getBoundaryConditionYm();
 				bctP = compartmentSubDomain.getBoundaryConditionYp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = compartmentSubDomain.getBoundaryConditionZm();
 				bctP = compartmentSubDomain.getBoundaryConditionZp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}				
@@ -2211,21 +2244,21 @@ public void gatherIssues(List<Issue> issueList) {
 				BoundaryConditionType bctM = membraneSubDomain.getBoundaryConditionXm();
 				BoundaryConditionType bctP = membraneSubDomain.getBoundaryConditionXp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Xm", "Xp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = membraneSubDomain.getBoundaryConditionYm();
 				bctP = membraneSubDomain.getBoundaryConditionYp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Ym", "Yp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				bctM = membraneSubDomain.getBoundaryConditionZm();
 				bctP = membraneSubDomain.getBoundaryConditionZp();
 				if (bctM.isPERIODIC() && !bctP.isPERIODIC() || !bctM.isPERIODIC() && bctP.isPERIODIC()) {
-					Issue issue = new Issue(subDomain, IssueCategory.MathDescription_SpatialModel_Subdomain, 
+					Issue issue = new Issue(subDomain, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_9, "Zm", "Zp", subDomain.getName()), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2248,7 +2281,7 @@ public void gatherIssues(List<Issue> issueList) {
 					//}
 				//}
 				if (regions==null){
-					Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
+					Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
 							VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_2, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2258,20 +2291,20 @@ public void gatherIssues(List<Issue> issueList) {
 						SubVolume subVolume1 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume();
 						CompartmentSubDomain compartment1 = getCompartmentSubDomain(subVolume1.getName());
 						if(compartment1 == null){
-							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry,
+							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 						SubVolume subVolume2 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
 						CompartmentSubDomain compartment2 = getCompartmentSubDomain(subVolume2.getName());
 						if(compartment2 == null){
-							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
+							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 						MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1,compartment2);
 						if (compartment2 != null && compartment1 != null && membraneSubDomain==null){
-							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
+							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
@@ -2299,7 +2332,7 @@ public void gatherIssues(List<Issue> issueList) {
 							}
 						}
 						if (!bFoundSurfaceInGeometry){
-							Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry, 
+							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
@@ -2320,7 +2353,7 @@ public void gatherIssues(List<Issue> issueList) {
 			//return false;
 		}catch (Exception e){
 			e.printStackTrace(System.out);
-			Issue issue = new Issue(geometry, IssueCategory.MathDescription_SpatialModel_Geometry,	e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,	e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}
 		//
@@ -2357,12 +2390,12 @@ public void gatherIssues(List<Issue> issueList) {
 									BoundaryConditionValue boundaryValue = ((PdeEquation)equ).getBoundaryConditionValue(membraneSubDomain.getName());
 									// if PDE variable does not have jump condition OR boundaryValue (neither or both are not allowed), its an error.  
 									if ((jumpCondition==null && boundaryValue == null) || (jumpCondition != null && boundaryValue != null)){
-										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+										Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation, 
 											VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
 										issueList.add(issue);
 									}
 									if (boundaryValue != null && (subDomain.getBoundaryConditionSpec(membraneSubDomain.getName()) == null)) {
-										Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+										Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation, 
 												VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_10A, varName, subDomain.getName(), membraneSubDomain.getName(), membraneSubDomain.getName(), subDomain.getName()), Issue.SEVERITY_ERROR);
 											issueList.add(issue);
 									}
@@ -2383,7 +2416,7 @@ public void gatherIssues(List<Issue> issueList) {
 							boolean bInsidePresent = (memSubDomain.getInsideCompartment().getEquation(volVar) instanceof PdeEquation);
 							boolean bOutsidePresent = (memSubDomain.getOutsideCompartment().getEquation(volVar) instanceof PdeEquation);
 							if (!bInsidePresent && !bOutsidePresent){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+								Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation, 
 										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_11, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);			
 							}
@@ -2391,12 +2424,12 @@ public void gatherIssues(List<Issue> issueList) {
 							// if either side is missing, then flux term should be identically zero.
 							//
 							if (!bInsidePresent && !jumpCondition.getInFluxExpression().isZero()){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation,
+								Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation,
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_12, varName, memSubDomain.getName(), memSubDomain.getInsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);	
 							}
 							if (!bOutsidePresent && !jumpCondition.getOutFluxExpression().isZero()){
-								Issue issue = new Issue(equ, IssueCategory.MathDescription_SpatialModel_Equation, 
+								Issue issue = new Issue(equ, issueContext, IssueCategory.MathDescription_SpatialModel_Equation, 
 									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_13, varName, memSubDomain.getName(), memSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
 								issueList.add(issue);	
 							}
@@ -2405,17 +2438,17 @@ public void gatherIssues(List<Issue> issueList) {
 					}
 				}
 				if (odeRefCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (steadyPdeCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, 
+					Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2442,17 +2475,17 @@ public void gatherIssues(List<Issue> issueList) {
 					}
 				}
 				if (odeRefCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+					Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_14, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (steadyPdeCount>0 && pdeRefCount>0){
-					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+					Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_15, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
 				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
-					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+					Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 						VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_16, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2466,7 +2499,7 @@ public void gatherIssues(List<Issue> issueList) {
 					if (subDomain instanceof FilamentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof OdeEquation)){
-							Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable,
+							Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
 								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_21, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
@@ -2495,7 +2528,7 @@ public void gatherIssues(List<Issue> issueList) {
 									MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain2;
 									if (membraneSubDomain.getInsideCompartment() == subDomain || membraneSubDomain.getOutsideCompartment() == subDomain){
 										if (membraneSubDomain.getJumpCondition(volRegionVar)==null){
-											Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable,
+											Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable,
 												VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_17, varName, subDomain.getName(), membraneSubDomain.getName()), Issue.SEVERITY_ERROR);
 											issueList.add(issue);											
 										}
@@ -2506,7 +2539,7 @@ public void gatherIssues(List<Issue> issueList) {
 					}
 				}
 				if (count == 0) {
-					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+					Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_18, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
@@ -2526,7 +2559,7 @@ public void gatherIssues(List<Issue> issueList) {
 					}
 				}
 				if (count == 0) {
-					Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+					Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 							VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_19, varName), Issue.SEVERITY_ERROR);
 					issueList.add(issue);					
 				}
@@ -2540,7 +2573,7 @@ public void gatherIssues(List<Issue> issueList) {
 					if (subDomain instanceof FilamentSubDomain){
 						Equation equ = subDomain.getEquation(var);
 						if (!(equ instanceof FilamentRegionEquation)){
-							Issue issue = new Issue(var, IssueCategory.MathDescription_SpatialModel_Variable, 
+							Issue issue = new Issue(var, issueContext, IssueCategory.MathDescription_SpatialModel_Variable, 
 								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_20, varName, subDomain.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);							
 						}
@@ -2550,14 +2583,14 @@ public void gatherIssues(List<Issue> issueList) {
 		}
 	}
 	if (eventList.size() > 0 && isSpatial()) {
-		Issue issue = new Issue(this, IssueCategory.MathDescription_SpatialModel, VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_22, Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_SpatialModel, VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_22, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 	for (Event event : eventList) {
 		try {
 			event.bind(this);
 		}catch (ExpressionBindingException e){
-			Issue issue = new Issue(event, IssueCategory.MathDescription_SpatialModel_Event, e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(event, issueContext, IssueCategory.MathDescription_SpatialModel_Event, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}		
 	}
@@ -2566,7 +2599,7 @@ public void gatherIssues(List<Issue> issueList) {
 		try {
 			dataGenerator.bind(this);
 		}catch (ExpressionBindingException e){
-			Issue issue = new Issue(dataGenerator, IssueCategory.MathDescription_SpatialModel_PostProcessingBlock, e.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(dataGenerator, issueContext, IssueCategory.MathDescription_SpatialModel_PostProcessingBlock, e.getMessage(), Issue.SEVERITY_ERROR);
 			issueList.add(issue);
 		}		
 	}
@@ -2833,6 +2866,37 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				varHash.addVariable(var);
 				continue;
 			}
+			if (tokenStr.equalsIgnoreCase(VCML.ParticleMolecularType))
+			{
+				tokenStr = tokens.nextToken();
+				String name = tokenStr;
+				ParticleMolecularType particleMolecularType = new ParticleMolecularType(name);
+				particleMolecularType.read(tokens);
+				addParticleMolecularType(particleMolecularType);
+				continue;
+			}
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeParticleObservable)) {
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
+				VolumeParticleObservable particle = new VolumeParticleObservable(name, domain, ObservableType.Molecules);
+				// TODO: here
+				particle.read(this, tokens, varHash);
+				varHash.addVariable(particle);
+				continue;
+			}
+			if (tokenStr.equalsIgnoreCase(VCML.VolumeParticleSpeciesPattern))
+			{
+				tokenStr = tokens.nextToken();
+				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
+				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
+				VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern(name,domain);
+				var.read(this,tokens);
+				// this is not really a variable and shouldn't be in the hash
+				// sadly the way we check consistency for compartments makes in necessary
+				varHash.addVariable(var);
+				continue;
+			}
 			if (tokenStr.equalsIgnoreCase(VCML.Function)){
 				tokenStr = tokens.nextToken();
 				Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
@@ -2943,6 +3007,13 @@ if(name.equals("ATP/ADP"))
 		throw new MathException("line #" + tokens.lineIndex() + " Exception: "+e.getMessage());
 	}	
 	fireStateChanged();
+}
+
+
+public void addParticleMolecularType(ParticleMolecularType particleMolecularType) {
+	if (!particleMolecularTypes.contains(particleMolecularType)){
+		particleMolecularTypes .add(particleMolecularType);
+	}
 }
 
 
@@ -3273,9 +3344,15 @@ public String toString() {
 }
 
 
-public String getMathType()
+public MathType getMathType()
 {
-	return isNonSpatialStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
+	if (isNonSpatialStoch() || isSpatialStoch() || isSpatialHybrid()){
+		return MathType.Stochastic;
+	} else if (isRuleBased()){
+		return MathType.RuleBased;
+	}else{
+		return MathType.Deterministic;
+	}
 }
 
 
@@ -3350,6 +3427,36 @@ public boolean hasDirichletAtMembrane() {
 				if (boundaryConditionSpec.getBoundaryConditionType().isDIRICHLET()) {
 					return true;
 				}
+			}
+		}
+	}
+	return false;
+}
+
+
+public ParticleMolecularType getParticleMolecularType(String molecularTypeName) {
+	for (ParticleMolecularType particleMolecularType : particleMolecularTypes){
+		if (particleMolecularType.getName().equals(molecularTypeName)){
+			return particleMolecularType;
+		}
+	}
+	return null;
+}
+
+public List<ParticleMolecularType> getParticleMolecularTypes() {
+	return Collections.unmodifiableList(particleMolecularTypes);
+}
+
+
+// if at least one species observable is present 
+// the solver will need a -cb flag in its command line
+public boolean hasSpeciesObservable() {
+	Enumeration<Variable> enum1 = getVariables();
+	while (enum1.hasMoreElements()){
+		Variable var = enum1.nextElement();
+		if (var instanceof ParticleObservable){
+			if(((ParticleObservable)var).getType() == ObservableType.Species) {
+				return true;
 			}
 		}
 	}

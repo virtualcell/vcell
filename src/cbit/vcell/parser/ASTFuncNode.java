@@ -148,6 +148,7 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
 }
 
   /** Bind method, identifiers bind themselves to ValueObjects */
+@Override
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	if (getFunction() == FunctionType.USERDEFINED){
 		if (symbolTable == null){

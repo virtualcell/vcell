@@ -15,12 +15,19 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Hashtable;
 
 import javax.swing.filechooser.FileFilter;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
+import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.sedml.SEDMLExporter;
+import org.vcell.solver.nfsim.NFsimSimulationOptions;
+import org.vcell.solver.nfsim.NFsimXMLWriter;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
@@ -40,11 +47,11 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 
 /**
  * Insert the type's description here.
@@ -209,6 +216,32 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						}
 						return;
 					}
+				} else if (fileFilter.equals(FileFilters.FILE_FILTER_BNGL)) {
+					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
+					StringWriter bnglStringWriter = new StringWriter();
+					PrintWriter pw = new PrintWriter(bnglStringWriter);
+					RbmNetworkGenerator.writeBngl(bioModel, pw);
+					resultString = bnglStringWriter.toString();
+					pw.close();
+					
+				} else if (fileFilter.equals(FileFilters.FILE_FILTER_NFSIM)) {
+					// TODO: get the first thing we find for now, in the future we'll need to modify ChooseFile 
+					//       to only offer the applications / simulations with bngl content
+					SimulationContext simContexts[] = bioModel.getSimulationContexts();
+					SimulationContext aSimulationContext = simContexts[0];
+					Simulation selectedSim = aSimulationContext.getSimulations(0);
+					//Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
+					SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
+					long randomSeed = 0;	// a fixed seed will allow us to run reproducible simulations
+					//long randomSeed = System.currentTimeMillis();
+					NFsimSimulationOptions nfsimSimulationOptions = new NFsimSimulationOptions();
+					// we get the data we need from the math description
+					Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions);
+					Document doc = new Document();
+					doc.setRootElement(root);
+					XMLOutputter xmlOut = new XMLOutputter();
+					resultString = xmlOut.outputString(doc);
+
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
 					Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
 					String applicationName = bioModel.getSimulationContext(chosenSimContextIndex.intValue()).getName();

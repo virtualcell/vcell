@@ -59,6 +59,9 @@ public class PropertyLoader {
 	// Smoldyn
 	public static final String smoldynExecutableProperty		= record("vcell.smoldyn.executable",RequiredFor.NOT,ValueType.EXE);
 
+	// NFSim
+	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",RequiredFor.NOT,ValueType.EXE);
+	
 	//Stoch properties
 	public static final String stochExecutableProperty		= record("vcell.stoch.executable",RequiredFor.NOT,ValueType.EXE);	
 	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",RequiredFor.NOT,ValueType.EXE);

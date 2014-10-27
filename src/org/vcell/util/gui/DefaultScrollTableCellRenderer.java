@@ -31,16 +31,14 @@ import org.vcell.util.Issue;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
-import cbit.gui.ReactionEquation;
+import cbit.gui.ModelProcessEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
-// ATTENTION: we use ScrollTableBooleanCellRenderer for check boxes inside tables
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	private static final int LEFT_ICON_MARGIN = 1;
 	public static final Color hoverColor = new Color(0xFDFCDC);
-//	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(2,4,2,4);
 	public static final Border DEFAULT_GAP = BorderFactory.createEmptyBorder(1,LEFT_ICON_MARGIN,1,1);
 	static final Border focusHighlightBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
 	public static final Color uneditableForeground = new Color(0x964B00/*0x967117*/)/*UIManager.getColor("TextField.inactiveForeground")*/;
@@ -113,17 +111,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_HTML);
-		} else if (value instanceof ReactionEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ReactionEquation)value).toString())) {
+		} else if (value instanceof ModelProcessEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ModelProcessEquation)value).toString())) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
 		}
-		
-		// 
-		// possible future development: we add some tooltip to (some) cells (example below)
-		//
-//		defaultToolTipText = getText();
-//		System.out.println(defaultToolTipText);
-//		setToolTipText(defaultToolTipText);
-		
 		if (tableModel instanceof SortTableModel) {
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
 		}
@@ -176,19 +166,4 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		renderer.setIcon(icon);
 	}
-
-//	@Override
-//	public String getToolTipText(MouseEvent event) {
-////		System.out.println("tooltip = "+super.getToolTipText()+" mouse pos = ("+event.getX()+","+event.getY()+")");
-//		if(getIcon() == null) {
-//			return null;
-//		}
-//		if (event.getX()>LEFT_ICON_MARGIN && event.getX()<(getIcon().getIconWidth()+LEFT_ICON_MARGIN)){
-////		if (getIcon().contains(event.getPoint())){
-//			return getToolTipText();
-//		}else{
-//			return null;
-//		}
-//	}
-	
 }
