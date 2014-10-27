@@ -10,6 +10,15 @@ public class ASTModel extends SimpleNode {
 	public ASTModel(BNGLParser p, int id) {
 		super(p, id);
 	}
+	
+	public boolean hasMolecularDefinitions() {
+		for (int i = 0; i < jjtGetNumChildren(); i++) {
+			if (jjtGetChild(i) instanceof ASTMolecularDefinitionBlock) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() |

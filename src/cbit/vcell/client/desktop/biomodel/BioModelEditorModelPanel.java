@@ -54,6 +54,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
@@ -65,7 +67,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
 
-import cbit.gui.ReactionEquation;
+import cbit.gui.ModelProcessEquation;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.gui.graph.GraphModel;
 import cbit.vcell.biomodel.BioModel;
@@ -87,7 +89,17 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ModelProcessDynamics;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -103,7 +115,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reaction_diagram("Reaction Diagram"),
 		reaction_table("Reactions"),
 		structure_table("Structures"),
-		species_table("Species");
+		species_table("Species"),
+		species_definitions_table("Species Types"),
+		observables_table("Observables");
 		
 		private String name = null;
 		ModelPanelTabID(String name) {
@@ -137,6 +151,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private ModelPanelTab modelPanelTabs[] = new ModelPanelTab[ModelPanelTabID.values().length]; 
 
 	private JButton newButton = null;
+	private JButton newButton2 = null;
 	private JButton newMemButton = null;
 	private JButton deleteButton = null;
 	private JButton pathwayButton = null;
@@ -146,9 +161,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private EditorScrollTable structuresTable = null;
 	private EditorScrollTable reactionsTable = null;
 	private EditorScrollTable speciesTable = null;
+	private EditorScrollTable speciesTypeTable = null;
+	private EditorScrollTable observablesTable = null;
 	private BioModelEditorStructureTableModel structureTableModel = null;
 	private BioModelEditorReactionTableModel reactionTableModel = null;
 	private BioModelEditorSpeciesTableModel speciesTableModel = null;
+	private MolecularTypeTableModel speciesTypeTableModel = null;
+	private ObservableTableModel observableTableModel = null;
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
 	private JTabbedPane tabbedPane = null;
@@ -176,7 +195,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == newButton) {
-				newButtonPressed();
+				try {
+					newButtonPressed();
+				} catch (ModelException e1) {
+					e1.printStackTrace();
+					throw new RuntimeException(e1.getMessage(), e1);
+				}
 			} else if (e.getSource() == newMemButton) {
 				newMemButtonPressed();
 			} else if (e.getSource() == deleteButton) {
@@ -187,6 +211,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				showPathwayLinks();
 			} else if (e.getSource() == editPathwayMenuItem) {
 				editPathwayLinks();
+			}
+
+			if (e.getSource() == newButton2) {
+				try {
+					newButton2Pressed();
+				} catch (ModelException e1) {
+					e1.printStackTrace();
+					throw new RuntimeException(e1.getMessage(), e1);
+				}
 			}
 		}
 
@@ -297,6 +330,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				newMemButton.setVisible(true);
 			}
 		}
+		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
+			newButton.setText("Add New Reaction");
+			newButton2.setVisible(true);
+			newButton2.setText("Add New Rule");
+		} else {
+			newButton2.setVisible(false);
+		}
 		
 		deleteButton.setEnabled(false);
 		pathwayButton.setEnabled(false);
@@ -336,6 +376,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionTableModel.setSearchText(null);
 		structureTableModel.setSearchText(null);
 		speciesTableModel.setSearchText(null);
+		speciesTypeTableModel.setSearchText(null);
+		observableTableModel.setSearchText(null);
 		
 		int selectedIndex = tabbedPane.getSelectedIndex();
 		ActiveView activeView = null;
@@ -345,6 +387,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE, ActiveViewID.structures);
 		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species);
+		} else if (selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE, ActiveViewID.species_definitions);
+		} else if (selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables);
 		} else if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE, ActiveViewID.reaction_diagram);
 //		} else if (selectedIndex == ModelPanelTabID.structure_diagram.ordinal()) {
@@ -363,6 +409,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		setTableSelections(selectedObjects, structuresTable, structureTableModel);
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
 		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
+		setTableSelections(selectedObjects, speciesTypeTable, speciesTypeTableModel);
+		setTableSelections(selectedObjects, observablesTable, observableTableModel);
 		refreshButtons();
 	}
 
@@ -386,6 +434,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	
 	private void initialize(){
 		newButton = new JButton("Add New");
+		newButton2 = new JButton("Add New Rule");
 		newMemButton = new JButton("Add New Membrane");
 		deleteButton = new JButton("Delete");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
@@ -397,12 +446,18 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable = new EditorScrollTable();
 
 		speciesTable = new EditorScrollTable();
+		speciesTypeTable = new EditorScrollTable();
+		observablesTable = new EditorScrollTable();
 		structureTableModel = new BioModelEditorStructureTableModel(structuresTable);
 		reactionTableModel = new BioModelEditorReactionTableModel(reactionsTable);
 		speciesTableModel = new BioModelEditorSpeciesTableModel(speciesTable);
+		speciesTypeTableModel = new MolecularTypeTableModel(speciesTypeTable);
+		observableTableModel = new ObservableTableModel(observablesTable);
 		structuresTable.setModel(structureTableModel);
 		reactionsTable.setModel(reactionTableModel);
 		speciesTable.setModel(speciesTableModel);
+		speciesTypeTable.setModel(speciesTypeTableModel);
+		observablesTable.setModel(observableTableModel);
 		
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
 		reactionCartoonEditorPanel.addPropertyChangeListener(eventHandler);
@@ -425,24 +480,31 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 0;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(newButton2, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(newMemButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
+		gbc.gridx = 3;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(deleteButton, gbc);
 				
 		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
+		gbc.gridx = 4;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(pathwayButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
+		gbc.gridx = 5;
 		gbc.gridy = 0;
 		gbc.weightx = 0.5;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -450,14 +512,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
+		gbc.gridx = 6;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(new JLabel("Search "), gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
+		gbc.gridx = 7;
 		gbc.gridy = 0;
 		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -473,6 +535,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		modelPanelTabs[ModelPanelTabID.species_definitions_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_definitions_table, speciesTypeTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		modelPanelTabs[ModelPanelTabID.observables_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.observables_table, observablesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
 		
@@ -487,6 +551,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		add(buttonPanel, BorderLayout.SOUTH);
 						
 		newButton.addActionListener(eventHandler);
+		newButton2.addActionListener(eventHandler);
 		newMemButton.addActionListener(eventHandler);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
@@ -497,8 +562,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
 		reactionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandler);
+		speciesTypeTable.getSelectionModel().addListSelectionListener(eventHandler);
+		observablesTable.getSelectionModel().addListSelectionListener(eventHandler);
+		
 		DefaultScrollTableCellRenderer tableRenderer = new DefaultScrollTableCellRenderer(){
-
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -509,19 +576,25 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					setText(((Structure)value).getName());
 				} else if (value instanceof Kinetics) {
 					setText(((Kinetics) value).getKineticsDescription().getDescription());
+				} else if (value instanceof RbmKineticLaw) {
+					setText(((RbmKineticLaw) value).getRateLawType().name());
 				}
 				return this;
 			}			
 		};
+		
+		RbmTableRenderer rbmTableRenderer = new RbmTableRenderer();
 		structuresTable.setDefaultRenderer(Structure.class, tableRenderer);
 		speciesTable.setDefaultRenderer(Structure.class, tableRenderer);
+		speciesTable.setDefaultRenderer(SpeciesPattern.class, rbmTableRenderer);
 		reactionsTable.setDefaultRenderer(Structure.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
+		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
+		reactionsTable.setDefaultRenderer(ModelProcessDynamics.class, tableRenderer);
 		
 		reactionCartoonEditorPanel.getReactionCartoon().addPropertyChangeListener(eventHandler);
 		
 		DefaultScrollTableCellRenderer tableCellRenderer = new DefaultScrollTableCellRenderer() {
-
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -529,8 +602,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				BioModelEntityObject bioModelEntityObject = null;
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
-					if (table.getModel() == reactionTableModel) {
-						bioModelEntityObject = reactionTableModel.getValueAt(row);
+					if (table.getModel() == reactionTableModel && reactionTableModel.getValueAt(row) instanceof BioModelEntityObject) {
+						bioModelEntityObject = (BioModelEntityObject)reactionTableModel.getValueAt(row);
 					} else if (table.getModel() == speciesTableModel){
 						bioModelEntityObject = speciesTableModel.getValueAt(row);
 					}
@@ -563,15 +636,158 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				return this;
 			}
-			
 		};
+		DefaultScrollTableCellRenderer rbmEeactionExpressionCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == reactionTableModel) {
+						selectedObject = reactionTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof ReactionRule && value instanceof ModelProcessEquation) {
+							ReactionRule rr = (ReactionRule)selectedObject;
+							String text = "<html><b>";
+							for(int i=0; i< rr.getReactantPatterns().size(); i++) {
+								ReactantPattern rp = rr.getReactantPattern(i);
+								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), false);
+								if(i<rr.getReactantPatterns().size()-1) {
+									text += "+";
+								}
+							}
+							if(rr.isReversible()) {
+								text += " &lt;-&gt; ";		// &lt;-&gt;  <->
+							} else {
+								text += " -&gt; ";
+							}
+							for(int i=0; i< rr.getProductPatterns().size(); i++) {
+								ProductPattern pp = rr.getProductPattern(i);
+								text += RbmTableRenderer.toHtml(pp.getSpeciesPattern(), false);
+								if(i<rr.getProductPatterns().size()-1) {
+									text += "+";
+								}
+							}
+							text += "</b></html>";
+							setText(text);
+						} else {					// plain reaction, check if reactants have species pattern and if yes draw them in bold
+							ReactionStep rs = (ReactionStep)selectedObject;
+							String text = "<html>";
+							int count = 0;
+							for(int i=0; i<rs.getReactionParticipants().length; i++) {
+								ReactionParticipant p = rs.getReactionParticipants(i);
+								if(p instanceof Reactant) {
+									if(p.getSpeciesContext().hasSpeciesPattern()) {
+										text += "<b>" + p.getName() + "</b>";
+									} else {
+										text += p.getName();
+									}
+								}
+								if(count < rs.getNumReactants()-1) {
+									text += " + ";
+								}
+								count++;
+							}
+							text += " -&gt; ";
+							count = 0;
+							for(int i=0; i<rs.getReactionParticipants().length; i++) {
+								ReactionParticipant p = rs.getReactionParticipants(i);
+								if(p instanceof Product) {
+									if(p.getSpeciesContext().hasSpeciesPattern()) {
+										text += "<b>" + p.getName() + "</b>";
+									} else {
+										text += p.getName();
+									}
+								}
+								if(count < rs.getNumProducts()-1) {
+									text += " + ";
+								}
+								count++;
+							}
+							text += "</html>";
+							setText(text);
+						}
+					}
+				}
+				return this;
+			}
+		};
+		DefaultScrollTableCellRenderer rbmObservablePatternCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == observableTableModel) {
+						selectedObject = observableTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof RbmObservable && value instanceof String) {
+							RbmObservable o = (RbmObservable)selectedObject;
+							String text = "<html>";
+							for(int i=0; i<o.getSpeciesPatternList().size(); i++) {
+								SpeciesPattern sp = o.getSpeciesPattern(i);
+								text += RbmTableRenderer.toHtml(sp, false);
+								if(i<o.getSpeciesPatternList().size()-1) {
+									text += " ";
+								}
+							}
+							text += "</html>";
+							setText(text);
+						}
+					}
+				}
+				return this;
+			}
+		};
+		DefaultScrollTableCellRenderer rbmSpeciesNameCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == speciesTableModel) {
+						selectedObject = speciesTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof SpeciesContext) {
+							SpeciesContext sc = (SpeciesContext)selectedObject;
+							String text = "<html>";
+							if(sc.hasSpeciesPattern()) {
+								text += "<b>" + sc.getName() + "</b>";
+							} else {
+								text += sc.getName();
+							}
+							text += "</html>";
+							setText(text);
+						}
+					}
+				}
+				return this;
+			}
+		};
+		
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);
 		speciesTable.addMouseListener(eventHandler);
 		speciesTable.addKeyListener(eventHandler);
+		speciesTypeTable.addMouseListener(eventHandler);
+		speciesTypeTable.addKeyListener(eventHandler);
+		observablesTable.addMouseListener(eventHandler);
+		observablesTable.addKeyListener(eventHandler);
 		structuresTable.addKeyListener(eventHandler);
 	}
 	
@@ -600,11 +816,23 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
-	private void newButtonPressed() {
+	private void newButtonPressed() throws ModelException {
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == speciesTable) {
 			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+		} else if (currentSelectedTable == speciesTypeTable) {
+			if(bioModel.getModel().getRbmModelContainer() != null) {
+				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
+				bioModel.getModel().getRbmModelContainer().addMolecularType(mt);
+				newObject = mt;
+			}
+		} else if (currentSelectedTable == observablesTable) {
+			if(bioModel.getModel().getRbmModelContainer() != null) {
+				RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
+				bioModel.getModel().getRbmModelContainer().addObservable(o);
+				newObject = o;
+			}
 		} else if (currentSelectedTable == structuresTable) {
 			try {
 				Feature feature = bioModel.getModel().createFeature();
@@ -619,6 +847,29 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				newObject = reactionStep;
 			} else {
 				addNewReaction();
+			}
+		}
+		if (newObject != null) {
+			for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+				if (currentSelectedTableModel.getValueAt(i) == newObject) {
+					currentSelectedTable.setRowSelectionInterval(i, i);
+					break;
+				}
+			}
+		}
+	}
+	private void newButton2Pressed() throws ModelException {
+		computeCurrentSelectedTable();
+		Object newObject = null;
+		if (currentSelectedTable == reactionsTable) {
+			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule();
+			if(rr != null) {
+				rr.setReversible(false);
+				rr.setStructure(bioModel.getModel().getStructure(0));
+				bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
+				newObject = rr;
+			} else {
+				throw new RuntimeException("Reaction Rule is null");
 			}
 		}
 		if (newObject != null) {
@@ -676,6 +927,25 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 						}
 					}
+				} else if (currentSelectedTable == speciesTypeTable) {
+					// TODO: delete stuff
+					for (int r : rows) {
+						if (r < speciesTypeTableModel.getRowCount()) {
+							MolecularType mt = speciesTypeTableModel.getValueAt(r);
+							if (mt != null) {
+								deleteList.add(mt);
+							}
+						}
+					}
+				} else if (currentSelectedTable == observablesTable) {
+					for (int r : rows) {
+						if (r < observableTableModel.getRowCount()) {
+							RbmObservable o = observableTableModel.getValueAt(r);
+							if (o != null) {
+								deleteList.add(o);
+							}
+						}
+					}
 				} else if (currentSelectedTable == structuresTable) {
 					for (int r : rows) {
 						if (r < structureTableModel.getRowCount()) {
@@ -688,7 +958,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				} else if (currentSelectedTable == reactionsTable) {
 					for (int r : rows) {
 						if (r < reactionTableModel.getRowCount()) {
-							ReactionStep reaction = reactionTableModel.getValueAt(r);
+							ModelProcess reaction = reactionTableModel.getValueAt(r);
 							if (reaction != null) {
 								deleteList.add(reaction);
 							}
@@ -703,12 +973,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			for (Object object : deleteList) {
 				if (object instanceof SpeciesContext) {
 					deleteListText.append("Species\t'" + ((SpeciesContext)object).getName() + "'\n");
+				} else if (object instanceof MolecularType) {
+					deleteListText.append("Species type\t'" + ((MolecularType)object).getName() + "'\n");
+				} else if (object instanceof RbmObservable) {
+					deleteListText.append("Observable\t'" + ((RbmObservable)object).getName() + "'\n");
 				} else if (object instanceof ReactionStep) {
 					deleteListText.append("Reaction\t'" + ((ReactionStep)object).getName() + "'\n");
+				} else if (object instanceof ReactionRule) {
+					deleteListText.append("Reaction rule\t'" + ((ReactionRule)object).getName() + "'\n");
 				} else if (object instanceof Structure) {
 					deleteListText.append("Structure\t'" + ((Structure)object).getName() + "'\n");
 				}
 			}
+			// TODO: once we display reaction rules in the carton editor panel we'll have to change the way we delete reaction rules
 			if(deleteList.get(0) instanceof SpeciesContext || deleteList.get(0) instanceof ReactionStep){
 				try{
 					ArrayList<SpeciesContext> speciesContextArrList = new ArrayList<SpeciesContext>();
@@ -733,14 +1010,27 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					return;
 				}
 				for (Object object : deleteList) {
-					bioModel.getModel().removeObject(object);
+					if(object instanceof ReactionRule) {
+						ReactionRule rr = (ReactionRule)object;
+						bioModel.getModel().getRbmModelContainer().removeReactionRule(rr);
+					} else if(object instanceof MolecularType) {
+						MolecularType mt = (MolecularType)object;
+						if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(mt)) {
+							throw new RuntimeException("Species type '" + mt + "' cannot be deleted because it's already being used.");
+						}
+						bioModel.getModel().getRbmModelContainer().removeMolecularType(mt);
+					} else if(object instanceof RbmObservable) {
+						RbmObservable o = (RbmObservable)object;
+						bioModel.getModel().getRbmModelContainer().removeObservable(o);
+					} else {
+						bioModel.getModel().removeObject(object);
+					}
 				}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
-			
 	}
 	
 	private void bioModelChange() {
@@ -757,8 +1047,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);
 		speciesTableModel.setBioModel(bioModel);
+		speciesTypeTableModel.setBioModel(bioModel);
+		observableTableModel.setBioModel(bioModel);
 	}
-
+	
 	private JTable currentSelectedTable = null;
 	private BioModelEditorRightSideTableModel<?> currentSelectedTableModel = null;
 	private void computeCurrentSelectedTable() {
@@ -774,6 +1066,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
+		} else if (selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
+			currentSelectedTable = speciesTypeTable;
+			currentSelectedTableModel = speciesTypeTableModel;
+		} else if (selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
+			currentSelectedTable = observablesTable;
+			currentSelectedTableModel = observableTableModel;
 		}
 	}
 	
@@ -870,6 +1168,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		case SPECIES_NODE:
 			selectTab(ModelPanelTabID.species_table);
 			break;
+		case SPECIES_TYPES_NODE:
+			selectTab(ModelPanelTabID.species_definitions_table);
+			break;
+		case OBSERVABLES_NODE:
+			selectTab(ModelPanelTabID.observables_table);
+			break;
 		case REACTION_DIAGRAM_NODE:
 			selectTab(ModelPanelTabID.reaction_diagram);
 			break;
@@ -884,6 +1188,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		super.setIssueManager(issueManager);
 		reactionTableModel.setIssueManager(issueManager);
 		speciesTableModel.setIssueManager(issueManager);
+		speciesTypeTableModel.setIssueManager(issueManager);
+		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
 	}
 
@@ -1039,7 +1345,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				dataModel.addElement(s);
 			}
 			structureComboBox.setModel(dataModel);
-			nameTextField.setText(model.getFreeReactionName());
+			nameTextField.setText(model.getReactionName());
 			equationTextField.setSymbolTable(model);
 			equationTextField.setText(null);
 		}
@@ -1076,7 +1382,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						throw new RuntimeException("Reaction '" + reactionName + "' already exists.");
 					}
 					ReactionStep simpleReaction = new SimpleReaction(model, reactionStructure, "dummy");
-					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(simpleReaction, getModel(), equationString);
+					ReactionParticipant[] rpArray = ModelProcessEquation.parseReaction(simpleReaction, getModel(), equationString);
 //					StructureTopology structTopology = getModel().getStructureTopology();
 //					for (ReactionParticipant reactionParticipant : rpArray) {
 //						if (reactionParticipant.getStructure() == reactionStructure) {

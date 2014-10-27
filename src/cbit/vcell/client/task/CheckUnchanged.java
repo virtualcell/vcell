@@ -15,7 +15,7 @@ import java.util.Hashtable;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.client.DocumentWindowManager;
@@ -51,7 +51,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 //	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
-	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocument.MATHMODEL_DOC) {
+	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocumentType.MATHMODEL_DOC) {
 		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {
 			String msg = "Changes have been made in VCML Editor, please click \"Apply Changes\" or \"Cancel\" to proceed.";
 			PopupGenerator.showErrorDialog(documentWindowManager, msg);

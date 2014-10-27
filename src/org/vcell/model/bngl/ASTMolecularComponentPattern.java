@@ -3,7 +3,7 @@
 package org.vcell.model.bngl;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.RBMSymbolTable;
+import org.vcell.model.rbm.common.RBMSymbolTable;
 
 public class ASTMolecularComponentPattern extends SimpleNode {
 	public String name;

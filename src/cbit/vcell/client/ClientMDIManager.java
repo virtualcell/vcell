@@ -31,6 +31,7 @@ import javax.swing.RootPaneContainer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.GlassPane;
@@ -164,16 +165,16 @@ public int closeWindow(String windowID) {
 public static String createCanonicalTitle(VCDocument vcDocument) {
 	
 	Version version = vcDocument.getVersion();
-	int docType = vcDocument.getDocumentType();
+	VCDocumentType docType = vcDocument.getDocumentType();
 	String docName = (version != null?version.getName():(vcDocument.getName()==null?"NoName":vcDocument.getName()+" (NoVersion)"));
 	java.util.Date docDate = (version != null?version.getDate():null);
 	VersionFlag versionFlag = (version != null?version.getFlag():null);
 	String title = 
 		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Archived)? "("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.ARCHIVE]+") ":"")+
 		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Published)?"("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.PUBLISH]+") ":"")+
-		(docType == VCDocument.BIOMODEL_DOC?"BIOMODEL: ":"")+
-		(docType == VCDocument.MATHMODEL_DOC?"MATHMODEL: ":"")+
-		(docType == VCDocument.GEOMETRY_DOC?"GEOMETRY: ":"")+
+		(docType == VCDocumentType.BIOMODEL_DOC?"BIOMODEL: ":"")+
+		(docType == VCDocumentType.MATHMODEL_DOC?"MATHMODEL: ":"")+
+		(docType == VCDocumentType.GEOMETRY_DOC?"GEOMETRY: ":"")+
 		docName+" "+
 		"("+(docDate != null?docDate.toString():"NoDate")+")";
 	title +=  " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";

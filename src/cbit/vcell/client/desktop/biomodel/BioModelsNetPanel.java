@@ -51,7 +51,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.ExternalDocInfo;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
@@ -196,20 +196,20 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
 				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
 				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetInfo.getId());
-				XMLInfo xmlInfo = new XMLInfo(bioModelSBML, bioModelsNetInfo.getName());
-				if (xmlInfo != null) {
-					hashTable.put("xmlInfo", xmlInfo);
+				ExternalDocInfo externalDocInfo = new ExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
+				if (externalDocInfo != null) {
+					hashTable.put("externalDocInfo", externalDocInfo);
 				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("Opening",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				XMLInfo xmlInfo = (XMLInfo) hashTable.get("xmlInfo");
-				if (xmlInfo == null) {
+				ExternalDocInfo externalDocInfo = (ExternalDocInfo) hashTable.get("externalDocInfo");
+				if (externalDocInfo == null) {
 					return;
 				}
-				documentWindowManager.getRequestManager().openDocument(xmlInfo, documentWindowManager, true);
+				documentWindowManager.getRequestManager().openDocument(externalDocInfo, documentWindowManager, true);
 			}
 		};
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);

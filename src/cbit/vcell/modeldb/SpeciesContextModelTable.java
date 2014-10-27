@@ -9,8 +9,10 @@
  */
 
 package cbit.vcell.modeldb;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
 import cbit.sql.*;
@@ -29,8 +31,9 @@ public class SpeciesContextModelTable extends cbit.sql.Table {
 	//public final Field diffRate		= new Field("diffRate",		"varchar(255)",	"NOT NULL");
 	//public final Field initCond		= new Field("initCond",		"varchar(255)",	"NOT NULL");
 	public final Field hasOverride	= new Field("hasOverride",	"varchar2(1)",	"NOT NULL");// 'T' or 'F'
-
-	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride};
+	public final Field speciesPattern=new Field("speciesPattern","varchar2(255)","");
+	
+	private final Field fields[] = {modelRef,speciesRef,structRef,name,/*diffRate,initCond,*/hasOverride,speciesPattern};
 	
 	public static final SpeciesContextModelTable table = new SpeciesContextModelTable();
 	//
@@ -56,9 +59,16 @@ public SpeciesContext getSpeciesContext(java.sql.ResultSet rset, SessionLog log,
 	//try {
 		String nameStr = rset.getString(name.toString());
 		
+		String speciesPattern = rset.getString(table.speciesPattern.getUnqualifiedColName());
+		if(rset.wasNull()){
+			speciesPattern = null;
+		}else{
+			speciesPattern = TokenMangler.getSQLRestoredString(speciesPattern);
+		}
 		SpeciesContext speciesContext = null;
 		//try {
 			speciesContext = new SpeciesContext(keyValue,nameStr,null,null);
+			speciesContext.setSpeciesPatternString(speciesPattern);
 			//speciesContext.setInitialValue(initValueExp.evaluateConstant());
 			//speciesContext.setDiffusionRate(diffValueExp.evaluateConstant());
 			return speciesContext;
@@ -84,7 +94,10 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, SpeciesContext
 	int defaultCharge = 0;
 	KeyValue speciesKey = hash.getDatabaseKey(speciesContext.getSpecies());
 	KeyValue structureKey = hash.getDatabaseKey(speciesContext.getStructure());
-	
+	String speciesPattern = "NULL";
+	if(speciesContext.getSpeciesPattern()!=null){
+		speciesPattern = TokenMangler.getSQLEscapedString(speciesContext.getSpeciesPattern().toString());
+	}
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("(");
 	buffer.append(key+",");
@@ -94,7 +107,8 @@ public String getSQLValueList(InsertHashtable hash, KeyValue key, SpeciesContext
 	buffer.append("'"+speciesContext.getName()+"',");
 	//buffer.append("'"+speciesContext.getDiffusionRate()+"'" + ",");
 	//buffer.append("'"+speciesContext.getInitialValue()+"'" + ",");
-	buffer.append("'"+OVERRIDE_TRUE+"'");
+	buffer.append("'"+OVERRIDE_TRUE+"',");
+	buffer.append("'"+speciesPattern+"'");
 	buffer.append(")");
 
 	return buffer.toString();

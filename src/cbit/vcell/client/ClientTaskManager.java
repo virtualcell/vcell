@@ -41,14 +41,14 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class ClientTaskManager {
-	public static AsynchClientTask[] newApplication(final BioModel bioModel, final boolean isStoch) {		
+	public static AsynchClientTask[] newApplication(final BioModel bioModel, final boolean isStoch, final boolean isRuleBased) {		
 		
 		AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				String newApplicationName = bioModel.getFreeSimulationContextName();
-				SimulationContext newSimulationContext = bioModel.addNewSimulationContext(newApplicationName, isStoch);
+				SimulationContext newSimulationContext = bioModel.addNewSimulationContext(newApplicationName, isStoch, isRuleBased);
 				hashTable.put("newSimulationContext", newSimulationContext);
 			}
 		};
@@ -63,7 +63,7 @@ public class ClientTaskManager {
 		return new AsynchClientTask[] {task0, task1};
 	}
 
-	public static AsynchClientTask[] copyApplication(final JComponent requester, final BioModel bioModel, final SimulationContext simulationContext, final boolean bSpatial, final boolean bStochastic) {	
+	public static AsynchClientTask[] copyApplication(final JComponent requester, final BioModel bioModel, final SimulationContext simulationContext, final boolean bSpatial, final boolean bStochastic, final boolean bRuleBased) {	
 		//get valid application name
 		String newApplicationName = null;
 		String baseName = "Copy of " + simulationContext.getName();
@@ -85,7 +85,7 @@ public class ClientTaskManager {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, bStochastic);
+				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, bStochastic, bRuleBased);
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
 					newSimulationContext.refreshMathDescription();
@@ -123,12 +123,12 @@ public class ClientTaskManager {
 		return new AsynchClientTask[] { task1, task2};			
 	}
 
-	public static SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
+	public static SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch, boolean bRuleBased) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
 		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
 		newClonedGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
 		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
-		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch);
+		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch, bRuleBased);
 		if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
 		{
 			try {

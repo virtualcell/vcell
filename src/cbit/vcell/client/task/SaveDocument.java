@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.task;
 import java.util.Hashtable;
+
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
@@ -61,7 +62,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	}
 	VCDocument savedDocument = null;
 	switch (currentDocument.getDocumentType()) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			if (bAsNew) {
 //				Substitute Field Func Names-----
 				VersionableTypeVersion originalVersionableTypeVersion = null;
@@ -80,7 +81,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			}
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			if (bAsNew) {
 //				Substitute Field Func Names-----
 				VersionableTypeVersion originalVersionableTypeVersion =
@@ -100,13 +101,16 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			}
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			if (bAsNew) {
 				savedDocument = documentManager.saveAsNew((Geometry)currentDocument, newName);
 			} else {
 				savedDocument = documentManager.save((Geometry)currentDocument);
 			}
 			break;
+		}
+		default:{
+			throw new RuntimeException("unexpected document type "+currentDocument.getDocumentType().name());
 		}
 	}
 	documentWindowManager.prepareDocumentToLoad(savedDocument, false);

@@ -21,6 +21,7 @@ public interface SimDataConstants {
 	
 	public static final String ODE_DATA_IDENTIFIER = "ODEData logfile";
 	public static final String IDA_DATA_IDENTIFIER = "IDAData logfile";
+	public static final String NFSIM_DATA_IDENTIFIER = "NFSimData logfile";
 	public static final String NETCDF_DATA_IDENTIFIER = "NetCDFData logfile";//stoch
 	public static final String SIMPLE_ODE_DATA_FORMAT_ID = "SimpleODEData binary format version 1";
 	public static final String GENERIC_ODE_DATA_FORMAT_ID = "GenericODEData binary format version 1";
@@ -68,6 +69,10 @@ public interface SimDataConstants {
 	public static final int ODE_DATA = 1;
 	public static final int PARTICLE_DATA = 2;
 	public static final int STOCH_DATA = 3; //stoch
+	
+	public static final String NFSIM_INPUT_FILE_EXTENSION = ".nfsimInput";
+	public static final String NFSIM_OUTPUT_FILE_EXTENSION = ".gdat";
+	public static final String NFSIM_OUTPUT_LOG_EXTENSION = ".log";
 	
 	public static final String SMOLDYN_INPUT_FILE_EXTENSION = ".smoldynInput";
 	public static final String SMOLDYN_OUTPUT_FILE_EXTENSION = ".smoldynOutput";

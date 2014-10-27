@@ -15,13 +15,10 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Hashtable;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
 
 import org.vcell.util.gui.DialogUtils;
@@ -31,7 +28,7 @@ import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebSe
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.ExternalDocInfo;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
@@ -89,20 +86,20 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
 				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
 				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetModelInfo.getId());
-				XMLInfo xmlInfo = new XMLInfo(bioModelSBML, bioModelsNetModelInfo.getName());
-				if (xmlInfo != null) {
-					hashTable.put("xmlInfo", xmlInfo);
+				ExternalDocInfo externalDocInfo = new ExternalDocInfo(bioModelSBML, bioModelsNetModelInfo.getName());
+				if (externalDocInfo != null) {
+					hashTable.put("externalDocInfo", externalDocInfo);
 				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("Opening",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				XMLInfo xmlInfo = (XMLInfo) hashTable.get("xmlInfo");
-				if (xmlInfo == null) {
+				ExternalDocInfo externalDocInfo = (ExternalDocInfo) hashTable.get("externalDocInfo");
+				if (externalDocInfo == null) {
 					return;
 				}
-				documentWindowManager.getRequestManager().openDocument(xmlInfo, documentWindowManager, true);
+				documentWindowManager.getRequestManager().openDocument(externalDocInfo, documentWindowManager, true);
 			}
 		};
 		ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);

@@ -25,6 +25,7 @@ import javax.swing.JCheckBox;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.vcell.solver.nfsim.NFSimSimulationOptionsPanel;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -67,6 +68,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private OutputOptionsPanel ivjOutputOptionsPanel = null;
 	private StochSimOptionsPanel stochSimOptionsPanel = null;
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
+	private NFSimSimulationOptionsPanel nfsimSimulationOptionsPanel = null;
 	private SundialsSolverOptionsPanel sundialsSolverOptionsPanel = null;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -389,6 +391,17 @@ private StochSimOptionsPanel getStochSimOptionsPanel() {
 		}
 	}
 	return stochSimOptionsPanel;
+}
+
+private NFSimSimulationOptionsPanel getNFSimSimulationOptionsPanel() {
+	if (nfsimSimulationOptionsPanel == null) {
+		try {
+			nfsimSimulationOptionsPanel = new NFSimSimulationOptionsPanel();
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return nfsimSimulationOptionsPanel;
 }
 
 private SmoldynSimulationOptionsPanel getSmoldynSimulationOptionsPanel() {
@@ -734,6 +747,15 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getNFSimSimulationOptionsPanel(), gbc);
+		
+		gridy ++;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
 				
 		gridy ++;
@@ -841,6 +863,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getTimeStepPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getErrorTolerancePanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getNFSimSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSundialsSolverOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);

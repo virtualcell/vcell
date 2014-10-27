@@ -15,27 +15,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.gui.ReactionEquation;
+import cbit.gui.ModelProcessEquation;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ModelProcessDynamics;
+import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
-public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ReactionStep> {	
+public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ModelProcess> {	
 	public final static int COLUMN_EQUATION = 0;
 	public final static int COLUMN_LINK = 1;
 	public final static int COLUMN_NAME = 2;
@@ -58,45 +65,46 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				return BioPaxObject.class;
 			}
 			case COLUMN_EQUATION:{
-				return ReactionEquation.class;
+				return ModelProcessEquation.class;
 			}
 			case COLUMN_STRUCTURE:{
 				return Structure.class;
 			}
 			case COLUMN_KINETICS:
-				return Kinetics.class;
+				return ModelProcessDynamics.class;
 		}
 		return Object.class;
 	}
 
-	protected ArrayList<ReactionStep> computeData() {
-		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
+	protected ArrayList<ModelProcess> computeData() {
+		ArrayList<ModelProcess> processList = new ArrayList<ModelProcess>();
 		if (getModel() != null){
+			ModelProcess[] modelProcesses = getModel().getModelProcesses();
 			if (searchText == null || searchText.length() == 0) {
-				reactionStepList.addAll(Arrays.asList(getModel().getReactionSteps()));
+				processList.addAll(Arrays.asList(modelProcesses));
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();	
-				for (ReactionStep rs : getModel().getReactionSteps()){
+				for (ModelProcess process : modelProcesses){
 					boolean bMatchRelationshipObj = false;
-					HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(rs);
-					for(RelationshipObject relObj:relObjsHash){
-						if(relObj.getBioPaxObject() instanceof Entity){
-							if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
-								bMatchRelationshipObj = true;
-								break;
+					if (process instanceof ReactionStep){
+						ReactionStep reactionStep = (ReactionStep)process;
+						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
+						for(RelationshipObject relObj:relObjsHash){
+							if(relObj.getBioPaxObject() instanceof Entity){
+								if(((Entity)relObj.getBioPaxObject()).getName().get(0).toLowerCase().contains(lowerCaseSearchText)){
+									bMatchRelationshipObj = true;
+									break;
+								}
 							}
 						}
 					}
-					if (bMatchRelationshipObj || rs.getName().toLowerCase().contains(lowerCaseSearchText)
-						|| new ReactionEquation(rs, bioModel.getModel()).toString().toLowerCase().contains(lowerCaseSearchText)
-						|| rs.getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
-						|| rs.getKinetics().getKineticsDescription().getDescription().toLowerCase().contains(lowerCaseSearchText)) {
-						reactionStepList.add(rs);
+					if (bMatchRelationshipObj || process.containsSearchText(lowerCaseSearchText)){
+						processList.add(process);
 					}
 				}
 			}
 		}
-		return reactionStepList;
+		return processList;
 	}
 
 	public Object getValueAt(int row, int column) {
@@ -104,31 +112,34 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return null;
 		}
 		try{
-			ReactionStep reactionStep = getValueAt(row);
-			if (reactionStep != null) {
+			ModelProcess process = getValueAt(row);
+			if (process != null) {
 				switch (column) {
 					case COLUMN_NAME: {
-						return reactionStep.getName();
+						return process.getName();
 					} 
 					case COLUMN_LINK: {
-						HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
-						if(relObjsHash != null && relObjsHash.size() > 0){
-							return relObjsHash.iterator().next().getBioPaxObject();
+						if (process instanceof ReactionStep){
+							ReactionStep reactionStep = (ReactionStep)process;
+							HashSet<RelationshipObject> relObjsHash = bioModel.getRelationshipModel().getRelationshipObjects(reactionStep);
+							if(relObjsHash != null && relObjsHash.size() > 0){
+								return relObjsHash.iterator().next().getBioPaxObject();
+							}
 						}
 						return null;
 					} 
 					case COLUMN_EQUATION: {
-						return new ReactionEquation(reactionStep, bioModel.getModel());
+						return new ModelProcessEquation(process, bioModel.getModel());
 					} 
 					case COLUMN_STRUCTURE: {
-						return reactionStep.getStructure();
+						return process.getStructure();
 					} 
 					case COLUMN_KINETICS:
-						return reactionStep.getKinetics();
+						return process.getDynamics();
 				}
 			} else {
 				if (column == COLUMN_EQUATION) {
-					return new ReactionEquation(null, bioModel.getModel());
+					return new ModelProcessEquation(null, bioModel.getModel());
 				} 
 			}
 			return null;
@@ -143,8 +154,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		if (bioModel == null) {
 			return false;
 		}
-		ReactionStep rs = getValueAt(row);
-		if (column == COLUMN_NAME && rs != null) {
+		ModelProcess process = getValueAt(row);
+		if (column == COLUMN_NAME && process != null) {
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
@@ -181,6 +192,30 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 				fireTableRowsUpdated(changeRow, changeRow);
 			}
 		}
+//		if (evt.getSource() == bioModel.getModel().getRbmModelContainer()) {
+		if (evt.getSource() == bioModel.getModel()) {
+			if (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)) {
+				List<ReactionRule> oldValue = (List<ReactionRule>) evt.getOldValue();
+				if (oldValue != null) {
+					for (ReactionRule rs : oldValue) {
+						rs.removePropertyChangeListener(this);
+					}
+				}
+				List<ReactionRule> newValue = (List<ReactionRule>)  evt.getNewValue();
+				if (newValue != null) {
+					for (ReactionRule rs : newValue) {
+						rs.addPropertyChangeListener(this);
+					}
+				}
+				refreshData();
+			}
+		} else if (evt.getSource() instanceof ReactionRule) {
+			ReactionRule reactionRule = (ReactionRule) evt.getSource();
+			int changeRow = getRowIndex(reactionRule);
+			if (changeRow >= 0) {
+				fireTableRowsUpdated(changeRow, changeRow);
+			}
+		}
 	}
 	
 	public void setValueAt(Object value, int row, int column) {
@@ -188,31 +223,49 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return;
 		}
 		try{
-			ReactionStep reactionStep = getValueAt(row);
-			if (reactionStep != null) {
+			ModelProcess modelProcess = getValueAt(row);
+			if (modelProcess != null) {
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = ((String)value);
 					inputValue = inputValue.trim();
-					reactionStep.setName(inputValue);
+					modelProcess.setName(inputValue);
 					break;
 				} 
 				case COLUMN_EQUATION: {
 					String inputValue = (String)value;
-					ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
-					for (ReactionParticipant rp : rpArray) {
-						SpeciesContext speciesContext = rp.getSpeciesContext();
-						if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
-							bioModel.getModel().addSpecies(speciesContext.getSpecies());
-							bioModel.getModel().addSpeciesContext(speciesContext);
+					inputValue = inputValue.trim();
+					if (modelProcess instanceof ReactionStep){
+						ReactionStep reactionStep = (ReactionStep)modelProcess;
+						ReactionParticipant[] rpArray = ModelProcessEquation.parseReaction(reactionStep, getModel(), inputValue);
+						for (ReactionParticipant rp : rpArray) {
+							SpeciesContext speciesContext = rp.getSpeciesContext();
+							if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
+								bioModel.getModel().addSpecies(speciesContext.getSpecies());
+								bioModel.getModel().addSpeciesContext(speciesContext);
+							}
+						}
+						reactionStep.setReactionParticipants(rpArray);
+					}else if (modelProcess instanceof ReactionRule){
+						ReactionRule oldReactionRule = (ReactionRule)modelProcess;
+						// when editing an existing reaction rule
+						ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, bioModel);
+						if(newReactionRule != null) {
+							String name = oldReactionRule.getName();
+							RbmKineticLaw kl = oldReactionRule.getKineticLaw();
+							Structure st = oldReactionRule.getStructure();
+							getModel().getRbmModelContainer().removeReactionRule(oldReactionRule);
+							newReactionRule.setName(name);
+							newReactionRule.setKineticLaw(kl);
+							newReactionRule.setStructure(st);
+							getModel().getRbmModelContainer().addReactionRule(newReactionRule);
 						}
 					}
-					reactionStep.setReactionParticipants(rpArray);
 					break;
 				}
 				case COLUMN_STRUCTURE: {
 					Structure s = (Structure)value;
-					reactionStep.setStructure(s);
+					modelProcess.setStructure(s);
 					break;
 				} 
 				}
@@ -222,19 +275,26 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					if (getModel().getNumStructures() == 1) {
 						String inputValue = ((String)value);
 						inputValue = inputValue.trim();
-						if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
-							return;
-						}
-						reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
-						ReactionParticipant[] rpArray = ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
-						for (ReactionParticipant rp : rpArray) {
-							SpeciesContext speciesContext = rp.getSpeciesContext();
-							if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
-								bioModel.getModel().addSpecies(speciesContext.getSpecies());
-								bioModel.getModel().addSpeciesContext(speciesContext);
+						
+						if(inputValue.contains("(") && inputValue.contains(")")) {
+							ReactionRule reactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, bioModel);
+							reactionRule.setStructure(getModel().getStructure(0));
+							getModel().getRbmModelContainer().addReactionRule(reactionRule);
+						} else {
+							if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
+								return;
 							}
+							ReactionStep reactionStep = getModel().createSimpleReaction(getModel().getStructure(0));
+							ReactionParticipant[] rpArray = ModelProcessEquation.parseReaction(reactionStep, getModel(), inputValue);
+							for (ReactionParticipant rp : rpArray) {
+								SpeciesContext speciesContext = rp.getSpeciesContext();
+								if (bioModel.getModel().getSpeciesContext(speciesContext.getName()) == null) {
+									bioModel.getModel().addSpecies(speciesContext.getSpecies());
+									bioModel.getModel().addSpeciesContext(speciesContext);
+								}
+							}
+							reactionStep.setReactionParticipants(rpArray);
 						}
-						reactionStep.setReactionParticipants(rpArray);
 					}
 					break;
 				}
@@ -252,15 +312,15 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 	
 	@Override
-	public Comparator<ReactionStep> getComparator(final int col, final boolean ascending) {
-		return new Comparator<ReactionStep>() {
-            public int compare(ReactionStep o1, ReactionStep o2) {
+	public Comparator<ModelProcess> getComparator(final int col, final boolean ascending) {
+		return new Comparator<ModelProcess>() {
+            public int compare(ModelProcess o1, ModelProcess o2) {
             	int scale = ascending ? 1 : -1;
                 if (col==COLUMN_NAME){
 					return scale * o1.getName().compareTo(o2.getName());
 				} else if (col == COLUMN_EQUATION) {
-					ReactionEquation re1 = new ReactionEquation(o1, bioModel.getModel());
-					ReactionEquation re2 = new ReactionEquation(o2, bioModel.getModel());
+					ModelProcessEquation re1 = new ModelProcessEquation(o1, bioModel.getModel());
+					ModelProcessEquation re2 = new ModelProcessEquation(o2, bioModel.getModel());
 					return scale * re1.toString().compareTo(re2.toString());
 				} else if (col == COLUMN_STRUCTURE) {
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
@@ -271,25 +331,63 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 	
 	public String checkInputValue(String inputValue, int row, int column) {
-		ReactionStep reactionStep = getValueAt(row);
+		ModelProcess modelProcess = getValueAt(row);
+		String errMsg = null;
 		switch (column) {
 		case COLUMN_NAME:
-			if (reactionStep == null || !reactionStep.getName().equals(inputValue)) {
+			if (modelProcess == null || !modelProcess.getName().equals(inputValue)) {
 				if (getModel().getReactionStep(inputValue) != null) {
-					return "Reaction '" + inputValue + "' already exist!";
+					errMsg = "Reaction '" + inputValue + "' already exist!";
+					errMsg += VCellErrorMessages.PressEscToUndo;
+					errMsg = "<html>" + errMsg + "</html>";
+					return errMsg;
+				}
+				if (getModel().getRbmModelContainer().getReactionRule(inputValue) != null) {
+					errMsg = "ReactionRule '" + inputValue + "' already exist!";
+					errMsg += VCellErrorMessages.PressEscToUndo;
+					errMsg = "<html>" + errMsg + "</html>";
+					return errMsg;
 				}
 			}
 			break;
 		case COLUMN_EQUATION:
 			try {
-				ReactionEquation.parseReaction(reactionStep, getModel(), inputValue);
+				if (modelProcess instanceof ReactionStep){
+					ReactionStep reactionStep = (ReactionStep)modelProcess;
+					ModelProcessEquation.parseReaction(reactionStep, getModel(), inputValue);
+				}else if (modelProcess instanceof ReactionRule){
+					//ReactionRuleEmbedded reactionRule = (ReactionRuleEmbedded)modelProcess;
+					ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, bioModel);
+				}else{
+					// new row ... it's a rule if contains parentheses, plain reaction if it does not 
+					if(inputValue.contains("(") && inputValue.contains(")")) {
+						ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, bioModel);
+						if(newlyParsedReactionRule_NotUsedForValidation == null) {
+							throw new RuntimeException("Unable to generate a reaction rule for this input.");
+						}
+					} else {
+						ReactionStep reactionStep = (ReactionStep)modelProcess;
+						ModelProcessEquation.parseReaction(reactionStep, getModel(), inputValue);
+					}
+				}
+			} catch (org.vcell.model.bngl.ParseException ex) {
+				errMsg = ex.getMessage();
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
 			} catch (Exception ex) {
-				return ex.getMessage();
+				errMsg = ex.getMessage();
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
 			}
 			break;
 		case COLUMN_STRUCTURE:
 			if (getModel().getStructure(inputValue) == null) {
-				return "Structure '" + inputValue + "' does not exist!";
+				errMsg = "Structure '" + inputValue + "' does not exist!";
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
 			}
 			break;
 		}
@@ -323,14 +421,14 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 		
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
-			for (ReactionStep rs : oldValue.getModel().getReactionSteps()) {
-				rs.removePropertyChangeListener(this);
+			for (ModelProcess p : oldValue.getModel().getModelProcesses()) {
+				p.removePropertyChangeListener(this);
 			}
 		}
 		BioModel newValue = (BioModel)evt.getNewValue();
 		if (newValue != null) {
-			for (ReactionStep rs : newValue.getModel().getReactionSteps()) {
-				rs.addPropertyChangeListener(this);
+			for (ModelProcess p : newValue.getModel().getModelProcesses()) {
+				p.addPropertyChangeListener(this);
 			}
 		}
 	}

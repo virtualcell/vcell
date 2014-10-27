@@ -25,8 +25,12 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.matrix.RationalNumber;
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -43,10 +47,10 @@ import cbit.vcell.units.VCUnitException;
  * 
  */
 @SuppressWarnings("serial")
-public abstract class Kinetics implements Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public abstract class Kinetics implements ModelProcessDynamics, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
 	public static final String PROPERTY_NAME_KINETICS_PARAMETERS = "kineticsParameters";
 	private String name;
-	private ReactionStep reactionStep = null;
+	private final ReactionStep reactionStep;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private Kinetics.KineticsParameter[] fieldKineticsParameters = new KineticsParameter[0];
@@ -66,6 +70,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
 	public static final int ROLE_NotARole		= -1;
+//	public static final int ROLE_Kcat			= -2;
 	
 	public static final int ROLE_UserDefined	= 0;
 	public static final int ROLE_ReactionRate	= 1;
@@ -80,25 +85,32 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_VmaxRev		= 10;
 	public static final int ROLE_Permeability	= 11;
 	public static final int ROLE_Conductivity	= 12;
-	public static final int ROLE_ChargeValence	= 13;
-	public static final int ROLE_LumpedReactionRate = 14;
-	public static final int ROLE_LumpedCurrent	= 15;
+	public static final int ROLE_NetChargeValence	= 13;
+	public static final int ROLE_CarrierChargeValence	= 14;
+	public static final int ROLE_LumpedReactionRate = 15;
+	public static final int ROLE_LumpedCurrent	= 16;
+	public static final int ROLE_ElectricalUnitFactor = 17;
 	
 	// spatial stochastic-related roles
-	public static final int ROLE_Binding_Radius  			= 16;
-	public static final int ROLE_KOn  						= 17;
-	public static final int ROLE_Diffusion_Reactant1 		= 18;
-	public static final int ROLE_Diffusion_Reactant2  		= 19;
-	public static final int ROLE_Concentration_Reactant1 	= 20;
-	public static final int ROLE_Concentration_Reactant2	= 21;
-	public static final int ROLE_Concentration_Product		= 22;
-	public static final int ROLE_Concentration_Catalyst		= 23;
-	public static final int ROLE_Concentration_Participant	= 24;
+	public static final int ROLE_Binding_Radius  			= 18;
+	public static final int ROLE_KOn  						= 19;
+	public static final int ROLE_Diffusion_Reactant1 		= 20;
+	public static final int ROLE_Diffusion_Reactant2  		= 21;
+	public static final int ROLE_Concentration_Reactant1 	= 22;
+	public static final int ROLE_Concentration_Reactant2	= 23;
+	
+	// not used anymore, for parsing only
+	public static final int ROLE_ChargeValence				= 24;
 	public static final int ROLE_Kcat						= 25;
 	
+
 	public static final int NUM_ROLES		= 26;
 
 	
+	/**
+	 * These default descriptions are used by the XML persistence layer.
+	 * 
+	 */
 	private static final String RoleDescs[] = {
 		"user defined",
 		"reaction rate",
@@ -113,15 +125,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"max reverse rate",
 		"permeability",
 		"conductivity",
-		"charge",
+		"net charge valence",
+		"flux carrier valence",
 		"lumped reaction rate",
 		"lumped current",
+		"electrical unit factor",
 		"binding radius",
 		"reaction forward rate",
 		"diffusion reactant1",
 		"diffusion reactant2",
 		"concentration reactant1",
 		"concentration reactant2",
+		// no used anymore, for parsing only
+		"charge",
 	};
 
 
@@ -139,15 +155,20 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.VmaxRev,
 		VCMODL.Permeability,
 		VCMODL.Conductivity,
-		VCMODL.ChargeValence,
+		VCMODL.NetChargeValence,
+		VCMODL.CarrierChargeValence,
 		VCMODL.LumpedReactionRate,
 		VCMODL.LumpedCurrent,
+		VCMODL.ElectricalUnitFactor,
 		VCMODL.Binding_Radius,
 		VCMODL.Kon,
 		VCMODL.Diffusion_Reactant1,
 		VCMODL.Diffusion_Reactant2,
 		VCMODL.Concentration_Reactant1,
 		VCMODL.Concentration_Reactant2,
+		// past end of list, old tags with equivalent parameters 
+		// which is determined by isEquivalentRoleFromKineticsVCMLTokens()
+		VCMODL.ChargeValence_OLD,
 	};
 
 	private static final String DefaultNames[] = {
@@ -164,15 +185,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"VmaxRev",
 		"P",
 		"C",
-		"valence",
+		"netValence",
+		"carrierValence",
 		"LumpedJ",
 		"LumpedI",
+		"unitFactor",
 		"Binding_Radius",
 		"Kon",
 		"Diffusion_Reactant1",
 		"Diffusion_Reactant2",
 		"Concentration_Reactant1",
-		"Concentration_Reactant2"
+		"Concentration_Reactant2",
+		// not used
+		"valence"
 	};
 
 	private static final RealInterval[] bounds = {
@@ -189,15 +214,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // VmaxRev
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Permeability
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conductivity
-		null,   // charge valence
+		null,   // net charge valence
+		null,   // charge carrier valence
 		null,   // lumped rate
 		null,	// lumped current
+		null,	// electrical unit factor
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Binding radius
 		new RealInterval(0,Double.POSITIVE_INFINITY), // KOn
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Diff_reactant1
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Diff_reactant2
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conc_reactant1
-		new RealInterval(0,Double.POSITIVE_INFINITY) // Conc_reactant2
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Conc_reactant2
+		// not used
+		null,	// valence
 	};
 
 
@@ -299,6 +328,17 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 					return true;
 				}
 			}
+			
+			if (getRole() == ROLE_NetChargeValence || getRole() == ROLE_CarrierChargeValence){
+				if (reactionStep.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_ONLY){
+					return false;
+				}
+			}
+			
+			if (getRole() == ROLE_ElectricalUnitFactor){
+				return false;
+			}
+			
 			return true;
 		}
 		
@@ -383,6 +423,19 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 
 		public boolean isDescriptionEditable() {
 			return false;
+		}
+
+
+		@Override
+		public String getDescription() {
+			if (getRole() == ROLE_NetChargeValence && reactionStep.getStructure() instanceof Membrane && reactionStep.getModel() != null){
+				Membrane membrane = (Membrane)reactionStep.getStructure();
+				Feature positiveFeature = reactionStep.getModel().getElectricalTopology().getPositiveFeature(membrane);
+				if (positiveFeature != null){
+					return "net charge into '"+positiveFeature.getName()+"'";
+				}
+			}
+			return super.getDescription();
 		}
 
 	}
@@ -1019,6 +1072,16 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 						}
 					}
 				}
+				// may need to generate on the fly during database reading.
+				if (parameterForRole == null && i == ROLE_ElectricalUnitFactor){
+					KineticsParameter unitFactorParm = new KineticsParameter(getDefaultParameterName(ROLE_ElectricalUnitFactor), new Expression(1.0), ROLE_ElectricalUnitFactor, null);
+					addKineticsParameter(unitFactorParm);
+					parameterForRole = unitFactorParm;
+				}
+				// be forgiving while parsing charge parameter variants from the database - to support legacy models.
+				if (parameterForRole == null && (i == ROLE_ChargeValence || i == ROLE_NetChargeValence || i == ROLE_CarrierChargeValence) ){
+					parameterForRole = getChargeValenceParameter();
+				}
 				if (parameterForRole == null) {
 					throw new RuntimeException("parameter for role "+RoleTags[i]+" not found in kinetic law "+this.getKineticsDescription().getName());
 				}	
@@ -1165,6 +1228,16 @@ private boolean isEquivalentRoleFromKineticsVCMLTokens(int role1, int role2) {
 	if ( (role1 == ROLE_VmaxFwd && role2 == ROLE_Vmax) || (role2 == ROLE_VmaxFwd && role1 == ROLE_Vmax) ) {
 		return true;
 	}
+	if ( (reactionStep instanceof SimpleReaction) && 
+			 ((role1 == ROLE_NetChargeValence && role2 == ROLE_ChargeValence) || 
+			  (role2 == ROLE_ChargeValence && role1 == ROLE_NetChargeValence))){
+			return true;
+	}
+	if ( (reactionStep instanceof FluxReaction) && 
+			 ((role1 == ROLE_CarrierChargeValence && role2 == ROLE_ChargeValence) || 
+			  (role2 == ROLE_ChargeValence && role1 == ROLE_CarrierChargeValence))){
+			return true;
+	}
 	return false;
 }
 
@@ -1172,12 +1245,13 @@ private boolean isEquivalentRoleFromKineticsVCMLTokens(int role1, int role2) {
  * Insert the method's description here.
  * Creation date: (5/12/2004 2:53:13 PM)
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.Kinetics,this);
 	//
 	// for each user unresolved parameter, make an issue
 	//
 	for (int i = 0; fieldUnresolvedParameters!=null && i < fieldUnresolvedParameters.length; i++){
-		issueList.add(new Issue(fieldUnresolvedParameters[i],IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(fieldUnresolvedParameters[i],issueContext, IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for each user defined parameter, see if it is used, if not make an issue
@@ -1186,12 +1260,12 @@ public void gatherIssues(List<Issue> issueList) {
 		if (fieldKineticsParameters[i].getRole()==ROLE_UserDefined){
 			try {
 				if (!isReferenced(fieldKineticsParameters[i],0)){
-					issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i],issueContext, IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldKineticsParameters[i].getName()+"' in reaction '"+reactionStep.getName()+"'",Issue.SEVERITY_WARNING));
 				}
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],issueContext,IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ModelException e){
-				issueList.add(new Issue(this,IssueCategory.CyclicDependency,"cyclic dependency in the parameter definitions", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.CyclicDependency,"cyclic dependency in the parameter definitions", Issue.SEVERITY_ERROR));
 			}
 		}
 	}
@@ -1202,7 +1276,7 @@ public void gatherIssues(List<Issue> issueList) {
 	if (fieldKineticsParameters!=null) {
 		for (KineticsParameter kineticsParameter : fieldKineticsParameters){
 			if (kineticsParameter.getExpression()==null){
-				issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
+				issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
 			}else{
 				Expression exp = kineticsParameter.getExpression();
 				String symbols[] = exp.getSymbols();
@@ -1214,17 +1288,17 @@ public void gatherIssues(List<Issue> issueList) {
 							ste = ((KineticsProxyParameter) ste).getTarget();
 						}
 						if (ste == null) {
-							issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 						} else if (ste instanceof SpeciesContext) {
 							if (!getReactionStep().getModel().contains((SpeciesContext)ste)) {
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 							}
 							if (reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 							}
 						} else if (ste instanceof ModelParameter) {
 							if (!getReactionStep().getModel().contains((ModelParameter)ste)) {
-								issueList.add(new Issue(kineticsParameter,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+								issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 							}
 						}
 					}
@@ -1244,22 +1318,22 @@ public void gatherIssues(List<Issue> issueList) {
 				VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD()){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"undefined unit " + modelUnitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD())){
-					issueList.add(new Issue(fieldKineticsParameters[i], IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units,"inconsistent units, defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i], issueContext, IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldKineticsParameters[i],IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldKineticsParameters[i],issueContext,IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(getReactionStep(),issueContext,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 
 	//
@@ -1269,7 +1343,7 @@ public void gatherIssues(List<Issue> issueList) {
 		RealInterval simpleBounds = bounds[fieldKineticsParameters[i].getRole()];
 		if (simpleBounds!=null){
 			String parmName = reactionStep.getNameScope().getName()+"."+fieldKineticsParameters[i].getName();
-			issueList.add(new SimpleBoundsIssue(fieldKineticsParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+			issueList.add(new SimpleBoundsIssue(fieldKineticsParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
 	
@@ -1370,6 +1444,30 @@ public KineticsProxyParameter[] getProxyParameters() {
 	return fieldProxyParameters;
 }
 
+protected boolean hasOutwardFlux(){
+	if (getReactionStep()!=null && getReactionStep() instanceof FluxReaction && getReactionStep().getModel()!=null && getReactionStep().getStructure() instanceof Membrane){
+		Membrane membrane = (Membrane)getReactionStep().getStructure();
+		Reactant r = null;
+		Product p = null;
+		for (ReactionParticipant rp : getReactionStep().getReactionParticipants()){
+			if (rp instanceof Reactant){
+				r = (Reactant)rp;
+			}
+			if (rp instanceof Product){
+				p = (Product)rp;
+			}
+		}
+		Feature insideFeature = getReactionStep().getModel().getElectricalTopology().getPositiveFeature(membrane);
+		Feature outsideFeature = getReactionStep().getModel().getElectricalTopology().getNegativeFeature(membrane);
+		if (insideFeature!=null && outsideFeature!=null && r!=null && p!=null){
+			if (r.getStructure() == insideFeature && p.getStructure() == outsideFeature){ // outward molecular flux
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 /**
  * Gets the kineticsParameters index property (cbit.vcell.model.KineticsParameter) value.
@@ -1387,7 +1485,7 @@ public KineticsParameter getKineticsParameters(int index) {
 	  return name; 
    }   
 
-	public static int getParamRoleFromDesc(String paramDesc) {
+	public static int getParamRoleFromDefaultDesc(String paramDesc) {
 
 		int paramRole = -1;
 		
@@ -1563,6 +1661,20 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 }
 
 
+public final void electricalTopologyChanged(ElectricalTopology electricalTopology) {
+	/**
+	 * Kinetics doesn't listen directly to Model, ReactionStep listens to Model and relays this event. 
+	 */
+	try {
+		updateGeneratedExpressions();
+		refreshUnits();
+		cleanupParameters();
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+	}
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (2/15/01 1:56:56 PM)
@@ -1580,7 +1692,7 @@ public void propertyChange(PropertyChangeEvent event) {
 			refreshUnits();
 			cleanupParameters();
 		}
-		if (event.getSource() instanceof ReactionStep && event.getPropertyName().equals("reactionParticipants")){
+		if (event.getSource() instanceof ReactionStep && event.getPropertyName().equals(ReactionStep.PROPERTY_NAME_REACTION_PARTICIPANTS)){
 			ReactionParticipant oldValues[] = (ReactionParticipant[])event.getOldValue();
 			for (int i = 0; oldValues!=null && i < oldValues.length; i++){
 				oldValues[i].removePropertyChangeListener(this);
@@ -2038,9 +2150,7 @@ public String toString() {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (10/19/2003 12:04:36 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * updates the rate parameter expression and the current parameter expression based on reactants/products/modifiers/charge valence/membrane polarity
  */
 protected abstract void updateGeneratedExpressions() throws ExpressionException, PropertyVetoException;
 
@@ -2218,6 +2328,38 @@ protected Expression getSymbolExpression(SymbolTableEntry ste) throws Expression
 }
 
 public abstract KineticsParameter getAuthoritativeParameter();
+
+public final KineticsParameter getChargeValenceParameter() {
+	KineticsParameter netChargeValenceParameter = getKineticsParameterFromRole(ROLE_NetChargeValence);
+	KineticsParameter carrierChargeValenceParameter = getKineticsParameterFromRole(ROLE_CarrierChargeValence);
+	if (netChargeValenceParameter!=null && carrierChargeValenceParameter!=null){
+		throw new RuntimeException("both netChargeValence and carrierChargeValence parameters are defined");
+	}
+	if (netChargeValenceParameter!=null){
+		return netChargeValenceParameter;
+	}
+	if (carrierChargeValenceParameter!=null){
+		return carrierChargeValenceParameter;
+	}
+	return null;
+};
+
+public final Expression getElectricalUnitFactor(VCUnitDefinition unitFactor) throws PropertyVetoException {
+	if (unitFactor.isEquivalent(getReactionStep().getModel().getUnitSystem().getInstance_DIMENSIONLESS())){
+		return null;
+	}
+	
+	RationalNumber factor = unitFactor.getDimensionlessScale();
+	KineticsParameter kineticsParameter = getKineticsParameterFromRole(ROLE_ElectricalUnitFactor);
+	if (kineticsParameter == null){
+		kineticsParameter = new KineticsParameter(DefaultNames[ROLE_ElectricalUnitFactor],new Expression(factor),ROLE_ElectricalUnitFactor, unitFactor);
+		addKineticsParameter(kineticsParameter);
+	}else{
+		kineticsParameter.setExpression(new Expression(factor));
+		kineticsParameter.setUnitDefinition(unitFactor);
+	}
+	return new Expression(kineticsParameter,null);
+}
 
 
 private void onProxyParameterNameChange(String oldName, String newName) throws PropertyVetoException, ModelException, ExpressionException {

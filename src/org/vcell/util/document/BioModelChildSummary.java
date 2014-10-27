@@ -25,7 +25,7 @@ public class BioModelChildSummary implements java.io.Serializable {
 	private String scAnnots[] = new String[0];
 	private String geoNames[] = new String[0];
 	private int geoDims[] = new int[0];
-	private String appTypes[] = new String[0]; //deterministic application or stochastic application
+	private MathType appTypes[] = new MathType[0]; //deterministic application or stochastic application
 
 	private String simNames[][] = new String[0][];
 	private String simAnnots[][] = new String[0][];
@@ -33,9 +33,21 @@ public class BioModelChildSummary implements java.io.Serializable {
 	private final static String NOCHILDREN = "NOCHILDREN";
 	public final static String COMPARTMENTAL_GEO_STR = "Compartmental";
 	public final static String TYPE_TOKEN = "__TYPE__:";
-	public final static String TYPE_STOCH_STR = "Stochastic";
-	public final static String TYPE_DETER_STR = "Deterministic";
-	public final static String TYPE_UNKNOWN_STR = "Unknown";
+	
+	public enum MathType {
+		RuleBased("RuleBased"),
+		Stochastic("Stochastic"),
+		Deterministic("Deterministic"),
+		Unknown("Unknown");
+		
+		private String description = null;
+		private MathType(String description){
+			this.description = description;
+		}
+		public String getDescription() {
+			return description;
+		}
+	}
 	public final static String GEOMETRY_DIMENSION_SUFFIX = "D";
 /**
  * Insert the method's description here.
@@ -43,7 +55,7 @@ public class BioModelChildSummary implements java.io.Serializable {
  */
 private BioModelChildSummary() {}
 
-public BioModelChildSummary(String[] arg_scNames, String[] arg_appType, String[] arg_scAnnots, String[][] arg_simNames, String[][] arg_simAnnots, String[] arg_geoNames, int[] arg_geoDims){
+public BioModelChildSummary(String[] arg_scNames, MathType[] arg_appType, String[] arg_scAnnots, String[][] arg_simNames, String[][] arg_simAnnots, String[] arg_geoNames, int[] arg_geoDims){
 	this.scNames = arg_scNames;
 	this.appTypes = arg_appType;
 	this.scAnnots = arg_scAnnots;
@@ -86,7 +98,7 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 		//Assumes there is a non-empty string for every element
 		st = new java.util.StringTokenizer(databaseSerialization,"\n",false);
 		Vector<String> scNamesV = new Vector<String>();
-		Vector<String> appTypesV = new Vector<String>();
+		Vector<MathType> appTypesV = new Vector<MathType>();
 		Vector<String> scAnnotsV = new Vector<String>();
 		Vector<String> geoNamesV = new Vector<String>();
 		int[] geoDimsArr = new int[0];
@@ -101,12 +113,12 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 			String tokenStr = (String)st.nextElement();
 			if(tokenStr.startsWith(TYPE_TOKEN))
 			{
-				appTypesV.add(TokenMangler.getChildSummaryElementRestoredString(tokenStr.substring(TYPE_TOKEN.length())));
+				appTypesV.add(MathType.valueOf(TokenMangler.getChildSummaryElementRestoredString(tokenStr.substring(TYPE_TOKEN.length()))));
 				scAnnotsV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
 			}
 			else
 			{
-				appTypesV.add(TYPE_UNKNOWN_STR);
+				appTypesV.add(MathType.Unknown);
 				scAnnotsV.add(TokenMangler.getChildSummaryElementRestoredString(tokenStr));
 			}
 //			scAnnotsV.add(TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement()));
@@ -132,7 +144,7 @@ public static BioModelChildSummary fromDatabaseSerialization(String databaseSeri
 		}
 	
 		bmcs.scNames = (String[])scNamesV.toArray(new String[scNamesV.size()]);
-		bmcs.appTypes = (String[])appTypesV.toArray(new String[appTypesV.size()]);
+		bmcs.appTypes = (MathType[])appTypesV.toArray(new MathType[appTypesV.size()]);
 		bmcs.scAnnots = (String[])scAnnotsV.toArray(new String[scAnnotsV.size()]);
 		bmcs.geoNames = (String[])geoNamesV.toArray(new String[geoNamesV.size()]); 
 		bmcs.geoDims = geoDimsArr;
@@ -182,7 +194,7 @@ public String[] getGeometryNames() {
 	return geoNames;
 }
 
-public String[] getAppTypes() {
+public MathType[] getAppTypes() {
 	return appTypes;
 }
 

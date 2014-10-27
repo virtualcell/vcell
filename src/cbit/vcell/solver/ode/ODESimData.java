@@ -10,24 +10,39 @@
 
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.util.ColumnDescription;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.math.*;
-
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 
 import ucar.ma2.ArrayDouble;
-import cbit.vcell.simdata.*;
+import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.stoch.NetCDFEvaluator;
 import cbit.vcell.solver.stoch.NetCDFReader;
 import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:59 PM)
@@ -456,6 +471,50 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	return odeSimData;
 }
 
+public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile) throws DataAccessException, IOException {
+	System.out.println("reading NetCDF file : " + dataFile);
+	ODESimData odeSimData = new ODESimData();	
+	odeSimData.formatID = NETCDF_DATA_FORMAT_ID;
+	odeSimData.mathName = vcdId.getID();
+
+	String file = dataFile.getPath();
+	BufferedReader reader = new BufferedReader( new FileReader (file));
+	String firstLine = reader.readLine();
+	
+	StringTokenizer st = new StringTokenizer(firstLine);
+	st.nextToken();		// #
+	st.nextToken();		// time
+	//first column will be time t.
+	odeSimData.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+
+	int count = st.countTokens();
+	String varName = new String();
+	for (int i=0; i<count; i++){
+		varName = st.nextToken();
+		odeSimData.addDataColumn(new ODESolverResultSetColumnDescription(varName));
+	}
+
+	
+	//Read data
+
+//	String         ls = System.getProperty("line.separator");
+//	StringBuilder  stringBuilder = new StringBuilder();
+	String         line = null;
+	while( ( line = reader.readLine() ) != null ) {
+		
+		double[] values = new double[odeSimData.getDataColumnCount()];
+		st = new StringTokenizer(line);
+		count = st.countTokens();
+		String sData = new String();
+		for (int i=0; i<count; i++){
+			sData = st.nextToken();
+			double dData = Double.parseDouble(sData);
+			values[i] = dData;
+		}
+		odeSimData.addRow(values);
+	}
+	return odeSimData;
+}
 
 public static ODESimData readNCDataFile(VCDataIdentifier vcdId, File dataFile, File functionsFile) throws DataAccessException {
 	// read ida file

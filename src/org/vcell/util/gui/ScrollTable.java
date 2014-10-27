@@ -53,11 +53,11 @@ import javax.swing.border.MatteBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import org.vcell.util.gui.sorttable.SortTableModel;
 
 import org.vcell.util.Issue;
+import org.vcell.util.gui.sorttable.SortTableModel;
 
-import cbit.gui.ReactionEquation;
+import cbit.gui.ModelProcessEquation;
 import cbit.gui.ScopedExpression;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
@@ -165,7 +165,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		} else {
 			setEnabled(false);
 		}
-			 
+		 
 		setSelected((value != null && ((Boolean) value).booleanValue()));			
 		if (hasFocus) {
 			setBorder(DefaultScrollTableCellRenderer.focusHighlightBorder);
@@ -213,6 +213,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	}
 }
 	
+
 	public ScrollTable() {
 		super();		
 		initialize();
@@ -336,7 +337,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	public void installCellEditors() {
 		setDefaultEditor(VCUnitDefinition.class,new TableCellEditorAutoCompletion(this));
 		setDefaultEditor(ScopedExpression.class,new TableCellEditorAutoCompletion(this));
-		setDefaultEditor(ReactionEquation.class,new TableCellEditorAutoCompletion(this));
+		setDefaultEditor(ModelProcessEquation.class,new TableCellEditorAutoCompletion(this));
 	}
 
 	@Override
@@ -393,7 +394,7 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 			if (getColumnClass(i).equals(ScopedExpression.class)) {
 				bHasScopedExpressionColumn = true;
 				break;
-			} else if (getColumnClass(i).equals(ReactionEquation.class)) {
+			} else if (getColumnClass(i).equals(ModelProcessEquation.class)) {
 				bHasScopedExpressionColumn = true;
 				break;
 			}
@@ -490,6 +491,28 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 	public final int getHoverColumn() {
 		return hoverColumn;
 	}
+
+//
+// A way to provide separate tooltips for each cell of a table
+// Right now we only offer tooltips for the table rows with errors / warnings associated
+// Implementation of that mechanism in DefaultScrollTableCellRenderer
+//
+//@Override	
+//	public String getToolTipText(MouseEvent e) {
+//		String tip = null;
+//		java.awt.Point p = e.getPoint();
+//		int rowIndex = rowAtPoint(p);
+//		int colIndex = columnAtPoint(p);
+//		try {
+//			//comment row, exclude heading
+//			if(rowIndex >= 0){
+//				tip = getValueAt(rowIndex, colIndex).toString();
+//			}
+//		} catch (RuntimeException e1) {
+//			//catch null pointer exception if mouse is over an empty line
+//		}
+//		return tip;
+//	}
 
 	public final void setScrollTableActionManager(ScrollTableActionManager scrollTableActionManager) {
 		if (scrollTableActionManager.getOwnerTable() != this) {

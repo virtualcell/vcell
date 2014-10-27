@@ -23,7 +23,6 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
@@ -333,7 +332,7 @@ private void updateInterface() {
 			}
 		}
 		geometryLabel.setText(geometryText);			
-		detStochLabel.setText(mathModel.getMathDescription().isNonSpatialStoch() || mathModel.getMathDescription().isSpatialStoch() ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR);
+		detStochLabel.setText(mathModel.getMathDescription().getMathType().getDescription());
 	} catch (DataAccessException e) {
 		e.printStackTrace();
 	}

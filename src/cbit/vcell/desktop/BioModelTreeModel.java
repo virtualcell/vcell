@@ -17,6 +17,7 @@ import javax.swing.tree.TreeNode;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.document.Identifiable;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -82,7 +83,7 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 			
 			
 			//add application type node
-			String typeInfo = scArray[i].getMathType();
+			MathType typeInfo = scArray[i].getMathType();
 			
 			BioModelNode appTypeNode = new BioModelNode(typeInfo,false);
 			appTypeNode.setRenderHint("type","AppType");

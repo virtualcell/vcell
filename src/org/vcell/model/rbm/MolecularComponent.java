@@ -6,12 +6,18 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class MolecularComponent extends RbmElement implements VetoableChangeListener {
-	public static final String PROPERTY_NAME_COMPONENT_STATES = "componentStates";
+public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener {
+	public static final String PROPERTY_NAME_COMPONENT_STATE_DEFINITIONS = "componentStateDefinitions";
+	
 	private String name;                                  // binding site or phosphosite, motif, extracdomain (e.g. tyrosine 77) 
-	private List<ComponentState> componentStates = new ArrayList<ComponentState>();    // allowable states (e.g. Phosphorylated, Unphosphorylated)
+	private List<ComponentStateDefinition> componentStateDefinitions = new ArrayList<ComponentStateDefinition>();    // allowable states (e.g. Phosphorylated, Unphosphorylated)
 	private int index = 0; 
 	
 	public MolecularComponent(String name) {
@@ -21,46 +27,46 @@ public class MolecularComponent extends RbmElement implements VetoableChangeList
 	public final String getName() {
 		return name;
 	}
-	public void addComponentState(ComponentState componentState) {
-		if (!componentStates.contains(componentState)) {
-			List<ComponentState> newValue = new ArrayList<ComponentState>(componentStates);
-			newValue.add(componentState);
-			setComponentStates(newValue);
+	public void addComponentStateDefinition(ComponentStateDefinition componentStateDefinition) {
+		if (!componentStateDefinitions.contains(componentStateDefinition)) {
+			List<ComponentStateDefinition> newValue = new ArrayList<ComponentStateDefinition>(componentStateDefinitions);
+			newValue.add(componentStateDefinition);
+			setComponentStateDefinitions(newValue);
 		}
 	}
 	
-	public void deleteComponentState(ComponentState componentState) {
-		if (componentStates.contains(componentState)) {
-			List<ComponentState> newValue = new ArrayList<ComponentState>(componentStates);
-			newValue.remove(componentState);
-			setComponentStates(newValue);
+	public void deleteComponentStateDefinition(ComponentStateDefinition componentStateDefinition) {
+		if (componentStateDefinitions.contains(componentStateDefinition)) {
+			List<ComponentStateDefinition> newValue = new ArrayList<ComponentStateDefinition>(componentStateDefinitions);
+			newValue.remove(componentStateDefinition);
+			setComponentStateDefinitions(newValue);
 		}
 	}
 	
-	public ComponentState createComponentState() {
+	public ComponentStateDefinition createComponentStateDefinition() {
 		int count=0;
 		String name = null;
 		while (true) {
 			name = "state" + count;	
-			if (getComponentState(name) == null) {
+			if (getComponentStateDefinition(name) == null) {
 				break;
 			}	
 			count++;
 		}
-		return new ComponentState(name);
+		return new ComponentStateDefinition(name);
 	}
 	
-	public ComponentState getComponentState(String componentName) {
-		for (ComponentState cs : componentStates)  {
-			if (cs.getName().equals(componentName)) {
+	public ComponentStateDefinition getComponentStateDefinition(String stateName) {
+		for (ComponentStateDefinition cs : componentStateDefinitions)  {
+			if (cs.getName().equals(stateName)) {
 				return cs;
 			}
 		}
 		return null;
 	}
 	
-	public final List<ComponentState> getComponentStates() {
-		return componentStates;
+	public final List<ComponentStateDefinition> getComponentStateDefinitions() {
+		return componentStateDefinitions;
 	}
 	public void setName(String newValue) throws PropertyVetoException {
 		String oldValue = name;
@@ -69,26 +75,26 @@ public class MolecularComponent extends RbmElement implements VetoableChangeList
 		firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, newValue);
 	}
 	
-	public final void setComponentStates(List<ComponentState> newValue) {
-		List<ComponentState> oldValue = componentStates;
+	public final void setComponentStateDefinitions(List<ComponentStateDefinition> newValue) {
+		List<ComponentStateDefinition> oldValue = componentStateDefinitions;
 		if (oldValue != null) {
-			for (ComponentState cs : oldValue) {
+			for (ComponentStateDefinition cs : oldValue) {
 				cs.removeVetoableChangeListener(this);
 			}
 		}
-		componentStates = newValue;
+		componentStateDefinitions = newValue;
 		if (newValue != null) {
-			for (ComponentState cs : newValue) {
+			for (ComponentStateDefinition cs : newValue) {
 				cs.addVetoableChangeListener(this);
 			}
 		}
-		firePropertyChange(PROPERTY_NAME_COMPONENT_STATES, oldValue, newValue);
+		firePropertyChange(PROPERTY_NAME_COMPONENT_STATE_DEFINITIONS, oldValue, newValue);
 	}
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
-			if (evt.getSource() instanceof ComponentState) {
+			if (evt.getSource() instanceof ComponentStateDefinition) {
 				String newName = (String) evt.getNewValue();
-				for (ComponentState cs : componentStates) {
+				for (ComponentStateDefinition cs : componentStateDefinitions) {
 					if (cs != evt.getSource()) {
 						if (cs.getName().equals(newName)) {
 							throw new PropertyVetoException("Component State '" + newName + "' already exists in Molecular Component '" + getName() + "'!", evt);
@@ -100,6 +106,28 @@ public class MolecularComponent extends RbmElement implements VetoableChangeList
 	}
 	
 	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof MolecularComponent)) {
+			return false;
+		}
+		MolecularComponent that = (MolecularComponent)aThat;
+
+		if (!Compare.isEqual(name, that.name)) {
+			return false;
+		}
+		if (!Compare.isEqual(index, that.index)) {
+			return false;
+		}
+		if (!Compare.isEqual(componentStateDefinitions, that.componentStateDefinitions)){
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
 	public String toString() {
 		return getName();
 	}
@@ -108,5 +136,26 @@ public class MolecularComponent extends RbmElement implements VetoableChangeList
 	}
 	public final void setIndex(int index) {
 		this.index = index;
+	}
+	public String getId() {
+		System.err.println("getId() not correct for MolecularComponent");
+		return "MolecularComponent_"+hashCode();
+	}
+	
+	@Override
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		if(name == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Component is null", Issue.SEVERITY_ERROR));
+		} else if(name.equals("")) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Component is empty", Issue.SEVERITY_WARNING));
+		} else if(componentStateDefinitions == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Component '" + name + "' State List is null", Issue.SEVERITY_ERROR));
+		} else if(componentStateDefinitions.isEmpty()) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Component '" + name + "' State List is empty", Issue.SEVERITY_INFO));
+		} else {
+			for (ComponentStateDefinition entity : componentStateDefinitions) {
+				entity.gatherIssues(issueContext, issueList);
+			}
+		}
 	}
 }

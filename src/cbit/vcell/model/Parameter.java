@@ -11,10 +11,13 @@
 package cbit.vcell.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
+import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -201,4 +204,7 @@ public String toString() {
 public String getNullExpressionDescription() {
 	return null;
 }
+
+public void gatherIssues(List<Issue> issueList) { }
+
 }

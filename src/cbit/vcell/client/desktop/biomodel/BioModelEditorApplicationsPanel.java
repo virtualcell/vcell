@@ -48,6 +48,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JMenu menuAppCopyAs = null;
 	private JMenuItem menuItemAppNonSpatialCopyStochastic = null;
 	private JMenuItem menuItemNonSpatialCopyDeterministic = null;
+	private JMenuItem menuItemAppNonSpatialCopyRulebased = null;
 	
 	private JMenu menuAppSpatialCopyAsNonSpatial = null;
 	private JMenuItem menuItemAppSpatialCopyAsNonSpatialStochastic = null;
@@ -58,6 +59,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	
 	private JMenuItem appNewStochApp = null;
 	private JMenuItem appNewDeterministicApp = null;
+	private JMenuItem appNewRulebasedApp = null;
 	private JMenuItem ivjJMenuItemAppCopy = null;	
 	
 	private EventHandler eventHandler = new EventHandler();
@@ -68,9 +70,11 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				moreActionsButtonPressed();
 			} else if (e.getSource() == appNewStochApp
 					|| e.getSource() == appNewDeterministicApp
+					|| e.getSource() == appNewRulebasedApp
 					|| e.getSource() == getJMenuItemAppCopy()
 					|| e.getSource() == menuItemAppNonSpatialCopyStochastic
 					|| e.getSource() == menuItemNonSpatialCopyDeterministic
+					|| e.getSource() == menuItemAppNonSpatialCopyRulebased
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialDeterministic
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialStochastic
 					|| e.getSource() == menuItemAppSpatialCopyAsSpatialDeterministic
@@ -252,9 +256,14 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appNewDeterministicApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION);
 				appNewDeterministicApp.addActionListener(eventHandler);
 				
+				appNewRulebasedApp = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+				appNewRulebasedApp.setActionCommand(GuiConstants.ACTIONCMD_CREATE_RULEBASED_APPLICATION);
+				appNewRulebasedApp.addActionListener(eventHandler);
+
 				//add menu items to menu
 				appsPopupMenu.add(appNewDeterministicApp);
 				appsPopupMenu.add(appNewStochApp);
+				appsPopupMenu.add(appNewRulebasedApp);
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {
@@ -284,6 +293,10 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				menuItemNonSpatialCopyDeterministic.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION);
 				menuItemNonSpatialCopyDeterministic.addActionListener(eventHandler);				
 				
+				menuItemAppNonSpatialCopyRulebased = new javax.swing.JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
+				menuItemAppNonSpatialCopyRulebased.setActionCommand(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION);
+				menuItemAppNonSpatialCopyRulebased.addActionListener(eventHandler);				
+
 				menuAppSpatialCopyAsNonSpatial = new JMenu(GuiConstants.MENU_TEXT_NON_SPATIAL_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialDeterministic = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 				menuItemAppSpatialCopyAsNonSpatialDeterministic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION);
@@ -314,6 +327,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			if (selectedSimContext.getGeometry().getDimension() == 0) {
 				menuAppCopyAs.add(menuItemNonSpatialCopyDeterministic);
 				menuAppCopyAs.add(menuItemAppNonSpatialCopyStochastic);
+				menuAppCopyAs.add(menuItemAppNonSpatialCopyRulebased);
 			} else {
 				menuAppCopyAs.add(menuAppSpatialCopyAsNonSpatial);
 				menuAppCopyAs.add(menuAppSpatialCopyAsSpatial);
@@ -348,23 +362,35 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	public void applicationMenuItem_ActionPerformed(java.awt.event.ActionEvent e) {
 		String actionCommand = e.getActionCommand();
 		if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION)) {
-			newApplication(e, false);
+			boolean bRuleBased = false;
+			newApplication(e, false, bRuleBased);
 		}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_STOCHASTIC_APPLICATION)) {
-			newApplication(e, true);
+			boolean bRuleBased = false;
+			newApplication(e, true, bRuleBased);
+		}  else if (actionCommand.equals(GuiConstants.ACTIONCMD_CREATE_RULEBASED_APPLICATION)) {
+			newApplication(e, false, true);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
 			copyApplication();
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
-			copyApplication(false, true);
+			boolean bRuleBased = false;
+			copyApplication(false, true, bRuleBased);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION)) {
+			copyApplication(false, false, true);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
-			copyApplication(false, false);
+			boolean bRuleBased = false;
+			copyApplication(false, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			copyApplication(false, false);
+			boolean bRuleBased = false;
+			copyApplication(false, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
-			copyApplication(false, true);
+			boolean bRuleBased = false;
+			copyApplication(false, true, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			copyApplication(true, false);
+			boolean bRuleBased = false;
+			copyApplication(true, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
-			copyApplication(true, true);
+			boolean bRuleBased = false;
+			copyApplication(true, true, bRuleBased);
 		} 
 	}
 	
@@ -374,7 +400,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			PopupGenerator.showErrorDialog(this, "Please select an application.");
 			return;
 		}
-		copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch());
+		copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch(), simulationContext.isRuleBased());
 	}
 	
 	private SimulationContext getSelectedSimulationContext() {
@@ -385,7 +411,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		return null;
 	}
 
-	private void copyApplication(final boolean bSpatial, final boolean bStochastic) {
+	private void copyApplication(final boolean bSpatial, final boolean bStochastic, final boolean bRuleBased) {
 		final SimulationContext simulationContext = getSelectedSimulationContext();
 		if (simulationContext == null) {
 			PopupGenerator.showErrorDialog(this, "Please select an application.");
@@ -399,7 +425,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				return;
 			}
 		}
-		AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic);
+		AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic, bRuleBased);
 		AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
 		System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
 		allTasks[allTasks.length - 1] = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
@@ -411,7 +437,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);
 	}
-	private void newApplication(java.awt.event.ActionEvent event, boolean bStoch) {
+	private void newApplication(java.awt.event.ActionEvent event, boolean bStoch, boolean bRuleBased) {
 		if (bStoch) {
 			String message = bioModel.getModel().isValidForStochApp();
 			if (!message.equals("")) {
@@ -419,7 +445,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				return;
 			}
 		}
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, bStoch);
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, bStoch, bRuleBased);
 		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
 		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
 		tasks[newApplicationTasks.length] = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

@@ -19,7 +19,6 @@ import javax.swing.UIManager;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 
@@ -327,15 +326,15 @@ private void connPtoP3SetTarget() {
 private void currentDocumentInfo() {
 	VCDocumentInfo selectedDocInfo = null;
 	switch (getJTabbedPane1().getSelectedIndex()) {
-		case VCDocument.BIOMODEL_DOC: {
+		case 0: { // VCDocumentType.BIOMODEL_DOC
 			selectedDocInfo = (BioModelInfo)getBioModelDbTreePanel1().getSelectedVersionInfo();
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case 1: { // VCDocumentType.MATHMODEL_DOC
 			selectedDocInfo = (MathModelInfo)getMathModelDbTreePanel1().getSelectedVersionInfo();
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case 2: { // VCDocumentType.GEOMETRY_DOC
 			selectedDocInfo = (GeometryInfo)getGeometryTreePanel1().getSelectedVersionInfo();
 			break;
 		}

@@ -13,6 +13,8 @@ import java.beans.PropertyVetoException;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -109,10 +111,11 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * Creation date: (5/2/2006 11:04:39 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.List<Issue> issueList) {
-	getModelOptimizationSpec().gatherIssues(issueList);
-	if (getModelOptimizationMapping().getOptimizationSpec()!=null){
-		getModelOptimizationMapping().getOptimizationSpec().gatherIssues(issueList);
+public void gatherIssues(IssueContext issueContext, java.util.List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.ParameterEstimationTask, this);
+	getModelOptimizationSpec().gatherIssues(issueContext,issueList);
+	if (getModelOptimizationMapping()!=null && getModelOptimizationMapping().getOptimizationSpec()!=null){
+		getModelOptimizationMapping().getOptimizationSpec().gatherIssues(issueContext,issueList);
 	}
 }
 
@@ -198,8 +201,8 @@ public java.lang.String getSolverMessageText() {
  * Insert the method's description here.
  * Creation date: (5/2/2006 5:00:50 PM)
  */
-public void refreshDependencies() {
-	getModelOptimizationSpec().refreshDependencies();
+public void refreshDependencies(boolean isRemoveUncoupledParameters) {
+	getModelOptimizationSpec().refreshDependencies(isRemoveUncoupledParameters);
 	if (getModelOptimizationMapping() != null) {
 		getModelOptimizationMapping().refreshDependencies();
 	}

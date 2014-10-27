@@ -21,6 +21,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.util.graph.Edge;
@@ -82,6 +84,7 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 	private ParameterEstimationTask parameterEstimationTask;
 	
 	protected List<Issue> localIssueList = new Vector<Issue>();
+	protected final IssueContext localIssueContext;
 
 /**
  * ModelOptimizationSpec constructor comment.
@@ -89,6 +92,7 @@ public class ModelOptimizationSpec implements java.io.Serializable, Matchable, P
 public ModelOptimizationSpec(ParameterEstimationTask pet) throws ExpressionException {
 	super();
 	parameterEstimationTask = pet;
+	localIssueContext = new IssueContext(ContextType.SimContext,pet.getSimulationContext(),null).newChildContext(ContextType.ParameterEstimationTask, pet);
 	// ModelOptSpec should listen to changes in model (addition/deletion of model params, species, reaction params, etc.)
 	// ModelOptSpec should listen to changes in simContext MathDesc
 	if (getSimulationContext() != null) {
@@ -97,9 +101,9 @@ public ModelOptimizationSpec(ParameterEstimationTask pet) throws ExpressionExcep
 	refreshParameterMappingSpecs();
 }
 
-public void gatherIssues(java.util.List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, java.util.List<Issue> issueList) {
 	if (!hasSelectedParameters()) {
-		issueList.add(new Issue(this,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization.",Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationNoParameterSelected,"No parameters are selected for optimization.",Issue.SEVERITY_INFO));
 	}
 	
 	boolean bExperimentalDataMapped = true;
@@ -112,7 +116,7 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 		}
 	}
 	if (!bExperimentalDataMapped) {
-		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column.",Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column.",Issue.SEVERITY_WARNING));
 	}
 	
 	issueList.addAll(localIssueList);
@@ -136,6 +140,7 @@ public boolean hasSelectedParameters()
 public ModelOptimizationSpec(ParameterEstimationTask task, ModelOptimizationSpec modelOptimizationSpecToCopy) throws ExpressionException {
 	super();
 	parameterEstimationTask = task;
+	localIssueContext = new IssueContext(ContextType.SimContext,task.getSimulationContext(),null).newChildContext(ContextType.ParameterEstimationTask, task);
 	Parameter[] modelParameters = getModelParameters();
 	fieldParameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];
 	ParameterMappingSpec[] parameterMappingSpecsCopy = modelOptimizationSpecToCopy.getParameterMappingSpecs();
@@ -445,6 +450,7 @@ private Parameter[] getModelParameters() {
 
 public void removeUncoupledParameters() {
 	try {
+		localIssueList.clear();
 		MathMapping mathMapping = getSimulationContext().createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		MathSystemHash mathSystemHash = fromMath(mathDesc);
@@ -496,7 +502,7 @@ public void removeUncoupledParameters() {
 		setParameterMappingSpecs(parameterMappingSpecs);
 	} catch (Exception e){
 		e.printStackTrace(System.out);
-		localIssueList.add(new Issue(this,IssueCategory.ParameterEstimationGeneralWarning, e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(this, localIssueContext, IssueCategory.ParameterEstimationGeneralWarning, e.getMessage(),Issue.SEVERITY_WARNING));
 		// throw new RuntimeException(e.getMessage());
 	}
 }
@@ -672,7 +678,7 @@ private void refreshParameterMappingSpecs() throws ExpressionException {
  * Insert the method's description here.
  * Creation date: (12/19/2005 3:20:34 PM)
  */
-public void refreshDependencies() {
+public void refreshDependencies(boolean isRemoveUncoupledParameters) {
 	if (getSimulationContext() != null) {
 		//remove listeners - simContext, mathDesc, model, spContextSpec, reactionSteps & kinetics
 		getSimulationContext().removePropertyChangeListener(this);
@@ -682,7 +688,10 @@ public void refreshDependencies() {
 		getSimulationContext().addPropertyChangeListener(this);
 		updateListenersList(model, true);
 	}
-	removeUncoupledParameters();
+	if(isRemoveUncoupledParameters) {
+		System.err.println("not calling removeUncoupledParameters() during ModelOptimizationSpec.refreshDependencies() ... need to invoke removeUncoupledParameters functionality a different way");
+		//removeUncoupledParameters();
+	}
 }
 
 

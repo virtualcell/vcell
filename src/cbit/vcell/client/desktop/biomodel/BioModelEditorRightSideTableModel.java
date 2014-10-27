@@ -15,7 +15,8 @@ import java.util.List;
 
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
-import cbit.gui.ReactionEquation;
+
+import cbit.gui.ModelProcessEquation;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 
@@ -48,8 +49,8 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	protected String searchText = null;
 	public static final String ADD_NEW_HERE_TEXT = "(add new here)";
 	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
-	public static final String ADD_NEW_HERE_REACTION_TEXT = ReactionEquation.REACTION_GOESTO;
-	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ReactionEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
+	public static final String ADD_NEW_HERE_REACTION_TEXT = ModelProcessEquation.REACTION_GOESTO;
+	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ModelProcessEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
 	
 	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
 		super(table);

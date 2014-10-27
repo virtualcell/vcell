@@ -45,7 +45,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGUtils;
-import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 
 /**
@@ -183,10 +183,10 @@ public void importSbml(String bngSbmlStr) {
 		// convert biomodel to vcml string
 		String vcmlString = XmlHelper.bioModelToXML(modifiedBiomodel);
 
-		XMLInfo xmlInfo = new XMLInfo(vcmlString);
+		ExternalDocInfo externalDocInfo = new ExternalDocInfo(vcmlString);
 
-		if (xmlInfo != null) {
-			getRequestManager().openDocument(xmlInfo, this, true);
+		if (externalDocInfo != null) {
+			getRequestManager().openDocument(externalDocInfo, this, true);
 		}
 	} catch (Exception e) {
 		e.printStackTrace(System.out);

@@ -343,6 +343,15 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		Diagram diagrams[] = getDiagramsFromModel(dbc, con,modelKey, structureTopology);
 		model.setDiagrams(diagrams);
 		
+		//
+		//add rbm
+		//
+		ModelTable.readRbmElement(con, model);
+		
+		for(SpeciesContext sc : model.getSpeciesContexts()) {
+			sc.parseSpeciesPatternString(model);
+		}
+		
 		return model;
 	}catch (PropertyVetoException e){
 		log.exception(e);
@@ -419,12 +428,14 @@ private SpeciesContext getSpeciesContext(QueryHashtable dbc, Connection con, Res
 	// get object (ignoring foreign keys)
 	//
 	speciesContext = speciesContextModelTable.getSpeciesContext(rset,log,scKey);
+	String speciesPatternString = speciesContext.getSpeciesPatternString();
 	//
 	// add objects corresponding to foreign keys
 	//
 	Structure structure = reactStepDB.getStructure(dbc, con,structKey);
 	Species species = reactStepDB.getSpecies(dbc, con,speciesKey);
 	speciesContext = new SpeciesContext(scKey,speciesContext.getName(),species,structure);
+	speciesContext.setSpeciesPatternString(speciesPatternString);
 
 	//
 	// put SpeciesContext into object cache
@@ -666,10 +677,26 @@ private void insertModelSQL(Connection con,User user, Model model,Version newVer
 					throws SQLException,DataAccessException {
 
 	String sql;
-	Object[] o = {model};
+	String rbmXmlStr = ModelTable.getRbmForDatabase(model);
+	Object[] o = {model,rbmXmlStr};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,modelTable,o,newVersion);
 //System.out.println(sql);
-	updateCleanSQL(con,sql);
+	
+	if (rbmXmlStr!=null){
+		varchar2_CLOB_update(
+			con,
+			sql,
+			rbmXmlStr,
+			ModelTable.table,
+			newVersion.getVersionKey(),
+			ModelTable.table.rbmLarge,
+			ModelTable.table.rbmSmall
+			);
+	}else{
+		updateCleanSQL(con,sql);
+	}
+
+//	updateCleanSQL(con,sql);
 }
 
 

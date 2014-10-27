@@ -10,8 +10,10 @@
 
 package cbit.vcell.client.desktop;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -30,8 +32,11 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -43,17 +48,10 @@ import org.vcell.util.gui.DialogUtils;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServicesServiceLocator;
-
 import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.xml.XMLInfo;
-
-import javax.swing.border.TitledBorder;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
-import javax.swing.JTextField;
-import java.awt.Dimension;
+import cbit.vcell.xml.ExternalDocInfo;
 
 @SuppressWarnings("serial")
 public class BioModelsNetJPanel extends JPanel {
@@ -373,11 +371,11 @@ public class BioModelsNetJPanel extends JPanel {
 						
 						//Download and open (in new window) SBML document selected by user
 						String bioModelSBML = bioModelsWebServices.getModelSBMLById(rowData[result.selectedTableRows[0]][1]);
-						final XMLInfo xmlInfo = new XMLInfo(bioModelSBML,sortedModelNames[result.selectedTableRows[0]]);
+						final ExternalDocInfo externalDocInfo = new ExternalDocInfo(bioModelSBML,sortedModelNames[result.selectedTableRows[0]]);
 						new Thread(new Runnable() {
 							public void run() {
 								documentWindow.getTopLevelWindowManager().getRequestManager().openDocument(
-										xmlInfo,documentWindow.getTopLevelWindowManager(), true);
+										externalDocInfo,documentWindow.getTopLevelWindowManager(), true);
 							}
 						}).start();
 					}

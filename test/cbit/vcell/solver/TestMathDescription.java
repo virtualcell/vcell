@@ -106,4 +106,9 @@ public class TestMathDescription implements SolverSelector {
 		return masked != 0;
 	}
 
+	@Override
+	public boolean isRuleBased() {
+		throw new UnsupportedOperationException("isRuleBased is not implemented in this JUnit test.");
+	}
+
 }

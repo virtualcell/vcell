@@ -10,8 +10,13 @@
 
 package cbit.vcell.mapping;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
+import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutsideVariable;
@@ -134,5 +139,37 @@ public void reconcileVarNames(MathDescription mathDesc) {
 			}
 		}
 	}
+}
+
+
+public void transform(SimContextTransformation transformation) {
+	if (transformation == null || transformation.modelEntityMappings == null){
+		return;
+	}
+	for (ModelEntityMapping mapping : transformation.modelEntityMappings){
+		Variable var = biologicalToMathHash.remove(mapping.origModelObj);
+		if (var!=null){
+			biologicalToMathHash.put(mapping.newModelObj, var);
+		}
+		String varName = biologicalToMathSymbolNameHash.remove(mapping.origModelObj);
+		if (varName!=null){
+			biologicalToMathSymbolNameHash.put(mapping.newModelObj, varName);
+		}
+	}
+	for (Map.Entry<Variable,SymbolTableEntry[]> entry : mathToBiologicalHash.entrySet()){
+		Variable key = entry.getKey();
+		SymbolTableEntry[] origBiologicalSymbols = entry.getValue();
+		ArrayList<SymbolTableEntry> newStes = new ArrayList<SymbolTableEntry>();
+		for (SymbolTableEntry origBiologicalSymbol : origBiologicalSymbols){
+			// replace all array entries with those from the original model
+			for (ModelEntityMapping mapping : transformation.modelEntityMappings){
+				if (origBiologicalSymbol == mapping.origModelObj){
+					newStes.add(mapping.newModelObj);
+				}
+			}
+		}
+		entry.setValue(newStes.toArray(new Variable[0]));
+	}
+	
 }
 }

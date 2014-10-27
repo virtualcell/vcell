@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.LicenseManager;
@@ -42,6 +44,7 @@ public class BNGUtils {
 
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
+	private static Logger lg = Logger.getLogger(BNGUtils.class);
 
 /**
  * BNGUtils constructor comment.
@@ -93,6 +96,9 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 			bngInputFile = new File(workingDir, tempFilePrefix + suffix_input);
 			fos = new java.io.FileOutputStream(bngInputFile);
 		}catch (java.io.IOException e){
+			if (lg.isEnabledFor(Level.WARN) ) {
+				lg.warn("error opening input file '"+bngInputFile,e);
+			}
 			e.printStackTrace(System.out);
 			throw new RuntimeException("error opening input file '"+bngInputFile.getName()+": "+e.getMessage());
 		}	
@@ -130,27 +136,32 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		System.out.println("--------------Finished BNG----------------------------");
 		
 	} catch(org.vcell.util.ExecutableException ex ){
+		if (lg.isEnabledFor(Level.WARN) ) {
+			lg.warn("error executable BNG", ex); 
+		}
 		if (executable.getStderrString().trim().length() == 0) {
 			throw ex;
 		}
-		throw new org.vcell.util.ExecutableException(executable.getStderrString());
+		throw new org.vcell.util.ExecutableException(executable.getStderrString(),ex);
 	} finally {
-		if (workingDir != null && workingDir.exists()) {
-			File[] files = workingDir.listFiles();
-			
-			for (int i = 0; i < files.length; i ++) {
-				files[i].delete();
-			}		
-		}
-		
-		workingDir = null;
 		executable = null;		
+		if (lg.getEffectiveLevel( ).isGreaterOrEqual(Level.INFO) ) {
+			if (workingDir != null && workingDir.exists()) {
+				File[] files = workingDir.listFiles();
+
+				for (int i = 0; i < files.length; i ++) {
+					files[i].delete();
+				}		
+			}
+		}
+
+		workingDir = null;
 	}
 
 	return bngOutput;
 }
 
-public static void initializeLicensedLibrary(Component parent) throws Exception {
+public static synchronized void initializeLicensedLibrary(Component parent) throws Exception {
 	if (!LicensedLibrary.CYGWIN_DLL_BIONETGEN.isLicensed()) {
 		LicenseManager.promptForLicense(parent, LicensedLibrary.CYGWIN_DLL_BIONETGEN,true); 
 	}
@@ -161,7 +172,7 @@ public static void initializeLicensedLibrary(Component parent) throws Exception 
  * Insert the method's description here.
  * Creation date: (9/19/2006 11:36:49 AM)
  */
-private static void initialize() throws Exception {
+private static synchronized void initialize() throws Exception {
 	File bngHome = new File(ResourceUtil.getVcellHome(), "BioNetGen");
 	if (!bngHome.exists()) {
 		bngHome.mkdirs();

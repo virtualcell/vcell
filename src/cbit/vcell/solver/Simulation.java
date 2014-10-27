@@ -14,11 +14,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -32,6 +36,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.util.VCellErrorMessages;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -75,6 +80,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	/**
 	 * Settings that override those specified in the MathDescription.
 	 */
+	private transient SimulationOwner simulationOwner = null;
 	private DataProcessingInstructions dataProcessingInstructions = null;
 	private MathOverrides fieldMathOverrides = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -83,8 +89,6 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private java.lang.String fieldSimulationIdentifier = null;
 	private MeshSpecification fieldMeshSpecification = null;
 	private boolean fieldIsDirty = false;
-	private java.lang.String fieldWarning = null;
-	
 	
 	
 /**
@@ -214,6 +218,16 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
 	dataProcessingInstructions = simulation.dataProcessingInstructions;
 	refreshDependencies();
+}
+
+
+public SimulationOwner getSimulationOwner() {
+	return simulationOwner;
+}
+
+
+public void setSimulationOwner(SimulationOwner simulationOwner) {
+	this.simulationOwner = simulationOwner;
 }
 
 
@@ -357,27 +371,25 @@ public boolean isSpatial() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/25/01 11:25:24 AM)
- * @return boolean
- */
-public boolean checkValid() {
-	setWarning(null);
-
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	
+	getMathOverrides().gatherIssues(issueContext, issueList);
+	
 	//
 	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
 	// If so, the simulation is invalid.
 	//
 	if (fieldMathDescription != null && getSolverTaskDescription() != null) {
 		if (getMathDescription().hasFastSystems() && (getSolverTaskDescription().getSensitivityParameter() != null)) {
-			setWarning("Sensitivity Analysis for a math with Fast Systems is not supported yet. Please disable sensitivity analysis for this simulation to run.");
-			return false;
+			Issue issue = new Issue(this, issueContext, IssueCategory.Simulation_SensAnal_And_FastSystem,
+									VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_SENSANAL_FASTSYSTEM,getName()),
+									Issue.SEVERITY_ERROR);
+			issueList.add(issue);
 		}
 	}
 	if (fieldMathDescription==null || !fieldMathDescription.isValid()){
-		setWarning(fieldMathDescription.getWarning());
-		return false;
+		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
+		issueList.add(issue);
 	}
 	
 	Set<SolverFeature> supportedFeatures = getSolverTaskDescription().getSolverDescription().getSupportedFeatures();
@@ -398,11 +410,9 @@ public boolean checkValid() {
 				text += sd.getDisplayLabel() + "\n";
 			}
 		}
-		setWarning(text);	
-		return false;
+		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
+		issueList.add(issue);
 	}
-	return true;
-	
 }
 
 public Set<SolverFeature> getRequiredFeatures() {
@@ -414,7 +424,7 @@ public Set<SolverFeature> getRequiredFeatures() {
 	}
 	if (getMathDescription().isNonSpatialStoch() || getMathDescription().isSpatialStoch()) {
 		requiredFeatures.add(SolverFeature.Feature_Stochastic);
-	} else {
+	} else if (!getMathDescription().isRuleBased()){
 		requiredFeatures.add(SolverFeature.Feature_Deterministic);
 	}
 	if (getMathDescription().hasFastSystems()) {
@@ -630,15 +640,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 
 
 /**
- * Gets the warning property (java.lang.String) value.
- * @return The warning property value.
- */
-public java.lang.String getWarning() {
-	return fieldWarning;
-}
-
-
-/**
  * The hasListeners method was generated to support the propertyChange field.
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
@@ -810,18 +811,6 @@ private void setVersion(SimulationVersion simulationVersion) throws PropertyVeto
 		setName(simulationVersion.getName());
 		setDescription(simulationVersion.getAnnot());
 	}
-}
-
-
-/**
- * Sets the warning property (java.lang.String) value.
- * @param warning The new value for the property.
- * @see #getWarning
- */
-private void setWarning(java.lang.String warning) {
-	String oldValue = fieldWarning;
-	fieldWarning = warning;
-	firePropertyChange("warning", oldValue, warning);
 }
 
 /**
