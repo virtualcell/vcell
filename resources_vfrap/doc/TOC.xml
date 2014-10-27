@@ -5,9 +5,7 @@
         <tocitem target="intro" text="introduction"/>
     </tocitem>
 
-    <tocitem target="gettingStarted" text="Getting Started">
-        <tocitem target="requirements" text="System Requirements"/>
-        <tocitem target="installation" text="Installation Instruction"/>
+    <tocitem target="gettingStarted" text="System Requirements">
     </tocitem>
 
     <tocitem target="quickTour" text="Quick Tour of Virtual Frap">
