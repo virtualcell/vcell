@@ -188,10 +188,23 @@ public class VCML {
 	public final static String CreateParticle			= "CreateParticle"; // particle
 	public final static String DestroyParticle			= "DestroyParticle"; // particle
 	public final static String SelectedParticle			= "SelectedParticle"; // particle
-	
 	public final static String ParticleInitialConcentration	= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistribution		= "ParticleDistribution"; // particle
 	
+	public final static String ParticleMolecularComponent	= "Component";
+	public final static String ParticleComponentAllowableState	= "AllowableState";
+	public final static String ParticleMolecularTypePattern	= "MolecularType";
+	public final static String ParticleMolecularComponentPattern = "Component";
+	public final static String ParticleComponentStatePattern = "State";
+	public final static String ParticleComponentBondPattern = "Bond";
+	public final static String ParticleMolecularType = "ParticleMolecularType";
+	public final static String VolumeParticleObservable     = "VolumeParticleObservable";
+	public final static String VolumeParticleSpeciesPattern     = "VolumeParticleSpeciesPattern";
+	public final static String VolumeParticleSpeciesPatterns     = "VolumeParticleSpeciesPatterns";
+		
+	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";
+	public final static String NFSimSimulationOptions_randomSeed	= "RandomSeed";
+
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String SmoldynSimulationOptions_accuracy	= "Accuracy";

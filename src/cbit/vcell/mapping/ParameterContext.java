@@ -21,9 +21,12 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.ParameterType;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -317,7 +320,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 	private transient boolean bResolvingUnits = false;
 	private transient boolean bReading = false;
 	
-	PropertyChangeListener listener = new PropertyChangeListener() {
+	private class MyPropertyChangeListener implements PropertyChangeListener, Serializable {
 		
 		public void propertyChange(PropertyChangeEvent event) {
 			try {
@@ -342,6 +345,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			}
 		}
 	};
+	private MyPropertyChangeListener listener = new MyPropertyChangeListener();
 	
 public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPolicy, UnitSystemProvider argUnitSystemProvider) {
 	this.nameScope = bioNameScope;
@@ -437,24 +441,31 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  */
 public SymbolTableEntry getEntry(String identifierString) {
 	
-	SymbolTableEntry ste = getLocalEntry(identifierString);
-	if (ste != null){
-		return ste;
+	SymbolTableEntry localSTE = getLocalEntry(identifierString);
+	if (localSTE != null && !(localSTE instanceof UnresolvedParameter)){
+		return localSTE;
 	}
+	UnresolvedParameter unresolvedParameter = (UnresolvedParameter)localSTE; // may be null.
 			
-	ste = getNameScope().getExternalEntry(identifierString,this);
+	SymbolTableEntry externalSTE = getNameScope().getExternalEntry(identifierString,this);
 
-	if (ste instanceof SymbolTableFunctionEntry){
-		return ste;
+	if (externalSTE instanceof SymbolTableFunctionEntry){
+		return externalSTE;
+	}	
+	//
+	// external ste is null and found unresolved parameter, then return unresolved parameter.  
+	// (external entry overrides unresolved parameter).
+	//
+	if (externalSTE!=null){
+		if (unresolvedParameter!=null){
+			removeUnresolvedParameters(this);
+		}
+		return addProxyParameter(externalSTE);
+	}else if (unresolvedParameter != null){
+		return unresolvedParameter;
 	}
 	
-	if (ste!=null){
-		if (ste instanceof SymbolTableFunctionEntry){
-			return ste;
-		} else {
-			return addProxyParameter(ste);
-		}
-	}
+	//TODO: check for x,y,z for reaction rule usage, see ReactionStep.getEntry()
 	
 	return null;
 }
@@ -906,6 +917,92 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
 		}
 	}
 	return false;
+}
+
+public interface GlobalParameterContext {
+	ScopedSymbolTable getSymbolTable();
+	Parameter getParameter(String name);
+	Parameter addParameter(String name, Expression exp, VCUnitDefinition unit) throws PropertyVetoException;
+}
+
+public void convertParameterType(Parameter param, boolean bConvertToGlobal, GlobalParameterContext globalParameterContext) throws PropertyVetoException, ExpressionBindingException {
+	Expression expression = param.getExpression();
+	if (!bConvertToGlobal) {
+		// need to convert model parameter (the proxyparam/global) to local (kinetics) parameter 
+		if (!(param instanceof LocalProxyParameter)) {
+			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a proxy (global) parameter, cannot convert it to a local parameter.");
+		} else {
+			// first remove proxy param, 
+			removeProxyParameter((LocalProxyParameter)param);
+			// then add it as local param
+			if (expression != null) {
+				Expression newExpr = new Expression(expression);
+				newExpr.bindExpression(this);
+				addLocalParameter(param.getName(), newExpr, RbmKineticLaw.ParameterType.UserDefined.getRole(), param.getUnitDefinition(), RbmKineticLaw.ParameterType.UserDefined.getDescription());
+			} 
+		}
+	} else {
+		// need to convert local (the kinetics parameter) to model (proxy) parameter
+		if (!(param instanceof LocalParameter)) {
+			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a local parameter, cannot convert it to a global (proxy) parameter.");
+		} else {
+			// first check if kinetic param is the 'authoritative' kinetic parame; if so, cannot remove it.
+			// else remove local param - should have already been checked in parameterTableModel
+			// First add param as a model parameter, if it is not already present
+			Parameter globalParameter = globalParameterContext.getParameter(param.getName());
+			if (globalParameter == null) {
+				Expression newExpr = new Expression(expression);
+				newExpr.bindExpression(globalParameterContext.getSymbolTable());
+				globalParameter = globalParameterContext.addParameter(param.getName(),  newExpr,  param.getUnitDefinition());
+			}
+			// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
+			// since it is present in the reaction rate equn.
+			removeParameter((LocalParameter)param);
+			addProxyParameter(globalParameter);
+		}
+	}
+}
+
+
+public void setParameterValue(LocalParameter parm, Expression exp, boolean autocreateLocalParameters) throws PropertyVetoException, ExpressionException {
+	LocalParameter p = getLocalParameterFromName(parm.getName());
+	if (p != parm){
+		throw new RuntimeException("parameter "+parm.getName()+" not found");
+	}
+	Expression oldExpression = parm.getExpression();
+	boolean bBound = false;
+	try {
+		if (autocreateLocalParameters){
+			//
+			// create local parameters for any unknown symbols.
+			//
+			LocalParameter newLocalParameters[] = (LocalParameter[])getLocalParameters().clone();
+//			LocalProxyParameter newProxyParameters[] = (LocalProxyParameter[])getProxyParameters().clone();
+			String symbols[] = exp.getSymbols();
+			VCUnitSystem modelUnitSystem = unitSystemProvider.getUnitSystem();
+			for (int i = 0; symbols!=null && i < symbols.length; i++){
+				SymbolTableEntry ste = getEntry(symbols[i]);
+				if (ste==null){
+					newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,new LocalParameter(symbols[i],new Expression(0.0),RbmKineticLaw.ParameterType.UserDefined.getRole(), modelUnitSystem.getInstance_TBD(),RbmKineticLaw.ParameterType.UserDefined.getDescription()));
+				}
+			}
+			setLocalParameters(newLocalParameters);
+//			setProxyParameters(newProxyParameters);
+		}		
+		exp.bindExpression(this);
+		parm.setExpression(exp);
+		bBound = true;
+	}finally{
+		try {
+			if (!bBound){
+				parm.setExpression(oldExpression);
+			}
+			cleanupParameters();
+		}catch (PropertyVetoException e){
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
 }
 
 

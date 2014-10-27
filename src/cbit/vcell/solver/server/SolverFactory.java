@@ -12,6 +12,7 @@ package cbit.vcell.solver.server;
 
 import java.io.File;
 
+import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.SessionLog;
 
@@ -95,6 +96,8 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 		solver = new SmoldynSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.Chombo)) {
 		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
+	} else if (solverDescription.equals(SolverDescription.NFSim)) {
+		solver = new NFSimSolver(simTask, directory, sessionLog, bMessaging);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

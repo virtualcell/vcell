@@ -28,10 +28,13 @@ import org.vcell.relationship.RelationshipObject;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.VCDocument;
@@ -41,29 +44,16 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
-import cbit.vcell.mapping.MicroscopeMeasurement;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -113,8 +103,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext addNewSimulationContext(String newSimulationContextName, boolean bStoch ) throws java.beans.PropertyVetoException {
-	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), bStoch);
+public SimulationContext addNewSimulationContext(String newSimulationContextName, boolean bStoch, boolean bRuleBased) throws java.beans.PropertyVetoException {
+	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), bStoch, bRuleBased);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;
@@ -275,7 +265,7 @@ public BioModelChildSummary createBioModelChildSummary() {
 	SimulationContext[] simContexts = getSimulationContexts();
 	
 	String[] scNames = new String[simContexts.length];
-	String[] appTypes = new String[simContexts.length];
+	MathType[] appTypes = new MathType[simContexts.length];
 	String[] scAnnots = new String[simContexts.length];
 	String[] geoNames = new String[simContexts.length];
 	int[] geoDims = new int[simContexts.length];
@@ -335,10 +325,15 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {
-	getModel().gatherIssues(issueList);
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.BioModel, this);
+	getModel().gatherIssues(issueContext, issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
-		simulationContext.gatherIssues(issueList);
+		simulationContext.gatherIssues(issueContext, issueList);
+	}
+	for (Simulation simulation : fieldSimulations) {
+		simulation.gatherIssues(issueContext,issueList);
 	}
 }
 
@@ -359,8 +354,8 @@ public java.lang.String getDescription() {
  * Creation date: (5/28/2004 3:13:04 PM)
  * @return int
  */
-public int getDocumentType() {
-	return BIOMODEL_DOC;
+public VCDocumentType getDocumentType() {
+	return VCDocumentType.BIOMODEL_DOC;
 }
 
 
@@ -684,6 +679,7 @@ public void refreshDependencies() {
 		fieldSimulations[i].addVetoableChangeListener(this);
 		fieldSimulations[i].refreshDependencies();
 	}
+	updateSimulationOwners();
 }
 
 
@@ -800,6 +796,7 @@ public void setSimulationContexts(SimulationContext[] simulationContexts) throws
 //		simulationContexts[i].addVetoableChangeListener(this);
 		simulationContexts[i].setBioModel(this);
 	}
+	updateSimulationOwners();
 	firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
 }
 
@@ -816,13 +813,26 @@ public void setSimulations(Simulation[] simulations) throws java.beans.PropertyV
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);
 		oldValue[i].removeVetoableChangeListener(this);
+		oldValue[i].setSimulationOwner(null); // make sure old simulation instances have null simulationOwners
 	}
 	fieldSimulations = simulations;
 	for (int i = 0; simulations!=null && i < simulations.length; i++){
 		simulations[i].addPropertyChangeListener(this);
 		simulations[i].addVetoableChangeListener(this);
 	}
+	updateSimulationOwners();
 	firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+}
+
+private void updateSimulationOwners(){
+	for (Simulation sim : fieldSimulations){
+		try {
+			sim.setSimulationOwner(getSimulationContext(sim));
+		} catch (ObjectNotFoundException e) {
+			sim.setSimulationOwner(null);
+			e.printStackTrace();
+		}
+	}
 }
 
 
@@ -1130,82 +1140,6 @@ public SimulationContext getSimulationContext(String name) {
 		return relationshipModel;
 	}
 
-	public String getObjectPathDescription(Object source) {
-		String description = "";
-		if (source instanceof SymbolTableEntry) {
-			description = ((SymbolTableEntry) source).getNameScope().getPathDescription();
-		} else if (source instanceof ReactionStep) {
-			ReactionStep reactionStep = (ReactionStep) source;
-			description = ((ReactionNameScope)reactionStep.getNameScope()).getPathDescription();
-		} else if (source instanceof SpeciesContext) {
-			description = "Species";
-		} else if (source instanceof Structure) {
-			Structure structure = (Structure)source;
-			description = "Model / " + structure.getTypeName() + "(" + structure.getName() + ")";
-		} else if (source instanceof StructureMapping) {
-			StructureMapping structureMapping = (StructureMapping) source;
-			description = ((StructureMappingNameScope)structureMapping.getNameScope()).getPathDescription();
-		} else if (source instanceof OutputFunctionIssueSource) {
-			SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
-			description = "App(" + simulationContext.getNameScope().getPathDescription() + ") / " 
-				+ "Simulations" + " / " + "Output Functions";
-		} else if (source instanceof UnmappedGeometryClass) {
-			UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
-			description = "App(" + unmappedGC.getSimulationContext().getNameScope().getPathDescription() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
-		} else if (source instanceof GeometryContext) {
-			description = "App(" + ((GeometryContext)source).getSimulationContext().getNameScope().getPathDescription() + ")";
-		} else if (source instanceof ModelOptimizationSpec) {
-			description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getNameScope().getPathDescription() + ") / Parameter Estimation";
-		} else if (source instanceof MicroscopeMeasurement) {
-			description = "App(" + ((MicroscopeMeasurement)source).getSimulationContext().getNameScope().getPathDescription() + ") / Microscope Measurements";
-		} else if (source instanceof SpeciesContextSpec) {
-			SpeciesContextSpec scs = (SpeciesContextSpec)source;
-			description = "App(" + scs.getSimulationContext().getNameScope().getPathDescription() + ") / Specifications / Species";
-		} else if (source instanceof ReactionCombo) {
-			ReactionCombo rc = (ReactionCombo)source;
-			description = "App(" + rc.getReactionContext().getSimulationContext().getNameScope().getPathDescription() + ") / Specifications / Reactions";
-		}
-		return description;
-	}
-
-	public String getObjectDescription(Object object) {
-		String description = "";
-		if (object instanceof SymbolTableEntry) {
-			description = ((SymbolTableEntry)object).getName();
-		} else if (object instanceof ReactionStep) {
-			description = ((ReactionStep)object).getName();
-		} else if (object instanceof SpeciesContext) {
-			description = ((SpeciesContext)object).getName();
-		} else if (object instanceof Structure) {
-			description = ((Structure)object).getName();
-		} else if (object instanceof Variable) {
-			description = ((Variable)object).getName();
-		} else if (object instanceof SubDomain) {
-			description = ((SubDomain)object).getName();
-		} else if (object instanceof Geometry) {
-			description = ((Geometry)object).getName();
-		} else if (object instanceof StructureMapping) {
-			description = ((StructureMapping)object).getStructure().getName();
-		} else if (object instanceof OutputFunctionIssueSource) {
-			description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
-		} else if (object instanceof UnmappedGeometryClass) {
-			description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
-		} else if (object instanceof MicroscopeMeasurement) {
-			description = ((MicroscopeMeasurement) object).getName();
-		}else if (object instanceof GeometryContext) {
-			description = "Geometry";
-		}else if (object instanceof ModelOptimizationSpec) {
-			description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
-		} else if (object instanceof SpeciesContextSpec) {
-			SpeciesContextSpec scs = (SpeciesContextSpec)object;
-			description = scs.getSpeciesContext().getName();
-		} else if (object instanceof ReactionCombo) {
-			ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
-			description = rs.getReactionStep().getName();
-		}
-		return description;
-	}
-	
 	public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
 		ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
 		HashSet<NameScope> visited = new HashSet<NameScope>();

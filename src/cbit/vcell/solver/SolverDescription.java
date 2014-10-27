@@ -120,7 +120,13 @@ public enum SolverDescription {
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_DirichletAtMembraneBoundary},
 	      SolverExecutable.VCellChombo, LicensedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285", 
-	      VCellCodeVersion.CURRENT.compare(5,4) < 0) ;
+	      VCellCodeVersion.CURRENT.compare(5,4) < 0), 
+	      
+	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.DEFAULT, "NFSim","NFSim (Network Free Simulator)","NFSim",
+	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
+	      SolverExecutable.NFSIM, LicensedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
+      ;
 
 	public enum SolverFeature {
 		Feature_NonSpatial("NonSpatial"),
@@ -142,7 +148,8 @@ public enum SolverDescription {
 		Feature_RegionSizeFunctions("Region Size Functions"),
 		Feature_GradientSourceTerm("Gradient Source Term"),
 		Feature_PostProcessingBlock("Post Processing"),
-		Feature_DirichletAtMembraneBoundary("Dirichlet (Value) Boundary Condition at Membrane");
+		Feature_DirichletAtMembraneBoundary("Dirichlet (Value) Boundary Condition at Membrane"),
+		Feature_Rulebased("Rule based");
 
 		private final String name;
 		private SolverFeature(String name) {
@@ -184,6 +191,14 @@ public enum SolverDescription {
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
 			return s.isSpatial() && !s.isSpatialHybrid() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
+	
+	/*
+	 * rule-based solvers
+	 */
+	public static final Collection<SolverFeature> RulebasedFeatureSet = new SolverFeatureSet ( 
+		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased,
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isRuleBased(); }},
+		NFSim,100);
 	
 	/*
 	 * Non-spatial solvers
@@ -563,6 +578,11 @@ public enum SolverDescription {
 	public boolean isChomboSolver() 
 	{
 		return this == Chombo; 
+	}
+
+	public boolean isNFSimSolver() 
+	{
+		return this == NFSim; 
 	}
 
 	/**

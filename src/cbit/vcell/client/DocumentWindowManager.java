@@ -18,6 +18,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -58,7 +59,7 @@ public abstract class DocumentWindowManager extends TopLevelWindowManager implem
 			this.vcDocumentInfo = vcDocumentInfo;
 		}
 		public GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument){
-			if(selectedGeometryDocument.getDocumentType() != VCDocument.GEOMETRY_DOC){
+			if(selectedGeometryDocument.getDocumentType() != VCDocumentType.GEOMETRY_DOC){
 				throw new IllegalArgumentException("GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument) must be of type VCDocument.GEOMETRY_DOC");
 			}
 			this.selectedGeometryDocument = selectedGeometryDocument;
@@ -280,7 +281,7 @@ public abstract VCDocument getVCDocument();
  */
 abstract SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
 
-public void openDocument(int documentType) {
+public void openDocument(VCDocumentType documentType) {
 	getRequestManager().openDocument(documentType, this);
 }
 

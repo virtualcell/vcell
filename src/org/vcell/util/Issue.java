@@ -12,6 +12,49 @@ package org.vcell.util;
 
 import java.util.List;
 
+import org.sbml.libsbml.SBase;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SeedSpecies;
+import org.vcell.model.rbm.SpeciesPattern;
+
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.Event;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.modelopt.ReferenceDataMappingSpec;
+import cbit.vcell.opt.ObjectiveFunction;
+import cbit.vcell.opt.OptimizationSpec;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.Simulation;
+
 
 
 /**
@@ -21,11 +64,13 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class Issue implements java.io.Serializable, Matchable {
+	
 	private java.util.Date date = new java.util.Date();
 	private String message = null;
 	private String tooltip = null;
 	private IssueCategory category = null;
 	private Object source = null;
+	private IssueContext issueContext = null;
 	private int severity = -1;
 
 	public static final int SEVERITY_INFO = 0;
@@ -83,6 +128,10 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_SpatialModel_PostProcessingBlock,
 		MathDescription_StochasticModel,
 		
+		Simulation_Override_NotFound,
+		Simulation_Override_NotSupported,
+		Simulation_SensAnal_And_FastSystem,
+		
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 		Smoldyn_Geometry_3DWarning,
 		
@@ -95,25 +144,188 @@ public class Issue implements java.io.Serializable, Matchable {
 		SBMLImport_MissingSpeciesInitCondition
 	}
 
+
 	//
-	// categories
+	// Physiology - to be handled by BioModels
 	//
-	//public static final int CATEGORY_KineticsApplicability		= 0;
-	//public static final int CATEGORY_ParameterLoop				= 1;
-	//public static final int CATEGORY_InconsistentUnits			= 2;
+	public Issue(Model argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SpeciesContext argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(KineticsParameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ModelParameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(UnresolvedParameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ReactionStep argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(Structure argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ComponentStateDefinition argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(RbmObservable argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(RbmModelContainer argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ReactionRule argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ProductPattern argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(RbmKineticLaw argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(MolecularComponent argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(MolecularComponentPattern argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(MolecularType argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(MolecularTypePattern argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SpeciesPattern argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SeedSpecies argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	
+	
+	//
+	// Applications - to be handled by BioModels
+	//
+	public Issue(GeometryContext argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(UnmappedGeometryClass argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SpeciesContextSpec argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SpeciesContextSpec argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, argTooltip, argSeverity);
+	}
+	public Issue(SpeciesContextSpecParameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(StructureMapping argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(StructureMappingParameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(MicroscopeMeasurement argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ReactionCombo argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, argTooltip, argSeverity);
+	}
+	
+
+	//
+	// ParameterEstimation / Optimization - to be handled by BioModels (and Maybe VirtualFRAP)
+	//
+	public Issue(ModelOptimizationSpec argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ObjectiveFunction argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(OptimizationSpec argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(ReferenceDataMappingSpec argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(cbit.vcell.opt.Parameter argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+
+	
+	//
+	// Geometry - to be handled by BioModels and MathModels
+	//
+	public Issue(Geometry argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	
+	
+	//
+	// MathDescription - to be handled by BioModels and MathModels
+	//
+	public Issue(MathDescription argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(Event argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(SubDomain argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(Variable argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(Equation argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	
+	
+	//
+	// Simulation - to be handled by BioModels and MathModels
+	//
+	public Issue(Simulation argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(OutputFunctionIssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	
+	
+	//
+	// too low level ... handle this soon
+	//
+	public Issue(Expression argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+
+
+	//
+	// SBML Importing
+	//
+	public Issue(SBase argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, argTooltip, argSeverity);
+	}
+	public Issue(SBase argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, null, argSeverity);
+	}
 
 /**
- * AbstractIssue constructor comment.
+ * Private constructor, not type safe
  */
-public Issue(Object argSource, IssueCategory argCategory, String argMessage, int argSeverity) {
-	this(argSource, argCategory, argMessage, null, argSeverity);
-}
-public Issue(Object argSource, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+private Issue(Object argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 	super();
 	if (argSeverity<0 || argSeverity>MAX_SEVERITY){
 		throw new IllegalArgumentException("unexpected severity="+argSeverity);
 	}
 	this.source = argSource;
+	this.issueContext = issueContext;
 	this.message = argMessage;
 	this.tooltip = argTooltip;
 	this.category = argCategory;
@@ -246,6 +458,10 @@ public String getSeverityName() {
  */
 public Object getSource() {
 	return source;
+}
+
+public IssueContext getIssueContext() {
+	return issueContext;
 }
 
 /**

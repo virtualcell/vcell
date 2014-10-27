@@ -32,7 +32,7 @@ import javax.swing.event.ChangeEvent;
 
 import org.vcell.util.gui.sorttable.JSortTable;
 
-import cbit.gui.ReactionEquation;
+import cbit.gui.ModelProcessEquation;
 import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.gui.TextFieldAutoCompletion;
 
@@ -229,7 +229,7 @@ public class EditorScrollTable extends JSortTable {
 	@Override
 	public void installCellEditors() {
 		super.installCellEditors();
-		setDefaultEditor(ReactionEquation.class,new DefaultScrollTableAutoCompleteCellEditor(new ReactionEquationTextFieldAutoCompletion(), this));
+		setDefaultEditor(ModelProcessEquation.class,new DefaultScrollTableAutoCompleteCellEditor(new ReactionEquationTextFieldAutoCompletion(), this));
 	}
 	
 	@Override

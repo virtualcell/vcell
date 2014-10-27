@@ -29,7 +29,11 @@ public class ASTParameter extends SimpleNode {
 		if (newValue.startsWith("{") && newValue.endsWith("}")) {
 			newValue = newValue.substring(1, newValue.length()-1);
 		}
-		expressionString = newValue;
+		if((newValue != null) && newValue.equals("undefined")) {
+			expressionString = "";
+		} else {
+			expressionString = newValue;
+		}
 	}
 
 	/** Accept the visitor. **/

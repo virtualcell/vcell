@@ -17,6 +17,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.*;
@@ -41,7 +42,7 @@ public class NewName extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	VCDocument document = documentWindowManager.getVCDocument();
-	if (document.getDocumentType() == VCDocument.MATHMODEL_DOC) {
+	if (document.getDocumentType() == VCDocumentType.MATHMODEL_DOC) {
 		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {
 			String msg = "Changes have been made in VCML Editor, please click \"Apply Changes\" or \"Cancel\" to proceed.";
 			PopupGenerator.showErrorDialog(documentWindowManager, msg);
@@ -56,13 +57,13 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	DocumentManager documentManager = mdiManager.getFocusedWindowManager().getRequestManager().getDocumentManager();
 	VCDocumentInfo[] vcDocumentInfos = new VCDocumentInfo[0];
 	String documentTypeDescription = "unknown";
-	if(document.getDocumentType() == VCDocument.MATHMODEL_DOC){
+	if(document.getDocumentType() == VCDocumentType.MATHMODEL_DOC){
 		documentTypeDescription = "MathModel";
 		vcDocumentInfos = documentManager.getMathModelInfos();
-	}else if(document.getDocumentType() == VCDocument.BIOMODEL_DOC){
+	}else if(document.getDocumentType() == VCDocumentType.BIOMODEL_DOC){
 		documentTypeDescription = "BioModel";
 		vcDocumentInfos = documentManager.getBioModelInfos();
-	}else if(document.getDocumentType() == VCDocument.GEOMETRY_DOC){
+	}else if(document.getDocumentType() == VCDocumentType.GEOMETRY_DOC){
 		documentTypeDescription = "Geometry";
 		vcDocumentInfos = documentManager.getGeometryInfos();
 	}

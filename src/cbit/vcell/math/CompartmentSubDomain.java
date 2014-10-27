@@ -618,6 +618,10 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 		}			
 		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
 			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+			if((pp.getVariable() == null) || (pp.getVariable().getDomain() == null)) {
+				throw new RuntimeException("either variable not found or no domain");
+//				continue;
+			}
 			if(pp.getVariable().getDomain().getName().equals(this.getName())){
 				addParticleProperties(pp);
 			}else{

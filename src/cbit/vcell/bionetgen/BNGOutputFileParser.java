@@ -67,8 +67,15 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 		System.out.println("<<<SYSOUT ALERT>>>BNGOutputFile, read "+stringBuffer.length()+" of "+bngoutputFileLength+" bytes of input file");
 	}
 
+	String inputString = stringBuffer.toString();
+	return createBngOutputSpec(inputString);
+}
+
+
+public static BNGOutputSpec createBngOutputSpec(String inputString) {
+
 	String newLineDelimiters = "\n\r";
-	StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
+	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
 	
 	String token1 = new String("");
 	String token2 = new String("");
@@ -423,10 +430,10 @@ public static void printBNGNetOutput(BNGOutputSpec bngOutputSpec) {
 	for (int i = 0; i < species.length; i++){
 		System.out.println(i+1 + ":\t\t"+ species[i].toString());
 	}	
-	System.out.println("\n\nReaction Rules : \n");
-	for (int i = 0; i < reactionRules.length; i++){
-		System.out.println(i+1 + ":\t\t"+ reactionRules[i].writeReaction());
-	}	
+//	System.out.println("\n\nReaction Rules : \n");
+//	for (int i = 0; i < reactionRules.length; i++){
+//		System.out.println(i+1 + ":\t\t"+ reactionRules[i].writeReaction());
+//	}	
 	System.out.println("\n\nReactions : \n");
 	for (int i = 0; i < reactions.length; i++){
 		System.out.println(i+1 + ":\t\t"+ reactions[i].writeReaction());
@@ -435,5 +442,6 @@ public static void printBNGNetOutput(BNGOutputSpec bngOutputSpec) {
 	for (int i = 0; i < observableGps.length; i++){
 		System.out.println(i+1 + ":\t\t"+ observableGps[i].toString());
 	}
+	System.out.println("\n\nDone : \n");
 }
 }

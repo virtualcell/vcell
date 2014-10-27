@@ -20,10 +20,12 @@ import java.util.Hashtable;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DialogUtils.TableListResult;
 
@@ -54,11 +56,12 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -97,8 +100,12 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelEditorSabioPanel bioModelEditorSabioPanel;
 	private BioModelEditorPathwayDiagramPanel bioModelEditorPathwayDiagramPanel = null;
 	
+	private ReactionRulePropertiesPanel reactionRulePropertiesPanel = null;
 	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
+	private MolecularTypePropertiesPanel speciesTypePropertiesPanel = null;
+	private ObservablePropertiesPanel observablePropertiesPanel = null;
+
 	private StructurePropertiesPanel structurePropertiesPanel = null;
 	private ParameterPropertiesPanel parameterPropertiesPanel = null;
 	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
@@ -151,6 +158,20 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				case SPECIES_NODE:
 					newObject = model.createSpeciesContext(model.getStructure(0));
 					break;
+				case SPECIES_TYPES_NODE:
+					if(model.getRbmModelContainer() != null) {
+						MolecularType mt = model.getRbmModelContainer().createMolecularType();
+						model.getRbmModelContainer().addMolecularType(mt);
+						newObject = mt;
+					}
+					break;
+				case OBSERVABLES_NODE:
+					if(model.getRbmModelContainer() != null) {
+						RbmObservable o = model.getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
+						model.getRbmModelContainer().addObservable(o);
+						newObject = o;
+					}
+					break;
 				case SIMULATIONS_NODE:
 					if (selectedSimulationContext != null) {
 						AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -182,6 +203,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		break;
 	case add_new_app_deterministic:
 	case add_new_app_stochastic:
+	case add_new_app_rulebased: {
 		AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			
 			@Override
@@ -190,27 +212,47 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
 			}
 		};
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic);
+		boolean bRuleBased = false;
+		if(action == DocumentEditorPopupMenuAction.add_new_app_rulebased) {
+			bRuleBased = true;
+		}
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic, bRuleBased);
 		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
 		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
 		tasks[newApplicationTasks.length] = task;
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
 		break;
+	}
 	case copy_app:
 		if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
 			copyApplication();
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
-			copyApplication(false, true);
+			boolean bRuleBased = false;
+			copyApplication(false, true, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
-			copyApplication(false, false);
+			boolean bRuleBased = false;
+			copyApplication(false, false, bRuleBased);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION)) {
+			boolean bRuleBased = true;
+			copyApplication(false, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			copyApplication(false, false);
+			boolean bRuleBased = false;
+			copyApplication(false, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
-			copyApplication(false, true);
+			boolean bRuleBased = false;
+			copyApplication(false, true, bRuleBased);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_RULEBASED_APPLICATION)) {
+			boolean bRuleBased = true;
+			copyApplication(false, true, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			copyApplication(true, false);
+			boolean bRuleBased = false;
+			copyApplication(true, false, bRuleBased);
 		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
-			copyApplication(true, true);
+			boolean bRuleBased = false;
+			copyApplication(true, true, bRuleBased);
+		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION)) {
+			boolean bRuleBased = true;
+			copyApplication(true, true, bRuleBased);
 		}
 		break;
 	case app_new_biomodel:
@@ -282,7 +324,7 @@ private void copyApplication() {
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}
-	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch());
+	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch(), simulationContext.isRuleBased());
 }
 
 private void createNewBiomodelFromApp(){
@@ -309,7 +351,7 @@ private void createNewBiomodelFromApp(){
 				newBioModel.removeSimulationContext(newBMSimcontexts[i]);
 			}
 		}
-		VCDocument.DocumentCreationInfo newBMDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC,VCDocument.BIO_OPTION_DEFAULT);
+		VCDocument.DocumentCreationInfo newBMDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC,VCDocument.BIO_OPTION_DEFAULT);
 		newBMDocCreateInfo.setPreCreatedDocument(newBioModel);
 		AsynchClientTask[] newBMTasks = getBioModelWindowManager().newDocument(newBMDocCreateInfo);
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), newBMTasks);
@@ -318,7 +360,7 @@ private void createNewBiomodelFromApp(){
 		PopupGenerator.showErrorDialog(this, "Error creating new BioModel from Application '"+simulationContext.getName()+"'\n"+e.getMessage());
 	}
 }
-private void copyApplication(final boolean bSpatial, final boolean bStochastic) {		
+private void copyApplication(final boolean bSpatial, final boolean bStochastic, final boolean bRuleBased) {		
 	final SimulationContext simulationContext = getSelectedSimulationContext();
 	if (simulationContext == null) {
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
@@ -332,7 +374,7 @@ private void copyApplication(final boolean bSpatial, final boolean bStochastic) 
 			return;
 		}
 	}
-	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic);
+	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic, bRuleBased);
 	AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
 	System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
 	allTasks[allTasks.length - 1] = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
@@ -394,7 +436,6 @@ private EventPanel getEventPanel() {
 		eventPanel = new EventPanel();
 		eventPanel.setName("EventPanel");
 	}
-	
 	return eventPanel;
 }
 private SimulationSummaryPanel getSimulationSummaryPanel() {
@@ -426,6 +467,12 @@ private ReactionPropertiesPanel getReactionPropertiesPanel() {
 	}
 	return reactionStepPropertiesPanel;
 }
+private ReactionRulePropertiesPanel getReactionRulePropertiesPanel() {
+	if (reactionRulePropertiesPanel == null) {
+		reactionRulePropertiesPanel = new ReactionRulePropertiesPanel();
+	}
+	return reactionRulePropertiesPanel;
+}
 private KineticsTypeTemplatePanel getKineticsTypeTemplatePanel() {
 	if (kineticsTypeTemplatePanel == null) {
 		try {
@@ -442,6 +489,18 @@ private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
 		speciesPropertiesPanel = new SpeciesPropertiesPanel();
 	}
 	return speciesPropertiesPanel;
+}
+private MolecularTypePropertiesPanel getSpeciesTypePropertiesPanel() {
+	if (speciesTypePropertiesPanel == null) {
+		speciesTypePropertiesPanel = new MolecularTypePropertiesPanel();
+	}
+	return speciesTypePropertiesPanel;
+}
+private ObservablePropertiesPanel getObservablePropertiesPanel() {
+	if (observablePropertiesPanel == null) {
+		observablePropertiesPanel = new ObservablePropertiesPanel();
+	}
+	return observablePropertiesPanel;
 }
 
 private StructurePropertiesPanel getStructurePropertiesPanel() {
@@ -527,6 +586,7 @@ private void initialize() {
 		bioModelEditorModelPanel.setIssueManager(issueManager);
 		getBioModelsNetPropertiesPanel().setSelectionManager(selectionManager);
 		getBioModelEditorApplicationsPanel().setSelectionManager(selectionManager);
+		getReactionRulePropertiesPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);
 		getKineticsTypeTemplatePanel().setSelectionManager(selectionManager);
@@ -542,6 +602,8 @@ private void initialize() {
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
+		getSpeciesTypePropertiesPanel().setSelectionManager(selectionManager);
+		getObservablePropertiesPanel().setSelectionManager(selectionManager);
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
 		
@@ -566,8 +628,14 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		Object singleSelection = selections[0];
 		if (singleSelection instanceof ReactionStep) {
 			bottomComponent = getReactionPropertiesPanel();
+		} else if (singleSelection instanceof ReactionRule) {
+			bottomComponent = getReactionRulePropertiesPanel();
 		} else if (singleSelection instanceof SpeciesContext) {
 			bottomComponent = getSpeciesPropertiesPanel();
+		} else if (singleSelection instanceof MolecularType) {
+			bottomComponent = getSpeciesTypePropertiesPanel();
+		} else if (singleSelection instanceof RbmObservable) {
+			bottomComponent = getObservablePropertiesPanel();
 		} else if (singleSelection instanceof Structure) {
 			bottomComponent = getStructurePropertiesPanel();
 			getStructurePropertiesPanel().setModel(bioModel.getModel());
@@ -614,12 +682,18 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			csgObjectPropertiesPanel.setSimulationContext(getSelectedSimulationContext());
 		} else if (singleSelection instanceof DocumentEditorTreeFolderNode) {
 			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode)singleSelection).getFolderClass();
-			if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
+			if ((folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) && !(singleSelection instanceof ReactionRule)) {
 				bottomComponent = getReactionPropertiesPanel();
+			} else if ((folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) && (singleSelection instanceof ReactionRule)) {
+				bottomComponent = getReactionRulePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE) {
 				bottomComponent = getStructurePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE) {
+				bottomComponent = getSpeciesTypePropertiesPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE) {
+				bottomComponent = getObservablePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bottomComponent = getApplicationsPropertiesPanel();
 				getApplicationsPropertiesPanel().setBioModel(bioModel);
@@ -708,6 +782,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE
 //				|| folderClass == DocumentEditorTreeFolderClass.STRUCTURE_DIAGRAM_NODE
@@ -778,8 +854,11 @@ public void setBioModel(BioModel bioModel) {
 	
 	bioModelEditorTreeCellRenderer.setBioModel(bioModel);
 	
+	getReactionRulePropertiesPanel().setBioModel(bioModel); 
 	getReactionPropertiesPanel().setBioModel(bioModel); 
 	getSpeciesPropertiesPanel().setBioModel(bioModel);
+	getSpeciesTypePropertiesPanel().setBioModel(bioModel);
+	getObservablePropertiesPanel().setBioModel(bioModel);
 	bioPaxObjectPropertiesPanel.setBioModel(bioModel);
 }
 

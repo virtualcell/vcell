@@ -5,6 +5,7 @@ package org.vcell.model.bngl;
 public class ASTReactionRule extends SimpleNode {
 
 	public String arrowString;
+	public String label;
 
 	public ASTReactionRule(int id) {
 		super(id);
@@ -16,6 +17,9 @@ public class ASTReactionRule extends SimpleNode {
 
 	public void setArrowString(String image) {
 		this.arrowString = image;
+	}
+	public void setLabel(String image) {
+		this.label = image.substring(0, image.indexOf(':'));
 	}
 
 	@Override
@@ -66,5 +70,8 @@ public class ASTReactionRule extends SimpleNode {
 
 	public final String getArrowString() {
 		return arrowString;
+	}
+	public final String getLabel() {
+		return label;
 	}
 }

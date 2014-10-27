@@ -14,6 +14,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 /**
  * Insert the type's description here.
  * Creation date: (8/20/2004 2:11:48 PM)
@@ -27,14 +28,14 @@ public class MathModelChildSummary implements java.io.Serializable {
 	private String simNames[] = null;
 	private String simAnnots[] = null;
 	//math model type deterministic or stochastic
-	private String modelType = null;
+	private MathType modelType = null;
 /**
  * Insert the method's description here.
  * Creation date: (8/23/2004 10:13:07 PM)
  */
 private MathModelChildSummary() {}
 
-public MathModelChildSummary(String arg_modelType, String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
+public MathModelChildSummary(MathType arg_modelType, String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
 	this.modelType = arg_modelType;
 	this.geoName = arg_geoName;
 	this.geoDim = arg_geoDim;
@@ -75,12 +76,12 @@ public static MathModelChildSummary fromDatabaseSerialization(String databaseSer
 		String tokenStr = (String)st.nextElement();
 		if(tokenStr.startsWith(BioModelChildSummary.TYPE_TOKEN))
 		{
-			mmcs.modelType = TokenMangler.getChildSummaryElementRestoredString(tokenStr.substring(BioModelChildSummary.TYPE_TOKEN.length()));
+			mmcs.modelType = MathType.valueOf(TokenMangler.getChildSummaryElementRestoredString(tokenStr.substring(BioModelChildSummary.TYPE_TOKEN.length())));
 			mmcs.geoName = TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
 		}
 		else
 		{
-			mmcs.modelType = BioModelChildSummary.TYPE_UNKNOWN_STR;
+			mmcs.modelType = BioModelChildSummary.MathType.Unknown;
 			mmcs.geoName = TokenMangler.getChildSummaryElementRestoredString(tokenStr);
 		}
 //		mmcs.modelType = (String)TokenMangler.getChildSummaryElementRestoredString((String)st.nextElement());
@@ -140,7 +141,7 @@ public String getGeometryName() {
 	return geoName;
 }
 
-public String getModelType()
+public MathType getModelType()
 {
 	return modelType;
 }

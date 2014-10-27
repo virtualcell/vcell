@@ -15,8 +15,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
@@ -25,18 +34,22 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTableModel<SpeciesContext> {
 	
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_LINK = 1;
-	public final static int COLUMN_STRUCTURE = 2;	
-	private static String[] columnNames = new String[] {"Name","Link","Structure"};
+	public final static int COLUMN_DEFINITION = 2;	
+	public final static int COLUMN_STRUCTURE = 3;	
+	private static String[] columnNames = new String[] {"Name","Link","Definition","Structure"};
 
 	public BioModelEditorSpeciesTableModel(EditorScrollTable table) {
 		super(table);
@@ -51,6 +64,9 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			}
 			case COLUMN_LINK:{
 				return BioPaxObject.class;
+			}
+			case COLUMN_DEFINITION:{
+				return SpeciesPattern.class;
 			}
 			case COLUMN_STRUCTURE:{
 				return Structure.class;
@@ -88,12 +104,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 
 	public Object getValueAt(int row, int column) {
-		if (getModel() == null) {
+		if (getModel() == null) {	
 			return null;
 		}
 		try{
 			SpeciesContext speciesContext = getValueAt(row);
-			if (speciesContext != null) {
+			if (speciesContext != null) {	// row with existing species
 				switch (column) {
 					case COLUMN_NAME: {
 						return speciesContext.getName();
@@ -105,11 +121,14 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 						}
 						return null;
 					} 
+					case COLUMN_DEFINITION: {
+						return speciesContext.getSpeciesPattern();
+					} 
 					case COLUMN_STRUCTURE: {
 						return speciesContext.getStructure();
 					} 
 				}
-			} else {
+			} else {			// empty row
 				if (column == COLUMN_NAME) {
 					return ADD_NEW_HERE_TEXT;
 				} 
@@ -122,14 +141,47 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	}
 
 	public boolean isCellEditable(int row, int column) {
-		return column == COLUMN_NAME;
+		switch (column) {
+		case COLUMN_NAME:
+			return true;
+		case COLUMN_DEFINITION:
+			SpeciesContext sc = getValueAt(row);
+			if (sc == null) {
+				return false;
+			} else {
+				return true;
+			}
+		default:
+			return false;
+		}
 	}
 
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		super.propertyChange(evt);
 		if (evt.getSource() == bioModel.getModel()) {
-			if (evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
+			if (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST)) {
+				refreshData();
+				
+//				List<RbmObservable> oldValue = (List<RbmObservable>) evt.getOldValue();
+//				if (oldValue != null) {
+//					for (RbmObservable observable : oldValue) {
+//						observable.removePropertyChangeListener(this);
+//						SpeciesPattern speciesPattern = observable.getSpeciesPattern(0);
+//						RbmUtils.removePropertyChangeListener(speciesPattern, this);
+//					}
+//				}
+//				List<RbmObservable> newValue = (List<RbmObservable>) evt.getNewValue();
+//				if (newValue != null) {
+//					for (RbmObservable observable : newValue) {
+//						observable.addPropertyChangeListener(this);
+//						SpeciesPattern speciesPattern = observable.getSpeciesPattern(0);
+//						RbmUtils.addPropertyChangeListener(speciesPattern, this);							
+//					}
+//				}
+			} else if(evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+				refreshData();		// we need this?
+			} else if (evt.getPropertyName().equals(Model.PROPERTY_NAME_STRUCTURES)) {
 				//updateStructureComboBox();
 			} else if (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)) {
 				SpeciesContext[] oldValue = (SpeciesContext[]) evt.getOldValue();
@@ -161,7 +213,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 		}
 		try{
 			SpeciesContext speciesContext = getValueAt(row);
-			if (speciesContext != null) {
+			if (speciesContext != null) {	// row with existing species
 				switch (column) {
 				case COLUMN_NAME: {
 					String inputValue = ((String)value);
@@ -178,11 +230,21 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 					Structure structure = (Structure)value;
 					speciesContext.setStructure(structure);
 					break;
-				} 
 				}
-			} else {
+				case COLUMN_DEFINITION:
+					String inputValue = ((String)value);
+					inputValue = inputValue.trim();
+					if (inputValue.length() == 0) {
+						speciesContext.setSpeciesPattern(null);
+						return;
+					}
+					SpeciesPattern sp = RbmUtils.parseSpeciesPattern(inputValue, bioModel.getModel());
+					speciesContext.setSpeciesPattern(sp);
+					break;
+				}
+			} else {				// empty row being edited
 				switch (column) {
-				case COLUMN_NAME: {
+				case COLUMN_NAME:	// only "name" column is editable
 					String inputValue = ((String)value);
 					if (inputValue.length() == 0 || inputValue.equals(ADD_NEW_HERE_TEXT)) {
 						return;
@@ -191,7 +253,6 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 					SpeciesContext freeSpeciesContext = getModel().createSpeciesContext(getModel().getStructures()[0]);
 					freeSpeciesContext.setName(inputValue);
 					break;
-				}
 				}
 			}
 		} catch(Exception e){
@@ -228,16 +289,84 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			if (speciesContext == null || !speciesContext.getName().equals(inputValue)) {
 				if (getModel().getSpeciesContext(inputValue) != null) {
 					errMsg = "Species '" + inputValue + "' already exists!";
+					errMsg += VCellErrorMessages.PressEscToUndo;
+					errMsg = "<html>" + errMsg + "</html>";
+					return errMsg;
 				}
 			}
 			break;
 		case COLUMN_STRUCTURE:
 			if (getModel().getStructure(inputValue) == null) {
 				errMsg = "Structure '" + inputValue + "' does not exist!";
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
+			}
+			break;
+		case COLUMN_DEFINITION:
+			try {
+				inputValue = inputValue.trim();
+				if (inputValue.length() > 0) {
+					// parsing will throw appropriate exception if molecular type or component don't exist
+					SpeciesPattern spThis = RbmUtils.parseSpeciesPattern(inputValue, bioModel.getModel());	// our change
+					// here we can restrict what the user can do
+					for(MolecularTypePattern mtpThis : spThis.getMolecularTypePatterns()) {
+						MolecularType mtThis = mtpThis.getMolecularType();
+						for(MolecularComponent mcThis : mtThis.getComponentList()) {
+							// we check that each component is present in the molecular type pattern (as component pattern)
+							if(mtpThis.getMolecularComponentPattern(mcThis) == null) {		// not found
+								errMsg = "All components in the Species Type definition must be present. Missing: " + mcThis.getName();
+								errMsg += VCellErrorMessages.PressEscToUndo;
+								errMsg = "<html>" + errMsg + "</html>";
+								return errMsg;
+							} else if(mtpThis.getMolecularComponentPattern(mcThis).isImplied()) {
+								errMsg = "All components in the Species Type definition must be present. Missing: " + mcThis.getName();
+								errMsg += VCellErrorMessages.PressEscToUndo;
+								errMsg = "<html>" + errMsg + "</html>";
+								return errMsg;
+							} else {	// now need to also check the states
+								if(mcThis.getComponentStateDefinitions().size() == 0) {
+									continue;	// nothing to do if the molecular component has no component state definition
+												// note that we raise exception in parseSpeciesPattern() if we attempt to use an undefined state
+												// so no need to check that here
+								}
+								boolean found = false;
+								for(ComponentStateDefinition csThis : mcThis.getComponentStateDefinitions()) {
+									MolecularComponentPattern mcpThis = mtpThis.getMolecularComponentPattern(mcThis);
+									if((mcpThis.getComponentStatePattern() == null) || mcpThis.getComponentStatePattern().isAny()) {
+										break;		// no component state pattern means no state, there's no point to check for this component again
+													// we get out of the for and complain that we found no matching state
+									}
+									if(csThis.getName().equals(mcpThis.getComponentStatePattern().getComponentStateDefinition().getName())) {
+										found = true;
+									}
+								}
+								if(found == false) {	// we should have found a matching state for the molecular component pattern
+									errMsg = "Component " + mcThis.getName() + " of molecule " + mtThis.getName() + " must be in one of the following states: ";
+									for(int i=0; i<mcThis.getComponentStateDefinitions().size(); i++) {
+										ComponentStateDefinition csThis = mcThis.getComponentStateDefinitions().get(i);
+										errMsg += csThis.getName();
+										if(i < mcThis.getComponentStateDefinitions().size()-1) {
+											errMsg += ", ";
+										}
+									}
+									errMsg += VCellErrorMessages.PressEscToUndo;
+									errMsg = "<html>" + errMsg + "</html>";
+									return errMsg;
+								}
+							}
+						}
+					}
+				}
+			} catch (Exception ex) {
+				errMsg = ex.getMessage();
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
 			}
 			break;
 		}
-		return errMsg;
+		return null;
 	}
 	
 	public SymbolTable getSymbolTable(int row, int column) {

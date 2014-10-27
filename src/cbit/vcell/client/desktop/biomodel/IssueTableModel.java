@@ -14,12 +14,45 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
+import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
+import cbit.vcell.model.ReactionStep.ReactionNameScope;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.Simulation;
 
 @SuppressWarnings("serial")
 public class IssueTableModel extends VCellSortTableModel<Issue> implements IssueEventListener {
@@ -35,14 +68,15 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
+		VCDocument vcDocument = (issueManager!=null)?(issueManager.getVCDocument()):null;
 		Issue issue = getValueAt(rowIndex);
 		switch (columnIndex) {
 		case COLUMN_DESCRIPTION:
 			return issue;
 		case COLUMN_SOURCE:
-			return issueManager == null ? null : issueManager.getObjectDescription(issue.getSource());
+			return getSourceObjectDescription(vcDocument,issue);
 		case COLUMN_PATH:
-			return issueManager == null ? null : issueManager.getObjectPathDescription(issue.getSource());
+			return getSourceObjectPathDescription(vcDocument,issue);
 		}
 		return null;
 	}
@@ -51,6 +85,7 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 	protected Comparator<Issue> getComparator(final int col, final boolean ascending) {
 		return new Comparator<Issue>() {
 			public int compare(Issue o1, Issue o2) {
+				VCDocument vcDocument = (issueManager!=null)?(issueManager.getVCDocument()):null;
 				int scale = ascending ? 1 : -1;
 				switch (col) {
 				case COLUMN_DESCRIPTION: {
@@ -63,9 +98,9 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 					}
 				}
 				case COLUMN_SOURCE:
-					return issueManager == null ? 0 : scale * issueManager.getObjectDescription(o1.getSource()).compareTo(issueManager.getObjectDescription(o2.getSource()));
+					return scale * getSourceObjectDescription(vcDocument,o1).compareTo(getSourceObjectDescription(vcDocument,o2));
 				case COLUMN_PATH:
-					return issueManager == null ? 0 : scale * issueManager.getObjectPathDescription(o1.getSource()).compareTo(issueManager.getObjectPathDescription(o2.getSource()));
+					return scale * getSourceObjectPathDescription(vcDocument,o1).compareTo(getSourceObjectPathDescription(vcDocument,o2));
 				}
 				return 0;
 			}		
@@ -136,4 +171,149 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		issueManager.updateIssues();
 		refreshData();
 	}
+	
+	private String getSourceObjectPathDescription(VCDocument vcDocument, Issue issue) {
+		if (vcDocument instanceof BioModel){
+			BioModel bioModel = (BioModel)vcDocument;
+			Object source = issue.getSource();
+			String description = "";
+			if (source instanceof SymbolTableEntry) {
+				if (source instanceof SpeciesContext) {
+					description = "Model / Species";
+				} else if (source instanceof RbmObservable) {
+					description = "Model / Observables";
+				} else {
+					description = ((SymbolTableEntry) source).getNameScope().getPathDescription();
+				}
+			} else if (source instanceof ReactionStep) {
+				ReactionStep reactionStep = (ReactionStep) source;
+				description = ((ReactionNameScope)reactionStep.getNameScope()).getPathDescription();
+			} else if (source instanceof ReactionRule) {
+				ReactionRule reactionRule = (ReactionRule) source;
+				description = ((ReactionRuleNameScope)reactionRule.getNameScope()).getPathDescription();
+			} else if (source instanceof Structure) {
+				Structure structure = (Structure)source;
+				description = "Model / " + structure.getTypeName() + "(" + structure.getName() + ")";
+			} else if (source instanceof StructureMapping) {
+				StructureMapping structureMapping = (StructureMapping) source;
+				description = ((StructureMappingNameScope)structureMapping.getNameScope()).getPathDescription();
+			} else if (source instanceof OutputFunctionIssueSource) {
+				SimulationContext simulationContext = (SimulationContext) ((OutputFunctionIssueSource)source).getOutputFunctionContext().getSimulationOwner();
+				description = "App(" + simulationContext.getName() + ") / " 
+					+ "Simulations" + " / " + "Output Functions";
+			} else if (source instanceof Simulation) {
+				Simulation simulation = (Simulation)source;
+				try {
+					SimulationContext simulationContext = bioModel.getSimulationContext(simulation);
+					description = "App(" + simulationContext.getName() + ") / Simulations";
+				} catch (ObjectNotFoundException e) {
+					e.printStackTrace();
+					description = "App(" + "unknown" + ") / Simulations";
+				}
+			} else if (source instanceof UnmappedGeometryClass) {
+				UnmappedGeometryClass unmappedGC = (UnmappedGeometryClass) source;
+				description = "App(" + unmappedGC.getSimulationContext().getName() + ") / Subdomain(" + unmappedGC.getGeometryClass().getName() + ")";
+			} else if (source instanceof GeometryContext) {
+				description = "App(" + ((GeometryContext)source).getSimulationContext().getName() + ")";
+			} else if (source instanceof ModelOptimizationSpec) {
+				description = "App(" + ((ModelOptimizationSpec)source).getSimulationContext().getName() + ") / Parameter Estimation";
+			} else if (source instanceof MicroscopeMeasurement) {
+				description = "App(" + ((MicroscopeMeasurement)source).getSimulationContext().getName() + ") / Microscope Measurements";
+			} else if (source instanceof SpeciesContextSpec) {
+				SpeciesContextSpec scs = (SpeciesContextSpec)source;
+				description = "App(" + scs.getSimulationContext().getName() + ") / Specifications / Species";
+			} else if (source instanceof ReactionCombo) {
+				ReactionCombo rc = (ReactionCombo)source;
+				description = "App(" + rc.getReactionContext().getSimulationContext().getName() + ") / Specifications / Reactions";
+			}
+			return description;
+		}else if (vcDocument instanceof MathModel){
+			Object object = issue.getSource();
+			if (object instanceof Geometry) {
+				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY;
+			} else if (object instanceof OutputFunctionIssueSource) {
+				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS;
+			} else if (object instanceof Simulation){
+				return "Simulation("+((Simulation)object).getName()+")";
+			} else {
+				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML;
+			}
+		}else{
+			System.err.println("unknown document type in IssueTableModel.getSourceObjectPathDescription()");
+			return "";
+		}
+	}
+
+	private String getSourceObjectDescription(VCDocument vcDocument, Issue issue) {
+		
+		if (vcDocument instanceof BioModel){
+			Object object = issue.getSource();
+			String description = "";
+			if (object instanceof SymbolTableEntry) {
+				description = ((SymbolTableEntry)object).getName();
+			} else if (object instanceof ReactionStep) {
+				description = ((ReactionStep)object).getName();
+			} else if (object instanceof ReactionRule) {
+				description = ((ReactionRule)object).getName();
+			} else if (object instanceof SpeciesPattern) {
+				description = ((SpeciesPattern)object).toString();
+			} else if (object instanceof MolecularType) {
+				description = ((MolecularType)object).getName();
+			} else if (object instanceof MolecularComponent) {
+				description = ((MolecularComponent)object).getName();
+			} else if (object instanceof ComponentStateDefinition) {
+				description = ((ComponentStateDefinition)object).getName();
+			} else if (object instanceof Structure) {
+				description = ((Structure)object).getName();
+			} else if (object instanceof SubDomain) {
+				description = ((SubDomain)object).getName();
+			} else if (object instanceof Geometry) {
+				description = ((Geometry)object).getName();
+			} else if (object instanceof StructureMapping) {
+				description = ((StructureMapping)object).getStructure().getName();
+			} else if (object instanceof OutputFunctionIssueSource) {
+				description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
+			} else if (object instanceof UnmappedGeometryClass) {
+				description = ((UnmappedGeometryClass) object).getGeometryClass().getName();
+			} else if (object instanceof MicroscopeMeasurement) {
+				description = ((MicroscopeMeasurement) object).getName();
+			}else if (object instanceof GeometryContext) {
+				description = "Geometry";
+			}else if (object instanceof ModelOptimizationSpec) {
+				description = ((ModelOptimizationSpec) object).getParameterEstimationTask().getName();
+			}else if (object instanceof Simulation) {
+				description = ((Simulation) object).getName();
+			} else if (object instanceof SpeciesContextSpec) {
+				SpeciesContextSpec scs = (SpeciesContextSpec)object;
+				description = scs.getSpeciesContext().getName();
+			} else if (object instanceof ReactionCombo) {
+				ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
+				description = rs.getReactionStep().getName();
+			}
+			return description;
+		}else if (vcDocument instanceof MathModel){
+			Object object = issue.getSource();
+			String description = "";
+			if (object instanceof Variable) {
+				description = ((Variable)object).getName();
+			} else if (object instanceof SubDomain) {
+				description = ((SubDomain)object).getName();
+			} else if (object instanceof Geometry) {
+				description = "Geometry";
+			} else if (object instanceof OutputFunctionIssueSource) {
+				description = ((OutputFunctionIssueSource)object).getAnnotatedFunction().getName();
+			} else if (object instanceof MathDescription) {
+				return "math";
+			} else if (object instanceof Simulation) {
+				return "Simulation "+((Simulation)object).getName()+"";
+			}
+			return description;		
+		}else{
+			System.err.println("unknown document type in IssueTableModel.getSourceObjectDescription()");
+			return "";
+		}
+	}
+
+
+
 }

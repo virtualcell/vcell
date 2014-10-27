@@ -1,4 +1,4 @@
-package org.vcell.model.rbm;
+package org.vcell.model.rbm.common;
 
 import org.vcell.model.rbm.MolecularType;
 

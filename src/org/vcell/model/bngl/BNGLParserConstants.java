@@ -4,55 +4,59 @@ package org.vcell.model.bngl;
 public interface BNGLParserConstants {
 
   int EOF = 0;
-  int PLUS = 5;
-  int QUESTION_MARK = 6;
-  int COMMA = 7;
-  int NAMED_ATTRIBUTE = 8;
-  int VARIABLE_ATTRIBUTE = 9;
-  int MINUS = 10;
-  int BOND = 11;
-  int DOT = 12;
-  int REACTION_ARROW_RIGHT = 13;
-  int REACTION_ARROW_LEFT = 14;
-  int REACTION_ARROW_BOTH = 15;
-  int BEGIN = 16;
-  int MODEL = 17;
-  int END = 18;
-  int MOLECULES = 19;
-  int MOLECULE = 20;
-  int SPECIES = 21;
-  int SEED = 22;
-  int ACTION = 23;
-  int PARAMETERS = 24;
-  int REACTION = 25;
-  int RULES = 26;
-  int TYPES = 27;
-  int OBSERVABLES = 28;
-  int INTEGER = 29;
-  int IDENTIFIER = 30;
-  int LETTER = 31;
-  int DIGIT = 32;
-  int ESCAPED_EXPRESSION = 33;
+  int BEGIN = 1;
+  int MODEL = 2;
+  int END = 3;
+  int MOLECULES = 4;
+  int MOLECULE = 5;
+  int SPECIES = 6;
+  int SEED = 7;
+  int FUNCTIONS = 8;
+  int ACTION = 9;
+  int PARAMETERS = 10;
+  int REACTION = 11;
+  int RULES = 12;
+  int TYPES = 13;
+  int OBSERVABLES = 14;
+  int IDENTIFIER = 15;
+  int ID = 16;
+  int LETTER = 17;
+  int DIGIT = 18;
+  int INTEGER = 19;
+  int LABEL = 20;
+  int QUOTE = 25;
+  int RELATIONAL_OPERATOR_WITHOUT_LT_GT = 26;
+  int LT = 27;
+  int GT = 28;
+  int LE = 29;
+  int GE = 30;
+  int EQ = 31;
+  int NE = 32;
+  int AND = 33;
+  int OR = 34;
+  int NOT = 35;
+  int POWER = 36;
+  int ADD = 37;
+  int SUB = 38;
+  int MULT = 39;
+  int DIV = 40;
+  int FLOATING_POINT_LITERAL = 41;
+  int EXPONENT = 42;
+  int QUESTION_MARK = 43;
+  int COMMA = 44;
+  int NAMED_ATTRIBUTE = 45;
+  int VARIABLE_ATTRIBUTE = 46;
+  int MINUS = 47;
+  int BOND = 48;
+  int DOT = 49;
+  int REACTION_ARROW_RIGHT = 50;
+  int REACTION_ARROW_LEFT = 51;
+  int REACTION_ARROW_BOTH = 52;
 
   int DEFAULT = 0;
 
   String[] tokenImage = {
     "<EOF>",
-    "\" \"",
-    "\"\\t\"",
-    "\"\\n\"",
-    "\"\\r\"",
-    "\"+\"",
-    "\"?\"",
-    "\",\"",
-    "\"~\"",
-    "\"%\"",
-    "\"-\"",
-    "\"!\"",
-    "\".\"",
-    "\"->\"",
-    "\"<-\"",
-    "\"<->\"",
     "\"begin\"",
     "\"model\"",
     "\"end\"",
@@ -60,19 +64,57 @@ public interface BNGLParserConstants {
     "\"molecule\"",
     "<SPECIES>",
     "\"seed\"",
+    "\"functions\"",
     "\"action\"",
     "\"parameters\"",
     "\"reaction\"",
     "\"rules\"",
     "\"types\"",
     "\"observables\"",
-    "<INTEGER>",
     "<IDENTIFIER>",
+    "<ID>",
     "<LETTER>",
     "<DIGIT>",
-    "<ESCAPED_EXPRESSION>",
+    "<INTEGER>",
+    "<LABEL>",
+    "\" \"",
+    "\"\\t\"",
+    "\"\\n\"",
+    "\"\\r\"",
+    "\"\\\'\"",
+    "<RELATIONAL_OPERATOR_WITHOUT_LT_GT>",
+    "\"<\"",
+    "\">\"",
+    "\"<=\"",
+    "\">=\"",
+    "\"==\"",
+    "\"!=\"",
+    "<AND>",
+    "<OR>",
+    "<NOT>",
+    "\"^\"",
+    "\"+\"",
+    "\"-\"",
+    "\"*\"",
+    "\"/\"",
+    "<FLOATING_POINT_LITERAL>",
+    "<EXPONENT>",
+    "\"?\"",
+    "\",\"",
+    "\"~\"",
+    "\"%\"",
+    "<MINUS>",
+    "\"!\"",
+    "\".\"",
+    "<REACTION_ARROW_RIGHT>",
+    "<REACTION_ARROW_LEFT>",
+    "<REACTION_ARROW_BOTH>",
     "\"(\"",
     "\")\"",
+    "\"=\"",
+    "\"{\"",
+    "\"}\"",
+    "\";\"",
   };
 
 }

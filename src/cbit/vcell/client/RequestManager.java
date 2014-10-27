@@ -17,6 +17,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
@@ -212,7 +213,7 @@ AsynchClientTask[] newDocument(TopLevelWindowManager requester, VCDocument.Docum
 AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo,AsynchClientTask[] finalTasks,String okButtonText);
 
-void openDocument(int documentType, DocumentWindowManager requester);
+void openDocument(VCDocumentType documentType, DocumentWindowManager requester);
 
 void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requester, boolean inNewWindow);
 
@@ -330,6 +331,6 @@ void showComparisonResults(TopLevelWindowManager requester, XmlTreeDiff compareP
 
 void accessPermissions(Component requester, VCDocument vcDocument);
 
-boolean isDifferentFromBlank(int documentType, VCDocument vcDocument);
+boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument);
 
 }

@@ -226,6 +226,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 	
 	refreshLocalNameCount();
 	refreshMathDescription();
+	reconcileWithOriginalModel();
 }
 
 
@@ -746,11 +747,11 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						{
 							throw new MappingException("Flux " + reactionStep.getName() + " should have only one reactant." );
 						}
-						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext scReactant = fluxFunc.getReactants().get(0).getSpeciesContext();
 						
-						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(sc.getStructure())));
-						Expression scStructureSize = new Expression(sc.getStructure().getStructureSize(), getNameScope());
-						Expression scExpr = new Expression(sc, getNameScope());
+						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(scReactant.getStructure())));
+						Expression scStructureSize = new Expression(scReactant.getStructure().getStructureSize(), getNameScope());
+						Expression scExpr = new Expression(scReactant, getNameScope());
 
 						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scExpr, Expression.div(scUnitFactor,scStructureSize));
 
@@ -769,6 +770,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,rsStructureMapping.getGeometryClass())));
 						// actions
 						Action action = null;
+						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
@@ -797,11 +799,11 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						{
 							throw new MappingException("Flux " + reactionStep.getName() + " should have only one product." );
 						}
-						SpeciesContext sc = fluxFunc.getProducts().get(0).getSpeciesContext();
+						SpeciesContext scProduct = fluxFunc.getProducts().get(0).getSpeciesContext();
 						
-						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(sc.getStructure())));
-						Expression scStructureSize = new Expression(sc.getStructure().getStructureSize(), getNameScope());
-						Expression scExpr = new Expression(sc, getNameScope());
+						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(scProduct.getStructure())));
+						Expression scStructureSize = new Expression(scProduct.getStructure().getStructureSize(), getNameScope());
+						Expression scExpr = new Expression(scProduct, getNameScope());
 
 						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scExpr, Expression.div(scUnitFactor,scStructureSize));
 						
@@ -818,6 +820,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,rsStructureMapping.getGeometryClass())));
 						// actions
 						Action action = null;
+						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, rsStructureMapping.getGeometryClass())),new Expression(1));

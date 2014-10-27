@@ -21,6 +21,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
@@ -109,16 +110,16 @@ private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
 	/* Create the first document desktop */
 	switch (startupDoc.getDocumentType()) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc);
 //				((BioModelWindowManager)windowManager).preloadApps();
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc);
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc);
 			break;
 		}
@@ -244,7 +245,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 			if (startupDoc != null) {
 				hashTable.put("startupDoc",startupDoc);
 			} else {
-				VCDocument newStartupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
+				VCDocument newStartupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocumentType.BIOMODEL_DOC);
 				hashTable.put("startupDoc",newStartupDoc);
 			}
 			DocumentWindowAboutBox.parseVCellVersion();

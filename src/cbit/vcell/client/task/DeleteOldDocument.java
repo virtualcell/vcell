@@ -42,7 +42,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	VCDocument currentDocument = ((DocumentWindowManager)hashTable.get("documentWindowManager")).getVCDocument();
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	switch (currentDocument.getDocumentType()) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			// make the info
 			BioModel oldBioModel = (BioModel)currentDocument;
 			BioModelInfo oldBioModelInfo = documentManager.getBioModelInfo(oldBioModel.getVersion().getVersionKey());
@@ -50,7 +50,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			documentManager.delete(oldBioModelInfo);
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			// make the info
 			MathModel oldMathModel = (MathModel)currentDocument;
 			MathModelInfo oldMathModelInfo = documentManager.getMathModelInfo(oldMathModel.getVersion().getVersionKey());
@@ -58,7 +58,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			documentManager.delete(oldMathModelInfo);
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			// make the info
 			Geometry oldGeometry = (Geometry)currentDocument;
 			GeometryInfo oldGeometryInfo = documentManager.getGeometryInfo(oldGeometry.getVersion().getVersionKey());

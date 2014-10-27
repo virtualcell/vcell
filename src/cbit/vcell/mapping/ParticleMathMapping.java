@@ -1073,6 +1073,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 	refreshLocalNameCount();
 	refreshMathDescription();
 	combineHybrid();
+	reconcileWithOriginalModel();
 }
 
 protected void combineHybrid() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{

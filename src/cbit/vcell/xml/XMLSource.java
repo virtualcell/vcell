@@ -24,7 +24,7 @@ import cbit.util.xml.XmlUtil;
  * Creation date: (6/13/2004 1:37:46 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class XMLSource {
+public final class XMLSource {
 	private String xmlString = null;
 	private File xmlFile = null;
 	private transient Document xmlDoc = null;

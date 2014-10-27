@@ -311,8 +311,8 @@ protected java.io.File getfile() {
 	if (this.chooser == null) {
 		this.chooser = new org.vcell.util.gui.VCFileChooser(".");
 		this.chooser.setFileSelectionMode(chooser.FILES_ONLY);
-		this.chooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_XML);
-		this.chooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_XML);
+		this.chooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_EXTERNALDOC);
+		this.chooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_EXTERNALDOC);
 	}
 	
 	int returnval = chooser.showOpenDialog(null);

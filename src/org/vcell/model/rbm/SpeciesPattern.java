@@ -1,35 +1,39 @@
 package org.vcell.model.rbm;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Matchable;
 
-public class SpeciesPattern extends RbmElement {
+public class SpeciesPattern extends RbmElementAbstract implements Matchable {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
 	private List<MolecularTypePattern> molecularTypePatterns = new ArrayList<MolecularTypePattern>();
 	
-	public static class Bond {
+	public static class Bond implements Serializable {
 		public MolecularTypePattern molecularTypePattern;
 		public MolecularComponentPattern molecularComponentPattern;
-		private Bond(MolecularTypePattern molecularTypePattern,
+		private Bond(MolecularTypePattern molecularTypePattern,		// keep this constructor private!!!
 				MolecularComponentPattern molecularComponentPattern) {
 			super();
 			this.molecularTypePattern = molecularTypePattern;
 			this.molecularComponentPattern = molecularComponentPattern;
 		}
-		
 		public Bond() {
 		}
-
 		@Override 
 		public boolean equals(Object obj) {
 			if (!(obj instanceof Bond)) {
 				return false;
 			}
 			Bond bp = (Bond)obj;
-			if (bp.molecularTypePattern != bp.molecularTypePattern) {
+			if (bp.molecularTypePattern != molecularTypePattern) {
 				return false;
 			}
 			if (bp.molecularComponentPattern.getMolecularComponent() != molecularComponentPattern.getMolecularComponent()) {
@@ -37,12 +41,27 @@ public class SpeciesPattern extends RbmElement {
 			}
 			return true;
 		}
-		
+		@Override
+		public int hashCode(){
+			return molecularTypePattern.hashCode() + molecularComponentPattern.getMolecularComponent().hashCode();
+		}
 		@Override
 		public String toString() {
 			 return molecularTypePattern.getMolecularType().getName() 
 				+ "(" + molecularTypePattern.getIndex() + ")(" 
-				+ molecularComponentPattern.getMolecularComponent().getName() + ")";
+				+ molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex()+")" + ")";
+		}
+		public String toHtmlStringShort() {
+			int index = molecularTypePattern.getIndex();
+			String name = molecularTypePattern.getMolecularType().getName();
+			name += "<sub>" + index + "</sub>"; 
+			name += "(" + molecularComponentPattern.getMolecularComponent().getName() + ")";
+			return "<html><b>" + name + "</b></html>";
+		}
+
+		public String getId() {
+			System.err.println("Bond.getId() ... need to implement something good here ... not yet implemented well.");
+			return "BondId_"+hashCode();
 		}
 	}
 	
@@ -97,6 +116,11 @@ public class SpeciesPattern extends RbmElement {
 	}
 	
 	public void resolveBonds() {
+		List<MolecularTypePattern> molecularTypePatterns = getMolecularTypePatterns();
+		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
+			molecularTypePatterns.get(i).setIndex(i+1);
+		}
+
 		// clear all the bonds now
 		for (MolecularTypePattern mtp : molecularTypePatterns) {
 			for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
@@ -151,5 +175,56 @@ public class SpeciesPattern extends RbmElement {
 			}
 		}
 		return allChoices;
+	}
+
+//	public String getId() {
+//		System.err.println("SpeciesPattern id generated badly");
+//		return "SpeciesPattern_"+hashCode();
+//	}
+	
+	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof SpeciesPattern)) {
+			return false;
+		}
+		SpeciesPattern that = (SpeciesPattern)aThat;
+		
+		if (!Compare.isEqual(molecularTypePatterns, that.molecularTypePatterns)){
+			return false;
+		}
+		return true;
+	}
+	
+	public void checkSpeciesPattern(IssueContext issueContext, List<Issue> issueList) {
+		for(MolecularTypePattern mtp : getMolecularTypePatterns()) {
+			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				if(mcp.isImplied()) {
+					continue;
+				}
+				if (mcp.getBondType() == BondType.Specified) {
+					Bond b = mcp.getBond();
+					if(b == null && issueList != null) {
+						String msg = "The Bonds of Species Pattern " + this.toString() + " do not match.\n";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+						return;
+					}
+				}
+			}
+		}
+	}
+	
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		if(molecularTypePatterns == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is null", Issue.SEVERITY_WARNING));
+		} else if (molecularTypePatterns.isEmpty()) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is empty", Issue.SEVERITY_WARNING));
+		} else {
+			for (MolecularTypePattern entity : molecularTypePatterns) {
+				entity.gatherIssues(issueContext, issueList);
+			}
+		}
 	}
 }

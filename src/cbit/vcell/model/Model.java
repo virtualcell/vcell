@@ -17,6 +17,7 @@ import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,14 +28,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.model.rbm.SpeciesPattern;
+//import org.vcell.model.rbm.RbmParameter;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
@@ -49,11 +62,11 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
-
 @SuppressWarnings("serial")
 public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable {
 	
@@ -86,6 +99,39 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private transient VCMetaData vcMetaData = null;
 	private StructureTopology structureTopology = new StructureTopology();
 	private ElectricalTopology electricalTopology = new ElectricalTopology();
+	
+	private final RbmModelContainer rbmModelContainer = new RbmModelContainer();
+	//private final RbmModelContainer rbmModelContainer = new org.vcell.model.rbm.simple.RbmModelContainerSimple(ModelUnitSystem.createDefaultVCModelUnitSystem());
+
+	public interface ElectricalTopologyListener {
+		public void electricalTopologyChanged(ElectricalTopology electricalTopology);
+	}
+
+	private transient ArrayList<ElectricalTopologyListener> transientElectricalTopologyListeners = null;
+	
+	private ArrayList<ElectricalTopologyListener> getElectricalTopologyListeners(){
+		if (transientElectricalTopologyListeners==null){
+			transientElectricalTopologyListeners = new ArrayList<ElectricalTopologyListener>();
+		}
+		return transientElectricalTopologyListeners;
+	}
+	
+	public void addElectricalTopologyListener(ElectricalTopologyListener listener){
+		if (!getElectricalTopologyListeners().contains(listener)){
+			getElectricalTopologyListeners().add(listener);
+		}
+	}
+
+	public void removeElectricalTopologyListener(ElectricalTopologyListener listener){
+		getElectricalTopologyListeners().remove(listener);
+	}
+
+	private void fireElectricalTopologyChanged(ElectricalTopology argElectricalTopology){
+		List<ElectricalTopologyListener> listeners = getElectricalTopologyListeners();
+		for (ElectricalTopologyListener listener : listeners){
+			listener.electricalTopologyChanged(argElectricalTopology);
+		}
+	}
 
 	public class StructureTopology implements Serializable, Matchable {
 		private HashMap<Membrane,Feature> insideFeatures = new HashMap<Membrane, Feature>();
@@ -292,9 +338,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}*/
 		
 	}
-
-	public class ElectricalTopology implements Serializable, Matchable {
-		
+	
+	public class ElectricalTopology implements Serializable, Matchable { 
+				
 		private HashMap<Membrane,Feature> positiveFeatures = new HashMap<Membrane, Feature>();
 		private HashMap<Membrane,Feature> negativeFeatures = new HashMap<Membrane, Feature>();
 		
@@ -303,9 +349,11 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 		public void setPositiveFeature(Membrane membrane, Feature insideFeature){
 			positiveFeatures.put(membrane, insideFeature);
+			fireElectricalTopologyChanged(this);
 		}
 		public void setNegativeFeature(Membrane membrane, Feature outsideFeature){
 			negativeFeatures.put(membrane, outsideFeature);
+			fireElectricalTopologyChanged(this);
 		}
 
 		public Feature getPositiveFeature(Membrane membrane) {
@@ -316,29 +364,49 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return negativeFeatures.get(membrane);
 		}
 		
-		public void gatherIssues(List<Issue> issueList) {
+		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			// check if membranes in model have positive and negative features set.
 			for (Structure struct : getStructures()) {
 				if (struct instanceof Membrane) {
 					Membrane membrane = (Membrane)struct;
+					ArrayList<ReactionStep> electricalReactions = new ArrayList<ReactionStep>();
+					for (ReactionStep reactionStep : getReactionSteps()){
+						if (reactionStep.getStructure() == membrane){
+							if (reactionStep.hasElectrical()){
+								electricalReactions.add(reactionStep);
+							}
+						}
+					}
 					String issueMsgPrefix = "Membrane '" + membrane.getName() + "' ";
 					Feature positiveFeature = getPositiveFeature(membrane);
-					if (positiveFeature == null) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
-					}
 					Feature negativeFeature = getNegativeFeature(membrane);
-					if (negativeFeature == null) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Negative feature of " + issueMsgPrefix + "not set. It is required for electrical mapping.", Issue.SEVERITY_WARNING));
+
+					if (electricalReactions.size()>0){
+						
+						StringBuilder reactionNames = new StringBuilder();
+						for (ReactionStep rs : electricalReactions){
+							reactionNames.append(rs.getName()).append(",");
+						}
+						reactionNames.deleteCharAt(reactionNames.length()-1);
+						
+						if (positiveFeature == null) {
+							issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+						}
+						if (negativeFeature == null) {
+							issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Negative compartment of " + issueMsgPrefix + "is required for electrical reactions ("+reactionNames.toString()+").", Issue.SEVERITY_ERROR));
+						}
 					}
 					if (positiveFeature != null && negativeFeature != null && positiveFeature.compareEqual(negativeFeature)) {
-						issueList.add(new Issue(membrane, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(membrane, issueContext, IssueCategory.MembraneElectricalPolarityError, "Positive and Negative features of " + issueMsgPrefix + " cannot be the same.", Issue.SEVERITY_ERROR));
 					}
+
 				}
 			}
 		}
 		
 		public void populateFromStructureTopology() {
 			// if the positive & negative features for the membranes are already set, do not override using struct topology.
+			boolean bChanged = false;
 			Structure[] structures = getStructures();
 			for (Structure struct : structures) {
 				if (struct instanceof Membrane) {
@@ -348,15 +416,18 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					if (positiveFeatureFromStructTopology != null) {
 						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
 							// if there is an entry in the positiveFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
-							electricalTopology.positiveFeatures.remove(membrane);
+							positiveFeatures.remove(membrane);
+							bChanged = true;
 						} else {
 							// if positiveFeature from structTopology != null, and the membrane does not have an entry in positiveFeatures hashMap, add it.
-							electricalTopology.setPositiveFeature(membrane, positiveFeatureFromStructTopology);
+							setPositiveFeature(membrane, positiveFeatureFromStructTopology);
+							bChanged = true;
 						}
 					} else {
 						// if there is no positiveFeature from structTopology, and the membrane's entry in positiveFeatures hashMap is not in the model, remove the entry.
 						if (positiveFeatureFromElectricalTopology != null && !contains(positiveFeatureFromElectricalTopology)) {
-							electricalTopology.positiveFeatures.remove(membrane);
+							positiveFeatures.remove(membrane);
+							bChanged = true;
 						}
 					} 
 					
@@ -365,29 +436,37 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					if (negativeFeatureFromStructTopology != null) {
 						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
 							// if there is an entry in the negativeFeature hashMap for the membrane, but the feature is not in model, remove entry in hashMap
-							electricalTopology.negativeFeatures.remove(membrane);
+							negativeFeatures.remove(membrane);
+							bChanged = true;
 						} else {
 							// if negativeFeature from structTopology != null, and the membrane does not have an entry in negativeFeatures hashMap, add it.
-							electricalTopology.setNegativeFeature(membrane, negativeFeatureFromStructTopology);
+							setNegativeFeature(membrane, negativeFeatureFromStructTopology);
+							bChanged = true;
 						}
 					} else {
 						// if there is no negativeFeature from structTopology, and the membrane's entry in negativeFeatures hashMap is not in the model, remove the entry.
 						if (negativeFeatureFromElectricalTopology != null && !contains(negativeFeatureFromElectricalTopology)) {
-							electricalTopology.negativeFeatures.remove(membrane);
+							negativeFeatures.remove(membrane);
+							bChanged = true;
 						}
 					} 
 				}
+			}
+			if (bChanged){
+				fireElectricalTopologyChanged(this);
 			}
 		}
 		
 		public void refresh() {
 			// if any membrane has been removed, remove its entry in the positiveFetures and negativeFeatures hashMap (separately?)
+			boolean bChanged = false;
 			Set<Membrane> membranesSet = positiveFeatures.keySet();
 			Iterator<Membrane> membranesIter = membranesSet.iterator();
 			while (membranesIter.hasNext()) {
 				Membrane membrane = membranesIter.next();
 				if (!contains(membrane)) {
 					membranesIter.remove();
+					bChanged = true;
 					// positiveFeatures.remove(membrane);
 				}
 			}
@@ -397,10 +476,14 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				Membrane membrane = membranesIter.next();
 				if (!contains(membrane)) {
 					membranesIter.remove();
+					bChanged = true;
 					// negativeFeatures.remove(membrane);
 				}
 			}
 
+			if (bChanged){
+				fireElectricalTopologyChanged(this);
+			}
 			// now populate electrical topology (+ve features and -ve features hashMap based on structureTopology, if a heirarchy exists.
 			populateFromStructureTopology();
 		}
@@ -432,13 +515,18 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			//
 			// return list of reactionNameScopes
 			//
-			NameScope nameScopes[] = new NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length];
+			NameScope nameScopes[] = new NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length+Model.this.getRbmModelContainer().getReactionRuleList().size()];
 			int j=0;
 			for (int i = 0; i < Model.this.fieldReactionSteps.length; i++){
 				nameScopes[j++] = Model.this.fieldReactionSteps[i].getNameScope();
 			}
 			for (int i = 0; i < Model.this.fieldStructures.length; i++){
 				nameScopes[j++] = Model.this.fieldStructures[i].getNameScope();
+			}
+			if(!Model.this.getRbmModelContainer().isEmpty()) {
+				for (int i = 0; i < Model.this.getRbmModelContainer().getReactionRuleList().size(); i++){
+					nameScopes[j++] = Model.this.getRbmModelContainer().getReactionRule(i).getNameScope();
+				}
 			}
 			return nameScopes;
 		}
@@ -820,6 +908,646 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 	}
 	
+	public class RbmModelContainer implements Matchable, Serializable, VetoableChangeListener {
+		private List<MolecularType> molecularTypeList = new ArrayList<MolecularType>();
+		private List<ReactionRule> reactionRuleList = new ArrayList<ReactionRule>();
+		private List<RbmObservable> observableList = new ArrayList<RbmObservable>();
+		private NetworkConstraints networkConstraints = new NetworkConstraints();
+		public static final String PROPERTY_NAME_MOLECULAR_TYPE_LIST = "molecularTypeList";
+		public static final String PROPERTY_NAME_OBSERVABLE_LIST = "observableList";
+		public static final String PROPERTY_NAME_FUNCTION_LIST = "functionList";
+		public static final String PROPERTY_NAME_REACTION_RULE_LIST = "reactionRuleList";
+		
+		public boolean isEmpty() {
+			if (!molecularTypeList.isEmpty()){
+				return false;
+			}
+			if (!reactionRuleList.isEmpty()){
+				return false;
+			}
+			if (!observableList.isEmpty()){
+				return false;
+			}
+			return true;
+		}
+		
+		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+			if(issueList == null) {
+				return;
+			}
+			if(molecularTypeList == null) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Molecular Type List is null", Issue.SEVERITY_ERROR));
+			} else if (!this.isEmpty() && molecularTypeList.isEmpty()){
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Molecular Type List is empty", Issue.SEVERITY_WARNING));
+			}else {
+				for (MolecularType entity : molecularTypeList) {
+					entity.gatherIssues(issueContext, issueList);
+				}
+			}
+			if(observableList == null) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Observable List is null", Issue.SEVERITY_ERROR));
+			} else if (!this.isEmpty() && observableList.isEmpty()){
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Observable List is empty", Issue.SEVERITY_WARNING));
+			} else {
+				for (RbmObservable entity : observableList) {
+					entity.gatherIssues(issueContext, issueList);
+				}
+			}
+			if(reactionRuleList == null) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Reaction Rule List is null", Issue.SEVERITY_ERROR));
+			} else if (!this.isEmpty() && reactionRuleList.isEmpty()){
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Reaction Rule List is empty", Issue.SEVERITY_WARNING));
+			} else {
+				for (ReactionRule entity : reactionRuleList) {
+					entity.gatherIssues(issueContext, issueList);
+				}
+			}
+			if(networkConstraints == null) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Network Constraints is null", Issue.SEVERITY_ERROR));
+			} else {
+				networkConstraints.gatherIssues(issueContext, issueList);
+			}
+		}
+		
+		public boolean isDeleteAllowed(MolecularType mt, MolecularComponent mc, ComponentStateDefinition cs) {
+			for(ReactionRule rr : getReactionRuleList()) {
+				for(ProductPattern pp : rr.getProductPatterns()) {
+					if(!canDelete(mt, mc, cs, pp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+				for(ReactantPattern rp : rr.getReactantPatterns()) {
+					if(!canDelete(mt, mc, cs, rp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				if(!canDelete(mt, mc, cs, sc.getSpeciesPattern().getMolecularTypePatterns())) {
+					return false;
+				}
+			}
+			for(RbmObservable o : getObservableList()) {
+				for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+					if(!canDelete(mt, mc, cs, sp.getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		private boolean canDelete(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd, List<MolecularTypePattern> mtpList) {
+			for(MolecularTypePattern mtp : mtpList) {
+				MolecularType mt1 = mtp.getMolecularType();
+				if(mt.getName().equals(mt1.getName())) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {
+							continue;
+						}
+						if(mcp.getMolecularComponent().getName().equals(mc.getName())) {
+							//System.out.println(mcp.toString());
+							if (mcp.getComponentStatePattern() != null) {
+								if(mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+									if(mcp.getComponentStatePattern().getComponentStateDefinition().getName().equals(csd.getName())) {
+										return false;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return true;
+		}
+
+		public boolean isDeleteAllowed(MolecularType mt, MolecularComponent mc) {
+			for(ReactionRule rr : getReactionRuleList()) {
+				for(ProductPattern pp : rr.getProductPatterns()) {
+					if(!canDelete(mt, mc, pp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+				for(ReactantPattern rp : rr.getReactantPatterns()) {
+					if(!canDelete(mt, mc, rp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				if(!canDelete(mt, mc, sc.getSpeciesPattern().getMolecularTypePatterns())) {
+					return false;
+				}
+			}
+			for(RbmObservable o : getObservableList()) {
+				for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+					if(!canDelete(mt, mc, sp.getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		private boolean canDelete(MolecularType mt, MolecularComponent mc, List<MolecularTypePattern> mtpList) {
+			for(MolecularTypePattern mtp : mtpList) {
+				MolecularType mt1 = mtp.getMolecularType();
+				if(mt.getName().equals(mt1.getName())) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {
+							continue;
+						}
+						if(mcp.getMolecularComponent().getName().equals(mc.getName())) {	// found mc in use, means we can't delete it
+							return false;
+						}
+					}
+				}
+			}
+			return true;
+		}
+
+		public boolean isDeleteAllowed(MolecularType mt) {
+			for(ReactionRule rrr : getReactionRuleList()) {
+				for(ProductPattern ppp : rrr.getProductPatterns()) {
+					if(!canDelete(mt, ppp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+				for(ReactantPattern rpp : rrr.getReactantPatterns()) {
+					if(!canDelete(mt, rpp.getSpeciesPattern().getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				if(!canDelete(mt, sc.getSpeciesPattern().getMolecularTypePatterns())) {
+					return false;
+				}
+			}
+			for(RbmObservable o : getObservableList()) {
+				for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+					if(!canDelete(mt, sp.getMolecularTypePatterns())) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		private boolean canDelete(MolecularType mt, List<MolecularTypePattern> mtpList) {
+			for(MolecularTypePattern mtp : mtpList) {
+				if(mt.compareEqual(mtp.getMolecularType())) {
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		public void addMolecularType(MolecularType molecularType) throws ModelException {
+			if (getMolecularType(molecularType.getName()) != null) {
+				throw new ModelException("Molecular type '" + molecularType.getName() + "' already exists!");
+			}
+			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+			newValue.add(molecularType);
+			setMolecularTypeList(newValue);
+		}
+		
+		public boolean removeMolecularType(MolecularType molecularType) {
+			if (!molecularTypeList.contains(molecularType)) {
+				return false;
+			}
+			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+			newValue.remove(molecularType);
+			setMolecularTypeList(newValue);
+			return true;
+		}
+		
+		public void deleteMolecularType(String molecularTypeName) {
+			MolecularType molecularType = getMolecularType(molecularTypeName);
+			if (molecularType == null) {
+				return;
+			}
+			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
+			newValue.remove(molecularType);
+			setMolecularTypeList(newValue);
+		}
+		
+		public boolean removeReactionRule(ReactionRule reactionRule) {
+			if (!reactionRuleList.contains(reactionRule)) {
+				return false;
+			}
+			ArrayList<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+			newValue.remove(reactionRule);
+			setReactionRules(newValue);
+			return true;
+		}
+		
+		public MolecularType getMolecularType(String molecularTypeName){
+			for (MolecularType molecularType : this.molecularTypeList){
+				if (molecularType.getName().equals(molecularTypeName)){
+					return molecularType;
+				}
+			}
+			return null;
+		}
+
+		public List<RbmObservable> getObservableList() {
+			return new ArrayList<RbmObservable>(observableList);
+		}
+
+		public List<Parameter> getConstantOrFunctionList(boolean bConstant, ModelParameter[] modelParameters) {
+			Map<String,Boolean> constantMap = getConstantMap(modelParameters);
+			ArrayList<Parameter> selectedParameters = new ArrayList<Parameter>();
+			for (Parameter p : Model.this.fieldModelParameters){
+				//
+				// check that it is not a constant valued function.
+				//
+				boolean bConst = constantMap.get(p.getName());
+				if (bConstant == bConst){
+					selectedParameters.add(p);
+				}
+			}
+			return Collections.unmodifiableList(selectedParameters);
+		}
+		
+		public List<Parameter> getParameterList() {
+			return getConstantOrFunctionList(true, Model.this.fieldModelParameters);
+		}
+
+		public List<Parameter> getFunctionList() {
+			return getConstantOrFunctionList(false, Model.this.fieldModelParameters);
+		}
+
+		private Map<String,Boolean> getConstantMap(ModelParameter[] parameters){
+			ArrayList<ModelParameter> unprocessed = new ArrayList<ModelParameter>(Arrays.asList(parameters));
+			HashMap<String,Boolean> constantMap = new HashMap<String,Boolean>();
+			Iterator<ModelParameter> unprocessedIter = unprocessed.iterator();
+			
+			//  assigns the parameters without symbols as constants (the simple case first).
+			while (unprocessedIter.hasNext()){
+				ModelParameter unprocessedParam = unprocessedIter.next();
+				Expression expression = unprocessedParam.getExpression();
+				String[] symbols = expression.getSymbols();
+				// if expression has no symbols, must be a constant.
+				if (symbols==null || symbols.length==0){
+					unprocessedIter.remove();
+					constantMap.put(unprocessedParam.getName(),true);
+				}
+			}
+			
+			// assign non-trivial expressions where all referenced parameters have been assigned ... then iterate.
+			int iterationCount = 0;
+			final int MAX_ITERATIONS = 20;
+			while (!unprocessed.isEmpty() && iterationCount<MAX_ITERATIONS){
+				unprocessedIter = unprocessed.iterator();
+				while (unprocessedIter.hasNext()){
+					ModelParameter unprocessedParam = unprocessedIter.next();
+					Expression expression = unprocessedParam.getExpression();
+					String[] symbols = expression.getSymbols();
+					// check if all referenced symbols have been classified as constant or variable, 
+					// if any variable then exp is variable
+					boolean bHasUnknown = false;
+					boolean bHasConstant = false;
+					boolean bHasVariable = false;
+					for (String symbol : symbols){
+						SymbolTableEntry ste = expression.getSymbolBinding(symbol);
+						// refers to an unprocessed parameter ... skip
+						if (unprocessed.contains(ste)){
+							bHasUnknown = true;
+						}else{
+							Boolean bConstant = constantMap.get(ste.getName());
+							if (bConstant!=null){
+								if (bConstant==true){
+									bHasConstant = true;
+								}else{
+									bHasVariable = true;
+								}
+							}else{
+								// refers to a symbol which is not a modelParameter (e.g. species concentration ... etc).
+								try {
+									if (ste.isConstant()){
+										bHasConstant = true;
+									}else{
+										bHasVariable = true;
+									}
+								} catch (ExpressionException e) {
+									bHasVariable = true;
+								}
+							}
+						}
+					}
+					// if have any unprocessed dependencies, then skip it for now.
+					if (!bHasUnknown){
+						constantMap.put(unprocessedParam.getName(), !bHasVariable);
+						unprocessedIter.remove();
+					}
+				}
+				if (iterationCount>=MAX_ITERATIONS){
+					throw new RuntimeException("getConstantMap() failed to terminate, maybe a cyclic dependenty exists");
+				}
+			}
+			return constantMap;
+		}
+		
+		private final void setMolecularTypeList(List<MolecularType> newValue) {
+			List<MolecularType> oldValue = molecularTypeList;
+			if (oldValue != null) {
+				for (MolecularType mt : oldValue) {
+					mt.removeVetoableChangeListener(this);
+				}
+			}
+			this.molecularTypeList = newValue;
+			if (newValue != null) {
+				for (MolecularType mt : newValue) {
+					mt.addVetoableChangeListener(this);
+				}
+			}
+			firePropertyChange(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST, oldValue, newValue);
+		}
+
+		private final void setReactionRules(List<ReactionRule> newValue) {
+			List<ReactionRule> oldValue = reactionRuleList;
+			if (oldValue != null) {
+				for (ReactionRule reactionRule : oldValue) {
+					reactionRule.removeVetoableChangeListener(this);
+				}
+			}
+			this.reactionRuleList = newValue;
+			if (newValue != null) {
+				for (ReactionRule reactionRule : newValue) {
+					reactionRule.addVetoableChangeListener(this);
+				}
+			}
+			firePropertyChange(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST, oldValue, newValue);
+		}
+		
+		public MolecularType createMolecularType() {
+			int count=0;
+			String name = null;
+			while (true) {
+				name = "MT" + count;	
+				if (getMolecularType(name) == null) {
+					break;
+				}	
+				count++;
+			}
+			return new MolecularType(name);
+		}
+
+		public RbmObservable createObservable(RbmObservable.ObservableType type) {
+			int count=0;
+			String name = null;
+			while (true) {
+				name = "O" + count;	
+				if (getObservable(name) == null) {
+					break;
+				}	
+				count++;
+			}
+			// use structure (if only one ... else complain)
+			Structure structure = null;
+			int size = fieldStructures.length;
+			if(size > 0) {
+				structure = getStructure(0);
+			}
+			RbmObservable observable = new RbmObservable(Model.this, name, structure, type);
+			return observable;
+		}
+		
+		public Parameter createParameter() {
+			int count=0;
+			String name = null;
+			while (true) {
+				name = "param" + count;	
+				if (getParameter(name) == null) {
+					break;
+				}	
+				count++;
+			}
+			return new ModelParameter(name, null, ROLE_UserDefined, unitSystem.getInstance_DIMENSIONLESS());
+		}
+		
+		public ReactionRule createReactionRule() {
+			return createReactionRule("", true);
+		}
+		
+		public ReactionRule createReactionRule(String label, boolean bReversible) {		
+			return new ReactionRule(Model.this, label, bReversible);
+		}
+		
+		public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+			if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
+				if (evt.getSource() instanceof MolecularType) {
+					String newName = (String) evt.getNewValue();
+					for (MolecularType molecularType : molecularTypeList) {
+						if (molecularType != evt.getSource()) {
+							if (molecularType.getName().equals(newName)) {
+								throw new PropertyVetoException("Molecular Type '" + newName + "' already exists!", evt);
+							}
+						}
+					}
+					for (RbmObservable observable : observableList) {
+						if (observable != evt.getSource()) {
+							if (observable.getName().equals(newName)) {
+								throw new PropertyVetoException("'" + newName + "' is already used for an observable!", evt);
+							}
+						}
+					}
+				} else if (evt.getSource() instanceof RbmObservable) {
+					String newName = (String) evt.getNewValue();
+					for (MolecularType molecularType : molecularTypeList) {
+						if (molecularType != evt.getSource()) {
+							if (molecularType.getName().equals(newName)) {
+								throw new PropertyVetoException("'" + newName + "' is already used for a molecular Type!", evt);
+							}
+						}
+					}
+					for (RbmObservable observable : observableList) {
+						if (observable != evt.getSource()) {
+							if (observable.getName().equals(newName)) {
+								throw new PropertyVetoException("Observable '" + newName + "' already exists!", evt);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		private final void setObservableList(List<RbmObservable> newValue) {
+			List<RbmObservable> oldValue = observableList;
+			if (oldValue != null) {
+				for (RbmObservable mt : oldValue) {
+					mt.removeVetoableChangeListener(this);
+				}
+			}
+			this.observableList = newValue;
+			if (newValue != null) {
+				for (RbmObservable mt : newValue) {
+					mt.addVetoableChangeListener(this);
+				}
+			}
+			firePropertyChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
+		}
+		
+//		private final void setSeedSpeciesList(List<SeedSpecies> newValue) {
+//			........
+//			firePropertyChange(PROPERTY_NAME_SEED_SPECIES_LIST, oldValue, newValue);
+//		}
+		
+		public List<MolecularType> getMolecularTypeList() {
+			return molecularTypeList;
+		}
+
+		public void addObservable(RbmObservable observable) throws ModelException {
+			if (getObservable(observable.getName()) != null) {
+				throw new ModelException("Observable '" + observable.getName() + "' already exists!");
+			}
+			List<RbmObservable> newValue = new ArrayList<RbmObservable>(observableList);
+			newValue.add(observable);
+			setObservableList(newValue);
+		}
+		
+		public Parameter addFunction(String name, Expression expression) throws ModelException, PropertyVetoException {
+			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
+		}
+		
+		public Parameter addParameter(String name, Expression expression) throws ModelException, PropertyVetoException {		
+			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
+		}
+		
+		public RbmObservable getObservable(String obName){
+			for (RbmObservable	observable : this.observableList){
+				if (observable.getName().equals(obName)){
+					return observable;
+				}
+			}
+			return null;
+		}
+		public Parameter getFunction(String obName){
+			ModelParameter p = Model.this.getModelParameter(obName);
+			if (p != null){
+				List<Parameter> parameters = getParameterList();
+				if (parameters.contains(p)){
+					return p;
+				}
+			}
+			return null;
+		}
+		
+		public Parameter getParameter(String obName){
+			return Model.this.getModelParameter(obName);
+		}
+		
+		public boolean removeObservable(RbmObservable observable) {
+			if (!observableList.contains(observable)) {
+				return false;
+			}
+			ArrayList<RbmObservable> newValue = new ArrayList<RbmObservable>(observableList);
+			newValue.remove(observable);
+			setObservableList(newValue);
+			return true;
+		}
+		
+		public boolean removeParameter(Parameter parameter) throws PropertyVetoException {
+			if (!Model.this.contains((ModelParameter)parameter)){
+				return false;
+			}
+			Model.this.removeModelParameter((ModelParameter)parameter);
+			return true;
+		}
+		
+		public void addReactionRule(ReactionRule reactionRule) {		
+			List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
+			newValue.add(reactionRule);
+			setReactionRules(newValue);
+		}
+
+		public List<ReactionRule> getReactionRuleList() {
+			return reactionRuleList;
+		}
+		public final NetworkConstraints getNetworkConstraints() {
+			return networkConstraints;
+		}
+
+		public SymbolTable getSymbolTable() {
+			return Model.this;
+		}
+
+		public boolean compareEqual(Matchable aThat) {
+			if (this == aThat) {
+				return true;
+			}
+			if (!(aThat instanceof RbmModelContainer)) {
+				return false;
+			}
+			RbmModelContainer that = (RbmModelContainer)aThat;
+			
+			if (!Compare.isEqual(molecularTypeList, that.getMolecularTypeList())){
+				return false;
+			}
+			if (!Compare.isEqual(reactionRuleList, that.getReactionRuleList())){
+				return false;
+			}
+			if (!Compare.isEqual(observableList, that.getObservableList())){
+				return false;
+			}
+			if(!Compare.isEqual(networkConstraints, that.getNetworkConstraints())) {
+				return false;
+			}
+			return true;
+		}
+
+		public ReactionRule getReactionRule(String name) {
+			if(name == null) {
+				return null;
+			}
+			for(ReactionRule r : reactionRuleList) {
+				if(name.equals(r.getName())) {
+					return r;
+				}
+			}
+			return null;
+		}
+
+		public ReactionRule getReactionRule(int index) {
+			if(index < 0) {
+				return null;
+			}
+			if((reactionRuleList == null) || reactionRuleList.isEmpty()) {
+				return null;
+			}
+			return reactionRuleList.get(index);
+		}
+
+		public void adjustSpeciesContextPatterns(MolecularType mt, MolecularComponent mc) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName());
+			Model model = Model.this;
+			for(SpeciesContext sc : model.getSpeciesContexts()) {
+				if(!sc.hasSpeciesPattern()) {
+					continue;
+				}
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp.getMolecularType() != mt) {
+						continue;
+					}
+					Boolean found = false;
+					for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+						if (mcp.getMolecularComponent() == mc) {
+							found = true;
+							break;
+						}
+					}
+					if(!found) {
+						MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+						mcp.setBondType(BondType.None);
+						mtp.getComponentPatternList().add(mcp);
+						sc.firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, sc, sc);
+					}
+				}
+			}
+		}
+	}
+		
 	public Model(Version argVersion) {
 		this(argVersion, ModelUnitSystem.createDefaultVCModelUnitSystem());
 	}
@@ -1066,6 +1794,9 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqual(electricalTopology, model.electricalTopology)){
 		return false;
 	}
+	if (!Compare.isEqual(rbmModelContainer, model.rbmModelContainer)){
+		return false;
+	}
 	
 	return true;
 }
@@ -1187,7 +1918,8 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (5/12/2004 10:38:12 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.Model, this);
 	//
 	// check for unknown units (TBD) and unit consistency
 	//
@@ -1200,14 +1932,14 @@ public void gatherIssues(List<Issue> issueList) {
 				for (int j = 0; j < symbols.length; j++){
 					SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
 					if (ste == null) {
-						issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined symbol '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 					} else if (ste instanceof SpeciesContext) {
 						if (!contains((SpeciesContext)ste)) {
-							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined species '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 						}						
 					} else if (ste instanceof ModelParameter) {
 						if (!contains((ModelParameter)ste)) {
-							issueList.add(new Issue(modelParameter,IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
+							issueList.add(new Issue(modelParameter, issueContext, IssueCategory.ModelParameterExpressionError, issueMsgPrefix + "references undefined global parameter '" + symbols[j]+"'",Issue.SEVERITY_ERROR));
 						}
 					}
 				}
@@ -1222,29 +1954,36 @@ public void gatherIssues(List<Issue> issueList) {
 				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
 				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
 				} else if (expUnitDef == null){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
 				} else if (paramUnitDef.isTBD()) {
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"unit is undefined (" + unitSystem.getInstance_TBD().getSymbol() + ")",Issue.SEVERITY_WARNING));
 				} else if (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
-					issueList.add(new Issue(fieldModelParameters[i], IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldModelParameters[i], issueContext, IssueCategory.Units,"unit mismatch, computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
 			}catch (VCUnitException e){
-				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],issueContext, IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
-				issueList.add(new Issue(fieldModelParameters[i],IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(fieldModelParameters[i],issueContext, IssueCategory.Units,"units inconsistent: "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
+		e.printStackTrace(System.out);
+		issueList.add(new Issue(this,issueContext, IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	
 	//
 	// get issues from all ReactionSteps
 	//
 	for (int i = 0; i < fieldReactionSteps.length; i++){
-		fieldReactionSteps[i].gatherIssues(issueList);
+		fieldReactionSteps[i].gatherIssues(issueContext,issueList);
+	}
+	//
+	// get issues from species contexts (species patterns)
+	//
+	for (int i = 0; i < fieldSpeciesContexts.length; i++){
+		fieldSpeciesContexts[i].gatherIssues(issueContext, issueList);
 	}
 	
 	//
@@ -1258,7 +1997,7 @@ public void gatherIssues(List<Issue> issueList) {
 		SymbolTableEntry ste = iter.next();
 		SymbolTableEntry existingSTE = symbolHashtable.get(ste.getName());
 		if (existingSTE!=null){
-			issueList.add(new Issue(this,IssueCategory.Identifiers, "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,issueContext, IssueCategory.Identifiers, "model symbol \""+ste.getName()+"\" is used within \""+ste.getNameScope().getName()+"\" and \""+existingSTE.getNameScope().getName()+"\"",Issue.SEVERITY_ERROR));
 		}else{
 			symbolHashtable.put(ste.getName(),ste);
 		}
@@ -1267,7 +2006,16 @@ public void gatherIssues(List<Issue> issueList) {
 	//
 	// gather issues for electrical topology (unspecified +ve or -ve features, or +ve feature == -ve feature
 	//
-	getElectricalTopology().gatherIssues(issueList);
+	getElectricalTopology().gatherIssues(issueContext, issueList);
+	
+	//
+	// gather issues for the Rbm Model
+	//
+	if(rbmModelContainer == null) {
+		issueList.add(new Issue(this, issueContext, IssueCategory.InternalError,"Rbm Model Container is null", Issue.SEVERITY_WARNING));
+	} else {
+		rbmModelContainer.gatherIssues(issueContext, issueList);
+	}
 }
 
 
@@ -1380,7 +2128,7 @@ private String getFreeMembraneName() {
  * @return java.lang.String
  */
 public SimpleReaction createSimpleReaction(Structure structure) {
-	String reactionStepName = getFreeReactionName();
+	String reactionStepName = getReactionName();
 	try {
 		SimpleReaction simpleReaction = new SimpleReaction(this, structure, reactionStepName);
 		addReactionStep(simpleReaction);
@@ -1392,18 +2140,17 @@ public SimpleReaction createSimpleReaction(Structure structure) {
 }
 
 
-public String getFreeReactionName() {
+public String getReactionName() {
 	int count=0;
-	String reactionStepName = null;
+	String reactionName = null;
 	while (true) {
-		reactionStepName = "r" + count;
-		if (getReactionStep(reactionStepName) == null){
+		reactionName = "r" + count;
+		if ((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
 			break;
 		}
-	
 		count++;
 	}
-	return reactionStepName;
+	return reactionName;
 }
 
 public FluxReaction createFluxReaction(Membrane membrane) {
@@ -1432,6 +2179,9 @@ public FluxReaction createFluxReaction(Membrane membrane) {
  * @throws PropertyVetoException 
  */
 public SpeciesContext createSpeciesContext(Structure structure) {
+	return createSpeciesContext(structure, null);
+}
+public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern speciesPattern) {
 	int count=0;
 	String speciesName = null;
 	while (true) {
@@ -1442,7 +2192,7 @@ public SpeciesContext createSpeciesContext(Structure structure) {
 		count++;
 	}
 	try {
-		SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, null), structure);
+		SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, null), structure, speciesPattern);
 		speciesContext.setName(speciesName);
 		addSpecies(speciesContext.getSpecies());
 		addSpeciesContext(speciesContext);
@@ -1514,7 +2264,7 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	// look through the global/model parameters
 	for (int i = 0; i < fieldModelParameters.length; i++) {
 		if (fieldModelParameters[i].getName().equals(identifier)) {
-			return getModelParameter(identifier);
+			return fieldModelParameters[i];
 		}
 	}
 	
@@ -1538,6 +2288,14 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 		if (structureSize.getName().equals(identifier)){
 			return structureSize;
 		}
+	}
+	
+	//
+	// get Observable from Rulebased Model Container
+	//
+	RbmObservable observable = rbmModelContainer.getObservable(identifier);
+	if (observable != null){
+		return (SymbolTableEntry)observable;
 	}
 	
 	return getSpeciesContext(identifier);
@@ -1672,6 +2430,16 @@ public ReactionStep getReactionStep(String reactionStepName) {
 	return null;
 }
 
+public int getNumModelProcesses(){
+	return getNumReactions()+getRbmModelContainer().getReactionRuleList().size();
+}
+
+public ModelProcess[] getModelProcesses(){
+	ArrayList<ModelProcess> processes = new ArrayList<ModelProcess>();
+	processes.addAll(Arrays.asList(fieldReactionSteps));
+	processes.addAll(rbmModelContainer.getReactionRuleList());
+	return processes.toArray(new ModelProcess[0]);
+}
 
 /**
  * Gets the reactionSteps property (cbit.vcell.model.ReactionStep[]) value.
@@ -1839,6 +2607,30 @@ public SpeciesContext[] getSpeciesContexts(Structure structure) {
 	scList.copyInto(scArray);
 	return scArray;
 }
+
+public SpeciesContext getSpeciesContextByPattern(SpeciesPattern sp) {
+	for(SpeciesContext sc : fieldSpeciesContexts) {
+		if(!sc.hasSpeciesPattern()) {
+			continue;
+		}
+		if(sc.getSpeciesPattern().compareEqual(sp)) {
+			return sc;
+		}
+	}
+	return null;
+}
+public SpeciesContext getSpeciesContextByPattern(String speciesPattern) {
+	for(SpeciesContext sc : fieldSpeciesContexts) {
+		if(!sc.hasSpeciesPattern()) {
+			continue;
+		}
+		if(sc.getSpeciesPattern().toString().equals(speciesPattern)) {
+			return sc;
+		}
+	}
+	return null;
+}
+
 
 
 /**
@@ -2113,8 +2905,42 @@ public void refreshDependencies() {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error binding global parameter '" + fieldModelParameters[i].getName() + "' to model."  + e.getMessage());
 		}
-
 	}
+	
+	for (int i=0;i<fieldReactionSteps.length;i++){
+		fieldReactionSteps[i].removePropertyChangeListener(this);
+		fieldReactionSteps[i].removeVetoableChangeListener(this);
+		fieldReactionSteps[i].getKinetics().removePropertyChangeListener(this);
+		fieldReactionSteps[i].getKinetics().removeVetoableChangeListener(this);
+		fieldReactionSteps[i].getKinetics().addPropertyChangeListener(this);
+		fieldReactionSteps[i].getKinetics().addVetoableChangeListener(this);
+		fieldReactionSteps[i].addPropertyChangeListener(this);
+		fieldReactionSteps[i].addVetoableChangeListener(this);
+		fieldReactionSteps[i].setModel(this);
+		try {
+			fieldReactionSteps[i].rebindAllToModel(this);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
+		fieldReactionSteps[i].refreshDependencies();
+	}
+	for (int i=0;i<getRbmModelContainer().getReactionRuleList().size();i++){
+		getRbmModelContainer().getReactionRule(i).removePropertyChangeListener(this);
+		getRbmModelContainer().getReactionRule(i).removeVetoableChangeListener(this);
+		getRbmModelContainer().getReactionRule(i).getKineticLaw().removePropertyChangeListener(this);
+		//getRbmModelContainer().getReactionRule(i).getKineticLaw().removeVetoableChangeListener(this);
+		getRbmModelContainer().getReactionRule(i).getKineticLaw().addPropertyChangeListener(this);
+		//getRbmModelContainer().getReactionRule(i).getKineticLaw().addVetoableChangeListener(this);
+		getRbmModelContainer().getReactionRule(i).addPropertyChangeListener(this);
+		getRbmModelContainer().getReactionRule(i).addVetoableChangeListener(this);
+		try {
+			getRbmModelContainer().getReactionRule(i).rebindAllToModel(this);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
+		getRbmModelContainer().getReactionRule(i).refreshDependencies();
+	}
+	
 }
 
 
@@ -3020,6 +3846,11 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 			entryMap.put(rs.getName(), rs);
 		}
 	}
+	
+	for (RbmObservable observable : rbmModelContainer.getObservableList()) {
+		entryMap.put(observable.getName(), (SymbolTableEntry)observable);
+	}
+	
 }
 
 
@@ -3086,6 +3917,11 @@ public void populateVCMetadata(boolean bMetadataPopulated) {
 //		}
 	}		
 }
+
+public final RbmModelContainer getRbmModelContainer() {
+	return rbmModelContainer;
+}
+
 
 /**
  * This method is modified on Nov 20, 2007. We got to go through the MassActionSolver and FluxSolver here to make sure that everything

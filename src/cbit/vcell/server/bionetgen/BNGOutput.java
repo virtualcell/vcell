@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.server.bionetgen;
+import java.util.HashSet;
+
 import org.vcell.util.BigString;
 /**
  * Insert the type's description here.
@@ -16,6 +18,7 @@ import org.vcell.util.BigString;
  * @author: Anuradha Lakshminarayana
  */
 public class BNGOutput implements java.io.Serializable {
+	public final static String BNG_NET_FILE_SUFFIX = ".net";
 	private org.vcell.util.BigString consoleOutput;
 	private org.vcell.util.BigString[] bng_fileContents;
 	private String[] bng_filenames;
@@ -34,6 +37,20 @@ public BNGOutput(String argConsoleOutput, String[] filenames, String[] fileconte
 	for (int i = 0; i < filecontents.length; i ++) {
 		bng_fileContents[i] = new BigString(filecontents[i]);
 	}		
+}
+
+
+public String getNetFileContent() {
+	HashSet<Integer> netFileIndices = new HashSet<Integer>();
+	for (int i=0;i<bng_filenames.length;i++){
+		if (bng_filenames[i].toLowerCase().endsWith(BNG_NET_FILE_SUFFIX)){
+			netFileIndices.add(i);
+		}
+	}
+	if (netFileIndices.size()==1){
+		return bng_fileContents[netFileIndices.iterator().next()].toString();
+	}
+	throw new RuntimeException("BioNetGen was unable to generate reaction network.");
 }
 
 

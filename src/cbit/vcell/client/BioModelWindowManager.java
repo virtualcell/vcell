@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.importer.DataImporter;
 import org.vcell.util.importer.PathwayImportPanel;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -611,7 +612,7 @@ public void showMIRIAMWindow() {
 
 
 public boolean hasBlankDocument() {
-	return !getRequestManager().isDifferentFromBlank(VCDocument.BIOMODEL_DOC, getVCDocument());
+	return !getRequestManager().isDifferentFromBlank(VCDocumentType.BIOMODEL_DOC, getVCDocument());
 }
 
 @Override

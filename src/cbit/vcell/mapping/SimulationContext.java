@@ -27,10 +27,12 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
@@ -54,6 +56,8 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -272,6 +276,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private AnalysisTask[] fieldAnalysisTasks = null;
 	private boolean bStoch;
+	private boolean bRuleBased;
 	private boolean bConcentration = true;
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
@@ -290,7 +295,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
  */
-public SimulationContext(SimulationContext simulationContext,Geometry newClonedGeometry, boolean arg_isStoch) throws PropertyVetoException {
+public SimulationContext(SimulationContext simulationContext,Geometry newClonedGeometry, boolean arg_isStoch, boolean arg_isRuleBased) throws PropertyVetoException {
 	
 	if(arg_isStoch)
 	{
@@ -312,6 +317,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
 	this.bioModel = simulationContext.getBioModel();
 	this.setIsStoch(arg_isStoch);
+	this.setIsRuleBased(arg_isRuleBased);
 	//
 	// copy electrical stimuli and ground
 	//
@@ -387,7 +393,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
  */
 public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans.PropertyVetoException
 {
-	this(argModel,argGeometry,false);
+	this(argModel,argGeometry,false,false);
 }
 
 
@@ -403,7 +409,7 @@ public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans
  */
 public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws java.beans.PropertyVetoException
 {
-	this(argModel,argGeometry,argMathDesc,argVersion,false);
+	this(argModel,argGeometry,argMathDesc,argVersion,false,false);
 }
 
 
@@ -412,10 +418,11 @@ public SimulationContext(Model argModel, Geometry argGeometry, MathDescription a
  * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
-public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch) throws PropertyVetoException {
+public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
 	setIsStoch(bStoch);
+	setIsRuleBased(bRuleBased);
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
@@ -438,10 +445,11 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
  * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
-public SimulationContext(Model model, Geometry geometry, boolean bStoch) throws PropertyVetoException {
+public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
 	setIsStoch(bStoch);
+	setIsRuleBased(bRuleBased);
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
@@ -527,7 +535,6 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 
 	return newSimulation;
 }
-
 
 public void refreshMathDescription() {
 	//The code below is used to check if the sizes are ready for required models.
@@ -627,6 +634,10 @@ public boolean compareEqual(Matchable object) {
 		simContext = (SimulationContext)object;
 	}
 	if(simContext.bStoch != bStoch)
+	{
+		return false;
+	}
+	if(simContext.bRuleBased != bRuleBased)
 	{
 		return false;
 	}
@@ -870,16 +881,20 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (11/1/2005 9:30:09 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
-	getReactionContext().gatherIssues(issueVector);
-	getGeometryContext().gatherIssues(issueVector);
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
+	getReactionContext().gatherIssues(issueContext, issueVector);
+	getGeometryContext().gatherIssues(issueContext, issueVector);
 	if (fieldAnalysisTasks != null) {
 		for (AnalysisTask analysisTask : fieldAnalysisTasks) {
-			analysisTask.gatherIssues(issueVector);
+			analysisTask.gatherIssues(issueContext, issueVector);
 		}
 	}
-	getOutputFunctionContext().gatherIssues(issueVector);
-	getMicroscopeMeasurement().gatherIssues(issueVector);
+	getOutputFunctionContext().gatherIssues(issueContext, issueVector);
+	getMicroscopeMeasurement().gatherIssues(issueContext, issueVector);
+	if (getMathDescription()!=null){
+		getMathDescription().gatherIssues(issueContext, issueVector);
+	}
 }
 
 
@@ -1274,6 +1289,9 @@ public boolean isStoch() {
 	return bStoch;
 }
 
+public boolean isRuleBased(){
+	return bRuleBased;
+}
 
 /**
  * Insert the method's description here.
@@ -1419,6 +1437,9 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
  * This method was created in VisualAge.
  */
 public void refreshDependencies() {
+	refreshDependencies1(true);
+}
+public void refreshDependencies1(boolean isRemoveUncoupledParameters) {
 	removePropertyChangeListener(this);
 	removeVetoableChangeListener(this);
 	addPropertyChangeListener(this);
@@ -1446,7 +1467,7 @@ public void refreshDependencies() {
 	}
 	if (fieldAnalysisTasks!=null){
 		for (int i = 0; i < fieldAnalysisTasks.length; i++){
-			fieldAnalysisTasks[i].refreshDependencies();
+			fieldAnalysisTasks[i].refreshDependencies(isRemoveUncoupledParameters);
 		}
 	}
 	
@@ -1788,13 +1809,12 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2006 4:07:16 PM)
- * @param newIsStoch boolean
- */
 private void setIsStoch(boolean newIsStoch) {
 	bStoch = newIsStoch;
+}
+
+private void setIsRuleBased(boolean newIsRuleBased) {
+	bRuleBased = newIsRuleBased;
 }
 
 
@@ -2038,9 +2058,15 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Mapping
 	}
 }
 
-public String getMathType()
+public MathType getMathType()
 {
-	return bStoch ? BioModelChildSummary.TYPE_STOCH_STR : BioModelChildSummary.TYPE_DETER_STR;
+	if (bRuleBased){
+		return MathType.RuleBased;
+	}else if (bStoch){
+		return MathType.Stochastic;
+	}else{
+		return MathType.Deterministic;
+	}
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
@@ -2121,7 +2147,7 @@ public boolean hasEventAssignment(SpeciesContext speciesContext) {
 	//
 	// spatial and stochastic models don't have events yet.
 	//
-	if (getGeometryContext().getGeometry().getDimension() != 0 || isStoch()){
+	if (getGeometryContext().getGeometry().getDimension() != 0 || isStoch() || isRuleBased()){
 		return false;
 	}
 
@@ -2168,18 +2194,27 @@ public DataContext getDataContext() {
 	return dataContext;
 }
 
+public SimContextTransformer createNewTransformer(){
+	SimContextTransformer modelTransformer = null;
+	if (isRuleBased()){
+		modelTransformer = new RulebasedTransformer();
+	}else{
+		modelTransformer = new NetworkTransformer();
+	}
+	return modelTransformer;	
+}
+
 public MathMapping createNewMathMapping() {
 	MathMapping mathMapping = null;
-	if (isStoch())
-	{
+	if (isStoch() && !isRuleBased()){
 		if (getGeometry().getDimension()==0){
 			mathMapping = new StochMathMapping(this);
 		}else{
 			mathMapping = new ParticleMathMapping(this);
 		}
-	}
-	else
-	{
+	}else if (isRuleBased()){
+		mathMapping = new RulebasedMathMapping(this);
+	}else {
 		mathMapping = new MathMapping(this);
 	}
 	return mathMapping;
@@ -2189,12 +2224,17 @@ public boolean isSameTypeAs(SimulationContext simulationContext) {
 	if (getGeometry().getDimension() != simulationContext.getGeometry().getDimension()) {
 		return false;
 	}
-		
-	return (isStoch() && simulationContext.isStoch()) || (!isStoch() && !simulationContext.isStoch());
+	if (isStoch() != simulationContext.isStoch()){
+		return false;
+	}
+	if (isRuleBased() != simulationContext.isRuleBased()){
+		return false;
+	}
+	return true;
 }
 
 public boolean isValidForFitting() {
-	return getGeometry().getDimension() == 0 && !isStoch();
+	return getGeometry().getDimension() == 0 && !isStoch() && !isRuleBased();
 }
 
 private void initializeForSpatial() {
@@ -2206,7 +2246,7 @@ private void initializeForSpatial() {
 
 public void createDefaultParameterEstimationTask()
 {
-	if(!this.isStoch() && this.getGeometry().getDimension() == 0 && fieldAnalysisTasks == null)
+	if(!this.isStoch() && !this.isRuleBased() && this.getGeometry().getDimension() == 0 && fieldAnalysisTasks == null)
 	{
 		try{
 			ParameterEstimationTask peTask = new ParameterEstimationTask(this);
@@ -2295,6 +2335,21 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 				return rr;
 			}
 		}
+	}
+	return null;
+}
+
+@Override
+public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
+	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
+	ReservedSymbol reservedSymbol = getModel().getReservedSymbolByName(overriddenConstantName);
+	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.KMOLE){
+		String msg = "overriding unit factor KMOLE is no longer supported, unit conversion has been completely redesigned";
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+	}
+	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.N_PMOLE){
+		String msg = "overriding unit factor N_PMOLE is no longer supported, unit conversion has been completely redesigned";
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
 	}
 	return null;
 }

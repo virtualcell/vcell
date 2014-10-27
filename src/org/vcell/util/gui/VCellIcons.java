@@ -32,6 +32,17 @@ public abstract class VCellIcons {
 	public final static int VCellIconWidth = 16;
 	public final static int VCellIconHeight = 16;
 	
+	// Rule Based Modeling
+	public final static Icon rbmIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm.png"));
+	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule.png"));
+	public final static Icon rbmMolecularComponentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component.gif"));
+	public final static Icon rbmMolecularComponentErrIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component_err.gif"));
+	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.gif"));
+	public final static Icon rbmObservableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_observable.gif"));
+	public final static Icon rbmBondIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond.gif"));
+	public final static Icon rbmReactantIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_reactant.png"));
+	public final static Icon rbmProductIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_product.png"));
+
 	// Chombo
 	public final static Icon refLevelNewIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_new.png"));
 	public final static Icon refLevelDeleteIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_delete.png"));

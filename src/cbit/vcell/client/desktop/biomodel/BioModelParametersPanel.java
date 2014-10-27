@@ -203,7 +203,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		globalParametersCheckBox = new JCheckBox("Global");
 		globalParametersCheckBox.setSelected(true);
 		globalParametersCheckBox.addActionListener(eventHandler);
-		reactionsCheckBox = new JCheckBox("Reactions");
+		reactionsCheckBox = new JCheckBox("Reactions and Rules");
 		reactionsCheckBox.setSelected(true);
 		reactionsCheckBox.addActionListener(eventHandler);
 		applicationsCheckBox = new JCheckBox("Applications");

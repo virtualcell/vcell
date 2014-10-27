@@ -6,13 +6,19 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class MolecularType extends RbmElement implements VetoableChangeListener {
+public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener {
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
-	private String name;	
 	
+	private String name;	
 	private List<MolecularComponent> componentList = new ArrayList<MolecularComponent>();
+	
 	public MolecularType(String name) {
 		this.name = name;
 	}
@@ -53,6 +59,16 @@ public class MolecularType extends RbmElement implements VetoableChangeListener 
 			}
 		}
 		return null;
+	}
+	
+		public MolecularComponent[] getMolecularComponents(String componentName) {
+		ArrayList<MolecularComponent> molecularComponents = new ArrayList<MolecularComponent>();
+		for (MolecularComponent mc : componentList)  {
+			if (mc.getName().equals(componentName)) {
+				molecularComponents.add(mc);
+			}
+		}
+		return molecularComponents.toArray(new MolecularComponent[molecularComponents.size()]);
 	}
 	
 	public final String getName() {
@@ -106,5 +122,43 @@ public class MolecularType extends RbmElement implements VetoableChangeListener 
 	@Override
 	public String toString() {
 		return getName();
+	}
+	
+	@Override
+	public boolean compareEqual(Matchable aThat) {
+		if (this == aThat) {
+			return true;
+		}
+		if (!(aThat instanceof MolecularType)) {
+			return false;
+		}
+		MolecularType that = (MolecularType)aThat;
+		
+		if (!Compare.isEqual(name, that.name)) {
+			return false;
+		}
+		if (!Compare.isEqual(componentList, that.componentList)){
+			return false;
+		}
+		return true;
+	}
+
+	
+	@Override
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		if(name == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Type is null", Issue.SEVERITY_ERROR));
+		} else if(name.equals("")) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Type is empty", Issue.SEVERITY_WARNING));
+		}
+		if(componentList == null) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type '" + name + "' Component List is null", Issue.SEVERITY_ERROR));
+		} else if(componentList.isEmpty()) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type '" + name + "' Component List is empty", Issue.SEVERITY_INFO));
+		} else {
+			for (MolecularComponent entity : componentList) {
+				entity.gatherIssues(issueContext, issueList);
+			}
+		}
 	}
 }

@@ -39,8 +39,8 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.ReferenceQueryResult;
 import org.vcell.util.document.ReferenceQuerySpec;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.document.VersionableRelationship;
@@ -62,7 +62,7 @@ import cbit.vcell.desktop.GeometryTreePanel;
 import cbit.vcell.desktop.MathModelDbTreePanel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.xml.XMLInfo;
+import cbit.vcell.xml.ExternalDocInfo;
 import cbit.xml.merge.XmlTreeDiff;
 /**
  * Insert the type's description here.
@@ -912,7 +912,7 @@ public void createNewGeometry(){
 				if(newGeom == null){
 					throw new Exception("No Geometry found in edit task");
 				}
-				DocumentCreationInfo documentCreationInfo = new DocumentCreationInfo(VCDocument.GEOMETRY_DOC, -1);
+				DocumentCreationInfo documentCreationInfo = new DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, -1);
 				documentCreationInfo.setPreCreatedDocument(newGeom);
 				AsynchClientTask[] newGeometryTaskArr = 
 					getRequestManager().newDocument(DatabaseWindowManager.this, documentCreationInfo);
@@ -949,37 +949,37 @@ public void publish() {
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager requester) throws Exception {
+public VCDocumentInfo selectDocument(VCDocumentType documentType, TopLevelWindowManager requester) throws Exception {
 
 	// Set doubleClickValue to null.
 	// if doubleClickValue is not null when dialog returns, use doubleClickValue value
 	// otherwise use dialog return value
 	switch (documentType) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			Object choice = showOpenDialog(getBioModelDbTreePanel(), requester);
 			if (choice != null && choice.equals("Open")) {
 				return (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		} 
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			Object choice = showOpenDialog(getMathModelDbTreePanel(), requester);
 			if (choice != null && choice.equals("Open")) {
 				return (MathModelInfo)getMathModelDbTreePanel().getSelectedVersionInfo();
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		} 
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			Object choice = showOpenDialog(getGeometryTreePanel(), requester);
 			if (choice != null && choice.equals("Open")) {
 				return (GeometryInfo)getGeometryTreePanel().getSelectedVersionInfo();
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		}
-		case VCDocument.XML_DOC: {
+		case EXTERNALFILE_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
-			File xmlFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_XML);
-			return new XMLInfo(xmlFile);
+			File modelFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_EXTERNALDOC);
+			return new ExternalDocInfo(modelFile);
 		}		
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
@@ -1130,22 +1130,22 @@ private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public String showSaveDialog(final int documentType, final Component requester, final String oldName) throws Exception {
+public String showSaveDialog(final VCDocumentType documentType, final Component requester, final String oldName) throws Exception {
 	JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
 	saveDialog.setWantsInput(true);
 	saveDialog.setInitialSelectionValue(oldName);
 	JPanel panel = new JPanel(new BorderLayout());
 	JComponent tree = null;
 	switch (documentType) {
-		case VCDocument.BIOMODEL_DOC: {
+		case BIOMODEL_DOC: {
 			tree = getBioModelDbTreePanel();
 			break;
 		}
-		case VCDocument.MATHMODEL_DOC: {
+		case MATHMODEL_DOC: {
 			tree = getMathModelDbTreePanel();
 			break;
 		}
-		case VCDocument.GEOMETRY_DOC: {
+		case GEOMETRY_DOC: {
 			tree = getGeometryTreePanel();
 			break;
 		}

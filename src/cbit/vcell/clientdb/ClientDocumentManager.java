@@ -2612,7 +2612,7 @@ public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
-
+//		System.out.println(mathModelXML);
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModelAs(new BigString(mathModelXML), newName, independentSims).toString();
 
 		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));

@@ -14,8 +14,10 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -136,6 +138,30 @@ public class GuiUtils {
 		return label;
 	}
 	
+	public static void selectClickTreePath(JTree jtree, MouseEvent e) {
+		Point mousePoint = e.getPoint();
+		TreePath clickPath = jtree.getPathForLocation(mousePoint.x, mousePoint.y);
+	    if (clickPath == null) {
+	    	return; 
+	    }
+		Object rightClickNode = clickPath.getLastPathComponent();
+		if (rightClickNode == null || !(rightClickNode instanceof BioModelNode)) {
+			return;
+		}
+		boolean bFound = false;
+		TreePath[] selectedPaths = jtree.getSelectionPaths();
+		if (selectedPaths != null) {
+			for (TreePath tp : selectedPaths) {
+				if (tp.equals(clickPath)) {
+					bFound = true;
+					break;
+				}
+			}
+		}
+		if (!bFound) {
+			jtree.setSelectionPath(clickPath);
+		}
+	}
 	public static String getMeshSizeText(int dim, ISize size, boolean bTotal)
 	{
 		int nx = size.getX();

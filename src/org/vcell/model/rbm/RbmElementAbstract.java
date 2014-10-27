@@ -3,9 +3,14 @@ package org.vcell.model.rbm;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+import java.util.List;
+
+import org.vcell.model.rbm.common.RbmEventContainer;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 
 @SuppressWarnings("serial")
-public abstract class RbmElement implements Serializable {
+public abstract class RbmElementAbstract implements RbmEventContainer, Serializable {
 	
 	private transient PropertyChangeSupport propertyChange;
 	private transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -47,4 +52,6 @@ public abstract class RbmElement implements Serializable {
 	public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 		getVetoPropertyChange().removeVetoableChangeListener(listener);
 	}
+	
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) { }
 }

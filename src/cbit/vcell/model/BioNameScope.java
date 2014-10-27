@@ -23,6 +23,7 @@ public abstract class BioNameScope extends AbstractNameScope {
 		modelType,
 		structureType,
 		reactionStepType,
+		reactionRuleType,
 
 		simulationContextType,
 		speciesContextSpecType,

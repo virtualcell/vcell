@@ -13,6 +13,7 @@ import java.beans.PropertyVetoException;
 
 import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.solver.nfsim.NFsimSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -40,6 +41,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
 	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
 	public static final String PROPERTY_SMOLDYN_SIMULATION_OPTIONS = "smoldynSimulationOptions";
+	public static final String PROPERTY_NFSIM_SIMULATION_OPTIONS = "nfsimSimulationOptions";
 	public static final String PROPERTY_SUNDIALS_SOLVER_OPTIONS = "sundialsSolverOptions";
 	
 	//  Or TASK_NONE for use as a default?
@@ -63,6 +65,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
+	private NFsimSimulationOptions nfsimSimulationOptions = null;
 	private SundialsSolverOptions sundialsSolverOptions = null; 
 	private ChomboSolverSpec chomboSolverSpec = null;
 	/**
@@ -150,6 +153,11 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 		smoldynSimulationOptions = new SmoldynSimulationOptions(solverTaskDescription.smoldynSimulationOptions);
 	} else {
 		smoldynSimulationOptions = null;
+	}
+	if (simulation.getMathDescription().isRuleBased()) {
+		nfsimSimulationOptions = new NFsimSimulationOptions(solverTaskDescription.nfsimSimulationOptions);
+	} else {
+		nfsimSimulationOptions = null;
 	}
 	if (fieldSolverDescription.equals(SolverDescription.SundialsPDE)) {
 		sundialsSolverOptions = new SundialsSolverOptions(solverTaskDescription.sundialsSolverOptions);
@@ -610,6 +618,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 //				setSmoldynDefaultTimeStep();
 			}
+			if (solverDescription.isNFSimSolver()){
+				if (nfsimSimulationOptions == null){
+					nfsimSimulationOptions = new NFsimSimulationOptions();
+				}
+			}
 			if (solverDescription.isChomboSolver()) {
 				if (chomboSolverSpec == null && getSimulation() != null) {
 					chomboSolverSpec = new ChomboSolverSpec(ChomboSolverSpec.getDefaultMaxBoxSize(getSimulation().getMathDescription().getGeometry().getDimension()));
@@ -769,6 +782,10 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				getErrorTolerance().readVCML(tokens);
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions)) {
+				getNFSimSimulationOptions().readVCML(tokens);
+				continue;
+			}
 			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
 				// Amended July 22nd, 2007 
 				StochSimOptions temp = null;
@@ -859,6 +876,9 @@ public void refreshDependencies() {
 	addPropertyChangeListener(this);
 	if(smoldynSimulationOptions != null) {
 		smoldynSimulationOptions.refreshDependencies();
+	}
+	if(nfsimSimulationOptions != null) {
+		nfsimSimulationOptions.refreshDependencies();
 	}
 }
 
@@ -1060,6 +1080,10 @@ public final SmoldynSimulationOptions getSmoldynSimulationOptions() {
 	return smoldynSimulationOptions;
 }
 
+public final NFsimSimulationOptions getNFSimSimulationOptions() {
+	return nfsimSimulationOptions;
+}
+
 public final SundialsSolverOptions getSundialsSolverOptions() {
 	return sundialsSolverOptions;
 }
@@ -1068,6 +1092,12 @@ public final void setSmoldynSimulationOptions(SmoldynSimulationOptions smoldynSi
 	SmoldynSimulationOptions oldValue = this.smoldynSimulationOptions;
 	this.smoldynSimulationOptions = smoldynSimulationOptions;
 	firePropertyChange(PROPERTY_SMOLDYN_SIMULATION_OPTIONS, oldValue, smoldynSimulationOptions);
+}
+
+public final void setNFSimSimulationOptions(NFsimSimulationOptions nfsimSimulationOptions) {
+	NFsimSimulationOptions oldValue = this.nfsimSimulationOptions;
+	this.nfsimSimulationOptions = nfsimSimulationOptions;
+	firePropertyChange(PROPERTY_NFSIM_SIMULATION_OPTIONS, oldValue, nfsimSimulationOptions);
 }
 
 public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverOptions) {

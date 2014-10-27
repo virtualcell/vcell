@@ -34,6 +34,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.Versionable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.UtilCancelException;
@@ -191,12 +192,8 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_GEOMETRY, mouseEvent.getModifiers()));
 		} else if (selectedObject instanceof Simulation) {
 			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_SIMULATION, mouseEvent.getModifiers()));
-		} else if (selectedObject instanceof String) { // deterministic or stochastic
-			String detStochString = (String)selectedObject;
-			if (detStochString.equals(BioModelChildSummary.TYPE_DETER_STR) || detStochString.equals(BioModelChildSummary.TYPE_STOCH_STR)
-					|| detStochString.equals(BioModelChildSummary.TYPE_UNKNOWN_STR)) {
-				fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH, mouseEvent.getModifiers()));
-			}
+		} else if (selectedObject instanceof MathType) { // deterministic or stochastic or rule-bsaed
+			fireActionPerformed(new ActionEvent(this, mouseEvent.getID(), GuiConstants.ACTIONCMD_OPEN_APPLICATION_DETSTOCH, mouseEvent.getModifiers()));
 		}
 		return;
 	}	

@@ -12,26 +12,21 @@ package cbit.vcell.client;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
@@ -46,7 +41,6 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.VCImageUncompressed;
 import cbit.rmi.event.DataJobEvent;
@@ -71,21 +65,17 @@ import cbit.vcell.field.gui.FieldDataDBEventListener;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataListener;
-import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
@@ -394,6 +384,12 @@ private static class OutputFunctionViewer extends JPanel{
 				// TODO Auto-generated method stub
 				return null;
 			}
+
+			@Override
+			public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String name) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		};
 		VCDocument fakeVCDocument = new VCDocument(){
 
@@ -410,9 +406,9 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 
 			@Override
-			public int getDocumentType() {
+			public VCDocumentType getDocumentType() {
 				// TODO Auto-generated method stub
-				return 0;
+				return null;
 			}
 
 			@Override
@@ -447,19 +443,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 
 			@Override
-			public String getObjectPathDescription(Object object) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public String getObjectDescription(Object object) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void gatherIssues(List<Issue> issueList) {
+			public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				// TODO Auto-generated method stub
 				
 			}

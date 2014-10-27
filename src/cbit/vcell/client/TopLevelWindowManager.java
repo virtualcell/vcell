@@ -26,6 +26,7 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 
@@ -324,17 +325,17 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 
 	VCDocument.DocumentCreationInfo documentCreationInfo = null;
 	if(geomType[0] == ANALYTIC_1D){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D);
 	}else if(geomType[0] == ANALYTIC_2D){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D);
 	}else if(geomType[0] == ANALYTIC_3D){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D);
 	}else if(geomType[0] == IMAGE_FILE || geomType[0] == MESH_FILE){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE);
 	}else if(geomType[0] == FROM_SCRATCH){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FROM_SCRATCH);
 	}else if(geomType[0] == CSGEOMETRY_3D){
-		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
+		documentCreationInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, VCDocument.GEOM_OPTION_CSGEOMETRY_3D);
 	}else{
 		throw new IllegalArgumentException("Error selecting geometry, Unknown Geometry type "+geomType[0]);
 	}
@@ -380,9 +381,9 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 					final Vector<AsynchClientTask> runtimeTasksV = new Vector<AsynchClientTask>();
 					VCDocument.DocumentCreationInfo workspaceDocCreateInfo = null;
 					if(currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() > 0 && currentGeometry.getGeometrySpec().getImage() == null){
-						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC);
+						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_ANALYTIC);
 					}else if(currentGeometry.getGeometrySpec().getImage() != null && currentGeometry.getGeometrySpec().getNumAnalyticOrCSGSubVolumes() == 0){
-						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE);
+						workspaceDocCreateInfo = new VCDocument.DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FROM_WORKSPACE_IMAGE);
 					}else{
 						throw new Exception("Unexpected image configuration for workspace geometry.");
 					}
