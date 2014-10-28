@@ -89,7 +89,8 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 	}
 
 	public static String toHtml(MolecularTypePattern mtp, boolean bShowWords) {
-		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
+//		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
+		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "</b></html>";
 	}
 	public static String toHtml(MolecularComponentPattern mcp, boolean bShowWords) {
 		return "<html> " + (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b></html>";
@@ -139,7 +140,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 					String colorTextEnd = bSelected ? "" : "</font>";
 					
 					bondText = colorTextStart + "<b>" + mcp.getBondId() + "</b>" + colorTextEnd;		// <sub>&nbsp;</sub>
-					bondText = " Bond(" + bondText + ") to: " + colorTextStart + toHtml(bond) + colorTextEnd;
+					bondText = " Bound(" + bondText + ") to: " + colorTextStart + toHtml(bond) + colorTextEnd;
 				}
 			} else {
 				bondText =  " Bond(<b>" + bondType.symbol + "</b>): " + "<b>" + bondType.name() + "</b>";
@@ -150,7 +151,8 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 	}
 	public static String toHtml(Bond bond) {
 		String bondText = " Molecule <b>" + bond.molecularTypePattern.getMolecularType().getName();
-		bondText += "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>";
+//		bondText += "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>";
+		bondText += "&nbsp;&nbsp;</b>Component <b>";
 		bondText +=	bond.molecularComponentPattern.getMolecularComponent().getName() + "</b>";
 		//  ... + "<sub>" + bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub>)"
 		return bondText;

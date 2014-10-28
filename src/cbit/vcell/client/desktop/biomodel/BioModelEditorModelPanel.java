@@ -654,7 +654,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							String text = "<html><b>";
 							for(int i=0; i< rr.getReactantPatterns().size(); i++) {
 								ReactantPattern rp = rr.getReactantPattern(i);
-								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), false);
+								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), isSelected);
 								if(i<rr.getReactantPatterns().size()-1) {
 									text += "+";
 								}
@@ -666,7 +666,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 							for(int i=0; i< rr.getProductPatterns().size(); i++) {
 								ProductPattern pp = rr.getProductPattern(i);
-								text += RbmTableRenderer.toHtml(pp.getSpeciesPattern(), false);
+								text += RbmTableRenderer.toHtml(pp.getSpeciesPattern(), isSelected);
 								if(i<rr.getProductPatterns().size()-1) {
 									text += "+";
 								}

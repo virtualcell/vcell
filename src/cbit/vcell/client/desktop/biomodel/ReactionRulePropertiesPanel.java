@@ -288,6 +288,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			gbc.fill = GridBagConstraints.BOTH;
 			productPanel.add(new JScrollPane(productTree), gbc);
 
+			splitPaneTrees.setPreferredSize(new Dimension(60, 1200));	// TODO: find better solution for the extra scrollbars!
 			splitPaneTrees.setLeftComponent(reactantPanel);
 			splitPaneTrees.setRightComponent(productPanel);
 
@@ -717,7 +718,17 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
-				itemMap.put(b.toHtmlStringShort(), b);
+				if(b.equals(mcp.getBond())) {
+					continue;	// if the mcp has a bond already we don't offer it
+				}
+//				itemMap.put(b.toHtmlStringShort(), b);
+				int index = 0;
+				if(mcp.getBondType() == BondType.Specified) {
+					index = mcp.getBondId();
+				} else {
+					index = sp.nextBondId();
+				}
+				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
 			}
 		}
 		for(String name : itemMap.keySet()) {
