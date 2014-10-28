@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<toc version="1.0">
+  <tocitem image="toplevelfolder" text="Virtual Frap Help">
+    <tocitem target="intro" text="Introduction">
+        <tocitem target="intro" text="introduction"/>
+    </tocitem>
+
+    <tocitem target="gettingStarted" text="System Requirements">
+    </tocitem>
+
+    <tocitem target="quickTour" text="Quick Tour of Virtual Frap">
+        <tocitem target="mainInterface" text="The Vitual FRAP Main Interface"/>
+	  <tocitem target="loadData" text="Loading FRAP Experimental Data"/>
+        <tocitem target="defineROI" text="Defining Regions of Interest"/>
+        <tocitem target="selectModel" text="Selecting FRAP Model"/>
+        <tocitem target="estParameters" text="Estimating Parameters"/>
+        <tocitem target="spatialSim" text="Spatial Simulation and Results"/>   
+        <tocitem target="batchRun" text="The Virtual FRAP Batch Run Mode"/>
+    </tocitem>
+  </tocitem>
+</toc>
