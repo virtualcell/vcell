@@ -25,6 +25,7 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -47,7 +48,9 @@ import cbit.vcell.units.VCUnitException;
  * 
  */
 @SuppressWarnings("serial")
-public abstract class Kinetics implements ModelProcessDynamics, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public abstract class Kinetics implements ModelProcessDynamics, Matchable, PropertyChangeListener, VetoableChangeListener, 
+java.io.Serializable, IssueSource
+{
 	public static final String PROPERTY_NAME_KINETICS_PARAMETERS = "kineticsParameters";
 	private String name;
 	private final ReactionStep reactionStep;
@@ -230,7 +233,7 @@ public abstract class Kinetics implements ModelProcessDynamics, Matchable, Prope
 	};
 
 
-	public class KineticsParameter extends Parameter implements ExpressionContainer {
+	public class KineticsParameter extends Parameter implements ExpressionContainer, IssueSource {
 		
 		private String fieldParameterName = null;
 		private Expression fieldParameterExpression = null;
@@ -504,7 +507,7 @@ public abstract class Kinetics implements ModelProcessDynamics, Matchable, Prope
 		
 	}
 	
-	public class UnresolvedParameter extends Parameter {
+	public class UnresolvedParameter extends Parameter implements IssueSource {
 		
 		private String fieldParameterName = null;
 

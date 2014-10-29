@@ -17,9 +17,11 @@ import java.util.List;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -191,6 +193,18 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (source instanceof ReactionRule) {
 				ReactionRule reactionRule = (ReactionRule) source;
 				description = ((ReactionRuleNameScope)reactionRule.getNameScope()).getPathDescription();
+			} else if (source instanceof SpeciesPattern) {
+//				if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
+//					description = "Model / Species";
+//				}else if(issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
+//					ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
+//					description = ((ReactionRuleNameScope)thing.getNameScope()).getPathDescription();
+//				}else if(issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
+//					description = "Model / Observables";
+//				} else {
+				System.err.println("Bad issue context for " + ((SpeciesPattern)source).toString());
+				description = ((SpeciesPattern)source).toString();
+//				}
 			} else if (source instanceof Structure) {
 				Structure structure = (Structure)source;
 				description = "Model / " + structure.getTypeName() + "(" + structure.getName() + ")";
@@ -225,6 +239,9 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (source instanceof ReactionCombo) {
 				ReactionCombo rc = (ReactionCombo)source;
 				description = "App(" + rc.getReactionContext().getSimulationContext().getName() + ") / Specifications / Reactions";
+			} else {
+				System.err.println("unknown source type in IssueTableModel.getSourceObjectPathDescription(): " + source.getClass());
+
 			}
 			return description;
 		}else if (vcDocument instanceof MathModel){
@@ -256,7 +273,23 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (object instanceof ReactionRule) {
 				description = ((ReactionRule)object).getName();
 			} else if (object instanceof SpeciesPattern) {
-				description = ((SpeciesPattern)object).toString();
+//				Object parent = issue.getIssueContext().getContextObject();
+//				if (parent instanceof SpeciesContext){
+//					description = ((SpeciesContext)parent).getName();
+//				}
+//				if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
+//					SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
+//					description = thing.getName();
+//				}else if(issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
+//					ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
+//					description = thing.getName();
+//				}else if(issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
+//					RbmObservable thing = (RbmObservable)issue.getIssueContext().getContextObject(ContextType.RbmObservable);
+//					description = thing.getName();
+//				} else {
+					System.err.println("Bad issue context for " + ((SpeciesPattern)object).toString());
+					description = ((SpeciesPattern)object).toString();
+//				}
 			} else if (object instanceof MolecularType) {
 				description = ((MolecularType)object).getName();
 			} else if (object instanceof MolecularComponent) {
@@ -289,6 +322,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (object instanceof ReactionCombo) {
 				ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
 				description = rs.getReactionStep().getName();
+			} else {
+				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}
 			return description;
 		}else if (vcDocument instanceof MathModel){

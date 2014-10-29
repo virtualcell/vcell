@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
 
@@ -24,7 +25,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 @SuppressWarnings("serial")
-public class Event extends CommentedBlockObject implements Matchable, Serializable, VCMLProvider {
+public class Event extends CommentedBlockObject implements Matchable, Serializable, VCMLProvider, IssueSource {
 
 	public static class EventAssignment implements Matchable, Serializable {
 		private Variable variable = null;
@@ -45,7 +46,7 @@ public class Event extends CommentedBlockObject implements Matchable, Serializab
 			if (variable == null) { 
 				throw new MathException("'" + token + "' in EventAssignment is not valid. No such variable is present");
 			}
-			if (!!(variable instanceof VolVariable)) {
+			if (!(variable instanceof VolVariable)) {
 				throw new MathException("'" + token + "' of type " + variable.getClass().getSimpleName() + " in EventAssignment is not valid. An event assignment target must be a VolVariable.");
 			}
 			assignmentExpression = MathFunctionDefinitions.fixFunctionSyntax(tokens);

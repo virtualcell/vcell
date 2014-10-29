@@ -25,6 +25,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
@@ -53,6 +54,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -230,6 +232,19 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {object});
 		} else if (object instanceof RbmObservable) {
 			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {object});
+		} else if (object instanceof SpeciesPattern) {
+//			if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
+//				SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
+//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {thing});
+//			}else if(issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
+//				ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
+//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {thing});
+//			}else if(issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
+//				RbmObservable thing = (RbmObservable)issue.getIssueContext().getContextObject(ContextType.RbmObservable);
+//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {thing});
+//			} else {
+				System.err.println("SpeciesPattern object missing a proper issue context.");
+//			}
 		} else if (object instanceof Geometry) {
 			if (issueContext.hasContextType(ContextType.SimContext)){
 				SimulationContext simContext = (SimulationContext)issueContext.getContextObject(ContextType.SimContext);
@@ -237,6 +252,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			}else if (issueContext.hasContextType(ContextType.MathModel)){
 				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry), new Object[] {object});
 			}
+		} else {
+			System.err.println("unknown object type in IssuePanel.invokeHyperlink(): " + object.getClass() + ", context type: " + issueContext.getContextType());
 		}
 	}
 }

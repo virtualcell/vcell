@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
@@ -96,7 +97,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return NamescopeType.reactionSpecType;
 		}
 	}
-	public class ReactionCombo {	// used only for Issue reporting stuff
+	public class ReactionCombo implements IssueSource {	// used only for Issue reporting stuff
 		final ReactionSpec rs;
 		final ReactionContext rc;
 		

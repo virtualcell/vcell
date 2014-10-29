@@ -6,12 +6,13 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 
 @SuppressWarnings("serial")
-public class MolecularComponentPattern extends RbmElementAbstract implements Matchable {
+public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource {
 	public static final String PROPERTY_NAME_COMPONENT_STATE = "componentStatePattern";
 	public static final String PROPERTY_NAME_BOND_TYPE = "bondType";
 	public static final String PROPERTY_NAME_BOND_ID = "bondId";

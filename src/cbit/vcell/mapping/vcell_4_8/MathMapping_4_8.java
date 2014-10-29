@@ -23,6 +23,9 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
@@ -103,7 +106,7 @@ import cbit.vcell.units.VCUnitException;
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
  */
-public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider {
+public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, IssueSource {
 	
 	public static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
 	public static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
@@ -118,6 +121,7 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider {
 	private PotentialMapping potentialMapping = null;  // null if don't need it
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
+	protected final IssueContext issueContext;
 
 	private MathMapping_4_8.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	private Hashtable<ModelParameter, Hashtable<String, Expression>> globalParamVariantsHash = new Hashtable<ModelParameter, Hashtable<String,Expression>>();
@@ -367,6 +371,7 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider {
  */
 public MathMapping_4_8(SimulationContext simContext) {
 	this.simContext = simContext;
+	this.issueContext = new IssueContext(ContextType.SimContext,simContext,null).newChildContext(ContextType.MathMapping,this);
 }
 
 
@@ -573,31 +578,31 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 		if (desiredExpUnitDef == null){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are null");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=[null], observed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', evaluated Units are null");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
+			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
 		System.out.println(".........exp='"+expStr+"' exception='"+e.getMessage()+"'");
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		localIssueList.add(new Issue(origExp, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 	}
 	Expression newExp = new Expression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -645,10 +650,10 @@ private Expression getInsideFluxCorrectionExpression(MembraneMapping membraneMap
  * Creation date: (11/8/2004 3:36:31 PM)
  * @return cbit.util.Issue
  */
-public Issue[] getIssues() {	
+public Issue[] getIssues(IssueContext issueContext) {	
 	Vector<Issue> issueList = new Vector<Issue>();
-	getSimulationContext().gatherIssues(issueList);
-	getSimulationContext().getModel().gatherIssues(issueList);
+	getSimulationContext().gatherIssues(issueContext, issueList);
+	getSimulationContext().getModel().gatherIssues(issueContext, issueList);
 	issueList.addAll(localIssueList);
 	return (Issue[])BeanUtils.getArray(issueList,Issue.class);
 }

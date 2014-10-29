@@ -21,8 +21,11 @@ import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.surface.GeometricRegion;
@@ -30,7 +33,6 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -55,7 +57,7 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable {
+public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, IssueSource {
 
 	public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
 	private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
@@ -99,7 +101,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 		}
 	}
 	
-	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer {
+	public class SpeciesContextSpecParameter extends Parameter implements ExpressionContainer, IssueSource {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
@@ -679,7 +681,8 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * Creation date: (11/1/2005 10:03:46 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	issueContext = issueContext.newChildContext(ContextType.SpeciesContextSpec, this);
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//
@@ -687,7 +690,7 @@ public void gatherIssues(List<Issue> issueVector) {
 		RealInterval simpleBounds = parameterBounds[fieldParameters[i].getRole()];
 		if (simpleBounds!=null){
 			String parmName = fieldParameters[i].getNameScope().getName()+"."+fieldParameters[i].getName();
-			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
 	if(bForceContinuous && !bConstant && getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {	// if it's particle or constant we're good
@@ -713,11 +716,9 @@ public void gatherIssues(List<Issue> issueVector) {
 				if(iAmParticipant && haveParticle) {
 					String msg = "Continuous Species won't conserve mass in particle reaction "+rs.getReactionStep().getName()+".";
 					String tip = "Mass conservation for reactions of binding between discrete and continuous species is handled approximately. <br>" +
-						"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate <br>" +
-						"the continuous species in those reactions as modifiers (i.e. 'catalysts') in the physiology.";
-					issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
-					// to increase tooltip duration before they go away call ToolTipManager.sharedInstance().setDismissDelay(10000);
-					// in the panel of interest, right after calling         ToolTipManager.sharedInstance().registerComponent(this);
+							"To avoid any algorithmic approximation, which may produce undesired results, the user is advised to indicate <br>" +
+							"the continuous species in those reactions as modifiers (i.e. 'catalysts') in the physiology.";
+					issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_WARNING));
 					break;	// we issue warning as soon as we found the first reaction which satisfies criteria
 				}
 			}
@@ -727,13 +728,13 @@ public void gatherIssues(List<Issue> issueVector) {
 		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()>0)) {
 			String msg = "Clamped Species must be continuous rather than particles.";
 			String tip = "If choose 'clamped', must also choose 'forceContinuous'";
-			issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_ERROR));
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.SEVERITY_ERROR));
 		}
 	}
 	if(bForceContinuous && !bConstant) {
 		if(getSimulationContext().isStoch() && (getSimulationContext().getGeometry().getDimension()==0)) {
 			String msg = "Non-constant species is forced continuous, not supported for nonspatial stochastic applications.";
-			issueVector.add(new Issue(this, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 		}
 	}
 }

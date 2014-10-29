@@ -36,6 +36,7 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
@@ -48,7 +49,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject {
+public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject, IssueSource {
 	private KeyValue key = null;
 
 	private transient Model model = null;
