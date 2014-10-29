@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.StringTokenizer;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
@@ -30,7 +31,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * 
  */
 @SuppressWarnings("serial")
-public abstract class Variable extends CommentedObject implements SymbolTableEntry, Serializable, Matchable, VCMLProvider {
+public abstract class Variable extends CommentedObject implements SymbolTableEntry, Serializable, Matchable, VCMLProvider, IssueSource {
 	private String name = null;
 	private transient int symbolTableIndex = -1;
 	private Domain domain = null;  // global if null

@@ -81,6 +81,7 @@ import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
+import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.SampledField;
 import org.sbml.libsbml.SampledFieldGeometry;
 import org.sbml.libsbml.SampledVolume;
@@ -100,6 +101,8 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelChildSummary;
@@ -167,12 +170,21 @@ import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
+	
+	public static class SBMLIssueSource implements IssueSource {
+		private final SBase issueSource;
+		public SBMLIssueSource(SBase issueSource){
+			this.issueSource = issueSource;
+		}
+		public SBase getSBase(){
+			return issueSource;
+		}
+	}
 
 	private long level = 2;
 	//private long version = 3;
@@ -189,6 +201,7 @@ public class SBMLImporter {
 	
 	// issue list for medium-level warnings while importing 
 	private Vector<Issue> localIssueList = new Vector<Issue>();
+	private final IssueContext issueContext = new IssueContext();
 	
 	// is model spatial?
 	private boolean bSpatial = false;
@@ -531,7 +544,7 @@ protected void addInitialAssignments() {
 			} else if (mp != null) {
 				mp.setExpression(initAssignMathExpr);
 			} else {
-				localIssueList.add(new Issue(initAssignMathExpr, IssueCategory.SBMLImport_UnsupportedAttributeOrElement , "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
+				localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement , "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
 				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
 			}
 		} catch (Exception e) {
@@ -970,7 +983,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 				for (ReactionParticipant rp : vcRxnParticipants) {
 					if (rp instanceof Reactant || rp instanceof Product) {
 						// If already a reactant or product in vcRxn, add warning to localIssuesList, don't do anything
-						localIssueList.add(new Issue(speciesContext, IssueCategory.SBMLImport_Reaction, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
+						localIssueList.add(new Issue(speciesContext, issueContext, IssueCategory.SBMLImport_Reaction, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.", Issue.SEVERITY_INFO));
 						break;
 					}
 				}
@@ -1207,7 +1220,7 @@ private void setSpeciesInitialConditions() {
 				if (initExpr == null) {
 					// no assignment rule (and there was no initConc or initAmt); if it doesn't have initialAssignment, throw warning and set it to 0.0
 					if (sbmlModel.getInitialAssignment(speciesName) == null) {
-						localIssueList.add(new Issue(initExpr, IssueCategory.SBMLImport_MissingSpeciesInitCondition , "no initial condition for species "+speciesName+", assuming 0.0", Issue.SEVERITY_WARNING));
+						localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel.getSpecies(speciesName)), issueContext, IssueCategory.SBMLImport_MissingSpeciesInitCondition , "no initial condition for species "+speciesName+", assuming 0.0", Issue.SEVERITY_WARNING));
 						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
 					}
 					initExpr = new Expression(0.0);
@@ -1667,14 +1680,14 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 				if (modelVolumeUnit == null) {
 					modelVolumeUnit = sbmlUnitDefinition;
 				} else if (!sbmlUnitDefinition.isEquivalent(modelVolumeUnit)) {
-					localIssueList.add(new Issue(modelVolumeUnit, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+					localIssueList.add(new Issue(new SBMLIssueSource(sbmlComp), issueContext, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
 					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")");
 				}
 			} else if (dim == 2) {
 				if (modelAreaUnit == null) {
 					modelAreaUnit = sbmlUnitDefinition;
 				} else if (!sbmlUnitDefinition.isEquivalent(modelAreaUnit)) {
-					localIssueList.add(new Issue(modelAreaUnit, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+					localIssueList.add(new Issue(new SBMLIssueSource(sbmlComp), issueContext, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
 					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")");
 				}
 			}
@@ -1695,7 +1708,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 			if (modelSubstanceUnit==null){
 				modelSubstanceUnit = sbmlUnitDefinition;
 			}else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
-				localIssueList.add(new Issue(modelSubstanceUnit, IssueCategory.Units, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+				localIssueList.add(new Issue(new SBMLIssueSource(sbmlSpecies), issueContext, IssueCategory.Units, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
 				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
 			}
 		}
@@ -1720,7 +1733,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 					if (modelSubstanceUnit == null) {
 						modelSubstanceUnit = sbmlUnitDefinition;
 					} else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
-						localIssueList.add(new Issue(modelSubstanceUnit, IssueCategory.Units, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+						localIssueList.add(new Issue(new SBMLIssueSource(sbmlReaction), issueContext, IssueCategory.Units, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
 						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
 					}
 					// check time unit
@@ -1734,7 +1747,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 					if (modelTimeUnit == null) {
 						modelTimeUnit = sbmlUnitDefinition;
 					} else if (!sbmlUnitDefinition.isEquivalent(modelTimeUnit)) {
-						localIssueList.add(new Issue(modelTimeUnit, IssueCategory.Units, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
+						localIssueList.add(new Issue(new SBMLIssueSource(sbmlReaction), issueContext, IssueCategory.Units, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
 						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")");
 					}
 				}
@@ -2091,7 +2104,7 @@ private void checkIdentifiersNameLength() throws Exception {
 	// Check compartment name lengths
 	ListOf listofIds = sbmlModel.getListOfCompartments();
 	boolean bLongCompartmentName = false;
-	Object issueSource = null;
+	SBase issueSource = null;
 	for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 		Compartment compartment = (Compartment)listofIds.get(i);
 		String compartmentName = compartment.getId();
@@ -2151,7 +2164,7 @@ private void checkIdentifiersNameLength() throws Exception {
 		warningMsg = warningMsg + "that have ids/names that are longer than 64 characters. \n\nUser is STRONGLY recommeded to shorten " +
 						"the names to avoid problems with the length of expressions these names might be used in.";
 		
-		localIssueList.add(new Issue(issueSource, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, warningMsg, Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(new SBMLIssueSource(issueSource), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, warningMsg, Issue.SEVERITY_WARNING));
 		// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
 	}
 }
@@ -2217,7 +2230,7 @@ protected void addReactions(VCMetaData metaData) {
 						} else if (fluxOptionStr.equals(XMLTags.FluxOptionElectricalOnly)) {
 							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 						} else {
-							localIssueList.add(new Issue(vcReactions[i], IssueCategory.SBMLImport_Reaction, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
+							localIssueList.add(new Issue(vcReactions[i], issueContext, IssueCategory.SBMLImport_Reaction, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
 							// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
 						}
 					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
@@ -2472,7 +2485,7 @@ protected void addGeometry() {
 
 	// (2/15/2013) For now, allow model to be imported even without geometry defined. Issue a warning.
 	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
-		localIssueList.add(new Issue(sbmlModel.getId(), IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
+		localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
 		return;
 		// throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
 	}

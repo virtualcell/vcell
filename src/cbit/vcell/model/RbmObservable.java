@@ -19,6 +19,7 @@ import org.vcell.model.rbm.common.RbmEventHandler;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -30,7 +31,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener {
+public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener, IssueSource {
 	public static enum ObservableType {
 		Molecules,
 		Species;
@@ -246,7 +247,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	}
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-		issueContext = issueContext.newChildContext(ContextType.RBMObservable, this);
+		issueContext = issueContext.newChildContext(ContextType.RbmObservable, this);
 		if(name == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Observable is null", Issue.SEVERITY_ERROR));
 		} else if(name.equals("")) {

@@ -12,6 +12,8 @@ package cbit.vcell.opt;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
@@ -22,7 +24,7 @@ import cbit.vcell.math.VolVariable;
  * Creation date: (8/3/2005 12:09:38 PM)
  * @author: Jim Schaff
  */
-public class OdeObjectiveFunction extends ObjectiveFunction {
+public class OdeObjectiveFunction extends ObjectiveFunction implements IssueSource {
 	private MathDescription mathDescription = null;
 	private SimpleReferenceData simpleReferenceData = null;
 
@@ -88,12 +90,12 @@ public static OdeObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenize
  * Creation date: (8/22/2005 2:30:24 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, java.util.List<Issue> issueList) {
 	//
 	// check for a data column named "t"
 	//
 	if (simpleReferenceData.findColumn("t")<0){
-		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNoTime,"missing time data column with name 't'",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationRefereceDataNoTime,"missing time data column with name 't'",Issue.SEVERITY_ERROR));
 	}
 	//
 	// for those columns that are not "t", check for a corresponding math description Function or VolumeVariable
@@ -105,9 +107,9 @@ public void gatherIssues(java.util.List<Issue> issueList) {
 		}
 		Variable mathVar = mathDescription.getVariable(columnNames[i]);
 		if (mathVar==null){
-			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"data column '"+columnNames[i]+"' not found in math model",Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationRefereceDataNotMapped,"data column '"+columnNames[i]+"' not found in math model",Issue.SEVERITY_ERROR));
 		}else if (!(mathVar instanceof VolVariable) && !(mathVar instanceof Function)){
-			issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataMappedImproperly,"data column '"+columnNames[i]+"' not a variable or function in math model",Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationRefereceDataMappedImproperly,"data column '"+columnNames[i]+"' not a variable or function in math model",Issue.SEVERITY_ERROR));
 		}
 	}
 	

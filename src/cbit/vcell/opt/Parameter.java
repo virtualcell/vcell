@@ -11,6 +11,7 @@
 package cbit.vcell.opt;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
 /**
@@ -18,7 +19,7 @@ import org.vcell.util.Matchable;
  * Creation date: (3/3/00 12:13:49 AM)
  * @author: 
  */
-public class Parameter implements Matchable{
+public class Parameter implements Matchable, IssueSource {
 	private String name = null;
 	private double lowerBound = Double.NEGATIVE_INFINITY;
 	private double upperBound = Double.POSITIVE_INFINITY;

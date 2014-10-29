@@ -16,6 +16,8 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.Expression;
@@ -27,7 +29,7 @@ import cbit.vcell.parser.SimpleSymbolTable;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class OptimizationSpec implements java.io.Serializable {
+public class OptimizationSpec implements java.io.Serializable, IssueSource {
 	private boolean bComputeProfileDistributions = false;
 	private ObjectiveFunction objectiveFunction = null;
 	private Vector<Constraint> constraintList = new Vector<Constraint>();
@@ -83,13 +85,13 @@ public void addParameter(Parameter optVar) {
  * Creation date: (8/22/2005 1:06:33 PM)
  * @return boolean
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	try {
 		for (int i=0;i<this.constraintList.size();i++){
 //			((Constraint)constraintList.elementAt(i)).gatherIssues(issueList);
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,issueContext,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 	
 	try {
@@ -99,21 +101,21 @@ public void gatherIssues(List<Issue> issueList) {
 		for (int i = 0; i < this.parameterList.size(); i++){
 			Parameter parameter = (Parameter)parameterList.elementAt(i);
 			if (parameter.getLowerBound()>parameter.getUpperBound()){
-				issueList.add(new Issue(parameter, IssueCategory.ParameterEstimationBoundsError,"lower bound is higher than upper bound for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(parameter, issueContext,IssueCategory.ParameterEstimationBoundsError,"lower bound is higher than upper bound for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
 			}
 			if (parameter.getInitialGuess()<parameter.getLowerBound() || parameter.getInitialGuess()>parameter.getUpperBound()){
-				issueList.add(new Issue(parameter, IssueCategory.ParameterEstimationBoundsViolation,"initial guess is outside of bounds for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(parameter, issueContext,IssueCategory.ParameterEstimationBoundsViolation,"initial guess is outside of bounds for parameter '"+parameter.getName()+"'",Issue.SEVERITY_ERROR));
 			}
 		}
 	}catch (Throwable e){
-		issueList.add(new Issue(this,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+		issueList.add(new Issue(this,issueContext,IssueCategory.InternalError,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
 	}
 	//
 	// check for validity of objective function
 	//
 	if(objectiveFunction != null)
 	{
-		objectiveFunction.gatherIssues(issueList);
+		objectiveFunction.gatherIssues(issueContext,issueList);
 	}
 }
 

@@ -9,11 +9,12 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener {
+public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_COMPONENT_STATE_DEFINITIONS = "componentStateDefinitions";
 	
 	private String name;                                  // binding site or phosphosite, motif, extracdomain (e.g. tyrosine 77) 

@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -120,7 +121,7 @@ import cbit.vcell.units.VCUnitException;
  * to get an updated MathDescription.
  * 		capacitances must not be overridden and must be constant (used as literals in KVL)
  */
-public class MathMapping implements ScopedSymbolTable, UnitFactorProvider {
+public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, IssueSource {
 	private static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
 	private static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
 	private static final String PARAMETER_VELOCITY_Z_SUFFIX = "_velocityZ";

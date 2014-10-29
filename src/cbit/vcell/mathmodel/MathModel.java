@@ -17,6 +17,7 @@ import java.util.List;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -42,7 +43,7 @@ import cbit.vcell.solver.SimulationOwner;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener {
+public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
 	private Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");

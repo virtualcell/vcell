@@ -19,6 +19,7 @@ import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;

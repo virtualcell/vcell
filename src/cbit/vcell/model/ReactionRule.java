@@ -22,6 +22,7 @@ import org.vcell.model.rbm.common.RbmEventHandler;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
@@ -37,7 +38,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener {
+public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener, IssueSource {
 	
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
@@ -190,7 +191,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 				String msg = "Product " + cnt + " does not have any molecules.\n";
 //				warning.append(msg);
 				if(issueList != null) {
-					issueList.add(new Issue(pp, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 				}
 			} else {
 				pp.getSpeciesPattern().checkSpeciesPattern(issueContext, issueList);

@@ -12,12 +12,14 @@ package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
+
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
-public class Membrane extends Structure {
+public class Membrane extends Structure implements IssueSource {
 	private MembraneVoltage fieldMembraneVoltage = null;
 
 	public final static String MEMBRANE_VOLTAGE_REGION_NAME = "SpatialMembraneVoltage";	

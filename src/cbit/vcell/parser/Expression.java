@@ -20,13 +20,14 @@ import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 
 @SuppressWarnings("serial")
-public class Expression implements java.io.Serializable, org.vcell.util.Matchable {
+public class Expression implements java.io.Serializable, org.vcell.util.Matchable, IssueSource {
 
 //   private String expString = null;
 	private SimpleNode rootNode = null;

@@ -10,12 +10,13 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
-public class SpeciesPattern extends RbmElementAbstract implements Matchable {
+public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
 	private List<MolecularTypePattern> molecularTypePatterns = new ArrayList<MolecularTypePattern>();
 	
@@ -277,7 +278,8 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable {
 					Bond b = mcp.getBond();
 					if(b == null && issueList != null) {
 						String msg = "The Bonds of Species Pattern " + this.toString() + " do not match.\n";
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+						IssueSource parent = issueContext.getContextObject();
+						issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 						return;
 					}
 				}
@@ -286,10 +288,11 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable {
 	}
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		IssueSource parent = issueContext.getContextObject();
 		if(molecularTypePatterns == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is null", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is null", Issue.SEVERITY_WARNING));
 		} else if (molecularTypePatterns.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is empty", Issue.SEVERITY_WARNING));
 		} else {
 			for (MolecularTypePattern entity : molecularTypePatterns) {
 				entity.gatherIssues(issueContext, issueList);
