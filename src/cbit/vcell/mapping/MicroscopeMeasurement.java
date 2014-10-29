@@ -19,6 +19,9 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.data.DataSymbol;
@@ -26,7 +29,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
 @SuppressWarnings("serial")
-public class MicroscopeMeasurement implements Serializable, Matchable  {
+public class MicroscopeMeasurement implements Serializable, Matchable, IssueSource  {
 	
 	public static final String CONVOLUTION_KERNEL_PROPERTYNAME = "convolutionKernel";
 	public static final String FLUORESCENT_SPECIES_PROPERTYNAME = "fluorescentSpecies";
@@ -182,10 +185,11 @@ public class MicroscopeMeasurement implements Serializable, Matchable  {
 		return fluorescentSpecies.contains(sc);
 	}
 
-	public void gatherIssues(List<Issue> issueVector) {
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+		issueContext = issueContext.newChildContext(ContextType.MicroscopyMeasurement,this);
 		if (fluorescentSpecies.size() > 0) {
 			if(getConvolutionKernel() instanceof ProjectionZKernel && simulationContext.getGeometry().getDimension() != 3) {
-				Issue issue = new Issue(this, IssueCategory.Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning, "Z Projection is only supported in 3D spatial applications.", Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(this, issueContext, IssueCategory.Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning, "Z Projection is only supported in 3D spatial applications.", Issue.SEVERITY_ERROR);
 				issueVector.add(issue);
 			}
 		}

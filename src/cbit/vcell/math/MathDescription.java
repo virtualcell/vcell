@@ -31,6 +31,7 @@ import org.vcell.util.Commented;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -65,7 +66,7 @@ import cbit.vcell.util.VCellErrorMessages;
  * 
  */
 @SuppressWarnings("serial")
-public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, SolverSelector {
+public class MathDescription implements Versionable, Matchable, SymbolTable, Serializable, SolverSelector, IssueSource {
 	
 	public final static String MATH_FUNC_INIT_SUFFIX_PREFIX = "_init_";
 	

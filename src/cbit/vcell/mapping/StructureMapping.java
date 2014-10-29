@@ -19,6 +19,8 @@ import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
@@ -48,7 +50,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
-public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable {
+public abstract class StructureMapping implements Matchable, ScopedSymbolTable, java.io.Serializable, IssueSource {
 	
 	public class StructureMappingNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -92,7 +94,7 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 		}
 	}
 	
-	public class StructureMappingParameter extends Parameter implements ExpressionContainer {
+	public class StructureMappingParameter extends Parameter implements ExpressionContainer, IssueSource {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
@@ -423,7 +425,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * Creation date: (11/1/2005 9:57:23 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	// size parameter must be set to non zero value for new ode, and all stoch simulations.
 	if (simulationContext != null) {
 		Parameter sizeParam = null;
@@ -435,17 +437,17 @@ public void gatherIssues(List<Issue> issueVector) {
 		if (sizeParam != null) {
 			if (sizeParam.getExpression() == null) {
 				if (!simulationContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {			
-					issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotSet, "Size parameter is not set.",Issue.SEVERITY_ERROR));
+					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotSet, "Size parameter is not set.",Issue.SEVERITY_ERROR));
 				}					
 			} else {
 				try{
 					double val = sizeParam.getExpression().evaluateConstant();
 					if (val <= 0) {
-						issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
+						issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotPositive, "Size parameter is not positive.",Issue.SEVERITY_ERROR));
 					}
 				} catch (ExpressionException e) {
 					e.printStackTrace();
-					issueVector.add(new Issue(sizeParam, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
+					issueVector.add(new Issue(this, issueContext, IssueCategory.StructureMappingSizeParameterNotConstant, "Size parameter is not a constant.",Issue.SEVERITY_ERROR));
 				}			
 			}
 		}
@@ -457,11 +459,11 @@ public void gatherIssues(List<Issue> issueVector) {
 		RealInterval simpleBounds = parameterBounds[fieldParameters[i].getRole()];
 		if (simpleBounds!=null){
 			String parmName = fieldParameters[i].getNameScope().getName()+"."+fieldParameters[i].getName();
-			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+			issueVector.add(new SimpleBoundsIssue(fieldParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
 		}
 	}
 	if (geometryClass == null) {
-		issueVector.add(new Issue(this, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
+		issueVector.add(new Issue(this, issueContext, IssueCategory.StructureNotMapped, getStructure().getTypeName() + " " + getStructure().getName() + " is not mapped to a geometry subdomain.", Issue.SEVERITY_WARNING));
 	}
 }
 

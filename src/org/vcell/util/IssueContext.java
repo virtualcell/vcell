@@ -2,6 +2,8 @@ package org.vcell.util;
 
 import java.io.Serializable;
 
+import org.vcell.util.Issue.IssueSource;
+
 /**
  * A hierarchical view of path to issue source object
  * 1) enables issue instantiation to be unaware of complete path to object within data model.   
@@ -9,6 +11,7 @@ import java.io.Serializable;
  */
 public class IssueContext implements Serializable {
 	public enum ContextType {
+		Default,
 		MathModel,
 		BioModel,
 		Model,
@@ -24,26 +27,26 @@ public class IssueContext implements Serializable {
 		ReactionStep, 
 		SeedSpecies,    // context for species pattern
 		ReactionRule, 
-		RBMObservable,  // context for species patterns
+		RbmObservable,  // context for species patterns
 		SpeciesContext, // context for species pattern
 		
 	}
 
 	private final IssueContext.ContextType contextType;
-	private final Object contextObject;
+	private final IssueSource contextObject;
 	private final IssueContext parentContext;
 	
 	public IssueContext(){
-		this(null,null,null);
+		this(ContextType.Default, null, null);
 	}
 	
-	public IssueContext(IssueContext.ContextType contextType, Object contextObject, IssueContext parentContext){
+	public IssueContext(IssueContext.ContextType contextType, IssueSource contextObject, IssueContext parentContext){
 		this.contextType = contextType;
 		this.contextObject = contextObject;
 		this.parentContext = parentContext;
 	}
 	
-	public IssueContext newChildContext(IssueContext.ContextType contextType, Object contextObject){
+	public IssueContext newChildContext(IssueContext.ContextType contextType, IssueSource contextObject){
 		if (hasContextType(contextType)){
 			return this;
 		}else{
@@ -55,7 +58,7 @@ public class IssueContext implements Serializable {
 		return contextType;
 	}
 
-	public Object getContextObject() {
+	public IssueSource getContextObject() {
 		return contextObject;
 	}
 	
@@ -66,7 +69,7 @@ public class IssueContext implements Serializable {
 	//
 	// convenience method to search through context hierarchy using contextType
 	//
-	public Object getContextObject(IssueContext.ContextType contextType){
+	public IssueSource getContextObject(IssueContext.ContextType contextType){
 		if (contextType==null){
 			throw new IllegalArgumentException("contextType is null");
 		}

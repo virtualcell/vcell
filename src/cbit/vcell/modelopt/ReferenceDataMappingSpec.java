@@ -12,8 +12,11 @@ package cbit.vcell.modelopt;
 
 import java.util.List;
 
+import org.vcell.sbml.vcell.SBMLImporter.SBMLIssueSource;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.client.constants.GuiConstants;
 
@@ -22,7 +25,7 @@ import cbit.vcell.client.constants.GuiConstants;
  * Creation date: (11/28/2005 5:48:28 PM)
  * @author: Jim Schaff
  */
-public class ReferenceDataMappingSpec implements java.io.Serializable, org.vcell.util.Matchable {
+public class ReferenceDataMappingSpec implements java.io.Serializable, org.vcell.util.Matchable, IssueSource {
 	private java.lang.String referenceDataColumnName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -213,9 +216,9 @@ public void setModelObject(cbit.vcell.parser.SymbolTableEntry modelObject) throw
 	firePropertyChange("modelObject", oldValue, modelObject);
 }
 
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (getModelObject() == null) {
-		issueList.add(new Issue(this,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column." +
+		issueList.add(new Issue(this,issueContext,IssueCategory.ParameterEstimationRefereceDataNotMapped,"There is unmapped experimental data column." +
 				"Go to '" + GuiConstants.PARAMETER_ESTIMATION_TAB_EXPDATAMAPPING + "' tab and do the mapping.",Issue.SEVERITY_ERROR));
 	}
 }

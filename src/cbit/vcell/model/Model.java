@@ -42,6 +42,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -68,7 +69,7 @@ import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 @SuppressWarnings("serial")
-public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable {
+public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
 	
 	public static interface Owner {
 		public Model getModel();
@@ -791,7 +792,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	
 	public static final String PROPERTY_NAME_MODEL_PARAMETERS = "modelParameters";
 	
-	public class ModelParameter extends Parameter implements ExpressionContainer {
+	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource {
 		
 		private String fieldParameterName = null;
 		private Expression fieldParameterExpression = null;
@@ -908,7 +909,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 	}
 	
-	public class RbmModelContainer implements Matchable, Serializable, VetoableChangeListener {
+	public class RbmModelContainer implements Matchable, Serializable, VetoableChangeListener, IssueSource {
 		private List<MolecularType> molecularTypeList = new ArrayList<MolecularType>();
 		private List<ReactionRule> reactionRuleList = new ArrayList<ReactionRule>();
 		private List<RbmObservable> observableList = new ArrayList<RbmObservable>();

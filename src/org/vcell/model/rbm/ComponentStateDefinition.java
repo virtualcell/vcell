@@ -6,11 +6,12 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class ComponentStateDefinition extends RbmElementAbstract implements Matchable {
+public class ComponentStateDefinition extends RbmElementAbstract implements Matchable, IssueSource {
 	private String name;   // e.g. Phosphorated, ...
 	
 	public ComponentStateDefinition(String name) {

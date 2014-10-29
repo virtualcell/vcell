@@ -15,16 +15,18 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.PropertyChangeListenerProxyVCell;
 
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
@@ -49,7 +51,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener {
+public  class GeometryContext implements Serializable, Matchable, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_STRUCTURE_MAPPINGS = "structureMappings";	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -60,7 +62,7 @@ public  class GeometryContext implements Serializable, Matchable, PropertyChange
 	private SimulationContext fieldSimulationContext = null;
 	
 	
-	public class UnmappedGeometryClass {
+	public class UnmappedGeometryClass implements IssueSource {
 		private GeometryClass geometryClass;
 		public UnmappedGeometryClass(GeometryClass geoClass){
 			this.geometryClass = geoClass;
@@ -233,26 +235,28 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * Creation date: (11/1/2005 9:48:55 AM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(List<Issue> issueList) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	issueContext = issueContext.newChildContext(ContextType.Geometry, getGeometry());
+	
 	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 	if (geometrySpec != null) {
-		geometrySpec.gatherIssues(this, issueList);
+		geometrySpec.gatherIssues(issueContext, getGeometry(),issueList);
 	}
 	
 	for (int i = 0; fieldStructureMappings!=null && i < fieldStructureMappings.length; i++){
-		fieldStructureMappings[i].gatherIssues(issueList);
+		fieldStructureMappings[i].gatherIssues(issueContext,issueList);
 	}
 	for (GeometryClass gc : fieldGeometry.getGeometryClasses()) {
 		Structure[] structuresFromGeometryClass = getStructuresFromGeometryClass(gc);
 		if (structuresFromGeometryClass == null || structuresFromGeometryClass.length == 0) {
 			UnmappedGeometryClass unmappedGeometryClass = new UnmappedGeometryClass(gc);
-			Issue issue = new Issue(unmappedGeometryClass, IssueCategory.GeometryClassNotMapped, "Subdomain '" + gc.getName() + "' is not mapped to any physiological structure.", Issue.SEVERITY_WARNING);
+			Issue issue = new Issue(unmappedGeometryClass, issueContext, IssueCategory.GeometryClassNotMapped, "Subdomain '" + gc.getName() + "' is not mapped to any physiological structure.", Issue.SEVERITY_WARNING);
 			issueList.add(issue);
 		}
 	}
 	if(getSimulationContext().isStoch() && getGeometry().getDimension() != 0 && getGeometry().getDimension() != 3)
 	{
-		Issue issue = new Issue(this, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this, issueContext, IssueCategory.Smoldyn_Geometry_3DWarning, "VCell spatial stochastic models only support 3D geometry.", Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 }

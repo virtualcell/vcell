@@ -21,7 +21,9 @@ import java.util.Set;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.sorttable.SortPreference;
 import org.vcell.util.gui.sorttable.SortTableModel;
@@ -29,6 +31,11 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
@@ -274,6 +281,7 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 		fireTableDataChanged();	
 	}
 
+	@Override
 	public List<Issue> getIssues(int row, int col, int severity) {
 		List<Issue> iL = new ArrayList<Issue>();
 		Object rowAt = getValueAt(row);
@@ -282,10 +290,35 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 			for (Issue issue: allIssueList) {
 				Object source = issue.getSource();
 				if (issue.getSeverity() == severity) {
-					if (rowAt == source || 
-							(source instanceof OutputFunctionIssueSource && ((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) ||
-							(source instanceof ReactionCombo && ((ReactionCombo)source).getReactionSpec() == rowAt)) {
-						iL.add(issue);
+					if(source instanceof ReactionCombo) {
+						if(((ReactionCombo)source).getReactionSpec() == rowAt) {
+							iL.add(issue);
+						}
+					} else if (source instanceof OutputFunctionIssueSource) {
+						if(((OutputFunctionIssueSource)source).getAnnotatedFunction() == rowAt) {
+							iL.add(issue);
+						}
+//					} else if (source instanceof SpeciesPattern) {
+//						if(rowAt instanceof ReactionRule && issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
+//							ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
+//							if(thing == rowAt) {
+//								iL.add(issue);
+//							}
+//						} else if (rowAt instanceof SpeciesContext && issue.getIssueContext().hasContextType(ContextType.SpeciesContext)) {
+//							SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
+//							if(thing == rowAt) {
+//								iL.add(issue);
+//							}
+//						} else if (rowAt instanceof RbmObservable && issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
+//							RbmObservable thing = (RbmObservable)issue.getIssueContext().getContextObject(ContextType.RbmObservable);
+//							if(thing == rowAt) {
+//								iL.add(issue);
+//							}
+//						}
+					} else {
+						if (rowAt == source) {
+							iL.add(issue);
+						}
 					}
 				}
 			}

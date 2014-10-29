@@ -10,6 +10,7 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
@@ -25,7 +26,7 @@ import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
-public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matchable, PropertyChangeListener {
+public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matchable, PropertyChangeListener, IssueSource {
 	
 	public static enum ParameterType {
 		MassActionForwardRate(0,"kf","forward rate"),

@@ -25,6 +25,8 @@ import java.util.Vector;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.geometry.Geometry;
@@ -43,8 +45,8 @@ import cbit.vcell.math.PseudoConstant;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -580,7 +582,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		return stef;
 	}
 
-	public static class OutputFunctionIssueSource {
+	public static class OutputFunctionIssueSource implements IssueSource {
 		private OutputFunctionContext outputFunctionContext;
 		private AnnotatedFunction function;
 		private OutputFunctionIssueSource(
@@ -598,12 +600,12 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 		}		
 	}
 	
-	public void gatherIssues(List<Issue> issueList) {
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		for (AnnotatedFunction af : outputFunctionsList) {
 			try {
 				af.bind(this);
 			} catch (ExpressionException ex) {
-				issueList.add(new Issue(new OutputFunctionIssueSource(this, af), IssueCategory.OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING, ex.getMessage(), Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(new OutputFunctionIssueSource(this, af), issueContext, IssueCategory.OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING, ex.getMessage(), Issue.SEVERITY_ERROR));
 			}
 		}
 		

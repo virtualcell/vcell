@@ -11,11 +11,12 @@ import java.util.Map;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
-public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener {
+public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
 	
 	private MolecularType molecularType;

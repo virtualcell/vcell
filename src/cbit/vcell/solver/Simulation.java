@@ -22,6 +22,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
@@ -44,7 +45,9 @@ import cbit.vcell.util.VCellErrorMessages;
  * @author: John Wagner
  */
 @SuppressWarnings("serial")
-public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
+public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener,
+		IssueSource {
+	
 	public static final String PSF_FUNCTION_NAME = "__PSF__";
 	public static final String PROPERTY_NAME_SOLVER_TASK_DESCRIPTION = "solverTaskDescription";
 	// size quotas enforced per simulation

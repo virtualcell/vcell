@@ -27,6 +27,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -83,7 +84,7 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 @SuppressWarnings("serial")
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
-	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable {
+	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource {
 
 	public static final String PROPERTY_NAME_DESCRIPTION = "description";
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
