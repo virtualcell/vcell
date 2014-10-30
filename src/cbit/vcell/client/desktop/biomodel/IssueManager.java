@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.Timer;
 
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.model.SimpleBoundsIssue;
@@ -97,10 +98,11 @@ public class IssueManager {
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
+			IssueContext issueContext = new IssueContext();
 			if (vcDocument==null){
 				return;
 			}
-			vcDocument.gatherIssues(tempIssueList);
+			vcDocument.gatherIssues(issueContext,tempIssueList);
 			
 			issueList = new ArrayList<Issue>();
 			for (Issue issue: tempIssueList) {
@@ -142,18 +144,15 @@ public class IssueManager {
 		return numWarnings;
 	}
 	
-	public String getObjectPathDescription(Object object) {
-		return vcDocument.getObjectPathDescription(object);
-	}
-	public String getObjectDescription(Object object) {
-		return vcDocument.getObjectDescription(object);
-	}
-	
 	public void setDirty() {
 		dirtyTimestamp = System.currentTimeMillis();
 	}
 	
+	@Deprecated
 	public static String getHtmlIssueMessage(List<Issue> issueList) {
 		return Issue.getHtmlIssueMessage(issueList);
+	}
+	public VCDocument getVCDocument() {
+		return vcDocument;
 	}
 }
