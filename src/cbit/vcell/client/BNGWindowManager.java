@@ -12,6 +12,8 @@ package cbit.vcell.client;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.EventObject;
@@ -307,6 +309,46 @@ public void stopBioNetGen() {
 	}
 }
 
+
+/**
+ * prompt user for filename, then write String to it
+ * @param bngl String to write out
+ * @throws IOException
+ */
+public void saveBNGLFile(String bngl) throws IOException {
+	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
+	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
+	fileChooser.setMultiSelectionEnabled(false);
+	// remove all selector
+	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+
+	// set default file filter
+	fileChooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
+
+	// Set file chooser dialog title
+	fileChooser.setDialogTitle("Save BNG file ...");
+	if (fileChooser.showSaveDialog(getBngOutputPanel()) != JFileChooser.APPROVE_OPTION) {
+		throw UserCancelException.CANCEL_FILE_SELECTION;
+	} else {
+		File selectedFile = fileChooser.getSelectedFile();
+		String path = selectedFile.getAbsolutePath();
+		if (path.indexOf('.') == -1) {
+			path += org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL.getPrimaryExtension();
+			selectedFile = new File(path);
+		}
+		if (selectedFile.exists()) {
+			final int answer = JOptionPane.showConfirmDialog(getComponent(), selectedFile + " exists. Overwrite?", "Confirm Replace",JOptionPane.YES_NO_OPTION);
+			if (answer != JOptionPane.YES_OPTION) {
+				return;
+			}
+		}
+		try (FileWriter fw = new FileWriter(path)) {
+			fw.write(bngl);
+		}
+	}
+}
 
 /**
  * Comment

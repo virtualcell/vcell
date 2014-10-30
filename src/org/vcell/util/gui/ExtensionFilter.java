@@ -19,24 +19,34 @@ import java.io.File;
  */
 @SuppressWarnings("serial")
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter implements java.io.Serializable {
-	private String[] extensions;
-	private String description;
+	private final String[] extensions;
+	private final String description;
 
 	/**
 	 * ExtensionFilter constructor comment.
+	 * @throws IllegalArgumentException if arg_extension is null
 	 */
 	public ExtensionFilter(String arg_extension, String descr) {
 		extensions = new String[1];
 		extensions[0] = arg_extension.toLowerCase();
 		description = descr;
+		checkPrimaryNotNull();
 	}
 
 	/**
 	 * ExtensionFilter constructor comment.
+	 * @throws IllegalArgumentException if extension[0] is null
 	 */
 	public ExtensionFilter(String[] arg_extensions, String descr) {
 		extensions = arg_extensions.clone();
 		description = descr;
+		checkPrimaryNotNull();
+	}
+	
+	private void checkPrimaryNotNull( ) {
+		if (extensions == null || extensions[0] == null) {
+			throw new IllegalArgumentException("Extension Filter " + description + " has null primary extension");
+		}
 	}
 
 
@@ -87,4 +97,12 @@ public String getDescription() {
 public int hashCode() {	
 	return getDescription().hashCode();
 }
+
+/**
+ * return first (primary) file extensions
+ */
+public String getPrimaryExtension( ) {
+	return extensions[0];
+}
+
 }

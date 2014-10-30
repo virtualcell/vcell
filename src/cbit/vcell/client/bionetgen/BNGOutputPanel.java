@@ -9,9 +9,14 @@
  */
 
 package cbit.vcell.client.bionetgen;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+
+import javax.swing.JButton;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -87,6 +92,9 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private BNGDataPlotPanel ivjbngDataPlotPanel = null;
 	private javax.swing.JLabel ivjOutputLabel = null;
 	private MultiPurposeTextPanel ivjBNGLInputPanel = null;
+	
+	//manually added ...
+	private javax.swing.JButton saveFileButton = null;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -729,6 +737,15 @@ private BNGInput getbngInput() {
 	// user code begin {1}
 	// user code end
 	return ivjbngInput;
+}
+
+private void saveToFile( ) {
+	try {
+		String bnglStr = getBNGLInputPanel().getText( );
+		getBngWindowManager().saveBNGLFile(bnglStr);
+	} catch (IOException e) {
+		throw new RuntimeException("Error saving bngl", e);
+	}
 }
 
 /**
@@ -1638,6 +1655,18 @@ private javax.swing.JButton getOpenFileButton() {
 	return ivjOpenFileButton;
 }
 
+private javax.swing.JButton getSaveFileButton() {
+	if (saveFileButton == null) {
+	saveFileButton = new JButton("Save .bngl file");
+	saveFileButton.addActionListener(new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			saveToFile();
+		}
+	});
+	}
+	return saveFileButton; 
+}
 /**
  * Return the OutputChoicesPanel property value.
  * @return javax.swing.JPanel
@@ -1942,6 +1971,7 @@ private javax.swing.JPanel getRulesEditorButtonsPanel1() {
 			ivjRulesEditorButtonsPanel1.setLayout(new java.awt.FlowLayout());
 			getRulesEditorButtonsPanel1().add(getOpenFileButton(), getOpenFileButton().getName());
 			getRulesEditorButtonsPanel1().add(getRunBNGButton(), getRunBNGButton().getName());
+			getRulesEditorButtonsPanel1().add(getSaveFileButton());
 //			getRulesEditorButtonsPanel1().add(getStopBNGButton(), getStopBNGButton().getName());
 			// user code begin {1}
 			// user code end
