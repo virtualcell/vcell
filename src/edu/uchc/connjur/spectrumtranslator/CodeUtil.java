@@ -127,11 +127,12 @@ public class CodeUtil {
                 Method methods[];
                 methods = oClass.getDeclaredMethods();
                 for (Method m : methods) {
+                	System.out.println(m.getName());
                     boolean noParams = m.getParameterTypes().length == 0;
                     int modifiers = m.getModifiers();
                     boolean isPublic = Modifier.isPublic(modifiers);
                     boolean isNotStatic = !Modifier.isStatic(modifiers);
-                    boolean hasReturn = m.getReturnType() != null;
+                    boolean hasReturn = m.getReturnType() != Void.TYPE; 
                     if (isPublic && isNotStatic && noParams && hasReturn) {
                         buffer.append(m.getName());
                         buffer.append("() = ");

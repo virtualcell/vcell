@@ -3053,15 +3053,17 @@ private Element getXML(ParticleVariable param) {
  * @param param cbit.vcell.math.SubDomain
  */
 private Element getXML(SubDomain param) throws XmlParseException{
+	Element e = null;
 	if (param instanceof CompartmentSubDomain) {
-		return getXML((CompartmentSubDomain)param);
+		e = getXML((CompartmentSubDomain)param);
 	} else if (param instanceof FilamentSubDomain) {
-		return getXML((FilamentSubDomain)param);
+		e = getXML((FilamentSubDomain)param);
 	} else if (param instanceof MembraneSubDomain) {
-		return getXML((MembraneSubDomain)param);
+		e = getXML((MembraneSubDomain)param);
 	}
+	transcribeComments(param, e);
 	
-	return null;
+	return e;
 }
 
 

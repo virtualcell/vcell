@@ -564,6 +564,7 @@ private CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescript
 	}
 	//--- create new CompartmentSubDomain ---
 	CompartmentSubDomain subDomain = new CompartmentSubDomain(name, priority);
+	transcribeComments(param, subDomain);
 
 	//Process BoundaryConditions
 	Iterator<Element> iterator = param.getChildren(XMLTags.BoundaryTypeTag, vcNamespace).iterator();
@@ -3656,6 +3657,7 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 	}
 	//*** create new Membrane SubDomain ***
 	MembraneSubDomain subDomain = new MembraneSubDomain(insideRef, outsideRef);
+	transcribeComments(param,subDomain);
 
 	//Process BoundaryConditions
 	Iterator<Element> iterator = param.getChildren(XMLTags.BoundaryTypeTag, vcNamespace).iterator();

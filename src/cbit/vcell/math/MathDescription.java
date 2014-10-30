@@ -2929,19 +2929,28 @@ if(name.equals("ATP/ADP"))
 				continue;
 			}			
 			if (tokenStr.equalsIgnoreCase(VCML.MembraneSubDomain)){
-				tokenStr = tokens.nextToken();
-				CompartmentSubDomain insideCompartment = getCompartmentSubDomain(tokenStr);
-				if (insideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
-				}	
-				tokenStr = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(tokenStr);
-				if (outsideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
-				}	
-				MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
-				subDomain.read(this,tokens);
-				addSubDomain0(subDomain);
+				//test var
+				boolean current = false;
+				if (current) {
+					tokenStr = tokens.nextToken();
+					CompartmentSubDomain insideCompartment = getCompartmentSubDomain(tokenStr);
+					if (insideCompartment == null){
+						throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
+					}	
+					tokenStr = tokens.nextToken();
+					CompartmentSubDomain outsideCompartment = getCompartmentSubDomain(tokenStr);
+					if (outsideCompartment == null){
+						throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+					}	
+					MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
+					subDomain.read(this,tokens);
+					addSubDomain0(subDomain);
+				}
+				else {
+					MembraneSubDomain subDomain = MembraneSubDomain.create(this,token,tokens);
+					addSubDomain0(subDomain);
+
+				}
 				continue;
 			}			
 			if (tokenStr.equalsIgnoreCase(VCML.FilamentSubDomain)){
