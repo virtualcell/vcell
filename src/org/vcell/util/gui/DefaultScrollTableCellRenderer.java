@@ -70,9 +70,10 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 	 * @param column int
 	 */
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-		setBorder(DEFAULT_GAP);
 		defaultToolTipText = null;
+		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+		defaultToolTipText = getToolTipText();
+		setBorder(DEFAULT_GAP);
 		
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
@@ -124,12 +125,13 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
 		Icon icon = null;
 		Point mousePosition = table.getMousePosition();
-		
+
 		if (issueListError.size() > 0) {
 			if (column == 0) {
 				icon = VCellIcons.issueErrorIcon;
 				if(mousePosition !=null && mousePosition.getX()>LEFT_ICON_MARGIN && mousePosition.getX()<=(icon.getIconWidth()+LEFT_ICON_MARGIN)) {
-					renderer.setToolTipText(Issue.getHtmlIssueMessage(issueListError));
+					String tt = Issue.getHtmlIssueMessage(issueListError);
+					renderer.setToolTipText(tt);
 				} else {
 					renderer.setToolTipText(defaultToolTipText);
 				}
