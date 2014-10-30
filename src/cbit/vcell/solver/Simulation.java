@@ -399,21 +399,26 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	Set<SolverFeature> missingFeatures = getRequiredFeatures();
 	missingFeatures.removeAll(supportedFeatures);
 	
+	String text = "The selected Solver does not support the following required features: \n";
+	for (SolverFeature sf : missingFeatures) {
+		text += sf.getName() + "\n";
+	}
+
 	if (!missingFeatures.isEmpty()) {
-		String text = "Selected solver '" + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + "' does not support " +
-		"the following required features: \n";
+		String tooltip = "The selected Solver " + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + 
+				" does not support the following required features: <br>";
 		for (SolverFeature sf : missingFeatures) {
-			text += sf.getName() + "\n";
+			tooltip += "&nbsp;&nbsp;&nbsp;" + sf.getName() + "<br>";
 		}
 		Collection<SolverDescription >goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures());
 		assert goodSolvers != null;
 		if (!goodSolvers.isEmpty()) {
-			text += "\nPlease choose one of the solvers : \n";
+			tooltip += "Please choose one of the solvers : <br>";
 			for (SolverDescription sd : goodSolvers) {
-				text += sd.getDisplayLabel() + "\n";
+				tooltip += "&nbsp;&nbsp;&nbsp;" + sd.getDisplayLabel() + "<br>";
 			}
 		}
-		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException,text,Issue.SEVERITY_ERROR);
+		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException, text, tooltip, Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
 }

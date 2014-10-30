@@ -145,7 +145,9 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 	@Override
 	public void setIssueManager(IssueManager newValue) {		
 		super.setIssueManager(newValue);
+		simulationListPanel.setIssueManager(newValue);
 		outputFunctionsPanel.setIssueManager(newValue);
+//		mathematicsPanel.setIssueManager(newValue);		// can't, not a table
 	}
 	
 }

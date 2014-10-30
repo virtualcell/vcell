@@ -507,19 +507,37 @@ public String toString() {
 
 
 public static String getHtmlIssueMessage(List<Issue> issueList) {
+	final int LIMIT = 600;
+	int size = 0;
+	String s = null;
+	String slist = null;
+
 	if (issueList == null || issueList.size() == 0) {
 		return null;
 	}
-	StringBuilder sb = new StringBuilder();
-	sb.append("<html>");
+	slist = "<html>";
 	for (Issue issue : issueList) {
 		if(issue.getTooltip() == null || issue.getTooltip().isEmpty()) {
-			sb.append("<li>" + issue.getMessage() + "</li>");
+			s = issue.getMessage();
 		} else {
-			sb.append("<li>" + issue.getTooltip() + "</li>");
+			s = issue.getTooltip();
+		}
+
+		if(s.length() > LIMIT-9) {		// each list entry must be shorter than the limit
+			s = s.substring(0, LIMIT-13);
+			s += " ...";
+		}
+		s = "<li>" + s + "</li>";
+		size += s.length();				// the list itself must be shorter than the limit
+		if(size > LIMIT) {
+			s = "<li>text</li>";
+			slist += s;
+			break;
+		} else {
+			slist += s;
 		}
 	}
-	sb.append("</html>");
-	return sb.toString();
+	slist += "</html>";
+	return slist;
 }
 }

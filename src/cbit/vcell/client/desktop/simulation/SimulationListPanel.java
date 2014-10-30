@@ -41,10 +41,12 @@ import org.vcell.util.gui.MultiLineToolTip;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
@@ -72,7 +74,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton ivjDeleteButton = null;
 	private JButton particleViewButton = null;
 	private JButton quickRunButton = null;
-	private ScrollTable ivjScrollPaneTable = null;
+	private JSortTable ivjScrollPaneTable = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
 	private SimulationWorkspace fieldSimulationWorkspace = null;
@@ -398,17 +400,18 @@ private javax.swing.JButton getDeleteButton() {
  * Return the ScrollPaneTable property value.
  * @return cbit.gui.JTableFixed
  */
-private ScrollTable getScrollPaneTable() {
+private JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new ScrollTable() {
-				@Override
-				public JToolTip createToolTip() {
-					MultiLineToolTip tip = new MultiLineToolTip();
-			        tip.setComponent(this);
-			        return tip;
-				}
-			};
+//			ivjScrollPaneTable = new ScrollTable() {
+//				@Override
+//				public JToolTip createToolTip() {
+//					MultiLineToolTip tip = new MultiLineToolTip();
+//			        tip.setComponent(this);
+//			        return tip;
+//				}
+//			};
+			ivjScrollPaneTable = new JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
 			ivjScrollPaneTable.setModel(getSimulationListTableModel1());
@@ -526,7 +529,6 @@ private void initConnections() throws java.lang.Exception {
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if (value instanceof OutputTimeSpec) {
 				setText(((OutputTimeSpec) value).getDescription());
 			} else if (value instanceof Double) {
@@ -539,6 +541,7 @@ private void initConnections() throws java.lang.Exception {
 			} else {
 				setToolTipText(getText());
 			}
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			return this;
 		}
 		
@@ -820,9 +823,13 @@ private void stopSimulations() {
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		setTableSelections(selectedObjects, getScrollPaneTable(), getSimulationListTableModel1());
-		
 	}
-	
+	@Override
+	public void setIssueManager(IssueManager newValue) {
+		super.setIssueManager(newValue);
+		ivjSimulationListTableModel1.setIssueManager(newValue);
+	}
+
 	private void particleView() {
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row < 0) {
