@@ -25,21 +25,11 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-
 public class MembraneSubDomain extends SubDomain {
-	//placeholder
-	@Override
-	protected void parse(MathDescription mathdesc, String tokenString,
-			CommentStringTokenizer tokens) throws MathException,
-			ExpressionException {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	@Override
 	protected String startToken() {
-		// TODO Auto-generated method stub
-		return null;
+		return VCML.MembraneSubDomain;
 	}
 
 
@@ -74,6 +64,341 @@ public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outsi
 	this.outsideCompartment = outside;
 }
 
+/**
+ * helper class for creating {@link MembraneSubDomain} from VCML tokens
+ * the superclass field name is immuatable and must be before creating the class
+ * Therefore do the necessary parsing to determine name components in this class
+ */
+private static class Builder {
+	final String name;
+	final String beforeComment;
+	final CompartmentSubDomain insideCompartment;
+	final CompartmentSubDomain outsideCompartment;
+	final MathDescription provider;
+	final CommentStringTokenizer tokens;
+	
+	private Builder(MathDescription provider, org.vcell.util.Token token, CommentStringTokenizer tokens) throws MathException, ExpressionException { 
+		this.provider = provider;
+		this.tokens = tokens;
+		beforeComment = token.getBeforeComment();
+		insideCompartment = provider.getCompartmentSubDomain(tokens.nextToken());
+		if (insideCompartment == null){
+			throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
+		}	
+		outsideCompartment = provider.getCompartmentSubDomain(tokens.nextToken());
+		if (outsideCompartment == null){
+			throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+		}	
+		name = SurfaceClass.createName(insideCompartment.getName(), outsideCompartment.getName());
+	}
+}
+
+/**
+ * create from VCML input
+ * @param provider creating object 
+ * @param token current token
+ * @param tokens token container
+ * @return new object
+ * @throws MathException
+ * @throws ExpressionException
+ */
+public static MembraneSubDomain create(MathDescription provider, org.vcell.util.Token token, CommentStringTokenizer tokens) throws MathException, ExpressionException { 
+	MembraneSubDomain msb = new MembraneSubDomain(new Builder(provider,token,tokens));
+	return msb;
+}
+
+/**
+ * implements {@link #create(MathDescription, org.vcell.util.Token, CommentStringTokenizer)}
+ */
+private MembraneSubDomain(Builder b) throws MathException, ExpressionException { 
+	super(b.name);
+	setBeforeComment(b.beforeComment);
+	insideCompartment = b.insideCompartment;
+	outsideCompartment = b.outsideCompartment;
+	parseBlock(b.provider,b.tokens);
+}
+
+/*
+public MembraneSubDomain(MathDescription provider, org.vcell.util.Token token, CommentStringTokenizer tokens) throws MathException, ExpressionException { 
+	super("");
+	setBeforeComment(token.getBeforeComment());
+
+	insideCompartment = provider.getCompartmentSubDomain(tokens.nextToken());
+	if (insideCompartment == null){
+		throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
+	}	
+	outsideCompartment = provider.getCompartmentSubDomain(tokens.nextToken());
+	if (outsideCompartment == null){
+		throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+	}	
+	name = SurfaceClass.createName(insideCompartment.getName(), outsideCompartment.getName());
+	parseBlock(provider,tokens);
+}
+*/
+
+@Override
+protected void parse(MathDescription mathDesc, String tokenString,
+		CommentStringTokenizer tokens) throws MathException,
+		ExpressionException {
+	if (tokenString.equalsIgnoreCase(VCML.OdeEquation)){
+		tokenString = tokens.nextToken();
+		Variable var = mathDesc.getVariable(tokenString);
+		if (var == null){
+			throw new MathFormatException("variable "+tokenString+" not defined");
+		}	
+		if (!(var instanceof MemVariable)){
+			throw new MathFormatException("variable "+tokenString+" not a "+VCML.MembraneVariable);
+		}	
+		OdeEquation ode = new OdeEquation((MemVariable)var, null,null);
+		ode.read(tokens);
+		addEquation(ode);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryXm)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeXm = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryXp)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeXp = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryYm)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeYm = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryYp)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeYp = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryZm)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeZm = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.BoundaryZp)){
+		String type = tokens.nextToken();
+		boundaryConditionTypeZp = new BoundaryConditionType(type);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.PdeEquation)){
+		tokenString = tokens.nextToken();
+		Variable var = mathDesc.getVariable(tokenString);
+		if (var == null){
+			throw new MathFormatException("variable "+tokenString+" not defined");
+		}	
+		if (!(var instanceof MemVariable)){
+			throw new MathFormatException("variable "+tokenString+" not a MembraneVariable");
+		}	
+		PdeEquation pde = new PdeEquation((MemVariable)var);
+		pde.read(tokens);
+		addEquation(pde);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.MembraneRegionEquation)){
+		tokenString = tokens.nextToken();
+		Variable var = mathDesc.getVariable(tokenString);
+		if (var == null){
+			throw new MathFormatException("variable "+tokenString+" not defined");
+		}	
+		if (!(var instanceof MembraneRegionVariable)){
+			throw new MathFormatException("variable "+tokenString+" not a "+VCML.MembraneRegionVariable);
+		}	
+		MembraneRegionEquation mre = new MembraneRegionEquation((MembraneRegionVariable)var, null);
+		mre.read(tokens);
+		addEquation(mre);
+		return;
+	}
+	if (tokenString.equalsIgnoreCase(VCML.ParticleProperties)){
+		ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+		if(pp.getVariable().getDomain().getName().equals(this.getName())){
+			addParticleProperties(pp);
+		}else{
+			throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
+									". \nHowever the variable particle properties of " + pp.getVariable().getName() + " is defined in domain " + this.getName() + ". \nPlease check your model.");
+		}	
+		return;
+	}
+	if (tokenString.equalsIgnoreCase(VCML.ParticleJumpProcess)){
+		ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
+		addParticleJumpProcess(particleJumpProcess);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.JumpCondition)){
+		tokenString = tokens.nextToken();
+		Variable var = mathDesc.getVariable(tokenString);
+		if (var == null){
+			throw new MathFormatException("variable "+tokenString+" not defined");
+		}	
+		JumpCondition jump = null;
+		if (var instanceof VolVariable) {
+			jump = new JumpCondition((VolVariable)var);
+		} else if (var instanceof VolumeRegionVariable) {
+			jump = new JumpCondition((VolumeRegionVariable)var);
+		} else {
+			throw new MathException("variable "+tokenString+" is neither a VolumeVariable nor a VolumeRegionVariable");
+		}
+		jump.read(tokens);
+		addJumpCondition(jump);
+		return;
+	}			
+	if (tokenString.equalsIgnoreCase(VCML.FastSystem)){
+		FastSystem fs = new FastSystem(mathDesc);
+		fs.read(tokens);
+		setFastSystem(fs);
+		return;
+	}			
+	if (FUTURE_VCML_SYMBOLS.containsKey(tokenString)) {
+		final int numberAdditionalTokensToSkip = FUTURE_VCML_SYMBOLS.get(tokenString);
+		for (int i = 0; i < numberAdditionalTokensToSkip; i++) { 
+			tokens.nextToken();
+		}
+		return;
+	}
+	throw new MathFormatException("unexpected identifier "+tokenString);
+}
+
+/**
+ * This method was created by a SmartGuide.
+ * @param tokens java.util.StringTokenizer
+ * @exception java.lang.Exception The exception description.
+ */
+public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
+	String token = null;
+	token = tokens.nextToken();
+	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+		throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+	}			
+	while (tokens.hasMoreTokens()){
+		token = tokens.nextToken();
+		if (token.equalsIgnoreCase(VCML.EndBlock)){
+			break;
+		}			
+		if (token.equalsIgnoreCase(VCML.OdeEquation)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof MemVariable)){
+				throw new MathFormatException("variable "+token+" not a "+VCML.MembraneVariable);
+			}	
+			OdeEquation ode = new OdeEquation((MemVariable)var, null,null);
+			ode.read(tokens);
+			addEquation(ode);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryXm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeXm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryXp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeXp = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryYm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeYm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryYp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeYp = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryZm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeZm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeZp = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.PdeEquation)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof MemVariable)){
+				throw new MathFormatException("variable "+token+" not a MembraneVariable");
+			}	
+			PdeEquation pde = new PdeEquation((MemVariable)var);
+			pde.read(tokens);
+			addEquation(pde);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.MembraneRegionEquation)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof MembraneRegionVariable)){
+				throw new MathFormatException("variable "+token+" not a "+VCML.MembraneRegionVariable);
+			}	
+			MembraneRegionEquation mre = new MembraneRegionEquation((MembraneRegionVariable)var, null);
+			mre.read(tokens);
+			addEquation(mre);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
+			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+			if(pp.getVariable().getDomain().getName().equals(this.getName())){
+				addParticleProperties(pp);
+			}else{
+				throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
+										". \nHowever the variable particle properties of " + pp.getVariable().getName() + " is defined in domain " + this.getName() + ". \nPlease check your model.");
+			}	
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.ParticleJumpProcess)){
+			ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
+			addParticleJumpProcess(particleJumpProcess);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.JumpCondition)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			JumpCondition jump = null;
+			if (var instanceof VolVariable) {
+				jump = new JumpCondition((VolVariable)var);
+			} else if (var instanceof VolumeRegionVariable) {
+				jump = new JumpCondition((VolumeRegionVariable)var);
+			} else {
+				throw new MathException("variable "+token+" is neither a VolumeVariable nor a VolumeRegionVariable");
+			}
+			jump.read(tokens);
+			addJumpCondition(jump);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.FastSystem)){
+			FastSystem fs = new FastSystem(mathDesc);
+			fs.read(tokens);
+			setFastSystem(fs);
+			continue;
+		}			
+		if (FUTURE_VCML_SYMBOLS.containsKey(token)) {
+			final int numberAdditionalTokensToSkip = FUTURE_VCML_SYMBOLS.get(token);
+			for (int i = 0; i < numberAdditionalTokensToSkip; i++) { 
+				tokens.nextToken();
+			}
+			continue;
+		}
+		throw new MathFormatException("unexpected identifier "+token);
+	}	
+		
+}
 /**
  * This method was created by a SmartGuide.
  * @param equation cbit.vcell.math.Equation
@@ -318,144 +643,7 @@ public String getVCML(int spatialDimension) {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathException, ExpressionException {
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}			
-		if (token.equalsIgnoreCase(VCML.OdeEquation)){
-			token = tokens.nextToken();
-			Variable var = mathDesc.getVariable(token);
-			if (var == null){
-				throw new MathFormatException("variable "+token+" not defined");
-			}	
-			if (!(var instanceof MemVariable)){
-				throw new MathFormatException("variable "+token+" not a "+VCML.MembraneVariable);
-			}	
-			OdeEquation ode = new OdeEquation((MemVariable)var, null,null);
-			ode.read(tokens);
-			addEquation(ode);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryXm)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeXm = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryXp)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeXp = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryYm)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeYm = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryYp)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeYp = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryZm)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeZm = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
-			String type = tokens.nextToken();
-			boundaryConditionTypeZp = new BoundaryConditionType(type);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.PdeEquation)){
-			token = tokens.nextToken();
-			Variable var = mathDesc.getVariable(token);
-			if (var == null){
-				throw new MathFormatException("variable "+token+" not defined");
-			}	
-			if (!(var instanceof MemVariable)){
-				throw new MathFormatException("variable "+token+" not a MembraneVariable");
-			}	
-			PdeEquation pde = new PdeEquation((MemVariable)var);
-			pde.read(tokens);
-			addEquation(pde);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.MembraneRegionEquation)){
-			token = tokens.nextToken();
-			Variable var = mathDesc.getVariable(token);
-			if (var == null){
-				throw new MathFormatException("variable "+token+" not defined");
-			}	
-			if (!(var instanceof MembraneRegionVariable)){
-				throw new MathFormatException("variable "+token+" not a "+VCML.MembraneRegionVariable);
-			}	
-			MembraneRegionEquation mre = new MembraneRegionEquation((MembraneRegionVariable)var, null);
-			mre.read(tokens);
-			addEquation(mre);
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
-			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
-			if(pp.getVariable().getDomain().getName().equals(this.getName())){
-				addParticleProperties(pp);
-			}else{
-				throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
-										". \nHowever the variable particle properties of " + pp.getVariable().getName() + " is defined in domain " + this.getName() + ". \nPlease check your model.");
-			}	
-			continue;
-		}
-		if (token.equalsIgnoreCase(VCML.ParticleJumpProcess)){
-			ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
-			addParticleJumpProcess(particleJumpProcess);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.JumpCondition)){
-			token = tokens.nextToken();
-			Variable var = mathDesc.getVariable(token);
-			if (var == null){
-				throw new MathFormatException("variable "+token+" not defined");
-			}	
-			JumpCondition jump = null;
-			if (var instanceof VolVariable) {
-				jump = new JumpCondition((VolVariable)var);
-			} else if (var instanceof VolumeRegionVariable) {
-				jump = new JumpCondition((VolumeRegionVariable)var);
-			} else {
-				throw new MathException("variable "+token+" is neither a VolumeVariable nor a VolumeRegionVariable");
-			}
-			jump.read(tokens);
-			addJumpCondition(jump);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.FastSystem)){
-			FastSystem fs = new FastSystem(mathDesc);
-			fs.read(tokens);
-			setFastSystem(fs);
-			continue;
-		}			
-		if (FUTURE_VCML_SYMBOLS.containsKey(token)) {
-			final int numberAdditionalTokensToSkip = FUTURE_VCML_SYMBOLS.get(token);
-			for (int i = 0; i < numberAdditionalTokensToSkip; i++) { 
-				tokens.nextToken();
-			}
-			continue;
-		}
-		throw new MathFormatException("unexpected identifier "+token);
-	}	
-		
-}
+
 
 
 /**
