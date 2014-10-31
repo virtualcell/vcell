@@ -125,7 +125,8 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
 		Icon icon = null;
 		Point mousePosition = table.getMousePosition();
-
+		Color red = Color.getHSBColor(0f, 0.4f, 1.0f);		// hue, saturation, brightness
+		
 		if (issueListError.size() > 0) {
 			if (column == 0) {
 				icon = VCellIcons.issueErrorIcon;
@@ -135,11 +136,11 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 				} else {
 					renderer.setToolTipText(defaultToolTipText);
 				}
-				renderer.setBorder(new MatteBorder(1,1,1,0,Color.red));
+				renderer.setBorder(new MatteBorder(1,1,1,0, red));	// Color.red
 			} else if (column == table.getColumnCount() - 1) {
-				renderer.setBorder(new MatteBorder(1,0,1,1,Color.red));
+				renderer.setBorder(new MatteBorder(1,0,1,1, red));
 			} else {
-				renderer.setBorder(new MatteBorder(1,0,1,0,Color.red));
+				renderer.setBorder(new MatteBorder(1,0,1,0, red));
 			}
 		} else if(issueListWarning.size() > 0) {
 			if (column == 0) {
