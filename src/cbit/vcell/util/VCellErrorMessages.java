@@ -78,6 +78,11 @@ public class VCellErrorMessages {
 		
 	// ========== BioModel start ==========================//
 	public static final String PressEscToUndo = "<br><font color=red>Press Esc to undo this change.</font>";
+	public static final String RightClickComponentForBond = "<br><font color=blue>Right click on the Component to edit a Bond.</font>";
+	public static final String RightClickComponentForState = "<br><font color=blue>Right click on the Component to edit a State.</font>";
+	public static final String RightClickComponentToEdit = "<br><font color=blue>Right click on the Component to edit it.</font>";
+	public static final String ClickShowAllComponents = "<br><font color=blue>Check the 'Show all components' box above to see all possible Components.</font>";
+	public static final String RightClickToAddMolecules = "<br><font color=blue>Right click on the Participant to add more Molecules.</font>";
 
 	
 	// ========== BioModel end =======================//
