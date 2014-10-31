@@ -192,8 +192,11 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			reactantTreeModel = new ReactionRulePropertiesTreeModel(reactantTree, ReactionRuleParticipantType.Reactant);
 			reactantTree.setModel(reactantTreeModel);
 			reactantTree.setEditable(true);
-			reactantTree.setCellRenderer(new RbmReactionParticipantTreeCellRenderer());
-			//reactantTree.setCellEditor(new RbmTreeCellEditor(reactantTree));
+			RbmReactionParticipantTreeCellRenderer crr = new RbmReactionParticipantTreeCellRenderer();
+			reactantTree.setCellRenderer(crr);
+			reactantTree.setCellEditor( new DisabledTreeCellEditor(reactantTree, (RbmReactionParticipantTreeCellRenderer)reactantTree.getCellRenderer()) );
+			reactantTree.setEditable(false);
+//			reactantTree.setCellEditor(new RbmTreeCellEditor(reactantTree));
 			
 			int rowHeight = reactantTree.getRowHeight();
 			if (rowHeight < 10) { 
@@ -213,6 +216,9 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			productTree.setLargeModel(true);
 			productTree.setEditable(true);
 			productTree.setCellRenderer(new RbmReactionParticipantTreeCellRenderer());
+			RbmReactionParticipantTreeCellRenderer crp = new RbmReactionParticipantTreeCellRenderer();
+			productTree.setCellRenderer(crp);
+			productTree.setCellEditor( new DisabledTreeCellEditor(productTree, (RbmReactionParticipantTreeCellRenderer)reactantTree.getCellRenderer()) );
 			//productTree.setCellEditor(new RbmTreeCellEditor(productTree));
 			
 			rowHeight = productTree.getRowHeight();
