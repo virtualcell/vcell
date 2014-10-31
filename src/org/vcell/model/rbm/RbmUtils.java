@@ -797,39 +797,37 @@ public class RbmUtils {
 			}
 			br.close();
 			cleanedBngl = sb.toString();
-			
-			
 			System.out.println(cleanedBngl);
 			
-			BufferedWriter writer = null;
-			try	{
-			    writer = new BufferedWriter( new FileWriter( "c:\\TEMP\\workRules.bngl"));
-			    writer.write( cleanedBngl);
-			}
-			catch ( IOException e) {
-			}
-			finally {
-			    try {
-			        if ( writer != null)
-			        writer.close( );
-			    }
-			    catch ( IOException e) {
-			    }
-			}
-		    BufferedReader br1 = new BufferedReader(new FileReader("c:\\TEMP\\workRules.bngl"));
-		    try {
-		        StringBuilder sb1 = new StringBuilder();
-		        String line = br1.readLine();
-		        while (line != null) {
-		            sb1.append(line);
-		            sb1.append("\n");
-		            line = br1.readLine();
-		        }
-		        cleanedBngl = sb1.toString();
-		    } finally {
-		        br.close();
-		    }
-			System.out.println(cleanedBngl);
+//			BufferedWriter writer = null;
+//			try	{
+//			    writer = new BufferedWriter( new FileWriter( "c:\\TEMP\\workRules.bngl"));
+//			    writer.write( cleanedBngl);
+//			}
+//			catch ( IOException e) {
+//			}
+//			finally {
+//			    try {
+//			        if ( writer != null)
+//			        writer.close( );
+//			    }
+//			    catch ( IOException e) {
+//			    }
+//			}
+//		    BufferedReader br1 = new BufferedReader(new FileReader("c:\\TEMP\\workRules.bngl"));
+//		    try {
+//		        StringBuilder sb1 = new StringBuilder();
+//		        String line = br1.readLine();
+//		        while (line != null) {
+//		            sb1.append(line);
+//		            sb1.append("\n");
+//		            line = br1.readLine();
+//		        }
+//		        cleanedBngl = sb1.toString();
+//		    } finally {
+//		        br.close();
+//		    }
+//			System.out.println(cleanedBngl);
 			
 			BNGLParser parser = new BNGLParser(new StringReader(cleanedBngl));
 			ASTModel astModel = parser.Model();
