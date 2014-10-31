@@ -569,29 +569,27 @@ public class NFsimXMLWriter {
 		modelElement.addContent(listOfFunctionsElement);
 
 		sbmlElement.addContent(modelElement);
-		Element e1 = null;
 		// for testing purposes
-		try {
-			Element e = (Element)sbmlElement.clone();
-			FileWriter writer = new FileWriter("c:\\TEMP\\math2xml.xml");
-			Document doc = new Document();
-			doc.setRootElement(e);
-			XMLOutputter xmlOut = new XMLOutputter();
-			xmlOut.output(doc, writer);			// write to file
-			// String xmlString = xmlOut.outputString(doc);
-			// System.out.println(xmlString);		// write to console
-			SAXBuilder builder = new SAXBuilder();
-//			File reader = new File("c:\\TEMP\\simple_system.xml");
-//			File reader = new File("c:\\TEMP\\actin_branch.xml");
-			File reader = new File("c:\\TEMP\\math2xml.xml");
-			Document document = (Document) builder.build(reader);
-			e1 = document.getRootElement();
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} catch (JDOMException ex) {
-			ex.printStackTrace();
-		}
-//		return e1;
+//		Element e1 = null;
+//		try {
+//			Element e = (Element)sbmlElement.clone();
+//			FileWriter writer = new FileWriter("c:\\TEMP\\math2xml.xml");
+//			Document doc = new Document();
+//			doc.setRootElement(e);
+//			XMLOutputter xmlOut = new XMLOutputter();
+//			xmlOut.output(doc, writer);			// write to file
+//			// String xmlString = xmlOut.outputString(doc);
+//			// System.out.println(xmlString);		// write to console
+//			SAXBuilder builder = new SAXBuilder();
+//			File reader = new File("c:\\TEMP\\math2xml.xml");
+//			Document document = (Document) builder.build(reader);
+//			e1 = document.getRootElement();
+//		} catch (IOException ex) {
+//			ex.printStackTrace();
+//		} catch (JDOMException ex) {
+//			ex.printStackTrace();
+//		}
+////		return e1;
 		return sbmlElement;
 	}
 	
