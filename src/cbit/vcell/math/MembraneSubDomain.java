@@ -66,7 +66,7 @@ public MembraneSubDomain(CompartmentSubDomain inside, CompartmentSubDomain outsi
 
 /**
  * helper class for creating {@link MembraneSubDomain} from VCML tokens
- * the superclass field name is immuatable and must be before creating the class
+ * the superclass field name is immutable and must be determined before creating the class
  * Therefore do the necessary parsing to determine name components in this class
  */
 private static class Builder {
