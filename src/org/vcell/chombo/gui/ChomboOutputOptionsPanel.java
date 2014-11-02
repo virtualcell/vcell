@@ -23,6 +23,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 
 @SuppressWarnings("serial")
 public class ChomboOutputOptionsPanel extends JPanel {
+	private static final boolean ENABLE_PARALLEL = false;
 
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener
 	{
@@ -114,10 +115,13 @@ public class ChomboOutputOptionsPanel extends JPanel {
 		if (solverTaskDescription.isParallel()) {
 			vcellOutputCheckBox.setSelected(false);
 		}
-		//numProcessors.setEnabled(!vcellOutputCheckBox.isSelected());
-		numProcessors.setEnabled(false);
+		if (ENABLE_PARALLEL) {
+			numProcessors.setEnabled(!vcellOutputCheckBox.isSelected());
+		}
+		else {
+			numProcessors.setEnabled(false);
+		}
 	}
-	
 
 	public ChomboOutputOptionsPanel() {
 		super(new BorderLayout());
@@ -131,11 +135,14 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	}
 	
 	/**
-	 * set num processors field from current solverTaskDescription 
+	 * if {@link #ENABLE_PARALLEL} is true, set num processors field from current solverTaskDescription 
+	 * if {@link #ENABLE_PARALLEL} is false, set solverTaskDescription processors to 1 
 	 */
 	private void setNumProcessorsField( ) {
-		//numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
-		numProcessors.setValue(1);
+		if (!ENABLE_PARALLEL) {
+			solverTaskDescription.setNumProcessors(1);
+		}
+		numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
 	}
 
 	private void updateDisplay() {
