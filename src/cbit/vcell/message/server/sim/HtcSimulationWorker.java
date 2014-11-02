@@ -21,6 +21,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -65,6 +66,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
@@ -86,6 +88,7 @@ public class HtcSimulationWorker extends ServiceProvider  {
 	private VCQueueConsumer queueConsumer = null;
 	private VCMessageSession sharedMessageProducer = null;
 	private VCPooledQueueConsumer pooledQueueConsumer = null;
+	private static Logger lg = Logger.getLogger(HtcSimulationWorker.class);
 	
 	/**
 	 * SimulationWorker constructor comment.
@@ -114,11 +117,11 @@ private static class RunDirectories {
 	/**
 	 * where solver runs
 	 */
-	String runDirectory;
+	final String runDirectory;
 	/**
 	 * where data ends up
 	 */
-	String finalDataDirectory;
+	final String finalDataDirectory;
 	
 	/**
 	 * directories are same
@@ -142,21 +145,35 @@ private static class RunDirectories {
 	boolean isCopyNeeded( ) {
 		return !runDirectory.equals(finalDataDirectory);
 	}
-	
+
+	@Override
+	public String toString() {
+		return "RunDirectories( " +runDirectory + ", "  + finalDataDirectory + " )";
+	}
 }
+
 /**
  * determine which user directory to use, based on whether task is parallel or not
  * @param simTask
  * @return appropriate user directory
  */
 private RunDirectories userDirFor(SimulationTask simTask) {
-		String userDir = "/" + simTask.getUserName();
-		String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty);
-		if (!simTask.getSimulation( ).getSolverTaskDescription().isParallel()) {
-			return new RunDirectories(primary + userDir);
-		}
+	String userDir = "/" + simTask.getUserName();
+	String primary = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty);
+	RunDirectories rd = null;
+	final SolverTaskDescription slvTaskDesc = simTask.getSimulation( ).getSolverTaskDescription();
+	if (!slvTaskDesc.isParallel()) {
+		rd = new RunDirectories(primary + userDir);
+	}
+	else {
 		String runDir = PropertyLoader.getRequiredProperty(PropertyLoader.PARALLEL_DATA_DIR);
-		return new RunDirectories(runDir + userDir , primary + userDir);
+		rd = new RunDirectories(runDir + userDir , primary + userDir);
+	}
+	if (lg.isDebugEnabled( )) {
+		lg.debug("Simulation " + simTask.getSimulation().getDescription() + " task " + simTask.getTaskID() 
+				+ " with " + slvTaskDesc.getNumProcessors() + " processors using " + rd);
+	}
+	return rd;
 }
 
 private void initQueueConsumer() {
