@@ -109,6 +109,12 @@ public abstract class Shape implements VisualState.Owner, ShapeSpaceManager.Owne
 		return false;
 	}
 
+	public final Color getBackgroundColor() {
+		return backgroundColor;
+	}
+	public final Color getForegroundColor() {
+		return forgroundColor;
+	}
 	public void setForgroundColor(Color color) {
 		forgroundColor = color;
 	}
