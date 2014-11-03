@@ -63,68 +63,44 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			return "<html><b>" + name + "</b></html>";
 		}
 		public String toHtmlStringLong(SpeciesPattern spThat, MolecularTypePattern mtpThat, MolecularComponent mcThat, int colorIndex) {
+			// "That" is the molecular type pattern / component we clicked on
+			String strThatType = mtpThat.getMolecularType().getName() + "(" + mtpThat.getIndex() + ")";
+			String strThatComponent = mcThat.getName() + "(" + mcThat.getIndex() + ")";
+			String strBondType = molecularTypePattern.getMolecularType().getName() + "(" + molecularTypePattern.getIndex() + ")";
+			String strBondComponent = molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex() + ")";
+//			System.out.println("Linking " + strThatType + strThatComponent + " to " + strBondType + strBondComponent);
 			
 			Color c = RbmTreeCellRenderer.bondHtmlColors[colorIndex];
 			String colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
 			String colorTextEnd = "</font>";
 			String str = "";
-			int count1 = 0;
 			for(int i = 0; i < spThat.getMolecularTypePatterns().size(); i++) {
+				if(i != 0) str += ".";
+				// we iterate through each molecular type pattern of this species pattern  
+				// "This" is the current molecular type pattern / component of the iteration			
 				MolecularTypePattern mtpThis = spThat.getMolecularTypePatterns().get(i);
-				if(mtpThis.compareEqual(mtpThat)) {
-					if(count1 != 0) str += ".";
+				String strThisType = mtpThis.getMolecularType().getName() + "(" + mtpThis.getIndex() + ")";
+//				System.out.print(strThisType + " ");
+				if(strThisType.equals(strThatType) || strThisType.equals(strBondType)) {
 					str += "<b>" + mtpThis.getMolecularType().getName() + "</b>(";
-					count1++;
-					int count2 = 0;
-					for(int j = 0; j < mtpThis.getMolecularType().getComponentList().size(); j++) {
-						MolecularComponent mcThis = mtpThis.getMolecularType().getComponentList().get(j);
-						if(mcThis.compareEqual(mcThat)) {
-							if(count2 != 0) str += ",";
-							str += colorTextStart + "<b>" + mcThis.getName() + "!" + colorIndex + "</b>" + colorTextEnd;
-							count2++;
-						} else if(molecularTypePattern.compareEqual(mtpThis) && molecularComponentPattern.getMolecularComponent().compareEqual(mcThis)) {	// candidate bond
-							if(count2 != 0) str += ",";
-							str += colorTextStart + "<b>" + mcThis.getName() + "!" + colorIndex + "</b>" + colorTextEnd;
-							count2++;
-//						} else {		// this shows the uninvolved components
-//							if(count2 != 0) str += ",";
-//							str += mcThis.getName();
-//							count2++;
-						}
-					}
-					str += ")";
-				} else if(molecularTypePattern.compareEqual(mtpThis)) {
-					if(count1 != 0) str += ".";
-					str += "<b>" + mtpThis.getMolecularType().getName() + "</b>(";
-					count1++;
-					int count2 = 0;
-					for(int j = 0; j < mtpThis.getMolecularType().getComponentList().size(); j++) {
-						MolecularComponent mcThis = mtpThis.getMolecularType().getComponentList().get(j);
-						if(molecularComponentPattern.getMolecularComponent().compareEqual(mcThis)) {
-							if(count2 != 0) str += ",";
-							str += colorTextStart + "<b>" + mcThis.getName() + "!" + colorIndex + "</b>" + colorTextEnd;
-							count2++;
-//						} else {		// this shows the uninvolved components
-//							if(count2 != 0) str += ",";
-//							str += mcThis.getName();
-//							count2++;
-						}
-					}
-					str += ")";
 				} else {
-					if(count1 != 0) str += ".";
-					str += mtpThis.getMolecularType().getName() + "(";
-					int count2 = 0;
-//					for(int j = 0; j < mtpThis.getMolecularType().getComponentList().size(); j++) {		// this shows the uninvolved components
-//						MolecularComponent mcThis = mtpThis.getMolecularType().getComponentList().get(j);
-//						if(count2 != 0) str += ",";
-//						str += mcThis.getName();
-//						count2++;
-//					}
-					if(count2 == 0) str+= " ";
-					str += ")";
-					count1++;
+					str += mtpThis.getMolecularType().getName() + "()";
+					continue;	// we don't look at the components of the unmatches types
 				}
+				boolean foundComponentMatch = false;
+				for(int j = 0; j < mtpThis.getMolecularType().getComponentList().size(); j++) {
+					MolecularComponent mcThis = mtpThis.getMolecularType().getComponentList().get(j);
+					String strThisComponent = mcThis.getName() + "(" + mcThis.getIndex() + ")";
+//					System.out.print(strThisComponent + ", ");
+					if((strThisType.equals(strThatType) && strThisComponent.equals(strThatComponent)) || 
+						(strThisType.equals(strBondType) && strThisComponent.equals(strBondComponent))) {
+						if(foundComponentMatch) str += ",";
+						str += colorTextStart + "<b>" + mcThis.getName() + "</b>" + colorTextEnd;
+						foundComponentMatch = true;
+					}
+				}
+				str += ")";
+//				System.out.println("");
 			}
 			return "<html>" + str + "</html>";
 		}
