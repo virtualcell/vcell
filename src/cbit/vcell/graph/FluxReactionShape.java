@@ -74,6 +74,7 @@ public class FluxReactionShape extends ReactionStepShape {
 		g2D.drawRoundRect(roundRectX, roundRectY, RND_RECT_WIDTH, RND_RECT_HEIGHT, arcWidth, arcWidth);
 		// draw and white out center channel
 		g2D.setColor(Color.white);
+//		g2D.setColor(getParent().getBackgroundColor());
 		g2D.fillRect(roundRectX - 1, roundRectY + RND_RECT_HEIGHT/3, RND_RECT_WIDTH + 2, RND_RECT_HEIGHT/3);
 		g2D.setColor(forgroundColor);
 		g2D.drawLine(roundRectX, roundRectY + RND_RECT_HEIGHT/3, roundRectX + RND_RECT_WIDTH, roundRectY + RND_RECT_HEIGHT/3);
