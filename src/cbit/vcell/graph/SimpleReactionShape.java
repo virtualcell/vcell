@@ -53,7 +53,11 @@ public class SimpleReactionShape extends ReactionStepShape {
 		// --- Added for relaxed topolgy
 		Color newBackgroundColor = backgroundColor;
 		if (getSimpleReaction().getKinetics().getKineticsDescription().isLumped()){
-			newBackgroundColor = newBackgroundColor.darker().darker().darker();
+//			newBackgroundColor = newBackgroundColor.darker().darker().darker();
+			float[] hbs = new float[3];
+			Color.RGBtoHSB(backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue(), hbs);
+			hbs[0] -= 0.023f;		// make it just a little orange
+			newBackgroundColor =  Color.getHSBColor(hbs[0], hbs[1], hbs[2]);
 		}
 		// --- End Add for relaxed topolgy
 		int shapeHeight = getSpaceManager().getSize().height;
