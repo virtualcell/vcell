@@ -218,7 +218,8 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			productTree.setCellRenderer(new RbmReactionParticipantTreeCellRenderer());
 			RbmReactionParticipantTreeCellRenderer crp = new RbmReactionParticipantTreeCellRenderer();
 			productTree.setCellRenderer(crp);
-			productTree.setCellEditor( new DisabledTreeCellEditor(productTree, (RbmReactionParticipantTreeCellRenderer)reactantTree.getCellRenderer()) );
+			productTree.setCellEditor( new DisabledTreeCellEditor(productTree, (RbmReactionParticipantTreeCellRenderer)productTree.getCellRenderer()) );
+			productTree.setEditable(false);
 			//productTree.setCellEditor(new RbmTreeCellEditor(productTree));
 			
 			rowHeight = productTree.getRowHeight();
@@ -727,7 +728,6 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 				if(b.equals(mcp.getBond())) {
 					continue;	// if the mcp has a bond already we don't offer it
 				}
-//				itemMap.put(b.toHtmlStringShort(), b);
 				int index = 0;
 				if(mcp.getBondType() == BondType.Specified) {
 					index = mcp.getBondId();
