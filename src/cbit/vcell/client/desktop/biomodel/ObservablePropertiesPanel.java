@@ -21,6 +21,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -31,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -38,13 +43,21 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.ObservableTreeModel.SpeciesPatternLocal;
+import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
 
@@ -62,7 +75,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == getDeleteMenuItem()) {
+			if (e.getSource() == getAddSpeciesPatternMenuItem()) {
+				addSpeciesPattern();
+			} else			if (source == getDeleteMenuItem()) {
 				delete();
 			} else if (source == getRenameMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
@@ -110,6 +125,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem renameMenuItem;
 	private JMenuItem editMenuItem;
+	private JMenuItem addSpeciesPatternMenuItem;
 	private JCheckBox showDetailsCheckBox;
 	
 	private BioModel bioModel;
@@ -177,8 +193,13 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		observableTreeModel = new ObservableTreeModel(observableTree);
 		observableTree.setModel(observableTreeModel);
 		observableTree.setEditable(true);
-		observableTree.setCellRenderer(new RbmTreeCellRenderer());
-		observableTree.setCellEditor(new RbmTreeCellEditor(observableTree));
+		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer();
+		observableTree.setCellRenderer(cro);
+		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(observableTree, (cro));
+		observableTree.setCellEditor(dtce);
+		observableTree.setEditable(false);
+//		observableTree.setCellRenderer(new RbmTreeCellRenderer());
+//		observableTree.setCellEditor(new RbmTreeCellEditor(observableTree));
 		
 		int rowHeight = observableTree.getRowHeight();
 		if (rowHeight < 10) { 
@@ -224,6 +245,20 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		add(new JScrollPane(observableTree), gbc);
 	}
 	
+	public void addSpeciesPattern() {
+		SpeciesPattern sp = new SpeciesPattern();
+		observable.addSpeciesPattern(sp);
+		final TreePath path = observableTreeModel.findObjectPath(null, observable);
+		observableTree.setSelectionPath(path);
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			public void run() {				
+				observableTree.scrollPathToVisible(path);
+			}
+		});
+		
+	}
+	
 	private JMenu getAddMenu() {
 		if (addMenu == null) {
 			addMenu = new JMenu("Add");
@@ -255,6 +290,15 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		return editMenuItem;
 	}
+	
+	private JMenuItem getAddSpeciesPatternMenuItem() {
+		if (addSpeciesPatternMenuItem == null) {
+			addSpeciesPatternMenuItem = new JMenuItem("Add Species Pattern");
+			addSpeciesPatternMenuItem.addActionListener(eventHandler);
+		}
+		return addSpeciesPatternMenuItem;
+	}
+
 	
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
@@ -297,13 +341,23 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		if (popupMenu.isShowing()) {
 			return;
 		}
-		GuiUtils.selectClickTreePath(observableTree, e);		
 		
-		TreePath[] selectedPaths = observableTree.getSelectionPaths();
 		boolean bDelete = false;
 		boolean bAdd = false;
 		boolean bEdit = false;
 		boolean bRename = false;
+		popupMenu.removeAll();
+		Point mousePoint = e.getPoint();
+		GuiUtils.selectClickTreePath(observableTree, e);		
+		TreePath clickPath = observableTree.getPathForLocation(mousePoint.x, mousePoint.y);
+	    if (clickPath == null) {
+	    	popupMenu.add(getAddSpeciesPatternMenuItem());
+	    	return;
+	    }
+		
+
+	    	
+		TreePath[] selectedPaths = observableTree.getSelectionPaths();
 		if (selectedPaths == null) {
 			return;
 		}
@@ -314,8 +368,25 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 			
 			BioModelNode selectedNode = (BioModelNode) obj;
-			final Object userObject = selectedNode.getUserObject();
-			if (userObject instanceof RbmObservable) {
+			final Object selectedObject = selectedNode.getUserObject();
+			
+			if (selectedObject instanceof RbmObservable) {
+//				getAddMenu().setText("Specify Molecular Type");
+//				getAddMenu().removeAll();
+//				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+//					JMenuItem menuItem = new JMenuItem(mt.getName());
+//					getAddMenu().add(menuItem);
+//					menuItem.addActionListener(new ActionListener() {
+//						
+//						public void actionPerformed(ActionEvent e) {
+//							observable.getSpeciesPattern(0).addMolecularTypePattern(new MolecularTypePattern(mt));
+//						}
+//					});
+//				}
+				bAdd = true;
+				bDelete = false;
+				bRename = true;
+			} else if(selectedObject instanceof ReactionRuleParticipantLocal) {
 				getAddMenu().setText("Specify Molecular Type");
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
@@ -324,21 +395,29 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 					menuItem.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							observable.getSpeciesPattern(0).addMolecularTypePattern(new MolecularTypePattern(mt));
+							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
+							((ReactionRuleParticipantLocal)selectedObject).speciesPattern.getSpeciesPattern().addMolecularTypePattern(molecularTypePattern);
+							final TreePath path = observableTreeModel.findObjectPath(null, molecularTypePattern);
+							observableTree.setSelectionPath(path);
+							SwingUtilities.invokeLater(new Runnable() {
+								
+								public void run() {				
+									observableTree.scrollPathToVisible(path);
+								}
+							});
 						}
 					});
 				}
 				bAdd = true;
-				bDelete = false;
-				bRename = true;
-			} else if (userObject instanceof MolecularTypePattern) {
 				bDelete = true;
-			} else if (userObject instanceof MolecularComponent) {
-				getEditMenuItem().setText("Edit Pattern");
-				bEdit = true;
+			} else if (selectedObject instanceof MolecularTypePattern) {
+				bDelete = true;
+			} else if (selectedObject instanceof MolecularComponentPattern) {
+				manageComponentPattern(observableTreeModel, observableTree, selectedNode, selectedObject);
+				bDelete = true;
 			}
 		}
-		popupMenu.removeAll();
+//		popupMenu.removeAll();
 		// everything can be renamed
 		if (bRename) {
 			popupMenu.add(getRenameMenuItem());
@@ -353,13 +432,165 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			popupMenu.add(new JSeparator());
 			popupMenu.add(getAddMenu());
 		}
-
-		Point mousePoint = e.getPoint();
 		popupMenu.show(observableTree, mousePoint.x, mousePoint.y);
 	}
 	
 	public void setBioModel(BioModel newValue) {
 		bioModel = newValue;
 		observableTreeModel.setBioModel(bioModel);
-	}	
+	}
+	
+	public void manageComponentPattern(final ObservableTreeModel treeModel, final JTree tree,
+			BioModelNode selectedNode, final Object selectedObject) {
+		popupMenu.removeAll();
+		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
+		final MolecularComponent mc = mcp.getMolecularComponent();
+		//
+		// --- State
+		//
+		if(mc.getComponentStateDefinitions().size() != 0) {
+			JMenu editStateMenu = new JMenu();
+			editStateMenu.setText("Edit State");
+			editStateMenu.removeAll();
+			List<String> itemList = new ArrayList<String>();
+			itemList.add("Any");
+			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				String name = csd.getName();
+				itemList.add(name);
+			}
+			for(String name : itemList) {
+				JMenuItem menuItem = new JMenuItem(name);
+				editStateMenu.add(menuItem);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						String name = e.getActionCommand();
+						if(name.equals("Any")) {
+							ComponentStatePattern csp = new ComponentStatePattern();
+							mcp.setComponentStatePattern(csp);
+						} else {
+							ComponentStateDefinition csd = new ComponentStateDefinition(e.getActionCommand());
+							ComponentStatePattern csp = new ComponentStatePattern(csd);
+							mcp.setComponentStatePattern(csp);
+						}
+					}
+				});
+			}
+			popupMenu.add(editStateMenu);
+		}
+		//
+		// --- Bonds
+		//						
+		final MolecularTypePattern mtp;
+		final SpeciesPattern sp;
+		BioModelNode parentNode = (BioModelNode) selectedNode.getParent();
+		Object parentObject = parentNode == null ? null : parentNode.getUserObject();
+		if(parentObject != null && parentObject instanceof MolecularTypePattern) {
+			mtp = (MolecularTypePattern)parentObject;
+			parentNode = (BioModelNode) parentNode.getParent();
+			parentObject = parentNode == null ? null : parentNode.getUserObject();
+			if(parentObject != null && parentObject instanceof SpeciesPatternLocal) {
+				sp = ((SpeciesPatternLocal)parentObject).speciesPattern;
+			} else {
+				sp = null;
+			}
+		} else {
+			mtp = null;
+			sp = null;
+		}
+		
+		JMenu editBondMenu = new JMenu();
+		editBondMenu.setText("Edit Bond");
+		editBondMenu.removeAll();
+		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
+		
+		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
+		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
+		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		itemMap.put(noneString, null);
+		itemMap.put(existsString, null);
+		itemMap.put(possibleString, null);
+		if(mtp != null && sp != null) {
+			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
+			for(Bond b : bondPartnerChoices) {
+				if(b.equals(mcp.getBond())) {
+					continue;	// if the mcp has a bond already we don't offer it
+				}
+				int index = 0;
+				if(mcp.getBondType() == BondType.Specified) {
+					index = mcp.getBondId();
+				} else {
+					index = sp.nextBondId();
+				}
+				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
+			}
+		}
+		for(String name : itemMap.keySet()) {
+			JMenuItem menuItem = new JMenuItem(name);
+			editBondMenu.add(menuItem);
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					String name = e.getActionCommand();
+					BondType btBefore = mcp.getBondType();
+					if(name.equals(noneString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.None);
+						mcp.setBond(null);
+						treeModel.populateTree();
+					} else if(name.equals(existsString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Exists);
+						mcp.setBond(null);
+						treeModel.populateTree();
+					} else if(name.equals(possibleString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Possible);
+						mcp.setBond(null);
+						treeModel.populateTree();
+					} else {
+						if (btBefore != BondType.Specified) {
+							// if we go from a non-specified to a specified we need to find the next available
+							// bond id, so that we can choose the color for displaying the bond
+							// a bad bond id, like -1, will crash badly when trying to choose the color
+							int bondId = sp.nextBondId();
+							mcp.setBondId(bondId);
+						} else {
+							// specified -> specified
+							// change the old partner to possible, continue using the bond id
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Specified);
+						Bond b = itemMap.get(name);
+						mcp.setBond(b);
+						mcp.getBond().molecularComponentPattern.setBondId(mcp.getBondId());
+						sp.resolveBonds();
+
+						final TreePath path = treeModel.findObjectPath(null, mcp);
+						treeModel.populateTree();
+						tree.setSelectionPath(path);
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {				
+								tree.scrollPathToVisible(path);
+							}
+						});
+					}
+
+				}
+			});
+		}
+		popupMenu.add(editBondMenu);
+	}
+
 }

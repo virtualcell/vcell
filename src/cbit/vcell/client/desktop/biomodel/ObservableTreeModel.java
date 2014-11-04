@@ -12,6 +12,7 @@ import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
@@ -21,8 +22,15 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.BondLocal;
+import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.ReactionRuleParticipantLocal;
+import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactantPattern;
+import cbit.vcell.model.ReactionRuleParticipant;
+import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 
 class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeListener {
 	private BioModelNode rootNode;
@@ -55,34 +63,80 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 		return null;
 	}
 	
-	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
-		MolecularType molecularType = molecularTypePattern.getMolecularType();
-		BioModelNode node = new BioModelNode(molecularTypePattern, true);
-		for (MolecularComponent mc : molecularType.getComponentList()) {
-			if (bShowDetails || molecularTypePattern.getMolecularComponentPattern(mc).isbVisible()) {
-				BioModelNode n = new BioModelNode(mc, false);
-				node.add(n);
-			}
+	class SpeciesPatternLocal {
+		SpeciesPattern speciesPattern;
+		int index;
+		private SpeciesPatternLocal(SpeciesPattern sp, int index) {
+			super();
+			this.speciesPattern = sp;
+			this.index = index;			// ex SpeciesPattern 1, SpeciesPattern 2...
 		}
-		return node;
 	}
-	
-	private void populateTree() {
+	class BondLocal {
+		private MolecularComponentPattern mcp;
+		private BondLocal(MolecularComponentPattern mcp) {
+			this.mcp = mcp;
+		}
+		public MolecularComponentPattern getMolecularComponentPattern() {
+			return mcp;
+		}
+	}
+	class StateLocal {
+		private MolecularComponentPattern mcp;
+		private StateLocal(MolecularComponentPattern mcp) {
+			this.mcp = mcp;
+		}
+		public MolecularComponentPattern getMolecularComponentPattern() {
+			return mcp;
+		}
+	}
+	public void populateTree() {
 		if (observable == null || bioModel == null) {
 			return;
 		}
 		rootNode.setUserObject(observable);
 		rootNode.removeAllChildren();
-		if(!observable.getSpeciesPatternList().isEmpty()) {
-			SpeciesPattern speciesPattern = observable.getSpeciesPattern(0);	// TODO: aici - can be multiple
-			for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
-				BioModelNode node = createMolecularTypePatternNode(mtp);
-				rootNode.add(node);
-			}
-		}
+		int count = 0;
 		
+		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
+			BioModelNode rrNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
+			for (MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				BioModelNode node = createMolecularTypePatternNode(mtp);
+				rrNode.add(node);
+			}
+			rootNode.add(rrNode);
+		}
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+	}
+	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
+		MolecularType molecularType = molecularTypePattern.getMolecularType();
+		BioModelNode node = new BioModelNode(molecularTypePattern, true);
+		for (MolecularComponent mc : molecularType.getComponentList()) {
+			if (bShowDetails || molecularTypePattern.getMolecularComponentPattern(mc).isbVisible()) {
+				BioModelNode n = createMolecularComponentPatternNode(molecularTypePattern.getMolecularComponentPattern(mc));
+				if(n != null) {
+					node.add(n);
+				}
+			}
+		}
+		return node;
+	}
+	private BioModelNode createMolecularComponentPatternNode(MolecularComponentPattern molecularComponentPattern) {
+		MolecularComponent mc = molecularComponentPattern.getMolecularComponent();
+		BioModelNode node = new BioModelNode(molecularComponentPattern, true);
+		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
+		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+			StateLocal sl = new StateLocal(molecularComponentPattern);
+			BioModelNode ns = new BioModelNode(sl, false);
+			node.add(ns);
+		}
+//		if(!molecularComponentPattern.getBondType().equals(BondType.None)) {	// we save space by not showing the Bond.None
+			BondLocal bl = new BondLocal(molecularComponentPattern);
+			BioModelNode nb = new BioModelNode(bl, false);
+			node.add(nb);
+//		}
+		return node;
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -96,14 +150,18 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 			Object source = evt.getSource();
 			if (source == observable) {
 				if (evt.getPropertyName().equals(RbmObservable.PROPERTY_NAME_SPECIES_PATTERN_LIST)) {
-//					SpeciesPattern oldValue = (SpeciesPattern) evt.getOldValue();
-//					if (oldValue != null) {
-//						RbmUtils.removePropertyChangeListener(oldValue, this);
-//					}
-//					SpeciesPattern newValue = (SpeciesPattern) evt.getNewValue();
-//					if (newValue != null) {
-//						RbmUtils.removePropertyChangeListener(newValue, this);
-//					}
+					List<SpeciesPattern> oldValue = (List<SpeciesPattern>) evt.getOldValue();
+					if (oldValue != null) {
+						for(SpeciesPattern sp : oldValue) {
+							RbmUtils.removePropertyChangeListener(sp, this);
+						}
+					}
+					List<SpeciesPattern> newValue = (List<SpeciesPattern>) evt.getNewValue();
+					if (newValue != null) {
+						for(SpeciesPattern sp : newValue) {
+							RbmUtils.addPropertyChangeListener(sp, this);
+						}
+					}
 				}
 			} else if (source instanceof SpeciesPattern) {
 				if (evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
@@ -165,7 +223,7 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
-				if (userObject instanceof RbmObservable) {
+				if (userObject instanceof RbmObservable) {				//TODO: untested!!!
 					((RbmObservable) userObject).setName(inputString);
 				}
 			} else if (newValue instanceof MolecularComponentPattern) {
@@ -175,7 +233,7 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 					MolecularTypePattern mtp = (MolecularTypePattern) parentObject;
 					MolecularComponent mc = newMcp.getMolecularComponent();
 					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-											
+
 					mcp.setComponentStatePattern(newMcp.getComponentStatePattern());
 					BondType bp = mcp.getBondType();
 					BondType newbp = newMcp.getBondType();
@@ -194,7 +252,9 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 						mcp.setBondId(newBondId);
 						mcp.setBond(newMcp.getBond());
 						mcp.getBond().molecularComponentPattern.setBondId(newBondId);
-						observable.getSpeciesPattern(0).resolveBonds();
+						for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
+							sp.resolveBonds();
+						}
 					} else {
 					}				
 				}
