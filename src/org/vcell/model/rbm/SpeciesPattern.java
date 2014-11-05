@@ -94,7 +94,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 //					System.out.print(strThisComponent + ", ");
 					if((strThisType.equals(strThatType) && strThisComponent.equals(strThatComponent)) || 
 						(strThisType.equals(strBondType) && strThisComponent.equals(strBondComponent))) {
-						if(foundComponentMatch) str += ",";
+						if(foundComponentMatch) str += ",";		// both components are on this molecular type
 						str += colorTextStart + "<b>" + mcThis.getName() + "</b>" + colorTextEnd;
 						foundComponentMatch = true;
 					}
@@ -175,6 +175,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		}
 		for (MolecularTypePattern mtp : molecularTypePatterns) {
 			for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				boolean found = false;
 				if (mcp.getBond() != null) {
 					continue;
 				}
@@ -197,7 +198,12 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 						}
 						mcp.setBond(new Bond(mtp1, mcp1));
 						mcp1.setBond(new Bond(mtp, mcp));
+						found = true;
 					}
+				}
+				if(!found) {
+					System.out.println("Failed to match a bond for " + mcp.getMolecularComponent().getName());
+					mcp.setBondType(BondType.None);
 				}
 			}
 		}

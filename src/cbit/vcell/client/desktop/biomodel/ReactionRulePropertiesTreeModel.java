@@ -32,7 +32,7 @@ import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.ReactionRuleParticipant;
 
 
-public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements PropertyChangeListener {
+public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel implements PropertyChangeListener {
 
 	private BioModelNode rootNode;
 	private ReactionRule reactionRule;
@@ -66,36 +66,6 @@ public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements
 		return null;
 	}
 	
-	class ReactionRuleParticipantLocal {
-		ReactionRuleParticipantType type;
-		ReactionRuleParticipant speciesPattern;
-		int index;
-		private ReactionRuleParticipantLocal(ReactionRuleParticipantType type, ReactionRuleParticipant sp, int index) {
-			super();
-			this.type = type;			// reactant or product
-			this.speciesPattern = sp;
-			this.index = index;			// ex Reactant 1, Reactant 2...
-		}
-	}
-	class BondLocal {
-		private MolecularComponentPattern mcp;
-		private BondLocal(MolecularComponentPattern mcp) {
-			this.mcp = mcp;
-		}
-		public MolecularComponentPattern getMolecularComponentPattern() {
-			return mcp;
-		}
-	}
-	class StateLocal {
-		private MolecularComponentPattern mcp;
-		private StateLocal(MolecularComponentPattern mcp) {
-			this.mcp = mcp;
-		}
-		public MolecularComponentPattern getMolecularComponentPattern() {
-			return mcp;
-		}
-	}
-	
 	public void populateTree() {
 		if (reactionRule == null) {
 			System.out.println("ReactionRulePropertiesTreeModel: reactionRule is null.");
@@ -118,7 +88,8 @@ public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements
 			rootNode.add(rrNode);
 		}
 		nodeStructureChanged(rootNode);
-		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+//		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+		GuiUtils.treeExpandAllRows(ownerTree);
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
@@ -137,14 +108,16 @@ public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements
 		MolecularComponent mc = molecularComponentPattern.getMolecularComponent();
 		BioModelNode node = new BioModelNode(molecularComponentPattern, true);
 		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
-		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
-			StateLocal sl = new StateLocal(molecularComponentPattern);
-			BioModelNode ns = new BioModelNode(sl, false);
-			node.add(ns);
+//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+//			StateLocal sl = new StateLocal(molecularComponentPattern);
+//			BioModelNode ns = new BioModelNode(sl, false);
+//			node.add(ns);
+//		}
+		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
+			BondLocal bl = new BondLocal(molecularComponentPattern);
+			BioModelNode nb = new BioModelNode(bl, false);
+			node.add(nb);
 		}
-		BondLocal bl = new BondLocal(molecularComponentPattern);
-		BioModelNode nb = new BioModelNode(bl, false);
-		node.add(nb);
 		return node;
 	}
 
@@ -232,8 +205,8 @@ public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
-				if (userObject instanceof RbmObservable) {
-					((RbmObservable) userObject).setName(inputString);
+				if (userObject instanceof ReactionRule) {				//TODO: untested!!!
+					((ReactionRule) userObject).setName(inputString);
 				}
 			} else if (newValue instanceof MolecularComponentPattern) {
 				MolecularComponentPattern newMcp = (MolecularComponentPattern) newValue;
@@ -267,9 +240,6 @@ public class ReactionRulePropertiesTreeModel extends DefaultTreeModel implements
 						for(ProductPattern pp : reactionRule.getProductPatterns()) {
 							pp.getSpeciesPattern().resolveBonds();
 						}
-
-					
-					
 					} else {
 					}				
 				}

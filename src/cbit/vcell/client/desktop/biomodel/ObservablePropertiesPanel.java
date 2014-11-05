@@ -56,8 +56,7 @@ import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.ObservableTreeModel.SpeciesPatternLocal;
-import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.ReactionRuleParticipantLocal;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
 
@@ -77,7 +76,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			Object source = e.getSource();
 			if (e.getSource() == getAddSpeciesPatternMenuItem()) {
 				addSpeciesPattern();
-			} else			if (source == getDeleteMenuItem()) {
+			} else if (source == getDeleteMenuItem()) {
 				delete();
 			} else if (source == getRenameMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
@@ -162,6 +161,18 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 //			jtree.startEditingAtPath(jtreeModel.findObjectPath(null, componentState));
 		}	
 	}
+	
+	public void addSpeciesPattern() {
+		SpeciesPattern sp = new SpeciesPattern();
+		observable.addSpeciesPattern(sp);
+		final TreePath path = observableTreeModel.findObjectPath(null, observable);
+		observableTree.setSelectionPath(path);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {				
+				observableTree.scrollPathToVisible(path);
+			}
+		});
+	}
 
 	public void delete() {
 		Object obj = observableTree.getLastSelectedPathComponent();
@@ -175,13 +186,42 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		BioModelNode parentNode = (BioModelNode) parent;
 		Object selectedUserObject = selectedNode.getUserObject();
-		if (selectedUserObject instanceof MolecularTypePattern){
+		
+		if(selectedUserObject instanceof SpeciesPatternLocal) {
+			System.out.println("deleting species pattern local");
+			Object parentUserObject = parentNode.getUserObject();
+			SpeciesPatternLocal spl = (SpeciesPatternLocal)selectedUserObject;
+			RbmObservable o = (RbmObservable)parentUserObject;
+			List<SpeciesPattern> speciesPatternList = o.getSpeciesPatternList();
+			speciesPatternList.remove(spl.speciesPattern);
+			final TreePath path = observableTreeModel.findObjectPath(null, observable);
+			observableTree.setSelectionPath(path);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					observableTreeModel.populateTree();			// repaint tree
+					observableTree.scrollPathToVisible(path);	// scroll back up to show the observable
+				}
+			});
+		} else if (selectedUserObject instanceof MolecularTypePattern){
+			System.out.println("deleting molecular type pattern");
 			MolecularTypePattern mtp = (MolecularTypePattern) selectedUserObject;
-			Object userObject = parentNode.getUserObject();
-			if (userObject == observable) {
-				// TODO: Observables can now have multiple species patterns
-				observable.getSpeciesPattern(0).removeMolecularTypePattern(mtp);
-			}
+			Object parentUserObject = parentNode.getUserObject();
+			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
+			SpeciesPattern sp = spl.speciesPattern;
+			sp.removeMolecularTypePattern(mtp);
+			sp.resolveBonds();
+			final TreePath path = observableTreeModel.findObjectPath(null, spl);
+			observableTree.setSelectionPath(path);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					observableTreeModel.populateTree();
+					observableTree.scrollPathToVisible(path);
+				}
+			});
+		} else if(selectedUserObject instanceof MolecularComponentPattern) {
+			System.out.println("deleting MolecularComponentPattern");
+		} else {
+			System.out.println("deleting " + selectedUserObject.toString());
 		}
 	}
 
@@ -243,20 +283,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(2,2,2,2);
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new JScrollPane(observableTree), gbc);
-	}
-	
-	public void addSpeciesPattern() {
-		SpeciesPattern sp = new SpeciesPattern();
-		observable.addSpeciesPattern(sp);
-		final TreePath path = observableTreeModel.findObjectPath(null, observable);
-		observableTree.setSelectionPath(path);
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			public void run() {				
-				observableTree.scrollPathToVisible(path);
-			}
-		});
-		
 	}
 	
 	private JMenu getAddMenu() {
@@ -354,9 +380,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	    	popupMenu.add(getAddSpeciesPatternMenuItem());
 	    	return;
 	    }
-		
-
-	    	
 		TreePath[] selectedPaths = observableTree.getSelectionPaths();
 		if (selectedPaths == null) {
 			return;
@@ -371,22 +394,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			final Object selectedObject = selectedNode.getUserObject();
 			
 			if (selectedObject instanceof RbmObservable) {
-//				getAddMenu().setText("Specify Molecular Type");
-//				getAddMenu().removeAll();
-//				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
-//					JMenuItem menuItem = new JMenuItem(mt.getName());
-//					getAddMenu().add(menuItem);
-//					menuItem.addActionListener(new ActionListener() {
-//						
-//						public void actionPerformed(ActionEvent e) {
-//							observable.getSpeciesPattern(0).addMolecularTypePattern(new MolecularTypePattern(mt));
-//						}
-//					});
-//				}
-				bAdd = true;
-				bDelete = false;
-				bRename = true;
-			} else if(selectedObject instanceof ReactionRuleParticipantLocal) {
+				popupMenu.add(getAddSpeciesPatternMenuItem());
+			} else if(selectedObject instanceof SpeciesPatternLocal) {
 				getAddMenu().setText("Specify Molecular Type");
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
@@ -396,7 +405,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 						
 						public void actionPerformed(ActionEvent e) {
 							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
-							((ReactionRuleParticipantLocal)selectedObject).speciesPattern.getSpeciesPattern().addMolecularTypePattern(molecularTypePattern);
+							((SpeciesPatternLocal)selectedObject).speciesPattern.addMolecularTypePattern(molecularTypePattern);
 							final TreePath path = observableTreeModel.findObjectPath(null, molecularTypePattern);
 							observableTree.setSelectionPath(path);
 							SwingUtilities.invokeLater(new Runnable() {
