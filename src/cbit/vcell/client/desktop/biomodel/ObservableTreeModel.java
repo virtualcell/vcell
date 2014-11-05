@@ -22,17 +22,11 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.BondLocal;
-import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.ReactionRuleParticipantLocal;
-import cbit.vcell.client.desktop.biomodel.ReactionRulePropertiesTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactantPattern;
-import cbit.vcell.model.ReactionRuleParticipant;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 
-class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeListener {
+class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeListener {
 	private BioModelNode rootNode;
 	private RbmObservable observable;
 	private JTree ownerTree;
@@ -63,33 +57,6 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 		return null;
 	}
 	
-	class SpeciesPatternLocal {
-		SpeciesPattern speciesPattern;
-		int index;
-		private SpeciesPatternLocal(SpeciesPattern sp, int index) {
-			super();
-			this.speciesPattern = sp;
-			this.index = index;			// ex SpeciesPattern 1, SpeciesPattern 2...
-		}
-	}
-	class BondLocal {
-		private MolecularComponentPattern mcp;
-		private BondLocal(MolecularComponentPattern mcp) {
-			this.mcp = mcp;
-		}
-		public MolecularComponentPattern getMolecularComponentPattern() {
-			return mcp;
-		}
-	}
-	class StateLocal {
-		private MolecularComponentPattern mcp;
-		private StateLocal(MolecularComponentPattern mcp) {
-			this.mcp = mcp;
-		}
-		public MolecularComponentPattern getMolecularComponentPattern() {
-			return mcp;
-		}
-	}
 	public void populateTree() {
 		if (observable == null || bioModel == null) {
 			return;
@@ -107,7 +74,8 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 			rootNode.add(rrNode);
 		}
 		nodeStructureChanged(rootNode);
-		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+//		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+		GuiUtils.treeExpandAllRows(ownerTree);
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
@@ -126,16 +94,16 @@ class ObservableTreeModel extends DefaultTreeModel implements PropertyChangeList
 		MolecularComponent mc = molecularComponentPattern.getMolecularComponent();
 		BioModelNode node = new BioModelNode(molecularComponentPattern, true);
 		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
-		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
-			StateLocal sl = new StateLocal(molecularComponentPattern);
-			BioModelNode ns = new BioModelNode(sl, false);
-			node.add(ns);
-		}
-//		if(!molecularComponentPattern.getBondType().equals(BondType.None)) {	// we save space by not showing the Bond.None
+//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+//			StateLocal sl = new StateLocal(molecularComponentPattern);
+//			BioModelNode ns = new BioModelNode(sl, false);
+//			node.add(ns);
+//		}
+		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
 			BondLocal bl = new BondLocal(molecularComponentPattern);
 			BioModelNode nb = new BioModelNode(bl, false);
 			node.add(nb);
-//		}
+		}
 		return node;
 	}
 
