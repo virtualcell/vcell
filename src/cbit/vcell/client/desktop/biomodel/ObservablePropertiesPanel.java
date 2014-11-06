@@ -215,11 +215,29 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					observableTreeModel.populateTree();
-					observableTree.scrollPathToVisible(path);
+					observableTree.scrollPathToVisible(path);	// this doesn't seem to work ?
 				}
 			});
 		} else if(selectedUserObject instanceof MolecularComponentPattern) {
-			System.out.println("deleting MolecularComponentPattern");
+			MolecularComponentPattern mcp = (MolecularComponentPattern) selectedUserObject;
+			Object parentUserObject = parentNode.getUserObject();
+			MolecularTypePattern mtp = (MolecularTypePattern)parentUserObject;
+			mtp.removeMolecularComponentPattern(mcp);
+			System.out.println("deleting MolecularComponentPattern " + mcp.getMolecularComponent().getName());
+			parent = parentNode.getParent();
+			parentNode = (BioModelNode) parent;
+			parentUserObject = parentNode.getUserObject();
+			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
+			SpeciesPattern sp = spl.speciesPattern;
+			sp.resolveBonds();
+			final TreePath path = observableTreeModel.findObjectPath(null, spl);
+			observableTree.setSelectionPath(path);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					observableTreeModel.populateTree();
+					observableTree.scrollPathToVisible(path);	// this doesn't seem to work ?
+				}
+			});
 		} else {
 			System.out.println("deleting " + selectedUserObject.toString());
 		}
