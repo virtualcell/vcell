@@ -61,6 +61,7 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
+import cbit.vcell.util.VCellErrorMessages;
 
 
 @SuppressWarnings("serial")
@@ -553,7 +554,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 					final Object selectedObject = selectedNode.getUserObject();
 					
 					if (selectedObject instanceof ReactionRuleParticipantLocal) {
-						getAddMenu().setText("Specify Molecular Type");
+						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 						getAddMenu().removeAll();
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
@@ -603,7 +604,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 					BioModelNode selectedNode = (BioModelNode) obj;
 					final Object selectedObject = selectedNode.getUserObject();
 					if (selectedObject instanceof ReactionRuleParticipantLocal) {
-						getAddMenu().setText("Specify Molecular Type");
+						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 						getAddMenu().removeAll();
 //						List<MolecularTypePattern> missingMoleculesInProducts = reactionRule.getMissingMoleculesInProducts();
 //						if (missingMoleculesInProducts.size() > 0) {

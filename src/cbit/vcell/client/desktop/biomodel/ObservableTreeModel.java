@@ -66,12 +66,12 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 		int count = 0;
 		
 		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
-			BioModelNode rrNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
+			BioModelNode spNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
 			for (MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				BioModelNode node = createMolecularTypePatternNode(mtp);
-				rrNode.add(node);
+				spNode.add(node);
 			}
-			rootNode.add(rrNode);
+			rootNode.add(spNode);
 		}
 		nodeStructureChanged(rootNode);
 //		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
