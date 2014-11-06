@@ -59,6 +59,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
@@ -209,7 +210,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
 			SpeciesPattern sp = spl.speciesPattern;
 			sp.removeMolecularTypePattern(mtp);
-			sp.resolveBonds();
+			if(!sp.getMolecularTypePatterns().isEmpty()) {
+				sp.resolveBonds();
+			}
 			final TreePath path = observableTreeModel.findObjectPath(null, spl);
 			observableTree.setSelectionPath(path);
 			SwingUtilities.invokeLater(new Runnable() {
@@ -229,7 +232,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			parentUserObject = parentNode.getUserObject();
 			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
 			SpeciesPattern sp = spl.speciesPattern;
-			sp.resolveBonds();
+			if(!sp.getMolecularTypePatterns().isEmpty()) {
+				sp.resolveBonds();
+			}
 			final TreePath path = observableTreeModel.findObjectPath(null, spl);
 			observableTree.setSelectionPath(path);
 			SwingUtilities.invokeLater(new Runnable() {
@@ -250,14 +255,11 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		observableTree = new BioModelNodeEditableTree();
 		observableTreeModel = new ObservableTreeModel(observableTree);
 		observableTree.setModel(observableTreeModel);
-		observableTree.setEditable(true);
 		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer();
 		observableTree.setCellRenderer(cro);
 		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(observableTree, (cro));
 		observableTree.setCellEditor(dtce);
 		observableTree.setEditable(false);
-//		observableTree.setCellRenderer(new RbmTreeCellRenderer());
-//		observableTree.setCellEditor(new RbmTreeCellEditor(observableTree));
 		
 		int rowHeight = observableTree.getRowHeight();
 		if (rowHeight < 10) { 
@@ -414,7 +416,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			if (selectedObject instanceof RbmObservable) {
 				popupMenu.add(getAddSpeciesPatternMenuItem());
 			} else if(selectedObject instanceof SpeciesPatternLocal) {
-				getAddMenu().setText("Specify Molecular Type");
+				getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());

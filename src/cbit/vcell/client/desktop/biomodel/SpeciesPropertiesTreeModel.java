@@ -12,9 +12,9 @@ import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
-//import org.vcell.model.rbm.Observable;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -23,10 +23,12 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.SpeciesContext;
 
-class SpeciesPropertiesTreeModel extends DefaultTreeModel implements PropertyChangeListener {
+class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements PropertyChangeListener {
 	private BioModelNode rootNode;
 	private SpeciesContext speciesContext;
 	private JTree ownerTree;
@@ -57,6 +59,29 @@ class SpeciesPropertiesTreeModel extends DefaultTreeModel implements PropertyCha
 		return null;
 	}
 	
+	public void populateTree() {
+		if (speciesContext == null || bioModel == null) {
+			return;
+		}
+		rootNode.setUserObject(speciesContext);
+		rootNode.removeAllChildren();
+		int count = 0;
+		
+		if (speciesContext.getSpeciesPattern() == null) {
+			nodeStructureChanged(rootNode);
+			return;
+		}
+		
+		SpeciesPattern sp = speciesContext.getSpeciesPattern();
+		BioModelNode spNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
+		for (MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+			BioModelNode node = createMolecularTypePatternNode(mtp);
+			spNode.add(node);
+		}
+		rootNode.add(spNode);
+		nodeStructureChanged(rootNode);
+		GuiUtils.treeExpandAllRows(ownerTree);
+	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
 		BioModelNode node = new BioModelNode(molecularTypePattern, true);
@@ -64,34 +89,31 @@ class SpeciesPropertiesTreeModel extends DefaultTreeModel implements PropertyCha
 // Attention: we show all components even though the combination State Any + Bond Possible should be "invisible"
 // uncomment the "if" to hide the Any + Possible combination
 //			if (bShowDetails || molecularTypePattern.getMolecularComponentPattern(mc).isbVisible()) {
-				BioModelNode n = new BioModelNode(mc, false);
+			BioModelNode n = createMolecularComponentPatternNode(molecularTypePattern.getMolecularComponentPattern(mc));
+			if(n != null) {
 				node.add(n);
-//			}
+//			}		
+			}
 		}
 		return node;
 	}
-	
-	private void populateTree() {
-		if (speciesContext == null || bioModel == null) {
-			return;
+	private BioModelNode createMolecularComponentPatternNode(MolecularComponentPattern molecularComponentPattern) {
+		MolecularComponent mc = molecularComponentPattern.getMolecularComponent();
+		BioModelNode node = new BioModelNode(molecularComponentPattern, true);
+		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
+//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+//			StateLocal sl = new StateLocal(molecularComponentPattern);
+//			BioModelNode ns = new BioModelNode(sl, false);
+//			node.add(ns);
+//		}
+		if(!molecularComponentPattern.getBondType().equals(BondType.None) || true) {	// we save space by not showing the Bond.None
+			BondLocal bl = new BondLocal(molecularComponentPattern);
+			BioModelNode nb = new BioModelNode(bl, false);
+			node.add(nb);
 		}
-		rootNode.setUserObject(speciesContext);
-		rootNode.removeAllChildren();
-		
-		if (speciesContext.getSpeciesPattern() == null) {
-			nodeStructureChanged(rootNode);
-			return;
-		}
-		
-		SpeciesPattern speciesPattern = speciesContext.getSpeciesPattern();
-		for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
-			BioModelNode node = createMolecularTypePatternNode(mtp);
-			rootNode.add(node);
-		}		
-		nodeStructureChanged(rootNode);
-		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+		return node;
 	}
-
+		
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 			nodeChanged(rootNode);

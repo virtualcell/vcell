@@ -1,28 +1,45 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
+import cbit.vcell.client.desktop.biomodel.RbmTreeCellEditor.MolecularComponentPatternCellEditor;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
-
+import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.util.VCellErrorMessages;
 @SuppressWarnings("serial")
-public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
+public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
+	
 
-	public RbmObservableTreeCellRenderer() {
+	
+	public RbmSpeciesContextTreeCellRenderer() {
 		super();
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
+	
 	
 	@Override
 	public Component getTreeCellRendererComponent(
@@ -41,11 +58,11 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 			String text = null;
 			Icon icon = null;
 			String toolTip = null;
-			if (userObject instanceof RbmObservable) {
-				RbmObservable ob = (RbmObservable) userObject;
-				text = toHtml(ob);
-				toolTip = toHtmlWithTip(ob);
-				icon = VCellIcons.rbmObservableIcon;
+			if(userObject instanceof SpeciesContext) {
+				SpeciesContext sc = (SpeciesContext)userObject;
+				text = toHtml(sc);
+				toolTip = toHtml(sc);
+				icon = VCellIcons.refLevelNewIcon;
 			} else if (userObject instanceof SpeciesPatternLocal) {
 				SpeciesPatternLocal spl = (SpeciesPatternLocal) userObject;
 				text = toHtml(spl,true);
@@ -54,7 +71,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 			} else if (userObject instanceof MolecularTypePattern) {
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);
-				toolTip = toHtmlWithTip(molecularTypePattern, true);
+				toolTip = toHtml(molecularTypePattern, true);
 				icon = VCellIcons.rbmMolecularTypeIcon;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
@@ -85,6 +102,5 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 		}
 		return this;
 	}
-	
 
 }
