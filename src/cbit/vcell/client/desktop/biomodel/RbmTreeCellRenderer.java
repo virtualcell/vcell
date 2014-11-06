@@ -234,7 +234,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
 	
-	private String toHtml(MolecularTypePattern mtp, MolecularComponent mc, boolean bSelected, boolean bShowWords) {
+	public String toHtml(MolecularTypePattern mtp, MolecularComponent mc, boolean bSelected, boolean bShowWords) {
 		String componentText = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
 		String stateText = "";
 		String bondText = "";
@@ -385,6 +385,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return this;
 	}
 
+
 //	static String toHtml(Bond bond) {
 //		return "<html>" + toHtml0(bond) + "</html>";
 //	}
@@ -446,11 +447,35 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return text;
 	}
 
-	private static String toHtml(ComponentStateDefinition cs) {
+	public static String toHtml(ComponentStateDefinition cs) {
 		return "<html>State <b>" + cs.getName() + "</b></html>";
 	}
 	
 	// ====================================================================================
+	public static final String toHtml(SpeciesContext sc) {
+		String text = sc.getName();
+		String htmlText = "Species: <b>" + text + "</b>";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static final String toHtmlWithTip(SpeciesContext sc) {
+		String text = sc.getName();
+		String htmlText = "Species: <b>" + text + "</b>";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static final String toHtml(RbmObservable o) {
+		String text = o.getName();
+		String htmlText = "Observable: <b>" + text + "</b>" + " (" + o.getType() + ")";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static final String toHtmlWithTip(RbmObservable o) {
+		String text = o.getName();
+		String htmlText = "Observable: <b>" + text + "</b>" + " (" + o.getType() + ")";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
 	public static final String toHtml(ReactionRuleParticipantLocal rrp, boolean bShowWords) {
 		String text = rrp.speciesPattern.getSpeciesPattern().toString();
 		String htmlText = rrp.type.name() + " " + rrp.index + ": <b>" + text + "</b>";
@@ -465,7 +490,6 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return htmlText;
 	}
 	public static final String toHtml(SpeciesPatternLocal spl, boolean bShowWords) {
-//		String text = "SpeciesPattern " + spl.index;
 		String text = spl.speciesPattern.toString();
 		String htmlText = "SpeciesPattern " + spl.index + ": " + "<b>" + text + "</b>";
 		htmlText = "<html>" + htmlText + "</html>";
@@ -477,6 +501,9 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		String htmlText = text + VCellErrorMessages.RightClickToAddMolecules;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
+	}
+	public static final String toHtml(MolecularType mt, boolean bShowWords) {
+		return "<html> " + (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b></html>";
 	}
 	public static final String toHtml(MolecularTypePattern mtp, boolean bShowWords) {
 //		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
