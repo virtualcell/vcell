@@ -84,6 +84,8 @@ public class VCellErrorMessages {
 	public static final String ClickShowAllComponents = "<br><font color=blue>Check the 'Show all components' box above to see all possible Components.</font>";
 	public static final String RightClickToAddMolecules = "<br><font color=blue>Right click on this Pattern to add more Species Types.</font>";
 
+	public static final String TripleClickOrRightClick = "<br><font color=blue>Triple click to edit an element, Right click for more options.</font>";
+
 	public static final String SpecifySpeciesTypes = "Specify Species Type";
 
 	
