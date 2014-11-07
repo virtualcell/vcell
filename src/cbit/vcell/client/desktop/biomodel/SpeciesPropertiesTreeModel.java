@@ -73,12 +73,13 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 		}
 		
 		SpeciesPattern sp = speciesContext.getSpeciesPattern();
-		BioModelNode spNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
+//		BioModelNode spNode = new BioModelNode(new SpeciesPatternLocal(sp, ++count));
 		for (MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 			BioModelNode node = createMolecularTypePatternNode(mtp);
-			spNode.add(node);
+			rootNode.add(node);
+//			spNode.add(node);
 		}
-		rootNode.add(spNode);
+//		rootNode.add(spNode);
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);
 	}
