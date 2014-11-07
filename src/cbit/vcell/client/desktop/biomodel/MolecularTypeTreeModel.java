@@ -17,7 +17,7 @@ import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.desktop.BioModelNode;
 
-class MolecularTypeTreeModel extends DefaultTreeModel implements PropertyChangeListener {
+class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChangeListener {
 	private BioModelNode rootNode;
 	private MolecularType molecularType;
 	private JTree ownerTree;
@@ -67,7 +67,7 @@ class MolecularTypeTreeModel extends DefaultTreeModel implements PropertyChangeL
 		}
 		
 		nodeStructureChanged(rootNode);
-		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
+		GuiUtils.treeExpandAllRows(ownerTree);
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
