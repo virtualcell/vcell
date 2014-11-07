@@ -31,6 +31,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Cacheable;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -331,6 +333,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Species is null", Issue.SEVERITY_WARNING));
 	} else {
 		if(speciesPattern != null) {
+			checkBondsSufficiency(issueContext, issueList,speciesPattern);
 			speciesPattern.checkSpeciesPattern(issueContext, issueList);
 			speciesPattern.gatherIssues(issueContext, issueList);
 			for(MolecularType mtThat : model.getRbmModelContainer().getMolecularTypeList()) {
@@ -439,6 +442,48 @@ private void checkMolecularTypeConsistency(IssueContext issueContext, List<Issue
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 	}
 }
+
+private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueList, SpeciesPattern sp) {
+	if(sp.getMolecularTypePatterns().size() == 0) {
+		return;		// is this even possible??
+	}
+	if(sp.getMolecularTypePatterns().size() == 1) {
+		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+		if(mtp.getComponentPatternList().size() < 2) {
+			return;		// not enough types / components to form at least one bond bonds
+		}
+	}
+	int numberOfComponents = 0;
+	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+		numberOfComponents += mtp.getComponentPatternList().size();
+	}
+	if(numberOfComponents < 2) {
+		return;		// not enough components to establish bonds
+	}
+	
+	boolean atLeastOneBad = false;
+	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+		boolean bondSpecifiedExists = false;
+		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+			if (mcp.getBondType() == BondType.Specified) {
+				Bond b = mcp.getBond();
+				if(b != null) {
+					bondSpecifiedExists = true;
+					break;
+				}
+			}
+		}
+		if(!bondSpecifiedExists) {
+			atLeastOneBad = true;
+		}
+	}
+	if(atLeastOneBad) {
+		String msg = "Each Molecular Pattern of the Species Pattern " + sp.toString() + " needs at least one explicit Bond.\n";
+		IssueSource parent = issueContext.getContextObject();
+		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+	}
+}
+
 
 /*
 public VCUnitDefinition getSbmlSpeciesUnit() {
