@@ -63,11 +63,11 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 				text = toHtml(sc);
 				toolTip = toHtml(sc);
 				icon = VCellIcons.refLevelNewIcon;
-			} else if (userObject instanceof SpeciesPatternLocal) {
-				SpeciesPatternLocal spl = (SpeciesPatternLocal) userObject;
-				text = toHtml(spl,true);
-				toolTip = toHtmlWithTip(spl,true);
-				icon = VCellIcons.rbmProductIcon;
+//			} else if (userObject instanceof SpeciesPatternLocal) {
+//				SpeciesPatternLocal spl = (SpeciesPatternLocal) userObject;
+//				text = toHtml(spl,true);
+//				toolTip = toHtmlWithTip(spl,true);
+//				icon = VCellIcons.rbmProductIcon;
 			} else if (userObject instanceof MolecularTypePattern) {
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);

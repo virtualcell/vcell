@@ -132,7 +132,6 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem renameMenuItem;
 	private JMenuItem editMenuItem;
-	private JMenuItem addSpeciesPatternMenuItem;
 	private JCheckBox showDetailsCheckBox;
 
 	public class BioModelNodeEditableTree extends JTree {
@@ -235,8 +234,8 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			Object source = e.getSource();
 			if (source == nameTextField) {
 				changeName();
-			} else if (e.getSource() == getAddSpeciesPatternMenuItem()) {
-				addSpeciesPattern();
+//			} else if (e.getSource() == getAddSpeciesPatternMenuItem()) {
+//				addSpeciesPattern();
 			} else if (source == getDeleteMenuItem()) {
 				delete();
 			} else if (source == getRenameMenuItem()) {
@@ -696,14 +695,6 @@ private void updateInterface() {
 		return editMenuItem;
 	}
 
-	private JMenuItem getAddSpeciesPatternMenuItem() {
-		if (addSpeciesPatternMenuItem == null) {
-			addSpeciesPatternMenuItem = new JMenuItem("Add Species Pattern");
-			addSpeciesPatternMenuItem.addActionListener(eventHandler);
-		}
-		return addSpeciesPatternMenuItem;
-	}
-	
 	public void addNew() {
 		Object obj = speciesPropertiesTree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -727,17 +718,17 @@ private void updateInterface() {
 		}	
 	}
 
-	public void addSpeciesPattern() {
-		SpeciesPattern sp = new SpeciesPattern();
-		fieldSpeciesContext.setSpeciesPattern(sp);
-		final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, fieldSpeciesContext);
-		speciesPropertiesTree.setSelectionPath(path);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {				
-				speciesPropertiesTree.scrollPathToVisible(path);
-			}
-		});
-	}
+//	public void addSpeciesPattern() {
+//		SpeciesPattern sp = new SpeciesPattern();
+//		fieldSpeciesContext.setSpeciesPattern(sp);
+//		final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, fieldSpeciesContext);
+//		speciesPropertiesTree.setSelectionPath(path);
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {				
+//				speciesPropertiesTree.scrollPathToVisible(path);
+//			}
+//		});
+//	}
 
 	public void delete() {
 		Object obj = speciesPropertiesTree.getLastSelectedPathComponent();
@@ -751,46 +742,17 @@ private void updateInterface() {
 		}
 		BioModelNode parentNode = (BioModelNode) parent;
 		Object selectedUserObject = selectedNode.getUserObject();
-		if (selectedUserObject instanceof MolecularComponent){
-			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;
-			Object userObject = parentNode.getUserObject();
-			if (userObject instanceof MolecularType) {
-				((MolecularType) userObject).removeMolecularComponent(molecularComponent);
-			}
-		} else if (selectedUserObject instanceof ComponentStateDefinition) {
-			ComponentStateDefinition componentState = (ComponentStateDefinition) selectedUserObject;
-			Object userObject = parentNode.getUserObject();
-			if (userObject instanceof MolecularComponent) {
-				((MolecularComponent) userObject).deleteComponentStateDefinition(componentState);
-			}
-		} else 	if(selectedUserObject instanceof SpeciesPatternLocal) {
-			System.out.println("deleting the only species pattern");
-//			Object parentUserObject = parentNode.getUserObject();
-//			SpeciesPatternLocal spl = (SpeciesPatternLocal)selectedUserObject;
-			
-			// we only need to set the species pattern to null
-			fieldSpeciesContext.setSpeciesPattern(null);
-			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, fieldSpeciesContext);
-			speciesPropertiesTree.setSelectionPath(path);
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					speciesPropertiesTreeModel.populateTree();			// repaint tree
-					speciesPropertiesTree.scrollPathToVisible(path);	// scroll back up to show the species
-				}
-			});
-		} else if(selectedUserObject instanceof MolecularTypePattern) {
+		if(selectedUserObject instanceof MolecularTypePattern) {
 			System.out.println("deleting molecular type pattern");
 			MolecularTypePattern mtp = (MolecularTypePattern) selectedUserObject;
-			Object parentUserObject = parentNode.getUserObject();
-			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
-			SpeciesPattern sp = spl.speciesPattern;
+			SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 			sp.removeMolecularTypePattern(mtp);
 			if(sp.getMolecularTypePatterns().isEmpty()) {
-//				fieldSpeciesContext.setSpeciesPattern(null);
+				fieldSpeciesContext.setSpeciesPattern(null);
 			} else {
 				sp.resolveBonds();
 			}
-			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, spl);
+			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, fieldSpeciesContext);
 			speciesPropertiesTree.setSelectionPath(path);
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -807,12 +769,12 @@ private void updateInterface() {
 			parent = parentNode.getParent();
 			parentNode = (BioModelNode) parent;
 			parentUserObject = parentNode.getUserObject();
-			SpeciesPatternLocal spl = (SpeciesPatternLocal)parentUserObject;
-			SpeciesPattern sp = spl.speciesPattern;
+			SpeciesContext sc = (SpeciesContext)parentUserObject;
+			SpeciesPattern sp = sc.getSpeciesPattern();
 			if(!sp.getMolecularTypePatterns().isEmpty()) {
 				sp.resolveBonds();
 			}
-			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, spl);
+			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, sc);
 			speciesPropertiesTree.setSelectionPath(path);
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -886,11 +848,7 @@ private void updateInterface() {
 			BioModelNode selectedNode = (BioModelNode) obj;
 			final Object userObject = selectedNode.getUserObject();
 			if (userObject instanceof SpeciesContext) {
-				SpeciesContext sc = (SpeciesContext)userObject;
-				if(sc.getSpeciesPattern() == null) {
-					popupMenu.add(getAddSpeciesPatternMenuItem());
-				}
-			} else if(userObject instanceof SpeciesPatternLocal) {
+				final SpeciesContext sc = (SpeciesContext)userObject;
 				getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
@@ -900,8 +858,12 @@ private void updateInterface() {
 						
 						public void actionPerformed(ActionEvent e) {
 							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
-							((SpeciesPatternLocal)userObject).speciesPattern.addMolecularTypePattern(molecularTypePattern);
-							final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, molecularTypePattern);
+							if(sc.getSpeciesPattern() == null) {
+								SpeciesPattern sp = new SpeciesPattern();
+								sc.setSpeciesPattern(sp);
+							}
+							sc.getSpeciesPattern().addMolecularTypePattern(molecularTypePattern);
+							final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, sc);
 							speciesPropertiesTree.setSelectionPath(path);
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
@@ -992,8 +954,9 @@ private void updateInterface() {
 			mtp = (MolecularTypePattern)parentObject;
 			parentNode = (BioModelNode) parentNode.getParent();
 			parentObject = parentNode == null ? null : parentNode.getUserObject();
-			if(parentObject != null && parentObject instanceof SpeciesPatternLocal) {
-				sp = ((SpeciesPatternLocal)parentObject).speciesPattern;
+			if(parentObject != null && parentObject instanceof SpeciesContext) {
+				sp = ((SpeciesContext)parentObject).getSpeciesPattern();
+				// equivalent with using fieldSpeciesContext.getSpeciesPattern()
 			} else {
 				sp = null;
 			}
