@@ -122,7 +122,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JTree speciesPropertiesTree = null;
 	private SpeciesPropertiesTreeModel speciesPropertiesTreeModel = null;
-	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JTree rightClickSourceTree = null;
 	
 	private EventHandler eventHandler = new EventHandler();
@@ -349,11 +349,12 @@ private void initialize() {
 		lowerPanel.setLayout(new GridBagLayout());
 		lowerPanel.setBackground(Color.white);		
 		
-		splitPaneHorizontal.setOneTouchExpandable(true);
-		splitPaneHorizontal.setDividerLocation(90);
-		splitPaneHorizontal.setResizeWeight(0.4);
-		splitPaneHorizontal.setTopComponent(upperPanel);
-		splitPaneHorizontal.setBottomComponent(lowerPanel);
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(350);
+//		splitPane.setResizeWeight(0.4);
+		splitPane.setResizeWeight(0.9);
+		splitPane.setLeftComponent(upperPanel);
+		splitPane.setRightComponent(lowerPanel);
 				
 		speciesPropertiesTree = new BioModelNodeEditableTree();
 		speciesPropertiesTreeModel = new SpeciesPropertiesTreeModel(speciesPropertiesTree);
@@ -457,15 +458,15 @@ private void initialize() {
 		gbc2.fill = GridBagConstraints.BOTH;
 		lowerPanel.add(new JScrollPane(speciesPropertiesTree), gbc2);
 
-		Dimension minimumSize = new Dimension(150, 50);		//provide minimum sizes for the two components in the split pane
-		splitPaneHorizontal.setMinimumSize(minimumSize);
+		Dimension minimumSize = new Dimension(100, 150);		//provide minimum sizes for the two components in the split pane
+		splitPane.setMinimumSize(minimumSize);
 		upperPanel.setMinimumSize(minimumSize);
 		lowerPanel.setMinimumSize(minimumSize);
 		
 		
 		setName("SpeciesEditorPanel");
 		setLayout(new BorderLayout());
-		add(splitPaneHorizontal, BorderLayout.CENTER);
+		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
 		
 		initConnections();
@@ -858,6 +859,9 @@ private void updateInterface() {
 						
 						public void actionPerformed(ActionEvent e) {
 							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
+							for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
+								mcp.setBondType(BondType.None);
+							}
 							if(sc.getSpeciesPattern() == null) {
 								SpeciesPattern sp = new SpeciesPattern();
 								sc.setSpeciesPattern(sp);
