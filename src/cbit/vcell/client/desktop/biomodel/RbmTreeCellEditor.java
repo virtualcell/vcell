@@ -47,6 +47,9 @@ import cbit.vcell.desktop.BioModelNode;
 
 public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 
+	protected Dimension componentPatternPreferredSizeWithWords = new Dimension(650, 50);
+	protected Dimension componentPatternPreferredSizeWithoutWords = new Dimension(400, 50);
+
 	public static class MolecularComponentPatternCellEditor extends AbstractCellEditor implements TreeCellEditor {
 		public static final int other = 0;
 		public static final int speciesTypes = 1;
@@ -205,8 +208,8 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 			panel.add(okButton, gbc);
 		}
 		
-		void updateInterface() {			
-			componentLabel.setText(RbmTreeCellRenderer.toHtml(molecularComponent, owner));
+		void updateInterface() {
+			componentLabel.setText(toHtml(molecularComponent, owner));
 			List<ComponentStateDefinition> componentStates = molecularComponent.getComponentStateDefinitions();
 			boolean bShowStateComboBox = componentStates.size() > 0;
 			stateLabel.setVisible(bShowStateComboBox);
@@ -264,6 +267,24 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 		}
 	}
 
+
+static String toHtml(MolecularComponent mc, int owner) {
+	String text = null;
+	switch (owner) {
+	case MolecularComponentPatternCellEditor.species:
+	case MolecularComponentPatternCellEditor.observable:
+		text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		break;
+	case MolecularComponentPatternCellEditor.reaction:
+		text = "<html> " + "" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		break;
+	default:
+		text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		break;
+	}
+	return text;
+}
+	
 	private MolecularComponentPatternCellEditor mcpCellEditor = null;
 	private DefaultCellEditor defaultCellEditor;
 	

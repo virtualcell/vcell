@@ -1,12 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-
-import javax.swing.Icon;
-import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -18,23 +12,16 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
-import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
-import cbit.vcell.client.desktop.biomodel.RbmTreeCellEditor.MolecularComponentPatternCellEditor;
-import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.util.VCellErrorMessages;
 @SuppressWarnings("serial")
 public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
-	
-	protected Dimension componentPatternPreferredSizeWithWords = new Dimension(650, 50);
-	protected Dimension componentPatternPreferredSizeWithoutWords = new Dimension(400, 50);
 	
 	// http://www.w3schools.com/cssref/css_colornames.asp
     public static final Color aliceblue = new Color(0xf0f8ff);
@@ -234,224 +221,6 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
 	
-	public String toHtml(MolecularTypePattern mtp, MolecularComponent mc, boolean bSelected, boolean bShowWords) {
-		String componentText = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
-		String stateText = "";
-		String bondText = "";
-		MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-		if (mcp != null /*&& !mcp.isImplied()*/) {			
-			if (mcp.getComponentStatePattern() == null) {
-				//stateText = "State(-): <b>NA</b>";
-				stateText = "";
-			} else if(mcp.getComponentStatePattern().isAny()) {
-				if(bShowWords) {
-					stateText = "State(~): <b>Any</b>";
-				} else {
-//					stateText = "<b>Any</b>";
-				}
-			} else {
-				if(bShowWords) {
-					stateText = "State(~): <b>" + mcp.getComponentStatePattern().getComponentStateDefinition().getName() + "</b>";
-				} else {
-					stateText = "~ <b>" + mcp.getComponentStatePattern().getComponentStateDefinition().getName() + "</b>";
-				}
-			}
-			BondType bondType = mcp.getBondType();
-			switch (bondType) {
-			case None:
-			case Possible:
-			case Exists:
-				bondText = "Bond(!" + bondType.symbol + "): <b>" + bondType.name()+ "</b>";
-				break;
-			case Specified:
-				Bond bond = mcp.getBond();
-				if (bond == null) {
-					bondText = "Bond(!" + bondType.symbol + "): <b>" + mcp.getBondId() + "</b>";
-				} else {
-					int id = mcp.getBondId();
-					String colorTextStart = bSelected ? "" : "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
-					String colorTextEnd = bSelected ? "" : "</font>";
-					if(bShowWords) {
-						bondText = "Bond(" + colorTextStart + "<b>! " + mcp.getBondId() + "</b>" + colorTextEnd + "):<sub>&nbsp;</sub>" + colorTextStart 
-							+ "Molecule <b>" + bond.molecularTypePattern.getMolecularType().getName() 
-							+ "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>" 
-							+ bond.molecularComponentPattern.getMolecularComponent().getName() + "<sub>" 
-							+ bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub></b>"
-							+ colorTextEnd;
-					} else {
-						bondText = "Bond(" + colorTextStart + "<b>! " + mcp.getBondId() + "</b>" + colorTextEnd + "):<sub>&nbsp;</sub>" + colorTextStart 
-								+ " <b>" + bond.molecularTypePattern.getMolecularType().getName() 
-								+ "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> <b>" 
-								+ bond.molecularComponentPattern.getMolecularComponent().getName() + "<sub>" 
-								+ bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub></b>"
-								+ colorTextEnd;
-					}
-				}
-				break;
-			}
-		}
-		String htmlText = "<html><table width=" + (bShowWords ? componentPatternPreferredSizeWithWords.getWidth() : componentPatternPreferredSizeWithoutWords.getWidth()) + "><tr>" +
-				"<td width=" + (bShowWords ? 25 : 15) + "%>" + componentText + "</td>" +	// numbers are percent
-				"<td width=25%>" + stateText + "<sub>&nbsp</sub>" + "</td>" +
-				"<td width=" + (bShowWords ? 50 : 60) + "%>" + bondText + "<sub>&nbsp</sub>" + "</td>" +
-				"</tr></table></font></html>";
-		return htmlText;
-	}
-	
-//	public static String toHtml(MolecularTypePattern mtp, boolean bShowWords) {
-//		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
-//	}
-	
-	@Override
-	public Component getTreeCellRendererComponent(
-            JTree tree,
-            Object value,
-            boolean sel,
-            boolean expanded,
-            boolean leaf,
-            int row,
-            boolean hasFocus) {	
-		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-		setBorder(null);
-		if (value instanceof BioModelNode) {
-			BioModelNode node = (BioModelNode)value;
-			Object userObject = node.getUserObject();
-			String text = null;
-			Icon icon = null;
-			String toolTip = null;
-			if (userObject instanceof MolecularType) {
-				MolecularType mt = (MolecularType) userObject;
-				text = RbmTreeCellRenderer.toHtml(mt);
-				icon = VCellIcons.rbmMolecularTypeIcon;
-			} else if (userObject instanceof MolecularTypePattern) {
-				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
-				boolean bShowWords = node.getParent() == null || !(((BioModelNode)node.getParent()).getUserObject() instanceof ReactionRuleParticipantLocal);
-				text = toHtml(molecularTypePattern, bShowWords);
-				toolTip = toHtml(molecularTypePattern, true);
-				icon = VCellIcons.rbmMolecularTypeIcon;
-			} else if (userObject instanceof MolecularComponent) {
-				BioModelNode parentNode = (BioModelNode) node.getParent();
-				Object parentObject = parentNode == null ? null : parentNode.getUserObject();
-				icon = VCellIcons.rbmMolecularComponentIcon;
-				MolecularComponent mc = (MolecularComponent) userObject;
-				
-				if (parentObject instanceof MolecularType) {
-					text = RbmTreeCellRenderer.toHtml(mc, true);
-					FontMetrics fm = getFontMetrics(getFont());		// here is how to set the cell minimum size !!!
-				    int width = fm.stringWidth(text);
-				    setMinimumSize(new Dimension(width + 50, fm.getHeight() + 5));
-				} else if (parentObject instanceof MolecularTypePattern) {
-					//setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0), GuiConstants.TAB_PANEL_BORDER));
-					MolecularTypePattern mtp = (MolecularTypePattern) parentObject;
-					boolean bShowWords = parentNode.getParent() == null || !(((BioModelNode)parentNode.getParent()).getUserObject() instanceof ReactionRuleParticipantLocal);
-					text = toHtml(mtp, mc, sel, bShowWords);
-					toolTip = toHtml(mtp, mc, sel, true);
-					if(!mtp.getMolecularComponentPattern(mc).isbVisible()) {
-						BioModelNode parentNode2 = (BioModelNode)parentNode.getParent();
-						Object parentObject2 = parentNode2 == null ? null : parentNode2.getUserObject();
-						if(parentObject2 instanceof SpeciesContext) {
-							// we want to change the icon only for the species patterns of species contexts
-							// but not for the species patterns of observables / reaction rules
-							icon = VCellIcons.rbmMolecularComponentErrIcon;
-						}
-					}
-				}
-			} else if (userObject instanceof MolecularComponentPattern) {
-				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
-				text = mcp.getMolecularComponent().getName();
-				icon = VCellIcons.rbmMolecularComponentIcon;
-//			} else if (userObject instanceof ComponentStatePattern) {
-//				ComponentStatePattern cs = (ComponentStatePattern) userObject;
-//				text = RbmTreeCellRenderer.toHtml(cs);
-//				//icon = VCellIcons.rbmComponentStateIcon;
-			} else if (userObject instanceof ComponentStateDefinition) {
-				ComponentStateDefinition cs = (ComponentStateDefinition) userObject;
-				text = RbmTreeCellRenderer.toHtml(cs);
-				icon = VCellIcons.rbmComponentStateIcon;
-			} else if (userObject instanceof RbmObservable) {
-				RbmObservable ob = (RbmObservable) userObject;
-				text = ob.getName();
-				icon = VCellIcons.rbmObservableIcon;
-				toolTip = "Observable: " + text + " (" + ob.getType() + ")";
-			} else if (userObject instanceof ReactionRuleParticipantLocal) {
-				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) userObject;
-				text = rrp.type.name() + " " + rrp.index;
-				icon = rrp.type == ReactionRuleParticipantType.Reactant ? VCellIcons.rbmReactantIcon : VCellIcons.rbmProductIcon;
-			}
-			setText(text);
-			setIcon(icon);
-			setToolTipText(toolTip == null ? text : toolTip);
-		}
-		return this;
-	}
-
-
-//	static String toHtml(Bond bond) {
-//		return "<html>" + toHtml0(bond) + "</html>";
-//	}
-	private static String toHtml0(Bond bond) {
-//		return "Molecule <b>" + bond.molecularTypePattern.getMolecularType().getName() 
-//				+ "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>" +
-//				bond.molecularComponentPattern.getMolecularComponent().getName() + "<sub>" + bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub></b>";
-		return " <b>" + bond.molecularTypePattern.getMolecularType().getName() 
-				+ "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> (<b>" +
-				bond.molecularComponentPattern.getMolecularComponent().getName() + "<sub>" + bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub></b>)";
-	}
-	
-	static String bondToHtml(MolecularComponentPattern mcp, boolean bSelected) {
-		BondType defaultType = BondType.Possible;
-		String bondText = "Bond(!" + defaultType.symbol + "): <b>" + BondType.Possible.name() + "</b>";
-		if (mcp != null) {			
-			BondType bondType = mcp.getBondType();
-			if (bondType == BondType.Specified) {
-				Bond bond = mcp.getBond();
-				if (bond == null) {
-					bondText = "";
-				} else {
-					int id = mcp.getBondId();
-					String colorTextStart = bSelected ? "" : "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
-					String colorTextEnd = bSelected ? "" : "</font>";
-					bondText = "Bond(" + colorTextStart + "<b>! " + mcp.getBondId() + "</b>" + colorTextEnd + "):<sub>&nbsp;</sub>" + colorTextStart 
-							+ toHtml0(bond) + colorTextEnd;
-				}
-			} else {
-				bondText = "Bond(!" + bondType.symbol + "): <b>" + bondType.name()+ "</b>";						
-			}
-		}
-		String htmlText = "<html>" + bondText + "</html>";
-		return htmlText;
-	}
-
-	private static String toHtml(MolecularType mt) {
-		return "<html> Molecule <b>" + mt.getName() + "</sub></b></html>";
-//		return "<html><b>" + mt.getName() + "</sub></b></html>";
-	}
-
-	static String toHtml(MolecularComponent mc, boolean bShowWords) {
-		return "<html> " + (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b> </html>";
-	}
-	static String toHtml(MolecularComponent mc, int owner) {
-		String text = null;
-		switch (owner) {
-		case MolecularComponentPatternCellEditor.species:
-		case MolecularComponentPatternCellEditor.observable:
-			text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
-			break;
-		case MolecularComponentPatternCellEditor.reaction:
-			text = "<html> " + "" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
-			break;
-		default:
-			text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
-			break;
-		}
-		return text;
-	}
-
-	public static String toHtml(ComponentStateDefinition cs) {
-		return "<html>State <b>" + cs.getName() + "</b></html>";
-	}
-	
-	// ====================================================================================
 	public static final String toHtml(SpeciesContext sc) {
 		String text = sc.getName();
 		String htmlText = "Species: <b>" + text + "</b>";
@@ -502,9 +271,42 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
 	}
+	
 	public static final String toHtml(MolecularType mt, boolean bShowWords) {
-		return "<html> " + (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b></html>";
+		String text = (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b>";
+		String htmlText = "<html>" + text + "</html>";
+		return htmlText;
 	}
+	public static final String toHtmlWithTip(MolecularType mt, boolean bShowWords) {
+		String text = (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b>";
+		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static String toHtml(MolecularComponent mc, boolean bShowWords) {
+		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+		String htmlText = "<html>" + text + "</html>";
+		return htmlText;
+	}
+	public static String toHtmlWithTip(MolecularComponent mc, boolean bShowWords) {
+		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static String toHtml(ComponentStateDefinition cs) {
+		String text = "State <b>" + cs.getName() + "</b>";
+		String htmlText = "<html>" + text + "</html>";
+		return htmlText;
+	}
+	public static String toHtmlWithTip(ComponentStateDefinition cs) {
+		String text = "State <b>" + cs.getName() + "</b>";
+		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+// ----------------------------------------------------------------------------------------------------
+	
 	public static final String toHtml(MolecularTypePattern mtp, boolean bShowWords) {
 //		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
 		return "<html> " + (bShowWords ? "Species Type" : "") + " <b>" + mtp.getMolecularType().getName() + "</b></html>";
