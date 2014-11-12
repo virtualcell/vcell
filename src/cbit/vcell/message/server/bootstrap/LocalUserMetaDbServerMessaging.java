@@ -9,7 +9,10 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
+import java.rmi.ConnectException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -40,6 +43,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 public class LocalUserMetaDbServerMessaging extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.UserMetaDbServer {
 	private RpcDbServerProxy dbServerProxy = null;
 	private SessionLog log = null;
+	private boolean bClosed = false;
 
 /**
  * This method was created in VisualAge.
@@ -59,6 +63,7 @@ public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, VCMessageSess
  * @exception java.rmi.RemoteException The exception description.
  */
 public org.vcell.util.document.VCDocumentInfo curate(org.vcell.util.document.CurateSpec curateSpec) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.curate(curatespec="+curateSpec.toString()+")");
 		return dbServerProxy.curate(curateSpec);
@@ -72,6 +77,7 @@ public org.vcell.util.document.VCDocumentInfo curate(org.vcell.util.document.Cur
 }
 
 public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.userRegistrationOP(...)");
 		return dbServerProxy.userRegistrationOP(userRegistrationOP);
@@ -87,8 +93,10 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAccessException {
+public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteBioModel(Key="+key+")");
 		dbServerProxy.deleteBioModel(key);
@@ -105,8 +113,10 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
 		return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
@@ -123,8 +133,10 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public void deleteGeometry(org.vcell.util.document.KeyValue key) throws DataAccessException {
+public void deleteGeometry(org.vcell.util.document.KeyValue key) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteGeometry(Key="+key+")");
 		dbServerProxy.deleteGeometry(key);
@@ -141,8 +153,10 @@ public void deleteGeometry(org.vcell.util.document.KeyValue key) throws DataAcce
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAccessException {
+public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteMathModel(Key="+key+")");
 		dbServerProxy.deleteMathModel(key);
@@ -159,8 +173,10 @@ public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAcc
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException {
+public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteResultSetExport(Key="+eleKey+")");
 		dbServerProxy.deleteResultSetExport(eleKey);
@@ -177,8 +193,10 @@ public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throw
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
+ * @throws RemoteException 
  */
-public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAccessException {
+public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteVCImage(Key="+key+")");
 		dbServerProxy.deleteVCImage(key);
@@ -200,6 +218,7 @@ public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAcces
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.doTestSuiteOP("+tsop+")");
 		return dbServerProxy.doTestSuiteOP(tsop);
@@ -221,6 +240,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @exception java.rmi.RemoteException The exception description.
  */
 public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.util.document.ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.findReferences(rqs="+rqs+")");
 		return dbServerProxy.findReferences(rqs);
@@ -236,8 +256,10 @@ public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.uti
 
 /**
  * getVersionable method comment.
+ * @throws RemoteException 
  */
-public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("LocalUserMetaDbServerMessaging.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
@@ -259,7 +281,8 @@ public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfo(key="+bioModelKey+")");
 		return dbServerProxy.getBioModelInfo(bioModelKey);
@@ -280,7 +303,8 @@ public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.docum
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getBioModelInfos(bAll);
@@ -296,8 +320,10 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) thr
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BioModelMetaData getBioModelMetaData(KeyValue bioModelKey) throws DataAccessException {
+public BioModelMetaData getBioModelMetaData(KeyValue bioModelKey) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelMetaData(key="+bioModelKey+")");
 		BioModelMetaData bioModelMetaData = dbServerProxy.getBioModelMetaData(bioModelKey);
@@ -315,8 +341,10 @@ public BioModelMetaData getBioModelMetaData(KeyValue bioModelKey) throws DataAcc
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException {
+public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelMetaDatas(bAll="+bAll+")");
 		BioModelMetaData bioModelMetaDataArray[] = dbServerProxy.getBioModelMetaDatas(bAll);
@@ -334,8 +362,10 @@ public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessEx
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException {
+public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelXML(key="+bioModelKey+")");
 		BigString bioModelXML = dbServerProxy.getBioModelXML(bioModelKey);
@@ -354,8 +384,10 @@ public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2003 3:26:10 PM)
+ * @throws RemoteException 
  */
-public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException{
+public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException, RemoteException{
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBoundSpecies");
 		return dbServerProxy.getBoundSpecies(dbfs);
@@ -372,8 +404,10 @@ public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessExceptio
 /**
  * Insert the method's description here.
  * Creation date: (2/20/2003 2:11:12 PM)
+ * @throws RemoteException 
  */
-public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws DataAccessException{
+public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws DataAccessException, RemoteException{
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getDatabaseSpecies");
 		return dbServerProxy.getDatabaseSpecies(likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
@@ -389,8 +423,10 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,Fo
 
 /**
  * getDictionaryReactions method comment.
+ * @throws RemoteException 
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getDictionaryReactions");
 		return dbServerProxy.getDictionaryReactions(reactionQuerySpec);
@@ -410,7 +446,8 @@ public cbit.vcell.dictionary.db.ReactionDescription[] getDictionaryReactions(Rea
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getGeometryInfo(key="+geoKey+")");
 		return dbServerProxy.getGeometryInfo(geoKey);
@@ -431,7 +468,8 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException {
+public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getGeometryInfos(bAll="+bAll+")");
 		return dbServerProxy.getGeometryInfos(bAll);
@@ -447,8 +485,10 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws 
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException {
+public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getGeometryXML(key="+geometryKey+")");
 		BigString geometryXML = dbServerProxy.getGeometryXML(geometryKey);
@@ -471,7 +511,8 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfo(key="+mathModelKey+")");
 		return dbServerProxy.getMathModelInfo(mathModelKey);
@@ -492,7 +533,8 @@ public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.doc
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getMathModelInfos(bAll);
@@ -508,8 +550,10 @@ public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) t
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public MathModelMetaData getMathModelMetaData(KeyValue mathModelKey) throws DataAccessException {
+public MathModelMetaData getMathModelMetaData(KeyValue mathModelKey) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelMetaData(key="+mathModelKey+")");
 		MathModelMetaData mathModelMetaData = dbServerProxy.getMathModelMetaData(mathModelKey);
@@ -527,8 +571,10 @@ public MathModelMetaData getMathModelMetaData(KeyValue mathModelKey) throws Data
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException {
+public MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelMetaDatas(bAll="+bAll+")");
 		MathModelMetaData mathModelMetaDataArray[] = dbServerProxy.getMathModelMetaDatas(bAll);
@@ -546,8 +592,10 @@ public MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccess
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
+public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelXML(mathModelKey="+mathModelKey+")");
 		BigString xml = dbServerProxy.getMathModelXML(mathModelKey);
@@ -570,7 +618,8 @@ public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessExcepti
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
+public org.vcell.util.Preference[] getPreferences() throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getPreferences()");
 		org.vcell.util.Preference[] preferences = dbServerProxy.getPreferences();
@@ -587,8 +636,10 @@ public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 
 /**
  * getReactionStep method comment.
+ * @throws RemoteException 
  */
-public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException {
+public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.KeyValue rxID) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getReactionStep()");
 		return dbServerProxy.getReactionStepAsModel(rxID);
@@ -604,8 +655,10 @@ public cbit.vcell.model.Model getReactionStepAsModel(org.vcell.util.document.Key
 
 /**
  * getReactionStepInfos method comment.
+ * @throws RemoteException 
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getReactionStepInfos()");
 		return dbServerProxy.getReactionStepInfos(reactionStepKeys);
@@ -624,8 +677,10 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(org.vcell.util.d
  * Creation date: (9/1/2004 11:27:01 AM)
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
+ * @throws RemoteException 
  */
-public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.KeyValue simulationKeys[]) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKeys+")");
 		SimulationStatusPersistent simulationStatus[] = dbServerProxy.getSimulationStatus(simulationKeys);
@@ -646,8 +701,10 @@ public SimulationStatusPersistent[] getSimulationStatus(org.vcell.util.document.
  * Creation date: (9/1/2004 11:27:01 AM)
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
+ * @throws RemoteException 
  */
-public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationStatus(key="+simulationKey+")");
 		SimulationStatusPersistent simulationStatus = dbServerProxy.getSimulationStatus(simulationKey);
@@ -665,8 +722,10 @@ public SimulationStatusPersistent getSimulationStatus(org.vcell.util.document.Ke
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString getSimulationXML(KeyValue simKey) throws DataAccessException, ObjectNotFoundException {
+public BigString getSimulationXML(KeyValue simKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationXML(simKey="+simKey+")");
 		BigString xml = dbServerProxy.getSimulationXML(simKey);
@@ -690,6 +749,7 @@ public BigString getSimulationXML(KeyValue simKey) throws DataAccessException, O
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getTestSuite("+getThisTS+")");
 		return dbServerProxy.getTestSuite(getThisTS);
@@ -711,6 +771,7 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal ge
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getTestSuiteInfos()");
 		return dbServerProxy.getTestSuiteInfos();
@@ -729,8 +790,10 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org
  * Creation date: (10/22/2003 10:23:06 AM)
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
+ * @throws RemoteException 
  */
-public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getUserReactionDescriptions()");
 		return dbServerProxy.getUserReactionDescriptions(reactionQuerySpec);
@@ -751,7 +814,8 @@ public cbit.vcell.dictionary.db.ReactionDescription[] getUserReactionDescription
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getVCImageInfo(key="+imgKey+")");
 		return dbServerProxy.getVCImageInfo(imgKey);
@@ -772,7 +836,8 @@ public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue im
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException {
+public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getVCImageInfos(bAll="+bAll+")");
 		return dbServerProxy.getVCImageInfos(bAll);
@@ -788,8 +853,10 @@ public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessE
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString getVCImageXML(KeyValue imageKey) throws DataAccessException, ObjectNotFoundException {
+public BigString getVCImageXML(KeyValue imageKey) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getSimulationXML(imageKey="+imageKey+")");
 		BigString xml = dbServerProxy.getVCImageXML(imageKey);
@@ -809,8 +876,10 @@ public BigString getVCImageXML(KeyValue imageKey) throws DataAccessException, Ob
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  * @return cbit.vcell.modeldb.VCInfoContainer
+ * @throws RemoteException 
  */
-public VCInfoContainer getVCInfoContainer() throws DataAccessException {
+public VCInfoContainer getVCInfoContainer() throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getVCInfoContainer()");
 		return dbServerProxy.getVCInfoContainer();
@@ -831,7 +900,8 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupAddUser(vType,key,addUserToGroup,isHidden);
@@ -853,7 +923,8 @@ public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupRemoveUser(vType,key,userRemoveFromGroup,isHiddenFromOwner);
@@ -875,7 +946,8 @@ public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.docume
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPrivate(vType,key);
@@ -897,7 +969,8 @@ public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.docume
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPublic(vType,key);
@@ -918,7 +991,8 @@ public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.documen
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.replacePreferences()");
 		dbServerProxy.replacePreferences(preferences);
@@ -936,8 +1010,10 @@ public void replacePreferences(org.vcell.util.Preference[] preferences) throws D
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveBioModel(BigString bioModelXML, String independentSims[]) throws DataAccessException {
+public BigString saveBioModel(BigString bioModelXML, String independentSims[]) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveBioModel()");
 		BigString savedBioModelXML = dbServerProxy.saveBioModel(bioModelXML, independentSims);
@@ -955,8 +1031,10 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveBioModelAs(BigString bioModelXML, String newName, String independentSims[]) throws DataAccessException {
+public BigString saveBioModelAs(BigString bioModelXML, String newName, String independentSims[]) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveBioModel(newName="+newName+")");
 		BigString savedBioModelXML = dbServerProxy.saveBioModelAs(bioModelXML,newName,independentSims);
@@ -974,8 +1052,10 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveGeometry(BigString geometryXML) throws DataAccessException {
+public BigString saveGeometry(BigString geometryXML) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveGeometry()");
 		BigString savedGeometryXML = dbServerProxy.saveGeometry(geometryXML);
@@ -993,8 +1073,10 @@ public BigString saveGeometry(BigString geometryXML) throws DataAccessException 
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveGeometryAs(BigString geometryXML, String newName) throws DataAccessException {
+public BigString saveGeometryAs(BigString geometryXML, String newName) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveGeometryAs(newName="+newName+")");
 		BigString savedGeometryXML = dbServerProxy.saveGeometryAs(geometryXML,newName);
@@ -1012,8 +1094,10 @@ public BigString saveGeometryAs(BigString geometryXML, String newName) throws Da
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveMathModel(BigString mathModelXML, String independentSims[]) throws DataAccessException {
+public BigString saveMathModel(BigString mathModelXML, String independentSims[]) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveMathModel()");
 		BigString savedMathModelXML = dbServerProxy.saveMathModel(mathModelXML,independentSims);
@@ -1031,8 +1115,10 @@ public BigString saveMathModel(BigString mathModelXML, String independentSims[])
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveMathModelAs(BigString mathModelXML, String newName, String independentSims[]) throws DataAccessException {
+public BigString saveMathModelAs(BigString mathModelXML, String newName, String independentSims[]) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveMathModel(newName="+newName+")");
 		BigString savedMathModelXML = dbServerProxy.saveMathModelAs(mathModelXML,newName, independentSims);
@@ -1056,7 +1142,8 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws org.vcell.util.DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws org.vcell.util.DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveSimulation()");
 		BigString savedSimulationXML = dbServerProxy.saveSimulation(simulationXML,bForceIndependent);
@@ -1074,8 +1161,10 @@ public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulati
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveVCImage(BigString vcImageXML) throws DataAccessException {
+public BigString saveVCImage(BigString vcImageXML) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveVCImage()");
 		BigString savedVCImageXML = dbServerProxy.saveVCImage(vcImageXML);
@@ -1093,8 +1182,10 @@ public BigString saveVCImage(BigString vcImageXML) throws DataAccessException {
 
 /**
  * getVersionInfo method comment.
+ * @throws RemoteException 
  */
-public BigString saveVCImageAs(BigString vcImageXML, String newName) throws DataAccessException {
+public BigString saveVCImageAs(BigString vcImageXML, String newName) throws DataAccessException, RemoteException {
+	checkClosed();
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveVCImage(newName="+newName+")");
 		BigString savedVCImageXML = dbServerProxy.saveVCImageAs(vcImageXML,newName);
@@ -1107,5 +1198,21 @@ public BigString saveVCImageAs(BigString vcImageXML, String newName) throws Data
 		throw new DataAccessException(e.getMessage());
 	}
 
+}
+
+private void checkClosed() throws RemoteException {
+	if (bClosed){
+		log.print("LocalUserMetaDbServerMessaging closed");
+		throw new ConnectException("LocalUserMetaDbServerMessaging closed, please reconnect");
+	}
+}
+
+public void close() {
+	//try {
+		bClosed = true;
+		//UnicastRemoteObject.unexportObject(this, true);
+	//} catch (NoSuchObjectException e) {
+		//e.printStackTrace();
+	//}
 }
 }
