@@ -290,6 +290,10 @@ public final SpeciesPattern getSpeciesPattern() {
 	return speciesPattern;
 }
 public void parseSpeciesPatternString(Model model) {
+	if(speciesPatternString.equalsIgnoreCase("null")) {
+		System.out.println("Species Pattern String is 'NULL'.");
+		return;
+	}
 if(speciesPatternString != null) {
 		try {
 			if(speciesPattern != null) {
