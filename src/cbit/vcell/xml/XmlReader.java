@@ -3995,15 +3995,21 @@ private Model getModel(Element param) throws XmlParseException {
 @SuppressWarnings("unchecked")
 public void getRbmModelContainer(Element param, Model newModel) throws ModelException {
 	Element element = param.getChild(XMLTags.RbmMolecularTypeListTag, vcNamespace);
-	getRbmMolecularTypeList(element, newModel);
-//	element = param.getChild(XMLTags.RbmSeedSpeciesListTag, vcNamespace);
-//	getRbmSeedSpeciesList(element, newModel);
+	if(element != null) {
+		getRbmMolecularTypeList(element, newModel);
+	}
 	element = param.getChild(XMLTags.RbmObservableListTag, vcNamespace);
-	getRbmObservableList(element, newModel);
+	if(element != null) {
+		getRbmObservableList(element, newModel);
+	}
 	element = param.getChild(XMLTags.RbmReactionRuleListTag, vcNamespace);
-	getRbmReactionRuleList(element, newModel);
+	if(element != null) {
+		getRbmReactionRuleList(element, newModel);
+	}
 	element = param.getChild(XMLTags.RbmNetworkConstraintsTag, vcNamespace);
-	getRbmNetworkConstraints(element, newModel);	// one network constraint element
+	if(element != null) {
+		getRbmNetworkConstraints(element, newModel);	// one network constraint element
+	}
 }
 private void getRbmMolecularTypeList(Element param, Model newModel) {
 	RbmModelContainer mc = newModel.getRbmModelContainer();
