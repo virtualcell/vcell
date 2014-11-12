@@ -2200,7 +2200,9 @@ public SimContextTransformer createNewTransformer(){
 	if (isRuleBased()){
 		modelTransformer = new RulebasedTransformer();
 	}else{
-		modelTransformer = new NetworkTransformer();
+		if(getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
+			modelTransformer = new NetworkTransformer();
+		}	// if no rbm stuff we don't need to flatten a deterministic model
 	}
 	return modelTransformer;	
 }
