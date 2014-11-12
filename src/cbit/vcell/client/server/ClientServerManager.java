@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.server;
+import java.rmi.RemoteException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -18,6 +19,8 @@ import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
+import cbit.rmi.event.MessageEvent;
+import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.clientdb.ClientDocumentManager;
@@ -234,6 +237,13 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
 }
 
 
+public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
+	// just pass it to the the messaging service
+	if (isStatusConnected()) {
+		vcellConnection.reportPerformanceMonitorEvent(pme);
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/25/2004 2:03:47 AM)
@@ -241,6 +251,14 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
  */
 public void cleanup() {
 	setVcellConnection(null);	
+}
+
+public MessageEvent[] getMessageEvents() throws RemoteException{
+	if (vcellConnection!=null && isStatusConnected()){
+		return vcellConnection.getMessageEvents();
+	} else {
+		return null;
+	}
 }
 
 public static void checkClientServerSoftwareVersion(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
@@ -434,6 +452,13 @@ public ConnectionStatus getConnectionStatus() {
 	return fieldConnectionStatus;
 }
 
+public boolean isStatusConnected(){
+	if (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED){
+		return true;
+	} else {
+		return false;
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -694,7 +719,6 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 	dataSetController = null;
 	userMetaDbServer = null;
 	
-	getAsynchMessageManager().setVCellConnection(vcellConnection);
 	if (vcellConnection == null) {
 		return;
 	}
