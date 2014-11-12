@@ -6,13 +6,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.ExecutableException;
@@ -40,8 +38,7 @@ public class SgeProxy extends HtcProxy {
 	private final static String JOB_CMD_DELETE = "qdel";
 	private final static String JOB_CMD_STATUS = "qstat";
 	private final static String JOB_CMD_QACCT = "qacct";
-	private static final Logger lg = Logger.getLogger(SgeProxy.class);
-	private static int MAX_BATCH_JOBS = 25;
+
 	
 	public SgeProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
@@ -190,14 +187,22 @@ arid         undefined
 		}
 		SgeJobID sgeJobID = (SgeJobID)htcJobId;
 
+		HtcJobStatus iStatus = null;
+
 		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
 		if (!SGE_HOME.endsWith("/")){
 			SGE_HOME += "/";
 		}
 
 		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", Long.toString(sgeJobID.getSgeJobNumber())};
-		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
+		
+		
+		//CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
+		
+		//CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])), new int[] { 0, 153 });
 
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, qstat_cmd), new int[] { 0, 1 });
+		
 		HashMap<String,String> outputMap = parseOutput(commandOutput);
 		
 		if (outputMap == null){
@@ -245,7 +250,10 @@ denied: job "6894" does not exist
 
 		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, Long.toString(sgeJobID.getSgeJobNumber())};
 		try {
-			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
+			CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardOut = commandOutput.getStandardOutput();
 			if (exitStatus!=null && exitStatus.intValue()==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
@@ -280,9 +288,9 @@ denied: job "6894" does not exist
 		    sw.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
 //			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
 
-			//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
+			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
 
-		    //long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
+		    long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
 		    sw.append("#$ -j y\n");
 //		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 		    sw.append("# -cwd\n");
@@ -373,7 +381,7 @@ denied: job "6894" does not exist
 			SGE_HOME += "/";
 		}
 		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
-		CommandOutput commandOutput = commandService.command(completeCommand);
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 		
 		return new SgeJobID(jobid);
@@ -399,7 +407,7 @@ denied: job "6894" does not exist
 		if (!SGE_HOME.endsWith("/")){
 			SGE_HOME += "/";
 		}
-		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "-u ", getHtcUser(),"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
+		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "|", "grep", getHtcUser(),"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
 		CommandOutput commandOutput = commandService.command(cmd);
 		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
 		
@@ -415,26 +423,26 @@ denied: job "6894" does not exist
 
 	@Override
 	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
-		if (htcJobIDs.size() < MAX_BATCH_JOBS) {
-			if (lg.isTraceEnabled()) {
-				lg.trace("single batch " + htcJobIDs.size());
+		try{
+			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
+			for (HtcJobID htcJobID : htcJobIDs){
+				HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
+				if (htcJobInfo!=null){
+					jobInfoMap.put(htcJobID,htcJobInfo);
+				}
 			}
-			return getJobInfoBatch(htcJobIDs);
-		}
-		HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
-		Collection<Collection<HtcJobID>> batches = splitCollections(htcJobIDs, MAX_BATCH_JOBS);
-		for (Collection<HtcJobID> batch : batches) {
-			Map<HtcJobID, HtcJobInfo> b = getJobInfoBatch(batch);
-			if (lg.isTraceEnabled()) {
-				lg.trace("batch of " + batch.size());
+			return jobInfoMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if(e instanceof ExecutableException){
+				throw (ExecutableException)e;
+			}else{
+				throw new ExecutableException("Error getJobInfo: "+e.getMessage());
 			}
-			jobInfoMap.putAll(b);
 		}
-		return jobInfoMap;
 	}
 
-	public Map<HtcJobID,HtcJobInfo> getJobInfoBatch(Collection<HtcJobID> htcJobIDs) throws ExecutableException {
-		HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
+	public HtcJobInfo getJobInfo(HtcJobID htcJobID) throws ExecutableException {
 		Vector<String> cmdV = new Vector<String>();
 		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
 		if (!SGE_HOME.endsWith("/")){
@@ -443,84 +451,72 @@ denied: job "6894" does not exist
 		cmdV.add(SGE_HOME + JOB_CMD_STATUS);
 		cmdV.add("-f");
 		cmdV.add("-j");
-		StringBuilder jobList = new StringBuilder();
-		for (HtcJobID jid : htcJobIDs) {
-			//preload map with requested jobs. Found jobs will override later
-			jobInfoMap.put(jid, new HtcJobInfo(jid,false,null,null, null) );
-			
-			SgeJobID sjid = (SgeJobID) jid;
-			jobList.append(sjid.getSgeJobNumber());
-			jobList.append(','); //qstat ignores trailing comma, so no special logic required  
-		}
-		cmdV.add(jobList.toString());
+		cmdV.add(Long.toString(((SgeJobID)htcJobID).getSgeJobNumber()));
 		cmdV.add("-xml");
-		CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])));
 		String xmlString = commandOutput.getStandardOutput();
-		/**
-		 * 
-		 * <detailed_job_info  xmlns:xsd="http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11">
-		 *    <djob_info>
-		 *  	 <element>
-		 *  	    <JB_job_number>12345</JB_job_number>
-		 *  	    <JB_job_name>S_76915529_0_0</JB_job_name>
-		 *          <JB_stdout_path_list>
-		 *             <path_list>
-		 *                <PN_path>S_76915529_0_0.log</PN_path>
-		 *                <PN_host></PN_host>
-		 *                <PN_file_host></PN_file_host>
-		 *                <PN_file_staging>false</PN_file_staging>
-		 *             </path_list>
-		 *          </JB_stdout_path_list>
-		 *       </element>
-		 *    </djob_info>
-		 * </detailed_job_info>
-		 **/
-		Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
-		Element rootElement = qstatDoc.getRootElement();
-		Element dbJobInfoElement = rootElement.getChild("djob_info");
-		if(dbJobInfoElement == null){
-			return null;
-		}
-		@SuppressWarnings("unchecked")
-		List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
-		if(qstatInfoChildren == null){
-			return null;
-		}
-		for(Element jobInfoElement : qstatInfoChildren){
-			String jobID = jobInfoElement.getChildText("JB_job_number").trim();
-			String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
-			String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
-			@SuppressWarnings("unchecked")
-			List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
-			for(Element envSublist : envSublists){
-				if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
-					SgeJobID jid = new SgeJobID(jobID);
-					jobInfoMap.put(jid, new HtcJobInfo(jid,true,jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile) );
+		if (xmlString.contains("unknown_jobs")){
+			/**
+			 * <unknown_jobs  xmlns:xsd='http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11'>
+			 * 		<>
+			 * 			<ST_name>12345</ST_name>
+			 * 		</>
+			 * </unknown_jobs>
+			 **/
+			return new HtcJobInfo(htcJobID,false,null,null,null);
+		}else{
+			/**
+			 * 
+			 * <detailed_job_info  xmlns:xsd="http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11">
+			 *    <djob_info>
+			 *  	 <element>
+			 *  	    <JB_job_number>12345</JB_job_number>
+			 *  	    <JB_job_name>S_76915529_0_0</JB_job_name>
+			 *          <JB_stdout_path_list>
+			 *             <path_list>
+			 *                <PN_path>S_76915529_0_0.log</PN_path>
+			 *                <PN_host></PN_host>
+			 *                <PN_file_host></PN_file_host>
+			 *                <PN_file_staging>false</PN_file_staging>
+			 *             </path_list>
+			 *          </JB_stdout_path_list>
+			 *       </element>
+			 *    </djob_info>
+			 * </detailed_job_info>
+			 **/
+			Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
+			Element rootElement = qstatDoc.getRootElement();
+			Element dbJobInfoElement = rootElement.getChild("djob_info");
+			if(dbJobInfoElement == null){
+				return null;
+			}
+			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
+			if(qstatInfoChildren == null){
+				return null;
+			}
+			for(Element jobInfoElement : qstatInfoChildren){
+				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
+				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
+				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
+				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
+				for(Element envSublist : envSublists){
+					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
+						return new HtcJobInfo(new SgeJobID(jobID),true,jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile);
+					}
 				}
 			}
 		}
-		return jobInfoMap;
+		throw new RuntimeException("Error parsing job status for batch job id "+htcJobID.toDatabase());
 	}
 	
-	/**
-	 * split collection input into collection of collections, each of size or less
-	 * @param input
-	 * @param size
-	 * @return Collection of Collections containing elements of input
-	 */
-	public static <T> Collection<Collection<T> > splitCollections(Collection<T> input, int size) {
-		ArrayList<Collection<T> > rval = new ArrayList<Collection<T>>();
-		if (!input.isEmpty()) {
-			Iterator<T> iter = input.iterator();
-			while (iter.hasNext()) {
-				ArrayList<T> working = new ArrayList<T>();
-				rval.add(working);
-				for (int i = 0; i < size && iter.hasNext();i++) {
-					working.add(iter.next());
-				}
-			}
-		}
-		
-		return rval; 
+	public String[] getEnvironmentModuleCommandPrefix() {
+		ArrayList<String> ar = new ArrayList<String>();
+		ar.add("source");
+		ar.add("/etc/profile.d/modules.sh;");
+		ar.add("module");
+		ar.add("load");
+		ar.add(PropertyLoader.getProperty(PropertyLoader.sgeModulePath, "htc/sge")+";");
+		return ar.toArray(new String[0]);
 	}
+
 }

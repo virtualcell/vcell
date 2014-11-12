@@ -40,6 +40,8 @@ public class PropertyLoader {
 	public static final String htcUser						= record("vcell.htc.user",RequiredFor.NOT,ValueType.GEN);
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",RequiredFor.NOT,ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",RequiredFor.NOT,ValueType.GEN);
+	public static final String sgeModulePath				= record("vcell.htc.sge.module",RequiredFor.NOT,ValueType.GEN);
+	public static final String pbsModulePath				= record("vcell.htc.pbs.module",RequiredFor.NOT,ValueType.GEN);
 
 	public static final String compilerProperty				= record("vcell.c++.compiler",RequiredFor.NOT,ValueType.GEN);
 	public static final String linkerProperty				= record("vcell.c++.linker",RequiredFor.NOT,ValueType.GEN);
