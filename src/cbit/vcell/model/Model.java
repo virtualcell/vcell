@@ -934,7 +934,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			if(this.isEmpty()) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "RbmModelContainer is empty. No action needs to be taken.", Issue.SEVERITY_INFO));
+				issueList.add(new Issue(Model.this, issueContext, IssueCategory.InternalError, "RbmModelContainer is empty. No action needs to be taken.", Issue.SEVERITY_INFO));
 				return;
 			}
 			
@@ -942,34 +942,34 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				return;
 			}
 			if(molecularTypeList == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Molecular Type List is null", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmSpeciesTypesTableBad, "Molecular Type List is null", Issue.SEVERITY_ERROR));
 			} else if (!this.isEmpty() && molecularTypeList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Molecular Type List is empty", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmSpeciesTypesTableBad, "Molecular Type List is empty", Issue.SEVERITY_WARNING));
 			}else {
 				for (MolecularType entity : molecularTypeList) {
 					entity.gatherIssues(issueContext, issueList);
 				}
 			}
 			if(observableList == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Observable List is null", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmObservablesTableBad, "Observable List is null", Issue.SEVERITY_ERROR));
 			} else if (!this.isEmpty() && observableList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Observable List is empty", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmObservablesTableBad, "Observable List is empty", Issue.SEVERITY_WARNING));
 			} else {
 				for (RbmObservable entity : observableList) {
 					entity.gatherIssues(issueContext, issueList);
 				}
 			}
 			if(reactionRuleList == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Reaction Rule List is null", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmReactionRulesTableBad, "Reaction Rule List is null", Issue.SEVERITY_ERROR));
 			} else if (!this.isEmpty() && reactionRuleList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Reaction Rule List is empty", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmReactionRulesTableBad, "Reaction Rule List is empty", Issue.SEVERITY_WARNING));
 			} else {
 				for (ReactionRule entity : reactionRuleList) {
 					entity.gatherIssues(issueContext, issueList);
 				}
 			}
 			if(networkConstraints == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "Network Constraints is null", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, "Network Constraints is null", Issue.SEVERITY_ERROR));
 			} else {
 				networkConstraints.gatherIssues(issueContext, issueList);
 			}
@@ -1086,6 +1086,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}
 			}
 			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				if(!sc.hasSpeciesPattern()) {
+					continue;
+				}
 				if(!canDelete(mt, sc.getSpeciesPattern().getMolecularTypePatterns())) {
 					return false;
 				}

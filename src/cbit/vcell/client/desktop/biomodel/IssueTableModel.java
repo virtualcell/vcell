@@ -20,6 +20,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.VCDocument;
@@ -44,6 +45,8 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
 import cbit.vcell.model.ReactionStep.ReactionNameScope;
@@ -239,9 +242,29 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (source instanceof ReactionCombo) {
 				ReactionCombo rc = (ReactionCombo)source;
 				description = "App(" + rc.getReactionContext().getSimulationContext().getName() + ") / Specifications / Reactions";
+			} else if (source instanceof RbmModelContainer) {
+				IssueCategory ic = issue.getCategory();
+				switch(ic) {
+				case RbmSpeciesTypesTableBad:
+					description = "Model / Species Types";
+					break;
+				case RbmReactionRulesTableBad:
+					description = "Model / Reactions";
+					break;
+				case RbmObservablesTableBad:
+					description = "Model / Observables";
+					break;
+				case RbmNetworkConstraintsBad:
+					description = "Network Constrains";
+					break;
+				default:
+					description = "Model";
+					break;
+				}
+			} else if (source instanceof Model) {
+				description = "Model";
 			} else {
 				System.err.println("unknown source type in IssueTableModel.getSourceObjectPathDescription(): " + source.getClass());
-
 			}
 			return description;
 		}else if (vcDocument instanceof MathModel){
@@ -322,6 +345,12 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (object instanceof ReactionCombo) {
 				ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
 				description = rs.getReactionStep().getName();
+			} else if (object instanceof RbmModelContainer) {
+				RbmModelContainer mc = (RbmModelContainer)object;
+				description = "Rules validator";
+			} else if (object instanceof Model) {
+				Model m = (Model)object;
+				description = m.getName();
 			} else {
 				System.err.println("unknown object type in IssueTableModel.getSourceObjectDescription(): " + object.getClass());
 			}
