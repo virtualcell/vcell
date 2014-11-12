@@ -37,6 +37,30 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	
 	private static final String PROPERTY_NAME_NAME = "name";
 
+	private final class BioEventParameterPolicy implements ParameterPolicy, Serializable {
+		public boolean isUserDefined(LocalParameter localParameter) {
+			return (localParameter.getRole() == ROLE_UserDefined);
+		}
+
+		public boolean isExpressionEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		public boolean isNameEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		public boolean isUnitEditable(LocalParameter localParameter) {
+			return isUserDefined(localParameter);
+		}
+	}
+
+	private final class BioEventUnitSystemProvider implements UnitSystemProvider, Serializable {
+		public VCUnitSystem getUnitSystem() {
+			return getSimulationContext().getModel().getUnitSystem();
+		}
+	}
+
 	public class BioEventNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public BioEventNameScope(){
@@ -161,33 +185,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			durationExpression.bindExpression(BioEvent.this.parameterContext);
 		}
 	}
-	ParameterPolicy parameterPolicy = new ParameterPolicy(){
-
-		public boolean isUserDefined(LocalParameter localParameter) {
-			return (localParameter.getRole() == ROLE_UserDefined);
-		}
-
-		public boolean isExpressionEditable(LocalParameter localParameter) {
-			return true;
-		}
-
-		public boolean isNameEditable(LocalParameter localParameter) {
-			return true;
-		}
-
-		public boolean isUnitEditable(LocalParameter localParameter) {
-			return isUserDefined(localParameter);
-		}
-		
-	};
+	ParameterPolicy parameterPolicy = new BioEventParameterPolicy();
 	public final static int ROLE_UserDefined = 0;
 	
 	private BioEventNameScope nameScope = new BioEventNameScope();
-	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy, new UnitSystemProvider() {
-		public VCUnitSystem getUnitSystem() {
-			return getSimulationContext().getModel().getUnitSystem();
-		}
-	});
+	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy, new BioEventUnitSystemProvider());
 	private String name;
 	private Expression triggerExpression = null;
 	private Delay delay = null;
