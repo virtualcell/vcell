@@ -99,7 +99,7 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
  */
 public String toString() {
 	return "DataEvent: "
-		+"source="+getSource().toString()
+		+"source="+getSource()
 		+", jobID="
 		+ vcDataJobID
 		+ ", progress=\""
