@@ -933,6 +933,11 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 		
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+			if(this.isEmpty()) {
+				issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, "RbmModelContainer is empty. No action needs to be taken.", Issue.SEVERITY_INFO));
+				return;
+			}
+			
 			if(issueList == null) {
 				return;
 			}
