@@ -348,8 +348,10 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 		//
 		ModelTable.readRbmElement(con, model);
 		
-		for(SpeciesContext sc : model.getSpeciesContexts()) {
-			sc.parseSpeciesPatternString(model);
+		if(!model.getRbmModelContainer().isEmpty()) {
+			for(SpeciesContext sc : model.getSpeciesContexts()) {
+				sc.parseSpeciesPatternString(model);
+			}
 		}
 		
 		return model;
