@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Color;
+
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -18,6 +19,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRulePartic
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.util.VCellErrorMessages;
 @SuppressWarnings("serial")
@@ -230,6 +232,18 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	public static final String toHtmlWithTip(SpeciesContext sc) {
 		String text = sc.getName();
 		String htmlText = "Species: <b>" + text + "</b>";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static final String toHtml(ReactionRule rr) {
+		String text = rr.getName();
+		String htmlText = "Reaction Rule: <b>" + text + "</b>";
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
+	public static final String toHtmlWithTip(ReactionRule rr) {
+		String text = rr.getName();
+		String htmlText = "Reaction Rule: <b>" + text + "</b>";
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
 	}

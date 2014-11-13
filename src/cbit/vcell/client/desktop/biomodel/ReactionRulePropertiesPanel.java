@@ -35,8 +35,12 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -98,7 +102,6 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
-	
 	private class BioModelNodeEditableTree extends JTree {
 		@Override
 		public boolean isPathEditable(TreePath path) {
@@ -106,8 +109,9 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			return object instanceof BioModelNode;
 		}
 	}
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener {
-
+	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
+		TreeWillExpandListener
+	{
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == reactionRule) {
 				if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REACTANT_WARNING)) {
@@ -156,7 +160,26 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 
 		public void valueChanged(TreeSelectionEvent e) {
 		}
-		
+
+		@Override
+		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
+			boolean veto = false;
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent e) throws ExpandVetoException {
+			JTree tree = (JTree) e.getSource();
+			TreePath path = e.getPath();
+			boolean veto = false;
+			if(path.getParentPath() == null) {
+				veto = true;
+			}
+			if (veto) {
+				throw new ExpandVetoException(e);	// veto root colapse
+			}
+		}
 	}
 	
 	public ReactionRulePropertiesPanel() {
@@ -208,8 +231,10 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			reactantTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			ToolTipManager.sharedInstance().registerComponent(reactantTree);
 			reactantTree.addTreeSelectionListener(eventHandler);
+			reactantTree.addTreeWillExpandListener(eventHandler);
 			reactantTree.addMouseListener(eventHandler);
-			reactantTree.setRootVisible(false);
+			reactantTree.setLargeModel(true);
+			reactantTree.setRootVisible(true);
 
 			productTree = new BioModelNodeEditableTree();
 			productTreeModel = new ReactionRulePropertiesTreeModel(productTree, ReactionRuleParticipantType.Product);
@@ -231,8 +256,10 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			productTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 			ToolTipManager.sharedInstance().registerComponent(productTree);
 			productTree.addTreeSelectionListener(eventHandler);
+			productTree.addTreeWillExpandListener(eventHandler);
 			productTree.addMouseListener(eventHandler);
-			productTree.setRootVisible(false);
+			productTree.setLargeModel(true);
+			productTree.setRootVisible(true);
 			
 			Dimension minimumSize = new Dimension(100, 50);		//provide minimum sizes for the two components in the split pane
 			table.getEnclosingScrollPane().setMinimumSize(minimumSize);
@@ -252,13 +279,13 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 1.0;
 			gbc.fill = GridBagConstraints.BOTH;
-			JLabel label = new JLabel("Reactants");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
-			p.add(label);
-			p.setBackground(lableColor);
-			p.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			reactantPanel.add(p, gbc);
+//			JLabel label = new JLabel("Reactants");
+//			label.setFont(label.getFont().deriveFont(Font.BOLD));
+//			JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
+//			p.add(label);
+//			p.setBackground(lableColor);
+//			p.setBorder(GuiConstants.TAB_PANEL_BORDER);
+//			reactantPanel.add(p, gbc);
 			
 			gridy ++;
 			gbc = new GridBagConstraints();
@@ -279,13 +306,13 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			gbc.gridy = gridy;
 			gbc.weightx = 1.0;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			label = new JLabel("Products");
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			p = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
-			p.add(label);
-			p.setBackground(lableColor);
-			p.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			productPanel.add(p, gbc);
+//			label = new JLabel("Products");
+//			label.setFont(label.getFont().deriveFont(Font.BOLD));
+//			p = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 2));
+//			p.add(label);
+//			p.setBackground(lableColor);
+//			p.setBorder(GuiConstants.TAB_PANEL_BORDER);
+//			productPanel.add(p, gbc);
 			
 			gridy ++;
 			gbc = new GridBagConstraints();

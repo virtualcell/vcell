@@ -56,10 +56,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -229,7 +232,9 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 
 	}
 	
-	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener, TreeSelectionListener {
+	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener, TreeSelectionListener,
+	TreeWillExpandListener
+	{
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			Object source = e.getSource();
 			if (source == nameTextField) {
@@ -293,6 +298,25 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
 				changeFreeTextAnnotation();
+			}
+		}
+		@Override
+		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
+			boolean veto = false;
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent e) throws ExpandVetoException {
+			JTree tree = (JTree) e.getSource();
+			TreePath path = e.getPath();
+			boolean veto = false;
+			if(path.getParentPath() == null) {
+				veto = true;
+			}
+			if (veto) {
+				throw new ExpandVetoException(e);
 			}
 		}
 	}
@@ -366,8 +390,6 @@ private void initialize() {
 		speciesPropertiesTree.setCellEditor(dtce);
 		speciesPropertiesTree.setEditable(false);
 		
-		
-		
 //		speciesPropertiesTree.setCellRenderer(new RbmTreeCellRenderer());
 //		speciesPropertiesTree.setCellEditor(new RbmTreeCellEditor(speciesPropertiesTree));
 		int rowHeight = speciesPropertiesTree.getRowHeight();
@@ -378,10 +400,10 @@ private void initialize() {
 		speciesPropertiesTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(speciesPropertiesTree);
 		speciesPropertiesTree.addTreeSelectionListener(eventHandler);
+		speciesPropertiesTree.addTreeWillExpandListener(eventHandler);
 		speciesPropertiesTree.addMouseListener(eventHandler);
 		speciesPropertiesTree.setLargeModel(true);
 		speciesPropertiesTree.setRootVisible(true);
-
 		
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
