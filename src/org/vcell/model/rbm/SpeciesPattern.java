@@ -62,7 +62,39 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			name += "(" + molecularComponentPattern.getMolecularComponent().getName() + ")";
 			return "<html><b>" + name + "</b></html>";
 		}
-		public String toHtmlStringLong(SpeciesPattern spThat, MolecularTypePattern mtpThat, MolecularComponent mcThat, int colorIndex) {
+		// we only show the component we want to bond with
+		public String toHtmlStringLong(SpeciesPattern sp, int colorIndex) 
+		{
+			String strBondType = molecularTypePattern.getMolecularType().getName() + "(" + molecularTypePattern.getIndex() + ")";
+			String strBondComponent = molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex() + ")";
+			System.out.println("Linking to " + strBondType + strBondComponent);
+			
+			Color c = RbmTreeCellRenderer.bondHtmlColors[colorIndex];
+			String colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
+			String colorTextEnd = "</font>";
+			String str = "";
+			for(int i = 0; i < sp.getMolecularTypePatterns().size(); i++) {
+				if(i != 0) str += ".";
+				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
+				if(mtp.equals(molecularTypePattern)) {		// our component is in this molecular type pattern
+					str += "<b>" + mtp.getMolecularType().getName() + "</b>(";
+					for(int j = 0; j < mtp.getMolecularType().getComponentList().size(); j++) {
+						MolecularComponent mc = mtp.getMolecularType().getComponentList().get(j);
+						if(mc.equals(molecularComponentPattern.getMolecularComponent())) {
+							str += colorTextStart + "<b>" + mc.getName() + "</b>" + colorTextEnd;
+							break;		// found it, don't need to look at other components
+						}
+					}
+					str += ")";
+				} else {
+					str += mtp.getMolecularType().getName() + "()";
+				}
+			}
+			return "<html>Bond to " + str + "</html>";
+		}
+		// here we show both component - the one we want to bond and the one we want to bond with
+		public String toHtmlStringLong(SpeciesPattern spThat, MolecularTypePattern mtpThat, MolecularComponent mcThat, int colorIndex) 
+		{
 			// "That" is the molecular type pattern / component we clicked on
 			String strThatType = mtpThat.getMolecularType().getName() + "(" + mtpThat.getIndex() + ")";
 			String strThatComponent = mcThat.getName() + "(" + mcThat.getIndex() + ")";

@@ -576,7 +576,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				} else {
 					index = sp.nextBondId();
 				}
-				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
+//				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
+				itemMap.put(b.toHtmlStringLong(sp, index), b);
 			}
 		}
 		for(String name : itemMap.keySet()) {
