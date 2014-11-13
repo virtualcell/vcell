@@ -37,8 +37,11 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -63,8 +66,10 @@ import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener {
-
+	
+	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
+		TreeWillExpandListener
+	{
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == observable) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
@@ -111,7 +116,26 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 		public void valueChanged(TreeSelectionEvent e) {
 		}
-		
+
+		@Override
+		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
+			boolean veto = false;
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent e) throws ExpandVetoException {
+			JTree tree = (JTree) e.getSource();
+			TreePath path = e.getPath();
+			boolean veto = false;
+			if(path.getParentPath() == null) {
+				veto = true;
+			}
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
 	}
 	
 	private JTree observableTree = null;
@@ -269,8 +293,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		observableTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(observableTree);
 		observableTree.addTreeSelectionListener(eventHandler);
+		observableTree.addTreeWillExpandListener(eventHandler);
 		observableTree.addMouseListener(eventHandler);
 		observableTree.setLargeModel(true);
+		observableTree.setRootVisible(true);
 		
 		setLayout(new GridBagLayout());
 		

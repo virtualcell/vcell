@@ -29,8 +29,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -46,7 +49,9 @@ import cbit.vcell.desktop.BioModelNode;
 
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener {
+	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
+		TreeWillExpandListener
+	{
 
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == molecularType) {
@@ -88,7 +93,21 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 
 		public void valueChanged(TreeSelectionEvent e) {
 		}
-		
+
+		@Override
+		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
+			boolean veto = false;
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
+		@Override
+		public void treeWillCollapse(TreeExpansionEvent e) throws ExpandVetoException {
+			boolean veto = true;	// we don't want to collapse any of this
+			if (veto) {
+				throw new ExpandVetoException(e);
+			}
+		}
 	}
 	
 	private JTree molecularTypeTree = null;
@@ -172,7 +191,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		ToolTipManager.sharedInstance().registerComponent(molecularTypeTree);
 		molecularTypeTree.addTreeSelectionListener(eventHandler);
+		molecularTypeTree.addTreeWillExpandListener(eventHandler);
 		molecularTypeTree.addMouseListener(eventHandler);
+		molecularTypeTree.setLargeModel(true);
+		molecularTypeTree.setRootVisible(true);
 		
 		setLayout(new GridBagLayout());
 		
