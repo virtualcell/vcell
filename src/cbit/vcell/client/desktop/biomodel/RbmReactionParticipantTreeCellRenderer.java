@@ -14,6 +14,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 
 @SuppressWarnings("serial")
@@ -41,7 +42,12 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 			String text = null;
 			Icon icon = null;
 			String toolTip = null;
-			if (userObject instanceof ReactionRuleParticipantLocal) {
+			if (userObject instanceof ReactionRule) {
+				ReactionRule rr = (ReactionRule) userObject;
+				text = toHtml(rr);
+				toolTip = toHtmlWithTip(rr);
+				icon = VCellIcons.rbmMolecularComponentIcon;
+			} else if (userObject instanceof ReactionRuleParticipantLocal) {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) userObject;
 				text = toHtml(rrp,true);
 				toolTip = toHtmlWithTip(rrp,true);
