@@ -783,28 +783,29 @@ private void updateInterface() {
 					speciesPropertiesTree.scrollPathToVisible(path);	// this doesn't seem to work ?
 				}
 			});
-		} else if(selectedUserObject instanceof MolecularComponentPattern) {
-			MolecularComponentPattern mcp = (MolecularComponentPattern) selectedUserObject;
-			Object parentUserObject = parentNode.getUserObject();
-			MolecularTypePattern mtp = (MolecularTypePattern)parentUserObject;
-			mtp.removeMolecularComponentPattern(mcp);
-			System.out.println("deleting MolecularComponentPattern " + mcp.getMolecularComponent().getName());
-			parent = parentNode.getParent();
-			parentNode = (BioModelNode) parent;
-			parentUserObject = parentNode.getUserObject();
-			SpeciesContext sc = (SpeciesContext)parentUserObject;
-			SpeciesPattern sp = sc.getSpeciesPattern();
-			if(!sp.getMolecularTypePatterns().isEmpty()) {
-				sp.resolveBonds();
-			}
-			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, sc);
-			speciesPropertiesTree.setSelectionPath(path);
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					speciesPropertiesTreeModel.populateTree();
-					speciesPropertiesTree.scrollPathToVisible(path);	// this doesn't seem to work ?
-				}
-			});
+// We should not delete components of species, we always must have them all
+//		} else if(selectedUserObject instanceof MolecularComponentPattern) {
+//			MolecularComponentPattern mcp = (MolecularComponentPattern) selectedUserObject;
+//			Object parentUserObject = parentNode.getUserObject();
+//			MolecularTypePattern mtp = (MolecularTypePattern)parentUserObject;
+//			mtp.removeMolecularComponentPattern(mcp);
+//			System.out.println("deleting MolecularComponentPattern " + mcp.getMolecularComponent().getName());
+//			parent = parentNode.getParent();
+//			parentNode = (BioModelNode) parent;
+//			parentUserObject = parentNode.getUserObject();
+//			SpeciesContext sc = (SpeciesContext)parentUserObject;
+//			SpeciesPattern sp = sc.getSpeciesPattern();
+//			if(!sp.getMolecularTypePatterns().isEmpty()) {
+//				sp.resolveBonds();
+//			}
+//			final TreePath path = speciesPropertiesTreeModel.findObjectPath(null, sc);
+//			speciesPropertiesTree.setSelectionPath(path);
+//			SwingUtilities.invokeLater(new Runnable() {
+//				public void run() {
+//					speciesPropertiesTreeModel.populateTree();
+//					speciesPropertiesTree.scrollPathToVisible(path);	// this doesn't seem to work ?
+//				}
+//			});
 		} else {
 			System.out.println("deleting " + selectedUserObject.toString());
 		}
@@ -906,7 +907,7 @@ private void updateInterface() {
 				bDelete = true;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				manageComponentPattern(speciesPropertiesTreeModel, speciesPropertiesTree, selectedNode, userObject);
-				bDelete = true;
+				bDelete = false;	// can't delete components, we need to always have them all
 			} else if (userObject instanceof MolecularComponent) {
 				getEditMenuItem().setText("Edit Pattern");
 				bEdit = true;
@@ -914,7 +915,6 @@ private void updateInterface() {
 				System.out.println("Unexpected object type: " + userObject);
 			}
 		}
-//		popupMenu.removeAll();
 		// everything can be renamed
 		if (bRename) {
 			popupMenu.add(getRenameMenuItem());
@@ -945,7 +945,8 @@ private void updateInterface() {
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
 			List<String> itemList = new ArrayList<String>();
-			itemList.add("Any");
+			// Any is not an option for species			
+//			itemList.add("Any");
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 				String name = csd.getName();
 				itemList.add(name);
@@ -997,11 +998,12 @@ private void updateInterface() {
 		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
 		
 		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
-		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
-		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		// possible and exists are not options here
+//		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
+//		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
 		itemMap.put(noneString, null);
-		itemMap.put(existsString, null);
-		itemMap.put(possibleString, null);
+//		itemMap.put(existsString, null);
+//		itemMap.put(possibleString, null);
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
@@ -1026,31 +1028,31 @@ private void updateInterface() {
 					BondType btBefore = mcp.getBondType();
 					if(name.equals(noneString)) {
 						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							// change the partner to none
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.None);
 							mcp.getBond().molecularComponentPattern.setBond(null);
 						}
 						mcp.setBondType(BondType.None);
 						mcp.setBond(null);
 						treeModel.populateTree();
-					} else if(name.equals(existsString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Exists);
-						mcp.setBond(null);
-						treeModel.populateTree();
-					} else if(name.equals(possibleString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Possible);
-						mcp.setBond(null);
-						treeModel.populateTree();
+//					} else if(name.equals(existsString)) {
+//						if(btBefore == BondType.Specified) {	// specified -> not specified
+//							// change the partner to possible
+//							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+//							mcp.getBond().molecularComponentPattern.setBond(null);
+//						}
+//						mcp.setBondType(BondType.Exists);
+//						mcp.setBond(null);
+//						treeModel.populateTree();
+//					} else if(name.equals(possibleString)) {
+//						if(btBefore == BondType.Specified) {	// specified -> not specified
+//							// change the partner to possible
+//							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+//							mcp.getBond().molecularComponentPattern.setBond(null);
+//						}
+//						mcp.setBondType(BondType.Possible);
+//						mcp.setBond(null);
+//						treeModel.populateTree();
 					} else {
 						if (btBefore != BondType.Specified) {
 							// if we go from a non-specified to a specified we need to find the next available
@@ -1060,8 +1062,8 @@ private void updateInterface() {
 							mcp.setBondId(bondId);
 						} else {
 							// specified -> specified
-							// change the old partner to possible, continue using the bond id
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							// change the old partner to none, continue using the bond id
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.None);
 							mcp.getBond().molecularComponentPattern.setBond(null);
 						}
 						mcp.setBondType(BondType.Specified);
