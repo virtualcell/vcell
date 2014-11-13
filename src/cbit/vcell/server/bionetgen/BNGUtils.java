@@ -12,11 +12,13 @@ package cbit.vcell.server.bionetgen;
 import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 
 import cbit.vcell.resource.LicenseManager;
@@ -76,9 +78,9 @@ public BNGUtils() {
  * Insert the method's description here.
  * Creation date: (6/23/2005 3:57:30 PM)
  */
-public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
+public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
 	if (executable != null) {
-		throw new RuntimeException("You can only run BNG one at a time!");
+		throw new BNGException("You can only run BNG one at a time!");
 	}
 
 	BNGOutput bngOutput = null;
@@ -107,7 +109,6 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		inputFile.print(bngRules.getInputString());
 		inputFile.close();
 		
-		System.out.println("-------------Starting BNG ...-------------------------------");
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
 		executable = new org.vcell.util.Executable(cmd);
@@ -133,16 +134,15 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		}		
 		
 		bngOutput = new BNGOutput(stdoutString, filenames.toArray(new String[0]), filecontents.toArray(new String[0]));
-		System.out.println("--------------Finished BNG----------------------------");
 		
-	} catch(org.vcell.util.ExecutableException ex ){
+	} catch(ExecutableException | IOException ex ){
 		if (lg.isEnabledFor(Level.WARN) ) {
 			lg.warn("error executable BNG", ex); 
 		}
 		if (executable.getStderrString().trim().length() == 0) {
-			throw ex;
+			throw new BNGException("Error executing BNG", ex); 
 		}
-		throw new org.vcell.util.ExecutableException(executable.getStderrString(),ex);
+		throw new BNGException(executable.getStderrString(),ex);
 	} finally {
 		executable = null;		
 		if (lg.getEffectiveLevel( ).isGreaterOrEqual(Level.INFO) ) {
@@ -171,8 +171,9 @@ public static synchronized void initializeLicensedLibrary(Component parent) thro
 /**
  * Insert the method's description here.
  * Creation date: (9/19/2006 11:36:49 AM)
+ * @throws IOException 
  */
-private static synchronized void initialize() throws Exception {
+private static synchronized void initialize() throws IOException {
 	File bngHome = new File(ResourceUtil.getVcellHome(), "BioNetGen");
 	if (!bngHome.exists()) {
 		bngHome.mkdirs();
