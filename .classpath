@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jta.jar"/>
-	<classpathentry kind="lib" path="lib/copasi_build30.jar"/>
 	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="/VCell_Rest/lib/gson-2.2.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar">
 		<attributes>
@@ -17,6 +16,11 @@
 	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
+	<classpathentry kind="lib" path="testlib/commons-cli-1.2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/VCellTrunkMerge/testlib/commons-cli-1.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.3-freshTrunk-7-21/nativelibs/win64"/>
@@ -81,11 +85,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/jhdfobj.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/mongo-2.8.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ucp.jar"/>
-	<classpathentry kind="lib" path="lib/ucpdemos.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk15on-147.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/sshj-0.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jlibsedml.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmathml.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.8.1.jar"/>
+	<classpathentry kind="lib" path="testlib/copasi_build30.jar"/>
+	<classpathentry kind="lib" path="testlib/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

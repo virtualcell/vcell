@@ -31,6 +31,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
@@ -69,6 +70,9 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGOutput bngOutput = null;
 		try {
 			bngOutput = BNGUtils.executeBNG(bngInput);
+		} catch (RuntimeException ex) {
+			ex.printStackTrace(System.out);
+			throw ex; //rethrow without losing context
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
 			throw new RuntimeException(ex.getMessage());
