@@ -17,6 +17,7 @@ package cbit.vcell.solver;
  * Creation date: (4/18/00 12:33:33 AM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class SolverException extends Exception implements java.io.Serializable {
 /**
  * Constructs a <code>SolverException</code> with no specified detail message. 
@@ -31,5 +32,13 @@ public SolverException() {
  */
 public SolverException(String s) {
 	super(s);
+}
+/**
+ * see {@link Exception#Exception(String, Throwable)}
+ * @param message
+ * @param e
+ */
+public SolverException(String message, Exception e) {
+	super(message,e);
 }
 }

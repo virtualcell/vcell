@@ -11,7 +11,6 @@ import org.vcell.sbml.SBMLSolver;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
-import org.vcell.sbml.SolverException;
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
@@ -34,6 +33,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -41,7 +41,6 @@ import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.MathTestingUtilities;
-import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
@@ -123,6 +122,10 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    SimulationContext simContext = bioModel.getSimulationContext(0);
 		    MathMapping mathMapping = simContext.createNewMathMapping();
 		    MathDescription mathDesc = mathMapping.getMathDescription();
+		    String vcml = mathDesc.getVCML();
+		    try (PrintWriter pw = new PrintWriter("vcmlTrace.txt")) {
+		    	pw.println(vcml);
+		    }
 		    simContext.setMathDescription(mathDesc);
 		    SimulationVersion simVersion =
 		        new SimulationVersion(
@@ -356,9 +359,12 @@ public class VCellSBMLSolver implements SBMLSolver {
 		    outputStream.close();
 		    
 		    return outputFile;
+		}catch (RuntimeException e){
+			e.printStackTrace(System.out);
+			throw e; //rethrow without losing context
 		}catch (Exception e){
 			e.printStackTrace(System.out);
-			throw new SolverException(e.getMessage());
+			throw new SolverException(e.getMessage(),e);
 		}
 	}
 

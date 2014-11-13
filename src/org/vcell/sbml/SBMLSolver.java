@@ -13,6 +13,8 @@ package org.vcell.sbml;
 import java.io.File;
 import java.io.IOException;
 
+import cbit.vcell.solver.SolverException;
+
 public interface SBMLSolver {
 	public File solve(String filePrefix, File outDir, String sbmlText, SimSpec testSpec) throws IOException, SolverException, SbmlException;
 	public String getResultsFileColumnDelimiter();
