@@ -448,21 +448,18 @@ private void checkMolecularTypeConsistency(IssueContext issueContext, List<Issue
 }
 
 private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueList, SpeciesPattern sp) {
-	if(sp.getMolecularTypePatterns().size() == 0) {
-		return;		// is this even possible??
+
+	if(sp.getMolecularTypePatterns().size() < 2) {
+		return;
 	}
-	if(sp.getMolecularTypePatterns().size() == 1) {
-		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-		if(mtp.getComponentPatternList().size() < 2) {
-			return;		// not enough types / components to form at least one bond bonds
+	int numberOfMolecularTypeCandidates = 0;
+	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+		if(mtp.getComponentPatternList().size() > 0) {
+			numberOfMolecularTypeCandidates++;
 		}
 	}
-	int numberOfComponents = 0;
-	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-		numberOfComponents += mtp.getComponentPatternList().size();
-	}
-	if(numberOfComponents < 2) {
-		return;		// not enough components to establish bonds
+	if(numberOfMolecularTypeCandidates < 2) {
+		return;		// we need at least 2 molecular types with at least 1 component each
 	}
 	
 	boolean atLeastOneBad = false;
