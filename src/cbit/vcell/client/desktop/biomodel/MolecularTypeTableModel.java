@@ -106,19 +106,29 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					getModel().getRbmModelContainer().addMolecularType(tempMolecularType);
 				} else {						// change it
 					ourMt.setName(tempMolecularType.getName());
-					// the only thing we allow here is to add components and states
-					// molecularType.setComponentList(newMolecularType.getComponentList());
+					// here we add components
 					for(MolecularComponent tempMc : tempMolecularType.getComponentList()) {
 						if(ourMt.getMolecularComponent(tempMc.getName()) == null) {	// component not found in the existing molecular type, it's a new component
 							ourMt.addMolecularComponent(tempMc);	// add the new component (and its states, if any)
 							getModel().getRbmModelContainer().adjustSpeciesContextPatterns(ourMt, tempMc);
-						} else {
-							// check for new states for the existing components
+						} else {		// existing component being modified (by adding or removing states)
+							// check for new states added to the existing components
 							MolecularComponent ourMc = ourMt.getMolecularComponent(tempMc.getName());
 							for(ComponentStateDefinition tempCsd : tempMc.getComponentStateDefinitions()) {
 								if(ourMc.getComponentStateDefinition(tempCsd.getName()) == null) {	// state not found in the existing component, it's a new state
 									ourMc.addComponentStateDefinition(tempCsd);
 								}
+							}
+							// TODO: check for deleted states from existing components
+							
+						}
+					}
+					// TODO: here we delete components
+					for(MolecularComponent ourMc : ourMt.getComponentList()) {
+						if(tempMolecularType.getMolecularComponent(ourMc.getName()) == null) {
+							// component has to go from our molecular type and from everywhere else where it's being used
+							if(getModel().getRbmModelContainer().delete(ourMt, ourMc) == true) {
+								ourMt.removeMolecularComponent(ourMc);
 							}
 						}
 					}

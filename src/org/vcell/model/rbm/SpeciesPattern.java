@@ -13,10 +13,11 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.VCEntity;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
-public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource {
+public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource, VCEntity {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
 	private List<MolecularTypePattern> molecularTypePatterns = new ArrayList<MolecularTypePattern>();
 	
@@ -312,5 +313,15 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 				entity.gatherIssues(issueContext, issueList);
 			}
 		}
+	}
+
+	private static final String typeName = "Species Pattern";
+	@Override
+	public String getEntityName() {
+		return toString();
+	}
+	@Override
+	public String getEntityTypeName() {
+		return typeName;
 	}
 }

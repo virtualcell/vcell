@@ -47,6 +47,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCEntity;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
@@ -68,6 +69,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
+import cbit.vcell.xml.sbml_transform.Pair;
 @SuppressWarnings("serial")
 public class Model implements Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, Serializable, ScopedSymbolTable, IssueSource {
 	
@@ -1027,34 +1029,47 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 
+		public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+			for(ReactionRule rr : getReactionRuleList()) {
+				rr.findComponentUsage(mt, mc, usedHereList);
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				sc.findComponentUsage(mt, mc, usedHereList);
+				}
+			for(RbmObservable o : getObservableList()) {
+				o.findComponentUsage(mt, mc, usedHereList);
+			}
+		}
+		
 		public boolean isDeleteAllowed(MolecularType mt, MolecularComponent mc) {
 			for(ReactionRule rr : getReactionRuleList()) {
 				for(ProductPattern pp : rr.getProductPatterns()) {
-					if(!canDelete(mt, mc, pp.getSpeciesPattern().getMolecularTypePatterns())) {
+					if(!canDelete(mt, mc, pp.getSpeciesPattern().getMolecularTypePatterns(), false)) {
 						return false;
 					}
 				}
 				for(ReactantPattern rp : rr.getReactantPatterns()) {
-					if(!canDelete(mt, mc, rp.getSpeciesPattern().getMolecularTypePatterns())) {
+					if(!canDelete(mt, mc, rp.getSpeciesPattern().getMolecularTypePatterns(), false)) {
 						return false;
 					}
 				}
 			}
 			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
-				if(!canDelete(mt, mc, sc.getSpeciesPattern().getMolecularTypePatterns())) {
+//				if(!canDelete(mt, mc, sc.getSpeciesPattern().getMolecularTypePatterns(), true)) {	// can delete if no bonds
+				if(!canDelete(mt, mc, sc.getSpeciesPattern().getMolecularTypePatterns(), false)) {	// for now we don't allow deletion as long as it's in use
 					return false;
 				}
 			}
 			for(RbmObservable o : getObservableList()) {
 				for(SpeciesPattern sp : o.getSpeciesPatternList()) {
-					if(!canDelete(mt, mc, sp.getMolecularTypePatterns())) {
+					if(!canDelete(mt, mc, sp.getMolecularTypePatterns(),false)) {
 						return false;
 					}
 				}
 			}
 			return true;
 		}
-		private boolean canDelete(MolecularType mt, MolecularComponent mc, List<MolecularTypePattern> mtpList) {
+		private boolean canDelete(MolecularType mt, MolecularComponent mc, List<MolecularTypePattern> mtpList, boolean keepOnlyIfBonds) {
 			for(MolecularTypePattern mtp : mtpList) {
 				MolecularType mt1 = mtp.getMolecularType();
 				if(mt.getName().equals(mt1.getName())) {
@@ -1064,12 +1079,23 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 							continue;
 						}
 						if(mcp.getMolecularComponent().getName().equals(mc.getName())) {	// found mc in use, means we can't delete it
-							return false;
+							if(keepOnlyIfBonds == false) {
+								return false;
+							} else {
+								if(mcp.getBond() != null) {
+									return false;		// can't delete because it has bonds
+								}
+							}
 						}
 					}
 				}
 			}
 			return true;
+		}
+		// deletes the molecular component from everywhere it's being used
+		public boolean delete(MolecularType mt, MolecularComponent mc) {
+			
+			return false;
 		}
 
 		public boolean isDeleteAllowed(MolecularType mt) {
