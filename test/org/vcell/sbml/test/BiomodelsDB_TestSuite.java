@@ -211,7 +211,6 @@ public class BiomodelsDB_TestSuite {
 				}
 			} //end command line processing 
 			
-			removeToxic(modelIDs);
 			PropertyLoader.loadProperties();
 			/**
 			 * example properties
@@ -228,6 +227,7 @@ public class BiomodelsDB_TestSuite {
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
+				removeToxic(modelIDs, printWriter);
 				for (BiomodelsNetEntry modelID : modelIDs){
 
 
@@ -550,14 +550,23 @@ public class BiomodelsDB_TestSuite {
 		System.exit(0);
 	}
 	
-	private static void removeToxic(Set<BiomodelsNetEntry> models) {
-		
+	/**
+	 * remove models known to crash JVM due to libSBML dll error
+	 * @param models set to remove from
+	 * @param note place to record removal so we don't forget
+	 */
+	private static void removeToxic(Collection<BiomodelsNetEntry> models, PrintWriter note) {
 		int toxic[] = {516}; //models known to crash libsbml ...
-		for (int t : toxic) {
-			BiomodelsNetEntry bne = new BiomodelsNetEntry(t);
-			models.remove(bne);
+		if (toxic.length > 0) {
+			note.print("Removing models which crash JVM due to libsbml errors:  ");
+			for (int t : toxic) {
+				BiomodelsNetEntry bne = new BiomodelsNetEntry(t);
+				note.print(bne);
+				note.print(", ");
+				models.remove(bne);
+			}
+			note.println( );
 		}
-		
 	}
 
 	public static ODESolverResultSet readResultFile(File resultFile, String delimiter) throws IOException{
