@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -27,6 +28,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCEntity;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -37,9 +39,11 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.xml.sbml_transform.Pair;
 
-public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener, IssueSource {
-	
+public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener,
+	IssueSource, VCEntity
+	{
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
 
@@ -587,4 +591,50 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 
 	}
 
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+		for(ProductPattern pp : getProductPatterns()) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {			// we don't care about these
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {		// found mc in use
+							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+						}
+					}
+				}
+			}
+		}
+		for(ReactantPattern rp : getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {
+							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static final String typeName = "Reaction Rule";
+	@Override
+	public String getEntityName() {
+		return getName();
+	}
+	@Override
+	public String getEntityTypeName() {
+		return typeName;
+	}
+
 }
+
