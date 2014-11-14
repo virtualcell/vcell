@@ -21,9 +21,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -41,11 +47,19 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.util.VCEntity;
 import org.vcell.util.document.PropertyConstants;
+import org.vcell.util.gui.DialogUtils;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.xml.sbml_transform.Pair;
 
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
@@ -164,7 +178,35 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;
 			Object userObject = parentNode.getUserObject();
 			if (userObject instanceof MolecularType) {
-				((MolecularType) userObject).removeMolecularComponent(molecularComponent);
+				MolecularType molecularType = (MolecularType) userObject;
+				if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(molecularType, molecularComponent)) {
+					
+					// TODO: replace with Map<String, Pair<VCEntity, SpeciesPattern>> usedHereMap = 
+					//      to eliminate multiple identical entries
+					List<Pair<VCEntity, SpeciesPattern>> usedHereList = new ArrayList<Pair<VCEntity, SpeciesPattern>>();
+					bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, molecularComponent, usedHereList);
+					String errMsg = "Component '" + molecularComponent + "' cannot be deleted because it's already being used by:";
+					final int MaxListSize = 8;
+					for(int i=0; i<usedHereList.size(); i++) {
+						if(i>MaxListSize) {
+							errMsg += "<br> ... and more.";
+							break;
+						}
+						Pair<VCEntity, SpeciesPattern> o = usedHereList.get(i);
+						VCEntity e = o.one;
+						SpeciesPattern sp = o.two;
+						errMsg += "<br> - " + e.getEntityTypeName().toLowerCase() + " <b>" + e.getEntityName() + "</b>";
+						errMsg += ", " + sp.getEntityTypeName().toLowerCase() + " " + " <b>" + sp.getEntityName() + "</b>";
+					}
+					errMsg = "<html>" + errMsg + "</html>";
+					DialogUtils.showErrorDialog(this.getParent().getParent(), errMsg);
+					return;
+				}
+				// keep this code in sync with MolecularTypeTableModel.setValueAt
+				// TODO: delete() needs to be implemented
+				if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
+					molecularType.removeMolecularComponent(molecularComponent);
+				}
 			}
 		} else if (selectedUserObject instanceof ComponentStateDefinition) {
 			ComponentStateDefinition componentState = (ComponentStateDefinition) selectedUserObject;

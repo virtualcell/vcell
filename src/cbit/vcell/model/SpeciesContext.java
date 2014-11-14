@@ -42,6 +42,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.VCEntity;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.Expression;
@@ -49,9 +50,12 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.sbml_transform.Pair;
 
 @SuppressWarnings("serial")
-public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject, IssueSource {
+public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
+	IssueSource, VCEntity
+{
 	private KeyValue key = null;
 
 	private transient Model model = null;
@@ -483,6 +487,34 @@ private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueL
 		IssueSource parent = issueContext.getContextObject();
 		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 	}
+}
+public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+	if(!hasSpeciesPattern()) {
+		return;
+	}
+	SpeciesPattern sp = getSpeciesPattern();
+	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+		if(mtp.getMolecularType() == mt) {
+			List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+			for (MolecularComponentPattern mcp : componentPatterns) {
+				if(mcp.getMolecularComponent() == mc) {		// here all components are always in use
+					if(mcp.getBond() != null) {				// we only care about the components with a bond
+						usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+					}
+				}
+			}
+		}
+	}
+}
+
+private static final String typeName = "Species";
+@Override
+public String getEntityName() {
+	return getName();
+}
+@Override
+public String getEntityTypeName() {
+	return typeName;
 }
 
 

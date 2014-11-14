@@ -7,6 +7,7 @@ import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -23,6 +24,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.VCEntity;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.parser.Expression;
@@ -30,8 +32,11 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.sbml_transform.Pair;
 
-public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener, IssueSource {
+public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener,
+	IssueSource, VCEntity
+{
 	public static enum ObservableType {
 		Molecules,
 		Species;
@@ -314,6 +319,34 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				}
 			}
 		}
+	}
+	
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+		for(SpeciesPattern sp : getSpeciesPatternList()) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {			// we don't care about these
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {		// found mc in use
+							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private static final String typeName = "Observable";
+	@Override
+	public String getEntityName() {
+		return getName();
+	}
+	@Override
+	public String getEntityTypeName() {
+		return typeName;
 	}
 
 }
