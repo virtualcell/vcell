@@ -6,6 +6,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -321,7 +322,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 	}
 	
-	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
 		for(SpeciesPattern sp : getSpeciesPatternList()) {
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				if(mtp.getMolecularType() == mt) {
@@ -331,21 +332,40 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {		// found mc in use
-							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
+							String key = sp.getDisplayName();
+							key = getDisplayType() + getDisplayName() + key;
+							usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
 			}
 		}
 	}
-	
+	public boolean deleteComponentFromPatterns(MolecularType mt, MolecularComponent mc) {
+		for(SpeciesPattern sp : getSpeciesPatternList()) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (Iterator<MolecularComponentPattern> iterator = componentPatterns.iterator(); iterator.hasNext();) {
+						MolecularComponentPattern mcp = iterator.next();
+						if (mcp.getMolecularComponent() == mc) {
+							iterator.remove();
+						}
+					}					
+				}
+			}
+			sp.resolveBonds();
+		}
+		return true;
+	}
+
 	private static final String typeName = "Observable";
 	@Override
-	public String getDisplayName() {
+	public final String getDisplayName() {
 		return getName();
 	}
 	@Override
-	public String getDisplayType() {
+	public final String getDisplayType() {
 		return typeName;
 	}
 

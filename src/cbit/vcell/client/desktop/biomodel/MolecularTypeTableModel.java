@@ -3,7 +3,9 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
@@ -11,6 +13,8 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -19,6 +23,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.xml.sbml_transform.Pair;
 
 @SuppressWarnings("serial")
 class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<MolecularType> {
@@ -105,7 +110,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 				if (ourMt == null) {	// new
 					getModel().getRbmModelContainer().addMolecularType(tempMolecularType);
 				} else {						// change it
-					ourMt.setName(tempMolecularType.getName());
+					ourMt.setName(tempMolecularType.getName());		// if it had been renamed
 					// here we add components
 					for(MolecularComponent tempMc : tempMolecularType.getComponentList()) {
 						if(ourMt.getMolecularComponent(tempMc.getName()) == null) {	// component not found in the existing molecular type, it's a new component
@@ -126,10 +131,9 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					// TODO: here we delete components
 					for(MolecularComponent ourMc : ourMt.getComponentList()) {
 						if(tempMolecularType.getMolecularComponent(ourMc.getName()) == null) {
+							// component present in the existing (our) molecular type is not present in the freshly edited one (temp) 
 							// component has to go from our molecular type and from everywhere else where it's being used
-							
-							
-							
+							// ATTENTION! renaming doesn't work here because we can't know the user's mind, we always consider addition + deletion here
 							if(getModel().getRbmModelContainer().delete(ourMt, ourMc) == true) {
 								ourMt.removeMolecularComponent(ourMc);
 							}
@@ -224,9 +228,12 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					// need to check if any Component we try to delete is not already in use elsewhere
 					for(MolecularComponent selectedMolecularComponent : selectedMolecularType.getComponentList()) {
 						if(mt.getMolecularComponent(selectedMolecularComponent.getName()) == null) {	// the user tries to delete this mc
-							if(!getModel().getRbmModelContainer().isDeleteAllowed(selectedMolecularType, selectedMolecularComponent)) {
-								errMsg = "Component '" + selectedMolecularComponent + "' cannot be deleted because it's already being used.";
-								errMsg += "<br>Deleting and Renaming a Component can be done in the Object Properties tree below.";
+							Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
+							bioModel.getModel().getRbmModelContainer().findComponentUsage(selectedMolecularType, selectedMolecularComponent, usedHere);
+							
+							if(!usedHere.isEmpty()) {
+								errMsg = selectedMolecularComponent.dependenciesToHtml(usedHere);
+								errMsg += "<br><br>Deleting and Renaming a Component can be done in the Object Properties tree below.";
 								errMsg += VCellErrorMessages.PressEscToUndo;
 								errMsg = "<html>" + errMsg + "</html>";
 								return errMsg;
