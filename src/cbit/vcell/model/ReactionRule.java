@@ -7,6 +7,7 @@ import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -591,7 +592,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 
 	}
 
-	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
 		for(ProductPattern pp : getProductPatterns()) {
 			SpeciesPattern sp = pp.getSpeciesPattern();
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
@@ -602,7 +603,8 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {		// found mc in use
-							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
+							String key = getDisplayType() + getDisplayName() + sp.getDisplayName();
+							usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
@@ -618,23 +620,58 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {
-							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
+							String key = getDisplayType() + getDisplayName() + sp.getDisplayName();
+							usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
 			}
 		}
 	}
+	public boolean deleteComponentFromPatterns(MolecularType mt, MolecularComponent mc) {
+		for(ProductPattern pp : getProductPatterns()) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (Iterator<MolecularComponentPattern> iterator = componentPatterns.iterator(); iterator.hasNext();) {
+						MolecularComponentPattern mcp = iterator.next();
+						if (mcp.getMolecularComponent() == mc) {
+							iterator.remove();
+						}
+					}					
+				}
+			}
+			sp.resolveBonds();
+		}
+		for(ReactantPattern rp : getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (Iterator<MolecularComponentPattern> iterator = componentPatterns.iterator(); iterator.hasNext();) {
+						MolecularComponentPattern mcp = iterator.next();
+						if (mcp.getMolecularComponent() == mc) {
+							iterator.remove();
+						}
+					}					
+				}
+			}
+			sp.resolveBonds();
+		}
+		return true;
+	}
 
 	private static final String typeName = "Reaction Rule";
 	@Override
-	public String getDisplayName() {
+	public final String getDisplayName() {
 		return getName();
 	}
 	@Override
-	public String getDisplayType() {
+	public final String getDisplayType() {
 		return typeName;
 	}
+
 
 }
 
