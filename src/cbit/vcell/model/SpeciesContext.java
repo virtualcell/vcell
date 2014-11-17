@@ -488,7 +488,7 @@ private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueL
 		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 	}
 }
-public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
+public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
 	if(!hasSpeciesPattern()) {
 		return;
 	}
@@ -499,21 +499,42 @@ public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pai
 			for (MolecularComponentPattern mcp : componentPatterns) {
 				if(mcp.getMolecularComponent() == mc) {		// here all components are always in use
 					if(mcp.getBond() != null) {				// we only care about the components with a bond
-						usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
+						String key = sp.getDisplayName();
+						key = getDisplayType() + getDisplayName() + key;
+						usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
 					}
 				}
 			}
 		}
 	}
 }
+public boolean deleteComponentFromPatterns(MolecularType mt, MolecularComponent mc) {
+	if(!hasSpeciesPattern()) {
+		return true;
+	}
+	SpeciesPattern sp = getSpeciesPattern();
+	for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+		if(mtp.getMolecularType() == mt) {
+			List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+			for (Iterator<MolecularComponentPattern> iterator = componentPatterns.iterator(); iterator.hasNext();) {
+				MolecularComponentPattern mcp = iterator.next();
+				if (mcp.getMolecularComponent() == mc) {
+					iterator.remove();
+				}
+			}					
+		}
+	}
+	sp.resolveBonds();
+	return true;
+}
 
 private static final String typeName = "Species";
 @Override
-public String getDisplayName() {
+public final String getDisplayName() {
 	return getName();
 }
 @Override
-public String getDisplayType() {
+public final String getDisplayType() {
 	return typeName;
 }
 

@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,15 +22,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BoxLayout;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -39,6 +44,8 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -179,35 +186,24 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			Object userObject = parentNode.getUserObject();
 			if (userObject instanceof MolecularType) {
 				MolecularType molecularType = (MolecularType) userObject;
-				if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(molecularType, molecularComponent)) {
-					
-					// TODO: replace with Map<String, Pair<VCEntity, SpeciesPattern>> usedHereMap = 
-					//      to eliminate multiple identical entries
-					
-					
-					List<Pair<Displayable, SpeciesPattern>> usedHereList = new ArrayList<Pair<Displayable, SpeciesPattern>>();
-					bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, molecularComponent, usedHereList);
-					String errMsg = "Component '" + molecularComponent + "' cannot be deleted because it's already being used by:";
-					final int MaxListSize = 8;
-					for(int i=0; i<usedHereList.size(); i++) {
-						if(i>MaxListSize) {
-							errMsg += "<br> ... and more.";
-							break;
-						}
-						Pair<Displayable, SpeciesPattern> o = usedHereList.get(i);
-						Displayable e = o.one;
-						SpeciesPattern sp = o.two;
-						errMsg += "<br> - " + e.getDisplayType().toLowerCase() + " <b>" + e.getDisplayName() + "</b>";
-						errMsg += ", " + sp.getDisplayType().toLowerCase() + " " + " <b>" + sp.getDisplayName() + "</b>";
-					}
+				Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
+				bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, molecularComponent, usedHere);
+				if(!usedHere.isEmpty()) {
+					String errMsg = molecularComponent.dependenciesToHtml(usedHere);
+					errMsg += "<br><br>Delete anyway?";
 					errMsg = "<html>" + errMsg + "</html>";
-					DialogUtils.showErrorDialog(this.getParent().getParent(), errMsg);
-					return;
-				}
-				// keep this code in sync with MolecularTypeTableModel.setValueAt
-				// TODO: delete() needs to be implemented
-				if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
-					molecularType.removeMolecularComponent(molecularComponent);
+
+			        int dialogButton = JOptionPane.YES_NO_OPTION;
+			        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete Molecular Component", dialogButton);
+					if (returnCode == JOptionPane.YES_OPTION) {
+						// keep this code in sync with MolecularTypeTableModel.setValueAt
+						// TODO: delete() needs to be implemented
+						if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
+							molecularType.removeMolecularComponent(molecularComponent);
+						}
+					} else {
+						return;
+					}
 				}
 			}
 		} else if (selectedUserObject instanceof ComponentStateDefinition) {

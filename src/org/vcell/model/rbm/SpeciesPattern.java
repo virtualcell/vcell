@@ -317,11 +317,11 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 
 	private static final String typeName = "Species Pattern";
 	@Override
-	public String getDisplayName() {
+	public final String getDisplayName() {
 		return toString();
 	}
 	@Override
-	public String getDisplayType() {
+	public final String getDisplayType() {
 		return typeName;
 	}
 }
