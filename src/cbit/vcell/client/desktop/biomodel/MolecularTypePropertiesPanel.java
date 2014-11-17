@@ -49,7 +49,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
-import org.vcell.util.VCEntity;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 
@@ -183,7 +183,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					
 					// TODO: replace with Map<String, Pair<VCEntity, SpeciesPattern>> usedHereMap = 
 					//      to eliminate multiple identical entries
-					List<Pair<VCEntity, SpeciesPattern>> usedHereList = new ArrayList<Pair<VCEntity, SpeciesPattern>>();
+					
+					
+					List<Pair<Displayable, SpeciesPattern>> usedHereList = new ArrayList<Pair<Displayable, SpeciesPattern>>();
 					bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, molecularComponent, usedHereList);
 					String errMsg = "Component '" + molecularComponent + "' cannot be deleted because it's already being used by:";
 					final int MaxListSize = 8;
@@ -192,11 +194,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 							errMsg += "<br> ... and more.";
 							break;
 						}
-						Pair<VCEntity, SpeciesPattern> o = usedHereList.get(i);
-						VCEntity e = o.one;
+						Pair<Displayable, SpeciesPattern> o = usedHereList.get(i);
+						Displayable e = o.one;
 						SpeciesPattern sp = o.two;
-						errMsg += "<br> - " + e.getEntityTypeName().toLowerCase() + " <b>" + e.getEntityName() + "</b>";
-						errMsg += ", " + sp.getEntityTypeName().toLowerCase() + " " + " <b>" + sp.getEntityName() + "</b>";
+						errMsg += "<br> - " + e.getDisplayType().toLowerCase() + " <b>" + e.getDisplayName() + "</b>";
+						errMsg += ", " + sp.getDisplayType().toLowerCase() + " " + " <b>" + sp.getDisplayName() + "</b>";
 					}
 					errMsg = "<html>" + errMsg + "</html>";
 					DialogUtils.showErrorDialog(this.getParent().getParent(), errMsg);

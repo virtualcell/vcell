@@ -42,7 +42,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
-import org.vcell.util.VCEntity;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.parser.Expression;
@@ -54,7 +54,7 @@ import cbit.vcell.xml.sbml_transform.Pair;
 
 @SuppressWarnings("serial")
 public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, BioModelEntityObject,
-	IssueSource, VCEntity
+	IssueSource, Displayable
 {
 	private KeyValue key = null;
 
@@ -488,7 +488,7 @@ private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueL
 		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 	}
 }
-public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
 	if(!hasSpeciesPattern()) {
 		return;
 	}
@@ -499,7 +499,7 @@ public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pai
 			for (MolecularComponentPattern mcp : componentPatterns) {
 				if(mcp.getMolecularComponent() == mc) {		// here all components are always in use
 					if(mcp.getBond() != null) {				// we only care about the components with a bond
-						usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+						usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
 					}
 				}
 			}
@@ -509,11 +509,11 @@ public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pai
 
 private static final String typeName = "Species";
 @Override
-public String getEntityName() {
+public String getDisplayName() {
 	return getName();
 }
 @Override
-public String getEntityTypeName() {
+public String getDisplayType() {
 	return typeName;
 }
 
