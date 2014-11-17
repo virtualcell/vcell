@@ -47,7 +47,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.VCEntity;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
@@ -1029,7 +1029,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 
-		public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+		public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
 			for(ReactionRule rr : getReactionRuleList()) {
 				rr.findComponentUsage(mt, mc, usedHereList);
 			}
@@ -1092,8 +1092,13 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			return true;
 		}
+		
+		// TODO: this!!!
 		// deletes the molecular component from everywhere it's being used
 		public boolean delete(MolecularType mt, MolecularComponent mc) {
+			
+			
+			
 			
 			return false;
 		}

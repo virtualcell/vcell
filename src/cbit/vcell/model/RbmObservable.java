@@ -24,7 +24,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
-import org.vcell.util.VCEntity;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.parser.Expression;
@@ -35,7 +35,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.sbml_transform.Pair;
 
 public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener,
-	IssueSource, VCEntity
+	IssueSource, Displayable
 {
 	public static enum ObservableType {
 		Molecules,
@@ -321,7 +321,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 	}
 	
-	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
 		for(SpeciesPattern sp : getSpeciesPatternList()) {
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 				if(mtp.getMolecularType() == mt) {
@@ -331,7 +331,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {		// found mc in use
-							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
@@ -341,11 +341,11 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	
 	private static final String typeName = "Observable";
 	@Override
-	public String getEntityName() {
+	public String getDisplayName() {
 		return getName();
 	}
 	@Override
-	public String getEntityTypeName() {
+	public String getDisplayType() {
 		return typeName;
 	}
 

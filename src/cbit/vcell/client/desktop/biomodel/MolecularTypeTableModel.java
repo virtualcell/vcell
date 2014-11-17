@@ -127,6 +127,9 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					for(MolecularComponent ourMc : ourMt.getComponentList()) {
 						if(tempMolecularType.getMolecularComponent(ourMc.getName()) == null) {
 							// component has to go from our molecular type and from everywhere else where it's being used
+							
+							
+							
 							if(getModel().getRbmModelContainer().delete(ourMt, ourMc) == true) {
 								ourMt.removeMolecularComponent(ourMc);
 							}
