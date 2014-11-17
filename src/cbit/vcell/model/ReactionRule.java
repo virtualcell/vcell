@@ -28,7 +28,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.VCEntity;
+import org.vcell.util.Displayable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -42,7 +42,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.xml.sbml_transform.Pair;
 
 public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener,
-	IssueSource, VCEntity
+	IssueSource, Displayable
 	{
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
@@ -591,7 +591,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 
 	}
 
-	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<VCEntity, SpeciesPattern>> usedHereList) {
+	public void findComponentUsage(MolecularType mt, MolecularComponent mc, List<Pair<Displayable, SpeciesPattern>> usedHereList) {
 		for(ProductPattern pp : getProductPatterns()) {
 			SpeciesPattern sp = pp.getSpeciesPattern();
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
@@ -602,7 +602,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {		// found mc in use
-							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
@@ -618,7 +618,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 							continue;
 						}
 						if(mcp.getMolecularComponent() == mc) {
-							usedHereList.add(new Pair<VCEntity, SpeciesPattern>(this, sp));
+							usedHereList.add(new Pair<Displayable, SpeciesPattern>(this, sp));
 						}
 					}
 				}
@@ -628,11 +628,11 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 
 	private static final String typeName = "Reaction Rule";
 	@Override
-	public String getEntityName() {
+	public String getDisplayName() {
 		return getName();
 	}
 	@Override
-	public String getEntityTypeName() {
+	public String getDisplayType() {
 		return typeName;
 	}
 
