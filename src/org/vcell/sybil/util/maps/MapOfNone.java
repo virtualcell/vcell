@@ -16,6 +16,11 @@ import java.util.Set;
 
 import org.sbpax.util.sets.SetOfNone;
 
+/**
+ * Unmodifiable empty map
+ * @param <K>
+ * @param <V>
+ */
 public class MapOfNone<K, V> implements Map<K, V> {
 
 	protected void throwUnsupportedException() { throw new UnsupportedOperationException("Can not change constant map."); }
