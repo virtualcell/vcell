@@ -545,15 +545,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 
 
 /**
- * Gets the XML property (java.lang.String) value.
- * @return The XML property value.
- */
-public java.lang.String getXML() {
-	return null;
-}
-
-
-/**
  * The hasListeners method was generated to support the propertyChange field.
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
