@@ -293,7 +293,7 @@ public class PDEDataViewer extends DataViewer {
 //	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
 //	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
 	//
-	private PDEDataContext fieldPdeDataContext = null;
+	private NewClientPDEDataContext fieldPdeDataContext = null;
 	private PDEDataContextPanel ivjPDEDataContextPanel1 = null;
 	private PDEPlotControlPanel ivjPDEPlotControlPanel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -2133,7 +2133,7 @@ private javax.swing.JPopupMenu getPlotPopupMenu() {
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public PDEDataContext getPdeDataContext() {
+public NewClientPDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
@@ -2316,7 +2316,7 @@ public static void main(java.lang.String[] args) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(PDEDataContext pdeDataContext) {	
+public void setPdeDataContext(NewClientPDEDataContext pdeDataContext) {	
 	meshRegionSurfaces = null;
 
 	PDEDataContext oldValue = fieldPdeDataContext;

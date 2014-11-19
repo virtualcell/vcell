@@ -137,4 +137,9 @@ public Parameter duplicate()
 	return result;
 }
 
+@Override
+public String toString(){
+	return "Parameter@"+hashCode()+"("+getName()+","+getLowerBound()+","+getUpperBound()+","+getInitialGuess()+","+getScale()+")";
+}
+
 }

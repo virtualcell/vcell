@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.solver.nfsim;
+package cbit.vcell.solver;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

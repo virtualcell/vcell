@@ -70,6 +70,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataListener;
+import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -131,7 +132,7 @@ public class FieldDataWindowManager
 	}
 	
 	
-	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI,OutputContext outputContext) throws DataAccessException{
+	public NewClientPDEDataContext getPDEDataContext(ExternalDataIdentifier eDI,OutputContext outputContext) throws DataAccessException{
 		return 
 			((PDEDataManager)getRequestManager().getDataManager(outputContext, eDI, true)).getPDEDataContext();
 	}
@@ -166,7 +167,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				PDEDataContext newPDEDataContext = getPDEDataContext(eDI,null/*(currentlyViewedOutputFunctionViewer==null?null:currentlyViewedOutputFunctionViewer.getOutputContext())*/);
+				NewClientPDEDataContext newPDEDataContext = getPDEDataContext(eDI,null/*(currentlyViewedOutputFunctionViewer==null?null:currentlyViewedOutputFunctionViewer.getOutputContext())*/);
 				hashTable.put("newPDEDataContext", newPDEDataContext);
 			}				
 		};
@@ -176,7 +177,7 @@ public void viewData(final ExternalDataIdentifier eDI){
 			public void run(Hashtable<String, Object> hashTable) throws Exception {				
 				try{
 					PDEDataViewer currentlyViewedPDEDV = new PDEDataViewer();
-					PDEDataContext newPDEDataContext = (PDEDataContext)hashTable.get("newPDEDataContext");
+					NewClientPDEDataContext newPDEDataContext = (NewClientPDEDataContext)hashTable.get("newPDEDataContext");
 					currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
 					newPDEDataContext.addPropertyChangeListener(FieldDataWindowManager.this);
 					getLocalRequestManager().getAsynchMessageManager().addDataJobListener(currentlyViewedPDEDV);
@@ -300,14 +301,14 @@ private static class OutputFunctionViewer extends JPanel{
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
 								OutputContext outputContext = OutputFunctionViewer.this.getOutputContext();
-								PDEDataContext pdeDataContext = OutputFunctionViewer.this.fieldDataWindowManager.getPDEDataContext(OutputFunctionViewer.this.edi,outputContext);
+								NewClientPDEDataContext pdeDataContext = OutputFunctionViewer.this.fieldDataWindowManager.getPDEDataContext(OutputFunctionViewer.this.edi,outputContext);
 								hashTable.put(PDEDC_KEY, pdeDataContext);
 							}
 						};
 						AsynchClientTask task2 = new AsynchClientTask("setPDEDataContext...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
-								OutputFunctionViewer.this.pdeDataViewer.setPdeDataContext((PDEDataContext)hashTable.get(PDEDC_KEY));
+								OutputFunctionViewer.this.pdeDataViewer.setPdeDataContext((NewClientPDEDataContext)hashTable.get(PDEDC_KEY));
 								setMathDescVariables();
 							}
 						};

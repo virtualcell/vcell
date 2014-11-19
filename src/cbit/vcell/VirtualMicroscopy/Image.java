@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 
 import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 
@@ -284,6 +285,9 @@ public final void setOrigin(Origin newOrigin) {
 	this.origin = newOrigin;
 }
 
+public ISize getISize() {
+	return new ISize(numX,numY,numZ);
+}
 
 /**
  * Sets the name property (java.lang.String) value.
@@ -304,5 +308,10 @@ public final void setName(java.lang.String name) throws java.beans.PropertyVetoE
 public String toString() {
 	return getClass().getName()+"@"+Integer.toHexString(hashCode())+"("+getName()+")";
 }
+
+
+public abstract double[] getDoublePixels();
+
+public abstract float[] getFloatPixels();
 
 }

@@ -81,7 +81,7 @@ import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
-import com.ibm.icu.util.StringTokenizer;
+import java.util.StringTokenizer;
 
 public class RbmUtils {
 	

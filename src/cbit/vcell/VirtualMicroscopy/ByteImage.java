@@ -300,4 +300,23 @@ public void reverse() {
 }
 
 
+@Override
+public double[] getDoublePixels() {
+	double[] doublePixels = new double[pixels.length];
+	for (int i=0;i<doublePixels.length;i++){
+		doublePixels[i] = pixels[i];
+	}
+	return doublePixels;
+}
+
+@Override
+public float[] getFloatPixels() {
+	float[] floatPixels = new float[pixels.length];
+	for (int i=0;i<floatPixels.length;i++){
+		floatPixels[i] = pixels[i];
+	}
+	return floatPixels;
+}
+
+
 }

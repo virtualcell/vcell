@@ -1541,7 +1541,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			outputContext = new OutputContext(func);
 							
 			dataManager = new PDEDataManager(outputContext,getLocalWorkspace().getVCDataManager(),vcDataId);
-			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+			NewClientPDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 			
 			pdeDataContext.refreshIdentifiers();
 			flourViewer.setSimulation(sim);
