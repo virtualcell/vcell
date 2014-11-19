@@ -142,7 +142,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 
 	private PDEDataContext pdeDataContext;
 
-	private void read(PDEDataContext pdeDataContext0) throws Exception {
+	private void read(NewClientPDEDataContext pdeDataContext0) throws Exception {
 		this.pdeDataContext = pdeDataContext0;
 		dataProcessingOutputInfo = null;
 		try {
@@ -153,7 +153,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		}
 	}
 	
-	public void update(final PDEDataContext pdeDataContext) {
+	public void update(final NewClientPDEDataContext pdeDataContext) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override

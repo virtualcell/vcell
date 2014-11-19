@@ -13,7 +13,6 @@ import java.beans.PropertyVetoException;
 
 import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.solver.nfsim.NFsimSimulationOptions;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
