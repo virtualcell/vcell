@@ -25,7 +25,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
-import com.ibm.icu.util.StringTokenizer;
+import java.util.StringTokenizer;
 
 public class RbmNetworkGenerator {
 	

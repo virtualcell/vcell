@@ -31,6 +31,7 @@ import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.SolverTaskDescription;
 
 

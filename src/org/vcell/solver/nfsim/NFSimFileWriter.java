@@ -19,6 +19,7 @@ import org.jdom.Element;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.server.SolverFileWriter;
 
 

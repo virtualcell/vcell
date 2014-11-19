@@ -14,6 +14,7 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
 
@@ -254,6 +255,22 @@ public ImageStatistics getImageStatistics() {
 	return stats;
 }
 
+@Override
+public double[] getDoublePixels() {
+	double[] doublePixels = new double[pixels.length];
+	for (int i=0;i<doublePixels.length;i++){
+		doublePixels[i] = pixels[i];
+	}
+	return doublePixels;
+}
 
+@Override
+public float[] getFloatPixels() {
+	float[] floatPixels = new float[pixels.length];
+	for (int i=0;i<floatPixels.length;i++){
+		floatPixels[i] = pixels[i];
+	}
+	return floatPixels;
+}
 
 }

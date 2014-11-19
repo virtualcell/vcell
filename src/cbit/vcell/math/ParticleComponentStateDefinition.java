@@ -1,13 +1,9 @@
 package cbit.vcell.math;
 
 import java.io.Serializable;
-import java.util.List;
 
-import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.util.Compare;
-import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
-import org.vcell.util.Issue.IssueCategory;
 
 
 public class ParticleComponentStateDefinition implements Serializable, Matchable {		// extends RbmElementAbstract ???

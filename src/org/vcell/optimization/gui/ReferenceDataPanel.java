@@ -21,7 +21,7 @@ import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.export.CSV;
+import cbit.vcell.math.CSV;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.RowColumnResultSet;

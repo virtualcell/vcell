@@ -49,6 +49,7 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XMLTags;

@@ -8,9 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.export;
+package cbit.vcell.math;
 
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
 
 /**
  * 	the format assumed by this class should:

@@ -151,7 +151,7 @@ public boolean getParticleDataExists() throws DataAccessException {
  * Creation date: (6/13/2004 3:04:49 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public PDEDataContext getPDEDataContext() {	
+public NewClientPDEDataContext getPDEDataContext() {	
 	return newClientPDEDataContext;
 }
 
