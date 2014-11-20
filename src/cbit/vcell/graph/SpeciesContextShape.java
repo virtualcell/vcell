@@ -13,11 +13,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.util.Map;
 
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
@@ -128,7 +132,7 @@ public class SpeciesContextShape extends ElipseShape {
 			isBound = true;
 		}
 		
-		int circleDiameter = 14;
+		int circleDiameter = 14;		// 14
 		int shapeHeight = getSpaceManager().getSize().height;
 		int shapeWidth = getSpaceManager().getSize().width;
 		int offsetX = (shapeWidth-circleDiameter) / 2;
@@ -150,11 +154,25 @@ public class SpeciesContextShape extends ElipseShape {
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
 
-		g.setColor((!isBound && !isSelected()?darkerBackground:backgroundColor));
+		//g.setColor((!isBound && !isSelected()?darkerBackground:backgroundColor));
+		
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		Color exterior = !isBound && !isSelected()?darkerBackground:backgroundColor;
+//		Color interior = exterior.brighter().brighter();
+		Point2D center = new Point2D.Float(absPosX+circleDiameter/2, absPosY+circleDiameter/2);
+		float radius = circleDiameter*0.5f;
+		Point2D focus = new Point2D.Float(absPosX+circleDiameter/2-1, absPosY+circleDiameter/2-1);
+		float[] dist = {0.1f, 1.0f};
+		Color[] colors = {Color.white, exterior};
+//		Color[] colors = {interior, exterior};
+		RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
+		g2D.setPaint(p);
 		g2D.fill(movedIcon);
+		
 		g.setColor(forgroundColor);
 		g2D.draw(movedIcon);
-		
+//		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
 		// draw label
 		if (getLabel()!=null && getLabel().length()>0){
 			if(isSelected()){//clear background and outline to make selected label stand out
@@ -172,7 +190,7 @@ public class SpeciesContextShape extends ElipseShape {
 					absPosX, getLabelPos().y + absPosY);
 		}
 		if(linkText != null && linkText != "") {
-			ShapePaintUtil.paintLinkMark(g2D, this, Color.WHITE);
+			ShapePaintUtil.paintLinkMark(g2D, this, Color.BLACK);
 		}
 	}
 
