@@ -3906,7 +3906,7 @@ private Model getModel(Element param) throws XmlParseException {
 		if(element != null) {
 			getRbmModelContainer(element, newmodel);
 		} else {
-			System.out.println("RbmModelContainer is missing.");
+			lg.info("RbmModelContainer is missing.");
 		}
 
 		//Add SpeciesContexts

@@ -95,6 +95,7 @@ import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
@@ -151,6 +152,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.model.ModelPropertyVetoException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -176,6 +178,11 @@ import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
 	
+	/**
+	 * keywords for VCLogger error message; used to detect specific error
+	 */
+	public static final String RESERVED_SPATIAL = "reserved spatial";
+	
 	public static class SBMLIssueSource implements IssueSource {
 		private final SBase issueSource;
 		public SBMLIssueSource(SBase issueSource){
@@ -188,6 +195,12 @@ public class SBMLImporter {
 
 	private long level = 2;
 	//private long version = 3;
+	
+	
+	/**
+	 * detect unsupporte  "delay" element
+	 */
+	private static final String DELAY_URL = "www.sbml.org/sbml/symbols/delay";
 	
 	private String sbmlFileName = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
@@ -285,11 +298,11 @@ public class SBMLImporter {
 	
 protected void addCompartments(VCMetaData metaData) {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofCompartments = sbmlModel.getListOfCompartments();
 	if (listofCompartments == null) {
-		throw new RuntimeException("Cannot have 0 compartments in model"); 
+		throw new SBMLImportException("Cannot have 0 compartments in model"); 
 	}
 	// Using a vector here - since there can be SBML models with only features and no membranes.
 	// Hence keeping the datastructure flexible.
@@ -313,7 +326,7 @@ protected void addCompartments(VCMetaData metaData) {
 				structureNameMap.put(compartmentName, membrane);
 			} else {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
-				throw new RuntimeException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
+				throw new SBMLImportException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
 			structIndx++;
 			sbmlAnnotationUtil.readAnnotation(structVector.get(i), compartment);
@@ -397,7 +410,7 @@ protected void addCompartments(VCMetaData metaData) {
 		}
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Error adding Feature to vcModel " + e.getMessage());
+		throw new SBMLImportException("Error adding Feature to vcModel " + e.getMessage(),e);
 	}
 }
 
@@ -405,7 +418,7 @@ protected void addEvents() {
 	if (sbmlModel.getNumEvents() > 0) {
 		// VCell does not support events in spatial model 
 		if (bSpatial) {
-			throw new RuntimeException("Events are not supported in a spatial VCell model.");
+			throw new SBMLImportException("Events are not supported in a spatial VCell model.");
 		}
 		
 		ListOfEvents listofEvents = sbmlModel.getListOfEvents();
@@ -479,7 +492,7 @@ protected void addEvents() {
 				simContext.addBioEvent(vcEvent);
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
+				throw new SBMLImportException(e.getMessage(),e);
 			}	// end - try/catch
 		}	// end - for(sbmlEvents)
 	}	// end - if numEvents > 0)
@@ -487,25 +500,25 @@ protected void addEvents() {
 
 protected void addCompartmentTypes() {
 	if (sbmlModel.getNumCompartmentTypes() > 0) {
-		throw new RuntimeException("VCell doesn't support CompartmentTypes at this time");
+		throw new SBMLImportException("VCell doesn't support CompartmentTypes at this time");
 	}
 }
 
 protected void addSpeciesTypes() {
 	if (sbmlModel.getNumSpeciesTypes() > 0) {
-		throw new RuntimeException("VCell doesn't support SpeciesTypes at this time");
+		throw new SBMLImportException("VCell doesn't support SpeciesTypes at this time");
 	}
 }
 
 protected void addConstraints() {
 	if (sbmlModel.getNumConstraints() > 0) {
-		throw new RuntimeException("VCell doesn't support Constraints at this time");
+		throw new SBMLImportException("VCell doesn't support Constraints at this time");
 	}
 }
 
 protected void addInitialAssignments() {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofInitialAssgns = sbmlModel.getListOfInitialAssignments();
 	if (listofInitialAssgns == null) {
@@ -549,14 +562,14 @@ protected void addInitialAssignments() {
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage()); 
+			throw new SBMLImportException("Error reading InitialAssignment : " + e.getMessage(),e); 
 		}
 	}
 }
 
 protected void addFunctionDefinitions() {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofFunctionDefinitions = sbmlModel.getListOfFunctionDefinitions();
 	if (listofFunctionDefinitions == null) {
@@ -598,7 +611,7 @@ protected void addFunctionDefinitions() {
 		}
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Error adding Lambda function" + e.getMessage());
+		throw new SBMLImportException("Error adding Lambda function" + e.getMessage(),e);
 	}
 }
 
@@ -672,7 +685,7 @@ protected void addParameters() throws Exception {
 					// if (a) and (b) are not true, for param with id x/y/z, throw exception - not allowed.
 					// if (a) and (b) are true, continue with the next parameter
 					if (!bSpatialParam) {
-						throw new RuntimeException("Parameter '" + paramName +
+						throw new SBMLImportException("Parameter '" + paramName +
 							"' is not a spatial parameter : Cannot have a variable in VCell named '" + 
 							paramName + "' unless it is a spatial variable.");
 					} else {
@@ -871,7 +884,8 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
+								Category.NON_INTEGER_STOICH	);
 							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} 
@@ -879,11 +893,13 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
+								Category.NON_INTEGER_STOICH	);
+							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} else {
-						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + sbmlReactantSpId + "' and no default value can be assumed.");
+						throw new SBMLImportException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + sbmlReactantSpId + "' and no default value can be assumed.");
 						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");						
 					}
 				}
@@ -899,7 +915,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 				}
 			} else {
 				// spRef is not in model, throw exception
-				throw new RuntimeException("Reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+				throw new SBMLImportException("Reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
 			}	// end - if (spRef is species in model)
 		}	// end - for reactants
 		
@@ -925,7 +941,8 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
+									Category.NON_INTEGER_STOICH);
 							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} 
@@ -933,11 +950,12 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 					if (spRef.isSetStoichiometry()) {
 						stoichiometry = spRef.getStoichiometry();
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
-							throw new RuntimeException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.");
+							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
+									Category.NON_INTEGER_STOICH);
 							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} else {
-						throw new RuntimeException("This is a SBML level 3 model, stoichiometry is not set for the product '" + sbmlProductSpId + "' and no default value can be assumed.");
+						throw new SBMLImportException("This is a SBML level 3 model, stoichiometry is not set for the product '" + sbmlProductSpId + "' and no default value can be assumed.");
 						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");						
 					}
 				}
@@ -953,7 +971,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 				}
 			} else {
 				// spRef is not in model, throw exception
-				throw new RuntimeException("Product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+				throw new SBMLImportException("Product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
 			}	// end - if (spRef is species in model)
 		}	// end - for products
 
@@ -990,7 +1008,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 			}
 		} else {
 			// spRef is not in model, throw exception
-			throw new RuntimeException("Modifier '" + sbmlSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
+			throw new SBMLImportException("Modifier '" + sbmlSpId + "' in reaction '" + sbmlRxn.getId() + "' not found as species in SBML model.");
 		}	// end - if (spRef is species in model)
 	}	// end - for modifiers
 }
@@ -1004,7 +1022,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 **/
 protected void addAssignmentRules() throws Exception {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofRules = sbmlModel.getListOfRules();
 	if (listofRules == null) {
@@ -1027,7 +1045,8 @@ protected void addAssignmentRules() throws Exception {
 						if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName()) || 
 							assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName()) || 
 							assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
-							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
+							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() 
+									+ " contains " + RESERVED_SPATIAL + " variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
 						}
 					}
 				}
@@ -1045,7 +1064,7 @@ protected void addAssignmentRules() throws Exception {
 **/
 protected void addRateRules() throws ExpressionException {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofRules = sbmlModel.getListOfRules();
 	if (listofRules == null) {
@@ -1071,7 +1090,7 @@ protected void addRateRules() throws ExpressionException {
 			String varName = sbmlRateRule.getVariable();
 			SymbolTableEntry rateRuleVar = simContext.getEntry(varName);
 			if (rateRuleVar instanceof Structure) {
-				throw new RuntimeException("Compartment '" + rateRuleVar.getName() + "' has a rate rule : not allowed in VCell at this time.");
+				throw new SBMLImportException("Compartment '" + rateRuleVar.getName() + "' has a rate rule : not allowed in VCell at this time.");
 			}
 			try {
 				if (rateRuleVar != null) {
@@ -1083,7 +1102,7 @@ protected void addRateRules() throws ExpressionException {
 				}
 			} catch (PropertyVetoException e) {
 				e.printStackTrace(System.out);
-				throw new RuntimeException("Unable to create and add rate rule to VC model : " + e.getMessage());
+				throw new SBMLImportException("Unable to create and add rate rule to VC model : " + e.getMessage());
 			}
 		}	// end if - RateRule 
 	}	// end - for i : rules
@@ -1091,7 +1110,7 @@ protected void addRateRules() throws ExpressionException {
 
 protected void addSpecies(VCMetaData metaData) {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listOfSpecies = sbmlModel.getListOfSpecies();
 	if (listOfSpecies == null) {
@@ -1163,9 +1182,11 @@ protected void addSpecies(VCMetaData metaData) {
 			sbmlAnnotationUtil.readAnnotation(vcSpecies, sbmlSpecies);
 			sbmlAnnotationUtil.readNotes(vcSpecies, sbmlSpecies);
 		}
+	} catch (ModelPropertyVetoException e) {
+		throw new SBMLImportException("Error adding species context; "+ e.getMessage(),e);
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Error adding species context; "+ e.getMessage());
+		throw new SBMLImportException("Error adding species context; "+ e.getMessage(),e);
 	}
 }
 
@@ -1245,7 +1266,7 @@ private void setSpeciesInitialConditions() {
 		}
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Error setting initial condition for species context; "+ e.getMessage()); 
+		throw new SBMLImportException("Error setting initial condition for species context; "+ e.getMessage(),e); 
 	}
 }
 
@@ -1460,19 +1481,21 @@ public BioModel getBioModel() {
 	SBMLDocument document = reader.readSBML(sbmlFileName);
 
 	long numProblems = document.getNumErrors();
-	System.out.println("\n\nSBML Import Error Report");
 	OStringStream oStrStream = new OStringStream();
-	document.printErrors(oStrStream);
-	if (numProblems > 0 && lg.isEnabledFor(Level.WARN)) {
-		lg.warn("Num problems in original SBML document : " + numProblems);
-		lg.warn(oStrStream.str());
+	if (numProblems > 0) {
+		System.out.println("\n\nSBML Import Error Report");
+		document.printErrors(oStrStream);
+		if (lg.isEnabledFor(Level.WARN)) {
+			lg.warn("Num problems in original SBML document : " + numProblems);
+			lg.warn(oStrStream.str());
+		}
 	}
 
 	try {
 		sbmlModel = document.getModel();
 
 		if (sbmlModel == null) {
-			throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str());
+			throw new SBMLImportException("Unable to read SBML file : \n" + oStrStream.str());
 		}
 
 		// Convert SBML Model to VCell model
@@ -1503,7 +1526,7 @@ public BioModel getBioModel() {
 				vcModel = new Model(modelName, createSBMLUnitSystemForVCModel());
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
-				throw new RuntimeException("Inconsistent unit system. Cannot import SBML model into VCell");
+				throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell", Category.INCONSISTENT_UNIT,e);
 			}
 			Geometry geometry = new Geometry(BioModelChildSummary.COMPARTMENTAL_GEO_STR, 0);
 			simContext = new SimulationContext(vcModel, geometry);
@@ -1511,7 +1534,7 @@ public BioModel getBioModel() {
 			//		simContext.setName(simContext.getModel().getName()+"_"+simContext.getGeometry().getName());
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not create simulation context corresponding to the input SBML model");
+			throw new SBMLImportException("Could not create simulation context corresponding to the input SBML model",e);
 		} 
 		translateSBMLModel();
 
@@ -1534,7 +1557,7 @@ public BioModel getBioModel() {
 			vcBioModel.setSimulationContexts(new SimulationContext[] {simContext});			
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not create Biomodel");
+			throw new SBMLImportException("Could not create Biomodel",e);
 		}
 
 		sbmlAnnotationUtil.readAnnotation(vcBioModel, sbmlModel);
@@ -1562,7 +1585,7 @@ public BioModel getBioModel() {
 			}
 		}
 	} catch (Exception e) {
-		throw new RuntimeException("Unable to read SBML file : \n" + oStrStream.str(),e);
+		throw new SBMLImportException("Unable to read SBML file : \n" + oStrStream.str(),e);
 	}
 
 	return vcBioModel;
@@ -1570,7 +1593,7 @@ public BioModel getBioModel() {
 
 private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofUnitDefns = sbmlModel.getListOfUnitDefinitions();
 	if (listofUnitDefns == null) {
@@ -1822,6 +1845,10 @@ private Element getEmbeddedElementInAnnotation(Element sbmlImportRelatedElement,
  */
 private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException {
 	String mathMLStr = libsbml.writeMathMLToString(math);
+	if (mathMLStr.contains(DELAY_URL)) {
+		throw new SBMLImportException("unsupported SBML element 'delay'",SBMLImportException.Category.DELAY);
+		
+	}
 	ExpressionMathMLParser exprMathMLParser = new ExpressionMathMLParser(lambdaFunctions);
 	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);
 	return expr;
@@ -2032,7 +2059,7 @@ public void translateSBMLModel() {
 		checkForUnsupportedVCellFeatures();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new SBMLImportException(e.getMessage(),e);
 	}
 	
 	// Create Virtual Cell Model with species, compartment, etc. and read in the 'values' from the SBML model
@@ -2044,9 +2071,11 @@ public void translateSBMLModel() {
 	// Add Assignment Rules : adding these first, since compartment/species/parameter init condns could be defined by assignment rules
 	try {
 		addAssignmentRules();
+	} catch (SBMLImportException sie) {
+		throw sie;
 	} catch (Exception ee) {
 		ee.printStackTrace(System.out);
-		throw new RuntimeException(ee.getMessage());
+		throw new SBMLImportException(ee.getMessage(),ee);
 	}
 	// Add features/compartments
 	VCMetaData vcMetaData = vcBioModel.getVCMetaData();
@@ -2058,7 +2087,7 @@ public void translateSBMLModel() {
 		addParameters();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new SBMLImportException(e.getMessage(),e);
 	}
 	// Set initial conditions on species
 	setSpeciesInitialConditions();
@@ -2069,7 +2098,7 @@ public void translateSBMLModel() {
 		addRateRules();
 	} catch (ExpressionException ee) {
 		ee.printStackTrace(System.out);
-		throw new RuntimeException(ee.getMessage());
+		throw new SBMLImportException(ee.getMessage(),ee);
 	}
 	// Add constraints (not handled in VCell)
 	addConstraints();
@@ -2081,7 +2110,7 @@ public void translateSBMLModel() {
 		simContext.getModel().setStructures(sortedStructures);
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace(System.out);
-		throw new RuntimeException("Error while sorting compartments: "+e1.getMessage());
+		throw new SBMLImportException("Error while sorting compartments: "+e1.getMessage(),e1);
 	}
 	
 	// Add Events
@@ -2091,7 +2120,7 @@ public void translateSBMLModel() {
 		checkIdentifiersNameLength();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new SBMLImportException(e.getMessage(),e);
 	}
 	
 	// Add geometry, if sbml model is spatial
@@ -2188,7 +2217,7 @@ private ArrayList<ReactionParticipant> getVCReactionParticipantsFromSymbol(React
  */
 protected void addReactions(VCMetaData metaData) {
 	if (sbmlModel == null) {
-		throw new RuntimeException("SBML model is NULL");
+		throw new SBMLImportException("SBML model is NULL");
 	}
 	ListOf listofReactions = sbmlModel.getListOfReactions();
 	if (listofReactions == null) {
@@ -2217,7 +2246,7 @@ protected void addReactions(VCMetaData metaData) {
 						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
 						Structure struct = vcModel.getStructure(structName);
 						if (!(struct instanceof Membrane)) {
-							throw new RuntimeException("Appears that the flux reaction is not occuring on a membrane.");
+							throw new SBMLImportException("Appears that the flux reaction is not occuring on a membrane.");
 						}
 						vcReactions[i] = new FluxReaction(vcModel, (Membrane)struct, null, rxnName);
 						vcReactions[i].setModel(vcModel);
@@ -2391,9 +2420,11 @@ protected void addReactions(VCMetaData metaData) {
 			}
 		}
 
+	} catch (ModelPropertyVetoException mpve) {
+		throw new SBMLImportException(mpve.getMessage(),mpve);
 	} catch (Exception e1) {
 		e1.printStackTrace(System.out);
-		throw new RuntimeException(e1.getMessage());
+		throw new SBMLImportException(e1.getMessage(),e1);
 	}
 	
 }
@@ -2418,9 +2449,9 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CYLINDER);
 			return vcellPrimitive;
 		}
-		throw new RuntimeException("PrimitiveType '" + primitiveType + "' not recognized");
+		throw new SBMLImportException("PrimitiveType '" + primitiveType + "' not recognized");
 	}else if (sbmlCSGNode.isCSGPseudoPrimitive()) {
-		throw new RuntimeException("Pseudo primitives not yet supported in CSGeometry.");
+		throw new SBMLImportException("Pseudo primitives not yet supported in CSGeometry.");
 	}else if (sbmlCSGNode.isCSGSetOperator()) {
 		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = (org.sbml.libsbml.CSGSetOperator)sbmlCSGNode;
 		String operatorType = sbmlSetOperator.getOperationType();
@@ -2432,7 +2463,7 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 		}else if (operatorType.equals(SBMLSpatialConstants.INTERSECTION)){
 			opType = OperatorType.INTERSECTION;
 		}else{
-			throw new RuntimeException("unsupported operator type '"+operatorType+"'");
+			throw new SBMLImportException("unsupported operator type '"+operatorType+"'");
 		}
 		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(csgNodeName, opType);
 		for (int c = 0; c < sbmlSetOperator.getNumCSGNodeChildren(); c++){
@@ -2462,12 +2493,12 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 			vcellScale.setChild(vcellCSGChild);
 			return vcellScale;
 		}else if (sbmlTransformation.isCSGHomogeneousTransformation()) {
-			throw new RuntimeException("homogeneous transformations not supported yet.");
+			throw new SBMLImportException("homogeneous transformations not supported yet.");
 		}else{
-			throw new RuntimeException("unsupported type of CSGTransformation");
+			throw new SBMLImportException("unsupported type of CSGTransformation");
 		}
 	}else{
-		throw new RuntimeException("unsupported type of CSGNode");
+		throw new SBMLImportException("unsupported type of CSGNode");
 	}
 }
 
@@ -2487,13 +2518,13 @@ protected void addGeometry() {
 	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
 		localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
 		return;
-		// throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+		// throw new SBMLImportException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
 	}
 	
 	// get a CoordComponent object via the Geometry object.	
 	ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
 	if (listOfCoordComps == null) {
-		throw new RuntimeException("Cannot have 0 coordinate compartments in geometry"); 
+		throw new SBMLImportException("Cannot have 0 coordinate compartments in geometry"); 
 	}
 	// coord component
 	double origX = 0.0; double origY = 0.0; double origZ = 0.0;
@@ -2512,7 +2543,7 @@ protected void addGeometry() {
 			origZ = coordComponent.getBoundaryMin().getValue();
 			extentZ = coordComponent.getBoundaryMax().getValue() - origZ;
 		} else {
-			throw new RuntimeException("unknown componentType '" + coordComponent.getComponentType() + "' : not supported in VCell");
+			throw new SBMLImportException("unknown componentType '" + coordComponent.getComponentType() + "' : not supported in VCell");
 		}
 		dimension++;
 	}
@@ -2547,7 +2578,7 @@ protected void addGeometry() {
 	}
 	
 	if (analyticGeometryDefinition==null && segmentedSampledFieldGeometry==null && distanceMapSampledFieldGeometry==null && csGeometry==null) {
-		throw new RuntimeException("VCell supports only Analytic, Image based (segmentd or distance map) or Constructed Solid Geometry at this time.");
+		throw new SBMLImportException("VCell supports only Analytic, Image based (segmentd or distance map) or Constructed Solid Geometry at this time.");
 	}
 	GeometryDefinition selectedGeometryDefinition = null;
 	if (csGeometry!=null){
@@ -2561,7 +2592,7 @@ protected void addGeometry() {
 	}else if (parametricGeometry!=null){
 		selectedGeometryDefinition = parametricGeometry;
 	}else{
-		throw new RuntimeException("no geometry definition found");
+		throw new SBMLImportException("no geometry definition found");
 	}
 	Geometry vcGeometry = null;
 	if (selectedGeometryDefinition==analyticGeometryDefinition || selectedGeometryDefinition==csGeometry){
@@ -2606,12 +2637,12 @@ protected void addGeometry() {
 			}else if (id.getDataType().equals("uint8") || id.getDataType().equals("int16")){
 				vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
 			}else{			
-				throw new RuntimeException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
+				throw new SBMLImportException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
 			}
 			vcImage.setName(sf.getSpatialId());
 			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
 			if (listOfSampledVols == null) {
-				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+				throw new SBMLImportException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
 			}
 			int numSampledVols = (int)sfg.getNumSampledVolumes();
 			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
@@ -2626,7 +2657,7 @@ protected void addGeometry() {
 			vcGeometry = new Geometry("spatialGeom", vcImage);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to create image from SampledFieldGeometry : " + e.getMessage());
+			throw new SBMLImportException("Unable to create image from SampledFieldGeometry : " + e.getMessage(),e);
 		} 
 	}
 	GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
@@ -2635,18 +2666,18 @@ protected void addGeometry() {
 		vcGeometrySpec.setExtent(vcExtent);
 	} catch (PropertyVetoException e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to set extent on VC geometry : " + e.getMessage());
+		throw new SBMLImportException("Unable to set extent on VC geometry : " + e.getMessage(),e);
 	}
 
 	// get  listOfDomainTypes via the Geometry object.	
 	ListOfDomainTypes listOfDomainTypes = sbmlGeometry.getListOfDomainTypes();
 	if (listOfDomainTypes == null || listOfDomainTypes.size() < 1) {
-		throw new RuntimeException("Cannot have 0 domainTypes in geometry"); 
+		throw new SBMLImportException("Cannot have 0 domainTypes in geometry"); 
 	}
 	// get a listOfDomains via the Geometry object.	
 	ListOfDomains listOfDomains = sbmlGeometry.getListOfDomains();
 	if (listOfDomains == null || listOfDomains.size() < 1) {
-		throw new RuntimeException("Cannot have 0 domains in geometry"); 
+		throw new SBMLImportException("Cannot have 0 domains in geometry"); 
 	}
 	
 //	ListOfGeometryDefinitions listOfGeomDefns = sbmlGeometry.getListOfGeometryDefinitions();
@@ -2677,21 +2708,21 @@ protected void addGeometry() {
 			// get an analyticVol object via the listOfAnalyticVol (from AnalyticGeometry) object.	
 			ListOfAnalyticVolumes listOfAnalyticVols = analyticGeometryDefinition.getListOfAnalyticVolumes();
 			if (listOfAnalyticVols == null || listOfAnalyticVols.size() < 1) {
-				throw new RuntimeException("Cannot have 0 Analytic volumes in analytic geometry"); 
+				throw new SBMLImportException("Cannot have 0 Analytic volumes in analytic geometry"); 
 			}
 			for (int i = 0; i < analyticGeometryDefinition.getNumAnalyticVolumes(); i++) {
 				// get subVol from VC geometry using analyticVol spatialId; set its expr using analyticVol's math.
 				AnalyticVolume analyticVol = listOfAnalyticVols.get(i);
 				SubVolume vcSubvolume = vcGeometrySpec.getSubVolume(analyticVol.getDomainType());
 				if (vcSubvolume == null) {
-					throw new RuntimeException("analytic volume '" + analyticVol.getSpatialId() + "' does not map to any VC subvolume.");
+					throw new SBMLImportException("analytic volume '" + analyticVol.getSpatialId() + "' does not map to any VC subvolume.");
 				}
 				try {
 					Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath());
 					((AnalyticSubVolume)vcSubvolume).setExpression(subVolExpr);
 				} catch (ExpressionException e) {
 					e.printStackTrace(System.out);
-					throw new RuntimeException("Unable to set expression on subVolume '" + vcSubvolume.getName() + "'. " + e.getMessage());
+					throw new SBMLImportException("Unable to set expression on subVolume '" + vcSubvolume.getName() + "'. " + e.getMessage(),e);
 				}
 			}
 		}
@@ -2699,7 +2730,7 @@ protected void addGeometry() {
 			SampledFieldGeometry sfg = (SampledFieldGeometry)selectedGeometryDefinition;
 			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
 			if (listOfSampledVols == null) {
-				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+				throw new SBMLImportException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
 			}
 			int numSampledVols = (int)sfg.getNumSampledVolumes();
 			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
@@ -2755,7 +2786,7 @@ protected void addGeometry() {
 		vcGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT(), true, true);
 	}   catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage());
+		throw new SBMLImportException("Unable to create VC subVolumes from SBML domainTypes : " + e.getMessage(),e);
 	}
 	
 	
@@ -2852,7 +2883,7 @@ protected void addGeometry() {
 				}
 				// there should be only 2 subVols in this vector
 				if (adjacentSubVolumesVector.size() != 2) {
-					throw new RuntimeException("Cannot have more or less than 2 subvolumes that are adjacent to surface (membrane) '" + d.getSpatialId() + "'"); 
+					throw new SBMLImportException("Cannot have more or less than 2 subvolumes that are adjacent to surface (membrane) '" + d.getSpatialId() + "'"); 
 				}
 				// get the surface class with these 2 adj subVols. Set its name to that of 'surfaceClassDomainType'
 				SurfaceClass surfacClass = vcGsd.getSurfaceClass(adjacentSubVolumesVector.get(0), adjacentSubVolumesVector.get(1));
@@ -2964,7 +2995,7 @@ protected void addGeometry() {
 		simContext.getGeometryContext().refreshStructureMappings();
 	}  catch (Exception e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Unable to create VC structureMappings from SBML compartment mappings : " + e.getMessage());
+		throw new SBMLImportException("Unable to create VC structureMappings from SBML compartment mappings : " + e.getMessage(),e);
 	}
 }
 
@@ -2979,7 +3010,7 @@ private SurfaceGeometricRegion getAssociatedSurfaceGeometricRegion(GeometrySurfa
 			// adjVolGeomRegs array should also have 2 elements : the 2 adj volGeomRegions for surfaceRegion.
 			// if the 2 arrays do not have 2 elements each, throw exception
 			if (volGeomRegionsArray.length != 2 && adjVolGeomRegs.length != 2) {
-				throw new RuntimeException("There should be 2 adjacent geometric regions for surfaceRegion '" + surfaceRegion.getName() + "'");
+				throw new SBMLImportException("There should be 2 adjacent geometric regions for surfaceRegion '" + surfaceRegion.getName() + "'");
 			}
 			// if the vol geomtric regions in both arrays match, we have a winner! - return surfaceRegion
 			if ((adjVolGeomRegs[0].compareEqual(volGeomRegionsArray[0]) && adjVolGeomRegs[1].compareEqual(volGeomRegionsArray[1])) || 
