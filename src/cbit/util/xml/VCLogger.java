@@ -22,6 +22,7 @@ public abstract class VCLogger {
 	public static final int LOW_PRIORITY = 0;
 	public static final int MEDIUM_PRIORITY = 1;
 	public static final int HIGH_PRIORITY = 2;
+	
 	public static final int SCHEMA_VALIDATION_ERROR = 0;
 	public static final int UNSUPPORED_ELEMENTS_OR_ATTS = 1;	//useful for SBML imports
 	public static final int COMPARTMENT_ERROR = 2;           
@@ -30,66 +31,111 @@ public abstract class VCLogger {
 	public static final int REACTION_ERROR = 5;
 	public static final int OVERALL_WARNINGS = 6;
 
+	public enum Priority {
+		LowPriority(LOW_PRIORITY),
+		MediumPriority(MEDIUM_PRIORITY),
+		HighPriority(HIGH_PRIORITY);
+
+		Priority(int constant) {
+			eCheck(this,constant);
+		}
+		
+		/**
+		 * convert ordinal to priority
+		 * @param p
+		 * @return {@link #LowPriority} if p invalid
+		 */
+		public static Priority fromOrdinal(int p) {
+			if (p >= 0 && p < arr.length) {
+				return arr[p];
+			}
+			return LowPriority;
+		}
+		
+		private static Priority[] arr = Priority.values( ) ;
+		
+	}
+
+	public enum ErrorType {
+		SchemaValidation(SCHEMA_VALIDATION_ERROR,"The source document has invalid elements and/or attributes" ),
+		UnsupportedConstruct(UNSUPPORED_ELEMENTS_OR_ATTS,"The source document has elements and/or attributes that cannot be translated" ),
+		CompartmentError(COMPARTMENT_ERROR, "Problem in the compartments section"),
+		UnitError(UNIT_ERROR , "Problem in the unit translation"),
+		SpeciesError(SPECIES_ERROR, "Problem in the species section"),
+		ReactionError(REACTION_ERROR, "Problem in the reactions section"),
+		OverallWarning(OVERALL_WARNINGS,"Warnings in the Import process" );
+		ErrorType(int constant,String message) {
+			eCheck(this,constant);
+			this.message = message;
+		}
+		
+		public final String message;
+		
+		public static boolean isValidOrdinal(int messageType) {
+			return (messageType >= 0 && messageType < errorTypes.length);
+		}
+		
+		/**
+		 * @param m
+		 * @return {@link #OverallWarning} if m invalid
+		 */
+		public static ErrorType fromOrdinal(int m)  {
+			if (isValidOrdinal(m)) {
+				return errorTypes[m];
+			}
+			return OverallWarning;
+		}
+		
+		/**
+		 * cache for faster access
+		 */
+		private static final ErrorType[] errorTypes = ErrorType.values();
+
+	}
+	
+	
+	private static void eCheck(Enum<?> e, int i) {
+		if (e.ordinal() != i) {
+			throw new IllegalStateException(e.name() + " not initialized to " + i);
+		}
+	}
+	
 	public abstract boolean hasMessages();
 
 
 	public abstract void sendAllMessages();
 
-
+	/**
+	 * replaced by {@link #sendMessage(Priority, ErrorType)}
+	 */
+	@Deprecated
 	public abstract void sendMessage(int messageLevel, int messageType) throws Exception;
-
-
-	public abstract void sendMessage(int messageLevel, int messageType, String message) throws Exception;
-
-
-	public static String getDefaultMessage(int messageType) {
 	
-		if (!isValidMessageType(messageType)) {
-			throw new IllegalArgumentException("Unknown translation message type: " + messageType);
-		}
-		String tempStr;
-		
-		switch (messageType) {
-			case VCLogger.SCHEMA_VALIDATION_ERROR:
-				tempStr = "The source document has invalid elements and/or attributes";
-				break;
-			case VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS:
-				tempStr = ".The source document has elements and/or attributes that cannot be translated";
-				break;
-			case VCLogger.COMPARTMENT_ERROR:
-				tempStr = "Problem in the compartments section";
-				break;
-			case VCLogger.UNIT_ERROR:
-				tempStr = "Problem in the unit translation";
-				break;
-			case VCLogger.SPECIES_ERROR:
-				tempStr = "Problem in the species section";
-				break;
-			case VCLogger.REACTION_ERROR:
-				tempStr = "Problem in the reactions section";
-				break;
-			case VCLogger.OVERALL_WARNINGS:
-				tempStr = "Warnings in the Import process";
-				break;
-			default:
-				tempStr = "";
-		}
-	
-		return tempStr;
+	public void sendMessage(Priority p, ErrorType et) throws Exception {
+		sendMessage(p.ordinal(),et.ordinal());
 	}
 
 
-	public static boolean isValidMessageType(int messageType) {
+	/**
+	 * replaced by {@link #sendMessage(Priority, ErrorType, String))}
+	 */
+	@Deprecated
+	public abstract void sendMessage(int messageLevel, int messageType, String message) throws Exception;
 	
-		if (messageType == VCLogger.SCHEMA_VALIDATION_ERROR ||
-			messageType == VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS ||
-			messageType == VCLogger.COMPARTMENT_ERROR ||
-			messageType == VCLogger.UNIT_ERROR ||
-			messageType == VCLogger.SPECIES_ERROR ||
-			messageType == VCLogger.REACTION_ERROR||
-			messageType == VCLogger.OVERALL_WARNINGS) {
-			return true;
-		}
-		return false;
+	public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+		sendMessage(p.ordinal(),et.ordinal(), message);
+	}
+
+
+	public static String getDefaultMessage(int messageType) {
+		return ErrorType.fromOrdinal(messageType).message;
+	}
+
+	/**
+	 * prefer {@link ErrorType#isValidOrdinal(int)}
+	 */
+    @Deprecated
+	public static boolean isValidMessageType(int messageType) {
+		return ErrorType.isValidOrdinal(messageType);
 	}
 }

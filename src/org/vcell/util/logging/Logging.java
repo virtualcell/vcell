@@ -42,31 +42,17 @@ public class Logging {
 	}
 	/*
 	 * first, look for configuration file specified on command line (#COMMAND_LINE_PROPERTY).
-	 * if that's not present, look for default file (#PROP_FILE) in current working directory.
+	 * then see if logging already initialized e.g. -Dlog4j.configuration jvm arg passed 
+	 * if not, look for default file (#PROP_FILE) in current working directory.
 	 * if that's not present, just use hardcoded default settings
 	 */
 	static {
-		File initFile = commandLineFile( );
-		if (initFile == null) {
-			File pFile = new File(PROP_FILE);
-			if (pFile.exists()) {
-				initFile = pFile;
-			}
+		initFromFile(commandLineFile( ));
+		if (!isLoggingInitialized()) {
+			initFromFile(new File(PROP_FILE));
 		}
 
-		boolean initialized = false;
-		if (initFile != null) {
-			try {
-				PropertyConfigurator.configure(initFile.toURI().toURL());
-				initialized = true;
-				if (lg.isInfoEnabled()) {
-					lg.info("logger initialized from file  " + initFile.getAbsolutePath());
-				}
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-		}
-		if (!initialized) {
+		if (!isLoggingInitialized()) {
 			Properties def = new Properties();
 			def.put("log4j.rootLogger","FATAL, A1");
 			def.put("log4j.appender.A1","org.apache.log4j.ConsoleAppender");
@@ -74,6 +60,31 @@ public class Logging {
 			def.put("log4j.appender.A1.layout.ConversionPattern","%-4r [%t] %-5p %c %x %d--> %m %n");
 			def.put("log4j.appender.A1.Target","System.out");
 			PropertyConfigurator.configure(def);
+		}
+	}
+	
+	/**
+	 * see if logging initialized (kludgy implementation) 
+	 * @return true something has been set
+	 */
+	private static boolean isLoggingInitialized( ) {
+		return Logger.getRootLogger().getAllAppenders().hasMoreElements();
+	}
+	
+	/**
+	 * attempt to initialize from file 
+	 * @param initFile may be null or invalid, just doesn't do anything
+	 */
+	private static void initFromFile(File initFile) {
+		if (initFile != null && initFile.exists()) {
+			try {
+				PropertyConfigurator.configure(initFile.toURI().toURL());
+				if (lg.isInfoEnabled()) {
+					lg.info("logger initialized from file  " + initFile.getAbsolutePath());
+				}
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}	
 		}
 	}
 

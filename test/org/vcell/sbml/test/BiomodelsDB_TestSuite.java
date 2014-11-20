@@ -9,16 +9,18 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -40,7 +42,10 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.junit.Test;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.SkipCommentLineNumberReader;
 import org.vcell.util.logging.Logging;
 
 import uk.ac.ebi.www.biomodels_main.services.BioModelsWebServices.BioModelsWebServices;
@@ -56,6 +61,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
+import cbit.vcell.util.WriterFlusher;
 
 public class BiomodelsDB_TestSuite {
 
@@ -102,13 +108,13 @@ public class BiomodelsDB_TestSuite {
 				System.err.println("run on 32 bit JVM");
 				System.exit(99);
 			}
+			
 
 			//following are set in command line processing
 			SortedSet<BiomodelsNetEntry> modelIDs = new TreeSet<BiomodelsNetEntry>( );
-			PrintWriter detailWriter = null; 
-			PrintWriter bngWriter = null; 
 			BioModelsWebServices service = null; 
 			File outDir = null;
+			boolean isDetailed;
 
 			{ //scope for commmand line processing
 
@@ -172,14 +178,8 @@ public class BiomodelsDB_TestSuite {
 				if (!outDir.exists()){
 					outDir.mkdirs();
 				}
-				if (optionSet.contains(detailed)) {
-					detailWriter = new PrintWriter( new File(outDir, "compareDetail.txt") );
-					bngWriter = new PrintWriter( new File(outDir, "bngErrors.txt") );
-				}
-				else {
-					detailWriter = new PrintWriter(new NullWriter());
-					bngWriter = new PrintWriter(new NullWriter());
-				}
+				isDetailed = optionSet.contains(detailed);
+			
 
 				BioModelsWebServicesServiceLocator locator = new BioModelsWebServicesServiceLocator();
 				service = locator.getBioModelsWebServices();
@@ -211,6 +211,27 @@ public class BiomodelsDB_TestSuite {
 				}
 			} //end command line processing 
 			
+			WriterFlusher flusher = new WriterFlusher(10);
+			
+			PrintWriter detailWriter;
+			PrintWriter bngWriter;
+			PrintWriter sbmlWriter;
+			SBMLExceptionSorter sbmlExceptions;
+			if (isDetailed) {
+				detailWriter = new PrintWriter( new File(outDir, "compareDetail.txt") );
+				bngWriter = new PrintWriter( new File(outDir, "bngErrors.txt") );
+				sbmlWriter = new PrintWriter( new File(outDir, "sbmlErrors.txt") );
+				sbmlExceptions = new LiveSorter(); 
+				flusher.add(detailWriter);
+				flusher.add(bngWriter);
+				flusher.add(sbmlWriter);
+			}
+			else {
+				detailWriter = new PrintWriter(new NullWriter());
+				bngWriter = new PrintWriter(new NullWriter());
+				sbmlWriter = new PrintWriter(new NullWriter());
+				sbmlExceptions = new NullSorter(); 
+			}
 			PropertyLoader.loadProperties();
 			/**
 			 * example properties
@@ -225,6 +246,7 @@ public class BiomodelsDB_TestSuite {
 			NativeLib.COPASI_JAVA.load();
 
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
+			flusher.add(printWriter);
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
 				removeToxic(modelIDs, printWriter);
@@ -369,6 +391,11 @@ public class BiomodelsDB_TestSuite {
 								bioModelInfo.setAttribute("vcell_ran","true");
 							}catch (BNGException e){
 								bngWriter.println(modelID + " " + e.getMessage());
+								throw e;
+							}catch (SBMLImportException e) {
+								ModelException me = new ModelException(modelID,e);
+								write(sbmlWriter,me);
+								sbmlExceptions.add(me);
 								throw e;
 							}catch (Exception e){
 								printWriter.println("vcell solve(roundtrip=true) failed");
@@ -524,6 +551,7 @@ public class BiomodelsDB_TestSuite {
 							bioModelInfo.setAttribute("exception",e.getMessage());
 						}
 						printWriter.flush();
+						write(bioModelInfo,new File(outDir,modelID+"_report.xml")); // write for each model just in case files get corrupted (it happened).
 					}finally{
 						if (new_sysout!=null){
 							new_sysout.close();
@@ -536,8 +564,22 @@ public class BiomodelsDB_TestSuite {
 						System.setOut(saved_sysout);
 						System.setOut(saved_syserr);
 					}
-					write(bioModelInfo,new File(outDir,modelID+"_report.xml")); // write for each model just in case files get corrupted (it happened).
 				}
+				
+				//this writes out the SBML import exceptions grouped by type
+				if (!sbmlExceptions.isEmpty()) {
+					Map<Category, Collection<ModelException>> map = sbmlExceptions.getMap();
+					try (PrintWriter pw = new PrintWriter(new File(outDir,"sbmlSorted.txt")) ) {
+						//SBMLImportException.Category
+						for (Category c : Category.values()) {
+							Collection<ModelException> meCollection = map.get(c);
+							for (ModelException me : meCollection) {
+								write(pw,me);
+							}
+						}
+					}
+				}
+				
 			}
 			finally{
 				printWriter.close();
@@ -546,6 +588,7 @@ public class BiomodelsDB_TestSuite {
 			}
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
+			e.printStackTrace(System.err);
 		}
 		System.exit(0);
 	}
@@ -556,7 +599,8 @@ public class BiomodelsDB_TestSuite {
 	 * @param note place to record removal so we don't forget
 	 */
 	private static void removeToxic(Collection<BiomodelsNetEntry> models, PrintWriter note) {
-		int toxic[] = {516}; //models known to crash libsbml ...
+		//int toxic[] = {510,511,515,516}; //models known to crash libsbml ...
+		int toxic[] = {}; //models known to crash libsbml ...
 		if (toxic.length > 0) {
 			note.print("Removing models which crash JVM due to libsbml errors:  ");
 			for (int t : toxic) {
@@ -567,6 +611,32 @@ public class BiomodelsDB_TestSuite {
 			}
 			note.println( );
 		}
+	}
+	
+	/**
+	 * write exception info, balancing informativeness with conciseness
+	 * @param sbmlWriter
+	 * @param me
+	 */
+	private static void write(PrintWriter sbmlWriter, ModelException me) {
+			SBMLImportException e = me.importException;
+		
+			switch (me.importException.category) {
+			case NON_INTEGER_STOICH:
+			case RATE_RULE:
+			case RESERVED_SPATIAL:
+			case RESERVED_SPECIES:
+			case INCONSISTENT_UNIT:
+		    case  DELAY:
+				sbmlWriter.println(me.entry +  ":  " + e.category  + " not supported by Virtual Cell" ); 
+				break;
+			case UNSPECIFIED:
+				sbmlWriter.println(me.entry + ":  " + e.category  + " " + e.getAllCauses());
+				e.printStackTrace(sbmlWriter);
+				break;
+				default:
+					throw new UnsupportedOperationException("value " + me.importException.category +  " missing from switch");
+			}
 	}
 
 	public static ODESolverResultSet readResultFile(File resultFile, String delimiter) throws IOException{
@@ -671,7 +741,7 @@ public class BiomodelsDB_TestSuite {
 
 		FileBaseFilter(String name) throws FileNotFoundException, IOException {
 			models = new ArrayList<BiomodelsNetEntry>( );
-			try (LineNumberReader br = new LineNumberReader(new FileReader(name))) {
+			try (SkipCommentLineNumberReader br = new SkipCommentLineNumberReader(new FileReader(name))) {
 				while (br.ready()) {
 					String s = br.readLine().trim( );
 					try {
@@ -700,5 +770,69 @@ public class BiomodelsDB_TestSuite {
 		File out = new File("../VCell_5.2/bioModelsNetInfo.xml");
 		writeSupportedModelsReport(dir, out);
 	}
+	
+	/**
+	 * modelId String and {@link SBMLImportException}
+	 */
+	private static class ModelException{
+		final BiomodelsNetEntry entry; 
+		final SBMLImportException importException;
+		public ModelException(BiomodelsNetEntry entry, SBMLImportException sie) {
+			super();
+			this.entry = entry;
+			this.importException = sie;
+		}
+	}
+	
+	interface SBMLExceptionSorter {
+		void add(ModelException me);
+		Map<SBMLImportException.Category,Collection<ModelException> > getMap( );
+		boolean isEmpty( );
+	}
+	
+	static class NullSorter implements SBMLExceptionSorter {
+		@Override
+		public void add(ModelException me) { }
+
+		@Override
+		public Map<Category, Collection<ModelException>> getMap() {
+			return Collections.emptyMap(); 
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return true;
+		}
+	}
+	static class LiveSorter implements SBMLExceptionSorter {
+		Map<SBMLImportException.Category,Collection<ModelException> > map;
+		boolean empty = true;
+		LiveSorter( ) {
+			map = new HashMap<>();
+			//load up map collection
+			for (SBMLImportException.Category c : SBMLImportException.Category.values()) {
+				map.put(c, new ArrayList<ModelException>( ) );
+			}
+		}
+
+		@Override
+		public void add(ModelException me) {
+			empty = false;
+			map.get(me.importException.category).add(me);
+		}
+
+		@Override
+		public Map<Category, Collection<ModelException>> getMap() {
+			return map; 
+		}
+
+		public boolean isEmpty() {
+			return empty;
+		}
+		
+	}
+	
+	
+	
 
 }
