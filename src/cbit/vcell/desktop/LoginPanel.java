@@ -10,19 +10,25 @@
 
 package cbit.vcell.desktop;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.*;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+
+import java.awt.Dimension;
 
 /**
  * Insert the type's description here.
@@ -47,6 +53,7 @@ public class LoginPanel extends JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JButton ivjJButtonRegister = null;
 	private LoginDelegate loginDelegate;
+	private JEditorPane dtrpnUseThisLink;
 
 
 class IvjEventHandler implements java.awt.event.ActionListener {
@@ -139,31 +146,33 @@ private void setupLoginPanelContentPane() {
 	
 			this.setName("JDialogContentPane");
 			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
-			gridBagLayout.rowHeights = new int[] {0,0,0,7,0};
+//			gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+//			gridBagLayout.columnWeights = new double[]{1.0, 0.0};
+//			gridBagLayout.rowHeights = new int[] {0,0,0,0,0, 0};
 			this.setLayout(gridBagLayout);
 
 			java.awt.GridBagConstraints constraintsJLabelUser = new java.awt.GridBagConstraints();
 			constraintsJLabelUser.gridx = 0; constraintsJLabelUser.gridy = 0;
-			constraintsJLabelUser.insets = new java.awt.Insets(4, 10, 4, 4);
+			constraintsJLabelUser.insets = new Insets(4, 10, 5, 5);
 			this.add(getJLabelUser(), constraintsJLabelUser);
 
 			java.awt.GridBagConstraints constraintsJLabelPassword = new java.awt.GridBagConstraints();
 			constraintsJLabelPassword.gridx = 0; constraintsJLabelPassword.gridy = 1;
-			constraintsJLabelPassword.insets = new java.awt.Insets(4, 10, 4, 4);
+			constraintsJLabelPassword.insets = new Insets(4, 10, 5, 5);
 			this.add(getJLabelPassword(), constraintsJLabelPassword);
 
 			java.awt.GridBagConstraints constraintsJTextFieldUser = new java.awt.GridBagConstraints();
 			constraintsJTextFieldUser.gridx = 1; constraintsJTextFieldUser.gridy = 0;
 			constraintsJTextFieldUser.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJTextFieldUser.weightx = 1.0;
-			constraintsJTextFieldUser.insets = new java.awt.Insets(4, 4, 4, 10);
+			constraintsJTextFieldUser.insets = new Insets(4, 4, 5, 10);
 			this.add(getJTextFieldUser(), constraintsJTextFieldUser);
 
 			java.awt.GridBagConstraints constraintsJPasswordFieldPassword = new java.awt.GridBagConstraints();
 			constraintsJPasswordFieldPassword.gridx = 1; constraintsJPasswordFieldPassword.gridy = 1;
 			constraintsJPasswordFieldPassword.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJPasswordFieldPassword.weightx = 1.0;
-			constraintsJPasswordFieldPassword.insets = new java.awt.Insets(4, 4, 4, 10);
+			constraintsJPasswordFieldPassword.insets = new Insets(4, 4, 5, 10);
 			this.add(getJPasswordFieldPassword(), constraintsJPasswordFieldPassword);
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
@@ -171,22 +180,30 @@ private void setupLoginPanelContentPane() {
 			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 2;
 			constraintsJPanel1.gridwidth = 2;
 			constraintsJPanel1.weightx = 1;
-			constraintsJPanel1.insets = new java.awt.Insets(4, 10, 4, 3);
+			constraintsJPanel1.insets = new Insets(4, 10, 5, 3);
 			this.add(getJPanel1(), constraintsJPanel1);
 
 			java.awt.GridBagConstraints constraintsJButtonRegister = new java.awt.GridBagConstraints();
 			constraintsJButtonRegister.fill = GridBagConstraints.HORIZONTAL;
 			constraintsJButtonRegister.gridx = 0; constraintsJButtonRegister.gridy = 4;
 			constraintsJButtonRegister.gridwidth = 2;
-			constraintsJButtonRegister.insets = new java.awt.Insets(2, 10, 2, 10);
+			constraintsJButtonRegister.insets = new Insets(2, 10, 5, 10);
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.insets = new Insets(4, 10, 4, 10);
+			gridBagConstraints.insets = new Insets(4, 10, 5, 10);
 			gridBagConstraints.gridwidth = 2;
 			gridBagConstraints.gridy = 3;
 			gridBagConstraints.gridx = 0;
 			this.add(getLostPasswordJButton(), gridBagConstraints);
 			this.add(getJButtonRegister(), constraintsJButtonRegister);
+			GridBagConstraints gbc_dtrpnUseThisLink = new GridBagConstraints();
+			gbc_dtrpnUseThisLink.fill = GridBagConstraints.BOTH;
+			gbc_dtrpnUseThisLink.weighty = 1.0;
+			gbc_dtrpnUseThisLink.gridwidth = 2;
+			gbc_dtrpnUseThisLink.insets = new Insets(4, 4, 4, 4);
+			gbc_dtrpnUseThisLink.gridx = 0;
+			gbc_dtrpnUseThisLink.gridy = 5;
+			add(getDtrpnUseThisLink(), gbc_dtrpnUseThisLink);
 			// user code begin {1}
 			// user code end
 }
@@ -336,7 +353,7 @@ public void initialize() {
 		// user code end
 		setName("LoginPanel");
 		//setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(315, 226);
+//		setSize(315, 250);
 		//setModal(true);
 		setupLoginPanelContentPane();
 		initConnections();
@@ -367,4 +384,21 @@ private void updateFields() {
 		return lostPasswordJButton;
 	}
 	
+	private JEditorPane getDtrpnUseThisLink() {
+		if (dtrpnUseThisLink == null) {
+			dtrpnUseThisLink = new JEditorPane();
+			dtrpnUseThisLink.setContentType("text/html");
+			dtrpnUseThisLink.setText("<html>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</html>");
+			dtrpnUseThisLink.setEditable(false);
+			dtrpnUseThisLink.addHyperlinkListener(new HyperlinkListener() {
+		        @Override
+		        public void hyperlinkUpdate(HyperlinkEvent e) {
+		            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+		            	DialogUtils.browserLauncher(LoginPanel.this, e.getURL().toString(), "Please visit "+"http://vcell.org"+" for Online Help", false);
+		            }
+		        }
+		    });
+		}
+		return dtrpnUseThisLink;
+	}
 }

@@ -41,7 +41,7 @@ public class LoginManager {
 			public void closed(ChildWindow childWindow) {
 			}
 		});
-		childWindow.setSize(315, 226);
+		childWindow.setSize(315, 300);
 		childWindow.setIsCenteredOnScreen();
 		childWindow.setTitle("Virtual Cell login");
 		childWindow.showModal();
