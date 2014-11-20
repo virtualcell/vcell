@@ -3,27 +3,23 @@ package cbit.vcell.message.server.htc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
-import cbit.vcell.message.server.htc.pbs.PbsProxy;
 
 public abstract class HtcProxy {
 	
@@ -134,6 +130,8 @@ public abstract class HtcProxy {
 		return commandService;
 	}
 
+	public abstract String[] getEnvironmentModuleCommandPrefix();
+	
 	public final String getHtcUser() {
 		return htcUser;
 	}
@@ -196,9 +194,22 @@ public abstract class HtcProxy {
 	 */
 	protected final String[] constructShellCommand(CommandService commandService, String[] cmd){
 		if (commandService instanceof CommandServiceSsh){
-			return cmd;
+			ArrayList<String> ar = new ArrayList<String>();
+			ar.addAll(Arrays.asList(getEnvironmentModuleCommandPrefix()));
+			ar.addAll(Arrays.asList(cmd));
+			return ar.toArray(new String[0]);
 		}else if (commandService instanceof CommandServiceLocal){
 			StringBuffer sb = new StringBuffer();
+			
+			
+/*  		Code to invoke environment modules */
+			
+//			String[] envModulePrefix = getEnvironmentModuleCommandPrefix();
+//			for (int i = 0; i< envModulePrefix.length; i++){
+//				sb.append((i>0?" ":"")+envModulePrefix[i]);
+//			}
+			 //if code above is uncommented, line 2 lines down below becomes sb.append(" "+cmd[i]); instead of sb.append((i>0?" ":"")+cmd[i]);
+			
 			for (int i = 0; i < cmd.length; i++) {
 				sb.append((i>0?" ":"")+cmd[i]);
 			}

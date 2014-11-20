@@ -53,8 +53,10 @@ public final class PbsProxy extends HtcProxy {
 		}
 		
 		String[] cmd = new String[]{PBS_HOME + JOB_CMD_STATUS, "-s", pbsJobID.getPbsJobID()};
-		CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
+		//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, 153 });
 
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, 153 });
+		
 		String output = commandOutput.getStandardOutput();
 		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
 		String strStatus = "";
@@ -108,7 +110,10 @@ public final class PbsProxy extends HtcProxy {
 		}
 		String[] cmd = new String[]{PBS_HOME + JOB_CMD_DELETE, pbsJobID.getPbsJobID()};
 		try {
-			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
+			CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardError = commandOutput.getStandardError();
 			if (exitStatus!=null && exitStatus==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
@@ -247,7 +252,7 @@ public final class PbsProxy extends HtcProxy {
 			PBS_HOME += "/";
 		}
 		String[] completeCommand = new String[] {PBS_HOME + JOB_CMD_SUBMIT, sub_file};
-		CommandOutput commandOutput = commandService.command(completeCommand);
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 		
 		return new PbsJobID(jobid);
@@ -307,7 +312,11 @@ public final class PbsProxy extends HtcProxy {
 			for(HtcJobID htcJobID : htcJobIDs){
 				cmdV.add(((PbsJobID)htcJobID).getPbsJobID());
 			}
-			CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
+			//CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]),new int[] { 0, 153 });
+			
+			CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])), new int[] { 0, 153 });
+			
+			
 			BufferedReader br = new BufferedReader(new StringReader(commandOutput.getStandardOutput()));
 			String line = null;
 			PbsJobID latestpbsJobID = null;
@@ -341,6 +350,17 @@ public final class PbsProxy extends HtcProxy {
 				throw new ExecutableException("Error getServiceJobIDs: "+e.getMessage());
 			}
 		}
+	}
+
+
+	public String[] getEnvironmentModuleCommandPrefix() {
+		ArrayList<String> ar = new ArrayList<String>();
+		ar.add("source");
+		ar.add("/etc/profile.d/modules.sh;");
+		ar.add("module");
+		ar.add("load");
+		ar.add(PropertyLoader.getProperty(PropertyLoader.pbsModulePath, "htc/pbs")+";");
+		return ar.toArray(new String[0]);
 	}
 	
 

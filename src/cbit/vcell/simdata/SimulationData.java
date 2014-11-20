@@ -512,6 +512,8 @@ public class SimulationData extends VCData {
  * SimResults constructor comment.
  */
 public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUsersRootPath) throws IOException, DataAccessException {
+	//DO NOT COMMIT:
+	primaryUserDir=new File("\\\\cfs02.cam.uchc.edu\\RAID\\vcell\\users\\edboyce\\");
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
 	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,amplistorVCellUsersRootPath);
 	this.vcDataId = amplistorHelper.getVCDataiDataIdentifier();

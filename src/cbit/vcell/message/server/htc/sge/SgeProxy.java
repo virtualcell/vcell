@@ -192,8 +192,12 @@ arid         undefined
 		}
 
 		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", sgeJobID.getSgeJobID()};
-		CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
+		//CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
+		
+		//CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])), new int[] { 0, 153 });
 
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, qstat_cmd), new int[] { 0, 1 });
+		
 		HashMap<String,String> outputMap = parseOutput(commandOutput);
 		
 		if (outputMap == null){
@@ -241,7 +245,10 @@ denied: job "6894" does not exist
 
 		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, sgeJobID.getSgeJobID()};
 		try {
-			CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
+			CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardOut = commandOutput.getStandardOutput();
 			if (exitStatus!=null && exitStatus.intValue()==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
@@ -363,7 +370,7 @@ denied: job "6894" does not exist
 			SGE_HOME += "/";
 		}
 		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
-		CommandOutput commandOutput = commandService.command(completeCommand);
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
 		String jobid = commandOutput.getStandardOutput().trim();
 		
 		return new SgeJobID(jobid);
@@ -435,7 +442,7 @@ denied: job "6894" does not exist
 		cmdV.add("-j");
 		cmdV.add(((SgeJobID)htcJobID).getSgeJobID());
 		cmdV.add("-xml");
-		CommandOutput commandOutput = commandService.command(cmdV.toArray(new String[0]));
+		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])));
 		String xmlString = commandOutput.getStandardOutput();
 		if (xmlString.contains("unknown_jobs")){
 			/**
@@ -489,6 +496,16 @@ denied: job "6894" does not exist
 			}
 		}
 		throw new RuntimeException("Error parsing job status for batch job id "+htcJobID.toDatabase());
+	}
+	
+	public String[] getEnvironmentModuleCommandPrefix() {
+		ArrayList<String> ar = new ArrayList<String>();
+		ar.add("source");
+		ar.add("/etc/profile.d/modules.sh;");
+		ar.add("module");
+		ar.add("load");
+		ar.add(PropertyLoader.getProperty(PropertyLoader.sgeModulePath, "htc/sge")+";");
+		return ar.toArray(new String[0]);
 	}
 
 }
