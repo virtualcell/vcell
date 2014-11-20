@@ -41,6 +41,7 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -57,7 +58,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
  * for stochastic simulation. To get math description for deterministic simulation please reference @MathMapping.

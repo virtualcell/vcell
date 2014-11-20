@@ -31,6 +31,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SimulationStatus;
@@ -41,7 +42,6 @@ import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

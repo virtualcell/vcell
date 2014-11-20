@@ -52,11 +52,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)

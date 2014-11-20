@@ -62,7 +62,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
-import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class ObservablePropertiesPanel extends DocumentEditorSubPanel {

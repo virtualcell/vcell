@@ -66,7 +66,7 @@ import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {

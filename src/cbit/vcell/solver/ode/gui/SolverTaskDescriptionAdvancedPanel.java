@@ -33,11 +33,11 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.util.VCellErrorMessages;
 
 /**
  * Insert the class' description here.
