@@ -29,6 +29,8 @@ import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.SystemColor;
 
 /**
  * Insert the type's description here.
@@ -387,8 +389,10 @@ private void updateFields() {
 	private JEditorPane getDtrpnUseThisLink() {
 		if (dtrpnUseThisLink == null) {
 			dtrpnUseThisLink = new JEditorPane();
+			dtrpnUseThisLink.setBackground(SystemColor.menu);
+			dtrpnUseThisLink.setFont(new Font("Arial", Font.BOLD, 14));
 			dtrpnUseThisLink.setContentType("text/html");
-			dtrpnUseThisLink.setText("<html>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</html>");
+			dtrpnUseThisLink.setText("<html><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</font></html>");
 			dtrpnUseThisLink.setEditable(false);
 			dtrpnUseThisLink.addHyperlinkListener(new HyperlinkListener() {
 		        @Override
