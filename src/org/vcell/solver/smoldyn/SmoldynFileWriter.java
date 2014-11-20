@@ -85,6 +85,7 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -112,7 +113,6 @@ import cbit.vcell.solver.server.SolverFileWriter;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.MembraneElement;
-import cbit.vcell.util.VCellErrorMessages;
 
 
 /**
@@ -790,7 +790,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 				else //membrane reactions which are not one to one, or 0th order, or consuming species
 				{
-					if((getMembraneVariableCount(reactants) == 1)) // membrane reaction has one mambrane bound reactant
+					if((getMembraneVariableCount(reactants) == 1)) // membrane reaction has one membrane bound reactant
 					{
 						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
@@ -804,12 +804,14 @@ private void writeReactions() throws ExpressionException, MathException {
 						}
 						else
 						{
-							throw new MathException("Error with reaction: " + pjp.getName() + ".\nVCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
+							// throw new MathException("Error with reaction: " + pjp.getName() + ".\nVCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
+							printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+							writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 						}
 					}
 					else if(getMembraneVariableCount(reactants) == 0)
 					{
-						throw new MathException("Error with reaction: " + pjp.getName() + ".\nIn VCell spatial stochastic modeling, the membrane reaction requires at least one mambrane bound reactant.");
+						throw new MathException("Error with reaction: " + pjp.getName() + ".\nIn VCell spatial stochastic modeling, the membrane reaction requires at least one membrane bound reactant.");
 					}
 				}
 			}

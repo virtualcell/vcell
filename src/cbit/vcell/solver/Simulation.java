@@ -36,8 +36,8 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.

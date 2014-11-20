@@ -65,7 +65,7 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
-import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.model.common.VCellErrorMessages;
 
 
 @SuppressWarnings("serial")

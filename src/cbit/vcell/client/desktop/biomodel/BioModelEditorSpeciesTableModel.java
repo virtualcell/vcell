@@ -38,9 +38,9 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTableModel<SpeciesContext> {

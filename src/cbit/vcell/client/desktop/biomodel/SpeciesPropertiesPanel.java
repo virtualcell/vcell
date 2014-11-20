@@ -107,7 +107,7 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
-import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.model.common.VCellErrorMessages;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)

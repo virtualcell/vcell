@@ -31,6 +31,7 @@ import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.export.server.ExportController;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellConnectionFactory;
@@ -40,7 +41,6 @@ import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:31:18 PM)
