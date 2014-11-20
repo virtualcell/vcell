@@ -45,7 +45,6 @@ import cbit.vcell.server.VCellConnection;
 public class AsynchMessageManager implements SimStatusListener {
     private static final int CLIENT_POLLING_INTERVAL = 3 * MessageConstants.SECOND_IN_MS;
 	private EventListenerList listenerList = new EventListenerList();
-    private VCellConnection vcellConnection = null;
     private ClientServerManager clientServerManager = null;
     private int failureCount = 0;
 
@@ -88,10 +87,10 @@ private void poll(boolean reportPerf) {
     	// time the call
 	    long l1 = System.currentTimeMillis();
 	    synchronized (this) {
-	    	if (vcellConnection == null) {
+	    	if (!clientServerManager.isStatusConnected()) {
 	    		return;
 	    	}
-	    	queuedEvents = vcellConnection.getMessageEvents();
+	    	queuedEvents = clientServerManager.getMessageEvents();
 		}
 	    long l2 = System.currentTimeMillis();
 	    double duration = ((double)(l2 - l1)) / 1000;
@@ -392,14 +391,9 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	fireSimStatusEvent(simStatusEvent);
 }
 
-public final void setVCellConnection(VCellConnection vcellConn) {
-	synchronized (this) {
-		this.vcellConnection = vcellConn;
-	}
-}
 
 public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws RemoteException {
 	// just pass it to the the messaging service
-	vcellConnection.reportPerformanceMonitorEvent(pme);
+	clientServerManager.reportPerformanceMonitorEvent(pme);
 }
 }

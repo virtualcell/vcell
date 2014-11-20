@@ -9,9 +9,16 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
-import org.vcell.util.SessionLog;
-import org.vcell.util.document.UserLoginInfo;
+import java.rmi.ConnectException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.UserLoginInfo;
+import java.rmi.server.UnicastRemoteObject;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
@@ -23,6 +30,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public class LocalSimulationControllerMessaging extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.SimulationController {
 	private org.vcell.util.SessionLog fieldSessionLog = null;
 	private RpcSimServerProxy simServerProxy = null;
+    private boolean bClosed = false;
 
 /**
  * MessagingSimulationController constructor comment.
@@ -39,8 +47,9 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, VCMessage
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
+public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) throws RemoteException {
 	fieldSessionLog.print("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
+	checkClosed();
 	simServerProxy.startSimulation(vcSimID,numSimulationScanJobs);
 }
 
@@ -49,8 +58,25 @@ public void startSimulation(VCSimulationIdentifier vcSimID, int numSimulationSca
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(VCSimulationIdentifier vcSimID) {
+public void stopSimulation(VCSimulationIdentifier vcSimID) throws RemoteException{
 	fieldSessionLog.print("LocalSimulationControllerMessaging.stopSimulation(" + vcSimID + ")");
+    checkClosed();
 	simServerProxy.stopSimulation(vcSimID);
+}
+
+private void checkClosed() throws RemoteException {
+	if (bClosed){
+		fieldSessionLog.print("LocalSimulationControllerMessaging closed");
+		throw new ConnectException("LocalSimulationControllerMessaging closed, please reconnect");
+	}
+}
+
+public void close() {
+	//try {
+		bClosed = true;
+	//	UnicastRemoteObject.unexportObject(this, true);
+	//} catch (NoSuchObjectException e) {
+	//	e.printStackTrace();
+	//}
 }
 }

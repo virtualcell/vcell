@@ -260,6 +260,19 @@ public final static int getIntProperty(String propertyName, int defaultValue) {
 	}		
 }
 
+public final static long getLongProperty(String propertyName, long defaultValue) {
+	try {
+		String propertyValue = System.getProperty(propertyName);
+		if (propertyValue==null){
+			return defaultValue;
+		}else{
+			return Long.parseLong(propertyValue);
+		}
+	}catch (Exception e){
+		return defaultValue;
+	}		
+}
+
 
 /**
  * This method was created in VisualAge.

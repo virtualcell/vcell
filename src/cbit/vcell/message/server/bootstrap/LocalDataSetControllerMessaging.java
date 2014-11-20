@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -39,6 +40,7 @@ import cbit.vcell.solvers.CartesianMesh;
 public class LocalDataSetControllerMessaging extends UnicastRemoteObject implements DataSetController {
     private RpcDataServerProxy dataServerProxy = null;
     private SessionLog sessionLog = null;
+    private boolean bClosed = false;
 
 /**
  * This method was created by a SmartGuide.
@@ -51,8 +53,9 @@ public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, VCMessageSe
 
 
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
+	checkClosed();
 	try {
 		return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
 	} catch (DataAccessException e){
@@ -68,9 +71,11 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String[]
+ * @throws RemoteException 
  */
-public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdID) throws DataAccessException {
+public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getDataIdentifiers(vcdID=" + vcdID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getDataIdentifiers(outputContext,vcdID);
 	} catch (DataAccessException e){
@@ -85,9 +90,11 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIde
 /**
  * This method was created by a SmartGuide.
  * @return double[]
+ * @throws RemoteException 
  */
-public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException {
+public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getDataSetTimes(vcdID=" + vcdID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getDataSetTimes(vcdID);
 	} catch (DataAccessException e){
@@ -108,8 +115,9 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * @exception java.rmi.RemoteException The exception description.
  */
 
-public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException {
+public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputContext,org.vcell.util.document.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getFunctions(vcdataID=" + vcdataID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getFunctions(outputContext,vcdataID);
 	} catch (DataAccessException e){
@@ -127,9 +135,11 @@ public cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputContext outputCo
  * @return cbit.plot.PlotData
  * @param varName java.lang.String
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
+ * @throws RemoteException 
  */
-public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException {
+public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time, SpatialSelection spatialSelection) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getLineScan(vcdID=" + vcdID + ", " + varName + ", " + time + ", at " + spatialSelection+")");
+	checkClosed();
 	try {
 		return dataServerProxy.getLineScan(outputContext,vcdID, varName, time, spatialSelection);
 	} catch (DataAccessException e){
@@ -145,9 +155,11 @@ public PlotData getLineScan(OutputContext outputContext,VCDataIdentifier vcdID, 
 /**
  * This method was created by a SmartGuide.
  * @return int[]
+ * @throws RemoteException 
  */
-public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
+public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getMesh(vcdID=" + vcdID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getMesh(vcdID);
 	} catch (DataAccessException e){
@@ -167,8 +179,9 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
+public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getODEData(vcdID=" + vcdID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getODEData(vcdID);
 	} catch (DataAccessException e){
@@ -186,9 +199,11 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
  * @return double[]
  * @param varName java.lang.String
  * @param time double
+ * @throws RemoteException 
  */
-public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
+public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getParticleDataBlock(vcdID=" + vcdID + ",time=" + time + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getParticleDataBlock(vcdID,time);
 	} catch (DataAccessException e){
@@ -204,9 +219,11 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 /**
  * This method was created by a SmartGuide.
  * @return boolean
+ * @throws RemoteException 
  */
-public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException {
+public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getParticleDataExists(vcdID=" + vcdID + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getParticleDataExists(vcdID);
 	} catch (DataAccessException e){
@@ -224,9 +241,11 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
  * @return double[]
  * @param varName java.lang.String
  * @param time double
+ * @throws RemoteException 
  */
-public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
+public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdID, String varName, double time) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getSimDataBlock(vcdID=" + vcdID + ", varName=" + varName + ", time=" + time + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getSimDataBlock(outputContext,vcdID,varName,time);
 	} catch (DataAccessException e){
@@ -244,9 +263,11 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier
  * @return double[]
  * @param varName java.lang.String
  * @param index int
+ * @throws RemoteException 
  */
-public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	} catch (DataAccessException e){
@@ -263,9 +284,11 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * This method was created in VisualAge.
  * @param simInfo cbit.vcell.solver.SimulationInfo
  * @exception org.vcell.util.DataAccessException The exception description.
+ * @throws RemoteException 
  */
-public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException {
+public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
+	checkClosed();
 	try {
 		return dataServerProxy.makeRemoteFile(outputContext,exportSpecs);
 	} catch (DataAccessException e){
@@ -279,8 +302,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs export
 
 
 
-public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws DataAccessException {
+public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getDataProcessingOutput(vcdataID=" + vcdataID + ")");
+    checkClosed();
 	try {
 		return dataServerProxy.getDataProcessingOutput(vcdataID);
 	} catch (DataAccessException e){
@@ -290,6 +314,23 @@ public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcdataID) t
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+private void checkClosed() throws RemoteException {
+	if (bClosed){
+		sessionLog.print("LocalDataSetControllerMessaging closed");
+		throw new ConnectException("LocalDataSetControllerMessaging closed, please reconnect");
+	}
+}
+
+
+public void close() {
+	//try {
+		bClosed = true;
+	//	UnicastRemoteObject.unexportObject(this, true);
+	//} catch (NoSuchObjectException e) {
+	//	e.printStackTrace();
+	//}
 }
 
 }

@@ -54,7 +54,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private ClientTopicMessageCollector clientTopicMessageCollector = null;
 	private int rmiPort;
 
-	private long CLEANUP_INTERVAL = 600*1000;	
+	private long CLEANUP_INTERVAL = 600*1000;	//Wants to be a property?
 	
 /**
  * This method was created by a SmartGuide.
@@ -134,12 +134,14 @@ public void cleanupConnections() {
 					LocalVCellConnectionMessaging messagingConnection = (LocalVCellConnectionMessaging)connections[i];
 
 					if (messagingConnection != null && messagingConnection.isTimeout()) {
-						VCMongoMessage.sendClientConnectionClosing(messagingConnection.getUserLoginInfo());
+						UserLoginInfo userLoginInfo = messagingConnection.getUserLoginInfo();
+						VCMongoMessage.sendClientConnectionClosing(userLoginInfo);
 						synchronized (this) {
+							System.out.println("CLEANUP.  Removing connection from: "+userLoginInfo.getUser().getName());
 							vcellConnectionList.remove(messagingConnection);
 							messagingConnection.close();							
 						}
-						sessionLog.print("Removed connection from " + messagingConnection.getUserLoginInfo().getUser());						
+						sessionLog.print("Removed connection from " + userLoginInfo.getUser());						
 					}
 
 				}
@@ -304,8 +306,12 @@ private synchronized VCellConnection getVCellConnection0(UserLoginInfo userLogin
 			}
 		}else if (vcc instanceof LocalVCellConnectionMessaging){
 			LocalVCellConnectionMessaging lvccm = (LocalVCellConnectionMessaging)vcc;
-			if (lvccm.getUserLoginInfo().getUser().compareEqual(userLoginInfo.getUser()) && lvccm.getUserLoginInfo().getClientId() == userLoginInfo.getClientId()) {
-				return lvccm;
+			try {
+				if (lvccm.getUserLoginInfo().getUser().compareEqual(userLoginInfo.getUser()) && lvccm.getUserLoginInfo().getClientId() == userLoginInfo.getClientId()) {
+					return lvccm;
+				}
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
 		}
 	}
