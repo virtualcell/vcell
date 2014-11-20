@@ -15,6 +15,7 @@ import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
+import org.vcell.util.Pair;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -23,7 +24,6 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.util.VCellErrorMessages;
-import cbit.vcell.xml.sbml_transform.Pair;
 
 @SuppressWarnings("serial")
 class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<MolecularType> {

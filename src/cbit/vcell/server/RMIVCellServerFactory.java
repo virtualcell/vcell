@@ -12,6 +12,7 @@ package cbit.vcell.server;
 
 import java.rmi.*;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;

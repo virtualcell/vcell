@@ -904,7 +904,7 @@ public static DataOperationResults getDataProcessingOutput(DataOperation dataOpe
 				}
 			}
 		}else{
-			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getName()+"' not found");
+			throw new FileNotFoundException("Data Processing Output file '"+dataProcessingOutputFileHDF5.getPath()+"' not found");
 		}
 	}catch(Exception e){
 		e.printStackTrace();

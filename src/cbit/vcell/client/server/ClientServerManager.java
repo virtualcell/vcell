@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
+
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -29,7 +31,6 @@ import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.export.server.ExportController;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.LocalVCellConnectionFactory;
