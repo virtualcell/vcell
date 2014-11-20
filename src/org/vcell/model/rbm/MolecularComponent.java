@@ -10,13 +10,12 @@ import java.util.Map;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.Pair;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
-
-import cbit.vcell.xml.sbml_transform.Pair;
 
 public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_COMPONENT_STATE_DEFINITIONS = "componentStateDefinitions";

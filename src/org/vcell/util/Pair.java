@@ -11,7 +11,7 @@
 /**
  * 
  */
-package cbit.vcell.xml.sbml_transform;
+package org.vcell.util;
 
 
 public class Pair <One, Two> {

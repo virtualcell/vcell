@@ -17,9 +17,9 @@ import java.util.Hashtable;
 import java.util.Random;
 
 import org.junit.Test;
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 

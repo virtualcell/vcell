@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import javax.jms.JMSException;
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;

@@ -12,6 +12,7 @@ package cbit.vcell.server;
 
 import java.rmi.*;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
