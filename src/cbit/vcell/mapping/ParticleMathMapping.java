@@ -58,6 +58,7 @@ import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -71,7 +72,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.util.VCellErrorMessages;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object

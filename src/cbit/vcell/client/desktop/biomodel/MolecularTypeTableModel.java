@@ -21,9 +21,9 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<MolecularType> {

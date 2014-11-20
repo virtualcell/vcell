@@ -28,8 +28,8 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellEditor.MolecularComponentPa
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.util.VCellErrorMessages;
 @SuppressWarnings("serial")
 public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 	

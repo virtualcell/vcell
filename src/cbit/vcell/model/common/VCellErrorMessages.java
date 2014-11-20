@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.util;
+package cbit.vcell.model.common;
 
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;

@@ -29,6 +29,7 @@ import cbit.gui.ModelProcessEquation;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelProcessDynamics;
 import cbit.vcell.model.RbmKineticLaw;
@@ -39,7 +40,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.util.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ModelProcess> {	

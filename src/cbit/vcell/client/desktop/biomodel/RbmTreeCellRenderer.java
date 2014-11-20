@@ -21,7 +21,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.util.VCellErrorMessages;
+import cbit.vcell.model.common.VCellErrorMessages;
 @SuppressWarnings("serial")
 public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	

@@ -19,6 +19,10 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.MathMapping;
@@ -27,6 +31,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -160,39 +165,6 @@ public void addMathOverridesListener(MathOverridesListener newListener) {
 
 /**
  * Insert the method's description here.
- * Creation date: (10/15/2005 6:25:28 PM)
- * @param mathDescription cbit.vcell.math.MathDescription
- */
-private void checkUnresolved(Expression exp, MathDescription mathDescription, String name) {
-	String symbols[] = exp.getSymbols();
-	boolean bExpressionBad = false;
-	for (int i=0;symbols!=null && i<symbols.length;i++){
-		if (symbols[i].equals(name)){
-			//
-			// should not be recursively defined
-			//
-			bExpressionBad = true;
-			break;
-		}
-		Variable symbolVar = mathDescription.getVariable(symbols[i]);
-		if (symbolVar == null || !(symbolVar instanceof Constant)) {
-			bExpressionBad = true;
-			break;
-		}
-	}
-	if (bExpressionBad){
-		Constant mathConstant = (Constant)mathDescription.getVariable(name);
-		if (mathConstant!=null){
-			removeConstant(name);
-		}else{
-			throw new RuntimeException("Constant \""+name+"\" not found in MathDescription");
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (10/24/00 1:23:14 PM)
  * @return boolean
  */
@@ -290,6 +262,15 @@ public String[] getAllConstantNames() {
 	while (en.hasMoreElements()) {
 		v.add((en.nextElement()).getName());
 	}
+	//
+	// add in the overridden parameters that don't exist in the math (these are errors, but have to be displayed).
+	//
+	for (String overridden : getOverridesHash().keySet()){
+		if (!v.contains(overridden)){
+			v.add(overridden);
+		}
+	}
+
 	return (String[])BeanUtils.getArray(v, String.class);
 }
 
@@ -689,9 +670,9 @@ public static List<Element> parseOverrideElementsFromVCML(CommentStringTokenizer
 			throw new DataAccessException("unexpected identifier " + token);
 		}
 		return elements;
-	} catch (Throwable e) {
+	} catch (Exception e) {
 		throw new DataAccessException(
-			"line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage()); 
+			"line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage(),e); 
 	}
 }
 
@@ -703,36 +684,6 @@ public static List<Element> parseOverrideElementsFromVCML(CommentStringTokenizer
 public void removeMathOverridesListener(MathOverridesListener newListener) {
 	aMathOverridesListener = MathOverridesEventMulticaster.remove(aMathOverridesListener, newListener);
 	return;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/6/01 8:38:02 AM)
- * @param mathDescription cbit.vcell.math.MathDescription
- */
-private void revertUnboundExpressions(MathDescription mathDescription) {
-	//
-	//  remove those expressions that contain unresolved symbols
-	//
-	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
-	while (mathOverrideNamesEnum.hasMoreElements()){
-		String name = mathOverrideNamesEnum.nextElement();
-		MathOverrides.Element element = getOverridesHash().get(name);
-		if (element.actualValue != null) {
-			// regular override
-			Expression exp = element.actualValue;
-			checkUnresolved(exp, mathDescription, name);
-		} else {
-			// scan override
-			ConstantArraySpec cas = element.spec;
-			for (int i = 0; i < cas.getConstants().length; i++){
-				Expression exp = cas.getConstants()[i].getExpression();
-				checkUnresolved(exp, mathDescription, name);
-			}
-		}
-	}
-
 }
 
 
@@ -755,15 +706,6 @@ private static java.util.Vector<Element> toVector (java.util.Enumeration<Element
 }
 
 
-/**
- * Returns the value to which the specified key is mapped in this hashtable.
- *
- * @param   key   a key in the hashtable.
- * @return  the value to which the key is mapped in this hashtable;
- *          <code>null</code> if the key is not mapped to any value in
- *          this hashtable.
- * @see     #put(Object, Object)
- */
 void updateFromMathDescription() {
 	MathDescription mathDescription = getSimulation().getMathDescription();
 	//
@@ -781,7 +723,7 @@ void updateFromMathDescription() {
 	//  	1) try to "repair" overridden constants for automatically generated constant names (via math generation)
 	//         which have changed due to changes to Math generation
 	//
-	//      2) if not repaired, remove obsolete override
+	//      2) if not repaired, will be reported as an issue.
 	//
 	HashMap<String, String> renamedMap = new HashMap<String, String>();
 	boolean bNameRepaired = true;
@@ -803,28 +745,45 @@ void updateFromMathDescription() {
 						element.name = name_repaired_to_uM;
 						overridesHash.put(name_repaired_to_uM, element);
 						renamedMap.put(name, name_repaired_to_uM);
+						removeConstant(name);
 						bNameRepaired = true;
 						break;
 					}						
 				}
 				//
-				// test for renamed initial condition constant (changed from _init to _init_molecules_per_um2)
+				// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
 				//
 				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
 					String name_repaired_to_molecule_per_um2 = name.replace(
 							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecule_per_um2);
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
 					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_molecule_per_um2;
 						overridesHash.put(name_repaired_to_molecule_per_um2, element);
 						renamedMap.put(name, name_repaired_to_molecule_per_um2);
+						removeConstant(name);
 						bNameRepaired = true;
 						break;
 					}						
 				}
-				// whether we could repair or not, remove the old name
-				removeConstant(name);
+				//
+				// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
+				//
+				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2)){
+					String name_repaired_to_molecule_per_um2 = name.replace(
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2, 
+							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
+					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
+						Element element = overridesHash.remove(name);
+						element.name = name_repaired_to_molecule_per_um2;
+						overridesHash.put(name_repaired_to_molecule_per_um2, element);
+						renamedMap.put(name, name_repaired_to_molecule_per_um2);
+						removeConstant(name);
+						bNameRepaired = true;
+						break;
+					}						
+				}
 			}
 		}
 	}
@@ -845,10 +804,6 @@ void updateFromMathDescription() {
 		}
 	}
 	
-	//
-	//  revert those expressions that contain unresolved symbols (back to the MathDescription expressions).
-	//
-	revertUnboundExpressions(mathDescription);
 	refreshDependencies();
 }
 
@@ -897,4 +852,106 @@ public void refreshDependencies() {
 		throw new RuntimeException(e.getMessage());
 	}	
 }
+
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ */
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	
+	MathDescription mathDescription = getSimulation().getMathDescription();
+	//
+	// get list of names of constants in this math
+	//
+	Enumeration<Constant> enumeration = mathDescription.getConstants();
+	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+	while (enumeration.hasMoreElements()) {
+		Constant constant = enumeration.nextElement();
+		mathDescriptionHash.add(constant.getName());
+	}
+	//
+	//  for any elements in this MathOverrides but not in the new MathDescription, add an "error" issue
+	//
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
+	while (mathOverrideNamesEnum.hasMoreElements()){
+		String name = mathOverrideNamesEnum.nextElement();
+		if (!mathDescriptionHash.contains(name)){
+			Issue issue = new Issue(getSimulation(), issueContext, IssueCategory.Simulation_Override_NotFound, VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_OVERRIDE_NOTFOUND, name, getSimulation().getName()), Issue.SEVERITY_ERROR);
+			issueList.add(issue);
+		}
+		Variable var = mathDescription.getVariable(name);
+		if (getSimulation().getSimulationOwner()!=null){
+			Issue issue = getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext, getSimulation(),name);
+			if (issue!=null){
+				issueList.add(issue);
+			}
+		}
+	}	
+}
+
+/**
+ * explicit user action invokes this method (currently pressing a button), this is not automatic cleanup of old/obsolete models ... we want the user to address the issues.
+ */
+public void removeUnusedOverrides(){
+	MathDescription mathDescription = getSimulation().getMathDescription();
+	//
+	// get list of names of constants in this math
+	//
+	Enumeration<Constant> enumeration = mathDescription.getConstants();
+	java.util.HashSet<String> mathDescriptionHash = new java.util.HashSet<String>();
+	while (enumeration.hasMoreElements()) {
+		Constant constant = enumeration.nextElement();
+		mathDescriptionHash.add(constant.getName());
+	}
+	//
+	//  for any elements in this MathOverrides but not in the new MathDescription, add an "error" issue
+	//
+	ArrayList<String> overridesToDelete = new ArrayList<String>();
+	Enumeration<String> mathOverrideNamesEnum = getOverridesHash().keys();
+	while (mathOverrideNamesEnum.hasMoreElements()){
+		String name = mathOverrideNamesEnum.nextElement();
+		if (!mathDescriptionHash.contains(name)){
+			// constant 'name' no longer part of mathDescription
+			overridesToDelete.add(name);
+		}else if (getSimulation().getSimulationOwner()!=null){
+			IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+			if (getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext,getSimulation(),name)!=null){
+				// constant 'name' is part of math, but simulation owner doesn't want you to override it.
+				overridesToDelete.add(name);
+			}
+		}
+	}
+	for (String deletedName : overridesToDelete) {
+		removeConstant(deletedName);
+	}
+}
+
+public boolean hasUnusedOverrides() {
+	ArrayList<Issue> issueList = new ArrayList<Issue>();
+	IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+	gatherIssues(issueContext,issueList);
+	for (Issue issue : issueList) {
+		if (issue.getSeverity()==Issue.SEVERITY_ERROR && (issue.getCategory().equals(IssueCategory.Simulation_Override_NotFound) || issue.getCategory().equals(IssueCategory.Simulation_Override_NotSupported))){
+			return true;
+		}
+	}
+	return false;
+}
+
+
+public boolean isUnusedParameter(String name) {
+	Variable var = getSimulation().getMathDescription().getVariable(name);
+	if (var instanceof Constant){
+		if (getSimulation().getSimulationOwner()!=null){
+			IssueContext issueContext = new IssueContext(ContextType.Simulation,getSimulation(),null);
+			if (getSimulation().getSimulationOwner().gatherIssueForMathOverride(issueContext,getSimulation(),name)!=null){
+				return true;
+			}
+		}
+		return false;
+	}else{
+		return true;
+	}
+}
+
 }
