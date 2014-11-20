@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.xml;
+import org.apache.log4j.Logger;
+
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.parser.*;
 /**
@@ -17,7 +19,11 @@ import cbit.vcell.parser.*;
  * @author: Daniel Lucio
  */
 public abstract class XmlBase {
-
+	
+	/**
+	 * Log4j logger
+	 */
+	protected static final Logger lg = Logger.getLogger(XmlBase.class);
 
 /**
  * Default XmlBase constructor .

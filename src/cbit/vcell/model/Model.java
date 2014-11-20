@@ -753,22 +753,22 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	}
 
 
-	public void setDescription(String description) throws PropertyVetoException {
+	public void setDescription(String description) throws ModelPropertyVetoException {
 		throw new RuntimeException("cannot change description of a reserved symbol");
 	}
 
 
-	public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+	public void setExpression(Expression expression) throws ModelPropertyVetoException, ExpressionBindingException {
 		throw new RuntimeException("cannot change the value of a reserved symbol");
 	}
 
 
-	public void setName(String name) throws PropertyVetoException {
+	public void setName(String name) throws ModelPropertyVetoException {
 		throw new RuntimeException("cannot rename a reserved symbols");
 	}
 
 
-	public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+	public void setUnitDefinition(VCUnitDefinition unit) throws ModelPropertyVetoException {
 		throw new RuntimeException("cannot change unit of a reserved symbol");
 	}
 
@@ -897,7 +897,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression expression) throws PropertyVetoException { 
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
@@ -1338,21 +1338,21 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return new ReactionRule(Model.this, label, bReversible);
 		}
 		
-		public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+		public void vetoableChange(PropertyChangeEvent evt) throws ModelPropertyVetoException {
 			if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 				if (evt.getSource() instanceof MolecularType) {
 					String newName = (String) evt.getNewValue();
 					for (MolecularType molecularType : molecularTypeList) {
 						if (molecularType != evt.getSource()) {
 							if (molecularType.getName().equals(newName)) {
-								throw new PropertyVetoException("Molecular Type '" + newName + "' already exists!", evt);
+								throw new ModelPropertyVetoException("Molecular Type '" + newName + "' already exists!", evt);
 							}
 						}
 					}
 					for (RbmObservable observable : observableList) {
 						if (observable != evt.getSource()) {
 							if (observable.getName().equals(newName)) {
-								throw new PropertyVetoException("'" + newName + "' is already used for an observable!", evt);
+								throw new ModelPropertyVetoException("'" + newName + "' is already used for an observable!", evt);
 							}
 						}
 					}
@@ -1361,14 +1361,14 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					for (MolecularType molecularType : molecularTypeList) {
 						if (molecularType != evt.getSource()) {
 							if (molecularType.getName().equals(newName)) {
-								throw new PropertyVetoException("'" + newName + "' is already used for a molecular Type!", evt);
+								throw new ModelPropertyVetoException("'" + newName + "' is already used for a molecular Type!", evt);
 							}
 						}
 					}
 					for (RbmObservable observable : observableList) {
 						if (observable != evt.getSource()) {
 							if (observable.getName().equals(newName)) {
-								throw new PropertyVetoException("Observable '" + newName + "' already exists!", evt);
+								throw new ModelPropertyVetoException("Observable '" + newName + "' already exists!", evt);
 							}
 						}
 					}
@@ -1414,7 +1414,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
 		}
 		
-		public Parameter addParameter(String name, Expression expression) throws ModelException, PropertyVetoException {		
+		public Parameter addParameter(String name, Expression expression) throws ModelException,PropertyVetoException {		
 			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
 		}
 		
@@ -2130,6 +2130,7 @@ private String getFreeMembraneName() {
 
 /**
  * @return java.lang.String
+ * @throws PropertyVetoException 
  */
 public SimpleReaction createSimpleReaction(Structure structure) {
 	String reactionStepName = getReactionName();
@@ -2139,7 +2140,7 @@ public SimpleReaction createSimpleReaction(Structure structure) {
 		return simpleReaction;
 	} catch (PropertyVetoException e) {
 		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e.getMessage(),e);
 	}
 }
 
@@ -2180,7 +2181,7 @@ public FluxReaction createFluxReaction(Membrane membrane) {
 
 /**
  * @return java.lang.String
- * @throws PropertyVetoException 
+ * @throws ModelPropertyVetoException 
  */
 public SpeciesContext createSpeciesContext(Structure structure) {
 	return createSpeciesContext(structure, null);
@@ -3145,7 +3146,7 @@ public void setDiagrams(int index, Diagram diagrams) {
 /**
  * Sets the modelParameters property (cbit.vcell.model.ModelParameter[]) value.
  * @param modelParameters The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
+ * @exception java.beans.ModelPropertyVetoException The exception description.
  * @see #getModelParameters
  */
 public void setModelParameters(ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
@@ -3174,7 +3175,7 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 /**
  * Sets the name property (java.lang.String) value.
  * @param name The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
+ * @exception java.beans.ModelPropertyVetoException The exception description.
  * @see #getName
  */
 public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
@@ -3437,11 +3438,11 @@ public ReservedSymbol getReservedSymbolByRole(ReservedSymbolRole role) {
  * @param e java.beans.PropertyChangeEvent
  * @exception java.beans.PropertyVetoException The exception description.
  */
-public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVetoException {
+public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoException {
 	if (e.getSource() instanceof Structure){
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			if (getStructure((String)e.getNewValue())!=null){
-				throw new PropertyVetoException("another structure already using name "+e.getNewValue(),e);
+				throw new ModelPropertyVetoException("another structure already using name "+e.getNewValue(),e);
 			}
 		}
 	}
@@ -3449,7 +3450,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
 			if (getReactionStep(newName)!=null){
-				throw new PropertyVetoException("another reaction step is already using name '"+newName+"'",e);
+				throw new ModelPropertyVetoException("another reaction step is already using name '"+newName+"'",e);
 			}
 			// validateNamingConflicts("Reaction",ReactionStep.class, newName, e);
 		}
@@ -3459,7 +3460,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			String newName = (String)e.getNewValue();
 			SpeciesContext sc = getSpeciesContext(newName);
 			if (sc != null){
-				throw new PropertyVetoException("another "+SpeciesContext.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+e.getNewValue()+"'",e);
+				throw new ModelPropertyVetoException("another "+SpeciesContext.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+e.getNewValue()+"'",e);
 			}
 			validateNamingConflicts("SpeciesContext",SpeciesContext.class, newName, e);
 		}
@@ -3469,7 +3470,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			String newName = (String)e.getNewValue();
 			SymbolTableEntry existingSTE = getLocalEntry(newName);
 			if (existingSTE instanceof MembraneVoltage){
-				throw new PropertyVetoException("new name \""+newName+"\" conflicts with the voltage parameter name for membrane \""+((MembraneVoltage)existingSTE).getMembrane().getName()+"\"",e);
+				throw new ModelPropertyVetoException("new name \""+newName+"\" conflicts with the voltage parameter name for membrane \""+((MembraneVoltage)existingSTE).getMembrane().getName()+"\"",e);
 			}
 			validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newName, e);
 		}
@@ -3479,7 +3480,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			String newName = (String)e.getNewValue();
 			SymbolTableEntry existingSTE = getLocalEntry(newName);
 			if (existingSTE instanceof StructureSize){
-				throw new PropertyVetoException("new name \""+newName+"\" conflicts with the size parameter name for structure \""+((StructureSize)existingSTE).getStructure().getName()+"\"",e);
+				throw new ModelPropertyVetoException("new name \""+newName+"\" conflicts with the size parameter name for structure \""+((StructureSize)existingSTE).getStructure().getName()+"\"",e);
 			}
 			validateNamingConflicts("StructureSize",StructureSize.class, newName, e);
 		}
@@ -3488,7 +3489,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
 			if (getModelParameter(newName)!=null){
-				throw new PropertyVetoException("Model Parameter with name '"+newName+"' already exists.",e);
+				throw new ModelPropertyVetoException("Model Parameter with name '"+newName+"' already exists.",e);
 			}
 			validateNamingConflicts("Model Parameter", ModelParameter.class, newName, e);
 		}
@@ -3498,16 +3499,17 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		if (e.getPropertyName().equals("commonName") && !e.getOldValue().equals(e.getNewValue())){
 			String commonName = (String)e.getNewValue();
 			if (commonName==null){
-				throw new PropertyVetoException("species name cannot be null",e);
+				throw new ModelPropertyVetoException("species name cannot be null",e);
 			}
 			//
 			// check that new name is not duplicated and that new Name isn't ReservedSymbols
 			//
 			if (getSpecies(commonName) != null){
-				throw new PropertyVetoException("Species with common name '"+commonName+"' already defined",e);
+				throw new ModelPropertyVetoException("Species with common name '"+commonName+"' already defined",e);
 			}
 			if (getReservedSymbolByName(commonName)!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e);
+				throw new ModelPropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e,
+						ModelPropertyVetoException.Category.RESERVED_SYMBOL);
 			}
 		}
 	}
@@ -3516,7 +3518,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		Structure topStructure = null;
 		Structure newStructures[] = (Structure[])e.getNewValue();
 		if (newStructures==null){
-			throw new PropertyVetoException("structures cannot be null",e);
+			throw new ModelPropertyVetoException("structures cannot be null",e);
 		}
 		//
 		// look for duplicates of structure name, structure size name, membrane voltage name within new "structures" array
@@ -3528,14 +3530,14 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			
 			String newStructureName = newStructures[i].getName();
 			if (structNameSet.contains(newStructureName)){
-				throw new PropertyVetoException("multiple structures with name '"+newStructureName+"' defined",e);
+				throw new ModelPropertyVetoException("multiple structures with name '"+newStructureName+"' defined",e);
 			}
 			structNameSet.add(newStructureName);
 			
 			if (newStructures[i] instanceof Membrane){
 				String newMembraneVoltageName = ((Membrane)newStructures[i]).getMembraneVoltage().getName();
 				if (structSymbolSet.contains(newMembraneVoltageName)){
-					//throw new PropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
+					//throw new ModelPropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
 				}
 				structSymbolSet.add(newMembraneVoltageName);
 				validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newMembraneVoltageName, e);
@@ -3543,7 +3545,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			
 			String newStructureSizeName = newStructures[i].getStructureSize().getName();
 			if (structSymbolSet.contains(newStructureSizeName)){
-				throw new PropertyVetoException("structure '"+newStructureName+"' has structure Size name '"+newStructureSizeName+"' that conflicts with another Voltage name or Size name",e);
+				throw new ModelPropertyVetoException("structure '"+newStructureName+"' has structure Size name '"+newStructureSizeName+"' that conflicts with another Voltage name or Size name",e);
 			}
 			structSymbolSet.add(newStructureSizeName);
 			validateNamingConflicts("StructureSize",StructureSize.class, newStructureSizeName, e);
@@ -3553,7 +3555,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES)){
 		Species newSpeciesArray[] = (Species[])e.getNewValue();
 		if (newSpeciesArray==null){
-			throw new PropertyVetoException("species cannot be null",e);
+			throw new ModelPropertyVetoException("species cannot be null",e);
 		}
 		//
 		// check that names are not duplicated and that no common names are ReservedSymbols
@@ -3562,10 +3564,11 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		for (int i=0;i<newSpeciesArray.length;i++){
 			String commonName = newSpeciesArray[i].getCommonName();
 			if (commonNameSet.contains(commonName)){
-				throw new PropertyVetoException("multiple species with common name '"+commonName+"' defined",e);
+				throw new ModelPropertyVetoException("multiple species with common name '"+commonName+"' defined",e);
 			}
 			if (getReservedSymbolByName(commonName)!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e);
+				throw new ModelPropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e,
+						ModelPropertyVetoException.Category.RESERVED_SYMBOL);
 			}
 			commonNameSet.add(commonName);
 		}
@@ -3581,7 +3584,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				}
 			}
 			if (!bFound){
-				throw new PropertyVetoException("species[] missing '"+sc.getSpecies().getCommonName()+"' referenced in SpeciesContext '"+sc.getName()+"'",e);
+				throw new ModelPropertyVetoException("species[] missing '"+sc.getSpecies().getCommonName()+"' referenced in SpeciesContext '"+sc.getName()+"'",e);
 			}
 		}
 	}
@@ -3594,7 +3597,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		HashSet<String> namesSet = new HashSet<String>();
 		for (int i=0;i<newModelParams.length;i++){
 			if (namesSet.contains(newModelParams[i].getName())){
-				throw new PropertyVetoException("Multiple model/global parameters with same name '"+newModelParams[i].getName()+"' defined",e);
+				throw new ModelPropertyVetoException("Multiple model/global parameters with same name '"+newModelParams[i].getName()+"' defined",e);
 			}
 			namesSet.add(newModelParams[i].getName());
 			
@@ -3637,7 +3640,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 						}
 					}
 					msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
-					throw new PropertyVetoException(msg,e);
+					throw new ModelPropertyVetoException(msg,e);
 				}
 				// At this point, it is not referenced in a reactionStep, find out if the missing model is used in other model parameters
 				// Enough to check in newModelParams array
@@ -3659,7 +3662,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 						}
 					}
 					msg = msg + "\n\nCannot delete '" + missingMP.getName() + "'.";
-					throw new PropertyVetoException(msg,e);
+					throw new ModelPropertyVetoException(msg,e);
 				}
 			}
 		}
@@ -3668,17 +3671,17 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_SPECIES_CONTEXTS)){
 		SpeciesContext newSpeciesContextArray[] = (SpeciesContext[])e.getNewValue();
 		if (newSpeciesContextArray==null){
-			throw new PropertyVetoException("speciesContexts cannot be null",e);
+			throw new ModelPropertyVetoException("speciesContexts cannot be null",e);
 		}
 		//
 		// check that the species and structure for each speciesContext already exist.
 		//
 		for (int i=0;i<newSpeciesContextArray.length;i++){
 			if (!contains(newSpeciesContextArray[i].getSpecies())){
-				throw new PropertyVetoException("can't add speciesContext '"+newSpeciesContextArray[i].getName()+"' before species '"+newSpeciesContextArray[i].getSpecies().getCommonName()+"'",e);
+				throw new ModelPropertyVetoException("can't add speciesContext '"+newSpeciesContextArray[i].getName()+"' before species '"+newSpeciesContextArray[i].getSpecies().getCommonName()+"'",e);
 			}
 			if (!contains(newSpeciesContextArray[i].getStructure())){
-				throw new PropertyVetoException("can't add speciesContext '"+newSpeciesContextArray[i].getName()+"' before structure '"+newSpeciesContextArray[i].getStructure().getName()+"'",e);
+				throw new ModelPropertyVetoException("can't add speciesContext '"+newSpeciesContextArray[i].getName()+"' before structure '"+newSpeciesContextArray[i].getStructure().getName()+"'",e);
 			}
 		}
 		//
@@ -3687,7 +3690,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		HashSet<String> nameSet = new HashSet<String>();
 		for (int i=0;i<newSpeciesContextArray.length;i++){
 			if (nameSet.contains(newSpeciesContextArray[i].getName())){
-				throw new PropertyVetoException("multiple speciesContexts with name '"+newSpeciesContextArray[i].getName()+"' defined",e);
+				throw new ModelPropertyVetoException("multiple speciesContexts with name '"+newSpeciesContextArray[i].getName()+"' defined",e);
 			}
 			nameSet.add(newSpeciesContextArray[i].getName());
 			
@@ -3707,7 +3710,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 					}
 				}
 				if (!bFound){
-					throw new PropertyVetoException("reaction '"+fieldReactionSteps[i].getName()+"' requires '"+rpArray[k].getSpeciesContext().getName()+"'",e);
+					throw new ModelPropertyVetoException("reaction '"+fieldReactionSteps[i].getName()+"' requires '"+rpArray[k].getSpeciesContext().getName()+"'",e);
 				}
 			}
 		}
@@ -3721,7 +3724,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		for(int i =0;i<newReactionStepArr.length;i+= 1){
 			if(newReactionStepArr[i] == null){
-				throw new PropertyVetoException("Null cannot be added to ReactionStep",e);
+				throw new ModelPropertyVetoException("Null cannot be added to ReactionStep",e);
 			}
 		}
 		//
@@ -3732,10 +3735,11 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		for (int i=0;i<newReactionStepArr.length;i++){
 			String rxnName = newReactionStepArr[i].getName();
 			if (nameSet.contains(rxnName)){
-				throw new PropertyVetoException("multiple reactionSteps with name '"+rxnName+"' defined",e);
+				throw new ModelPropertyVetoException("multiple reactionSteps with name '"+rxnName+"' defined",e);
 			}
 			if (getReservedSymbolByName(rxnName)!=null){
-				throw new PropertyVetoException("cannot use reserved symbol '"+rxnName+"' as a Reaction name",e);
+				throw new ModelPropertyVetoException("cannot use reserved symbol '"+rxnName+"' as a Reaction name",e,
+						ModelPropertyVetoException.Category.RESERVED_SYMBOL);
 			}
 			nameSet.add(rxnName);
 
@@ -3756,7 +3760,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 					}
 				}
 				if (!bFound){
-					throw new PropertyVetoException("reaction '"+newReactionStepArr[i].getName()+"' requires '"+rpArray[k].getSpeciesContext().getName()+"'",e);
+					throw new ModelPropertyVetoException("reaction '"+newReactionStepArr[i].getName()+"' requires '"+rpArray[k].getSpeciesContext().getName()+"'",e);
 				}
 			}
 		}
@@ -3767,18 +3771,18 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
  * if newSTE is null, then newName is the proposed name of a reaction
  * else newSTE is the symbol to be added.
  */
-private void validateNamingConflicts(String symbolDescription, Class<?> newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws PropertyVetoException {
+private void validateNamingConflicts(String symbolDescription, Class<?> newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws ModelPropertyVetoException {
 	//
 	// validate lexicon
 	//
 	if (newSymbolName==null){
-		throw new PropertyVetoException(symbolDescription+" name is null.",e);
+		throw new ModelPropertyVetoException(symbolDescription+" name is null.",e);
 	}
 	if (newSymbolName.length()<1){
-		throw new PropertyVetoException(symbolDescription+" name is empty (zero length).",e);
+		throw new ModelPropertyVetoException(symbolDescription+" name is empty (zero length).",e);
 	}
 	if (!newSymbolName.equals(TokenMangler.fixTokenStrict(newSymbolName))){
-		throw new PropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'.",e);
+		throw new ModelPropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'.",e);
 	}
 	
 	//
@@ -3787,7 +3791,7 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	if (!newSymbolClass.equals(ReactionStep.class)){
 		for (int j = 0; j < fieldReactionSteps.length; j++){
 			if (fieldReactionSteps[j].getName().equals(newSymbolName)){
-				throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
+				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
 			}
 		}
 	}
@@ -3809,21 +3813,21 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	// old and new symbols of different type but same name, throw exception 
 	//
 	if (localSTE instanceof StructureSize){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Size in Structure '"+((StructureSize)localSTE).getStructure().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Size in Structure '"+((StructureSize)localSTE).getStructure().getName()+"'",e);
 	}else if (localSTE instanceof MembraneVoltage){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Voltage Context in Structure '"+((MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Voltage Context in Structure '"+((MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
 	}else if (localSTE instanceof SpeciesContext){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Species Context in Structure '"+((SpeciesContext)localSTE).getStructure().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Species Context in Structure '"+((SpeciesContext)localSTE).getStructure().getName()+"'",e);
 	}else if (localSTE instanceof MembraneVoltage){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Membrane Voltage in Membrane '"+((Membrane.MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Membrane Voltage in Membrane '"+((Membrane.MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
 	}else if (localSTE instanceof StructureSize){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Structure Size in Structure '"+((Structure.StructureSize)localSTE).getStructure().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Structure Size in Structure '"+((Structure.StructureSize)localSTE).getStructure().getName()+"'",e);
 	}else if (localSTE instanceof ModelParameter){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Model Parameter",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Model Parameter",e);
 	}else if (localSTE instanceof ReservedSymbol){
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a reserved symbol (e.g. 'x','y','z','t','KMOLE','_T_','_F_','_R_', ...)",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a reserved symbol (e.g. 'x','y','z','t','KMOLE','_T_','_F_','_R_', ...)",e);
 	}else{
-		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a '"+localSTE.getClass().getName()+"' in context '"+localSTE.getNameScope().getName()+"'",e);
+		throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a '"+localSTE.getClass().getName()+"' in context '"+localSTE.getNameScope().getName()+"'",e);
 	}
 	
 }
@@ -4073,7 +4077,7 @@ public String isValidForStochApp()
 	}
 
 
-	public RateRuleVariable addRateRuleVariable(RateRuleVariable rateRuleVar) throws PropertyVetoException {
+	public RateRuleVariable addRateRuleVariable(RateRuleVariable rateRuleVar) throws ModelPropertyVetoException {
 		
 		if (rateRuleVar.getStructure() != null && !contains(rateRuleVar.getStructure())){
 			throw new RuntimeException("structure "+rateRuleVar.getStructure().getName()+" not found in model");
@@ -4089,7 +4093,7 @@ public String isValidForStochApp()
 		return rateRuleVar;
 	}
 
-	public void removeRateRuleVariable(RateRuleVariable rateRuleVar) throws PropertyVetoException {
+	public void removeRateRuleVariable(RateRuleVariable rateRuleVar) throws ModelPropertyVetoException {
 		if (contains(rateRuleVar)){
 			RateRuleVariable[] newRateRules = (RateRuleVariable[])BeanUtils.removeElement(fieldRateRuleVariables, rateRuleVar);
 			setRateRuleVariables(newRateRules);
@@ -4143,7 +4147,7 @@ public String isValidForStochApp()
 		}
 	}
 
-	public RateRuleVariable createRateRuleVariable(Structure structure) throws PropertyVetoException {
+	public RateRuleVariable createRateRuleVariable(Structure structure) throws ModelPropertyVetoException {
 		int count=0;
 		String rateRuleVarName = null;
 		while (true) {
@@ -4163,7 +4167,7 @@ public String isValidForStochApp()
 			}
 			addRateRuleVariable(rateRuleVar);
 			return rateRuleVar;
-		} catch (PropertyVetoException e) {
+		} catch (ModelPropertyVetoException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}

@@ -11,6 +11,8 @@ import org.vcell.sbml.SBMLSolver;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
+import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
@@ -64,7 +66,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	public File solve(String filePrefix, File outDir, String sbmlFileName, SimSpec testSpec) throws IOException, SolverException, SbmlException {
 		try {
-		    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
+		    cbit.util.xml.VCLogger sbmlImportLogger = new cbit.util.xml.VCLogger() {
 		        private StringBuffer buffer = new StringBuffer();
 		        public void sendMessage(int messageLevel, int messageType) {
 		            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
@@ -73,7 +75,12 @@ public class VCellSBMLSolver implements SBMLSolver {
 		        public void sendMessage(int messageLevel, int messageType, String message) {
 		            System.out.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
 		            if (messageLevel==VCLogger.HIGH_PRIORITY){
-		            	throw new RuntimeException("SBML Import Error: "+message);
+		            	SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
+		            	if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {
+		            		cat = SBMLImportException.Category.RESERVED_SPATIAL;
+		            	}
+		            	
+		            	throw new SBMLImportException(message,cat);
 		            }
 		        }
 		        public void sendAllMessages() {
@@ -86,7 +93,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		    // and import SBML  (sbml->bioModel)
-			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, logger, false);
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlFileName, sbmlImportLogger, false);
 			BioModel bioModel = sbmlImporter.getBioModel();
 //			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 //			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
@@ -109,7 +116,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    
 			    // re-import bioModel from exported sbml
 			    XMLSource vcml_sbml_Src = new XMLSource(vcml_sbml);
-			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml_Src, false);
+			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(sbmlImportLogger, vcml_sbml_Src, false);
 			    String vcml_sbml_vcml = XmlHelper.bioModelToXML(newBioModel);
 			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath(), true);
 			    
