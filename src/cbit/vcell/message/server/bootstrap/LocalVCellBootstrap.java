@@ -20,6 +20,7 @@ import java.util.Date;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
@@ -53,7 +54,6 @@ import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.server.LocalVCellServer;
 import cbit.vcell.server.VCellBootstrap;

@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.server;
+package org.vcell.util;
 
 /**
  * This type was created in VisualAge.

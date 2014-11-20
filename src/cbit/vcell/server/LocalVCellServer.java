@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.Vector;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CacheStatus;
 import org.vcell.util.DataAccessException;

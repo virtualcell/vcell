@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 
+import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.UserLoginInfo;
 
 /**

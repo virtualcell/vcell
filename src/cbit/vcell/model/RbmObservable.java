@@ -20,6 +20,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.RbmEventHandler;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Pair;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
@@ -33,7 +34,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.xml.sbml_transform.Pair;
 
 public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener,
 	IssueSource, Displayable

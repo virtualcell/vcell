@@ -28,6 +28,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.PropertyConstants;
@@ -40,7 +41,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.xml.sbml_transform.Pair;
 
 public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener,
 	IssueSource, Displayable
