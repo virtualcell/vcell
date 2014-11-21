@@ -10,8 +10,11 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -38,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
@@ -66,6 +70,7 @@ import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
@@ -136,7 +141,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private MolecularType molecularType;
 	private JLabel titleLabel = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
-	
+	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+	SpeciesTypeLargeShape speciesTypeShape = new SpeciesTypeLargeShape(20, 20, new MolecularType("empty"));
+
 	private JPopupMenu popupMenu;
 	private JMenuItem addMenuItem;
 	private JMenuItem deleteMenuItem;	
@@ -216,6 +223,28 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	}
 
 	private void initialize() {
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new GridBagLayout());
+		leftPanel.setBackground(Color.white);		
+		JPanel rightPanel = new JPanel() {
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+//				g.drawString("This is my custom Panel!", 10, 20);
+				speciesTypeShape.paintSelf(g);
+			}
+		};
+		rightPanel.setLayout(new GridBagLayout());
+		rightPanel.setBackground(Color.white);		
+		
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(350);
+		splitPane.setResizeWeight(0.9);
+		splitPane.setLeftComponent(leftPanel);
+		splitPane.setRightComponent(rightPanel);
+
+
+		
+		
 		molecularTypeTree = new BioModelNodeEditableTree();
 		molecularTypeTreeModel = new MolecularTypeTreeModel(molecularTypeTree);
 		molecularTypeTree.setModel(molecularTypeTreeModel);
@@ -246,7 +275,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4,4,4,4);
 		titleLabel = new JLabel("Construct Solid Geometry");
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-		add(titleLabel, gbc);
+		leftPanel.add(titleLabel, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -256,7 +285,17 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weighty = 1.0;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.fill = GridBagConstraints.BOTH;
-		add(new JScrollPane(molecularTypeTree), gbc);
+		leftPanel.add(new JScrollPane(molecularTypeTree), gbc);
+		
+		Dimension minimumSize = new Dimension(100, 150);	//provide minimum sizes for the two components in the split pane
+		splitPane.setMinimumSize(minimumSize);
+		leftPanel.setMinimumSize(minimumSize);
+		rightPanel.setMinimumSize(minimumSize);
+		setName("MolecularTypePropertiesPanel");
+		setLayout(new BorderLayout());
+		add(splitPane, BorderLayout.CENTER);
+		setBackground(Color.white);
+
 	}
 	
 	private JMenuItem getAddMenuItem() {
@@ -308,7 +347,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularType = newValue;
 		molecularTypeTreeModel.setMolecularType(molecularType);
 		if (molecularType != null) {
-			titleLabel.setText("Properties for Molecluar Type: " + molecularType.getName());
+			titleLabel.setText("Properties for Species Type: " + molecularType.getName());
+			speciesTypeShape = new SpeciesTypeLargeShape(20, 20, molecularType);
+			splitPane.getRightComponent().repaint();
 		}
 	}
 	
