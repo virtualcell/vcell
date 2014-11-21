@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.desktop;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Frame;
@@ -20,6 +21,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.vcell.util.Hex;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -389,10 +391,15 @@ private void updateFields() {
 	private JEditorPane getDtrpnUseThisLink() {
 		if (dtrpnUseThisLink == null) {
 			dtrpnUseThisLink = new JEditorPane();
-			dtrpnUseThisLink.setBackground(SystemColor.menu);
+			dtrpnUseThisLink.setBorder(null);
+			dtrpnUseThisLink.setBackground(getBackground());
 			dtrpnUseThisLink.setFont(new Font("Arial", Font.BOLD, 14));
 			dtrpnUseThisLink.setContentType("text/html");
-			dtrpnUseThisLink.setText("<html><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</font></html>");
+			String s =
+					"<html><body bgcolor=\"#"+Hex.toString(new byte[] {(byte)(getBackground().getRed()&0xFF),(byte)(getBackground().getGreen()&0xFF),(byte)(getBackground().getBlue()&0xFF)})+
+					"\"><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</font></body></html>";
+//			System.out.println(s);
+			dtrpnUseThisLink.setText(s);
 			dtrpnUseThisLink.setEditable(false);
 			dtrpnUseThisLink.addHyperlinkListener(new HyperlinkListener() {
 		        @Override
@@ -405,4 +412,14 @@ private void updateFields() {
 		}
 		return dtrpnUseThisLink;
 	}
+
+
+	@Override
+	public void setBackground(Color bg) {
+		// TODO Auto-generated method stub
+		super.setBackground(bg);
+		System.out.println("-----------"+bg);
+	}
+	
+	
 }
