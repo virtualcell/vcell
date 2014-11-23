@@ -735,9 +735,20 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 }
 
 
-public void sendErrorReport(Throwable exception) {
+/**
+ * calls {@link #sendErrorReport(Throwable, cbit.vcell.server.VCellConnection.ExtraContext)} with null ExtraContext
+ * @param exception
+ */
+public void sendErrorReport(Throwable exception ) {
+	sendErrorReport(exception, null);
+}
+/**
+ * @param exception
+ * @param extraContext may be null
+ */
+public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext extraContext) {
 	try {
-		getVcellConnection().sendErrorReport(exception);
+		getVcellConnection().sendErrorReport(exception, extraContext);
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}

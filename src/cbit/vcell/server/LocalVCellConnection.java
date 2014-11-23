@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 import org.vcell.util.BeanUtils;
@@ -32,6 +33,7 @@ import cbit.sql.KeyFactory;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
+import cbit.vcell.server.VCellConnection.ExtraContext;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.LocalDataSetController;
 /**
@@ -197,6 +199,13 @@ public void dataJobMessage(DataJobEvent event) {
 	if (getUserLoginInfo().getUser().equals(event.getUser())) {
 		messageService.messageEvent(event);
 	}
+}
+
+
+@Override
+public void sendErrorReport(Throwable exception, ExtraContext extra)
+		throws RemoteException {
+	BeanUtils.sendErrorReport(exception,extra.toString());
 }
 
 
