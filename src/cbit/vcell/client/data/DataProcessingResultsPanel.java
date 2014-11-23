@@ -213,7 +213,14 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 //				
 //				totalColumns += numColumns;
 			}
-			int numTimes = dataProcessingOutputInfo.getVariableTimePoints().length;
+			if (dataProcessingOutputInfo == null) {
+				throw new RuntimeException("dataProcessingOutInfo null, thread = " + Thread.currentThread().getName());
+			}
+			final double[] vtp = dataProcessingOutputInfo.getVariableTimePoints();
+			if (vtp == null) {
+				throw new RuntimeException("getVariableTimePoints( ) null, thread = " + Thread.currentThread().getName());
+			}
+			final int numTimes = vtp.length;
 			double[][] plotDatas = new double[totalColumns][numTimes];
 			plotDatas[0] = dataProcessingOutputInfo.getVariableTimePoints();//assumes all times same
 			String[] plotNames = new String[totalColumns - 1];
