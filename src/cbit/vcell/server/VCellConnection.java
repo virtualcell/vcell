@@ -23,6 +23,33 @@ import cbit.rmi.event.PerformanceMonitorEvent;
  * 
  */
 public interface VCellConnection extends Remote {
+	/**
+	 * provide extra context to email. Implement as separate class to make
+	 * extension easier in the future
+	 */
+	public static class ExtraContext {
+		final String threadName;
+
+		/**
+		 * explicitly set thread name
+		 * @param threadName
+		 */
+		public ExtraContext(String threadName) {
+			this.threadName = threadName;
+		}
+		
+		/**
+		 * set thread name to current thread
+		 */
+		public ExtraContext() {
+			threadName = Thread.currentThread().getName();
+		}
+
+		@Override
+		public String toString() {
+			return "ExtraContext [threadName=" + threadName + "]";
+		}
+	}
 /**
  * Insert the method's description here.
  * Creation date: (6/8/2001 1:17:05 AM)
@@ -49,6 +76,7 @@ public UserLoginInfo getUserLoginInfo() throws RemoteException;
  */
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException;
 void sendErrorReport(Throwable exception) throws RemoteException;
+void sendErrorReport(Throwable exception, ExtraContext extra) throws RemoteException;
 
 MessageEvent[] getMessageEvents() throws RemoteException;
 void reportPerformanceMonitorEvent(PerformanceMonitorEvent performanceMonitorEvent) throws RemoteException;

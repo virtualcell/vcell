@@ -81,6 +81,11 @@ import cbit.vcell.util.AmplistorUtils;
  * @author: 
  */
 public final class BeanUtils {
+	
+	/**
+	 * newline used in email of Content-Type: text/plain
+	 */
+	public static final String PLAINTEXT_EMAIL_NEWLINE = "\r\n";
 
 	public static class XYZ {
 		public double x;
@@ -826,6 +831,15 @@ public final class BeanUtils {
 	}
 
 	public static void sendErrorReport(Throwable exception) throws RuntimeException {
+		sendErrorReport(exception,null);
+	}
+	/**
+	 * send error report
+	 * @param exception
+	 * @param supplement extra information to add, may be null
+	 * @throws RuntimeException
+	 */
+	public static void sendErrorReport(Throwable exception, String supplement) throws RuntimeException {
 		if (exception == null) {
 			throw new RuntimeException("Send Error Report, exception is null");
 		}
@@ -848,6 +862,9 @@ public final class BeanUtils {
 			", published by "+(System.getProperty("java.vendor"))+", on the "+ (System.getProperty("os.arch"))+" architecture running version "+(System.getProperty("os.version"))+
 			" of the "+(System.getProperty("os.name"))+" operating system";
 		content = content + platform;
+		if (supplement != null) {
+			content += PLAINTEXT_EMAIL_NEWLINE + supplement; 
+		}
 
 		try {
 			BeanUtils.sendSMTP(smtpHost, Integer.parseInt(smtpPort), from, to, subject, content);

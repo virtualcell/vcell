@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -50,6 +51,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -58,6 +60,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
+import cbit.vcell.server.VCellConnection;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)
@@ -763,6 +766,7 @@ public static class ErrorContext {
  */
 public static void showErrorDialog(final Component requester, final String message, final Throwable exception, 
 		final ErrorContext errorContext) {
+		final VCellConnection.ExtraContext extraContext = new VCellConnection.ExtraContext();
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			final boolean haveContext = errorContext != null;
@@ -791,6 +795,12 @@ public static void showErrorDialog(final Component requester, final String messa
 				initialCheckState = errorContext.userPreferences.getGenPrefBoolean(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT);
 				addModelSendInformation(panel, initialCheckState);
 			}
+			Collection<String> suggestions = ExceptionInterpreter.instance().suggestions(message);
+			if (suggestions != null) {
+				SuggestionPanel sp = new SuggestionPanel();
+				sp.setSuggestedSolution(suggestions);
+				panel.add(sp,BorderLayout.NORTH);
+			}
 				
 			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
 			JDialog dialog = pane.createDialog(requester, "Error");
@@ -808,14 +818,14 @@ public static void showErrorDialog(final Component requester, final String messa
 						else {
 							throwableToSend = new RuntimeException("User declined to share model",exception);
 						}
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend, extraContext);
 						if (userSelectedSendModel != initialCheckState) {
 							errorContext.userPreferences.setGenPref(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT,userSelectedSendModel);
 						}
 					}
 					else {
 						assert(haveContext == false);
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception);
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception, extraContext);
 					}
 					
 				}
