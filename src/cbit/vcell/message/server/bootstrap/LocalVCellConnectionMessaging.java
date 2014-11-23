@@ -37,6 +37,7 @@ import cbit.vcell.server.PerformanceMonitoringFacility;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnection.ExtraContext;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -250,10 +251,21 @@ public boolean isTimeout() throws java.rmi.RemoteException {
 	return messageService.timeSinceLastPoll() > MAX_TIME_WITHOUT_POLLING_MS;
 }
 
-
+/**
+ * @inheritDoc
+ */
+@Override
 public void sendErrorReport(Throwable exception) throws RemoteException {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
-	BeanUtils.sendErrorReport(exception);
+	BeanUtils.sendErrorReport(exception, null);
+}
+
+@Override
+public void sendErrorReport(Throwable exception, ExtraContext extra)
+		throws RemoteException {
+	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
+	BeanUtils.sendErrorReport(exception,extra.toString( ));
+	
 }
 
 public MessageEvent[] getMessageEvents() throws RemoteException {
