@@ -40,7 +40,8 @@ public class SwingPaintDemo {
 class MyPanel extends JPanel {
 	
 	MolecularType mt = new MolecularType("egfr");
-	SpeciesTypeLargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt);
+	Graphics panelContext = getGraphics();
+	SpeciesTypeLargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext);
 
 	public MyPanel() {
 		setBorder(BorderFactory.createLineBorder(Color.black));
