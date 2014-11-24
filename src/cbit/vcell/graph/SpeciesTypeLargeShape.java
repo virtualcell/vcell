@@ -1,38 +1,75 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
 
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 
 public class SpeciesTypeLargeShape {
 	
-	private static final int componentSeparation = 3;		// distance between components
-	private static final int componentDiameter = 14;		// diameter of the component
-	private static final int baseWidth = 35;
-	private static final int baseHeight = 28;
+	private static final int baseWidth = 25;
+	private static final int baseHeight = 30;
 	private static final int cornerArc = 25;
 
 	private int xPos = 0;
 	private int yPos = 0;
-		private int width = baseWidth;
+	private int width = baseWidth;
 	private int height = baseHeight;
+	
+	final Graphics graphicsContext;
+	
+	private final String name;
+	private final MolecularType mt;
 
-	MolecularType mt = null;
-
-	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt) {
+	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext) {
 		this.mt = mt;
 		this.xPos = xPos;
 		this.yPos = yPos;
-		width = baseWidth + mt.getComponentList().size() * (componentDiameter + componentSeparation);	// adjusted for # of components
-		width += 5 * mt.getName().length();
-		height = baseHeight + componentDiameter / 2;
+		this.graphicsContext = graphicsContext;
+		// adjustment for name width and for the width of the components
+		// TODO: properly calculate the width based on the font and size of each letter
+		int numComponents = mt.getComponentList().size();
+		int offsetFromRight = 0;		// total width of all components, based on the length of their names
+		for(int i=numComponents-1; i >=0; i--) {
+			MolecularComponent mc = getSpeciesType().getComponentList().get(i);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc);
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+		}
+		name = adjustForSize(mt.getName());
+		width = baseWidth + offsetFromRight;	// adjusted for # of components
+//		width += 6 * name.length();				// adjust for the length of the name of the species type
+		width += getStringWidth(name);				// adjust for the length of the name of the species type
+		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
 	}
 	
+	private String adjustForSize(String name) {
+		int len = mt.getName().length();
+		if(len > 10) {
+			return(mt.getName().substring(0,5) + "..." + mt.getName().substring(len-3, len));
+		} else {
+			return(mt.getName());
+		}
+	}
+	
+	private int getStringWidth(String s) {
+		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
+		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		int stringWidth = fm.stringWidth(s);
+//		AffineTransform at = font.getTransform();
+//		FontRenderContext frc = new FontRenderContext(at,true,true);
+//		int textwidth = (int)(font.getStringBounds(s, frc).getWidth());
+		return stringWidth;
+	}
+
 	public void setX(int xPos){ 
 		this.xPos = xPos;
 	}
@@ -51,6 +88,10 @@ public class SpeciesTypeLargeShape {
 	public int getHeight(){
 		return height;
 	}
+	public MolecularType getSpeciesType() {
+		return mt;
+	}
+	
 	public void paintSelf(Graphics g) {
 		paintSpecies(g);
 	}
@@ -70,20 +111,15 @@ public class SpeciesTypeLargeShape {
 		g2.setPaint(Color.DARK_GRAY);
 		g2.draw(rect);
 		
-		g2.drawString(mt.getName(), xPos+8, yPos+baseHeight-8);
+		Font fontOld = g.getFont();
+		Color colorOld = g.getColor();
+		Font font = fontOld.deriveFont(Font.BOLD);
+		g.setFont(font);
+		g.setColor(Color.black);
+		g2.drawString(name, xPos+10, yPos+baseHeight-9);
+		g.setFont(fontOld);
+		g.setColor(colorOld);
 		
-		for(int i=0; i<mt.getComponentList().size(); i++) {
-			paintComponent(g, mt.getComponentList().size()-i);
-		}
-	}
-	private void paintComponent(Graphics g, int index) {
-		int fromRight = index*(componentDiameter + componentSeparation);
-		int x = xPos + width - fromRight - 5;		// we compute distance from right end
-		int y = yPos + baseHeight - componentDiameter/2;
-		
-		g.setColor(Color.YELLOW);
-		g.fillOval(x, y, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
-		g.setColor(Color.BLACK);
-		g.drawOval(x, y, componentDiameter, componentDiameter);
+		MolecularComponentLargeShape.paintComponents(g, this);
 	}
 }
