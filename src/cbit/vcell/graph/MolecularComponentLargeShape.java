@@ -88,8 +88,11 @@ public class MolecularComponentLargeShape {
 	// ----------------------------------------------------------------------------------------------
 	private void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
-		g.setColor(Color.YELLOW);
-		
+		if(mc.getComponentStateDefinitions().isEmpty()) {
+			g.setColor(Color.lightGray);
+		} else {
+			g.setColor(Color.yellow);
+		}
 		g.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
 		g.setColor(Color.BLACK);
 		g.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
