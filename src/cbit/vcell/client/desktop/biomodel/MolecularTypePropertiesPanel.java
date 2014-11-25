@@ -211,6 +211,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					} else {
 						return;
 					}
+				} else {
+					if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
+						molecularType.removeMolecularComponent(molecularComponent);
+					}
 				}
 			}
 		} else if (selectedUserObject instanceof ComponentStateDefinition) {
