@@ -41,7 +41,7 @@ public class SpeciesTypeLargeShape {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponent mc = getSpeciesType().getComponentList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize(mt.getName());
@@ -53,8 +53,8 @@ public class SpeciesTypeLargeShape {
 	
 	private String adjustForSize(String name) {
 		int len = mt.getName().length();
-		if(len > 10) {
-			return(mt.getName().substring(0,5) + "..." + mt.getName().substring(len-3, len));
+		if(len > 12) {
+			return(mt.getName().substring(0,7) + ".." + mt.getName().substring(len-3, len));
 		} else {
 			return(mt.getName());
 		}
@@ -120,6 +120,6 @@ public class SpeciesTypeLargeShape {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 		
-		MolecularComponentLargeShape.paintComponents(g, this);
+		MolecularComponentLargeShape.paintComponents(g, this, graphicsContext);
 	}
 }
