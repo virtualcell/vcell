@@ -34,6 +34,7 @@ public class DocumentWindowAboutBox extends JPanel {
 	private static final String COPASI_WEB_URL = "http://www.copasi.org";
 	private static final String SMOLDYN_WEB_URL = "http://www.smoldyn.org";
 	private static final String BIONETGEN_WEB_URL = "http://bionetgen.org";
+	private static final String ACKNOWLEGE_PUB__WEB_URL = "http://vcell.org/vcell_models/how_submit_publication.html";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
 	private JLabel copyright = null;
@@ -212,6 +213,24 @@ public class DocumentWindowAboutBox extends JPanel {
 		return bioNetGenText;
 	}
 	
+	private JLabel getAcknowledgePubAttribution() {
+		JLabel ackPubJlabel = new JLabel();
+			try {
+				
+				ackPubJlabel.setName("AcknowledgePub");
+				ackPubJlabel.setText("<html>Use <font color=blue><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database. </html>");
+				ackPubJlabel.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, ACKNOWLEGE_PUB__WEB_URL, "Failed to open BioNetGen webpage ("+ACKNOWLEGE_PUB__WEB_URL+")", false);
+					}
+				});
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		
+		return ackPubJlabel;
+	}
+
 	public JLabel getVersion() {
 		if (version == null) {
 			try {
@@ -312,6 +331,27 @@ public class DocumentWindowAboutBox extends JPanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.LINE_START;
 			add(getBioNetGenAttribution(), gbc);
+			
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(getAcknowledgePubAttribution(), gbc);
+
+			gridy ++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.insets = new Insets(10,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			add(new JLabel("<html>Virtual Cell is Supported by NIH Grant P41 GM103313 from the National Institute for General Medical Sciences.</html>"), gbc);
+
 		} catch (Throwable throwable) {
 			handleException(throwable);
 		}
