@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,6 +35,7 @@ import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -82,6 +84,8 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
+import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.SpeciesTypeSmallShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
@@ -774,11 +778,57 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		};
 		
+		//
+		// this renderer only paints the shape of the molecular type (species type)
+		//
+		DefaultScrollTableCellRenderer rbmMolecularTypeShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			SpeciesTypeSmallShape stls = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == speciesTypeTableModel) {
+						selectedObject = speciesTypeTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof MolecularType) {
+							MolecularType mt = (MolecularType)selectedObject;
+//							Icon icon = VCellIcons.issueErrorIcon;
+//							setIcon(icon);
+//							setText("alabala");
+							
+							Graphics cellContext = table.getGraphics();
+							if(mt != null) {
+								stls = new SpeciesTypeSmallShape(4, 1, mt, cellContext);
+							} else {
+								stls = null;
+							}
+						}
+					}
+				}
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(stls != null) {
+					stls.paintSelf(g);
+				}
+			}
+		};
+		
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
+		
+		// all "depictions" have their own renderer
+		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);

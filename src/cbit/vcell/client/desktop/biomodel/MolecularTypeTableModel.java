@@ -28,9 +28,10 @@ import cbit.vcell.parser.SymbolTable;
 @SuppressWarnings("serial")
 class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<MolecularType> {
 
-	private enum Column {
+	public enum Column {
 		name("Name"),
-		bngl_pattern("BNGL Pattern");
+		bngl_pattern("BNGL Pattern"),
+		depiction("Depiction");
 		
 		String columeName;
 		Column(String col) {
@@ -49,6 +50,8 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		super(table);
 		setColumns(columnNames);
 	}
+	
+	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		Column col = Column.values()[columnIndex];
 		MolecularType molecularType = getValueAt(rowIndex);
@@ -80,6 +83,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		return null;
 	}
 
+	@Override
 	public void setValueAt(Object value, int row, int column) {
 		if (getModel() == null || value == null) {
 			return;
@@ -150,6 +154,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		}
 	}
 	
+	@Override
 	public boolean isCellEditable(int row, int column) {
 		Column col = Column.values()[column];
 		if (col == Column.name) {
@@ -195,6 +200,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		return Object.class;
 	}
 	
+	@Override
 	public String checkInputValue(String inputValue, int row, int columnIndex) {
 		String errMsg = null;
 		final Column col = Column.values()[columnIndex];
@@ -270,15 +276,18 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		return null;
 	}
 	
+	@Override
 	public SymbolTable getSymbolTable(int row, int column) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
 	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row,
 			int column) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	@Override
 	public Set<String> getAutoCompletionWords(int row, int column) {
 		// TODO Auto-generated method stub
 		return null;
