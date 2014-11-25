@@ -154,10 +154,12 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		Column col = Column.values()[column];
 		if (col == Column.name) {
 			return true;
+		} else if(col == Column.bngl_pattern) {
+			// we allow editing as long as it's a new molecular type or there are no components yet
+			MolecularType molecularType = getValueAt(row);
+			return molecularType == null || molecularType.getComponentList().size() == 0;
 		} else {
-//			MolecularType molecularType = getValueAt(row);		
-//			return molecularType == null || molecularType.getComponentList().size() == 0;
-			return true;
+			return false;
 		}
 	}
 	

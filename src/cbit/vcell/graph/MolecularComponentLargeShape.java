@@ -30,16 +30,22 @@ public class MolecularComponentLargeShape {
 	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext) {
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
-		if(mc.getName().length() > 8) {
-			int len = mc.getName().length();
-			name = mc.getName().substring(0,4) + ".." + mc.getName().substring(len-2, len);
-		} else {
-			name = mc.getName();
-		}
-		textWidth = getStringWidth(name.substring(1));	// we provide space for the component name
+		name = adjustForSize();
+		// there's already space enough in the circle if the component name is 1 letter only
+		// we add the +2 to slightly adjust width if that single letter is long (like "m")
+		textWidth = getStringWidth(name.substring(1)) + 2;	// we provide space for the component name
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
+	}
+
+	private String adjustForSize() {
+		int len = mc.getName().length();
+		if(len > 8) {
+			return(mc.getName().substring(0,4) + ".." + mc.getName().substring(len-2, len));
+		} else {
+			return(mc.getName());
+		}
 	}
 
 	private Font deriveComponentFont() {
