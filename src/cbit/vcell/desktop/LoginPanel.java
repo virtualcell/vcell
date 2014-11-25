@@ -412,14 +412,4 @@ private void updateFields() {
 		}
 		return dtrpnUseThisLink;
 	}
-
-
-	@Override
-	public void setBackground(Color bg) {
-		// TODO Auto-generated method stub
-		super.setBackground(bg);
-		System.out.println("-----------"+bg);
-	}
-	
-	
 }
