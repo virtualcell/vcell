@@ -44,14 +44,16 @@ public class SpeciesTypeLargeShape {
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
-		name = adjustForSize(mt.getName());
+		name = adjustForSize();
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 //		width += 6 * name.length();				// adjust for the length of the name of the species type
 		width += getStringWidth(name);				// adjust for the length of the name of the species type
 		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
 	}
 	
-	private String adjustForSize(String name) {
+	private String adjustForSize() {
+		// we truncate to 12 characters any name longer than 12 characters
+		// we keep the first 7 letters, then 2 points, then the last 3 letters
 		int len = mt.getName().length();
 		if(len > 12) {
 			return(mt.getName().substring(0,7) + ".." + mt.getName().substring(len-3, len));
