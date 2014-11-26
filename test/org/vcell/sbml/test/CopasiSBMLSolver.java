@@ -1,11 +1,7 @@
 package org.vcell.sbml.test;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.StringTokenizer;
 
 import org.COPASI.CCopasiDataModel;
 import org.COPASI.CCopasiMessage;
@@ -26,7 +22,6 @@ import org.COPASI.CTrajectoryProblem;
 import org.COPASI.CTrajectoryTask;
 import org.COPASI.ReportItemVector;
 import org.vcell.sbml.SBMLSolver;
-import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 
@@ -36,7 +31,7 @@ import cbit.vcell.solver.SolverException;
 
 public class CopasiSBMLSolver implements SBMLSolver {
 	
-	private String columnDelimiter = ", ";
+	public static final String COLUMN_DELIMITER = ", ";
 	
 	static
 	{
@@ -47,95 +42,10 @@ public class CopasiSBMLSolver implements SBMLSolver {
 			e.printStackTrace(System.out);
 		}
 	}
-
-	public static void main(String[] args){
-		try {
-			if (args.length!=2){
-				System.out.println("usage: CopasiSBMLSolver sbmlDirectory outputDirectory");
-				System.exit(-1);
-			}
-			File dataDir = new File(args[0]);
-			if (!dataDir.exists()){
-				throw new RuntimeException("inputDirectory "+dataDir.getAbsolutePath()+" doesn't exist");
-			}
-			File outDir = new File(args[1]);
-			if (!outDir.exists()){
-				outDir.mkdirs();
-			}
-			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log")));
-			try {
-				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error* | *Exception* | *Comments* |");
-				File[] sbmlFiles = dataDir.listFiles();
-				for (File sbmlFile : sbmlFiles){
-					StringTokenizer stringTokenizer = new StringTokenizer(sbmlFile.getName(),".",false);
-					String sbmlID = stringTokenizer.nextToken();
-					String filePrefix = sbmlID;
-					String bioModelsPrefix = "http://www.ebi.ac.uk/compneur-srv/biomodels-main/publ-model.do?mid=";
-					String sbmlLink = "[["+bioModelsPrefix+sbmlID+"]["+sbmlID+"]]";
-					PrintStream saved_sysout = System.out;
-					PrintStream saved_syserr = System.err;
-					PrintStream new_sysout = null;
-					PrintStream new_syserr = null;
-					try {
-						File logFile = new File(outDir,filePrefix+".log");
-						new_sysout = new PrintStream(logFile);
-						new_syserr = new_sysout;
-						System.setOut(new_sysout);
-						System.setErr(new_syserr);
-						StringBuffer combinedErrorBuffer = new StringBuffer();
-						String sbmlText = SBMLUtils.readStringFromFile(sbmlFile.getAbsolutePath());
-						//
-						// get SBML model "name" (or "id")
-						//
-						SimSpec simSpec = SimSpec.fromSBML(sbmlText);
-						
-						String passedString = "%NO%";
-						String relErrorString = "";
-						try {
-							//
-							// get COPASI solution (time and species concentrations)
-							//
-							try {
-								CopasiSBMLSolver copasiSolver = new CopasiSBMLSolver();
-								copasiSolver.solve(filePrefix, outDir, sbmlText, simSpec);
-							}catch (Exception e){
-								printWriter.println("solveCopasi() failed");
-								e.printStackTrace(printWriter);
-								System.out.println("solveCopasi() failed");
-								e.printStackTrace(System.out);
-								combinedErrorBuffer.append(" *COPASI* _"+e.getMessage()+"_ ");
-							}
-
-						}catch (Exception e){
-							e.printStackTrace(printWriter);
-							combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
-						}
-						printWriter.println(" | "+sbmlLink+" | "+sbmlID+" | "+passedString+" | "+relErrorString+" | "+combinedErrorBuffer.toString()+" | |");
-						printWriter.flush();
-					}finally{
-						if (new_sysout!=null){
-							new_sysout.close();
-							new_sysout=null;
-						}
-						if (new_syserr!=null){
-							new_syserr.close();
-							new_syserr=null;
-						}
-						System.setOut(saved_sysout);
-						System.setOut(saved_syserr);
-					}
-				}
-			}finally{
-				printWriter.close();
-			}
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
-		System.exit(0);
-	}
 	
+	@Override
 	public String getResultsFileColumnDelimiter(){
-		return columnDelimiter;
+		return COLUMN_DELIMITER;
 	}
 	
 	public File solve(String filePrefix, File outDir, String sbmlText, SimSpec simSpec) throws IOException, SolverException, SbmlException {
@@ -288,18 +198,91 @@ public class CopasiSBMLSolver implements SBMLSolver {
 	    }
 		return outputFile;		
 	}
-
 	
+	/*public static void main(String[] args){
+	try {
+		if (args.length!=2){
+			System.out.println("usage: CopasiSBMLSolver sbmlDirectory outputDirectory");
+			System.exit(-1);
+		}
+		File dataDir = new File(args[0]);
+		if (!dataDir.exists()){
+			throw new RuntimeException("inputDirectory "+dataDir.getAbsolutePath()+" doesn't exist");
+		}
+		File outDir = new File(args[1]);
+		if (!outDir.exists()){
+			outDir.mkdirs();
+		}
+		PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log")));
+		try {
+			printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error* | *Exception* | *Comments* |");
+			File[] sbmlFiles = dataDir.listFiles();
+			for (File sbmlFile : sbmlFiles){
+				StringTokenizer stringTokenizer = new StringTokenizer(sbmlFile.getName(),".",false);
+				String sbmlID = stringTokenizer.nextToken();
+				String filePrefix = sbmlID;
+				String bioModelsPrefix = "http://www.ebi.ac.uk/compneur-srv/biomodels-main/publ-model.do?mid=";
+				String sbmlLink = "[["+bioModelsPrefix+sbmlID+"]["+sbmlID+"]]";
+				PrintStream saved_sysout = System.out;
+				PrintStream saved_syserr = System.err;
+				PrintStream new_sysout = null;
+				PrintStream new_syserr = null;
+				try {
+					File logFile = new File(outDir,filePrefix+".log");
+					new_sysout = new PrintStream(logFile);
+					new_syserr = new_sysout;
+					System.setOut(new_sysout);
+					System.setErr(new_syserr);
+					StringBuffer combinedErrorBuffer = new StringBuffer();
+					String sbmlText = SBMLUtils.readStringFromFile(sbmlFile.getAbsolutePath());
+					//
+					// get SBML model "name" (or "id")
+					//
+					SimSpec simSpec = SimSpec.fromSBML(sbmlText);
+					
+					String passedString = "%NO%";
+					String relErrorString = "";
+					try {
+						//
+						// get COPASI solution (time and species concentrations)
+						//
+						try {
+							CopasiSBMLSolver copasiSolver = new CopasiSBMLSolver();
+							copasiSolver.solve(filePrefix, outDir, sbmlText, simSpec);
+						}catch (Exception e){
+							printWriter.println("solveCopasi() failed");
+							e.printStackTrace(printWriter);
+							System.out.println("solveCopasi() failed");
+							e.printStackTrace(System.out);
+							combinedErrorBuffer.append(" *COPASI* _"+e.getMessage()+"_ ");
+						}
 
-	public void close() throws SolverException {
-		// TODO Auto-generated method stub
-		
+					}catch (Exception e){
+						e.printStackTrace(printWriter);
+						combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
+					}
+					printWriter.println(" | "+sbmlLink+" | "+sbmlID+" | "+passedString+" | "+relErrorString+" | "+combinedErrorBuffer.toString()+" | |");
+					printWriter.flush();
+				}finally{
+					if (new_sysout!=null){
+						new_sysout.close();
+						new_sysout=null;
+					}
+					if (new_syserr!=null){
+						new_syserr.close();
+						new_syserr=null;
+					}
+					System.setOut(saved_sysout);
+					System.setOut(saved_syserr);
+				}
+			}
+		}finally{
+			printWriter.close();
+		}
+	}catch (Exception e){
+		e.printStackTrace(System.out);
 	}
-
-	public void open() throws SolverException {
-		// TODO Auto-generated method stub
-		
-	}
-
+	System.exit(0);
+}*/
 
 }

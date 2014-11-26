@@ -41,6 +41,7 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.junit.Test;
+import org.vcell.sbml.SBMLSolver;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
@@ -247,6 +248,8 @@ public class BiomodelsDB_TestSuite {
 
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			flusher.add(printWriter);
+			//SBMLSolver copasiSBMLSolver = new CopasiSBMLSolver();
+			SBMLSolver copasiSBMLSolver = new CopasiStandaloneSolver(); 
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
 				removeToxic(modelIDs, printWriter);
@@ -293,13 +296,46 @@ public class BiomodelsDB_TestSuite {
 						printWriter.flush( ); 
 						try {
 							//
+							// get VCell solution with an embedded "ROUND TRIP" (time and species concentrations)
+							//
+							ODESolverResultSet vcellResults_RT = null;
+							try {
+								VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
+								vcellSBMLSolver_RT.setRoundTrip(false);
+								// TODO try with round-trip later.
+								String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
+								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlFile.getAbsolutePath(), simSpec);
+								vcellResults_RT = readResultFile(resultFile, columnDelimiter); 
+								bioModelInfo.setAttribute("vcell_ran","true");
+							}catch (BNGException e){
+								bngWriter.println(modelID + " " + e.getMessage());
+								throw e;
+							}catch (SBMLImportException e) {
+								ModelException me = new ModelException(modelID,e);
+								write(sbmlWriter,me);
+								sbmlExceptions.add(me);
+								throw e;
+							}catch (Exception e){
+								printWriter.println("vcell solve(roundtrip=true) failed");
+								e.printStackTrace(printWriter);
+								System.out.println("vcell solve(roundtrip=true) failed");
+								e.printStackTrace(System.out);
+								combinedErrorBuffer.append(" *VCELL_RT* _"+e.getMessage()+"_ ");
+
+								Element vcellSolverReport = new Element("SolverReport");
+								vcellSolverReport.setAttribute("solverName","vcell");
+								vcellSolverReport.setAttribute("errorMessage",e.getMessage());
+								bioModelInfo.addContent(vcellSolverReport);
+
+								bioModelInfo.setAttribute("vcell_ran","false");
+							}
+							//
 							// get COPASI solution (time and species concentrations)
 							//
 							ODESolverResultSet copasiResults = null;
 
 
 							try {
-								CopasiSBMLSolver copasiSBMLSolver = new CopasiSBMLSolver();
 								String columnDelimiter = copasiSBMLSolver.getResultsFileColumnDelimiter();
 								File resultFile = copasiSBMLSolver.solve(filePrefix, outDir, sbmlText, simSpec);
 								copasiResults = readResultFile(resultFile, columnDelimiter);
@@ -377,40 +413,7 @@ public class BiomodelsDB_TestSuite {
 								}
 							}
 							 */
-							//
-							// get VCell solution with an embedded "ROUND TRIP" (time and species concentrations)
-							//
-							ODESolverResultSet vcellResults_RT = null;
-							try {
-								VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
-								vcellSBMLSolver_RT.setRoundTrip(false);
-								// TODO try with round-trip later.
-								String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
-								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlFile.getAbsolutePath(), simSpec);
-								vcellResults_RT = readResultFile(resultFile, columnDelimiter); 
-								bioModelInfo.setAttribute("vcell_ran","true");
-							}catch (BNGException e){
-								bngWriter.println(modelID + " " + e.getMessage());
-								throw e;
-							}catch (SBMLImportException e) {
-								ModelException me = new ModelException(modelID,e);
-								write(sbmlWriter,me);
-								sbmlExceptions.add(me);
-								throw e;
-							}catch (Exception e){
-								printWriter.println("vcell solve(roundtrip=true) failed");
-								e.printStackTrace(printWriter);
-								System.out.println("vcell solve(roundtrip=true) failed");
-								e.printStackTrace(System.out);
-								combinedErrorBuffer.append(" *VCELL_RT* _"+e.getMessage()+"_ ");
-
-								Element vcellSolverReport = new Element("SolverReport");
-								vcellSolverReport.setAttribute("solverName","vcell");
-								vcellSolverReport.setAttribute("errorMessage",e.getMessage());
-								bioModelInfo.addContent(vcellSolverReport);
-
-								bioModelInfo.setAttribute("vcell_ran","false");
-							}
+						
 							//
 							// compare results from COPASI and VCELL_RT
 							//

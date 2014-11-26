@@ -14,6 +14,7 @@
 package org.vcell.sbml;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Vector;
@@ -21,11 +22,13 @@ import java.util.Vector;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-public class SimSpec {
-	private String[] varsList = null;
-	private double endTime = 0.0;
-	private int numTimeSteps = 0;
-	private double absTolerance = 1e-10;
+@SuppressWarnings("serial")
+public class SimSpec implements Serializable {
+	private final String[] varsList;
+	private final double endTime;
+	private final int numTimeSteps;
+	//private double absTolerance = 1e-10;
+	private final double absTolerance;
 	public double getAbsTolerance() {
 		return absTolerance;
 	}
@@ -34,15 +37,11 @@ public class SimSpec {
 		return relTolerance;
 	}
 
-	private double relTolerance = 1e-12;
+	private final double relTolerance;
+	//private double relTolerance = 1e-12;
 	
 	public SimSpec(String[] argVarsList, double argEndTime, int argSteps) {
-		if (argVarsList == null) {
-			throw new IllegalArgumentException("No variables in list");
-		}
-		this.varsList = argVarsList;
-		this.endTime = argEndTime;
-		this.numTimeSteps = argSteps;
+		this(argVarsList,argEndTime,argSteps,1e-10,1e-12);
 	}
 
 	public SimSpec(String[] argVarsList, double argEndTime, int argSteps, double absTol, double relTol) {
@@ -93,6 +92,7 @@ public class SimSpec {
 		Vector<String> varNames = new Vector<String>();
 		Element listOfSpeciesElement = sbmlModelElement.getChild("listOfSpecies",sbmlNamespace);
 		if (listOfSpeciesElement!=null){
+			@SuppressWarnings("unchecked")
 			List<Element> speciesElementList = listOfSpeciesElement.getChildren("species", sbmlNamespace);
 			for (Element speciesElement : speciesElementList){
 				varNames.add(speciesElement.getAttributeValue("id"));
