@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import cbit.vcell.resource.ResourceUtil;
 
@@ -22,7 +25,7 @@ import cbit.vcell.resource.ResourceUtil;
  * Creation date: (10/22/2002 4:33:29 PM)
  * @author: Ion Moraru
  */
-public class Executable {
+public class Executable implements IExecutable {
 	private String[] command = null;
 	private Process process = null;
 	private String outputString = "";
@@ -31,6 +34,9 @@ public class Executable {
 	private ExecutableStatus status = null;
 	private long timeoutMS = 0;
 	private File workingDir = null;
+	private Thread runThread = null;
+	private CountDownLatch stoppingLatch = null;
+	private AtomicBoolean active = new AtomicBoolean(false);
 	
 /**
  * sometimes command and input file name have space, we need to escape space;
@@ -96,22 +102,29 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.E
 	
 	System.out.println("Executable.executeProcess(" + getCommand() + ") starting...");
 	try {
-		// reset just in case
-		setOutputString("");
-		setErrorString("");
-		setExitValue(null);
-		ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
-		ResourceUtil.setEnvForOperatingSystem(pb.environment());
-		pb.directory(workingDir);
-		// start the process
-		Process p = pb.start();
-		setProcess(p);
-		
-		// monitor the process; blocking call
-		// will update the fields from StdOut and StdErr
-		// will return the exit code once the process terminates
-		int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
-		setExitValue(new Integer(exitCode));
+		try {
+			active.set(true);
+			runThread = Thread.currentThread(); //record for interruption via #stop
+			// reset just in case
+			setOutputString("");
+			setErrorString("");
+			setExitValue(null);
+			ProcessBuilder pb = new ProcessBuilder(Arrays.asList(command));
+			ResourceUtil.setEnvForOperatingSystem(pb.environment());
+			pb.directory(workingDir);
+			// start the process
+			Process p = pb.start();
+			setProcess(p);
+
+			// monitor the process; blocking call
+			// will update the fields from StdOut and StdErr
+			// will return the exit code once the process terminates
+			int exitCode = monitorProcess(getProcess().getInputStream(), getProcess().getErrorStream(), 10);
+			Thread.interrupted(); //clear interrupted status
+			setExitValue(new Integer(exitCode));
+		} finally {
+			active.set(false);
+		}
 		// log what happened and update status
 		if (getStatus().equals(org.vcell.util.ExecutableStatus.STOPPED)) {
 			System.out.println("\nExecutable.executeProcess(" + getCommand() + ") STOPPED\n");
@@ -223,7 +236,7 @@ private java.lang.Process getProcess() {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public org.vcell.util.ExecutableStatus getStatus() {
+public synchronized org.vcell.util.ExecutableStatus getStatus() {
 	return status;
 }
 
@@ -286,6 +299,12 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 		try {
 			if (pollingIntervalMS > 0) Thread.sleep(pollingIntervalMS);
 		} catch (InterruptedException e) {
+			if (getStatus( ) == ExecutableStatus.STOPPED) {
+				close( );
+				getLatch( ).countDown();
+				Thread.interrupted( );
+				return -1;
+			}
 		}
 		try {
 			if (inputStreamOut.available() > 0) {
@@ -384,7 +403,7 @@ private void setProcess(java.lang.Process newProcess) {
  * Creation date: (10/23/2002 12:23:37 PM)
  * @param newStatus cbit.vcell.solvers.ExecutableStatus
  */
-private void setStatus(org.vcell.util.ExecutableStatus newStatus) {
+private synchronized void setStatus(org.vcell.util.ExecutableStatus newStatus) {
 	status = newStatus;
 }
 
@@ -411,8 +430,30 @@ public final void start(int[] expectedReturnCodes) throws org.vcell.util.Executa
  * This method was created in VisualAge.
  */
 public final void stop() {
-	setStatus(ExecutableStatus.STOPPED);
-	close();
+	if (active.get( )) {
+		try {
+			CountDownLatch cdl = getLatch(); //get local copy to avoid race issues
+			setStatus(ExecutableStatus.STOPPED);
+			runThread.interrupt();
+			cdl.await(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) { 
+			Thread.interrupted();
+		}
+		if (getProcess() != null) {
+			System.out.println("Executable.stop( ) failed to clean up properly");
+		}
+	}
+}
+
+/**
+ * lazily create /return 1 step CountDownLatch
+ * @return new or existing latch
+ */
+private synchronized CountDownLatch getLatch( ) {
+	if (stoppingLatch == null) {
+		stoppingLatch = new CountDownLatch(1);
+	}
+	return stoppingLatch;
 }
 
 private final void close(){
