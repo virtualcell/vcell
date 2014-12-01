@@ -38,7 +38,9 @@ import cbit.vcell.server.bionetgen.BNGUtils;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 
-
+/*
+ * Flattening a Rule-based Model
+ */
 public class NetworkTransformer implements SimContextTransformer {
 
 	@Override
