@@ -148,9 +148,20 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			SpeciesContext sc = getValueAt(row);
 			if (sc == null) {
 				return false;
-			} else {
-				return true;
 			}
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if(sp == null) {
+				return true;	// we can edit a species pattern if none is present
+			}
+			final List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+			for(MolecularTypePattern mtp : mtpList) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.getComponentList().size() != 0) {
+					return false;
+				}
+			}
+			return true;
+			
 		default:
 			return false;
 		}

@@ -130,6 +130,11 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 							RbmUtils.addPropertyChangeListener(sp, this);
 						}
 					}
+				} else if (evt.getPropertyName().equals(RbmObservable.PROPERTY_NAME_SPECIES_PATTERN)) {
+					SpeciesPattern newValue = (SpeciesPattern) evt.getNewValue();
+					if (newValue != null) {
+						RbmUtils.addPropertyChangeListener(newValue, this);
+					}
 				}
 			} else if (source instanceof SpeciesPattern) {
 				if (evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
