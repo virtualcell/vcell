@@ -21,6 +21,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
@@ -163,9 +164,19 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		if (col == Column.name) {
 			return true;
 		}
-		RbmObservable observable = getValueAt(row);
-		if (observable == null) {
+		RbmObservable o = getValueAt(row);
+		if (o == null) {
 			return false;
+		}
+		final List<SpeciesPattern> spList = o.getSpeciesPatternList();
+		for(SpeciesPattern sp : spList) {
+			final List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+			for(MolecularTypePattern mtp : mtpList) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.getComponentList().size() != 0) {
+					return false;
+				}
+			}
 		}
 		return true;
 	}

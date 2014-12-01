@@ -110,7 +110,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			resolveBonds();
 		}
 		if(ret == true) {
-			firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN_LIST, null, newValue);	// is this correct?
+			firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN, null, newValue);	// is this correct?
 		}
 		return ret;
 	}
@@ -190,6 +190,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	private final RbmEventHandler eventHandler = new RbmEventHandler(this);
 	public static final String PROPERTY_NAME_TYPE = "type";
 	public static final String PROPERTY_NAME_SPECIES_PATTERN_LIST = "speciesPatternList";
+	public static final String PROPERTY_NAME_SPECIES_PATTERN = "speciesPattern";
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		eventHandler.addPropertyChangeListener(listener);
