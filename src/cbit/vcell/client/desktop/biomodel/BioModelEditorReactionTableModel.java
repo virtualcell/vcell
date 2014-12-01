@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
@@ -32,7 +34,9 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelProcessDynamics;
+import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
@@ -159,7 +163,34 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
-			return bioModel.getModel().getNumStructures() == 1;
+			if(bioModel.getModel().getNumStructures() != 1) {
+				return false;
+			}
+			Object o = getValueAt(row);
+			if(o instanceof ReactionRule) {
+				ReactionRule rr = (ReactionRule)o;
+				final List<ReactantPattern> rpList = rr.getReactantPatterns();
+				for(ReactantPattern rp : rpList) {
+					final List<MolecularTypePattern> mtpList = rp.getSpeciesPattern().getMolecularTypePatterns();
+					for(MolecularTypePattern mtp : mtpList) {
+						MolecularType mt = mtp.getMolecularType();
+						if(mt.getComponentList().size() != 0) {
+							return false;
+						}
+					}
+				}
+				final List<ProductPattern> ppList = rr.getProductPatterns();
+				for(ProductPattern pp : ppList) {
+					final List<MolecularTypePattern> mtpList = pp.getSpeciesPattern().getMolecularTypePatterns();
+					for(MolecularTypePattern mtp : mtpList) {
+						MolecularType mt = mtp.getMolecularType();
+						if(mt.getComponentList().size() != 0) {
+							return false;
+						}
+					}
+				}
+			}
+			return true;
 		}
 		return false;
 	}
