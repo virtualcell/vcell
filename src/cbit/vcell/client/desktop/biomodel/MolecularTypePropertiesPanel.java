@@ -231,6 +231,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		leftPanel.setLayout(new GridBagLayout());
 		leftPanel.setBackground(Color.white);		
 		JPanel rightPanel = new JPanel() {
+			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
 //				g.drawString("This is my custom Panel!", 10, 20);

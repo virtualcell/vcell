@@ -797,17 +797,13 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (selectedObject != null) {
 						if(selectedObject instanceof MolecularType) {
 							MolecularType mt = (MolecularType)selectedObject;
-//							Icon icon = VCellIcons.issueErrorIcon;
-//							setIcon(icon);
-//							setText("alabala");
-							
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
 								stls = new SpeciesTypeSmallShape(4, 1, mt, cellContext);
-							} else {
-								stls = null;
 							}
 						}
+					} else {
+						stls = null;
 					}
 				}
 				return this;
@@ -829,6 +825,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		
 		// all "depictions" have their own renderer
 		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
+		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);

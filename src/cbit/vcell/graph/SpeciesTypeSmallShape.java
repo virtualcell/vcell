@@ -71,6 +71,8 @@ public class SpeciesTypeSmallShape {
 		paintSpecies(g);
 	}
 	// --------------------------------------------------------------------------------------
+	// paintComponent is being overridden in the renderer
+	//
 	private void paintSpecies(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
