@@ -1042,7 +1042,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 		}
 		
-		// TODO: this!!!
 		// deletes the molecular component from everywhere it's being used
 		public boolean delete(MolecularType mt, MolecularComponent mc) {
 			boolean ret = true;
