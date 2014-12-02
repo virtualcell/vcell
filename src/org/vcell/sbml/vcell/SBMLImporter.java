@@ -196,9 +196,8 @@ public class SBMLImporter {
 	private long level = 2;
 	//private long version = 3;
 	
-	
 	/**
-	 * detect unsupporte  "delay" element
+	 * detect unsupported  "delay" element
 	 */
 	private static final String DELAY_URL = "www.sbml.org/sbml/symbols/delay";
 	
