@@ -163,9 +163,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
-			if(bioModel.getModel().getNumStructures() != 1) {
-				return false;
-			}
+//			if(bioModel.getModel().getNumStructures() != 1) {
+//				return false;
+//			}
 			Object o = getValueAt(row);
 			if(o instanceof ReactionRule) {
 				ReactionRule rr = (ReactionRule)o;
