@@ -135,7 +135,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2014 UCHC");
+				copyright.setText("(c) Copyright 1998-2014 UConn Health");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
