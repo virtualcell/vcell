@@ -34,13 +34,13 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.UnitSystemProvider;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/3/2003 2:07:01 PM)
@@ -279,28 +279,43 @@ private void changeUnit() {
 	}
 }
 
+/**
+ * return true if {@link #parameter} expression and {@link #expressionTextField} are both present and 
+ * the same
+ * @return true if conditions met
+ * @throws ExpressionException 
+ */
+private boolean expressionMatchesCurrentValue(String expressionText) throws ExpressionException  {
+	if (expressionText == null || parameter == null || parameter.getExpression() == null) {
+		return false;
+	}
+	
+	Expression exp = parameter.getExpression();
+	Expression n = new Expression(expressionText);
+	return exp.compareEqual(n);
+}
+
 private void changeExpression() {
 	try{
 		if (parameter == null) {
 			return;
 		}
 		String text = expressionTextField.getText();
-		if(text != null && text.equals(parameter.getExpression().infix())) {
+		if (text == null || text.trim().length() == 0) {
+			Expression exp = parameter.getDefaultExpression();
+			if (exp != null) {
+				parameter.setExpression(exp);
+			}
 			return;
 		}
+		
+		if(expressionMatchesCurrentValue(text)) {
+			return;
+		}
+		
 		if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 			SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-			Expression newExp = null;
-			if (text == null || text.trim().length() == 0) {
-				if (scsParm.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
-						|| scsParm.getRole() == SpeciesContextSpec.ROLE_DiffusionRate
-						|| scsParm.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
-					newExp = new Expression(0.0);
-				}
-			} else {
-				newExp = new Expression(text);
-			}
-			scsParm.setExpression(newExp);	
+			scsParm.setExpression(new Expression(text));
 		} else if (parameter instanceof KineticsParameter){
 			Expression exp1 = new Expression(text);
 			Kinetics kinetics = ((KineticsParameter) parameter).getKinetics();
