@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,11 +72,7 @@ public class SBMLStandaloneImporter {
 		channel = null;
 	}
 	
-	public BioModel importSBML(File sbmlFile) throws IOException, ExecutableException, XmlParseException, ClassNotFoundException {
-		if (!sbmlFile.canRead()) {
-			throw new IOException("Can't read " + sbmlFile);
-		}
-		
+	private BioModel attemptImport(File sbmlFile) throws ExecutableException, IOException, ClassNotFoundException, XmlParseException {
 		if (subProcess == null || subProcess.getStatus() != LiveProcessStatus.RUNNING) { 
 			subProcess = createProcess( );
 		}
@@ -105,6 +102,29 @@ public class SBMLStandaloneImporter {
 		}
 		
 		throw new ExecutableException("unexpected object from child process:  " + back.getClass().getName() + " " + back.toString());
+		
+	}
+	
+	public BioModel importSBML(File sbmlFile) throws IOException, ExecutableException, XmlParseException, ClassNotFoundException {
+		if (!sbmlFile.canRead()) {
+			throw new IOException("Can't read " + sbmlFile);
+		}
+		
+		//if process dies on socket exception we're going to try killing and restarting it before giving up
+		int tryCount = 0;
+		BioModel bm  = null;
+		while (bm == null) {
+			try {
+				bm = attemptImport(sbmlFile);
+			}
+			catch (SocketException se) {
+				if (++tryCount >= 2) {
+					throw se;
+				}
+				subProcess.stop(2, TimeUnit.SECONDS); 
+			}
+		}
+		return bm;
 	}
 	
 	private LiveProcess<ClosedInput,InheritOutput,InheritOutput> createProcess( ) throws ExecutableException, IOException {
