@@ -1041,6 +1041,19 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				o.findComponentUsage(mt, mc, usedHere);
 			}
 		}
+		public void findStateUsage(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd, 
+				Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
+			for(ReactionRule rr : getReactionRuleList()) {
+				rr.findStateUsage(mt, mc, csd, usedHere);
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				sc.findStateUsage(mt, mc, csd, usedHere);
+				}
+			for(RbmObservable o : getObservableList()) {
+				o.findStateUsage(mt, mc, csd, usedHere);
+			}
+		}
+
 		
 		// deletes the molecular component from everywhere it's being used
 		public boolean delete(MolecularType mt, MolecularComponent mc) {
@@ -1059,6 +1072,29 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			for(RbmObservable o : getObservableList()) {
 				ret = o.deleteComponentFromPatterns(mt, mc);
+				if(ret == false) {
+					return false;
+				}
+			}
+		return true;
+		}
+		// deletes State from everywhere it's being used
+		public boolean delete(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+			boolean ret = true;
+			for(ReactionRule rr : getReactionRuleList()) {
+				ret = rr.deleteStateFromPatterns(mt, mc, csd);
+				if(ret == false) {
+					return false;
+				}
+			}
+			for(SpeciesContext sc : Model.this.getSpeciesContexts()) {
+				ret = sc.deleteStateFromPatterns(mt, mc, csd);
+				if(ret == false) {
+					return false;
+				}
+			}
+			for(RbmObservable o : getObservableList()) {
+				ret = o.deleteStateFromPatterns(mt, mc, csd);
 				if(ret == false) {
 					return false;
 				}

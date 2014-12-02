@@ -189,14 +189,27 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		BioModelNode parentNode = (BioModelNode) parent;
 		Object selectedUserObject = selectedNode.getUserObject();
 		if (selectedUserObject instanceof MolecularComponent){
-			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;
+			MolecularComponent mc = (MolecularComponent) selectedUserObject;
 			Object userObject = parentNode.getUserObject();
 			if (userObject instanceof MolecularType) {
-				MolecularType molecularType = (MolecularType) userObject;
+				MolecularType mt = (MolecularType) userObject;
+				
+				// if there are states we ask the user to delete them individually first
+				// detailed verifications will be done there, to see if they are being used in reactions, species, observables
+				if(!mc.getComponentStateDefinitions().isEmpty()) {
+					String[] options = {"OK"};
+					String errMsg = "Component '<b>" + mc.getDisplayName() + "</b>' cannot be deleted because it contains explicit States.";
+					errMsg += "<br>Please delete each individual State first.";
+					errMsg += "<br><br>Detailed usage information will be provided at that time to help you decide.";
+					errMsg = "<html>" + errMsg + "</html>";
+					JOptionPane.showOptionDialog(this.getParent().getParent(), errMsg, "Delete Molecular Component", JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
+					return;
+				}
+				// we find and display component usage information to help the user decide
 				Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
-				bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, molecularComponent, usedHere);
+				bioModel.getModel().getRbmModelContainer().findComponentUsage(mt, mc, usedHere);
 				if(!usedHere.isEmpty()) {
-					String errMsg = molecularComponent.dependenciesToHtml(usedHere);
+					String errMsg = mc.dependenciesToHtml(usedHere);
 					errMsg += "<br><br>Delete anyway?";
 					errMsg = "<html>" + errMsg + "</html>";
 
@@ -204,25 +217,59 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete Molecular Component", dialogButton);
 					if (returnCode == JOptionPane.YES_OPTION) {
 						// keep this code in sync with MolecularTypeTableModel.setValueAt
-						// TODO: delete() needs to be implemented
-						if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
-							molecularType.removeMolecularComponent(molecularComponent);
+						if(bioModel.getModel().getRbmModelContainer().delete(mt, mc) == true) {
+							mt.removeMolecularComponent(mc);
 						}
 					} else {
 						return;
 					}
 				} else {
-					if(bioModel.getModel().getRbmModelContainer().delete(molecularType, molecularComponent) == true) {
-						molecularType.removeMolecularComponent(molecularComponent);
+					if(bioModel.getModel().getRbmModelContainer().delete(mt, mc) == true) {
+						mt.removeMolecularComponent(mc);
 					}
 				}
 			}
 		} else if (selectedUserObject instanceof ComponentStateDefinition) {
-			ComponentStateDefinition componentState = (ComponentStateDefinition) selectedUserObject;
+			ComponentStateDefinition csd = (ComponentStateDefinition) selectedUserObject;
 			Object userObject = parentNode.getUserObject();
-			if (userObject instanceof MolecularComponent) {
-				((MolecularComponent) userObject).deleteComponentStateDefinition(componentState);
+			if (!(userObject instanceof MolecularComponent)) {
+				System.out.println("Unexpected parent in tree hierarchy for component state definition " + csd.getDisplayName() + "!");
+				return;
 			}
+			MolecularComponent mc = (MolecularComponent) userObject;
+			TreeNode grandParent = parentNode.getParent();
+			BioModelNode grandParentNode = (BioModelNode) grandParent;
+			userObject = grandParentNode.getUserObject();
+			if (!(userObject instanceof MolecularType)) {
+				System.out.println("Unexpected parent in tree hierarchy for molecular component " + mc.getDisplayName() + "!");
+				return;
+			}
+			MolecularType mt = (MolecularType) userObject;
+			Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
+			bioModel.getModel().getRbmModelContainer().findStateUsage(mt, mc, csd, usedHere);
+			if(!usedHere.isEmpty()) {
+				String errMsg = csd.dependenciesToHtml(usedHere);
+				errMsg += "<br><br>Delete anyway?";
+				errMsg = "<html>" + errMsg + "</html>";
+
+		        int dialogButton = JOptionPane.YES_NO_OPTION;
+		        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete Component State", dialogButton);
+				if (returnCode == JOptionPane.YES_OPTION) {
+					// keep this code in sync with MolecularTypeTableModel.setValueAt
+					if(bioModel.getModel().getRbmModelContainer().delete(mt, mc, csd) == true) {
+						mc.deleteComponentStateDefinition(csd);		// this stays
+					}
+				} else {
+					return;
+				}
+			} else {
+				if(bioModel.getModel().getRbmModelContainer().delete(mt, mc, csd) == true) {
+					mc.deleteComponentStateDefinition(csd);		// this stays
+				}
+			}
+			
+			
+//			mc.deleteComponentStateDefinition(csd);
 		}
 	}
 
@@ -351,7 +398,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularType = newValue;
 		molecularTypeTreeModel.setMolecularType(molecularType);
 		if (molecularType != null) {
-			titleLabel.setText("Properties for Species Type: " + molecularType.getName());
+			titleLabel.setText("Properties for Species Type: " + molecularType.getDisplayName());
 			speciesTypeShapeList.clear();
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
 			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20, molecularType, panelContext);

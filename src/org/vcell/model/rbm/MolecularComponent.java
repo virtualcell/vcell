@@ -9,15 +9,17 @@ import java.util.Map;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
 import org.vcell.util.Pair;
+import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener, IssueSource {
+public class MolecularComponent extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
+	IssueSource, Displayable
+{
 	public static final String PROPERTY_NAME_COMPONENT_STATE_DEFINITIONS = "componentStateDefinitions";
 	
 	private String name;                                  // binding site or phosphosite, motif, extracdomain (e.g. tyrosine 77) 
@@ -147,7 +149,7 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 	}
 	
 	public String dependenciesToHtml(Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
-		String errMsg = "Component '" + getName() + "' cannot be deleted because it's already being used by:";
+		String errMsg = "Component '<b>" + getDisplayName() + "'</b> is already being used by:<br>";
 		final int MaxListSize = 7;
 		int count = 0;
 		for(String key : usedHere.keySet()) {
@@ -183,4 +185,14 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 			}
 		}
 	}
+	private static final String typeName = "Component";
+	@Override
+	public final String getDisplayName() {
+		return getName();
+	}
+	@Override
+	public final String getDisplayType() {
+		return typeName;
+	}
+
 }
