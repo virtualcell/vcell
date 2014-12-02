@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -27,7 +28,8 @@ public interface VCellConnection extends Remote {
 	 * provide extra context to email. Implement as separate class to make
 	 * extension easier in the future
 	 */
-	public static class ExtraContext {
+	@SuppressWarnings("serial")
+	public static class ExtraContext implements Serializable {
 		final String threadName;
 
 		/**
