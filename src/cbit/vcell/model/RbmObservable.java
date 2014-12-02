@@ -342,6 +342,34 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			}
 		}
 	}
+	public void findStateUsage(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd,
+			Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
+		for(SpeciesPattern sp : getSpeciesPatternList()) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {			// we don't care about these
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {		// found mc in use
+							// now let's look at component state definition
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								continue;
+							}
+							if(csp.getComponentStateDefinition() == csd) {
+								String key = sp.getDisplayName();
+								key = getDisplayType() + getDisplayName() + key;
+								usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public boolean deleteComponentFromPatterns(MolecularType mt, MolecularComponent mc) {
 		for(SpeciesPattern sp : getSpeciesPatternList()) {
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
@@ -356,6 +384,35 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				}
 			}
 			sp.resolveBonds();
+		}
+		return true;
+	}
+	public boolean deleteStateFromPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+		for(SpeciesPattern sp : getSpeciesPatternList()) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for(MolecularComponentPattern mcp : componentPatterns) {
+						if (!(mcp.getMolecularComponent() == mc)) {
+							continue;
+						}
+						ComponentStatePattern csp = mcp.getComponentStatePattern();
+						if(csp == null || csp.isAny()) {
+							continue;
+						}
+						if(csp.getComponentStateDefinition() == csd) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								// we are about to delete the last possible state, so we set the ComponentStatePattern to null
+								mcp.setComponentStatePattern(null);
+							} else {
+								// some other state is still available, we set the ComponentStatePattern to Any and let the user deal with it
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+							}
+						}
+					}
+				}
+			}
 		}
 		return true;
 	}

@@ -709,7 +709,11 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {
-							ComponentStateDefinition csd = new ComponentStateDefinition(e.getActionCommand());
+							String csdName = e.getActionCommand();
+							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
+							if(csd == null) {
+								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
+							}
 							ComponentStatePattern csp = new ComponentStatePattern(csd);
 							mcp.setComponentStatePattern(csp);
 						}

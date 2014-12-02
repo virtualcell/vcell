@@ -592,6 +592,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 
 	}
 
+	//TODO: almost identical to findStateUsage() below - pay attention to keep both in sync
 	public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
 		for(ProductPattern pp : getProductPatterns()) {
 			SpeciesPattern sp = pp.getSpeciesPattern();
@@ -628,6 +629,57 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			}
 		}
 	}
+	public void findStateUsage(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd,
+			Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
+		for(ProductPattern pp : getProductPatterns()) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {			// we don't care about these
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {		// found mc in use
+							// now let's look at component state definition
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								continue;
+							}
+							if(csp.getComponentStateDefinition() == csd) {
+								String key = getDisplayType() + getDisplayName() + sp.getDisplayName();
+								usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
+							}
+						}
+					}
+				}
+			}
+		}
+		for(ReactantPattern rp : getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for (MolecularComponentPattern mcp : componentPatterns) {
+						if (mcp.isImplied()) {
+							continue;
+						}
+						if(mcp.getMolecularComponent() == mc) {
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								continue;
+							}
+							if(csp.getComponentStateDefinition() == csd) {
+								String key = getDisplayType() + getDisplayName() + sp.getDisplayName();
+								usedHere.put(key, new Pair<Displayable, SpeciesPattern>(this, sp));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	public boolean deleteComponentFromPatterns(MolecularType mt, MolecularComponent mc) {
 		for(ProductPattern pp : getProductPatterns()) {
 			SpeciesPattern sp = pp.getSpeciesPattern();
@@ -661,6 +713,62 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		}
 		return true;
 	}
+	public boolean deleteStateFromPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+		for(ProductPattern pp : getProductPatterns()) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for(MolecularComponentPattern mcp : componentPatterns) {
+						if (!(mcp.getMolecularComponent() == mc)) {
+							continue;	// not our mc
+						}
+						ComponentStatePattern csp = mcp.getComponentStatePattern();
+						if(csp == null || csp.isAny()) {
+							continue;	// no state to delete
+						}
+						if(csp.getComponentStateDefinition() == csd) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								// we are about to delete the last possible state, so we set the ComponentStatePattern to null
+								mcp.setComponentStatePattern(null);
+							} else {
+								// some other state is still available, we set the ComponentStatePattern to Any and let the user deal with it
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+							}
+						}
+					}
+				}
+			}
+		}
+		for(ReactantPattern rp : getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() == mt) {
+					List<MolecularComponentPattern> componentPatterns = mtp.getComponentPatternList();
+					for(MolecularComponentPattern mcp : componentPatterns) {
+						if (!(mcp.getMolecularComponent() == mc)) {
+							continue;
+						}
+						ComponentStatePattern csp = mcp.getComponentStatePattern();
+						if(csp == null || csp.isAny()) {
+							continue;
+						}
+						if(csp.getComponentStateDefinition() == csd) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								mcp.setComponentStatePattern(null);
+							} else {
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 
 	private static final String typeName = "Reaction Rule";
 	@Override
