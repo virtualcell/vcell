@@ -68,6 +68,7 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 	
 	public void populateTree() {
 		if (reactionRule == null) {
+			// this may be legit, for example when there's a plain reaction rather than a reaction rule
 			System.out.println("ReactionRulePropertiesTreeModel: reactionRule is null.");
 			return;
 		}

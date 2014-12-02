@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
@@ -14,7 +15,9 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
-public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, IssueSource {
+public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
+	IssueSource, Displayable
+{
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
 	
 	private String name;	
@@ -162,4 +165,15 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			}
 		}
 	}
+	
+	private static final String typeName = "Species Type";
+	@Override
+	public final String getDisplayName() {
+		return getName();
+	}
+	@Override
+	public final String getDisplayType() {
+		return typeName;
+	}
+
 }
