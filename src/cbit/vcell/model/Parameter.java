@@ -17,7 +17,6 @@ import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
-import org.vcell.util.Issue.IssueCategory;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -99,8 +98,8 @@ public java.lang.String getDescription() {
 	return fieldDescription;
 }
 /**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
+ * may return null if implementing class can't provide appropriate default value  
+ * @return cbit.vcell.parser.Expression 
  */
 public abstract Expression getExpression();
    public abstract String getName();
@@ -207,4 +206,11 @@ public String getNullExpressionDescription() {
 
 public void gatherIssues(List<Issue> issueList) { }
 
+/**
+ * get default expression, if available
+ * @return default expression or null 
+ */
+public Expression getDefaultExpression( ) { 
+	return null;
+}
 }
