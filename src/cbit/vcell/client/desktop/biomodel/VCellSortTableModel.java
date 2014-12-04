@@ -166,7 +166,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 
 
 protected void resortColumn() {
-	if (getSortPreference() != null && getSortPreference().getSortedColumnIndex() != -1) {
+	if (getSortPreference() != null && getSortPreference().getSortedColumnIndex() != -1 && getSortPreference().getSortedColumnIndex()<getColumnCount()) {
 		Collections.sort(allRows, getComparator(getSortPreference().getSortedColumnIndex(), getSortPreference().isSortedColumnAscending()));
 	}	
 }

@@ -46,9 +46,9 @@ public class RbmNetworkGenerator {
 
 	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
 		SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
-		writeBngl(sc, writer);
+		writeBngl(sc, writer, false);
 	}
-	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer) {
+	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions) {
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
@@ -59,6 +59,12 @@ public class RbmNetworkGenerator {
 		List<Parameter> paramList = rbmModelContainer.getParameterList();
 		for (Parameter param : paramList) {
 			writer.println(RbmUtils.toBnglString(param,false));
+		}
+		if(ignoreFunctions) {	// we cheat and transform all functions into constant parameters
+			List<Parameter> functionList = rbmModelContainer.getFunctionList();
+			for (Parameter function : functionList) {
+				writer.println(RbmUtils.toBnglStringIgnoreExpression(function));
+			}
 		}
 		writer.println(END_PARAMETERS);
 		writer.println();
@@ -88,13 +94,15 @@ public class RbmNetworkGenerator {
 		writer.println(END_OBSERVABLES);
 		writer.println();
 
-		writer.println(BEGIN_FUNCTIONS);
-		List<Parameter> functionList = rbmModelContainer.getFunctionList();
-		for (Parameter function : functionList) {
-			writer.println(RbmUtils.toBnglString(function,true));
+		if(!ignoreFunctions) {
+			writer.println(BEGIN_FUNCTIONS);
+			List<Parameter> functionList = rbmModelContainer.getFunctionList();
+			for (Parameter function : functionList) {
+				writer.println(RbmUtils.toBnglString(function,true));
+			}
+			writer.println(END_FUNCTIONS);
+			writer.println();
 		}
-		writer.println(END_FUNCTIONS);
-		writer.println();
 
 		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();

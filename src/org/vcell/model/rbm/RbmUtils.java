@@ -1134,11 +1134,16 @@ public class RbmUtils {
 			return str;
 		}
 	}
+	public static String toBnglStringIgnoreExpression(Parameter function) {
+		String str = function.getName() + "\t\t";
+		str += "1";			// we totally ignore the expression and replace it with a '1'
+		return str;
+	}
 	
-	public static String convertToBngl(SimulationContext simulationContext) {
+	public static String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl(simulationContext, pw);
+		RbmNetworkGenerator.writeBngl(simulationContext, pw, ignoreFunctions);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		System.out.println(bngl);
