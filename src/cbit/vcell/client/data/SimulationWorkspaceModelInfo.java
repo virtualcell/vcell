@@ -21,6 +21,7 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ReservedVariable;
@@ -28,6 +29,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -239,7 +241,7 @@ public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifi
 	}
 }
 
-public static enum FilterCategoryType {Species,Reactions,UserFunctions,ReservedXYZT,Other};
+public static enum FilterCategoryType {Species,Reactions,UserFunctions,Observables,GeneratedSpecies,ReservedXYZT,Other};
 public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(ColumnDescription[] columnDescriptions) throws Exception{
 	HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap = new HashMap<ColumnDescription,FilterCategoryType>();
 	if(columnDescriptions == null){
@@ -251,10 +253,6 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 			MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 //			Enumeration<Variable> variableEnum = mathDescription.getVariables();
 			for (int i = 0; i < columnDescriptions.length; i++) {
-				boolean bSpecies = false;
-				boolean bIsUserFunc = false;
-				boolean bReaction = false;
-				boolean bReserved = false;
 				Variable variable = mathDescription.getVariable(columnDescriptions[i].getName());
 				if(variable == null && columnDescriptions[i].getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)){
 //					System.out.println(columnDescriptions[i]);
@@ -264,13 +262,13 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 						ReservedVariable.Z.getName().equals(columnDescriptions[i].getName()))){
 					//do nothing
 				}else{
+					// map category as "other" ... will be overwritten below if part of a specific category.
 					filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Other);
 				}
 
 				if(variable == null){
 					if(columnDescriptions[i] instanceof FunctionColumnDescription){
 						if(((FunctionColumnDescription)columnDescriptions[i]).getIsUserDefined()){
-							bIsUserFunc = true;
 							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.UserFunctions);
 						}
 					}
@@ -280,14 +278,16 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 					for (int j = 0;symbolTableEntries != null &&  j < symbolTableEntries.length; j++) {
 	//					System.out.println("   "+symbolTableEntries[i]);
 						if(symbolTableEntries[j] instanceof SpeciesContext){
-							bSpecies =  true;
 							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Species);
 						}else if(symbolTableEntries[j] instanceof KineticsParameter){
 							KineticsParameter kineticsParameter = (KineticsParameter)symbolTableEntries[j];
 							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
-								bReaction = true;
 								filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Reactions);
 							}
+						}else if (symbolTableEntries[j] instanceof RbmObservable){
+							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.Observables);
+						}else if (symbolTableEntries[j] instanceof GeneratedSpeciesSymbolTableEntry){
+							filterCategoryMap.put(columnDescriptions[i], FilterCategoryType.GeneratedSpecies);
 						}
 					}
 				}
