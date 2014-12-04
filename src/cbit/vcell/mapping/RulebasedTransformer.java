@@ -157,15 +157,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
-		
-		
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl(transformedSimulationContext, pw);
+		RbmNetworkGenerator.writeBngl(transformedSimulationContext, pw, false);
 		String resultString = bnglStringWriter.toString();
 		System.out.println(resultString);
 		pw.close();
-	
 	}
-
 }

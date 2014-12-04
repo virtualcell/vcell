@@ -104,7 +104,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
 		
-		String input = RbmUtils.convertToBngl(simContext);
+		String input = RbmUtils.convertToBngl(simContext, true);
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
