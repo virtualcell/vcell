@@ -21,11 +21,13 @@ public class BNGReaction {
 	private Expression paramExpression = null; 
 	private BNGSpecies[] reactants = null;
 	private BNGSpecies[] products = null;
+	private String ruleName = null;
+	private boolean bRuleReversed = false;
 
 /**
  * BNGReaction constructor comment.
  */
-public BNGReaction(BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression argExpr) {
+public BNGReaction(BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression argExpr, String ruleName, boolean bRuleReversed) {
 	super();
 	if (argReactants.length > 0) {
 		reactants = argReactants;
@@ -34,6 +36,18 @@ public BNGReaction(BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression a
 		products = argPdts;
 	}
 	paramExpression = argExpr;
+	this.ruleName = ruleName;
+	this.bRuleReversed = bRuleReversed;
+}
+
+
+public String getRuleName() {
+	return ruleName;
+}
+
+
+public boolean isRuleReversed() {
+	return bRuleReversed;
 }
 
 

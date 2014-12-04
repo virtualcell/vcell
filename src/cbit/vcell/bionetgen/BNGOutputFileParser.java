@@ -236,6 +236,9 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 			BNGSpecies[] reactantsArray = null;
 			BNGSpecies[] productsArray = null;
 			Expression paramExpression = null;
+			String ruleName = null;
+			boolean ruleReversed = false;
+			
 			
 			// 'nextLine' is the line with a reaction : reactants, products, rate consts.; the index can be ignored (for now)
 			while (nextLine.hasMoreTokens()) {
@@ -294,12 +297,21 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 					} catch (ExpressionException e) {
 						throw new RuntimeException("Could not create parameter expression for reaction : " + e.getMessage());
 					}
+				} else if (i == 4) {
+					StringTokenizer ruleOriginTokens = new StringTokenizer(token2, "#()");
+					ruleName = ruleOriginTokens.nextToken();
+					if (ruleOriginTokens.hasMoreTokens()){
+						String reverse = ruleOriginTokens.nextToken();
+						if (reverse.equals("reverse")){
+							ruleReversed = true;
+						}
+					}
 				}
 				i++;
 			}
 			// After parsing reaction participants from the line, create a new BNGReaction and add it to rxnVector.
 			if (reactantsArray.length > 0 && productsArray.length > 0 && paramExpression != null) {
-				BNGReaction newRxn = new BNGReaction(reactantsArray, productsArray, paramExpression);
+				BNGReaction newRxn = new BNGReaction(reactantsArray, productsArray, paramExpression, ruleName, ruleReversed);
 				rxnVector.addElement(newRxn);
 			}
 		}
