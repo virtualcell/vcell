@@ -18,11 +18,14 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.ObservableGroup;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
@@ -31,10 +34,14 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 
@@ -64,6 +71,36 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
+	
+	public static class GeneratedSpeciesSymbolTableEntry implements SymbolTableEntry {
+		private SymbolTableEntry unmappedSymbol = null;
+		
+		private GeneratedSpeciesSymbolTableEntry(SymbolTableEntry unmappedSymbol){
+			this.unmappedSymbol = unmappedSymbol;
+		}
+		public boolean isConstant(){
+			return false;
+		}
+		public String getName(){
+			return unmappedSymbol.getName();
+		}
+		public NameScope getNameScope(){
+			return null; // unmappedSymbol.getNameScope();
+		}
+		public VCUnitDefinition getUnitDefinition() {
+			return unmappedSymbol.getUnitDefinition();
+		}
+		public Expression getExpression(){
+			return null;
+		}
+		public double getConstantValue() throws ExpressionException {
+			throw new ExpressionException("can't evaluate to constant");
+		}
+		@Override
+		public int getIndex() {
+			return 0;
+		}
+	};
 		
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
 		
@@ -129,6 +166,14 @@ public class NetworkTransformer implements SimContextTransformer {
 			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(speciesContext);
 			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
 			param.setExpression(s.getConcentration());
+			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
+			if (origSpeciesContext!=null){
+				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,speciesContext);
+				entityMappings.add(em);
+			}else{
+				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(speciesContext),speciesContext);
+				entityMappings.add(em);
+			}
 		}
 		
 		System.out.println("\n\nReactions : \n");
@@ -179,6 +224,34 @@ public class NetworkTransformer implements SimContextTransformer {
 			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
 			model.addReactionStep(sr);
 		}
+		
+		System.out.println("\n\nObservables : \n");
+		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
+			ObservableGroup o = outputSpec.getObservableGroups()[i];
+			System.out.println(i+1 + ":\t\t" + o.toString());
+			
+			if(model.getRbmModelContainer().getParameter(o.getObservableGroupName()) != null) {
+				System.out.println("   ...already exists.");
+				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
+			}
+			Expression exp = null;
+			for (int j=0; j<o.getListofSpecies().length; j++){
+				Expression term = Expression.mult(new Expression(o.getSpeciesMultiplicity()[j]),new Expression(speciesMap.get(o.getListofSpecies()[j].getNetworkFileIndex())));
+				if (exp == null){
+					exp = term;
+				}else{
+					exp = Expression.add(exp,term);
+				}
+			}
+			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
+			model.getRbmModelContainer().removeObservable(model.getRbmModelContainer().getObservable(o.getObservableGroupName()));
+			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp);
+
+			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
+			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
+			entityMappings.add(em);
+		}
+		
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace(System.out);
 			throw new RuntimeException(ex.getMessage());

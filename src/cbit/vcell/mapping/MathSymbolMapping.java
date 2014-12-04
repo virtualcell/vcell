@@ -147,28 +147,28 @@ public void transform(SimContextTransformation transformation) {
 		return;
 	}
 	for (ModelEntityMapping mapping : transformation.modelEntityMappings){
-		Variable var = biologicalToMathHash.remove(mapping.origModelObj);
+		Variable var = biologicalToMathHash.remove(mapping.newModelObj);
 		if (var!=null){
-			biologicalToMathHash.put(mapping.newModelObj, var);
+			biologicalToMathHash.put(mapping.origModelObj, var);
 		}
-		String varName = biologicalToMathSymbolNameHash.remove(mapping.origModelObj);
+		String varName = biologicalToMathSymbolNameHash.remove(mapping.newModelObj);
 		if (varName!=null){
-			biologicalToMathSymbolNameHash.put(mapping.newModelObj, varName);
+			biologicalToMathSymbolNameHash.put(mapping.origModelObj, varName);
 		}
 	}
 	for (Map.Entry<Variable,SymbolTableEntry[]> entry : mathToBiologicalHash.entrySet()){
 		Variable key = entry.getKey();
-		SymbolTableEntry[] origBiologicalSymbols = entry.getValue();
-		ArrayList<SymbolTableEntry> newStes = new ArrayList<SymbolTableEntry>();
-		for (SymbolTableEntry origBiologicalSymbol : origBiologicalSymbols){
+		SymbolTableEntry[] newBiologicalSymbols = entry.getValue();
+		ArrayList<SymbolTableEntry> origStes = new ArrayList<SymbolTableEntry>();
+		for (SymbolTableEntry newBiologicalSymbol : newBiologicalSymbols){
 			// replace all array entries with those from the original model
 			for (ModelEntityMapping mapping : transformation.modelEntityMappings){
-				if (origBiologicalSymbol == mapping.origModelObj){
-					newStes.add(mapping.newModelObj);
+				if (newBiologicalSymbol == mapping.newModelObj){
+					origStes.add(mapping.origModelObj);
 				}
 			}
 		}
-		entry.setValue(newStes.toArray(new Variable[0]));
+		entry.setValue(origStes.toArray(new SymbolTableEntry[0]));
 	}
 	
 }
