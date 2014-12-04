@@ -6,6 +6,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 
@@ -22,7 +23,7 @@ public class MolecularComponentLargeShape {
 	private int height = componentDiameter;
 	
 	private int textWidth = 0;			// we add this to componentDiameter to obtain the final width of the eclipse
-	private final String name;
+	private final String displayName;
 	private final MolecularComponent mc;
 
 
@@ -30,36 +31,56 @@ public class MolecularComponentLargeShape {
 	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext) {
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
-		name = adjustForSize();
+		displayName = adjustForSize(mc.getDisplayName());
+		
+		String longestName = "";	// we find the longest State name
+		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+			String stateName = mc.getComponentStateDefinitions().get(i).getDisplayName();
+			stateName = adjustForSize(stateName);
+			longestName = stateName.length() > longestName.length() ? stateName : longestName;
+		}
+		// we reserve enough space for component name or state name, whichever is longer
+		// TODO: this is not an exact science because so far we checked just for the number of characters
+		longestName = displayName.length() > longestName.length() ? displayName : longestName;
 		// there's already space enough in the circle if the component name is 1 letter only
 		// we add the +2 to slightly adjust width if that single letter is long (like "m")
-		textWidth = getStringWidth(name.substring(1)) + 2;	// we provide space for the component name
+		textWidth = getStringWidth(longestName.substring(1)) + 3;	// we provide space for the component name
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
 	}
 
-	private String adjustForSize() {
-		int len = mc.getName().length();
+	private String adjustForSize(String input) {
+		int len = input.length();
 		if(len > 8) {
-			return(mc.getName().substring(0,4) + ".." + mc.getName().substring(len-2, len));
+			return(input.substring(0,4) + ".." + input.substring(len-2, len));
 		} else {
-			return(mc.getName());
+			return(input);
 		}
 	}
 
-	private Font deriveComponentFont() {
+	private Font deriveComponentFontBold() {
 		Font fontOld = graphicsContext.getFont();
 		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
+		return font;
+	}
+	private Font deriveStateFont() {
+		Font fontOld = graphicsContext.getFont();
+		Font font = fontOld.deriveFont((float) (componentDiameter*3/5));
 		return font;
 	}
 	
 	private int getStringWidth(String s) {
 //		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		Font font = deriveComponentFont();
+		Font font = deriveComponentFontBold();
 		FontMetrics fm = graphicsContext.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
 		return stringWidth;
+	}
+	private int getStringHeight(Font font) {
+		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		int stringHeight = fm.getHeight();
+		return stringHeight;
 	}
 
 	public static void paintComponents(Graphics g, SpeciesTypeLargeShape parent, Graphics graphicsContext) {
@@ -100,10 +121,21 @@ public class MolecularComponentLargeShape {
 		Font fontOld = g.getFont();
 		Color colorOld = g.getColor();
 //		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
-		Font font = deriveComponentFont();
+		Font font = deriveComponentFontBold();
 		g.setFont(font);
 		g.setColor(Color.black);
-		g2.drawString(name, xPos+2+componentDiameter/3, yPos+4+componentDiameter/2);
+		g2.drawString(displayName, xPos+3+componentDiameter/3, yPos+4+componentDiameter/2);
+		g.setFont(fontOld);
+		g.setColor(colorOld);
+		
+		font = deriveStateFont();
+		g.setFont(font);
+		g.setColor(Color.black);
+		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
+			String s = adjustForSize(csd.getDisplayName());
+			g.drawString(s, xPos+7, yPos + componentDiameter + getStringHeight(font)*(i+1));
+		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
