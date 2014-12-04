@@ -163,37 +163,50 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
-//			if(bioModel.getModel().getNumStructures() != 1) {
-//				return false;
-//			}
-			Object o = getValueAt(row);
-			if(o instanceof ReactionRule) {
-				ReactionRule rr = (ReactionRule)o;
-				final List<ReactantPattern> rpList = rr.getReactantPatterns();
-				for(ReactantPattern rp : rpList) {
-					final List<MolecularTypePattern> mtpList = rp.getSpeciesPattern().getMolecularTypePatterns();
-					for(MolecularTypePattern mtp : mtpList) {
-						MolecularType mt = mtp.getMolecularType();
-						if(mt.getComponentList().size() != 0) {
-							return false;
-						}
-					}
-				}
-				final List<ProductPattern> ppList = rr.getProductPatterns();
-				for(ProductPattern pp : ppList) {
-					final List<MolecularTypePattern> mtpList = pp.getSpeciesPattern().getMolecularTypePatterns();
-					for(MolecularTypePattern mtp : mtpList) {
-						MolecularType mt = mtp.getMolecularType();
-						if(mt.getComponentList().size() != 0) {
-							return false;
-						}
-					}
-				}
-			}
-			return true;
+			return bioModel.getModel().getNumStructures() == 1;
 		}
 		return false;
 	}
+//	public boolean isCellEditable(int row, int column) {
+//		if (bioModel == null) {
+//			return false;
+//		}
+//		ModelProcess process = getValueAt(row);
+//		if (column == COLUMN_NAME && process != null) {
+//			return true;
+//		}
+//		if (column == COLUMN_EQUATION) {
+////			if(bioModel.getModel().getNumStructures() != 1) {
+////				return false;
+////			}
+//			Object o = getValueAt(row);
+//			if(o instanceof ReactionRule) {
+//				ReactionRule rr = (ReactionRule)o;
+//				final List<ReactantPattern> rpList = rr.getReactantPatterns();
+//				for(ReactantPattern rp : rpList) {
+//					final List<MolecularTypePattern> mtpList = rp.getSpeciesPattern().getMolecularTypePatterns();
+//					for(MolecularTypePattern mtp : mtpList) {
+//						MolecularType mt = mtp.getMolecularType();
+//						if(mt.getComponentList().size() != 0) {
+//							return false;
+//						}
+//					}
+//				}
+//				final List<ProductPattern> ppList = rr.getProductPatterns();
+//				for(ProductPattern pp : ppList) {
+//					final List<MolecularTypePattern> mtpList = pp.getSpeciesPattern().getMolecularTypePatterns();
+//					for(MolecularTypePattern mtp : mtpList) {
+//						MolecularType mt = mtp.getMolecularType();
+//						if(mt.getComponentList().size() != 0) {
+//							return false;
+//						}
+//					}
+//				}
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
 	
 	@Override
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
