@@ -736,7 +736,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							String text = "<html>";
 							for(int i=0; i<o.getSpeciesPatternList().size(); i++) {
 								SpeciesPattern sp = o.getSpeciesPattern(i);
-								text += RbmTableRenderer.toHtml(sp, false);
+								text += RbmTableRenderer.toHtml(sp, isSelected);
 								if(i<o.getSpeciesPatternList().size()-1) {
 									text += " ";
 								}
