@@ -44,7 +44,7 @@ public class MolecularComponentLargeShape {
 		longestName = displayName.length() > longestName.length() ? displayName : longestName;
 		// there's already space enough in the circle if the component name is 1 letter only
 		// we add the +2 to slightly adjust width if that single letter is long (like "m")
-		textWidth = getStringWidth(longestName.substring(1)) + 3;	// we provide space for the component name
+		textWidth = getStringWidth(longestName.substring(1)) + 5;	// we provide space for the component name and a bit extra
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
@@ -134,6 +134,7 @@ public class MolecularComponentLargeShape {
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
 			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
 			String s = adjustForSize(csd.getDisplayName());
+			s = "~" + s;
 			g.drawString(s, xPos+7, yPos + componentDiameter + getStringHeight(font)*(i+1));
 		}
 		g.setFont(fontOld);

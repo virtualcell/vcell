@@ -298,12 +298,14 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return htmlText;
 	}
 	public static String toHtml(MolecularComponent mc, boolean bShowWords) {
-		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+//		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "</b>";
 		String htmlText = "<html>" + text + "</html>";
 		return htmlText;
 	}
 	public static String toHtmlWithTip(MolecularComponent mc, boolean bShowWords) {
-		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+//		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
+		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "</b>";
 		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
