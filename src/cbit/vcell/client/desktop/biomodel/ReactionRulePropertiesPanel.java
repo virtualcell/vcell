@@ -412,10 +412,10 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			ReactionRuleParticipantLocal reactionRuleParticipant = (ReactionRuleParticipantLocal) selectedUserObject;
 			switch (reactionRuleParticipant.type) {
 			case Reactant:
-				reactionRule.removeReactant(new ReactantPattern(reactionRuleParticipant.speciesPattern.getSpeciesPattern()));
+				reactionRule.removeReactant((ReactantPattern)(reactionRuleParticipant.speciesPattern));
 				break;
 			case Product:
-				reactionRule.removeProduct(new ProductPattern(reactionRuleParticipant.speciesPattern.getSpeciesPattern()));
+				reactionRule.removeProduct((ProductPattern)(reactionRuleParticipant.speciesPattern));
 				break;
 			}
 		} else if (selectedUserObject instanceof MolecularTypePattern){
@@ -424,6 +424,13 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			if (parentObject instanceof ReactionRuleParticipantLocal) {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) parentObject;
 				rrp.speciesPattern.getSpeciesPattern().removeMolecularTypePattern(mtp);
+			}
+		} else if (selectedUserObject instanceof MolecularComponentPattern) {
+			MolecularComponentPattern mcp = (MolecularComponentPattern)selectedUserObject;
+			Object parentObject = parentNode.getUserObject();
+			if (parentObject instanceof MolecularTypePattern) {
+				MolecularTypePattern mtp = (MolecularTypePattern)parentObject;
+				mtp.removeMolecularComponentPattern(mcp);
 			}
 		}
 	}
@@ -566,7 +573,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			GuiUtils.selectClickTreePath(reactantTree, e);
 			TreePath clickPath = reactantTree.getPathForLocation(mousePoint.x, mousePoint.y);
 		    if (clickPath == null) {
-		    	popupMenu.add(getAddReactantMenuItem());
+		    	//popupMenu.add(getAddReactantMenuItem());
 		    } else {
 				TreePath[] selectedPaths = reactantTree.getSelectionPaths();
 				if (selectedPaths == null) {
@@ -580,7 +587,9 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 					BioModelNode selectedNode = (BioModelNode) obj;
 					final Object selectedObject = selectedNode.getUserObject();
 					
-					if (selectedObject instanceof ReactionRuleParticipantLocal) {
+					if (selectedObject instanceof ReactionRule) {
+						popupMenu.add(getAddReactantMenuItem());
+					} else if (selectedObject instanceof ReactionRuleParticipantLocal) {
 						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 						getAddMenu().removeAll();
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
@@ -617,7 +626,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			GuiUtils.selectClickTreePath(productTree, e);
 			TreePath clickPath = productTree.getPathForLocation(mousePoint.x, mousePoint.y);
 		    if (clickPath == null) {
-		    	popupMenu.add(getAddProductMenuItem());
+		    	//popupMenu.add(getAddProductMenuItem());
 		    } else {
 		    	TreePath[] selectedPaths = productTree.getSelectionPaths();
 				if (selectedPaths == null) {
@@ -630,7 +639,9 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 					}
 					BioModelNode selectedNode = (BioModelNode) obj;
 					final Object selectedObject = selectedNode.getUserObject();
-					if (selectedObject instanceof ReactionRuleParticipantLocal) {
+					if (selectedObject instanceof ReactionRule) {
+						popupMenu.add(getAddProductMenuItem());
+					} else 					if (selectedObject instanceof ReactionRuleParticipantLocal) {
 						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
 						getAddMenu().removeAll();
 //						List<MolecularTypePattern> missingMoleculesInProducts = reactionRule.getMissingMoleculesInProducts();
