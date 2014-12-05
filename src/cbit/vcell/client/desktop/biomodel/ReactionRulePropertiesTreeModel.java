@@ -126,23 +126,35 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 			nodeChanged(rootNode);
-		} else if (evt.getSource() == reactionRule || evt.getSource() instanceof SpeciesPattern){
+		} else if (evt.getSource() == reactionRule || evt.getSource() instanceof SpeciesPattern || evt.getSource() instanceof MolecularTypePattern) {
 			populateTree();
 			
 			Object source = evt.getSource();
 			if (source == reactionRule) {
-				if (participantType == ReactionRuleParticipantType.Reactant && evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REACTANT_PATTERNS)
-						|| participantType == ReactionRuleParticipantType.Product && evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS)) {
-					List<SpeciesPattern> oldValue = (List<SpeciesPattern>) evt.getOldValue();
+				if (participantType == ReactionRuleParticipantType.Reactant && evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REACTANT_PATTERNS)) {
+					List<ReactantPattern> oldValue = (List<ReactantPattern>) evt.getOldValue();
 					if (oldValue != null) {
-						for(SpeciesPattern sp : oldValue) {
-							RbmUtils.removePropertyChangeListener(sp, this);
+						for(ReactantPattern sp : oldValue) {
+							RbmUtils.removePropertyChangeListener(sp.getSpeciesPattern(), this);
 						}
 					}
-					List<SpeciesPattern> newValue = (List<SpeciesPattern>) evt.getNewValue();
+					List<ReactantPattern> newValue = (List<ReactantPattern>) evt.getNewValue();
 					if (newValue != null) {
-						for(SpeciesPattern sp : newValue) {
-							RbmUtils.addPropertyChangeListener(sp, this);
+						for(ReactantPattern sp : newValue) {
+							RbmUtils.addPropertyChangeListener(sp.getSpeciesPattern(), this);
+						}
+					}
+				} else if (participantType == ReactionRuleParticipantType.Product && evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS)) {
+					List<ProductPattern> oldValue = (List<ProductPattern>) evt.getOldValue();
+					if (oldValue != null) {
+						for(ProductPattern sp : oldValue) {
+							RbmUtils.removePropertyChangeListener(sp.getSpeciesPattern(), this);
+						}
+					}
+					List<ProductPattern> newValue = (List<ProductPattern>) evt.getNewValue();
+					if (newValue != null) {
+						for(ProductPattern sp : newValue) {
+							RbmUtils.addPropertyChangeListener(sp.getSpeciesPattern(), this);
 						}
 					}
 				}
