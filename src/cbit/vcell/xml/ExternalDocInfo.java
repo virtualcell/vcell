@@ -68,7 +68,9 @@ public VersionableType getVersionType() {
 public String getDefaultName(){
 	return defaultName;
 }
-
+public final File getFile() {
+	return file;
+}
 public VCellSoftwareVersion getSoftwareVersion() {
 	return null;
 }
