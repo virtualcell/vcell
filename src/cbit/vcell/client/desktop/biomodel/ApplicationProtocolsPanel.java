@@ -83,8 +83,9 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
-		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
+//		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		showOrHideEventsPanel();
+		showOrHideelectricalMembraneMappingPanel();
 		showOrHideMicroscopeMeasurementPanel();
 		showOrHideRateRulesPanel();
 		rateRulesDisplayPanel.setSimulationContext(simulationContext);
@@ -116,6 +117,15 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 					}
 				}
 			}
+		}
+	}
+
+	
+	private void showOrHideelectricalMembraneMappingPanel() {
+		boolean bShow = true;
+		showOrHidePanel(ProtocolsPanelTabID.electrical, bShow);
+		if (bShow) {
+			electricalMembraneMappingPanel.setSimulationContext(simulationContext);
 		}
 	}
 
