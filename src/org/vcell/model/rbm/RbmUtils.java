@@ -835,8 +835,13 @@ public class RbmUtils {
 //			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(rbmModelContainer);
 //			astModel.jjtAccept(constructionVisitor, rbmModelContainer); 
 		} catch (Throwable ex) {
-			ex.printStackTrace();
-			throw new ParseException(ex.getMessage());
+//			ex.printStackTrace();
+			if(ex instanceof ParseException) {
+				ParseException pe = (ParseException)ex;
+				throw pe;
+			} else {
+				throw new ParseException(ex.getMessage());
+			}
 		}
 	}
 	public static String generateReactionRuleName() {

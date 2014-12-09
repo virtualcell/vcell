@@ -33,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
@@ -62,6 +63,8 @@ import javax.swing.ListSelectionModel;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
+import org.vcell.model.bngl.BNGLDebugger;
+import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.BeanUtils;
@@ -2595,6 +2598,27 @@ public void onVCellMessageEvent(final VCellMessageEvent event) {
 	}
 }
 
+//private void openBnglDebugger() {
+//try {
+//	javax.swing.JFrame frame = new javax.swing.JFrame();
+//	BNGOutputPanel aBNGOutputPanel;
+//	aBNGOutputPanel = new BNGOutputPanel();
+//	frame.setContentPane(aBNGOutputPanel);
+//	frame.setSize(aBNGOutputPanel.getSize());
+//	frame.addWindowListener(new java.awt.event.WindowAdapter() {
+//		public void windowClosing(java.awt.event.WindowEvent e) {
+//			// System.exit(0);
+//		};
+//	});
+//	java.awt.Insets insets = frame.getInsets();
+//	frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+//	frame.setVisible(true);
+//} catch (Throwable exception) {
+//	System.err.println("Exception occurred in main() of javax.swing.JPanel");
+//	exception.printStackTrace(System.out);
+//}
+//}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 9:37:46 PM)
@@ -2608,6 +2632,34 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 	String taskName = null;
 	if (documentInfo instanceof ExternalDocInfo) {
 		taskName = "Importing document";
+		ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
+		
+		File file = externalDocInfo.getFile();
+		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+		try {
+			ASTModel astModel = null;
+			RbmUtils.reactionRuleLabelIndex = 0;
+			RbmUtils.reactionRuleNames.clear();
+			Reader reader = externalDocInfo.getReader();
+			astModel = RbmUtils.importBnglFile(reader);
+		} catch (ParseException e) {
+			
+			class BnglDebuggerThread implements Runnable {
+				ExternalDocInfo docInfo;
+				BnglDebuggerThread(ExternalDocInfo docInfo) {
+					this.docInfo = docInfo;
+				}
+				public void run() {
+					BNGLDebugger instance = BNGLDebugger.getInstance();
+					instance.setInfo(docInfo);
+				}
+			}
+			BnglDebuggerThread p = new BnglDebuggerThread(externalDocInfo);
+			new Thread(p).start();			
+			return;
+		}
+		}
+		
 	} else {
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
 	}
