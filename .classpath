@@ -5,7 +5,7 @@
 	<classpathentry kind="lib" path="lib/gson-2.2.2.jar" sourcepath="/VCell_Rest/lib/gson-2.2.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/vtk.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_micro/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/libKiSAO.jar"/>
@@ -16,14 +16,16 @@
 	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
+<!--	<classpathentry kind="lib" path="lib/bioformats_ALPHA_5_4_1.jar"/> -->
 	<classpathentry kind="lib" path="testlib/commons-cli-1.2.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/VCellTrunkMerge/testlib/commons-cli-1.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/jgraphx_2.2.0.5.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.3-freshTrunk-7-21/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_micro/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
@@ -31,7 +33,12 @@
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_vmicro/nativelibs/win64"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src_vmicro">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_vmicro/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
