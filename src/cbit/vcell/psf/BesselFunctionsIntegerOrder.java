@@ -28,9 +28,9 @@ public class BesselFunctionsIntegerOrder {
 	private BesselFunctionsIntegerOrder() {		// cannot be instantiated
 	}
 	
-	private final double ACC = 40.0D;
-	private final double THRESHOLD_HI = 1.0e10D;
-	private final double THRESHOLD_LO = 1.0e-10;
+	private final static double ACC = 40.0D;
+	private final static double THRESHOLD_HI = 1.0e10D;
+	private final static double THRESHOLD_LO = 1.0e-10;
 
 	// Bessel function of first kind and order 0 at input x
 	public static double J0( double x )
@@ -89,7 +89,7 @@ public class BesselFunctionsIntegerOrder {
 
 	// Bessel function of first kind and order n at input x
 	// Can also be called for n = 0 and n = 1
-	double Jn( int n, double x )
+	public static double Jn( int n, double x )
 	{
 	   int    j, m;
 	   boolean jsum;
@@ -144,7 +144,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Bessel function of second kind and order 0 at input x
-	static double Y0( double x )
+	public static double Y0( double x )
 	{
 	   double z;
 	   double xx,y,ans,ans1,ans2;
@@ -171,7 +171,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Bessel function of second kind and order 1 at input x
-	static double Y1( double x )
+	public static double Y1( double x )
 	{
 	   double z;
 	   double xx,y,ans,ans1,ans2;
@@ -204,7 +204,7 @@ public class BesselFunctionsIntegerOrder {
 	// Bessel function of second kind and order n (n >= 0) at input x
 	// For x == 0 the functions Yn and Kn are not
 	// defined and Double.NaN is returned
-	double Yn( int n, double x )
+	public static double Yn( int n, double x )
 	{
 	   int j;
 	   double by,bym,byp,tox;
@@ -230,7 +230,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Modified Bessel function In(x) and order 0 at input x
-	static double I0( double x )
+	public static double I0( double x )
 	{
 	   double ax,ans;
 	   double y;
@@ -251,7 +251,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Modified Bessel function In(x) and order 1 at input x
-	static double I1( double x)
+	public static double I1( double x)
 	{
 	   double ax,ans;
 	   double y;
@@ -273,7 +273,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Modified Bessel function In(x) and order n (n >= 0) at input x
-	double In( int n, double x)
+	public static double In( int n, double x)
 	{
 	   int j;
 	   double bi,bim,bip,tox,ans;
@@ -310,7 +310,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Modified Bessel function Kn(x) and order 0 at input x
-	static double K0( double x )
+	public static double K0( double x )
 	{
 	   double y,ans;
 
@@ -329,7 +329,7 @@ public class BesselFunctionsIntegerOrder {
 	}
 
 	// Modified Bessel function Kn(x) and order 1 at input x
-	static double K1( double x )
+	public static double K1( double x )
 	{
 	   double y,ans;
 
@@ -350,7 +350,7 @@ public class BesselFunctionsIntegerOrder {
 	// Modified Bessel function Kn(x) and order n (n>=0) at input x
 	// For x == 0 the functions Yn and Kn are not
 	// defined and Double.NaN is returned
-	double Kn( int n, double x )
+	public static double Kn( int n, double x )
 	{
 	   int j;
 	   double bk,bkm,bkp,tox;

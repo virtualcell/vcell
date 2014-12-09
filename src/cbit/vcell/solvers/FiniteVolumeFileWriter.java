@@ -100,7 +100,6 @@ import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.microscopy.ROIDataGenerator;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -420,7 +419,7 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 				printWriter.println(FVInputFileKeyword.GAUSSIAN_CONVOLUTION_DATA_GENERATOR + " " + varName + " " + domainName 
 						+ " " + sigmaXY.infix() + " " + sigmaZ.infix() + " " + FVInputFileKeyword.GAUSSIAN_CONVOLUTION_VOL_FUNCTION+ " " + volFuncStr + "; " + FVInputFileKeyword.GAUSSIAN_CONVOLUTION_MEM_FUNCTION+ " " + memFuncStr +";");
 			}
-		} else if (dataGenerator instanceof ROIDataGenerator) {
+		} else if (dataGenerator instanceof cbit.vcell.microscopy.ROIDataGenerator) {
 			/*
 			ROI_DATA_GENERATOR_BEGIN roidata
 			VolumePoints 20
@@ -431,7 +430,20 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 			SampleImageFile roiSumDataVar 0.0 C:\Users\abcde\VirtualMicroscopy\SimulationData\SimID_1341426862125_0_sumROIData_roiSumDataVar_0_0_Volume.fdat
 			DATA_PROCESSOR_END
 			*/
-			ROIDataGenerator roiDataGenerator = (ROIDataGenerator) dataGenerator;
+			cbit.vcell.microscopy.ROIDataGenerator roiDataGenerator = (cbit.vcell.microscopy.ROIDataGenerator) dataGenerator;
+			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
+		} else if (dataGenerator instanceof org.vcell.vmicro.workflow.scratch.ROIDataGenerator) {
+			/*
+			ROI_DATA_GENERATOR_BEGIN roidata
+			VolumePoints 20
+			2667 2676 2679 2771 2969 2877 3067 3277 3185 3283 3473 3580 3690 3687 3878 4086 3990 4182 4193 1077 (all points in one line)
+			SampleImage 9 0 1341426862190 vcField('sumROIData','roiSumDataVar',0.0,'Volume')
+			StoreEnabled false
+
+			SampleImageFile roiSumDataVar 0.0 C:\Users\abcde\VirtualMicroscopy\SimulationData\SimID_1341426862125_0_sumROIData_roiSumDataVar_0_0_Volume.fdat
+			DATA_PROCESSOR_END
+			*/
+			org.vcell.vmicro.workflow.scratch.ROIDataGenerator roiDataGenerator = (org.vcell.vmicro.workflow.scratch.ROIDataGenerator) dataGenerator;
 			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
