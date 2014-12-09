@@ -45,6 +45,7 @@ import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
@@ -54,6 +55,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
@@ -1264,7 +1266,8 @@ private void setsimulationContext1(SimulationContext newValue) {
 			StringBuffer buffer = new StringBuffer();
 			for (int i = 0; symbols!=null && i < symbols.length; i++) {
 				SymbolTableEntry ste = protocolParameterExp.getSymbolBinding(symbols[i]);
-				if (!ste.equals(getSimulationContext().getModel().getTIME())){
+				if (!ste.equals(getSimulationContext().getModel().getTIME()) &&
+					(ste instanceof LocalProxyParameter && !((LocalProxyParameter)ste).getTarget().equals(getSimulationContext().getModel().getTIME()))){
 					buffer.append(ste.getName()+" ");
 				}
 			}
@@ -1292,6 +1295,7 @@ private void setsimulationContext1(SimulationContext newValue) {
 		});
     	jdialog.setContentPane(timeFunctionPanel);
     	jdialog.pack();
+    	BeanUtils.centerOnComponent(jdialog, this);
     	DialogUtils.showModalJDialogOnTop(jdialog, this);
     	
 
