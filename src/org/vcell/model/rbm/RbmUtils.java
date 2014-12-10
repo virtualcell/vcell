@@ -633,10 +633,13 @@ public class RbmUtils {
 	}
 	// preprocessor
 	public static ASTModel importBnglFile(Reader reader) throws ParseException {
+		BufferedReader br = new BufferedReader(reader);
+		return importBnglFile(br);
+	}
+	public static ASTModel importBnglFile(BufferedReader br) throws ParseException {
 		try {
-			// remove all the comments
 			StringBuilder sb = new StringBuilder();
-			BufferedReader br = new BufferedReader(reader);
+			// remove all the comments
 			reactionRuleNames.clear();
 			ArrayList<BnglComment> comments = new ArrayList<BnglComment>();
 			int lineNumber = 0;
