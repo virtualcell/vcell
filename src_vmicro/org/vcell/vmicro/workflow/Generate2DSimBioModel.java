@@ -10,8 +10,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionFlag;
-import org.vcell.vmicro.workflow.scratch.FRAPOptimizationUtils;
-import org.vcell.vmicro.workflow.scratch.FRAPStudy;
 import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.Task;
@@ -47,7 +45,15 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class Generate2DSimBioModel extends Task {
+	private static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_primary_mobile"; 
+	private static final String SPECIES_NAME_PREFIX_SLOW_MOBILE = "fluor_secondary_mobile";
+	private static final String SPECIES_NAME_PREFIX_BINDING_SITE = "binding_site";
+	private static final String SPECIES_NAME_PREFIX_IMMOBILE = "fluor_immobile"; 
+	private static final String SPECIES_NAME_PREFIX_COMBINED = "fluor_combined"; 
+	private static double epsilon = 1e-8;
 	
+	private static final String ROI_EXTDATA_NAME = "roiData";
+
 	//
 	// inputs
 	//
@@ -137,11 +143,11 @@ public class Generate2DSimBioModel extends Task {
 		}		
 		//immobile fraction
 		double fimm = 1-ff-fc;
-		if(fimm < FRAPOptimizationUtils.epsilon && fimm > (0 - FRAPOptimizationUtils.epsilon))
+		if(fimm < epsilon && fimm > (0 - epsilon))
 		{
 			fimm = 0;
 		}
-		if(fimm < (1+FRAPOptimizationUtils.epsilon) && fimm > (1 - FRAPOptimizationUtils.epsilon))
+		if(fimm < (1+epsilon) && fimm > (1 - epsilon))
 		{
 			fimm = 1;
 		}
@@ -200,7 +206,7 @@ public class Generate2DSimBioModel extends Task {
 //			model.getStructureTopology().setOutsideFeature(mem, extracellular);
 		
 
-		String roiDataName = FRAPStudy.ROI_EXTDATA_NAME;
+		String roiDataName = ROI_EXTDATA_NAME;
 		
 		final int SPECIES_COUNT = 4;
 		final int FREE_SPECIES_INDEX = 0;
@@ -227,7 +233,7 @@ public class Generate2DSimBioModel extends Task {
 		Expression totalIniCondition = Expression.div(expPostBleach_first, expPreBleach_avg);
 		//Free Species
 		diffusionConstants[FREE_SPECIES_INDEX] = new Expression(df);
-		species[FREE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE,	"Mobile bleachable species");
+		species[FREE_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_MOBILE,	"Mobile bleachable species");
 		speciesContexts[FREE_SPECIES_INDEX] = new SpeciesContext(null,species[FREE_SPECIES_INDEX].getCommonName(),species[FREE_SPECIES_INDEX],cytosol);
 		initialConditions[FREE_SPECIES_INDEX] = Expression.mult(new Expression(ff), totalIniCondition);
 		
@@ -236,19 +242,19 @@ public class Generate2DSimBioModel extends Task {
 		//If left as a function errors occur because functions involving FieldData require a database connection
 		final String IMMOBILE_DIFFUSION_KLUDGE = "1e-14";
 		diffusionConstants[IMMOBILE_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
-		species[IMMOBILE_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE,"Immobile bleachable species");
+		species[IMMOBILE_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_IMMOBILE,"Immobile bleachable species");
 		speciesContexts[IMMOBILE_SPECIES_INDEX] = new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol);
 		initialConditions[IMMOBILE_SPECIES_INDEX] = Expression.mult(new Expression(fimm), totalIniCondition);
 
 		//BS Species
 		diffusionConstants[BS_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
-		species[BS_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE,"Binding Site species");
+		species[BS_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_BINDING_SITE,"Binding Site species");
 		speciesContexts[BS_SPECIES_INDEX] = new SpeciesContext(null,species[BS_SPECIES_INDEX].getCommonName(),species[BS_SPECIES_INDEX],cytosol);
 		initialConditions[BS_SPECIES_INDEX] = Expression.mult(new Expression(bs), totalIniCondition);
 	
 		//Complex species
 		diffusionConstants[COMPLEX_SPECIES_INDEX] = new Expression(dc);
-		species[COMPLEX_SPECIES_INDEX] = new Species(FRAPStudy.SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
+		species[COMPLEX_SPECIES_INDEX] = new Species(SPECIES_NAME_PREFIX_SLOW_MOBILE, "Slower mobile bleachable species");
 		speciesContexts[COMPLEX_SPECIES_INDEX] = new SpeciesContext(null,species[COMPLEX_SPECIES_INDEX].getCommonName(),species[COMPLEX_SPECIES_INDEX],cytosol);
 		initialConditions[COMPLEX_SPECIES_INDEX] = Expression.mult(new Expression(fc), totalIniCondition);
 	
@@ -257,7 +263,7 @@ public class Generate2DSimBioModel extends Task {
 			model.addSpecies(species[i]);
 			model.addSpeciesContext(speciesContexts[i]);
 			//reaction with BMW rate, which should not be applied to binding site
-			if(!(species[i].getCommonName().equals(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE)))
+			if(!(species[i].getCommonName().equals(SPECIES_NAME_PREFIX_BINDING_SITE)))
 			{
 				SimpleReaction simpleReaction = new SimpleReaction(model, cytosol,speciesContexts[i].getName()+"_bleach");
 				model.addReactionStep(simpleReaction);
@@ -312,7 +318,7 @@ public class Generate2DSimBioModel extends Task {
 		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();
 		//Add total fluorescence as function of mobile(optional: and slower mobile) and immobile fractions
-		mathDesc.addVariable(new Function(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,
+		mathDesc.addVariable(new Function(SPECIES_NAME_PREFIX_COMBINED,
 					             new Expression(species[FREE_SPECIES_INDEX].getCommonName()+"+"+species[COMPLEX_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName()), null));
 		simContext.setMathDescription(mathDesc);
 

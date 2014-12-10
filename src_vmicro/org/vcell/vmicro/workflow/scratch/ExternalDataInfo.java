@@ -10,13 +10,11 @@
 
 package org.vcell.vmicro.workflow.scratch;
 
-import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.ExternalDataIdentifier;
 
 /**
  */
-public class ExternalDataInfo implements Matchable {
+public class ExternalDataInfo {
 	
 	private ExternalDataIdentifier externalDataIdentifier = null;
 	private String filename = null;
@@ -46,22 +44,4 @@ public class ExternalDataInfo implements Matchable {
 		return filename;
 	}
 	
-	public boolean compareEqual(Matchable obj) 
-	{
-		if (this == obj) {
-			return true;
-		}
-		if (obj != null && obj instanceof ExternalDataInfo) {
-			ExternalDataInfo exInfo = (ExternalDataInfo) obj;
-			if (!Compare.isEqualOrNull(getExternalDataIdentifier(), exInfo.getExternalDataIdentifier())){
-				return false;
-			}
-			if (!Compare.isEqualOrNull(getFilename(),exInfo.getFilename())){
-				return false;
-			}
-			return true;
-		}
-		return false;
-		
-	}
 }

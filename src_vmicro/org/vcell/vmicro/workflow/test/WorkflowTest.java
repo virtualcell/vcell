@@ -35,7 +35,6 @@ import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.ModelType;
 import org.vcell.vmicro.workflow.gui.WorkflowModelPanel;
 import org.vcell.vmicro.workflow.gui.WorkflowObjectsPanel;
-import org.vcell.vmicro.workflow.jgraphx.EditorMenuBar;
 import org.vcell.vmicro.workflow.jgraphx.WorkflowEditorPanel;
 import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy;
 import org.vcell.workflow.DataHolder;

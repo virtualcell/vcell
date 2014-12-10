@@ -42,12 +42,9 @@ import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy.WorkflowGraph;
 import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy.WorkflowObjectCell;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.WorkflowObject.Status;
-import org.w3c.dom.Document;
 
-import com.mxgraph.io.mxCodec;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.view.mxInteractiveCanvas;
-import com.mxgraph.util.mxUtils;
 import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 

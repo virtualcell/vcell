@@ -12,9 +12,9 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,10 +28,12 @@ import javax.swing.border.EmptyBorder;
 import com.mxgraph.analysis.StructuralException;
 import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.analysis.mxGraphGenerator;
-import com.mxgraph.analysis.mxTraversal;
 import com.mxgraph.analysis.mxGraphProperties;
 import com.mxgraph.analysis.mxGraphProperties.GraphType;
 import com.mxgraph.analysis.mxGraphStructure;
+import com.mxgraph.analysis.mxTraversal;
+import com.mxgraph.costfunction.mxCostFunction;
+import com.mxgraph.costfunction.mxDoubleValCostFunction;
 import com.mxgraph.layout.mxCircleLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.layout.mxOrganicLayout;
@@ -39,8 +41,6 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxGraph.mxICellVisitor;
 import com.mxgraph.view.mxGraphView;
-import com.mxgraph.costfunction.mxCostFunction;
-import com.mxgraph.costfunction.mxDoubleValCostFunction;
 
 public class GraphConfigDialog extends JDialog
 {
