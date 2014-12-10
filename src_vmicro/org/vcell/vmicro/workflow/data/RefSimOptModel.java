@@ -1,10 +1,10 @@
 package org.vcell.vmicro.workflow.data;
 
-import org.vcell.vmicro.workflow.scratch.FRAPOptimizationUtils;
-
 import cbit.vcell.opt.Parameter;
 
 public abstract class RefSimOptModel extends OptModel{
+	private static double epsilon = 1e-8;
+
 	private double[][] refData = null;
 	private double[] refTimePoints = null;
 	private double refDiffusionRate = 0;
@@ -28,7 +28,7 @@ public abstract class RefSimOptModel extends OptModel{
 			double estimateTime = (newDiffRate/refDiffusionRate) * solutionTimePoints[j];
 			for( ;idx < refTimePoints.length; idx ++)
 			{
-				if(estimateTime < (refTimePoints[idx] + FRAPOptimizationUtils.epsilon))
+				if(estimateTime < (refTimePoints[idx] + epsilon))
 				{
 					break;
 				}
@@ -42,7 +42,7 @@ public abstract class RefSimOptModel extends OptModel{
 			}
 			else if(postTimeIndex > 0 && postTimeIndex < refTimePoints.length )
 			{
-				if((estimateTime > (refTimePoints[postTimeIndex] - FRAPOptimizationUtils.epsilon)) &&  (estimateTime  < (refTimePoints[postTimeIndex] + FRAPOptimizationUtils.epsilon)))
+				if((estimateTime > (refTimePoints[postTimeIndex] - epsilon)) &&  (estimateTime  < (refTimePoints[postTimeIndex] + epsilon)))
 				{
 					preTimeIndex = postTimeIndex;
 				}

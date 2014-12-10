@@ -13,9 +13,6 @@ import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithoutPenalty;
-import org.vcell.vmicro.workflow.scratch.FRAPModel;
-import org.vcell.vmicro.workflow.scratch.FRAPOptData;
-import org.vcell.vmicro.workflow.scratch.FRAPOptimizationUtils;
 import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.Task;
@@ -32,6 +29,38 @@ import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 
 public class RunProfileLikelihood extends Task {
 	
+	//different model parameters
+	private static String[] MODEL_PARAMETER_NAMES = new String[]{"Primary_diffusion_rate",
+																"Primary_mobile_fraction",
+																"Bleach_while_monitoring_rate",
+																"Secondary_diffusion_rate",
+																"Secondary_mobile_fraction",
+																"Binding_site_concentration",
+																"Reaction_on_rate",
+																"Reaction_off_rate"};
+	//other contants
+	private static int NUM_MODEL_PARAMETERS_ONE_DIFF = 3;
+	private static int NUM_MODEL_PARAMETERS_TWO_DIFF = 5;
+	private static int INDEX_PRIMARY_DIFF_RATE = 0;
+	private static int INDEX_PRIMARY_FRACTION = 1;
+	private static int INDEX_BLEACH_MONITOR_RATE = 2;
+	private static int INDEX_SECONDARY_DIFF_RATE = 3;
+	private static int INDEX_SECONDARY_FRACTION = 4;
+
+	//referenced parameters
+	private static final Parameter REF_DIFFUSION_RATE_PARAM = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE], 0, 200, 1.0, 1.0);
+	private static final Parameter REF_MOBILE_FRACTION_PARAM = new Parameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION], 0, 1, 1.0, 1.0);
+	private static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM = new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE], 0, 1, 1.0,  0);
+	private static final Parameter REF_SECOND_DIFFUSION_RATE_PARAM = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE], 0, 100, 1.0, 1.0);
+	private static final Parameter REF_SECOND_MOBILE_FRACTION_PARAM = new Parameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION], 0, 1, 1.0, 1.0);
+	//concentration parameter is used for reaction off rate model to store unuseful parameter A.
+	
+	private static final double[] DEFAULT_CI_STEPS = new double[]{0.04, 0.004, 0.04, 0.04, 0.04};
+	private static final int MAX_ITERATION = 100;
+	private static final double MIN_LIKELIHOOD_CHANGE = 0.01;
+	private static double epsilon = 1e-8;
+	private static double FTOL = 1.0e-6;
+	
 	//
 	// inputs
 	//
@@ -46,7 +75,6 @@ public class RunProfileLikelihood extends Task {
 	public final DataHolder<ProfileData[]> profileData;
 	
 	private double leastError = Double.MAX_VALUE;
-	private int totalParamLen = -1;
 	
 
 	public RunProfileLikelihood(String id){
@@ -134,80 +162,80 @@ public class RunProfileLikelihood extends Task {
 	private static Parameter[] generateInParamSet(Parameter[] inputParams, double newValues[])
 	{
 		Parameter[] result = new Parameter[inputParams.length];
-		Parameter primaryRate = inputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE];
-		Parameter primaryFrac = inputParams[FRAPModel.INDEX_PRIMARY_FRACTION];
-		Parameter bwmRate = inputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE];
-		Parameter secondaryRate = inputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE];
-		Parameter secondaryFrac = inputParams[FRAPModel.INDEX_SECONDARY_FRACTION];
+		Parameter primaryRate = inputParams[INDEX_PRIMARY_DIFF_RATE];
+		Parameter primaryFrac = inputParams[INDEX_PRIMARY_FRACTION];
+		Parameter bwmRate = inputParams[INDEX_BLEACH_MONITOR_RATE];
+		Parameter secondaryRate = inputParams[INDEX_SECONDARY_DIFF_RATE];
+		Parameter secondaryFrac = inputParams[INDEX_SECONDARY_FRACTION];
 		
-		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] < primaryRate.getLowerBound())
+		if(newValues[INDEX_PRIMARY_DIFF_RATE] < primaryRate.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryRate.getLowerBound();
+			newValues[INDEX_PRIMARY_DIFF_RATE] = primaryRate.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] > primaryRate.getUpperBound())
+		if(newValues[INDEX_PRIMARY_DIFF_RATE] > primaryRate.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = primaryRate.getUpperBound();
+			newValues[INDEX_PRIMARY_DIFF_RATE] = primaryRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] < primaryFrac.getLowerBound())
+		if(newValues[INDEX_PRIMARY_FRACTION] < primaryFrac.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac.getLowerBound();
+			newValues[INDEX_PRIMARY_FRACTION] = primaryFrac.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_PRIMARY_FRACTION] > primaryFrac.getUpperBound())
+		if(newValues[INDEX_PRIMARY_FRACTION] > primaryFrac.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_PRIMARY_FRACTION] = primaryFrac.getUpperBound();
+			newValues[INDEX_PRIMARY_FRACTION] = primaryFrac.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] < bwmRate.getLowerBound())
+		if(newValues[INDEX_BLEACH_MONITOR_RATE] < bwmRate.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bwmRate.getLowerBound();
+			newValues[INDEX_BLEACH_MONITOR_RATE] = bwmRate.getLowerBound();
 		}	
-		if(newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] > bwmRate.getUpperBound())
+		if(newValues[INDEX_BLEACH_MONITOR_RATE] > bwmRate.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = bwmRate.getUpperBound();
+			newValues[INDEX_BLEACH_MONITOR_RATE] = bwmRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] < secondaryRate.getLowerBound())
+		if(newValues[INDEX_SECONDARY_DIFF_RATE] < secondaryRate.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getLowerBound();
+			newValues[INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] > secondaryRate.getUpperBound())
+		if(newValues[INDEX_SECONDARY_DIFF_RATE] > secondaryRate.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getUpperBound();
+			newValues[INDEX_SECONDARY_DIFF_RATE] = secondaryRate.getUpperBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] < secondaryFrac.getLowerBound())
+		if(newValues[INDEX_SECONDARY_FRACTION] < secondaryFrac.getLowerBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac.getLowerBound();
+			newValues[INDEX_SECONDARY_FRACTION] = secondaryFrac.getLowerBound();
 		}
-		if(newValues[FRAPModel.INDEX_SECONDARY_FRACTION] > secondaryFrac.getUpperBound())
+		if(newValues[INDEX_SECONDARY_FRACTION] > secondaryFrac.getUpperBound())
 		{
-			newValues[FRAPModel.INDEX_SECONDARY_FRACTION] = secondaryFrac.getUpperBound();
+			newValues[INDEX_SECONDARY_FRACTION] = secondaryFrac.getUpperBound();
 		}
 		
 		
-		result[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(primaryRate.getName(), 
+		result[INDEX_PRIMARY_DIFF_RATE] = new Parameter(primaryRate.getName(), 
                                                     primaryRate.getLowerBound(), 
                                                     primaryRate.getUpperBound(),
                                                     primaryRate.getScale(),
-                                                    newValues[FRAPModel.INDEX_PRIMARY_DIFF_RATE]);
+                                                    newValues[INDEX_PRIMARY_DIFF_RATE]);
 		
-		result[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(primaryFrac.getName(), 
+		result[INDEX_PRIMARY_FRACTION] = new Parameter(primaryFrac.getName(), 
 													primaryFrac.getLowerBound(), 
 													primaryFrac.getUpperBound(),
 													primaryFrac.getScale(),
-													newValues[FRAPModel.INDEX_PRIMARY_FRACTION]);
-		result[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(bwmRate.getName(),
+													newValues[INDEX_PRIMARY_FRACTION]);
+		result[INDEX_BLEACH_MONITOR_RATE] = new Parameter(bwmRate.getName(),
 												    bwmRate.getLowerBound(),
 												    bwmRate.getUpperBound(),
 												    bwmRate.getScale(),
-												    newValues[FRAPModel.INDEX_BLEACH_MONITOR_RATE]);
-		result[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(secondaryRate.getName(), 
+												    newValues[INDEX_BLEACH_MONITOR_RATE]);
+		result[INDEX_SECONDARY_DIFF_RATE] = new Parameter(secondaryRate.getName(), 
 													secondaryRate.getLowerBound(), 
 													secondaryRate.getUpperBound(),
 													secondaryRate.getScale(),
-													newValues[FRAPModel.INDEX_SECONDARY_DIFF_RATE]);
-		result[FRAPModel.INDEX_SECONDARY_FRACTION] = new Parameter(secondaryFrac.getName(), 
+													newValues[INDEX_SECONDARY_DIFF_RATE]);
+		result[INDEX_SECONDARY_FRACTION] = new Parameter(secondaryFrac.getName(), 
 													secondaryFrac.getLowerBound(), 
 													secondaryFrac.getUpperBound(),
 													secondaryFrac.getScale(),
-													newValues[FRAPModel.INDEX_SECONDARY_FRACTION]);
+													newValues[INDEX_SECONDARY_FRACTION]);
        
  		return result;
 	}
@@ -221,7 +249,7 @@ public class RunProfileLikelihood extends Task {
 		DefaultScalarFunction scalarFunc = new OptContextObjectiveFunction(optContext);
 		optSpec.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
 		// create solver spec 
-		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FRAPOptimizationUtils.FTOL);
+		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(OptimizationSolverSpec.SOLVERTYPE_POWELL, FTOL);
 		// create solver call back
 		OptSolverCallbacks optSolverCallbacks = new DefaultOptSolverCallbacks();
 		// create optimization result set
@@ -273,99 +301,99 @@ public class RunProfileLikelihood extends Task {
 		//get results as Parameters (take fixed parameter into account)
 		for(int i = 0; i < outParaNames.length; i++)
 		{
-			if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
+			if(outParaNames[i].equals(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE]))
 			{
 				double primaryDiffRate = outParaVals[i];
-				if(primaryDiffRate > FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound())
+				if(primaryDiffRate > REF_DIFFUSION_RATE_PARAM.getUpperBound())
 				{
-					primaryDiffRate = FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(); 
+					primaryDiffRate = REF_DIFFUSION_RATE_PARAM.getUpperBound(); 
 				}
-				if(primaryDiffRate < FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound())
+				if(primaryDiffRate < REF_DIFFUSION_RATE_PARAM.getLowerBound())
 				{
-					primaryDiffRate = FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound();
+					primaryDiffRate = REF_DIFFUSION_RATE_PARAM.getLowerBound();
 				}
 	
-				outputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = new Parameter(outParaNames[i], FRAPModel.REF_DIFFUSION_RATE_PARAM.getLowerBound(), FRAPModel.REF_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, primaryDiffRate);
+				outputParams[INDEX_PRIMARY_DIFF_RATE] = new Parameter(outParaNames[i], REF_DIFFUSION_RATE_PARAM.getLowerBound(), REF_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, primaryDiffRate);
 			}
-			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION]))
+			else if(outParaNames[i].equals(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION]))
 			{
 				double primaryFraction = outParaVals[i];
-				if(primaryFraction > FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound())
+				if(primaryFraction > REF_MOBILE_FRACTION_PARAM.getUpperBound())
 				{
-					primaryFraction = FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(); 
+					primaryFraction = REF_MOBILE_FRACTION_PARAM.getUpperBound(); 
 				}
-				if(primaryFraction < FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound())
+				if(primaryFraction < REF_MOBILE_FRACTION_PARAM.getLowerBound())
 				{
-					primaryFraction = FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound();
+					primaryFraction = REF_MOBILE_FRACTION_PARAM.getLowerBound();
 				}
 	
-				outputParams[FRAPModel.INDEX_PRIMARY_FRACTION] = new Parameter(outParaNames[i], FRAPModel.REF_MOBILE_FRACTION_PARAM.getLowerBound(), FRAPModel.REF_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, primaryFraction);
+				outputParams[INDEX_PRIMARY_FRACTION] = new Parameter(outParaNames[i], REF_MOBILE_FRACTION_PARAM.getLowerBound(), REF_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, primaryFraction);
 			}
-			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+			else if(outParaNames[i].equals(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE]))
 			{
 				double bwmRate = outParaVals[i];
-				if(bwmRate > FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound())
+				if(bwmRate > REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound())
 				{
-					bwmRate = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(); 
+					bwmRate = REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(); 
 				}
-				if(bwmRate < FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
+				if(bwmRate < REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())
 				{
-					bwmRate = FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
+					bwmRate = REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
 				}
 	
-				outputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = new Parameter(outParaNames[i], FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(), FRAPModel.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(), 1.0, bwmRate);
+				outputParams[INDEX_BLEACH_MONITOR_RATE] = new Parameter(outParaNames[i], REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound(), REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound(), 1.0, bwmRate);
 			}
-			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+			else if(outParaNames[i].equals(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE]))
 			{
 				double secDiffRate = outParaVals[i];
-				if(secDiffRate > FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound())
+				if(secDiffRate > REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound())
 				{
-					secDiffRate = FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(); 
+					secDiffRate = REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(); 
 				}
-				if(secDiffRate < FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound())
+				if(secDiffRate < REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound())
 				{
-					secDiffRate = FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound();
+					secDiffRate = REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound();
 				}
 	
-				outputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = new Parameter(outParaNames[i], FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(), FRAPModel.REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, secDiffRate);
+				outputParams[INDEX_SECONDARY_DIFF_RATE] = new Parameter(outParaNames[i], REF_SECOND_DIFFUSION_RATE_PARAM.getLowerBound(), REF_SECOND_DIFFUSION_RATE_PARAM.getUpperBound(), 1.0, secDiffRate);
 			}
-			else if(outParaNames[i].equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION]))
+			else if(outParaNames[i].equals(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION]))
 			{
 				double secFraction = outParaVals[i];
-				if(secFraction > FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound())
+				if(secFraction > REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound())
 				{
-					secFraction = FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(); 
+					secFraction = REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(); 
 				}
-				if(secFraction < FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())
+				if(secFraction < REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound())
 				{
-					secFraction = FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound();
+					secFraction = REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound();
 				}
 	
-				outputParams[FRAPModel.INDEX_SECONDARY_FRACTION] = new Parameter(outParaNames[i], FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(), FRAPModel.REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, secFraction);
+				outputParams[INDEX_SECONDARY_FRACTION] = new Parameter(outParaNames[i], REF_SECOND_MOBILE_FRACTION_PARAM.getLowerBound(), REF_SECOND_MOBILE_FRACTION_PARAM.getUpperBound(), 1.0, secFraction);
 			}
 		}
 		//add fixed parameter to the best parameter output to make a whole set
 		if(fixedParam != null)
 		{
-			if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_DIFF_RATE]))
+			if(fixedParam.getName().equals(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE]))
 			{
-				outputParams[FRAPModel.INDEX_PRIMARY_DIFF_RATE] = fixedParam;
+				outputParams[INDEX_PRIMARY_DIFF_RATE] = fixedParam;
 			}
-			else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_PRIMARY_FRACTION]))
+			else if(fixedParam.getName().equals(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION]))
 			{
-				outputParams[FRAPModel.INDEX_PRIMARY_FRACTION] = fixedParam;
+				outputParams[INDEX_PRIMARY_FRACTION] = fixedParam;
 			}
-			else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_BLEACH_MONITOR_RATE]))
+			else if(fixedParam.getName().equals(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE]))
 			{
-				outputParams[FRAPModel.INDEX_BLEACH_MONITOR_RATE] = fixedParam;
+				outputParams[INDEX_BLEACH_MONITOR_RATE] = fixedParam;
 			}
-			else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_DIFF_RATE]))
+			else if(fixedParam.getName().equals(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE]))
 			{
-				outputParams[FRAPModel.INDEX_SECONDARY_DIFF_RATE] = fixedParam;
+				outputParams[INDEX_SECONDARY_DIFF_RATE] = fixedParam;
 			}
-			else if(fixedParam.getName().equals(FRAPModel.MODEL_PARAMETER_NAMES[FRAPModel.INDEX_SECONDARY_FRACTION]))
+			else if(fixedParam.getName().equals(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_FRACTION]))
 			{
-				outputParams[FRAPModel.INDEX_SECONDARY_FRACTION] = fixedParam;
+				outputParams[INDEX_SECONDARY_FRACTION] = fixedParam;
 			}
 		}
 		//for debug purpose
@@ -386,7 +414,6 @@ public class RunProfileLikelihood extends Task {
 		{
 			ProfileData profileData = new ProfileData();
 			//add the fixed parameter to profileData, output exp data and opt results
-			setNumEstimatedParams(totalParamLen);
 			Parameter[] newBestParameters = getBestParameters(optContext, currentParams, null);
 			double iniError = leastError;
 			//fixed parameter
@@ -397,15 +424,15 @@ public class RunProfileLikelihood extends Task {
 	                        fixedParam.getLowerBound(),
 	                        fixedParam.getUpperBound(),
 	                        fixedParam.getScale(),
-	                        FRAPOptimizationUtils.epsilon);
+	                        epsilon);
 			}
 			if(clientTaskStatusSupport != null)
 			{
-				if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_ONE_DIFF)
+				if(totalParamLen == NUM_MODEL_PARAMETERS_ONE_DIFF)
 				{
 					clientTaskStatusSupport.setMessage("<html>Evaluating confidence intervals of \'" + fixedParam.getName() + "\' <br> of diffusion with one diffusing component model.</html>");
 				}
-				else if(totalParamLen == FRAPModel.NUM_MODEL_PARAMETERS_TWO_DIFF)
+				else if(totalParamLen == NUM_MODEL_PARAMETERS_TWO_DIFF)
 				{
 					clientTaskStatusSupport.setMessage("<html>Evaluating confidence intervals of \'" + fixedParam.getName() + "\' <br> of diffusion with two diffusing components model.</html>");
 				}
@@ -430,11 +457,11 @@ public class RunProfileLikelihood extends Task {
 			double paramLogVal = Math.log10(fixedParam.getInitialGuess());
 			double lastError = iniError;
 			boolean isBoundReached = false;
-			double incrementStep = FRAPOptData.DEFAULT_CI_STEPS[j];
+			double incrementStep = DEFAULT_CI_STEPS[j];
 			int stepIncreaseCount = 0;
 			while(true)
 			{
-				if(iterationCount > FRAPOptData.MAX_ITERATION)//if exceeds the maximum iterations, break;
+				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
@@ -444,7 +471,7 @@ public class RunProfileLikelihood extends Task {
 				}
 				paramLogVal = paramLogVal + incrementStep ;
 				double paramVal = Math.pow(10,paramLogVal);
-				if(paramVal > (fixedParam.getUpperBound() - FRAPOptimizationUtils.epsilon))
+				if(paramVal > (fixedParam.getUpperBound() - epsilon))
 				{
 					paramVal = fixedParam.getUpperBound();
 					paramLogVal = Math.log10(fixedParam.getUpperBound());
@@ -456,7 +483,6 @@ public class RunProfileLikelihood extends Task {
 	                                                      fixedParam.getScale(),
 	                                                      paramVal);
 				//getBestParameters returns the whole set of parameters including the fixed parameters
-				setNumEstimatedParams(totalParamLen-1);
 				optContext.setFixedParameter(fixedParam, paramVal);
 				Parameter[] newParameters = getBestParameters(optContext, unFixedParams, increasedParam);
 				for(int i=0; i < newParameters.length; i++)//use last step unfixed parameter values to optimize
@@ -482,16 +508,16 @@ public class RunProfileLikelihood extends Task {
 				{
 					break;
 				}
-				if(Math.abs((error-lastError)/lastError) < FRAPOptData.MIN_LIKELIHOOD_CHANGE)
+				if(Math.abs((error-lastError)/lastError) < MIN_LIKELIHOOD_CHANGE)
 				{
 					stepIncreaseCount ++;
-					incrementStep = FRAPOptData.DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
+					incrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
 				}
 				else
 				{
 					if(stepIncreaseCount > 1)
 					{
-						incrementStep = FRAPOptData.DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
+						incrementStep = DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
 						stepIncreaseCount --;
 					}
 				}
@@ -515,7 +541,7 @@ public class RunProfileLikelihood extends Task {
 
 				lastError = error;
 				iterationCount++;
-				clientTaskStatusSupport.setProgress((int)((iterationCount*1.0/FRAPOptData.MAX_ITERATION) * 0.5 * 100));
+				clientTaskStatusSupport.setProgress((int)((iterationCount*1.0/MAX_ITERATION) * 0.5 * 100));
 			}
 			clientTaskStatusSupport.setProgress(50);//half way through evaluation of a parameter.
 			//decrease
@@ -524,11 +550,11 @@ public class RunProfileLikelihood extends Task {
 			;
 			lastError = iniError;
 			isBoundReached = false;
-			double decrementStep = FRAPOptData.DEFAULT_CI_STEPS[j];
+			double decrementStep = DEFAULT_CI_STEPS[j];
 			stepIncreaseCount = 0;
 			while(true)
 			{
-				if(iterationCount > FRAPOptData.MAX_ITERATION)//if exceeds the maximum iterations, break;
+				if(iterationCount > MAX_ITERATION)//if exceeds the maximum iterations, break;
 				{
 					break;
 				}
@@ -538,10 +564,10 @@ public class RunProfileLikelihood extends Task {
 				}
 				paramLogVal = paramLogVal - decrementStep;
 				double paramVal = Math.pow(10,paramLogVal);
-				if(paramVal < (fixedParam.getLowerBound() + FRAPOptimizationUtils.epsilon))
+				if(paramVal < (fixedParam.getLowerBound() + epsilon))
 				{
-					paramVal = FRAPOptimizationUtils.epsilon;
-					paramLogVal = Math.log10(FRAPOptimizationUtils.epsilon);
+					paramVal = epsilon;
+					paramLogVal = Math.log10(epsilon);
 					isBoundReached = true;
 				}
 				Parameter decreasedParam = new Parameter (fixedParam.getName(),
@@ -550,7 +576,6 @@ public class RunProfileLikelihood extends Task {
 	                                            fixedParam.getScale(),
 	                                            paramVal);
 				//getBestParameters returns the whole set of parameters including the fixed parameters
-				setNumEstimatedParams(totalParamLen-1);
 				optContext.setFixedParameter(fixedParam, paramVal);
 				Parameter[] newParameters = getBestParameters(optContext, unFixedParams, decreasedParam);
 				for(int i=0; i < newParameters.length; i++)//use last step unfixed parameter values to optimize
@@ -575,16 +600,16 @@ public class RunProfileLikelihood extends Task {
 				{
 					break;
 				}
-				if(Math.abs((error-lastError)/lastError) < FRAPOptData.MIN_LIKELIHOOD_CHANGE)
+				if(Math.abs((error-lastError)/lastError) < MIN_LIKELIHOOD_CHANGE)
 				{
 					stepIncreaseCount ++;
-					decrementStep = FRAPOptData.DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
+					decrementStep = DEFAULT_CI_STEPS[j] * Math.pow(2, stepIncreaseCount);
 				}
 				else
 				{
 					if(stepIncreaseCount > 1)
 					{
-						incrementStep = FRAPOptData.DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
+						incrementStep = DEFAULT_CI_STEPS[j] / Math.pow(2, stepIncreaseCount);
 						stepIncreaseCount --;
 					}
 				}
@@ -607,7 +632,7 @@ public class RunProfileLikelihood extends Task {
 				}
 				lastError = error;
 				iterationCount++;
-				clientTaskStatusSupport.setProgress((int)(((iterationCount+FRAPOptData.MAX_ITERATION)*1.0/FRAPOptData.MAX_ITERATION) * 0.5 * 100));
+				clientTaskStatusSupport.setProgress((int)(((iterationCount+MAX_ITERATION)*1.0/MAX_ITERATION) * 0.5 * 100));
 			}
 			resultData[j] = profileData;
 			clientTaskStatusSupport.setProgress(100);//finish evaluation of a parameter
@@ -618,10 +643,5 @@ public class RunProfileLikelihood extends Task {
 //		long endTime =System.currentTimeMillis();
 //		System.out.println("total time used:" + (endTime - startTime));
 		return resultData;
-	}
-
-	
-	private void setNumEstimatedParams(int totalParamLen) {
-		this.totalParamLen = totalParamLen;
 	}
 }
