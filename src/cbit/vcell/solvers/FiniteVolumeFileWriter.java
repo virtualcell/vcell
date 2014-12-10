@@ -432,7 +432,7 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 			*/
 			cbit.vcell.microscopy.ROIDataGenerator roiDataGenerator = (cbit.vcell.microscopy.ROIDataGenerator) dataGenerator;
 			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
-		} else if (dataGenerator instanceof org.vcell.vmicro.workflow.scratch.ROIDataGenerator) {
+		} else if (dataGenerator instanceof org.vcell.vmicro.workflow.data.ROIDataGenerator) {
 			/*
 			ROI_DATA_GENERATOR_BEGIN roidata
 			VolumePoints 20
@@ -443,7 +443,7 @@ private void writePostProcessingBlock() throws Exception { // SolverException, E
 			SampleImageFile roiSumDataVar 0.0 C:\Users\abcde\VirtualMicroscopy\SimulationData\SimID_1341426862125_0_sumROIData_roiSumDataVar_0_0_Volume.fdat
 			DATA_PROCESSOR_END
 			*/
-			org.vcell.vmicro.workflow.scratch.ROIDataGenerator roiDataGenerator = (org.vcell.vmicro.workflow.scratch.ROIDataGenerator) dataGenerator;
+			org.vcell.vmicro.workflow.data.ROIDataGenerator roiDataGenerator = (org.vcell.vmicro.workflow.data.ROIDataGenerator) dataGenerator;
 			printWriter.println(roiDataGenerator.getROIDataGeneratorDescription(userDirectory, simTask.getSimulationJob())); 
 		} else {
 			throw new SolverException(dataGenerator.getClass() + " : data generator not supported yet.");
