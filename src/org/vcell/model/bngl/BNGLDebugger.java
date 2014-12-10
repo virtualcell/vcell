@@ -17,9 +17,9 @@ import cbit.vcell.xml.ExternalDocInfo;
 
 import java.io.*;
 
-public class BNGLDebugger extends JFrame {
+public class BNGLDebugger extends JFrame implements KeyListener, ActionListener {
 	
-	private JFrame frame;
+	private JFrame frame = new JFrame("Bngl Debugger");
 	private static BNGLDebugger instance = null;
 	
 	private JTextArea	lineNumberArea;
@@ -27,8 +27,8 @@ public class BNGLDebugger extends JFrame {
 	private JTextArea	exceptionTextArea;
 	
 	private ExternalDocInfo docInfo = null;
-	private String bnglText = "";
-	private String exceptionText = "";
+//	private String bnglText = "";
+//	private String exceptionText = "";
 
 	private JFileChooser fileChooser = new JFileChooser();
     
@@ -36,6 +36,10 @@ public class BNGLDebugger extends JFrame {
 	private Action openAction = new OpenAction();
 	private Action saveAction = new SaveAction();
 	private Action exitAction = new ExitAction();
+	
+	private Button buttonParse = new Button("Parse");
+	private Button buttonSave = new Button("Save");
+	private Button buttonExit = new Button("Exit");
     
 	private BNGLDebugger() {
 		initialize();
@@ -54,36 +58,17 @@ public class BNGLDebugger extends JFrame {
 			fr = docInfo.getReader();
 			BufferedReader br = new BufferedReader(fr); 
 			String s;
-			bnglText = "";		// the text of the bngl file
+			String bnglText = "";		// the text of the bngl file
 			while((s = br.readLine()) != null) {
 				bnglText += s + "\n";
 			}
-			fr.close();
+//			fr.close();
 			bnglTextArea.setText(bnglText);
 
-			RbmUtils.reactionRuleLabelIndex = 0;
-			RbmUtils.reactionRuleNames.clear();
-			Reader reader = docInfo.getReader();
-			RbmUtils.importBnglFile(reader);
-		} catch (ParseException e) {
-			Token exceptionToken = e.currentToken;
-			exceptionText = e.getMessage();
-			exceptionTextArea.setText(exceptionText);
-			
-			int lineNumber = 1;
-			int startIndex;
-			try {
-				if(exceptionToken != null) {
-					lineNumber = exceptionToken.beginLine;
-				}
-				startIndex = lineNumberArea.getLineStartOffset(lineNumber-1);
-				int endIndex = lineNumberArea.getLineEndOffset(lineNumber-1);
-
-				Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
-				lineNumberArea.getHighlighter().addHighlight(startIndex, endIndex, painter);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
+			fr = docInfo.getReader();
+			br = new BufferedReader(fr);
+			parse1(br);
+			fr.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -107,9 +92,9 @@ public class BNGLDebugger extends JFrame {
 			public String getNr(){
 				int caretPosition = bnglTextArea.getDocument().getLength();
 				Element root = bnglTextArea.getDocument().getDefaultRootElement();
-				String nr = "1" + " " + System.getProperty("line.separator");
+				String nr = "1" + System.getProperty("line.separator");
 				for(int i = 2; i < root.getElementIndex( caretPosition ) + 2; i++){
-					nr += i + " " + System.getProperty("line.separator");
+					nr += i + System.getProperty("line.separator");
 				}
 				return nr;
 			}
@@ -162,15 +147,38 @@ public class BNGLDebugger extends JFrame {
 		fileMenu.addSeparator(); 
 		fileMenu.add(exitAction);
 
-		frame = new JFrame();
+		JPanel buttonPane = new JPanel();
+		buttonParse.addActionListener(this);
+		buttonSave.addActionListener(this);
+		buttonExit.addActionListener(this);
+		buttonPane.add(buttonParse);
+		buttonPane.add(buttonSave);
+		buttonPane.add(buttonExit);
+		
+		JPanel framePanel = new JPanel();
+		framePanel.setLayout(new GridBagLayout());
 
-		frame.add(splitPane);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        framePanel.add(splitPane, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0;
+        gbc.weighty = 0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        framePanel.add(buttonPane, gbc); 
+		
+		frame.add(framePanel);
 		frame.setJMenuBar(menuBar);
 		frame.pack();
 		frame.setName("BnglDebugger");
-		frame.setSize(500,500);
-		
-		bnglTextArea.setText(bnglText);
+		frame.setSize(900,650);
 		frame.setVisible(true);
 	}
 
@@ -228,6 +236,96 @@ public class BNGLDebugger extends JFrame {
         }
     }
 
+    // ----------------------------------------------------------------------
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		System.out.println(e.getSource() + ", " + e.getActionCommand());
+		if(e.getSource() == buttonParse) {
+			parse();
+		} else if(e.getSource() == buttonSave) {
+			save();
+		} else if(e.getSource() == buttonExit) {
+			frame.dispose();
+		}
+
+	}
+	private void parse() {
+		String str = bnglTextArea.getText();
+		InputStream is = new ByteArrayInputStream(str.getBytes());
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+		parse1(br);
+	}
+	private void parse1(BufferedReader br) {
+		String exceptionText = "No errors detected. Please Save this file, Exit the debugger and Import again.";
+		try {
+		RbmUtils.importBnglFile(br);
+		} catch (ParseException e) {
+			Token exceptionToken = e.currentToken;
+			exceptionText = e.getMessage();
+			int lineNumber = 0;
+			int startIndex;
+			try {
+				if(exceptionToken != null) {
+					// line number is 1 based, we make it 0 based
+					lineNumber = exceptionToken.beginLine - 1;
+					
+					String key = " at line ";
+					String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
+					sn = sn.substring(0, sn.indexOf(','));
+					System.out.println(sn);
+					if(sn != null && isNumeric(sn)) {
+						lineNumber = Integer.parseInt(sn) - 1;
+					}
+				}
+				startIndex = lineNumberArea.getLineStartOffset(lineNumber);
+				int endIndex = lineNumberArea.getLineEndOffset(lineNumber);
+
+				Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
+				lineNumberArea.getHighlighter().addHighlight(startIndex, endIndex, painter);
+				
+				Rectangle rect = bnglTextArea.modelToView(bnglTextArea.getLineStartOffset(lineNumber));
+				bnglTextArea.scrollRectToVisible(rect);
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+				exceptionText = e1.getMessage();
+			}
+		} finally {
+			exceptionTextArea.setText(exceptionText);
+		}
+	}
+	private static boolean isNumeric(String str)
+	{
+	    return str.matches("[+-]?\\d*(\\.\\d+)?");
+	}
+	private void save() {
+		try {
+			File file = docInfo.getFile();
+            String str = bnglTextArea.getText();
+
+            FileWriter fw = new FileWriter(file);
+            fw.write(str);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+	}
+	
+// ========================================================================
     public static void main(String[] args) {
         new BNGLDebugger();
     }
