@@ -16,6 +16,9 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
+
 public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
 	
@@ -168,6 +171,37 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			for (MolecularComponentPattern entity : componentPatternList) {
 				entity.gatherIssues(issueContext, issueList);
 			}
+			//
+			//	Big sanity check: take each molecule type and make sure it's present in the rbmModelContainer
+			//
+			MolecularType mt = getMolecularType();
+			IssueSource m = issueContext.getContextObject(IssueContext.ContextType.Model);
+			if(!(m instanceof Model)) {
+				return;
+			}
+			IssueContext.ContextType ownerContextType = issueContext.getContextType();
+			IssueSource owner = issueContext.getContextObject(ownerContextType);
+			RbmModelContainer c = ((Model)m).getRbmModelContainer();
+			if(!c.getMolecularTypeList().contains(mt)) {
+				issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Type '" + mt.getName() + "' missing from the SpeciesTypes table.", Issue.SEVERITY_ERROR));
+			}
+			for(MolecularComponentPattern mcp : getComponentPatternList()) {
+				MolecularComponent mc = mcp.getMolecularComponent();
+				if(!mt.getComponentList().contains(mc)) {
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component '" + mc.toString() + "' missing from the SpeciesType definition.", Issue.SEVERITY_ERROR));
+				}
+				ComponentStatePattern csp = mcp.getComponentStatePattern();
+				if(csp != null && !csp.isAny()) {
+					ComponentStateDefinition cs = csp.getComponentStateDefinition();
+					if(cs == null) {
+						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the ComponentStatePattern.", Issue.SEVERITY_ERROR));
+					}
+					if(!mc.getComponentStateDefinitions().contains(cs)) {
+						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the SpeciesType definition.", Issue.SEVERITY_ERROR));
+					}
+				}
+			}
+			
 		}			
 	}
 
