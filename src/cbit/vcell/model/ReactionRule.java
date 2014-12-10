@@ -465,11 +465,19 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.SEVERITY_ERROR));
 		} else {
 			checkReactantPatterns(issueContext, issueList);
+			for (ReactantPattern rp : reactantPatterns) {
+				issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
+				rp.getSpeciesPattern().gatherIssues(issueContext, issueList);				
+			}
 		}
 		if(productPatterns == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Product Pattern is null", Issue.SEVERITY_ERROR));
 		} else {
 			checkProductPatterns(issueContext, issueList);
+			for (ProductPattern pp : productPatterns) {
+				issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
+				pp.getSpeciesPattern().gatherIssues(issueContext, issueList);				
+			}
 		}
 		kineticLaw.gatherIssues(issueContext, issueList);
 		if(molecularTypeMappings == null) {
