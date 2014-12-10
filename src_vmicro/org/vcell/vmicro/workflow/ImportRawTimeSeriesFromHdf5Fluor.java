@@ -7,7 +7,6 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.vmicro.workflow.scratch.FRAPData;
 import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.Task;
@@ -126,10 +125,8 @@ public class ImportRawTimeSeriesFromHdf5Fluor extends Task {
 		}
 		
 		ImageDataset imageDataSet = new ImageDataset(dataImages1,times,Z_SIZE);
-		org.vcell.vmicro.workflow.scratch.FRAPData frapData1 = new org.vcell.vmicro.workflow.scratch.FRAPData(imageDataSet, new String[]{ FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name(),FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name(),FRAPData.VFRAP_ROI_ENUM.ROI_BACKGROUND.name()});
-		FRAPData frapData = frapData1;
-		UShortImage[] dataImages = frapData.getImageDataset().getAllImages();
-		double[] timeStamps = frapData.getImageDataset().getImageTimeStamps();
+		UShortImage[] dataImages = imageDataSet.getAllImages();
+		double[] timeStamps = imageDataSet.getImageTimeStamps();
 		ImageTimeSeries<UShortImage> rawImageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,dataImages,timeStamps,1 /*sdInfo.get(0).getZSize()*/);
 		
 		return rawImageTimeSeries;

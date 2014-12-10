@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.workflow.scratch.FRAPData;
 import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.Task;
@@ -14,6 +13,17 @@ import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 public class GenerateDependentImageROIs extends Task {
+	
+	private enum VFRAP_ROI_ENUM {
+		ROI_BLEACHED_RING1,
+		ROI_BLEACHED_RING2,
+		ROI_BLEACHED_RING3,
+		ROI_BLEACHED_RING4,
+		ROI_BLEACHED_RING5,
+		ROI_BLEACHED_RING6,
+		ROI_BLEACHED_RING7,
+		ROI_BLEACHED_RING8
+	};
 	
 	//
 	// inputs
@@ -107,14 +117,14 @@ public class GenerateDependentImageROIs extends Task {
 
 		ArrayList<ROI> rois = new ArrayList<ROI>();
 //		rois.add(new ROI(this.bleachedROI_2D.getData())); // copy this one through
-		rois.add(new ROI(erodedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()));
-		rois.add(new ROI(erodedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()));
-		rois.add(new ROI(erodedROI_2D_0,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()));
-		rois.add(new ROI(dilatedROI_2D_1,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()));
-		rois.add(new ROI(dilatedROI_2D_2,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()));
-		rois.add(new ROI(dilatedROI_2D_3,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()));
-		rois.add(new ROI(dilatedROI_2D_4,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()));
-		rois.add(new ROI(dilatedROI_2D_5,FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()));
+		rois.add(new ROI(erodedROI_2D_2,VFRAP_ROI_ENUM.ROI_BLEACHED_RING1.name()));
+		rois.add(new ROI(erodedROI_2D_1,VFRAP_ROI_ENUM.ROI_BLEACHED_RING2.name()));
+		rois.add(new ROI(erodedROI_2D_0,VFRAP_ROI_ENUM.ROI_BLEACHED_RING3.name()));
+		rois.add(new ROI(dilatedROI_2D_1,VFRAP_ROI_ENUM.ROI_BLEACHED_RING4.name()));
+		rois.add(new ROI(dilatedROI_2D_2,VFRAP_ROI_ENUM.ROI_BLEACHED_RING5.name()));
+		rois.add(new ROI(dilatedROI_2D_3,VFRAP_ROI_ENUM.ROI_BLEACHED_RING6.name()));
+		rois.add(new ROI(dilatedROI_2D_4,VFRAP_ROI_ENUM.ROI_BLEACHED_RING7.name()));
+		rois.add(new ROI(dilatedROI_2D_5,VFRAP_ROI_ENUM.ROI_BLEACHED_RING8.name()));
 		
 		Iterator<ROI> roiIter = rois.iterator();
 		while (roiIter.hasNext()){

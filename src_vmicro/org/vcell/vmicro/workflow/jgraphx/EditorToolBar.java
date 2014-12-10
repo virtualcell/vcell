@@ -12,19 +12,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
-import javax.swing.TransferHandler;
 
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.ColorAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.FontStyleAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.HistoryAction;
 import org.vcell.vmicro.workflow.jgraphx.EditorActions.KeyValueAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.NewAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.OpenAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.PrintAction;
-import org.vcell.vmicro.workflow.jgraphx.EditorActions.SaveAction;
 
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
