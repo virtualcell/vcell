@@ -22,19 +22,17 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 	private JFrame frame = new JFrame("Bngl Debugger");
 	private static BNGLDebugger instance = null;
 	
+	private int lines = 0;
 	private JTextArea	lineNumberArea;
 	private JTextArea	bnglTextArea;
 	private JTextArea	exceptionTextArea;
 	
 	private ExternalDocInfo docInfo = null;
-//	private String bnglText = "";
-//	private String exceptionText = "";
-
 	private JFileChooser fileChooser = new JFileChooser();
     
 	// create actions for menu items, buttons
-	private Action openAction = new OpenAction();
-	private Action saveAction = new SaveAction();
+//	private Action openAction = new OpenAction();
+//	private Action saveAction = new SaveAction();
 	private Action exitAction = new ExitAction();
 	
 	private Button buttonParse = new Button("Parse");
@@ -62,7 +60,6 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 			while((s = br.readLine()) != null) {
 				bnglText += s + "\n";
 			}
-//			fr.close();
 			bnglTextArea.setText(bnglText);
 
 			fr = docInfo.getReader();
@@ -90,25 +87,43 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 		
 		bnglTextArea.getDocument().addDocumentListener(new DocumentListener(){
 			public String getNr(){
+				lines = 1;
 				int caretPosition = bnglTextArea.getDocument().getLength();
 				Element root = bnglTextArea.getDocument().getDefaultRootElement();
 				String nr = "1" + System.getProperty("line.separator");
 				for(int i = 2; i < root.getElementIndex( caretPosition ) + 2; i++){
 					nr += i + System.getProperty("line.separator");
+					lines++;
 				}
 				return nr;
 			}
 			@Override
 			public void changedUpdate(DocumentEvent de) {
-				lineNumberArea.setText(getNr());
+				int oldLines = lines;
+				String numbers = getNr();
+				if(oldLines != lines) {
+					lineNumberArea.setText(numbers);
+				}
+				lineNumberArea.getHighlighter().removeAllHighlights();
+
 			}
 			@Override
 			public void insertUpdate(DocumentEvent de) {
-				lineNumberArea.setText(getNr());
+				int oldLines = lines;
+				String numbers = getNr();
+				if(oldLines != lines) {
+					lineNumberArea.setText(numbers);
+				}
+				lineNumberArea.getHighlighter().removeAllHighlights();
 			}
  			@Override
 			public void removeUpdate(DocumentEvent de) {
-				lineNumberArea.setText(getNr());
+				int oldLines = lines;
+				String numbers = getNr();
+				if(oldLines != lines) {
+					lineNumberArea.setText(numbers);
+				}
+				lineNumberArea.getHighlighter().removeAllHighlights();
 			}
 		});
 		bnglPanel.getViewport().add(bnglTextArea);
@@ -141,10 +156,10 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 		//... Create menubar
 		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = menuBar.add(new JMenu("File"));
-		fileMenu.setMnemonic('F');
-		fileMenu.add(openAction);       // Note use of actions, not text.
-		fileMenu.add(saveAction);
-		fileMenu.addSeparator(); 
+//		fileMenu.setMnemonic('F');
+//		fileMenu.add(openAction);       // Note use of actions, not text.
+//		fileMenu.add(saveAction);
+//		fileMenu.addSeparator(); 
 		fileMenu.add(exitAction);
 
 		JPanel buttonPane = new JPanel();
@@ -183,47 +198,47 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 	}
 
     
-    class OpenAction extends AbstractAction {
-        public OpenAction() {
-            super("Open...");
-            putValue(MNEMONIC_KEY, new Integer('O'));
-        }
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int retval = fileChooser.showOpenDialog(BNGLDebugger.this);
-            if (retval == JFileChooser.APPROVE_OPTION) {
-                File f = fileChooser.getSelectedFile();
-                try {
-                    FileReader reader = new FileReader(f);
-                    bnglTextArea.read(reader, "");  // Use TextComponent read
-                } catch (IOException ioex) {
-                    System.out.println(e);
-                    System.exit(1);
-                }
-            }
-        }
-    }
-    
-    class SaveAction extends AbstractAction {
-        SaveAction() {
-            super("Save...");
-            putValue(MNEMONIC_KEY, new Integer('S'));
-        }
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int retval = fileChooser.showSaveDialog(BNGLDebugger.this);
-            if (retval == JFileChooser.APPROVE_OPTION) {
-                File f = fileChooser.getSelectedFile();
-                try {
-                    FileWriter writer = new FileWriter(f);
-                    bnglTextArea.write(writer);  // Use TextComponent write
-                } catch (IOException ioex) {
-                    JOptionPane.showMessageDialog(BNGLDebugger.this, ioex);
-                    System.exit(1);
-                }
-            }
-        }
-    }
+//    class OpenAction extends AbstractAction {
+//        public OpenAction() {
+//            super("Open...");
+//            putValue(MNEMONIC_KEY, new Integer('O'));
+//        }
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            int retval = fileChooser.showOpenDialog(BNGLDebugger.this);
+//            if (retval == JFileChooser.APPROVE_OPTION) {
+//                File f = fileChooser.getSelectedFile();
+//                try {
+//                    FileReader reader = new FileReader(f);
+//                    bnglTextArea.read(reader, "");  // Use TextComponent read
+//                } catch (IOException ioex) {
+//                    System.out.println(e);
+//                    System.exit(1);
+//                }
+//            }
+//        }
+//    }
+//    
+//    class SaveAction extends AbstractAction {
+//        SaveAction() {
+//            super("Save...");
+//            putValue(MNEMONIC_KEY, new Integer('S'));
+//        }
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            int retval = fileChooser.showSaveDialog(BNGLDebugger.this);
+//            if (retval == JFileChooser.APPROVE_OPTION) {
+//                File f = fileChooser.getSelectedFile();
+//                try {
+//                    FileWriter writer = new FileWriter(f);
+//                    bnglTextArea.write(writer);  // Use TextComponent write
+//                } catch (IOException ioex) {
+//                    JOptionPane.showMessageDialog(BNGLDebugger.this, ioex);
+//                    System.exit(1);
+//                }
+//            }
+//        }
+//    }
     
     class ExitAction extends AbstractAction {
         public ExitAction() {
@@ -265,32 +280,37 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 			int lineNumber = 0;
 			int startIndex;
 			try {
-				if(exceptionToken != null) {
-					// line number is 1 based, we make it 0 based
-					lineNumber = exceptionToken.beginLine - 1;
-					
-					String key = " at line ";
-					String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
-					sn = sn.substring(0, sn.indexOf(','));
-					System.out.println(sn);
-					if(sn != null && isNumeric(sn)) {
-						lineNumber = Integer.parseInt(sn) - 1;
-					}
+				String key = " at line ";
+				String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
+				sn = sn.substring(0, sn.indexOf(','));
+				if(sn != null && isNumeric(sn)) {
+					lineNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
 				}
 				startIndex = lineNumberArea.getLineStartOffset(lineNumber);
 				int endIndex = lineNumberArea.getLineEndOffset(lineNumber);
-
+				
 				Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
 				lineNumberArea.getHighlighter().addHighlight(startIndex, endIndex, painter);
 				
 				Rectangle rect = bnglTextArea.modelToView(bnglTextArea.getLineStartOffset(lineNumber));
 				bnglTextArea.scrollRectToVisible(rect);
+				lineNumberArea.scrollRectToVisible(rect);
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 				exceptionText = e1.getMessage();
 			}
 		} finally {
 			exceptionTextArea.setText(exceptionText);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						Rectangle rect = exceptionTextArea.modelToView(exceptionTextArea.getLineStartOffset(0));
+						exceptionTextArea.scrollRectToVisible(rect);
+					} catch (BadLocationException e) {
+						e.printStackTrace();
+					}
+				}
+			});
 		}
 	}
 	private static boolean isNumeric(String str)
@@ -326,8 +346,8 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 	}
 	
 // ========================================================================
-    public static void main(String[] args) {
-        new BNGLDebugger();
-    }
-
+//    public static void main(String[] args) {
+//        new BNGLDebugger();
+//    }
+//
 }
