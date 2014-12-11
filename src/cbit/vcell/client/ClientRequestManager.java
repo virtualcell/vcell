@@ -2644,6 +2644,11 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			astModel = RbmUtils.importBnglFile(reader);
 		} catch (ParseException e) {
 			
+			
+//			String confirm = PopupGenerator.showOKCancelWarningDialog(requester, "Some Parse Exception Here", "Press any button.");
+//			System.out.println(confirm);
+		
+			
 			class BnglDebuggerThread implements Runnable {
 				ExternalDocInfo docInfo;
 				BnglDebuggerThread(ExternalDocInfo docInfo) {
