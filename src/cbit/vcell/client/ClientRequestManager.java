@@ -35,6 +35,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -59,11 +61,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebugger;
+import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
@@ -112,6 +116,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
@@ -2623,10 +2628,19 @@ public void onVCellMessageEvent(final VCellMessageEvent event) {
  * Insert the method's description here.
  * Creation date: (5/24/2004 9:37:46 PM)
  */
-private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
+private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
 
+	final String DOCUMENT_INFO = "documentInfo";
 	/* asynchronous and not blocking any window */
 	bOpening = true;
+
+	Hashtable<String,Object> hashTable = new Hashtable<String, Object>();
+	
+	//
+	// may want to insert corrected VCDocumentInfo later if our import debugger corrects it (BNGL Debugger).
+	//
+	hashTable.put(DOCUMENT_INFO, documentInfo);
+	
 	
 	// start a thread that gets it and updates the GUI by creating a new document desktop
 	String taskName = null;
@@ -2635,36 +2649,56 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 		ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 		
 		File file = externalDocInfo.getFile();
-		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+		String fileText;
+		String originalFileText;
 		try {
-			ASTModel astModel = null;
-			RbmUtils.reactionRuleLabelIndex = 0;
-			RbmUtils.reactionRuleNames.clear();
-			Reader reader = externalDocInfo.getReader();
-			astModel = RbmUtils.importBnglFile(reader);
-		} catch (ParseException e) {
-			
-			
-//			String confirm = PopupGenerator.showOKCancelWarningDialog(requester, "Some Parse Exception Here", "Press any button.");
-//			System.out.println(confirm);
-		
-			
-			class BnglDebuggerThread implements Runnable {
-				ExternalDocInfo docInfo;
-				BnglDebuggerThread(ExternalDocInfo docInfo) {
-					this.docInfo = docInfo;
-				}
-				public void run() {
-					BNGLDebugger instance = BNGLDebugger.getInstance();
-					instance.setInfo(docInfo);
-				}
-			}
-			BnglDebuggerThread p = new BnglDebuggerThread(externalDocInfo);
-			new Thread(p).start();			
+			fileText = BeanUtils.readBytesFromFile(file, null);
+			originalFileText = new String(fileText);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			DialogUtils.showErrorDialog(requester.getComponent(), 
+					"<html>Error reading file "+file.getPath()+"</html>");
 			return;
 		}
-		}
 		
+		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+			Reader reader = externalDocInfo.getReader();
+			boolean bException = true;
+			while (bException){
+				try {
+					RbmUtils.importBnglFile(reader);
+					bException = false;
+				} catch (final ParseException e) {
+					BNGLDebuggerPanel panel = new BNGLDebuggerPanel(fileText, e);
+					int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "bngl debugger" );
+					if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
+						throw new UserCancelException("Canceling Import");
+					}
+					//
+					// inserting <potentially> corrected DocumentInfo
+					//
+					fileText = panel.getText();
+					externalDocInfo = new ExternalDocInfo(panel.getText());
+					reader = externalDocInfo.getReader();
+					hashTable.put(DOCUMENT_INFO, externalDocInfo);
+				}
+			}
+			if(!originalFileText.equals(fileText)) {		// file has been modified
+		        int dialogButton = JOptionPane.YES_NO_OPTION;
+		        String message = "File <b>" + file.getName() + "</b> has been changed. <br>Save?<br>";
+		        message = "<html>" + message + "</html>";
+		        int returnCode = JOptionPane.showConfirmDialog(requester.getComponent(), message, "Bngl Debugger", dialogButton);
+				if (returnCode == JOptionPane.YES_OPTION) {
+					try {
+			            FileWriter fw = new FileWriter(file);
+			            fw.write(fileText);
+			            fw.close();
+			        } catch (IOException e) {
+			            e.printStackTrace();
+			        }
+				}
+			}
+		}
 	} else {
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
 	}
@@ -2681,6 +2715,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = null;
+			VCDocumentInfo documentInfo = (VCDocumentInfo)hashTable.get(DOCUMENT_INFO);
 			if (documentInfo instanceof BioModelInfo) {
 				BioModelInfo bmi = (BioModelInfo)documentInfo;
 				doc = getDocumentManager().getBioModel(bmi);
@@ -2801,7 +2836,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 			}
 		}		
 	};
-	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task0, task1, task2}, false);
+	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2}, false);
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
