@@ -477,8 +477,8 @@ public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExcept
 	}
 }
 
-public BioEvent createBioEvent() throws PropertyVetoException {
-	String eventName = getFreeEventName();
+public BioEvent createBioEvent(String preferredName) throws PropertyVetoException {
+	String eventName = getFreeEventName(preferredName);
 	BioEvent bioEvent = new BioEvent(eventName, this);
 	return addBioEvent(bioEvent);
 }
@@ -2180,10 +2180,17 @@ public BioEvent getEvent(String name) {
 	return null;
 }
 
-public String getFreeEventName() {	
+public String getFreeEventName(String preferredName) {
+	if(preferredName != null){
+		if(preferredName.length() > 0){
+			preferredName = TokenMangler.fixTokenStrict(preferredName);
+		}else{
+			preferredName = null;
+		}
+	}
 	int count = 0;
 	while (true) {
-		String eventName = "event" + count;
+		String eventName = (preferredName != null?preferredName:"event") + (preferredName != null?(count>0?count:""):count);
 		if (getEvent(eventName) == null) {
 			return eventName;
 		}
