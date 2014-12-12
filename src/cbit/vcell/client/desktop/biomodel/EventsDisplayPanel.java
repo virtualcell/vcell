@@ -17,6 +17,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import org.vcell.util.gui.DialogUtils;
 
@@ -83,7 +84,25 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 			return;
 		}
 		try {
-			simulationContext.createBioEvent();
+			TriggerTemplatePanel triggerTemplatePanel = new TriggerTemplatePanel();
+			triggerTemplatePanel.setSimulationContext(simulationContext);
+			int result = DialogUtils.showComponentOKCancelDialog(this, triggerTemplatePanel, "Enter event name and choose 1 suitable template");
+			if(result != JOptionPane.OK_OPTION){
+				return;
+			}
+			BioEvent mybioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
+			if(triggerTemplatePanel.getTriggerExpr() != null){
+				try{
+					EventPanel.setNewTrigger(mybioEvent, simulationContext, triggerTemplatePanel.getTriggerExpr());
+				}catch(Exception e){
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(this, "Error setting trigger : " + e.getMessage());
+					if(mybioEvent != null){
+						simulationContext.removeBioEvent(mybioEvent);
+					}
+				}
+			}
+
 		} catch (PropertyVetoException e) {
 			e.printStackTrace(System.out);
 			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());

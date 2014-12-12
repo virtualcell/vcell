@@ -14,9 +14,11 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
@@ -30,6 +32,7 @@ import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
@@ -54,13 +57,26 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
+
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.GridBagLayout;
+
+import javax.swing.JRadioButton;
+import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class EventPanel extends DocumentEditorSubPanel {
@@ -70,7 +86,6 @@ public class EventPanel extends DocumentEditorSubPanel {
 		private TextFieldAutoCompletion triggerTextfield = null;
 		private JLabel delayLabel = null;
 		private TextFieldAutoCompletion delayTextField = null;
-		private JLabel delayUnitsLabel = null;
 		// for event assignment - label, add/delete event assignment var
 		private JPanel buttons_n_label_Panel = null;
 		private javax.swing.JLabel eventAssgnLabel = null;
@@ -83,11 +98,11 @@ public class EventPanel extends DocumentEditorSubPanel {
 		private JLabel eventAssignExprLabel = null;
 		private JLabel eventAssgnVarNameLabel = null;
 		private TextFieldAutoCompletion eventAssgnExpressionTextField = null;
-		private JComboBox eventAssignvarNameComboBox = null;
-		private DefaultComboBoxModel varNameComboBoxModel = null;
+		private JComboBox<String> eventAssignvarNameComboBox = null;
+		private DefaultComboBoxModel<String> varNameComboBoxModel = null;
 		private JPanel eventAssignmentPanel = null;
 		
-		private JCheckBox useValuesAtTriggerTimeCheckBox = null;
+//		private JCheckBox useValuesAtTriggerTimeCheckBox = null;
 		
 		// general
 		private SimulationContext fieldSimContext = null;
@@ -96,6 +111,11 @@ public class EventPanel extends DocumentEditorSubPanel {
 		private AutoCompleteSymbolFilter autoCompleteFilter = null;
 		private Set<String> autoCompleteList = null;
 		IvjEventHandler ivjEventHandler = new IvjEventHandler();
+		private JButton btnPlotTrigger;
+		private JRadioButton rdbtnTrigTime;
+		private JRadioButton rdbtnDelayTime;
+		private ButtonGroup buttonGroup = new ButtonGroup();
+		private JPanel panel_1;
 		
 		class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener, FocusListener {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -105,7 +125,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				if (e.getSource() == EventPanel.this.getDeleteEventAssgnButton()) { 
 					deleteEventAssignment();
 				}
-				if (e.getSource() == getUseValuesAtTriggerTimeCheckBox()) {
+				if (e.getSource() == getRdbtnDelayTime() || e.getSource() == getRdbtnTrigTime()) {
 					setNewDelay();
 				}
 			}
@@ -116,10 +136,10 @@ public class EventPanel extends DocumentEditorSubPanel {
 					updateEventPanel();					
 				}
 				if (evt.getSource() == EventPanel.this && (evt.getPropertyName().equals("simulationContext"))) {
-					triggerTextfield.setAutoCompleteSymbolFilter(getAutoCompleteFilter());
-					triggerTextfield.setAutoCompletionWords(getAutoCompleteList());
-					delayTextField.setAutoCompleteSymbolFilter(getAutoCompleteFilter());
-					delayTextField.setAutoCompletionWords(getAutoCompleteList());					
+					getTriggerTextField().setAutoCompleteSymbolFilter(getAutoCompleteFilter());
+					getTriggerTextField().setAutoCompletionWords(getAutoCompleteList());
+					getDelayTextField().setAutoCompleteSymbolFilter(getAutoCompleteFilter());
+					getDelayTextField().setAutoCompletionWords(getAutoCompleteList());					
 				}
 			};
 
@@ -143,7 +163,12 @@ public class EventPanel extends DocumentEditorSubPanel {
 					return;
 				}
 				if (e.getSource() == getTriggerTextField()) {
-					setNewTrigger();
+					try{
+						setNewTrigger(getBioEvent(),getSimulationContext(),getTriggerTextField().getText());
+					} catch (Exception e1) {
+						e1.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(EventPanel.this, e1.getMessage());
+					}
 				}
 				if (e.getSource() == getDelayTextField()) {
 					setNewDelay();
@@ -162,7 +187,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					addButton = new javax.swing.JButton();
 					addButton.setName("AddEventAssgnButton");
-					addButton.setText("Add Variable");
+					addButton.setText("Add Assignment");
 					addButton.setEnabled(true);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -176,7 +201,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					deleteButton = new javax.swing.JButton();
 					deleteButton.setName("DeleteEventAssgnButton");
-					deleteButton.setText("Delete Variable");
+					deleteButton.setText("Delete Assignment");
 					deleteButton.setEnabled(false);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -205,7 +230,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					triggerLabel = new javax.swing.JLabel();
 					triggerLabel.setName("TriggerLabel");
 					triggerLabel.setFont(triggerLabel.getFont().deriveFont(Font.BOLD));
-					triggerLabel.setText("Trigger");
+					triggerLabel.setText("Trigger Expression:");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -225,17 +250,17 @@ public class EventPanel extends DocumentEditorSubPanel {
 			return triggerTextfield;
 		}
 
-		private JCheckBox getUseValuesAtTriggerTimeCheckBox() {
-			if (useValuesAtTriggerTimeCheckBox == null) {
-				try {
-					useValuesAtTriggerTimeCheckBox = new JCheckBox("Use Values at Trigger Time");
-					useValuesAtTriggerTimeCheckBox.setSelected(true);
-				} catch (java.lang.Throwable e) {
-					e.printStackTrace(System.out);
-				}
-			}
-			return useValuesAtTriggerTimeCheckBox;
-		}
+//		private JCheckBox getUseValuesAtTriggerTimeCheckBox() {
+//			if (useValuesAtTriggerTimeCheckBox == null) {
+//				try {
+//					useValuesAtTriggerTimeCheckBox = new JCheckBox("Use Values at Trigger Time");
+//					useValuesAtTriggerTimeCheckBox.setSelected(true);
+//				} catch (java.lang.Throwable e) {
+//					e.printStackTrace(System.out);
+//				}
+//			}
+//			return useValuesAtTriggerTimeCheckBox;
+//		}
 
 		
 		private JLabel getDelayLabel() {
@@ -244,7 +269,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					delayLabel = new javax.swing.JLabel();
 					delayLabel.setName("DelayLabel");
 					delayLabel.setFont(delayLabel.getFont().deriveFont(Font.BOLD));
-					delayLabel.setText("Delay");
+					delayLabel.setText("Assignment Delay (s):");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -257,6 +282,19 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					delayTextField = new TextFieldAutoCompletion();
 					delayTextField.setName("DelayTextField");
+					delayTextField.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseExited(MouseEvent e) {
+							super.mouseExited(e);
+							setNewDelay();
+						}
+					});
+					delayTextField.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							setNewDelay();
+						}
+					});
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -264,60 +302,63 @@ public class EventPanel extends DocumentEditorSubPanel {
 			return delayTextField;
 		}
 
-		private JLabel getDelayUnitsLabel() {
-			if (delayUnitsLabel == null) {
-				try {
-					delayUnitsLabel = new javax.swing.JLabel();
-					delayUnitsLabel.setName("DelayUnitsLabel");
-					delayUnitsLabel.setFont(delayLabel.getFont().deriveFont(Font.BOLD));
-					delayUnitsLabel.setText("seconds");
-				} catch (java.lang.Throwable e) {
-					e.printStackTrace(System.out);
-				}
-			}
-			return delayUnitsLabel;
-		}
-
 		private JPanel getLabelsTextFieldsPanel() {
 			if (labels_n_textfields_Panel == null) {
 				try {
 					labels_n_textfields_Panel = new javax.swing.JPanel();
 					labels_n_textfields_Panel.setName("labelsTextfieldsPanel");
-					labels_n_textfields_Panel.setLayout(new java.awt.GridBagLayout());
+					GridBagLayout gbl_labels_n_textfields_Panel = new GridBagLayout();
+					gbl_labels_n_textfields_Panel.rowWeights = new double[]{1.0, 0.0};
+					gbl_labels_n_textfields_Panel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0};
+					labels_n_textfields_Panel.setLayout(gbl_labels_n_textfields_Panel);
 
 					java.awt.GridBagConstraints constraintsTriggerLabel = new java.awt.GridBagConstraints();
+					constraintsTriggerLabel.anchor = GridBagConstraints.EAST;
 					constraintsTriggerLabel.gridx = 0; constraintsTriggerLabel.gridy = 0;
-					constraintsTriggerLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+					constraintsTriggerLabel.insets = new Insets(4, 4, 5, 5);
 					labels_n_textfields_Panel.add(getTriggerLabel(), constraintsTriggerLabel);
 
 					java.awt.GridBagConstraints constraintsTriggerTextField = new java.awt.GridBagConstraints();
+					constraintsTriggerTextField.gridwidth = 2;
 					constraintsTriggerTextField.gridx = 1; constraintsTriggerTextField.gridy = 0;
 					constraintsTriggerTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 					constraintsTriggerTextField.weightx = 1.0;
-					constraintsTriggerTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+					constraintsTriggerTextField.insets = new Insets(4, 4, 5, 5);
 					labels_n_textfields_Panel.add(getTriggerTextField(), constraintsTriggerTextField);
+					GridBagConstraints gbc_btnPlotTrigger = new GridBagConstraints();
+					gbc_btnPlotTrigger.anchor = GridBagConstraints.EAST;
+					gbc_btnPlotTrigger.fill = GridBagConstraints.VERTICAL;
+					gbc_btnPlotTrigger.insets = new Insets(4, 4, 5, 4);
+					gbc_btnPlotTrigger.gridx = 3;
+					gbc_btnPlotTrigger.gridy = 0;
+					labels_n_textfields_Panel.add(getBtnPlotTrigger(), gbc_btnPlotTrigger);
 
 					java.awt.GridBagConstraints constraintsDelayLabel = new java.awt.GridBagConstraints();
+					constraintsDelayLabel.anchor = GridBagConstraints.EAST;
 					constraintsDelayLabel.gridx = 0; constraintsDelayLabel.gridy = 1;
-					constraintsDelayLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+					constraintsDelayLabel.insets = new Insets(4, 4, 4, 5);
 					labels_n_textfields_Panel.add(getDelayLabel(), constraintsDelayLabel);
 
 					java.awt.GridBagConstraints constraintsDelayTextField = new java.awt.GridBagConstraints();
+					constraintsDelayTextField.gridwidth = 2;
 					constraintsDelayTextField.gridx = 1; constraintsDelayTextField.gridy = 1;
 					constraintsDelayTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 					constraintsDelayTextField.weightx = 1.0;
-					constraintsDelayTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+					constraintsDelayTextField.insets = new Insets(4, 4, 4, 5);
 					labels_n_textfields_Panel.add(getDelayTextField(), constraintsDelayTextField);
-
-					java.awt.GridBagConstraints constraintsDelayUnitsLabel = new java.awt.GridBagConstraints();
-					constraintsDelayUnitsLabel.gridx = 2; constraintsDelayUnitsLabel.gridy = 1;
-					constraintsDelayUnitsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-					labels_n_textfields_Panel.add(getDelayUnitsLabel(), constraintsDelayUnitsLabel);
+					GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+					gbc_panel_1.insets = new Insets(4, 4, 4, 4);
+					gbc_panel_1.fill = GridBagConstraints.BOTH;
+					gbc_panel_1.gridwidth = 2;
+					gbc_panel_1.gridx = 3;
+					gbc_panel_1.gridy = 1;
+					labels_n_textfields_Panel.add(getPanel_1(), gbc_panel_1);
 					
-					java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-					gbc.gridx = 3; gbc.gridy = 1;
-					gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-					labels_n_textfields_Panel.add(getUseValuesAtTriggerTimeCheckBox(), gbc);
+//					java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+//					gbc.gridx = 5; 
+//					gbc.gridy = 1;
+//					gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+//					labels_n_textfields_Panel.add(getUseValuesAtTriggerTimeCheckBox(), gbc);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -401,10 +442,10 @@ public class EventPanel extends DocumentEditorSubPanel {
 			return eventAssgnVarNameLabel;
 		}
 
-		private JComboBox getEventAssignVarNameComboBox() {
+		private JComboBox<String> getEventAssignVarNameComboBox() {
 			if (eventAssignvarNameComboBox == null) {
 				try {
-					eventAssignvarNameComboBox = new javax.swing.JComboBox();
+					eventAssignvarNameComboBox = new JComboBox<String>();
 					eventAssignvarNameComboBox.setName("VariableNameComboBox");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -413,10 +454,10 @@ public class EventPanel extends DocumentEditorSubPanel {
 			return eventAssignvarNameComboBox;
 		}
 
-		private DefaultComboBoxModel getVarNameComboBoxModel() {
+		private DefaultComboBoxModel<String> getVarNameComboBoxModel() {
 			if (varNameComboBoxModel == null) {
 				try {
-					varNameComboBoxModel = new javax.swing.DefaultComboBoxModel();
+					varNameComboBoxModel = new DefaultComboBoxModel<String>();
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -481,7 +522,9 @@ public class EventPanel extends DocumentEditorSubPanel {
 			getEventTargetsScrollPaneTable().addMouseListener(ivjEventHandler);
 			getTriggerTextField().addFocusListener(ivjEventHandler);
 			getDelayTextField().addFocusListener(ivjEventHandler);
-			getUseValuesAtTriggerTimeCheckBox().addActionListener(ivjEventHandler);
+			
+			getRdbtnDelayTime().addActionListener(ivjEventHandler);
+			getRdbtnTrigTime().addActionListener(ivjEventHandler);
 			
 			this.addPropertyChangeListener(ivjEventHandler);
 			
@@ -536,10 +579,18 @@ public class EventPanel extends DocumentEditorSubPanel {
 		private void initialize() {
 			try {
 				setName("EventPanel");
-				setPreferredSize(new Dimension(400, 400));
+				setPreferredSize(new Dimension(547, 400));
 				setLayout(new BorderLayout());
 				add(getLabelsTextFieldsPanel(), BorderLayout.NORTH);
+				
+				buttonGroup.add(rdbtnTrigTime);
+				buttonGroup.add(rdbtnDelayTime);
+				rdbtnTrigTime.setSelected(true);
+				rdbtnTrigTime.setEnabled(false);
+				rdbtnDelayTime.setEnabled(false);
+				
 				JPanel panel = new JPanel();
+				panel.setName("assignmentPanel");
 				panel.setLayout(new BorderLayout());
 				panel.add(getButtonLabelPanel(), BorderLayout.NORTH);
 				panel.add(getEventTargetsScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
@@ -552,25 +603,31 @@ public class EventPanel extends DocumentEditorSubPanel {
 			}
 		}
 
-		private void addEventAssignment() {
+		public static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel,SimulationContext simContext/*,boolean bExcludeFuncAndReserved*/){
 			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
-			getVarNameComboBoxModel().removeAllElements();
+			defaultComboBoxModel.removeAllElements();
 			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
-			fieldSimContext.getEntries(entryMap);
+			simContext.getEntries(entryMap);
 			ArrayList<String> varNameList = new ArrayList<String>();
 			for (String varName : entryMap.keySet()) {
 				SymbolTableEntry symbolTableEntry = entryMap.get(varName);
-				if (symbolTableEntry instanceof SymbolTableFunctionEntry
-						|| symbolTableEntry instanceof Model.ReservedSymbol) {
+				if (/*bExcludeFuncAndReserved &&*/ 
+					(symbolTableEntry instanceof SymbolTableFunctionEntry || 
+					symbolTableEntry instanceof Model.ReservedSymbol)) {
 					continue;
 				}
 				varNameList.add(varName);
 			}
 			Collections.sort(varNameList);
 			for (String varName : varNameList) {
-				getVarNameComboBoxModel().addElement(varName);
+				defaultComboBoxModel.addElement(varName);
 			}
 
+		}
+		private void addEventAssignment() {
+
+			populateVariableComboBoxModel(getVarNameComboBoxModel(),getSimulationContext()/*,true*/);
+			
 			JPanel eventAssignmentPanel = getEventAssignmentPanel();
 			getEventAssignVarNameComboBox().setModel(getVarNameComboBoxModel());
 			getEventAssignExpressionTextField().setText("0.0");
@@ -713,11 +770,18 @@ public class EventPanel extends DocumentEditorSubPanel {
 				Delay delay = fieldBioEvent.getDelay();
 				if (delay != null) {
 					getDelayTextField().setText(delay.getDurationExpression().infix());
-					getUseValuesAtTriggerTimeCheckBox().setSelected(delay.useValuesFromTriggerTime());
+					getRdbtnDelayTime().setEnabled(true);
+					getRdbtnTrigTime().setEnabled(true);
+					if(delay.useValuesFromTriggerTime()){
+						getRdbtnTrigTime().setSelected(true);
+					}else{
+						getRdbtnDelayTime().setSelected(true);
+					}
+//					getUseValuesAtTriggerTimeCheckBox().setSelected(delay.useValuesFromTriggerTime());
 				} else {
 					getDelayTextField().setText("");
-					getUseValuesAtTriggerTimeCheckBox().setSelected(false);
-					getUseValuesAtTriggerTimeCheckBox().setSelected(true);
+					getRdbtnDelayTime().setEnabled(false);
+					getRdbtnTrigTime().setEnabled(false);
 				}
 				getEventAssignmentsTableModel().setSimulationContext(fieldSimContext);
 				getEventAssignmentsTableModel().setBioEvent(fieldBioEvent);
@@ -746,28 +810,23 @@ public class EventPanel extends DocumentEditorSubPanel {
 				if (text != null && text.trim().length() > 0) {
 					Expression durationExpression = new Expression(text);
 					durationExpression.bindExpression(fieldSimContext);
-					delay = fieldBioEvent.new Delay(getUseValuesAtTriggerTimeCheckBox().isSelected(), durationExpression);
+					delay = fieldBioEvent.new Delay(getRdbtnTrigTime().isSelected(), durationExpression);
 				}
 				fieldBioEvent.setDelay(delay);
+				updateEventPanel();
 			} catch (ExpressionException e1) {
 				e1.printStackTrace(System.out);
 				DialogUtils.showErrorDialog(EventPanel.this, e1.getMessage());
 			}
 		}
 
-		private void setNewTrigger() {
-			try {
-				if (fieldBioEvent == null) {
-					return;
-				}
-				String text = getTriggerTextField().getText();
-				Expression triggerExpr = new Expression(text);
-				triggerExpr.bindExpression(fieldSimContext);
-				fieldBioEvent.setTriggerExpression(triggerExpr);
-			} catch (ExpressionException e1) {
-				e1.printStackTrace(System.out);
-				DialogUtils.showErrorDialog(EventPanel.this, e1.getMessage());
+		public static void setNewTrigger(BioEvent bioEvent,SimulationContext simulationContext,String expr) throws ExpressionBindingException,ExpressionException{
+			if (bioEvent == null) {
+				return;
 			}
+			Expression triggerExpr = new Expression(expr);
+			triggerExpr.bindExpression(simulationContext);
+			bioEvent.setTriggerExpression(triggerExpr);
 		}
 		
 	@Override
@@ -788,5 +847,63 @@ public class EventPanel extends DocumentEditorSubPanel {
 			bioEvent = (BioEvent) selectedObjects[0];
 		}
 		setBioEvent(bioEvent);			
+	}
+	private JButton getBtnPlotTrigger() {
+		if (btnPlotTrigger == null) {
+			btnPlotTrigger = new JButton("Plot Trigger...");
+			btnPlotTrigger.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try{
+						setNewTrigger(getBioEvent(),getSimulationContext(),getTriggerTextField().getText());
+						ElectricalStimulusPanel.graphTimeFunction(
+								EventPanel.this,
+								getBioEvent().getTriggerExpression(),
+								getSimulationContext(),
+								getSimulationContext().getModel().getTIME(),
+								"Trigger Expression");
+					} catch (Exception e1) {
+						e1.printStackTrace(System.out);
+						DialogUtils.showErrorDialog(EventPanel.this, "Error: Only simple expressions of time can be plotted here");
+					}
+				}
+			});
+		}
+		return btnPlotTrigger;
+	}
+	private JRadioButton getRdbtnTrigTime() {
+		if (rdbtnTrigTime == null) {
+			rdbtnTrigTime = new JRadioButton("evaluate at trigger time");
+		}
+		return rdbtnTrigTime;
+	}
+	private JRadioButton getRdbtnDelayTime() {
+		if (rdbtnDelayTime == null) {
+			rdbtnDelayTime = new JRadioButton("evaluate after delay");
+		}
+		return rdbtnDelayTime;
+	}
+	private JPanel getPanel_1() {
+		if (panel_1 == null) {
+			panel_1 = new JPanel();
+			panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
+			GridBagLayout gbl_panel_1 = new GridBagLayout();
+			gbl_panel_1.columnWidths = new int[]{0, 0};
+			gbl_panel_1.rowHeights = new int[]{0};
+			gbl_panel_1.columnWeights = new double[]{0, 0.0};
+			gbl_panel_1.rowWeights = new double[]{0.0};
+			panel_1.setLayout(gbl_panel_1);
+			GridBagConstraints gbc_rdbtnTrigTime = new GridBagConstraints();
+			gbc_rdbtnTrigTime.anchor = GridBagConstraints.WEST;
+			gbc_rdbtnTrigTime.insets = new Insets(0, 0, 0, 5);
+			gbc_rdbtnTrigTime.gridx = 0;
+			gbc_rdbtnTrigTime.gridy = 0;
+			panel_1.add(getRdbtnTrigTime(), gbc_rdbtnTrigTime);
+			GridBagConstraints gbc_rdbtnDelayTime = new GridBagConstraints();
+			gbc_rdbtnDelayTime.gridx = 1;
+			gbc_rdbtnDelayTime.gridy = 0;
+			panel_1.add(getRdbtnDelayTime(), gbc_rdbtnDelayTime);
+		}
+		return panel_1;
 	}
 }

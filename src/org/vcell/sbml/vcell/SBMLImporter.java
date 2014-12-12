@@ -440,7 +440,7 @@ protected void addEvents() {
 					eventName = TokenMangler.mangleToSName(event.getName());
 					// if event name is still null, get free event name from simContext.
 					if  (eventName == null  || eventName.length() == 0) {
-						eventName = simContext.getFreeEventName();
+						eventName = simContext.getFreeEventName(null);
 					}
 				}
 				
