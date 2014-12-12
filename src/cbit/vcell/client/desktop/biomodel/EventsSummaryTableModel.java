@@ -30,11 +30,11 @@ import cbit.vcell.parser.SymbolTable;
 public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<BioEvent> implements PropertyChangeListener{
 
 	public final static int COLUMN_EVENT_NAME = 0;
-	public final static int COLUMN_EVENT_TRIGGER_EXPR = 1;
-	public final static int COLUMN_EVENT_DELAY_EXPR = 2;
-	public final static int COLUMN_EVENT_ASSIGN_VARS_LIST = 3;
+//	public final static int COLUMN_EVENT_TRIGGER_EXPR = 1;
+//	public final static int COLUMN_EVENT_DELAY_EXPR = 2;
+//	public final static int COLUMN_EVENT_ASSIGN_VARS_LIST = 3;
 	
-	private static String[] columnNames = new String[] {"Name", "Trigger", "Delay", "Event Assignment Vars"};
+	private static String[] columnNames = new String[] {"Name"/*, "Trigger", "Delay", "Event Assignment Vars"*/};
 
 	public EventsSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -45,15 +45,15 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			case COLUMN_EVENT_NAME:{
 				return String.class;
 			}
-			case COLUMN_EVENT_TRIGGER_EXPR:{
-				return ScopedExpression.class;
-			}
-			case COLUMN_EVENT_DELAY_EXPR:{
-				return ScopedExpression.class;
-			}
-			case COLUMN_EVENT_ASSIGN_VARS_LIST:{
-				return String.class;
-			}
+//			case COLUMN_EVENT_TRIGGER_EXPR:{
+//				return ScopedExpression.class;
+//			}
+//			case COLUMN_EVENT_DELAY_EXPR:{
+//				return ScopedExpression.class;
+//			}
+//			case COLUMN_EVENT_ASSIGN_VARS_LIST:{
+//				return String.class;
+//			}
 			default:{
 				return Object.class;
 			}
@@ -88,39 +88,40 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 					case COLUMN_EVENT_NAME: {
 						return event.getName();
 					} 
-					case COLUMN_EVENT_TRIGGER_EXPR: {
-						if (event.getTriggerExpression() == null) {
-							return null; 
-						} else {
-							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope());
-						}
-					}
-					case COLUMN_EVENT_DELAY_EXPR: {
-						Delay delay = event.getDelay();
-						if (delay == null) {
-							return "None"; 
-						} else {
-							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope());
-						}
-					}
-					case COLUMN_EVENT_ASSIGN_VARS_LIST: {
-						ArrayList<EventAssignment> eas = event.getEventAssignments();
-						if (eas.size() == 0) {
-							return "None";
-						} 
-						String varNames = "";
-						for (EventAssignment ea : eas) {
-							varNames = varNames.concat(ea.getTarget().getName() + ", ");
-						}
-						varNames = varNames.substring(0, varNames.lastIndexOf(","));
-						return varNames;
-					} 
-				}
-			} else {
-				if (column == COLUMN_EVENT_NAME) {
-					return BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT;
+//					case COLUMN_EVENT_TRIGGER_EXPR: {
+//						if (event.getTriggerExpression() == null) {
+//							return null; 
+//						} else {
+//							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope());
+//						}
+//					}
+//					case COLUMN_EVENT_DELAY_EXPR: {
+//						Delay delay = event.getDelay();
+//						if (delay == null) {
+//							return "None"; 
+//						} else {
+//							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope());
+//						}
+//					}
+//					case COLUMN_EVENT_ASSIGN_VARS_LIST: {
+//						ArrayList<EventAssignment> eas = event.getEventAssignments();
+//						if (eas.size() == 0) {
+//							return "None";
+//						} 
+//						String varNames = "";
+//						for (EventAssignment ea : eas) {
+//							varNames = varNames.concat(ea.getTarget().getName() + ", ");
+//						}
+//						varNames = varNames.substring(0, varNames.lastIndexOf(","));
+//						return varNames;
+//					} 
 				}
 			}
+//			else {
+//				if (column == COLUMN_EVENT_NAME) {
+//					return BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT;
+//				}
+//			}
 		} catch(Exception e){
 			e.printStackTrace(System.out);
 		}
@@ -163,7 +164,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			}
 			BioEvent bioEvent = getValueAt(row);
 			if (bioEvent == null) {
-				bioEvent = simulationContext.createBioEvent();
+				bioEvent = simulationContext.createBioEvent(null);
 			} else {
 				bioEvent = getValueAt(row);
 			}
@@ -216,8 +217,8 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 		return null;
 	}
 	
-	@Override
-	public int getRowCount() {
-		return getRowCountWithAddNew();
-	}
+//	@Override
+//	public int getRowCount() {
+//		return getRowCountWithAddNew();
+//	}
 }

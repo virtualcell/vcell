@@ -121,7 +121,14 @@ public class TimeFunctionPanel extends JPanel {
 		JButton btnPlot = new JButton("Refresh Plot");
 		btnPlot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				refreshPlot();
+				try {
+					refreshPlot();
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					DialogUtils.showErrorDialog(TimeFunctionPanel.this, "Error refreshing Plot:\n"+e1.getMessage(), e1);
+					plotPane.setPlot2D(	null);
+				}
 			}
 		});
 		timePanel.add(btnPlot);
@@ -134,11 +141,18 @@ public class TimeFunctionPanel extends JPanel {
 		timeBegTextField.setText("0");
 		timeStepTextField.setText(".1");
 		timeStepCountTextField.setText("100");
-		refreshPlot();
+		try {
+			refreshPlot();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "Error refreshing Plot:\n"+e.getMessage(), e);
+			plotPane.setPlot2D(	null);
+		}
 	}
 	
-	private void refreshPlot(){
-		try {
+	private void refreshPlot() throws Exception{
+//		try {
 			Expression exp = new Expression(funcTextField.getText());
 			exp.flatten();
 			SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] {"t", "pi"/*, "x", "y", "z"*/});
@@ -182,14 +196,14 @@ public class TimeFunctionPanel extends JPanel {
 			Plot2D plot2D = new Plot2D(null, new String[] { "Time Function" },new PlotData[] { plotData },
 					new String[] {"Time Function Value", "Time", "[" + "Time Function" + "]"});
 			plotPane.setPlot2D(	plot2D);
-		} catch (Exception e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Error refreshing Plot:\n"+e.getMessage(), e);
-			plotPane.setPlot2D(	null);
-		}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			DialogUtils.showErrorDialog(this, "Error refreshing Plot:\n"+e.getMessage(), e);
+//			plotPane.setPlot2D(	null);
+//		}
 
 	}
-	public void setTimeFunction(String timeFunction){
+	public void setTimeFunction(String timeFunction) throws Exception{
 		funcTextField.setText(timeFunction);
 		refreshPlot();
 	}

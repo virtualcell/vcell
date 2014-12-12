@@ -51,11 +51,13 @@ import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
  * Insert the type's description here.
@@ -77,7 +79,6 @@ public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private ElectrodePanel ivjpatchElectrodePanel = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private JButton btnGraphElectricalStimulus;
-	private TimeFunctionPanel timeFunctionPanel = null;
 	private JComboBox clampComboBox;
 	
 	private enum Clamp {
@@ -1244,59 +1245,49 @@ private void setsimulationContext1(SimulationContext newValue) {
 			btnGraphElectricalStimulus = new JButton("Preview Electrical Stimulus");
 			btnGraphElectricalStimulus.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					graphElectricalStimulusFunction();
+					if (getelectricalStimulus()==null){
+						DialogUtils.showInfoDialog(ElectricalStimulusPanel.this, "No electrical stimulus selected (e.g. \"Voltage Clamp\" or \"Total Current Clamp\")");
+						return;
+					}
+					ElectricalStimulusPanel.graphTimeFunction(
+						ElectricalStimulusPanel.this,
+						getelectricalStimulus().getProtocolParameter().getExpression(),
+						getelectricalStimulus().getSymbolTable(),
+						getSimulationContext().getModel().getTIME(),
+						getBtnGraphElectricalStimulus().getText());
 				}
 			});
 		}
 		return btnGraphElectricalStimulus;
 	}
 	
-	private void graphElectricalStimulusFunction(){
-		if(timeFunctionPanel != null){
-			return;
-		}
-		if (getelectricalStimulus()==null){
-			DialogUtils.showInfoDialog(this, "No electrical stimulus selected (e.g. \"Voltage Clamp\" or \"Total Current Clamp\")");
-		}
+	public static void graphTimeFunction(Component owner,Expression expr,SymbolTable symbolTable,ReservedSymbol timeSymbol,String title){
 		
+		final TimeFunctionPanel timeFunctionPanel = new TimeFunctionPanel();
 		try {
-			Expression protocolParameterExp = new Expression(getelectricalStimulus().getProtocolParameter().getExpression());
-			protocolParameterExp = MathUtilities.substituteModelParameters(protocolParameterExp, getelectricalStimulus().getSymbolTable());
+			Expression protocolParameterExp = new Expression(expr);
+			protocolParameterExp = MathUtilities.substituteModelParameters(protocolParameterExp, symbolTable);
 			String[] symbols = protocolParameterExp.getSymbols();
-			StringBuffer buffer = new StringBuffer();
 			for (int i = 0; symbols!=null && i < symbols.length; i++) {
 				SymbolTableEntry ste = protocolParameterExp.getSymbolBinding(symbols[i]);
-				if (!ste.equals(getSimulationContext().getModel().getTIME()) &&
-					(ste instanceof LocalProxyParameter && !((LocalProxyParameter)ste).getTarget().equals(getSimulationContext().getModel().getTIME()))){
-					buffer.append(ste.getName()+" ");
+				if (!ste.equals(timeSymbol) &&
+					(ste instanceof LocalProxyParameter && !((LocalProxyParameter)ste).getTarget().equals(timeSymbol))){
+					throw new ExpressionException("Error, Only 'time' allowed as variable for plot previews.");
 				}
 			}
-			if (buffer.length()>0){
-				throw new ExpressionException("Cannot preview electrical stimulus containing variables ("+buffer.toString()+").");
-			}
-			timeFunctionPanel = new TimeFunctionPanel();
 			timeFunctionPanel.setTimeFunction(protocolParameterExp.flatten().infix());
-		} catch (Exception e) {							
-			DialogUtils.showErrorDialog(ElectricalStimulusPanel.this, e.getMessage(), e);
+		} catch (Exception e) {			
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(owner, "For plot preview only simple expressions of time are allowed.", e);
 			return;
 		}
     	
-		JDialog jdialog = new JDialog(JOptionPane.getFrameForComponent(this),true);
-		jdialog.setTitle(getBtnGraphElectricalStimulus().getText());
-    	jdialog.addWindowListener(new WindowAdapter() {	
-    		@Override
-			public void windowClosing(WindowEvent e) {
-				timeFunctionPanel = null;
-			}
-    		@Override
-			public void windowClosed(WindowEvent e) {
-				timeFunctionPanel = null;
-			}
-		});
-    	jdialog.setContentPane(timeFunctionPanel);
+		JDialog jdialog = new JDialog(JOptionPane.getFrameForComponent(owner),true);
+		jdialog.setTitle(title);
+		jdialog.setContentPane(timeFunctionPanel);
     	jdialog.pack();
-    	BeanUtils.centerOnComponent(jdialog, this);
-    	DialogUtils.showModalJDialogOnTop(jdialog, this);
+    	BeanUtils.centerOnComponent(jdialog, owner);
+    	DialogUtils.showModalJDialogOnTop(jdialog, owner);
     	
 
 	}
