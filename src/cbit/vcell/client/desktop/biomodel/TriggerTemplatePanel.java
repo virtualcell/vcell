@@ -15,11 +15,16 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 
 import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +41,31 @@ public class TriggerTemplatePanel extends JPanel {
 	private JRadioButton rdbtnOneVar;
 	private JRadioButton rdbtnSingleTime;
 	private JRadioButton rdbtnMultiTimes;
-
+	private JLabel generalLabel;
+	private JPanel varValuePanel;
+	
+	private ItemListener rdbtnLItemListener =
+			new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if(e.getStateChange() == ItemEvent.DESELECTED){
+						return;
+					}
+					generalLabel.setEnabled(false);
+					BeanUtils.enableComponents(varValuePanel, false);
+					textFieldSingleTime.setEnabled(false);
+					textFieldMultiTimes.setEnabled(false);
+					if(e.getSource() == rdbtnGeneral && rdbtnGeneral.isSelected()){
+						generalLabel.setEnabled(true);
+					}if(e.getSource() == rdbtnOneVar && rdbtnOneVar.isSelected()){
+						BeanUtils.enableComponents(varValuePanel, true);
+					}else if(e.getSource() == rdbtnSingleTime && rdbtnSingleTime.isSelected()){
+						textFieldSingleTime.setEnabled(true);
+					}else if(e.getSource() == rdbtnMultiTimes && rdbtnMultiTimes.isSelected()){
+						textFieldMultiTimes.setEnabled(true);
+					}
+				}
+			};
 	public TriggerTemplatePanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0};
@@ -83,13 +112,13 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_rdbtnGeneral.gridy = 3;
 		add(rdbtnGeneral, gbc_rdbtnGeneral);
 		
-		JLabel lblNewLabel_2 = new JLabel("Arbitrary 'trigger' and 'delay' expressions");
-		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_2.insets = new Insets(4, 4, 5, 4);
-		gbc_lblNewLabel_2.gridx = 1;
-		gbc_lblNewLabel_2.gridy = 3;
-		add(lblNewLabel_2, gbc_lblNewLabel_2);
+		generalLabel = new JLabel("Arbitrary 'trigger' and 'delay' expressions");
+		GridBagConstraints gbc_generalLabel = new GridBagConstraints();
+		gbc_generalLabel.anchor = GridBagConstraints.WEST;
+		gbc_generalLabel.insets = new Insets(4, 4, 5, 4);
+		gbc_generalLabel.gridx = 1;
+		gbc_generalLabel.gridy = 3;
+		add(generalLabel, gbc_generalLabel);
 		
 		rdbtnOneVar = new JRadioButton("on variable value");
 		GridBagConstraints gbc_rdbtnOneVar = new GridBagConstraints();
@@ -99,19 +128,19 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_rdbtnOneVar.gridy = 4;
 		add(rdbtnOneVar, gbc_rdbtnOneVar);
 		
-		JPanel panel = new JPanel();
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_panel.insets = new Insets(4, 4, 5, 4);
-		gbc_panel.gridx = 1;
-		gbc_panel.gridy = 4;
-		add(panel, gbc_panel);
-		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[]{0, 0, 0};
-		gbl_panel.rowHeights = new int[]{0};
-		gbl_panel.columnWeights = new double[]{0, 0.0, 0};
-		gbl_panel.rowWeights = new double[]{0.0};
-		panel.setLayout(gbl_panel);
+		varValuePanel = new JPanel();
+		GridBagConstraints gbc_varValuePanel = new GridBagConstraints();
+		gbc_varValuePanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_varValuePanel.insets = new Insets(4, 4, 5, 4);
+		gbc_varValuePanel.gridx = 1;
+		gbc_varValuePanel.gridy = 4;
+		add(varValuePanel, gbc_varValuePanel);
+		GridBagLayout gbl_varValuePanel = new GridBagLayout();
+		gbl_varValuePanel.columnWidths = new int[]{0, 0, 0};
+		gbl_varValuePanel.rowHeights = new int[]{0};
+		gbl_varValuePanel.columnWeights = new double[]{0, 0.0, 0};
+		gbl_varValuePanel.rowWeights = new double[]{0.0};
+		varValuePanel.setLayout(gbl_varValuePanel);
 		
 		varComboBox = new JComboBox<String>();
 		GridBagConstraints gbc_varComboBox = new GridBagConstraints();
@@ -120,7 +149,7 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_varComboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_varComboBox.gridx = 0;
 		gbc_varComboBox.gridy = 0;
-		panel.add(varComboBox, gbc_varComboBox);
+		varValuePanel.add(varComboBox, gbc_varComboBox);
 		
 		mathOpComboBox = new JComboBox<String>();
 		GridBagConstraints gbc_mathOpComboBox = new GridBagConstraints();
@@ -129,7 +158,7 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_mathOpComboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_mathOpComboBox.gridx = 1;
 		gbc_mathOpComboBox.gridy = 0;
-		panel.add(mathOpComboBox, gbc_mathOpComboBox);
+		varValuePanel.add(mathOpComboBox, gbc_mathOpComboBox);
 		
 		textFieldOneVarVal = new JTextField();
 		GridBagConstraints gbc_textFieldOneVarVal = new GridBagConstraints();
@@ -138,7 +167,7 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_textFieldOneVarVal.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldOneVarVal.gridx = 2;
 		gbc_textFieldOneVarVal.gridy = 0;
-		panel.add(textFieldOneVarVal, gbc_textFieldOneVarVal);
+		varValuePanel.add(textFieldOneVarVal, gbc_textFieldOneVarVal);
 		textFieldOneVarVal.setColumns(10);
 		
 		rdbtnSingleTime = new JRadioButton("at a single time");
@@ -195,6 +224,13 @@ public class TriggerTemplatePanel extends JPanel {
 		buttonGroup.add(rdbtnOneVar);
 		buttonGroup.add(rdbtnSingleTime);
 		buttonGroup.add(rdbtnMultiTimes);
+		
+		rdbtnLItemListener.itemStateChanged(new ItemEvent(rdbtnGeneral, 0, rdbtnGeneral, ItemEvent.SELECTED));
+		
+		rdbtnGeneral.addItemListener(rdbtnLItemListener);
+		rdbtnOneVar.addItemListener(rdbtnLItemListener);
+		rdbtnSingleTime.addItemListener(rdbtnLItemListener);
+		rdbtnMultiTimes.addItemListener(rdbtnLItemListener);
 	}
 
 	public String getEventPreferredName(){
@@ -212,7 +248,7 @@ public class TriggerTemplatePanel extends JPanel {
 			mathOpComboBox.addItem("<=");
 			
 			varComboBox.removeAllItems();
-			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext/*,false*/);
+			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext,false);
 		}
 	}
 	public String getTriggerExpr(){
