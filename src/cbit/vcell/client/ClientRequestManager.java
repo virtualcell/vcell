@@ -2666,9 +2666,25 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			boolean bException = true;
 			while (bException){
 				try {
-					RbmUtils.importBnglFile(reader);
+					BioModel bioModel = createDefaultBioModelDocument();
+					boolean bStochastic = true;
+					boolean bRuleBased = true;
+					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
+
+					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
+					RbmUtils.reactionRuleLabelIndex = 0;
+					RbmUtils.reactionRuleNames.clear();
+					ASTModel astModel = RbmUtils.importBnglFile(reader);
+					BnglObjectConstructionVisitor constructionVisitor = null;
+					if(!astModel.hasMolecularDefinitions()) {
+						System.out.println("Molecular Definition Block missing.");
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, false);
+					} else {
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, true);
+					}
+					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					bException = false;
-				} catch (final ParseException e) {
+				} catch (final Exception e) {
 					BNGLDebuggerPanel panel = new BNGLDebuggerPanel(fileText, e);
 					int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Debugger: " + file.getName());
 					if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
@@ -2686,7 +2702,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			if(!originalFileText.equals(fileText)) {		// file has been modified
 		        String message = "Importing <b>" + file.getName() + "</b> into vCell. <br>Overwrite the file on the disk?<br>";
 		        message = "<html>" + message + "</html>";
-				Object[] options = {"Save and Import", "Import only", "Cancel"};
+				Object[] options = {"Overwrite and Import", "Import Only", "Cancel"};
 				int returnCode = JOptionPane.showOptionDialog(requester.getComponent(), message, "Bngl Debugger",
 				    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
 				    null, options, options[2]);

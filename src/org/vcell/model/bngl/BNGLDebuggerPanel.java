@@ -44,14 +44,17 @@ public class BNGLDebuggerPanel extends JPanel {
 	private JTextArea	exceptionTextArea;
 	
 	private ParseException parseException = null;
+	private Exception exception = null;
     	
-	public BNGLDebuggerPanel(String initialDocText, final ParseException parseException) {
+	public BNGLDebuggerPanel(String initialDocText, final Exception e) {
+		
+		
 		initialize();
 		getBnglPanel().setText(initialDocText);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {		
-				setParseException(parseException);
+				setParseException(e);
 			}
 		});
 	}
@@ -104,19 +107,31 @@ public class BNGLDebuggerPanel extends JPanel {
 		return getBnglPanel().getText();
 	}
 
-	public void setParseException(ParseException e){
-		this.parseException = e;
+	public void setParseException(Exception e){
+		if(e instanceof ParseException) {
+			this.parseException = (ParseException)e;
+			this.exception = null;
+		} else {
+			this.parseException = null;
+			this.exception = e;
+		}
 		updateException();
 	}
 	private void updateException(){
 		String exceptionText = "No errors detected. Please Save this file, Exit the debugger and Import again.";
-		if (parseException!=null){
+		if (parseException != null){
 			exceptionText = parseException.getMessage();
 //			int bl = parseException.currentToken.beginLine;
 //			int bc = parseException.currentToken.beginColumn;
 //			int el = parseException.currentToken.endLine;
 //			int ec = parseException.currentToken.endColumn;
 //			System.out.println(bl + ":" + bc + ", " + el + ":" + ec);
+			int lineNumber = parseLineNumber(exceptionText);
+			int columnNumber = parseColumnNumber(exceptionText);
+			getBnglPanel().setCursor(lineNumber, columnNumber);
+			getBnglPanel().getLineNumberPanel().setErrorLine(lineNumber);
+		} else if(exception != null) {
+			exceptionText = exception.getMessage();
 			int lineNumber = parseLineNumber(exceptionText);
 			int columnNumber = parseColumnNumber(exceptionText);
 			getBnglPanel().setCursor(lineNumber, columnNumber);
@@ -152,21 +167,29 @@ public class BNGLDebuggerPanel extends JPanel {
 	// typical message:   Encountered "x" at line 15, column 11.
 	private static int parseLineNumber(String exceptionText) {
 		int lineNumber = 0;
+		try {
 		final String key = " at line ";
 		String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
 		sn = sn.substring(0, sn.indexOf(','));
 		if(sn != null && isNumeric(sn)) {
 			lineNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
 		}
+		} catch (Exception e) {
+		e.printStackTrace();
+		}
 		return (lineNumber < 0 ? 0 : lineNumber);
 	}
 	private static int parseColumnNumber(String exceptionText) {
 		int columnNumber = 0;
+		try {
 		final String key = ", column ";
 		String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
 		sn = sn.substring(0, sn.indexOf('.'));
 		if(sn != null && isNumeric(sn)) {
 			columnNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
+		}
+		} catch (Exception e) {
+		e.printStackTrace();
 		}
 		return (columnNumber < 0 ? 0 : columnNumber);
 	}
