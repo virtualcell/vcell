@@ -11,6 +11,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -27,18 +30,24 @@ import javax.swing.text.Highlighter;
 
 import org.vcell.model.rbm.RbmUtils;
 
-public class BNGLDebuggerPanel extends JPanel /*implements KeyListener, ActionListener*/ {
+import cbit.gui.MultiPurposeTextPanel;
+import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.VCML;
+import cbit.vcell.math.gui.MathDescEditor;
+
+public class BNGLDebuggerPanel extends JPanel {
 	
-	private int lines = 0;
-	private JTextArea	lineNumberArea;
-	private JTextArea	bnglTextArea;
+	private final static Set<String> autoCompletionWords = new HashSet<String>();
+	private final static Set<String> keywords = null;
+
+	private MultiPurposeTextPanel bnglTextArea = null;
 	private JTextArea	exceptionTextArea;
 	
 	private ParseException parseException = null;
     	
 	public BNGLDebuggerPanel(String initialDocText, final ParseException parseException) {
 		initialize();
-		bnglTextArea.setText(initialDocText);
+		getBnglPanel().setText(initialDocText);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {		
@@ -49,69 +58,19 @@ public class BNGLDebuggerPanel extends JPanel /*implements KeyListener, ActionLi
 	
 	private void initialize(){
 
-		JScrollPane bnglPanel = new JScrollPane();
-		bnglTextArea = new JTextArea();
-        bnglTextArea.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-//        bnglTextArea.setFont(new Font("monospaced", Font.PLAIN, 14));
+		getBnglPanel().getTextPane().setFont(new Font("monospaced", Font.PLAIN, 12));
 
-        lineNumberArea = new JTextArea("1");
-		lineNumberArea.setBackground(Color.LIGHT_GRAY);
-		lineNumberArea.setEditable(false);
-		lineNumberArea.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-		
-		bnglTextArea.getDocument().addDocumentListener(new DocumentListener(){
-			public String getNr(){
-				lines = 1;
-				int caretPosition = bnglTextArea.getDocument().getLength();
-				Element root = bnglTextArea.getDocument().getDefaultRootElement();
-				String nr = "1" + System.getProperty("line.separator");
-				for(int i = 2; i < root.getElementIndex( caretPosition ) + 2; i++){
-					nr += i + System.getProperty("line.separator");
-					lines++;
-				}
-				return nr;
-			}
-			@Override
-			public void changedUpdate(DocumentEvent de) {
-				int oldLines = lines;
-				String numbers = getNr();
-				if(oldLines != lines) {
-					lineNumberArea.setText(numbers);
-				}
-				lineNumberArea.getHighlighter().removeAllHighlights();
-
-			}
-			@Override
-			public void insertUpdate(DocumentEvent de) {
-				int oldLines = lines;
-				String numbers = getNr();
-				if(oldLines != lines) {
-					lineNumberArea.setText(numbers);
-				}
-				lineNumberArea.getHighlighter().removeAllHighlights();
-			}
- 			@Override
-			public void removeUpdate(DocumentEvent de) {
-				int oldLines = lines;
-				String numbers = getNr();
-				if(oldLines != lines) {
-					lineNumberArea.setText(numbers);
-				}
-				lineNumberArea.getHighlighter().removeAllHighlights();
-			}
-		});
-		bnglPanel.getViewport().add(bnglTextArea);
-		bnglPanel.setRowHeaderView(lineNumberArea);
-		bnglPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		getBnglPanel().getLineNumberPanel().setForeground(java.awt.Color.gray);
+		getBnglPanel().getLineNumberPanel().setBackground(java.awt.Color.white);
 		
 		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new BorderLayout());
-		upperPanel.add(bnglPanel, BorderLayout.CENTER);
+		upperPanel.add(getBnglPanel(), BorderLayout.CENTER);
 
 		JScrollPane exceptionPanel = new JScrollPane();
 		exceptionTextArea = new JTextArea();
 		exceptionTextArea.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		exceptionTextArea.setFont(new Font("monospaced", Font.PLAIN, 14));
+		exceptionTextArea.setFont(new Font("monospaced", Font.PLAIN, 12));
 
 		exceptionPanel.getViewport().add(exceptionTextArea);
 		exceptionPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -140,21 +99,11 @@ public class BNGLDebuggerPanel extends JPanel /*implements KeyListener, ActionLi
 		setPreferredSize(new Dimension(900,650));
 	}
 
+
 	public String getText(){
-		return bnglTextArea.getText();
+		return getBnglPanel().getText();
 	}
 
-//	private void parse() {
-//		String str = bnglTextArea.getText();
-//		InputStream is = new ByteArrayInputStream(str.getBytes());
-//		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-//		try {
-//			RbmUtils.importBnglFile(br);
-//			setParseException(null);
-//		}catch (ParseException e){
-//			setParseException(e);
-//		}
-//	}
 	public void setParseException(ParseException e){
 		this.parseException = e;
 		updateException();
@@ -163,28 +112,15 @@ public class BNGLDebuggerPanel extends JPanel /*implements KeyListener, ActionLi
 		String exceptionText = "No errors detected. Please Save this file, Exit the debugger and Import again.";
 		if (parseException!=null){
 			exceptionText = parseException.getMessage();
-			int lineNumber = 0;
-			int startIndex;
-			try {
-				String key = " at line ";
-				String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
-				sn = sn.substring(0, sn.indexOf(','));
-				if(sn != null && isNumeric(sn)) {
-					lineNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
-				}
-				startIndex = lineNumberArea.getLineStartOffset(lineNumber);
-				int endIndex = lineNumberArea.getLineEndOffset(lineNumber);
-				
-				Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.RED);
-				lineNumberArea.getHighlighter().addHighlight(startIndex, endIndex, painter);
-				
-				Rectangle rect = bnglTextArea.modelToView(bnglTextArea.getLineStartOffset(lineNumber));
-				bnglTextArea.scrollRectToVisible(rect);
-				lineNumberArea.scrollRectToVisible(rect);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-				exceptionText = e1.getMessage();
-			}
+//			int bl = parseException.currentToken.beginLine;
+//			int bc = parseException.currentToken.beginColumn;
+//			int el = parseException.currentToken.endLine;
+//			int ec = parseException.currentToken.endColumn;
+//			System.out.println(bl + ":" + bc + ", " + el + ":" + ec);
+			int lineNumber = parseLineNumber(exceptionText);
+			int columnNumber = parseColumnNumber(exceptionText);
+			getBnglPanel().setCursor(lineNumber, columnNumber);
+			getBnglPanel().getLineNumberPanel().setErrorLine(lineNumber);
 		}
 		exceptionTextArea.setText(exceptionText);
 		SwingUtilities.invokeLater(new Runnable() {
@@ -199,8 +135,61 @@ public class BNGLDebuggerPanel extends JPanel /*implements KeyListener, ActionLi
 		});
 	}
 
-	private static boolean isNumeric(String str)
-	{
-	    return str.matches("[+-]?\\d*(\\.\\d+)?");
+	//   isAsciiPrintable('a')  = true
+	//   isAsciiPrintable('A')  = true
+	//   isAsciiPrintable('3')  = true
+	//   isAsciiPrintable('-')  = true
+	//   isAsciiPrintable('\n') = false
+	//   isAsciiPrintable('&copy;') = false
+		public static boolean isAsciiPrintable(char ch) {
+			return ch >= 32 && ch < 127;
+		}
+		private static boolean isNumeric(String str)
+		{
+		    return str.matches("[+-]?\\d*(\\.\\d+)?");
+		}
+
+	// typical message:   Encountered "x" at line 15, column 11.
+	private static int parseLineNumber(String exceptionText) {
+		int lineNumber = 0;
+		final String key = " at line ";
+		String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
+		sn = sn.substring(0, sn.indexOf(','));
+		if(sn != null && isNumeric(sn)) {
+			lineNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
+		}
+		return (lineNumber < 0 ? 0 : lineNumber);
 	}
+	private static int parseColumnNumber(String exceptionText) {
+		int columnNumber = 0;
+		final String key = ", column ";
+		String sn = exceptionText.substring(exceptionText.indexOf(key) + key.length());
+		sn = sn.substring(0, sn.indexOf('.'));
+		if(sn != null && isNumeric(sn)) {
+			columnNumber = Integer.parseInt(sn) - 1;	// sn is 1 based, we make lineNumber 0 based
+		}
+		return (columnNumber < 0 ? 0 : columnNumber);
+	}
+	
+	private MultiPurposeTextPanel getBnglPanel() {
+		if (bnglTextArea == null) {
+			bnglTextArea = new MultiPurposeTextPanel(true);
+			bnglTextArea.setName("BnglPanel");
+			bnglTextArea.setKeywords(new HashSet<String>(Arrays.asList(kw)));
+		}
+		return bnglTextArea;
+	}
+
+	public static final String[] kw = new String[] {
+		"begin", "end",
+		"model",
+		"parameters",
+		"molecule", "types",
+		"seed", "species",
+		"observables",
+		"reaction", "rules",
+		"Molecules", 
+		"generate_network"
+		};
+
 }
