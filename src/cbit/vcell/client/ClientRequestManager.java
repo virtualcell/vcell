@@ -2684,10 +2684,12 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				}
 			}
 			if(!originalFileText.equals(fileText)) {		// file has been modified
-		        int dialogButton = JOptionPane.YES_NO_OPTION;
-		        String message = "File <b>" + file.getName() + "</b> has been changed. <br>Save?<br>";
+		        String message = "Importing <b>" + file.getName() + "</b> into vCell. <br>Overwrite the file on the disk?<br>";
 		        message = "<html>" + message + "</html>";
-		        int returnCode = JOptionPane.showConfirmDialog(requester.getComponent(), message, "Bngl Debugger", dialogButton);
+				Object[] options = {"Save and Import", "Import only", "Cancel"};
+				int returnCode = JOptionPane.showOptionDialog(requester.getComponent(), message, "Bngl Debugger",
+				    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+				    null, options, options[2]);
 				if (returnCode == JOptionPane.YES_OPTION) {
 					try {
 			            FileWriter fw = new FileWriter(file);
@@ -2696,6 +2698,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			        } catch (IOException e) {
 			            e.printStackTrace();
 			        }
+				} else if(returnCode == JOptionPane.CANCEL_OPTION || returnCode == JOptionPane.CLOSED_OPTION) {
+					return;
 				}
 			}
 		}
