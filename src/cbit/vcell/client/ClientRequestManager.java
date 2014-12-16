@@ -2670,7 +2670,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					bException = false;
 				} catch (final ParseException e) {
 					BNGLDebuggerPanel panel = new BNGLDebuggerPanel(fileText, e);
-					int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "bngl debugger" );
+					int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Debugger: " + file.getName());
 					if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
 						throw new UserCancelException("Canceling Import");
 					}
