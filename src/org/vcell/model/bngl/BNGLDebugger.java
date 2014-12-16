@@ -17,6 +17,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 
 import java.io.*;
 
+@Deprecated
 public class BNGLDebugger extends JFrame implements KeyListener, ActionListener {
 	
 	private JFrame frame = new JFrame("Bngl Debugger");
@@ -28,7 +29,6 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 	private JTextArea	exceptionTextArea;
 	
 	private ExternalDocInfo docInfo = null;
-	private JFileChooser fileChooser = new JFileChooser();
     
 	// create actions for menu items, buttons
 //	private Action openAction = new OpenAction();
@@ -42,7 +42,7 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 	private BNGLDebugger() {
 		initialize();
 	}
-
+@Deprecated
 	public static final BNGLDebugger getInstance() {
 		if(instance == null) {
 			instance = new BNGLDebugger();
@@ -72,7 +72,7 @@ public class BNGLDebugger extends JFrame implements KeyListener, ActionListener 
 			frame.setVisible(true);
 		}
 	}
-	
+@Deprecated	
 	public void initialize(){
 		// -------------------------------------------------- bngl panel
 		JScrollPane bnglPanel = new JScrollPane();

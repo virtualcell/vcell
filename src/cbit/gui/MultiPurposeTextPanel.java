@@ -54,6 +54,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -71,6 +72,7 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
@@ -97,6 +99,7 @@ import javax.swing.undo.UndoManager;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.CountingLineReader;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
@@ -379,6 +382,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	
 	public class LineNumberPanel extends JPanel {
 		private int preferred_size = 50;
+		private int errorLine = -1;			// 1-indexed; once the user presses any key the errorLine is reset
 
 		public LineNumberPanel() {
 			super();
@@ -387,6 +391,16 @@ public class MultiPurposeTextPanel extends JPanel {
 			setMinimumSize(new Dimension(preferred_size, preferred_size));
 			setPreferredSize(new Dimension(preferred_size, preferred_size));
 			setMinimumSize(new Dimension(preferred_size, preferred_size));
+			
+			setBorder(new MatteBorder(0,0,1,0, Color.gray));
+		}
+		
+		public void setErrorLine(int line) {
+			if(line >= 0) {
+				this.errorLine = line + 1;	// line is 0-indexed while errorLine is 1-indexed
+			} else {
+				this.errorLine = -1;
+			}
 		}
 
 		public void paint(Graphics g) {
@@ -394,17 +408,15 @@ public class MultiPurposeTextPanel extends JPanel {
 
 			// We need to properly convert the points to match the viewport
 			// Read docs for viewport
-			int start = getTextPane().viewToModel(
-					scrollPane.getViewport().getViewPosition()); // starting pos
-																	// in
-																	// document
-			int end = getTextPane().viewToModel(
+			int start = getTextPane().viewToModel(					// starting position in document
+					scrollPane.getViewport().getViewPosition());
+			
+			int end = getTextPane().viewToModel(					// end position in doc
 					new Point(scrollPane.getViewport().getViewPosition().x
 							+ getTextPane().getWidth(), scrollPane
 							.getViewport().getViewPosition().y
 							+ getTextPane().getHeight()));
-			// end pos in doc
-
+			
 			// translate offsets to lines			
 			Element defaultRootElement = getTextPane().getDocument().getDefaultRootElement();
 			int startline = defaultRootElement.getElementIndex(start) + 1;
@@ -429,9 +441,21 @@ public class MultiPurposeTextPanel extends JPanel {
 				for (int i = 0; i < linestr.length(); i++) {
 					width += fm.charWidth(linestr.charAt(i));
 				}
-				g.drawString(linestr, preferred_size - width - 2, y);
+				
+				if(line == errorLine) {
+//					Icon icon = VCellIcons.issueGoodIcon;
+					Color oldColor = g.getColor();
+					Font oldFont = g.getFont();
+					Font newFont = oldFont.deriveFont(Font.BOLD);
+					g.setColor(Color.red);
+					g.setFont(newFont);
+					g.drawString(linestr, preferred_size - width - 2, y + 2);
+					g.setColor(oldColor);
+					g.setFont(oldFont);
+				} else {
+					g.drawString(linestr, preferred_size - width - 2, y + 2);
+				}
 			}
-
 		}
 	}
 	
@@ -487,6 +511,7 @@ public class MultiPurposeTextPanel extends JPanel {
 		}
 		
 		public void keyPressed(KeyEvent e) {
+			
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -508,9 +533,10 @@ public class MultiPurposeTextPanel extends JPanel {
 		}
 
 		public void keyTyped(KeyEvent e) {
+			numberPanel.setErrorLine(-1);		// reset error line once we start typing
 		}
 	}
-
+	
 	public MultiPurposeTextPanel() {
 		this(true);
 	}
@@ -518,7 +544,7 @@ public class MultiPurposeTextPanel extends JPanel {
 	public MultiPurposeTextPanel(boolean editable) {
 		super();
 
-		numberPanel = new LineNumberPanel();
+		numberPanel = getLineNumberPanel();
 		scrollPane = new JScrollPane(getTextPane());
 		setLayout(new BorderLayout());
 		add(numberPanel, BorderLayout.WEST);
@@ -703,6 +729,12 @@ public class MultiPurposeTextPanel extends JPanel {
 		}
 		return textPane;
 	}
+	public LineNumberPanel getLineNumberPanel() {
+		if(numberPanel == null) {
+			numberPanel = new LineNumberPanel();
+		}
+		return numberPanel;
+	}
 
 	// test main
 	public static void main(String[] args) {
@@ -723,6 +755,30 @@ public class MultiPurposeTextPanel extends JPanel {
 	 */
 	public void setCaretPosition(int position) {
 		textPane.setCaretPosition(position);
+	}
+
+	public void setCursor(int line) {
+		setCursor(line, 0);
+	}
+	public void setCursor(int line, int columnOffset) {
+		showTextContent();
+	    int currentLine = 0;
+	    int currentSelection = 0;
+	    String tc = getTextPane().getText();
+	    int seperatorLength = 1;
+	    String separator = "\n";
+	    while (currentLine < line) {
+	        int next = tc.indexOf(separator,currentSelection);
+	        if (next > -1) {
+	            currentSelection = next + seperatorLength;
+	            currentLine++;
+	        } else {
+	            // set to the end of doc
+	            currentSelection = tc.length();
+	            currentLine= line; // exits loop
+	        }
+	    }
+		textPane.setCaretPosition(currentSelection + columnOffset);
 	}
 
 	private void scrollToShow(int position) {
