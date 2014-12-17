@@ -2,10 +2,13 @@ package cbit.vcell.resource;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 
@@ -17,6 +20,25 @@ import cbit.vcell.resource.ResourceUtil.ExecutableFinder;
 
 public class VisitSupport {
 
+	public static class VisitFolderFileFilter implements FileFilter {
+
+		ArrayList<String> excludeList = null;
+		
+		VisitFolderFileFilter(){
+			excludeList = new ArrayList<String>();
+			excludeList.add("env");
+		}
+		
+		@Override
+		public boolean accept(File pathname) {
+			if (excludeList.contains(pathname.getName())) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+	}
+	
 	private static final Logger lg = Logger.getLogger(VisitSupport.class);
 	public static final String visitUserMessage = "If VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
 
@@ -141,7 +163,12 @@ public class VisitSupport {
 					throw new IOException("Cannot create directory "+vcellHomeVisFolder.getCanonicalPath());
 				}
 			}
-			FileUtils.copyDirectory(visMainCLI.getParentFile(), vcellHomeVisFolder);
+			
+			
+			
+			
+			//FileUtils.copyDirectoryShallow(visMainCLI.getParentFile(), vcellHomeVisFolder);
+			FileUtils.copyDirectory(visMainCLI.getParentFile(), vcellHomeVisFolder, true, new VisitFolderFileFilter());
 			File vcellHomeVisMainCLI=new File(vcellHomeVisFolder, visMainCLI.getName());
 
 			vcellHomeVisMainCLI.setExecutable(true);
