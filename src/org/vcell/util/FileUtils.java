@@ -50,7 +50,8 @@ public final class FileUtils {
 * @throws IOException
 * @author Ed Boyce
 */
-public static void copyDirectory(File sourceDir, File destDir) throws IOException {
+public static void copyDirectory(File sourceDir, File destDir, boolean bDeep, FileFilter filter) throws IOException {
+
 	if (!(sourceDir.isDirectory())){
 		throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Source dir: "+sourceDir.getCanonicalPath());
 	}
@@ -67,10 +68,24 @@ public static void copyDirectory(File sourceDir, File destDir) throws IOExceptio
 	}
 	File[] sourceFiles = sourceDir.listFiles();
 	for (int i=0; i<sourceFiles.length; i++){
-		copyFile(sourceFiles[i], new File(destDir,sourceFiles[i].getName()), true, true, 4*1024);
-	}
-		
-	
+		if (filter == null || filter.accept(sourceFiles[i])){
+			if (sourceFiles[i].isFile()) {
+				copyFile(sourceFiles[i], new File(destDir,sourceFiles[i].getName()), true, true, 4*1024);
+			} else {
+				if (sourceFiles[i].isDirectory() && bDeep) {
+					copyDirectory(sourceFiles[i],new File(destDir.getCanonicalPath(),sourceFiles[i].getName()), bDeep, filter);
+				}
+			}	
+		}
+	}	
+}
+
+public static void copyDirectoryShallow(File sourceDir, File destDir) throws IOException {
+	copyDirectory(sourceDir, destDir, false, null);
+}
+
+public static void copyDirectoryDeep(File sourceDir, File destDir) throws IOException {
+	copyDirectory(sourceDir, destDir, true, null);
 }
 	
 /**
