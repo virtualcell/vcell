@@ -194,21 +194,21 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * Creation date: (11/29/2005 5:10:51 PM)
  * @return cbit.vcell.parser.SymbolTableEntry[]
  */
-public SymbolTableEntry[] calculateTimeDependentModelObjects() {
+public static SymbolTableEntry[] calculateTimeDependentModelObjects(SimulationContext simulationContext) {
 
 	Graph digraph = new Graph();
 
 	//
 	// add time
 	//
-	Model model = getSimulationContext().getModel();
+	Model model = simulationContext.getModel();
 	Node timeNode = new Node("t", model.getTIME());
 	digraph.addNode(timeNode);
 	
 	//
 	// add all species concentrations (that are not fixed with a constant initial condition).
 	//
-	SpeciesContextSpec scs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+	SpeciesContextSpec scs[] = simulationContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0;scs!=null && i < scs.length; i++){
 		SpeciesContextSpecParameter initParam = scs[i].getInitialConditionParameter();
 		Expression iniExp = initParam == null? null : initParam.getExpression();
@@ -303,7 +303,7 @@ public SymbolTableEntry[] calculateTimeDependentModelObjects() {
     //  add dependences for calculated voltages
     //
     for (Structure structure : model.getStructures()){
-           if (structure instanceof Membrane && ((MembraneMapping)getSimulationContext().getGeometryContext().getStructureMapping(structure)).getCalculateVoltage()){
+           if (structure instanceof Membrane && ((MembraneMapping)simulationContext.getGeometryContext().getStructureMapping(structure)).getCalculateVoltage()){
                   MembraneVoltage membraneVoltage = ((Membrane)structure).getMembraneVoltage();
                   String membraneVoltageScopedName = membraneVoltage.getNameScope().getAbsoluteScopePrefix()+membraneVoltage.getName();
                   Node membraneVoltageNode = digraph.getNode(membraneVoltageScopedName);
@@ -734,7 +734,7 @@ private void refreshReferenceDataMappingSpecs() {
 	// 3. for referenceData columns that remain unmapped, see if there are obvious mappings
 	//
 	if (numUnmapped>0){
-		SymbolTableEntry[] stes = calculateTimeDependentModelObjects();
+		SymbolTableEntry[] stes = calculateTimeDependentModelObjects(getSimulationContext());
 		for (int i = 0; i < newReferenceDataMappingSpecs.length; i++){
 			if (newReferenceDataMappingSpecs[i].getModelObject()==null){
 				for (int j = 0;stes!=null && j < stes.length; j++){

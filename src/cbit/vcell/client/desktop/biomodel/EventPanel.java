@@ -603,7 +603,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			}
 		}
 
-		public static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel,SimulationContext simContext,boolean bExcludeFuncAndReserved){
+		public static void populateVariableComboBoxModel(DefaultComboBoxModel<String> defaultComboBoxModel,SimulationContext simContext/*,boolean bExcludeFuncAndReserved*/){
 			// fill comboboxmodel with possible variables from simContext (symboltable entries) list
 			defaultComboBoxModel.removeAllElements();
 			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
@@ -611,7 +611,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			ArrayList<String> varNameList = new ArrayList<String>();
 			for (String varName : entryMap.keySet()) {
 				SymbolTableEntry symbolTableEntry = entryMap.get(varName);
-				if (bExcludeFuncAndReserved && 
+				if (/*bExcludeFuncAndReserved && */
 					(symbolTableEntry instanceof SymbolTableFunctionEntry || 
 					symbolTableEntry instanceof Model.ReservedSymbol)) {
 					continue;
@@ -626,7 +626,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 		}
 		private void addEventAssignment() {
 
-			populateVariableComboBoxModel(getVarNameComboBoxModel(),getSimulationContext(),true);
+			populateVariableComboBoxModel(getVarNameComboBoxModel(),getSimulationContext()/*,true*/);
 			
 			JPanel eventAssignmentPanel = getEventAssignmentPanel();
 			getEventAssignVarNameComboBox().setModel(getVarNameComboBoxModel());

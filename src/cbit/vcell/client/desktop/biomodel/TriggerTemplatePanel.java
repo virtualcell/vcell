@@ -20,6 +20,9 @@ import org.vcell.util.BeanUtils;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.GeneralLumpedKinetics;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 
 import java.awt.Font;
@@ -27,7 +30,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class TriggerTemplatePanel extends JPanel {
 	private JTextField textFieldSingleTime;
@@ -248,7 +254,19 @@ public class TriggerTemplatePanel extends JPanel {
 			mathOpComboBox.addItem("<=");
 			
 			varComboBox.removeAllItems();
-			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext,false);
+			SymbolTableEntry[] triggerExprSymbols = ModelOptimizationSpec.calculateTimeDependentModelObjects(simulationContext);
+			Arrays.sort(triggerExprSymbols, new Comparator<SymbolTableEntry>() {
+				@Override
+				public int compare(SymbolTableEntry o1, SymbolTableEntry o2) {
+					return o1.getName().compareToIgnoreCase(o2.getName());
+				}
+			});
+			for(SymbolTableEntry ste:triggerExprSymbols){
+				if(!(ste instanceof ReservedSymbol)){
+					varComboBox.addItem(ste.getName());
+				}
+			}
+//			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext,false);
 		}
 	}
 	public String getTriggerExpr(){
