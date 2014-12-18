@@ -88,7 +88,7 @@ class VCellPysideApp(QtGui.QMainWindow):
  
     def initUI(self):
         self.setObjectName("QMainWindow")
-        self.resize(1030, 891);
+        self.resize(800, 600);
         centralwidget = QtGui.QWidget(self);
         centralwidget.setObjectName("centralwidget")
         gridLayout = QtGui.QGridLayout(centralwidget);
