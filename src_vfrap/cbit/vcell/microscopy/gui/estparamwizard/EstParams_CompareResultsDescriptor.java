@@ -206,7 +206,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     					             truncatedTimes,
     					             0,
     					             fStudy.getSelectedROIsForErrorCalculation());
-    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("opt_DF1", temSolverResultSet);
+    			newDataSource = new DataSource.DataSourceRowColumnResultSet("opt_DF1", temSolverResultSet);
     		}
     		else if(selectedModelIndexes.get(i).equals(FRAPModel.IDX_MODEL_DIFF_TWO_COMPONENTS))
     		{
@@ -216,7 +216,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
     								 truncatedTimes,
     					             0,
     					             fStudy.getSelectedROIsForErrorCalculation());
-    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("opt_DF2", temSolverResultSet);
+    			newDataSource = new DataSource.DataSourceRowColumnResultSet("opt_DF2", temSolverResultSet);
     		}
     		else if(selectedModelIndexes.get(i).equals(FRAPModel.IDX_MODEL_REACTION_OFF_RATE))
     		{
@@ -228,7 +228,7 @@ public class EstParams_CompareResultsDescriptor extends WizardPanelDescriptor
 	    								 truncatedTimes,
 	    					             0,
 	    					             FRAPStudy.createSelectedROIsForReactionOffRateModel());//for reaction off model, display curve under bleached region only
-	    			newDataSource = new DataSource.DataSourceOdeSolverResultSet("sim_Koff", temSolverResultSet);
+	    			newDataSource = new DataSource.DataSourceRowColumnResultSet("sim_Koff", temSolverResultSet);
     			}
     		}
     		if(newDataSource != null)

@@ -277,7 +277,7 @@ public class EstParams_TwoDiffComponentPanel extends JPanel {
 				if(selectedRowDataSourceArr != null)
 				{   //referenceData is the exp data
 					final DataSource expDataSource = /*new DataSource(referenceData,"exp")*/selectedRowDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];
-					DataSource optDataSource  = new DataSource.DataSourceOdeSolverResultSet( "opt", fitOdeSolverResultSet);
+					DataSource optDataSource  = new DataSource.DataSourceRowColumnResultSet( "opt", fitOdeSolverResultSet);
 //					
 					DataSource[] newDataSourceArr = new DataSource[2];
 					newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;

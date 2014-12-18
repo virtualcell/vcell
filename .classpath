@@ -16,13 +16,13 @@
 	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
-<!--	<classpathentry kind="lib" path="lib/bioformats_ALPHA_5_4_1.jar"/> -->
 	<classpathentry kind="lib" path="testlib/commons-cli-1.2.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/VCellTrunkMerge/testlib/commons-cli-1.2-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jgraphx_2.2.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/colt_1.2.0.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_micro/nativelibs/win64"/>

@@ -11,9 +11,9 @@
 package cbit.vcell.modelopt.gui;
 
 import cbit.plot.Plot2D;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 
 /**
@@ -64,18 +64,6 @@ public abstract class DataSource {
 			return timeIndex;	
 		}
 
-//		@Override
-//		public double[] getColumnWeights() {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-//
-//		@Override
-//		public int getDataSize() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-
 		@Override
 		public int getNumColumns() {
 			return referenceData.getNumDataColumns();
@@ -98,28 +86,38 @@ public abstract class DataSource {
 		
 	}
 	
-	public static class DataSourceOdeSolverResultSet extends DataSource {
-		private ODESolverResultSet odeSolverResultSet = null;
+	public static class DataSourceRowColumnResultSet extends DataSource {
+		private RowColumnResultSet rowColumnResultSet = null;
+		private final int renderHints;
 		
-		public DataSourceOdeSolverResultSet(String argName, ODESolverResultSet arg_odeOdeSolverResultSet) {
+		public DataSourceRowColumnResultSet(String argName, RowColumnResultSet arg_rowColumnResultSet) {
+			this(argName, arg_rowColumnResultSet, false);
+		}
+		
+		public DataSourceRowColumnResultSet(String argName, RowColumnResultSet arg_rowColumnResultSet, boolean bDrawPoints) {
 			super(argName);
-			odeSolverResultSet = arg_odeOdeSolverResultSet;
+			rowColumnResultSet = arg_rowColumnResultSet;
+			if (bDrawPoints){
+				renderHints = Plot2D.RENDERHINT_DRAWPOINT;
+			}else{
+				renderHints = Plot2D.RENDERHINT_DRAWLINE;
+			}
 		}
 		
 		@Override
 		public int getRenderHints() {
-			return (Plot2D.RENDERHINT_DRAWLINE);
+			return renderHints;
 		}
 
 		@Override
 		public int findColumn(String colName) {
-			return odeSolverResultSet.findColumn(colName);
+			return rowColumnResultSet.findColumn(colName);
 		}
 
 		@Override
 		public double[] getColumnData(int columnIndex) {
 			try {
-				return odeSolverResultSet.extractColumn(columnIndex);
+				return rowColumnResultSet.extractColumn(columnIndex);
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage());
@@ -128,7 +126,7 @@ public abstract class DataSource {
 
 		@Override
 		public String[] getColumnNames() {
-			ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
+			ColumnDescription[] columnDescriptions = rowColumnResultSet.getColumnDescriptions();
 			String[] names = new String[columnDescriptions.length];
 			for (int i = 0; i < names.length; i++) {
 				names[i] = columnDescriptions[i].getName();
@@ -141,36 +139,24 @@ public abstract class DataSource {
 			return findColumn("t");
 		}
 
-//		@Override
-//		public double[] getColumnWeights() {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-//
-//		@Override
-//		public int getDataSize() {
-//			// TODO Auto-generated method stub
-//			return 0;
-//		}
-
 		@Override
 		public int getNumColumns() {
-			return odeSolverResultSet.getColumnDescriptionsCount();
+			return rowColumnResultSet.getColumnDescriptionsCount();
 		}
 
 		@Override
 		public int getNumRows() {
-			return odeSolverResultSet.getRowCount();
+			return rowColumnResultSet.getRowCount();
 		}
 
 		@Override
 		public double[] getRowData(int rowIndex) {
-			return odeSolverResultSet.getRow(rowIndex);
+			return rowColumnResultSet.getRow(rowIndex);
 		}
 
 		@Override
 		public boolean isSourceNull() {
-			return odeSolverResultSet == null;
+			return rowColumnResultSet == null;
 		}		
 	}
 /**
@@ -205,10 +191,8 @@ public abstract int findColumn(String colName);
 public abstract double[] getColumnData(int columnIndex);
 public abstract String[] getColumnNames();
 public abstract int getTimeColumnIndex();
-//public abstract double[] getColumnWeights();
 public abstract int getNumColumns();
 public abstract int getNumRows();
-//public abstract int getDataSize();
 public abstract double[] getRowData(int rowIndex);
 public abstract boolean isSourceNull();
 }

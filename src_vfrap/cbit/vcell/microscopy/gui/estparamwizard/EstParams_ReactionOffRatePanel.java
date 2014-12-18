@@ -271,7 +271,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 				truncatedTimes[i-startIndexRecovery] = frapDataTimeStamps[i];
 			}
 			setCurrentEstimationResults(frapWorkspace.getWorkingFrapStudy().getFrapOptFunc().createData(bleachedAvgExp.flatten(), truncatedTimes));
-			DataSource koffFitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", koffFitOdeSolverResultSet);
+			DataSource koffFitDataSource = new DataSource.DataSourceRowColumnResultSet("fit", koffFitOdeSolverResultSet);
 			multisourcePlotPane.setDataSources(new DataSource[] {expBleachDataSource, koffFitDataSource /*, expCellAvgDataSource , bleachWhileMonitorDataSource*/} );
 			multisourcePlotPane.selectAll();		
 		}
