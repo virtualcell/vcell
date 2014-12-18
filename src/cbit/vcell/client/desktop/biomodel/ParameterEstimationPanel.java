@@ -576,7 +576,7 @@ public class ParameterEstimationPanel extends ApplicationSubPanel {
 			return;
 		}
 
-		SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects();
+		SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects(getParameterEstimationTask().getModelOptimizationSpec().getSimulationContext());
 
 		java.util.Comparator<SymbolTableEntry> steComparator = new java.util.Comparator<SymbolTableEntry>() {
 			private Class<?>[] classOrder = new Class<?>[] { Model.ReservedSymbol.class, SpeciesContext.class, Model.ModelParameter.class, Kinetics.KineticsParameter.class };
