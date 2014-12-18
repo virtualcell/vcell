@@ -104,7 +104,7 @@ public class SpatialAnalysisResults{
 			if(isSimData)
 			{
 				ODESolverResultSet odeSolverResultSet = createODESolverResultSet(currentAnalysisParameters,null,"");
-				simDataSource = new DataSource.DataSourceOdeSolverResultSet("sim", odeSolverResultSet); //rows for time points and cols for t + roibleached + ring1--8 (10 cols)
+				simDataSource = new DataSource.DataSourceRowColumnResultSet("sim", odeSolverResultSet); //rows for time points and cols for t + roibleached + ring1--8 (10 cols)
 			}
 			newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
 			allDataHash.put(currentAnalysisParameters,newDataSourceArr);

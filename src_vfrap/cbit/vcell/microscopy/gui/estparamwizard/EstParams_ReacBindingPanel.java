@@ -268,7 +268,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 //				ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
 				final DataSource expDataSource = /*new DataSource(referenceData,"exp")*/selectedRowDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];
 				//from simulation
-				final DataSource simDataSource = new DataSource.DataSourceOdeSolverResultSet("sim", simSolverResultSet);
+				final DataSource simDataSource = new DataSource.DataSourceRowColumnResultSet("sim", simSolverResultSet);
 				DataSource[] newDataSourceArr = new DataSource[2];
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
 				newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;

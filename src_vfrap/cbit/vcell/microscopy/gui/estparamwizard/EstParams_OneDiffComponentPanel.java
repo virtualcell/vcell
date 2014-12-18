@@ -277,7 +277,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 				{   //referenceData is the exp data
 //					ReferenceData referenceData = (ReferenceData)selectedRowDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];
 					final DataSource expDataSource = selectedRowDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE];//new DataSource.DataSourceReferenceData("exp", referenceData);
-					DataSource optDataSource  = new DataSource.DataSourceOdeSolverResultSet("opt", fitOdeSolverResultSet);
+					DataSource optDataSource  = new DataSource.DataSourceRowColumnResultSet("opt", fitOdeSolverResultSet);
 
 					DataSource[] newDataSourceArr = new DataSource[2];
 					newDataSourceArr[SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;

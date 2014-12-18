@@ -464,7 +464,7 @@ public class NonGUIFRAPTest {
 			spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
 		for (int i = 0; i < spatialAnalysisResults.analysisParameters.length; i++) {
 			DataSource expDataSource = new DataSource.DataSourceReferenceData("experiment", referenceDataArr[i]);
-			DataSource fitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", odeSolverResultSetArr[i]);
+			DataSource fitDataSource = new DataSource.DataSourceRowColumnResultSet("fit", odeSolverResultSetArr[i]);
 			MultisourcePlotListModel multisourcePlotListModel =
 				new MultisourcePlotListModel();
 			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
