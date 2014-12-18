@@ -48,6 +48,7 @@ import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -1063,7 +1064,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				StringBuffer issueText = new StringBuffer();				
 				java.util.Vector<Issue> issueList = new java.util.Vector<Issue>();
-				parameterEstimationTask.gatherIssues(issueList);
+				IssueContext issueContext = new IssueContext();
+				parameterEstimationTask.gatherIssues(issueContext,issueList);
 				boolean bFailed = false;
 				for (int i = 0; i < issueList.size(); i++){
 					Issue issue = (Issue)issueList.elementAt(i);
@@ -1130,7 +1132,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			ODESolverResultSet odeSolverResultSet = parestSimulator.getOdeSolverResultSet(parameterEstimationTask);
 
 			if (odeSolverResultSet!=null){
-				dataSourceList.add(new DataSource.DataSourceOdeSolverResultSet("EST", odeSolverResultSet));
+				dataSourceList.add(new DataSource.DataSourceRowColumnResultSet("EST", odeSolverResultSet));
 				if (mappingSpecs != null) {
 					for (int i = 0; i < mappingSpecs.length; i ++) {
 						if (i == timeIndex) {
@@ -1208,7 +1210,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 							}
 						}
 					}else{
-						if(ds02 instanceof DataSource.DataSourceOdeSolverResultSet){//both OdeSolverResultSet data, sort names
+						if(ds02 instanceof DataSource.DataSourceRowColumnResultSet){//both OdeSolverResultSet data, sort names
 							ReferenceDataMappingSpec mspec01 = null;
 							ReferenceDataMappingSpec mspec02 = null;
 							for(ReferenceDataMappingSpec rdMappingSpec:mappingSpecs){

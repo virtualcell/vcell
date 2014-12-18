@@ -474,7 +474,7 @@ public class FRAPEstimationPanel extends JPanel {
 				T += deltaT;
 			}
 			}
-			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceOdeSolverResultSet("bleachwm", bleachWhileMonitorOdeSolverResultSet);
+			DataSource bleachWhileMonitorDataSource = new DataSource.DataSourceRowColumnResultSet("bleachwm", bleachWhileMonitorOdeSolverResultSet);
 
 			//Recovery curve
 			double[] bleachRegionData = FRAPDataAnalysis.getAverageROIIntensity(initFRAPData, initFRAPData.getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.name()),preBleachAvgXYZ,temp_background);;
@@ -504,7 +504,7 @@ public class FRAPEstimationPanel extends JPanel {
 				fitOdeSolverResultSet.addRow(new double[] { T } );
 				T += deltaT;
 			}
-			DataSource fitDataSource = new DataSource.DataSourceOdeSolverResultSet("fit", fitOdeSolverResultSet);
+			DataSource fitDataSource = new DataSource.DataSourceRowColumnResultSet("fit", fitOdeSolverResultSet);
 			multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource , expCellAvgDataSource , bleachWhileMonitorDataSource} );
 			multisourcePlotPane.selectAll();		
 		}

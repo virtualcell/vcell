@@ -32,6 +32,7 @@ import org.vcell.vmicro.workflow.task.GenerateRefSimOptModel;
 import org.vcell.vmicro.workflow.task.GenerateTrivial2DPsf;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromHdf5Fluor;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromVFrap;
+import org.vcell.vmicro.workflow.task.KenworthyProcess;
 import org.vcell.vmicro.workflow.task.RunFakeSim;
 import org.vcell.vmicro.workflow.task.RunProfileLikelihoodGeneral;
 import org.vcell.vmicro.workflow.task.RunRefSimulation;
@@ -91,7 +92,8 @@ public class WorkflowTest {
 System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> using hard-coded example instead <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 File vfrapFile = new File("D:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_vmicro\\3D_FRAP_2_ZProjection_Simulation1.vfrap");
 //Workflow workflow = getVFrapSimpleExample(workingDirectory, vfrapFile);
-Workflow workflow = getFakeDataExample(workingDirectory);
+//Workflow workflow = getFakeDataExample(workingDirectory);
+Workflow workflow = getInteractiveModelWorkflow(workingDirectory);
 			
 			ArrayList<Issue> issues = new ArrayList<Issue>();
 			IssueContext issueContext = new IssueContext();
@@ -546,6 +548,7 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		DataHolder<String> displayProfileOneTitle = workflow.addParameter(String.class,"displayProfileOneTitle","1 Diffusing");
 		DataHolder<String> displayProfileTwoWithoutPenaltyTitle = workflow.addParameter(String.class,"displayProfileTwoTitle","2 Diffusing - no penalty");
 		DataHolder<String> displayProfileTwoWithPenaltyTitle = workflow.addParameter(String.class,"displayProfileTwoTitle","2 Diffusing - with penalty");
+		DataHolder<String> displayProfileUniformDiskTitle = workflow.addParameter(String.class,"displayProfileUniformDiskTitle","Uniform Disk");
 		
 		DataHolder<Double> cellRadius = workflow.addParameter(Double.class, 			"cellRadius", 					20.0);
 		DataHolder<String> cytosolName = workflow.addParameter(String.class, 			"cytosolName", 					"cytosol");
@@ -553,20 +556,20 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		DataHolder<Double> deltaX = workflow.addParameter(Double.class, 				"deltaX", 						0.3);
 		DataHolder<Double> outputTimeStep = workflow.addParameter(Double.class, 		"outputTimeStep", 				0.3);
 
-		DataHolder<Double> psfSigma = workflow.addParameter(Double.class, 				"psfSigma",			 			0.3);
+		DataHolder<Double> psfSigma = workflow.addParameter(Double.class, 				"psfSigma",			 			0.01);	// 0.3
 
 		DataHolder<Double> bleachRadius = workflow.addParameter(Double.class, 			"bleachRadius", 				4.0); // circular disk (no K
-		DataHolder<Double> bleachRate = workflow.addParameter(Double.class, 			"bleachRate", 					5.0);
-		DataHolder<Double> bleachDuration = workflow.addParameter(Double.class, 		"bleachDuraction", 				0.3);
+		DataHolder<Double> bleachRate = workflow.addParameter(Double.class, 			"bleachRate", 					500.0); // 5.0
+		DataHolder<Double> bleachDuration = workflow.addParameter(Double.class, 		"bleachDuraction", 				0.003); // 0.3
 
-		DataHolder<Double> postbleachDelay = workflow.addParameter(Double.class, 		"postbleachDelay", 				1.0);
+		DataHolder<Double> postbleachDelay = workflow.addParameter(Double.class, 		"postbleachDelay", 				0.001); // 1.0
 		DataHolder<Double> postbleachDuration = workflow.addParameter(Double.class, 	"postbleachDuraction", 			25.0);
-		DataHolder<Double> bleachMonitorRate = workflow.addParameter(Double.class, 		"bleachMonitorRate", 			0.005); // no bleach while monitoring
+		DataHolder<Double> bleachMonitorRate = workflow.addParameter(Double.class, 		"bleachMonitorRate", 			0.0000005); // no bleach while monitoring
 
 		DataHolder<Double> primaryDiffusionRate = workflow.addParameter(Double.class, 	"primaryDiffusionRate", 		2.0);
-		DataHolder<Double> primaryFraction = workflow.addParameter(Double.class, 		"primaryFraction", 				0.8); // primary fraction 100%
-		DataHolder<Double> secondaryDiffusionRate = workflow.addParameter(Double.class, "secondaryDiffusionRate", 		20.0);
-		DataHolder<Double> secondaryFraction = workflow.addParameter(Double.class, 		"secondaryFraction",			0.2);
+		DataHolder<Double> primaryFraction = workflow.addParameter(Double.class, 		"primaryFraction", 				1.0); // primary fraction 100%
+		DataHolder<Double> secondaryDiffusionRate = workflow.addParameter(Double.class, "secondaryDiffusionRate", 		0.0); // 20.0
+		DataHolder<Double> secondaryFraction = workflow.addParameter(Double.class, 		"secondaryFraction",			0.0); // 0.2
 
 		DataHolder<Boolean> bNoise = workflow.addParameter(Boolean.class, 				"bNoise", 						true); // no noise to start
 		DataHolder<Double> maxIntensity = workflow.addParameter(Double.class,			"maxIntensity",					60000.0);
@@ -607,6 +610,25 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		displayRawImages.title.setSource(workflow.addParameter(String.class, "displayRawImagesTitle", "raw Images from "+runFakeSim.getClass().getSimpleName()));
 		workflow.addTask(displayRawImages);
 		
+		KenworthyProcess kenworthyProcess = new KenworthyProcess("kenworthyProcess");
+		kenworthyProcess.bleachThreshold.setSource(bleachThreshold);
+		kenworthyProcess.cellThreshold.setSource(cellThreshold);
+		kenworthyProcess.rawTimeSeriesImages.setSource(runFakeSim.simTimeSeries);
+		workflow.addTask(kenworthyProcess);
+		
+		Workflow kenworthyInternalWorkflow = kenworthyProcess.getWorkflow();
+		WorkflowJGraphProxy kenworthyInternalWorkflowJGraphProxy = new WorkflowJGraphProxy(kenworthyInternalWorkflow);
+		displayWorkflowGraphJGraphX(kenworthyInternalWorkflowJGraphProxy);
+		displayWorkflowTable(kenworthyInternalWorkflow);
+
+//		DisplayProfileLikelihoodPlots displayProfilesUniformDisk = new DisplayProfileLikelihoodPlots("displayProfilesUniformDisk");
+//		displayProfilesUniformDisk.profileData.setSource(kenworthyProcess.profileData);
+//		displayProfilesUniformDisk.title.setSource(displayProfileUniformDiskTitle);
+//		workflow.addTask(displayProfilesUniformDisk);
+		
+		
+		
+
 		VFrapProcess vfrapProcess = new VFrapProcess("vfrapProcess");
 		vfrapProcess.bleachThreshold.setSource(bleachThreshold);
 		vfrapProcess.cellThreshold.setSource(cellThreshold);
@@ -618,7 +640,6 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		displayWorkflowGraphJGraphX(internalWorkflowJGraphProxy);
 		displayWorkflowTable(vfrapInternalWorkflow);
 
-		
 		DisplayPlot displayROIData = new DisplayPlot("displayROIData");
 		displayROIData.plotData.setSource(vfrapProcess.reducedTimeSeries);
 		displayROIData.title.setSource(workflow.addParameter(String.class, "displayROIDataTitle", "reduced data from "+vfrapProcess.getClass().getSimpleName()));
@@ -644,6 +665,9 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		displayProfilesTwoWithPenalty.profileData.setSource(vfrapProcess.profileDataTwoWithPenalty);
 		displayProfilesTwoWithPenalty.title.setSource(displayProfileTwoWithPenaltyTitle);
 		workflow.addTask(displayProfilesTwoWithPenalty);
+	
+		
+		
 		
 //		DisplayProfileLikelihoodPlots displayProfilesTwoWithoutPenalty = new DisplayProfileLikelihoodPlots("displayProfilesTwoWithoutPenalty");
 //		displayProfilesTwoWithoutPenalty.profileData.setSource(vfrapProcess.profileDataTwoWithoutPenalty);
@@ -654,5 +678,99 @@ Workflow workflow = getFakeDataExample(workingDirectory);
 		return workflow;
 
 	}
+
+	public static Workflow getInteractiveModelWorkflow(File workingDirectory){
+			
+			//
+			// construct the dataflow graph
+			//
+			LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
+			Workflow workflow = new Workflow(localWorkspace);
+	
+			//
+			// workflow parameters
+			//
+			DataHolder<Double> bleachThreshold = workflow.addParameter(Double.class,"bleachThreshold",0.80);
+			DataHolder<Double> cellThreshold = workflow.addParameter(Double.class,"cellThreshold",0.5);
+	
+			DataHolder<Double> cellRadius = workflow.addParameter(Double.class, 			"cellRadius", 					10.0);
+			DataHolder<String> cytosolName = workflow.addParameter(String.class, 			"cytosolName", 					"cytosol");
+			DataHolder<String> extracellularName = workflow.addParameter(String.class, 		"extracellularName", 			"ec");
+			DataHolder<Double> deltaX = workflow.addParameter(Double.class, 				"deltaX", 						0.3);
+			DataHolder<Double> outputTimeStep = workflow.addParameter(Double.class, 		"outputTimeStep", 				0.3);
+	
+			DataHolder<Double> psfSigma = workflow.addParameter(Double.class, 				"psfSigma",			 			0.01);	// 0.3
+	
+			DataHolder<Double> bleachRadius = workflow.addParameter(Double.class, 			"bleachRadius", 				4.0); // circular disk (no K
+			DataHolder<Double> bleachRate = workflow.addParameter(Double.class, 			"bleachRate", 					500.0); // 5.0
+			DataHolder<Double> bleachDuration = workflow.addParameter(Double.class, 		"bleachDuraction", 				0.003); // 0.3
+	
+			DataHolder<Double> postbleachDelay = workflow.addParameter(Double.class, 		"postbleachDelay", 				0.001); // 1.0
+			DataHolder<Double> postbleachDuration = workflow.addParameter(Double.class, 	"postbleachDuraction", 			25.0);
+			DataHolder<Double> bleachMonitorRate = workflow.addParameter(Double.class, 		"bleachMonitorRate", 			0.0000005); // no bleach while monitoring
+	
+			DataHolder<Double> primaryDiffusionRate = workflow.addParameter(Double.class, 	"primaryDiffusionRate", 		2.0);
+			DataHolder<Double> primaryFraction = workflow.addParameter(Double.class, 		"primaryFraction", 				1.0); // primary fraction 100%
+			DataHolder<Double> secondaryDiffusionRate = workflow.addParameter(Double.class, "secondaryDiffusionRate", 		0.0); // 20.0
+			DataHolder<Double> secondaryFraction = workflow.addParameter(Double.class, 		"secondaryFraction",			0.0); // 0.2
+	
+			DataHolder<Boolean> bNoise = workflow.addParameter(Boolean.class, 				"bNoise", 						true); // no noise to start
+			DataHolder<Double> maxIntensity = workflow.addParameter(Double.class,			"maxIntensity",					60000.0);
+
+			Generate2DExpModel generateExpModel = new Generate2DExpModel("generateExpModel");
+			generateExpModel.bleachDuration.setSource(bleachDuration);
+			generateExpModel.bleachMonitorRate.setSource(bleachMonitorRate);
+			generateExpModel.bleachRadius.setSource(bleachRadius);
+			generateExpModel.bleachRate.setSource(bleachRate);
+			generateExpModel.cellRadius.setSource(cellRadius);
+			generateExpModel.cytosolName.setSource(cytosolName);
+			generateExpModel.deltaX.setSource(deltaX);
+			generateExpModel.extracellularName.setSource(extracellularName);
+			generateExpModel.outputTimeStep.setSource(outputTimeStep);
+			generateExpModel.postbleachDelay.setSource(postbleachDelay);
+			generateExpModel.postbleachDuration.setSource(postbleachDuration);
+			generateExpModel.primaryDiffusionRate.setSource(primaryDiffusionRate);
+			generateExpModel.primaryFraction.setSource(primaryFraction);
+			generateExpModel.psfSigma.setSource(psfSigma);
+			generateExpModel.secondaryDiffusionRate.setSource(secondaryDiffusionRate);
+			generateExpModel.secondaryFraction.setSource(secondaryFraction);
+			workflow.addTask(generateExpModel);
+			
+//			DisplayBioModel displayBioModel = new DisplayBioModel("displayBioModel");
+//			displayBioModel.bioModel.setSource(generateExpModel.bioModel_2D);
+//			workflow.addTask(displayBioModel);
+			
+			RunFakeSim runFakeSim = new RunFakeSim("runFakeSim");
+			runFakeSim.bNoise.setSource(bNoise);
+			runFakeSim.maxIntensity.setSource(maxIntensity);
+			runFakeSim.simulation_2D.setSource(generateExpModel.simulation_2D);
+			runFakeSim.bleachBlackoutBeginTime.setSource(generateExpModel.bleachBlackoutBeginTime);
+			runFakeSim.bleachBlackoutEndTime.setSource(generateExpModel.bleachBlackoutEndTime);
+			workflow.addTask(runFakeSim);
+			
+//			DisplayTimeSeries displayRawImages = new DisplayTimeSeries("displayRawImages");
+//			displayRawImages.imageTimeSeries.setSource(runFakeSim.simTimeSeries);
+//			displayRawImages.title.setSource(workflow.addParameter(String.class, "displayRawImagesTitle", "raw Images from "+runFakeSim.getClass().getSimpleName()));
+//			workflow.addTask(displayRawImages);
+			
+			KenworthyProcess kenworthyProcess = new KenworthyProcess("kenworthyProcess");
+			kenworthyProcess.bleachThreshold.setSource(bleachThreshold);
+			kenworthyProcess.cellThreshold.setSource(cellThreshold);
+			kenworthyProcess.rawTimeSeriesImages.setSource(runFakeSim.simTimeSeries);
+			workflow.addTask(kenworthyProcess);
+			
+//			Workflow kenworthyInternalWorkflow = kenworthyProcess.getWorkflow();
+//			WorkflowJGraphProxy kenworthyInternalWorkflowJGraphProxy = new WorkflowJGraphProxy(kenworthyInternalWorkflow);
+//			displayWorkflowGraphJGraphX(kenworthyInternalWorkflowJGraphProxy);
+//			displayWorkflowTable(kenworthyInternalWorkflow);
+//	
+//			DisplayProfileLikelihoodPlots displayProfilesUniformDisk = new DisplayProfileLikelihoodPlots("displayProfilesUniformDisk");
+//			displayProfilesUniformDisk.profileData.setSource(kenworthyProcess.profileData);
+//			displayProfilesUniformDisk.title.setSource(workflow.addParameter(String.class, "title", "uniform disk"));
+//			workflow.addTask(displayProfilesUniformDisk);
+			
+			return workflow;
+	
+		}
 
 }

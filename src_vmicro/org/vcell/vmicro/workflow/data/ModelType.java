@@ -5,7 +5,10 @@ public enum ModelType {
 	DiffTwoWithPenalty("Diffusion with Two Diffusing Components (with penalty)",1),
 	ReactDominant("Reaction Dominant Off Rate",2),
 	DiffAndBinding("Diffusion plus Binding",3),
-	DiffTwoWithoutPenalty("Diffusion with Two Diffusing Components (without penalty)",4);
+	DiffTwoWithoutPenalty("Diffusion with Two Diffusing Components (without penalty)",4),
+	KenworthyUniformDisk2Param("Uniform Disk bleach area: D,amp",5),
+	KenworthyUniformDisk3Param("Uniform Disk bleach area: D,amp,bwm",6), 
+	KenworthyUniformDisk4Param("Uniform Disk bleach area: D,amp,bwm,timeoffset",7);
 	
 	public final String description;
 	public final int index;

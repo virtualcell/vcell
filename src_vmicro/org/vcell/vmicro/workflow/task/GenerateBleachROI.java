@@ -24,6 +24,7 @@ public class GenerateBleachROI extends Task {
 	// outputs
 	//
 	public final DataHolder<ROI> bleachedROI_2D;
+	public final DataHolder<ROI[]> bleachedROI_2D_array;
 	
 
 	public GenerateBleachROI(String id){
@@ -32,10 +33,12 @@ public class GenerateBleachROI extends Task {
 		bleachThreshold = new DataInput<Double>(Double.class,"bleachThreshold",this);
 		cellROI_2D = new DataInput<ROI>(ROI.class,"cellROI_2D",this);
 		bleachedROI_2D = new DataHolder<ROI>(ROI.class,"bleachedROI_2D",this);
+		bleachedROI_2D_array = new DataHolder<ROI[]>(ROI[].class,"bleachedROI_2D_array",this);
 		addInput(normalizedTimeSeries);
 		addInput(cellROI_2D);
 		addInput(bleachThreshold);
 		addOutput(bleachedROI_2D);
+		addOutput(bleachedROI_2D_array);
 	}
 
 	@Override
@@ -78,6 +81,7 @@ public class GenerateBleachROI extends Task {
 		ROI bleachedROI = new ROI(bleachedImage,"bleachedROI");
 		
 		bleachedROI_2D.setData(bleachedROI);
+		bleachedROI_2D_array.setData(new ROI[] { bleachedROI });
 	}
 
 }
