@@ -36,6 +36,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.rmi.event.DataJobListener;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
@@ -295,6 +296,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 								dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
 							}	
 							dataViewerController = new SimResultsViewerController(dataManager, sim);
+							dataSetControllerImpl.addDataJobListener(documentWindowManager);
 						}
 						// make the viewer
 						dataViewerControllers.put(vcSimulationIdentifier, dataViewerController);
