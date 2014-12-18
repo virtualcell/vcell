@@ -28,7 +28,7 @@ class PlotWindow(QtGui.QWidget):
     def __init__(self,windowID):
         print("in PlotWindow() constructor: begin")
         super(PlotWindow,self).__init__()
-        self.setMinimumSize(799, 800)
+        self.setMinimumSize(500, 500)
         hbox = QtGui.QHBoxLayout(self)
         self.setLayout(hbox)
         self._rwin = visit.pyside_support.GetRenderWindow(windowID)
