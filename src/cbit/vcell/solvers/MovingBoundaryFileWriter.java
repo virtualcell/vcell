@@ -147,9 +147,9 @@ import cbit.vcell.solvers.FiniteVolumeFileWriter.FVInputFileKeyword;
 import cbit.vcell.xml.XMLTags;
 
 /**
- * Insert the type's description here.
- * Creation date: (5/9/2005 2:51:48 PM)
- * @author: Fei Gao
+ * Exporting simulation data to Moving Boundary XML format
+ * Creation date: (12/18/2014 3:12:57 PM)
+ * @author: Dan Vasilescu
  */
 public class MovingBoundaryFileWriter extends SolverFileWriter {
 	private File userDirectory = null;
@@ -202,8 +202,37 @@ public static void test(SimulationTask simTask, Geometry resampledGeometry) {
 	}
 }
 
+private int subdomainsSanityCheck() {
+	int subdomainsWithPdeEquations = 0;
+	Simulation simulation = simTask.getSimulation();
+	MathDescription mathDesc = simulation.getMathDescription();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	while (enum1.hasMoreElements()) {
+		SubDomain sd = enum1.nextElement();
+		if (sd instanceof CompartmentSubDomain) {
+			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
+			System.out.println("compartment " + csd.getName());
+			Enumeration<Equation> enum_equ = csd.getEquations();
+			while (enum_equ.hasMoreElements()){
+				Equation equation = enum_equ.nextElement();
+				if (equation instanceof PdeEquation){
+					subdomainsWithPdeEquations++;
+					break;
+				}
+			}
+		}
+	}
+	return subdomainsWithPdeEquations;
+}
+
+//
+//	XML producer - here all the work is done
+//
 public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverException {
-	MathDescription mathDesc = simTask.getSimulation().getMathDescription();
+	int subdomainsWithPdeEquations = subdomainsSanityCheck();
+	if(subdomainsWithPdeEquations != 1) {
+		throw new RuntimeException("MovingBoundary Solver only accepts ONE subdomain containing PDE equations.");
+	}
 	
 	Element rootElement = new Element(MBTags.MovingBoundarySetup);
 	rootElement.addContent(getXMLProblem());	// problem
@@ -211,19 +240,6 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 	rootElement.addContent(getXMLProgress());	// progress
 	rootElement.addContent(getXMLTrace());		// trace
 	rootElement.addContent(getXMLDebug());		// debug
-
-
-
-//	SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getTaskID());
-	
-//	{	// for testing purposes only
-//		Document doc = new Document();
-//		Element clone = (Element)rootElement.clone();
-//		doc.setRootElement(clone);
-//		String xmlString = XmlUtil.xmlToString(doc, false);
-//		System.out.println(xmlString);
-//	}
-
 	return rootElement;
 }
 // ------------------------------------------------- problem
@@ -233,22 +249,18 @@ private Element getXMLProblem() {
 	e.addContent(getXMLnoOperation());
 	e.addContent(getXMLspecialFront());
 	e.addContent(getXMLxLimits());
-	e.addContent(getXMyLimits());
+	e.addContent(getXMLyLimits());
 	
 	e.addContent(getnumNodesX());
 	e.addContent(getnumNodesY());
 	e.addContent(getfrontToNodeRatio());
 	e.addContent(getmaxTime());
 	e.addContent(gettimeStep());
-	e.addContent(getdiffusionConstant());
 	e.addContent(getLevelFunction());
-	e.addContent(getadvectVelocityFunctionX());
-	e.addContent(getadvectVelocityFunctionY());
 	e.addContent(getfrontVelocityFunctionX());
 	e.addContent(getfrontVelocityFunctionY());
 
 	e.addContent(getXMLphysiology());
-	e.addContent(getXMLconcentration());
 
 	return e;
 }
@@ -261,18 +273,23 @@ private Element getcircle() {
 	Element e = new Element(MBTags.circle);
 	Element e1 = null;
 	e1 = new Element(MBTags.originx);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("0");
 	e.addContent(e1);
 	e1 = new Element(MBTags.originy);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("0");
 	e.addContent(e1);
 	e1 = new Element(MBTags.radius);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("1");
 	e.addContent(e1);
 	e1 = new Element(MBTags.velocityx);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("1");
 	e.addContent(e1);
 	e1 = new Element(MBTags.thetaIncrement);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("THETA");
 	e.addContent(e1);
 	return e;
@@ -286,9 +303,11 @@ private Element getexpandingCircle() {
 	Element e = new Element(MBTags.expandingCircle);
 	Element e1 = null;
 	e1 = new Element(MBTags.theta);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText(".01");
 	e.addContent(e1);
 	e1 = new Element(MBTags.radiusExpression);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("1+sin(t)");
 	e.addContent(e1);
 	return e;
@@ -297,125 +316,189 @@ private Element getXMLxLimits() {
 	Element e = new Element(MBTags.xLimits);
 	Element e1 = null;
 	e1 = new Element(MBTags.low);
-	e1.setText("-1.5");
+	double l = simTask.getSimulation().getMathDescription().getGeometry().getOrigin().getX();
+	e1.setText(l+"");
 	e.addContent(e1);
-	e1 = new Element(MBTags.high);
-	e1.setText("1.5");
+	e1 = new Element(MBTags.high);		// sim.math.geometry.origin.x + sim.math.geometry.extent.x
+	double h = l + simTask.getSimulation().getMathDescription().getGeometry().getExtent().getX();
+	e1.setText(h+"");
 	e.addContent(e1);
 	return e;
 }
-private Element getXMyLimits() {
+private Element getXMLyLimits() {
 	Element e = new Element(MBTags.yLimits);
 	Element e1 = null;
 	e1 = new Element(MBTags.low);
-	e1.setText("-1.5");
+	double l = simTask.getSimulation().getMathDescription().getGeometry().getOrigin().getY();
+	e1.setText(l+"");
 	e.addContent(e1);
 	e1 = new Element(MBTags.high);
-	e1.setText("1.5");
+	double h = l + simTask.getSimulation().getMathDescription().getGeometry().getExtent().getY();
+	e1.setText(h+"");
 	e.addContent(e1);
 	return e;
 }
 private Element getnumNodesX() {
 	Element e = new Element(MBTags.numNodesX);
-	e.setText("10");
+	int x = simTask.getSimulation().getMeshSpecification().getSamplingSize().getX();
+	e.setText(x+"");
 	return e;
 }
 private Element getnumNodesY() {
 	Element e = new Element(MBTags.numNodesY);
-	e.setText("10");
+	int y = simTask.getSimulation().getMeshSpecification().getSamplingSize().getY();
+	e.setText(y+"");
 	return e;
 }
 private Element getfrontToNodeRatio() {
 	Element e = new Element(MBTags.frontToNodeRatio);
-	e.setText("1");
+	e.setAttribute("mode", "HARDCODED");
+	e.setText("5");
 	return e;
 }
 private Element getmaxTime() {
 	Element e = new Element(MBTags.maxTime);
-	e.setText(".2");
+	double endingTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+	e.setText(endingTime+"");
 	return e;
 }
 private Element gettimeStep() {
 	Element e = new Element(MBTags.timeStep);
-	e.setText(".2");
-	return e;
-}
-private Element getdiffusionConstant() {
-	Element e = new Element(MBTags.diffusionConstant);
-	e.setText("1");
+	double defaultTimeStep = simTask.getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+	e.setText(defaultTimeStep+"");
 	return e;
 }
 private Element getLevelFunction() {
 	Element e = new Element(MBTags.levelFunction);
-	e.setText("x^2 + y^2 - 1");
-
-// geometry shape encode in "LevelFunction".
-Geometry geometry = simTask.getSimulation().getMathDescription().getGeometry();
-GeometrySpec geometrySpec = geometry.getGeometrySpec();
-//if (geometry.getGeometrySpec().hasImage()){
-//	throw new RuntimeException("image-based geometry not yet supported");
-//}
-//else{
-//	Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
-//	if (rvachevExps.length == 2){
-//		Expression levelFunction = rvachevExps[0];
-//		Element.content = levelFunction.infix();
-//	}
-//}
-	return e;
-}
-private Element getadvectVelocityFunctionX() {
-	Element e = new Element(MBTags.advectVelocityFunctionX);
-	e.setText("0");
-	return e;
-}
-private Element getadvectVelocityFunctionY() {
-	Element e = new Element(MBTags.advectVelocityFunctionY);
-	e.setText("0");
+	// geometry shape encode in "LevelFunction".
+	Geometry geometry = simTask.getSimulation().getMathDescription().getGeometry();
+	GeometrySpec geometrySpec = geometry.getGeometrySpec();
+	if (geometry.getGeometrySpec().hasImage()){
+		throw new RuntimeException("image-based geometry not yet supported");
+	}
+	else{
+		Expression[] rvachevExps;
+		try {
+			rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
+			if (rvachevExps.length == 2){
+				Expression levelFunction = rvachevExps[0];
+				String content = levelFunction.infix();
+				e.setText(content);
+			}
+		} catch (ExpressionException e1) {
+			e1.printStackTrace();
+		}
+	}
 	return e;
 }
 private Element getfrontVelocityFunctionX() {
 	Element e = new Element(MBTags.frontVelocityFunctionX);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("1");
 	return e;
 }
 private Element getfrontVelocityFunctionY() {
 	Element e = new Element(MBTags.frontVelocityFunctionY);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("0");
 	return e;
 }
 private Element getXMLphysiology() {
 	Element e = new Element(MBTags.physiology);
-	e.addContent(getspecies("a"));
-	e.addContent(getspecies());
+	
+//	SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getTaskID());
+//	Variable[] variables = simulationSymbolTable.getVariables();
+//	for(Variable v : variables) {
+//		if(v instanceof VolVariable && simTask.getSimulation().getMathDescription().isPDE((VolVariable)v)) {
+//			System.out.println(v.getName() + ", " + v.getClass().getSimpleName());
+//			e.addContent(getSpecies((VolVariable)v));
+//		}
+//	}
+	
+	Simulation simulation = simTask.getSimulation();
+	MathDescription mathDesc = simulation.getMathDescription();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	while (enum1.hasMoreElements()) {		
+		SubDomain sd = enum1.nextElement();
+		if (sd instanceof CompartmentSubDomain) {
+			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
+			System.out.println("compartment " + csd.getName());
+			
+			e = manageCompartment(e, csd);
+		}
+	}
 	return e;
 }
-private Element getspecies(String name) {
-	Element e = new Element(MBTags.species);
-	e.setAttribute("name", name);
-	Element e1 = null;
-	e1 = new Element(MBTags.source);
-	e1.setText("x/(x*x+y*y)^0.5*j1(1.841183781340659*(x*x+y*y)^0.5)+j1(1.841183781340659)");
-	e.addContent(e1);
+private Element manageCompartment(Element e, CompartmentSubDomain csd)
+{
+	Enumeration<Equation> enum_equ = csd.getEquations();
+	while (enum_equ.hasMoreElements()){
+		Equation equation = enum_equ.nextElement();
+		if (equation.getVariable().getDomain().getName().equals(csd.getName()))
+		{
+			// do nothing
+		}
+		
+		if (equation instanceof PdeEquation){
+			e.addContent(getSpecies((PdeEquation)equation));
+		}	
+	}
 	return e;
 }
-private Element getspecies() {
+private Element getSpecies(PdeEquation eq) {
 	Element e = new Element(MBTags.species);
+	e.setAttribute("name", eq.getVariable().getName());
+	
 	Element e1 = null;
 	e1 = new Element(MBTags.initial);
-	e1.setText("1");
+	Expression ex = eq.getInitialExpression();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	}
 	e.addContent(e1);
+
 	e1 = new Element(MBTags.source);
-	e1.setText("exp(-x)");
+	ex = eq.getDiffusionExpression();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	}
+	e.addContent(e1);
+	
+	e1 = new Element(MBTags.diffusionConstant);
+	ex = eq.getRateExpression();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	}
+	e.addContent(e1);
+
+	e1 = new Element(MBTags.advectVelocityFunctionX);
+	ex = eq.getVelocityX();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	} else {
+		e1.setText("0");
+	}
+	e.addContent(e1);
+	e1 = new Element(MBTags.advectVelocityFunctionY);
+	ex = eq.getVelocityY();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	} else {
+		e1.setText("0");
+	}
 	e.addContent(e1);
 	return e;
 }
-private Element getXMLconcentration() {
-	Element e = new Element(MBTags.concentration);
+private Element getSpecies(VolVariable v) {
+	Element e = new Element(MBTags.species);
+	e.setAttribute("name", v.getName());
 	Element e1 = null;
-	e1 = new Element(MBTags.species);
-	e1.setAttribute("name", "u");
-	e1.setText("1");
+	e1 = new Element(MBTags.source);
+	
+	Expression ex = v.getExpression();
+	if(ex != null) {
+		e1.setText(ex.infix());
+	}
 	e.addContent(e1);
 	return e;
 }
@@ -431,16 +514,19 @@ private Element getXMLReport() {
 }
 private Element getdeleteExisting() {
 	Element e = new Element(MBTags.deleteExisting);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("1");
 	return e;
 }
 private Element getoutputFilename() {
 	Element e = new Element(MBTags.outputFilename);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("figsix-10-4.h5");
 	return e;
 }
 private Element getdatasetName() {
 	Element e = new Element(MBTags.datasetName);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("10");
 	return e;
 }
@@ -448,6 +534,7 @@ private Element getannotation() {
 	Element e = new Element(MBTags.annotation);
 	Element e1 = null;
 	e1 = new Element(MBTags.series);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("spatial convergence");
 	e.addContent(e1);
 	return e;
@@ -484,9 +571,11 @@ private Element getXMLProgress() {
 	Element e = new Element(MBTags.progress);
 	Element e1 = null;
 	e1 = new Element(MBTags.percent);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("5");
 	e.addContent(e1);
 	e1 = new Element(MBTags.estimateProgress);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("true");
 	e.addContent(e1);
 	return e;
@@ -496,9 +585,11 @@ private Element getXMLTrace() {
 	Element e = new Element(MBTags.trace);
 	Element e1 = null;
 	e1 = new Element(MBTags.level);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("warn");
 	e.addContent(e1);
 	e1 = new Element(MBTags.traceFilename);
+	e1.setAttribute("mode", "HARDCODED");
 	e1.setText("trace10-4.txt");
 	e.addContent(e1);
 	return e;
@@ -506,6 +597,7 @@ private Element getXMLTrace() {
 //------------------------------------------------------ debug
 private Element getXMLDebug() {
 	Element e = new Element(MBTags.matlabDebug);
+	e.setAttribute("mode", "HARDCODED");
 	e.setText("false");
 	return e;
 }
@@ -576,12 +668,13 @@ public class MBTags {
 
 }
 
-
-
-
-
-
-
+//{	// for testing purposes only
+//Document doc = new Document();
+//Element clone = (Element)rootElement.clone();
+//doc.setRootElement(clone);
+//String xmlString = XmlUtil.xmlToString(doc, false);
+//System.out.println(xmlString);
+//}
 
 //<?xml version="1.0" encoding="UTF-8"?>
 
