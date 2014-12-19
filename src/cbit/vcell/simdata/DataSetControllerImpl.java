@@ -82,6 +82,7 @@ import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.math.GradientFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.OutsideVariable;
@@ -94,6 +95,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VariableSymbolTable;
@@ -1698,7 +1700,8 @@ private SimDataBlock evaluateFunction(
 	//
 	//Gradient Info for special processing
 	//
-	boolean isGrad = exp.hasGradient();
+	boolean isGrad = hasGradient(exp);
+	
 	if(isGrad && !variableType.equals(VariableType.VOLUME)){
 		throw new DataAccessException("Gradient function is not implemented for datatype "+variableType.getTypeName());
 	}
@@ -3383,6 +3386,17 @@ private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int n
 	return spatialNeighborData;
 }
 
+private boolean hasGradient(Expression exp){
+	boolean hasGradient = false;
+	FunctionInvocation[] functionInvocations = exp.getFunctionInvocations(null);
+	for (FunctionInvocation fi : functionInvocations){
+		if (fi.getSymbolTableFunctionEntry() instanceof GradientFunctionDefinition){
+			hasGradient = true;
+		}
+	}
+	return hasGradient;
+}
+
 private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,
 		TimeSeriesJobSpec timeSeriesJobSpec,TimeInfo timeInfo) throws Exception{
 	
@@ -3419,7 +3433,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(OutputContext outputCont
 			AnnotatedFunction functionFromVarName = getFunction(outputContext,vcdID,variableNames[i]);
 			if(functionFromVarName != null){
 				FieldFunctionArguments[] fieldFunctionArgumentsArr = FieldUtilities.getFieldFunctionArguments(functionFromVarName.getExpression());
-				if(functionFromVarName.getExpression().hasGradient() ||
+				if(hasGradient(functionFromVarName.getExpression()) ||
 					(fieldFunctionArgumentsArr != null && fieldFunctionArgumentsArr.length > 0)){
 					bIsSpecial = true;
 					break;
@@ -4034,7 +4048,7 @@ private void adjustMembraneAdjacentVolumeValues(
 				FieldFunctionArguments[] outsideExpFieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(outsideExp);
 				bIsSpecial =
 					!isAllowOptimizedTimeDataRetrieval() || 
-					insideExp.hasGradient() || outsideExp.hasGradient() ||
+					hasGradient(insideExp) || hasGradient(outsideExp) ||
 					(insideExpFieldFunctionArgs != null && insideExpFieldFunctionArgs.length > 0) ||
 					(outsideExpFieldFunctionArgs != null && outsideExpFieldFunctionArgs.length > 0);
 				if(bIsSpecial && fullDataValueSource == null){

@@ -327,9 +327,6 @@ public Expression getBinaryExpression() {
 	  }
 
    }         
-public boolean hasGradient(){
-	return rootNode.hasGradient();
-}
 
 public interface FunctionFilter {
 	boolean accept(String functionName, FunctionType functionType);

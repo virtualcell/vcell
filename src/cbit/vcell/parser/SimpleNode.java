@@ -112,16 +112,6 @@ public SymbolTableEntry getBinding(String symbol) {
 	return null;
 }
 
-boolean hasGradient() {
-	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
-		SimpleNode child = (SimpleNode)jjtGetChild(i);
-		if(child.hasGradient()){
-			return true;
-		}
-	}
-	return false;
-}
-
 void getFunctionInvocations(java.util.Vector<FunctionInvocation> v, FunctionFilter filter) {	
 	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
 		SimpleNode child = (SimpleNode)jjtGetChild(i);
