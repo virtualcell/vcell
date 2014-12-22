@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -104,6 +105,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
@@ -137,6 +139,9 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem editMenuItem;
 	private JCheckBox showDetailsCheckBox;
 
+	private List<SpeciesTypeLargeShape> speciesTypeShapeList = new ArrayList<SpeciesTypeLargeShape>();
+	private JPanel shapePanel = null;
+	
 	public class BioModelNodeEditableTree extends JTree {
 		@Override
 		public boolean isPathEditable(TreePath path) {
@@ -366,19 +371,34 @@ private void initConnections() throws java.lang.Exception {
  */
 private void initialize() {
 	try {
-		JPanel upperPanel = new JPanel();
-		upperPanel.setLayout(new GridBagLayout());
-		upperPanel.setBackground(Color.white);		
-		JPanel lowerPanel = new JPanel();
-		lowerPanel.setLayout(new GridBagLayout());
-		lowerPanel.setBackground(Color.white);		
+		shapePanel = new JPanel() {		// glyph (shape) panel
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesTypeLargeShape stls : speciesTypeShapeList) {
+					stls.paintSelf(g);
+				}
+			}
+		};
+		shapePanel.setLayout(new GridBagLayout());
+		shapePanel.setBackground(Color.white);		
+		Dimension ms = new Dimension(150, 80);
+		shapePanel.setMinimumSize(ms);
+				
+		// ----------------------------------------------------------------------------------
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new GridBagLayout());
+		leftPanel.setBackground(Color.white);
+		
+		JPanel rightPanel = new JPanel();
+		rightPanel.setLayout(new GridBagLayout());
+		rightPanel.setBackground(Color.white);		
 		
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(350);
-//		splitPane.setResizeWeight(0.4);
 		splitPane.setResizeWeight(0.9);
-		splitPane.setLeftComponent(upperPanel);
-		splitPane.setRightComponent(lowerPanel);
+		splitPane.setLeftComponent(leftPanel);
+		splitPane.setRightComponent(rightPanel);
 				
 		speciesPropertiesTree = new BioModelNodeEditableTree();
 		speciesPropertiesTreeModel = new SpeciesPropertiesTreeModel(speciesPropertiesTree);
@@ -405,6 +425,13 @@ private void initialize() {
 		speciesPropertiesTree.setLargeModel(true);
 		speciesPropertiesTree.setRootVisible(true);
 		
+		
+		
+		JPanel generalPanel = new JPanel();
+		generalPanel.setLayout(new GridBagLayout());
+		Dimension size = new Dimension(100, 150);
+		generalPanel.setMinimumSize(size);
+
 		nameTextField = new JTextField();
 		nameTextField.setEditable(false);
 		nameTextField.addActionListener(eventHandler);
@@ -416,7 +443,7 @@ private void initialize() {
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;		
 		JLabel label = new JLabel("Species Name");
-		upperPanel.add(label, gbc);
+		generalPanel.add(label, gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
@@ -425,7 +452,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(0, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_START;		
-		upperPanel.add(nameTextField, gbc);
+		generalPanel.add(nameTextField, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -433,7 +460,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		upperPanel.add(new JLabel("Linked Pathway Object(s)"), gbc);
+		generalPanel.add(new JLabel("Linked Pathway Object(s)"), gbc);
 
 		linkedPOScrollPane = new JScrollPane();
 		
@@ -445,7 +472,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		upperPanel.add(linkedPOScrollPane, gbc);
+		generalPanel.add(linkedPOScrollPane, gbc);
 		
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
@@ -453,7 +480,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		upperPanel.add(new JLabel("Annotation"), gbc);
+		generalPanel.add(new JLabel("Annotation"), gbc);
 
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
@@ -469,7 +496,7 @@ private void initialize() {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		upperPanel.add(jsp, gbc);
+		generalPanel.add(jsp, gbc);
 	
 		int gridy2 = 0;
 		GridBagConstraints gbc2 = new GridBagConstraints();
@@ -478,12 +505,31 @@ private void initialize() {
 		gbc2.weightx = 1.0;
 		gbc2.weighty = 1.0;
 		gbc2.fill = GridBagConstraints.BOTH;
-		lowerPanel.add(new JScrollPane(speciesPropertiesTree), gbc2);
+		rightPanel.add(new JScrollPane(speciesPropertiesTree), gbc2);
 
+		
+		GridBagConstraints gbc1 = new GridBagConstraints();
+		gbc1.gridx = 0;
+        gbc1.gridy = 0;
+        gbc1.gridwidth = 1;
+        gbc1.weightx = 1;
+        gbc1.weighty = 1;
+        gbc1.fill = GridBagConstraints.BOTH;
+        leftPanel.add(generalPanel, gbc1);
+
+        gbc1.gridx = 0;
+        gbc1.gridy = 1;
+        gbc1.weightx = 0;
+        gbc1.weighty = 0;
+        gbc1.gridwidth = GridBagConstraints.REMAINDER;
+        leftPanel.add(shapePanel, gbc1); 
+
+		
+		
 		Dimension minimumSize = new Dimension(100, 150);		//provide minimum sizes for the two components in the split pane
 		splitPane.setMinimumSize(minimumSize);
-		upperPanel.setMinimumSize(minimumSize);
-		lowerPanel.setMinimumSize(minimumSize);
+		leftPanel.setMinimumSize(minimumSize);
+		rightPanel.setMinimumSize(minimumSize);
 		
 		
 		setName("SpeciesEditorPanel");
@@ -588,6 +634,19 @@ void setSpeciesContext(SpeciesContext newValue) {
 	}
 	speciesPropertiesTreeModel.setSpeciesContext(fieldSpeciesContext);
 	updateInterface();
+	
+	if(fieldSpeciesContext!= null && fieldSpeciesContext.getSpeciesPattern() != null) {
+		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
+		speciesTypeShapeList.clear();
+		Graphics panelContext = shapePanel.getGraphics();
+		for(int i = 0; i<sp.getMolecularTypePatterns().size(); i++) {
+			MolecularType mt = sp.getMolecularTypePatterns().get(i).getMolecularType();
+			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20+150*i, 5, mt, panelContext);
+			speciesTypeShapeList.add(stls);
+		}
+		shapePanel.repaint();
+		
+	}
 }
 
 /**
