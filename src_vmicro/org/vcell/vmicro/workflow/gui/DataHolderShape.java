@@ -13,8 +13,7 @@ package org.vcell.vmicro.workflow.gui;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import org.vcell.workflow.DataHolder;
-import org.vcell.workflow.Workflow;
+import org.vcell.workflow.DataOutput;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
@@ -23,18 +22,13 @@ import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 public class DataHolderShape extends AbstractWorkflowNodeShape {
 	
 	int radius = 8;
-	protected DataHolder<? extends Object> fieldDataHolder = null;
+	protected DataOutput<? extends Object> fieldDataOutput = null;
 
-	public DataHolderShape(DataHolder<? extends Object> dataHolder, GraphModel graphModel) {
+	public DataHolderShape(DataOutput<? extends Object> dataOutput, GraphModel graphModel) {
 		super(graphModel);
-		this.fieldDataHolder = dataHolder;
-		if (dataHolder.getParent() instanceof Workflow){
-			defaultBG = Color.blue;
-			defaultFGselect = Color.black;
-		}else{
-			defaultBG = Color.red;
-			defaultFGselect = Color.black;
-		}
+		this.fieldDataOutput = dataOutput;
+		defaultBG = Color.red;
+		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
 		refreshLabel();
@@ -46,12 +40,12 @@ public class DataHolderShape extends AbstractWorkflowNodeShape {
 	}
 
 	@Override
-	public Object getModelObject() {
-		return fieldDataHolder;
+	public DataOutput<? extends Object> getModelObject() {
+		return fieldDataOutput;
 	}
 
-	public DataHolder<? extends Object> getDataHolder() {
-		return fieldDataHolder;
+	public DataOutput<? extends Object> getDataOutput() {
+		return fieldDataOutput;
 	}
 
 	@Override
@@ -74,8 +68,8 @@ public class DataHolderShape extends AbstractWorkflowNodeShape {
 	@Override
 	public void refreshLabel() {
 		String label = "";
-		if (fieldDataHolder!=null){
-			label = fieldDataHolder.getName();
+		if (fieldDataOutput!=null){
+			label = fieldDataOutput.getName();
 		}
 		setLabel(label);
 	}

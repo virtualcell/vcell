@@ -12,25 +12,47 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.TokenMangler;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.WorkflowObject.Status;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 
-public class Workflow implements Serializable {
+public class Workflow implements Serializable, IssueSource {
 	
 	public static final String PROPERTY_NAME_PARAMETERS		= "parameter";
 	public static final String PROPERTY_NAME_TASKS			= "tasks";
+
+	private ArrayList<Task> tasks = new ArrayList<Task>();
+	private ArrayList<Connection<? extends Object>> connections = new ArrayList<Connection<? extends Object>>();
+	private ArrayList<WorkflowParameter<? extends Object>> parameters = new ArrayList<WorkflowParameter<? extends Object>>();
+	private final String name;
 	
 	private transient ArrayList<WorkflowChangeListener> listeners;
 	private transient PropertyChangeSupport propertyChangeSupport;
 	
+	private class Connection<T> {
+		private final DataObject<T> source;
+		private final DataObject<T> target;
+		
+		private Connection(DataObject<T> source, DataObject<T> target){
+			if (source==null || target==null){
+				throw new IllegalArgumentException("both input and output must be non-null");
+			}
+			this.source = source;
+			this.target = target;
+		}
+		
+		public String toString(){
+			return "connection(from="+source.getPath()+", to="+target.getPath();
+		}
+	}
+		
 	public interface WorkflowChangeListener{
 		public void workflowChanged(Workflow source);
 	}
@@ -78,13 +100,9 @@ public class Workflow implements Serializable {
 		getPropertyChangeSupport().firePropertyChange(propertyName, oldValue, newValue);
 	}
 	
-	private ArrayList<Task> tasks = new ArrayList<Task>();
-	private ArrayList<DataHolder<? extends Object>> parameters = new ArrayList<DataHolder<? extends Object>>();
-	private LocalWorkspace localWorkspace = null;
-	
-	public Workflow(LocalWorkspace localWorkspace) {
+	public Workflow(String name) {
 		super();
-		this.localWorkspace = localWorkspace;
+		this.name = name;
 	}
 
 	public void addTask(Task task) {
@@ -96,7 +114,9 @@ public class Workflow implements Serializable {
 		}
 		Task[] oldValue = tasks.toArray(new Task[0]);
 		tasks.add(task);
-		task.setLocalWorkspace(localWorkspace);
+		if (task instanceof WorkflowTask){
+			((WorkflowTask)task).addWorkflowComponents(this);
+		}
 		Task[] newValue = tasks.toArray(new Task[0]);
 		firePropertyChangeEvent(PROPERTY_NAME_TASKS, oldValue, newValue);
 		System.out.println("added task "+task.getPath()+" to workflow "+this.toString());
@@ -114,54 +134,76 @@ public class Workflow implements Serializable {
 		}
 	}
 	
-	public <T> DataHolder<T> addParameter(Class<T> type, String name, T value) {
-		DataHolder<T> dataHolder = new DataHolder<T>(type,name,this);
-		dataHolder.setData(value);
-		DataHolder<T>[] oldValue = parameters.toArray(new DataHolder[0]);
-		parameters.add(dataHolder);
-		DataHolder<T>[] newValue = parameters.toArray(new DataHolder[0]);
-		firePropertyChangeEvent(PROPERTY_NAME_PARAMETERS, oldValue, newValue);
-		return dataHolder;
+	public <T> WorkflowParameter<T> addParameter(Class<T> type, String name, Repository repository, T data) {
+		WorkflowParameter<T> parameter = new WorkflowParameter<T>(type,name,this);
+		parameters.add(parameter);
+		repository.setData(parameter, data);
+		return parameter;
 	}
 	
-	public void compute(ClientTaskStatusSupport progress) throws Exception {
+	public <T> WorkflowParameter<T> addParameter(Class<T> type, String name) {
+		WorkflowParameter<T> parameter = new WorkflowParameter<T>(type,name,this);
+		parameters.add(parameter);
+		return parameter;
+	}
+		
+	public void compute(TaskContext context, ClientTaskStatusSupport progress) throws Exception {
 		boolean bComputedSomething = true;
-		while (bComputedSomething){
-			boolean bAnythingDirty = false;
+		boolean bSomethingDirty = false;
+		int iterationCount = 0;
+		int numTasks = getTasks().size();
+		while (bComputedSomething && iterationCount < numTasks){
 			bComputedSomething = false;
+			bSomethingDirty = false;
 			for (Task task : tasks){
 				boolean bInputDirty = false;
 				for (DataInput<? extends Object> dataInput : task.getInputs()){
-					if (dataInput.getSource()!=null && dataInput.getSource().isDirty()){
-						bAnythingDirty = true;
+					if (context.getRepository().isDirty(this, dataInput) && !dataInput.bOptional){
 						bInputDirty = true;
+						bSomethingDirty = true;
 					}
 				}
 				boolean bOutputsDirty = false;
-				for (DataHolder<? extends Object> output : task.getOutputs()){
-					if (output.isDirty()){
+				for (DataOutput<? extends Object> output : task.getOutputs()){
+					if (context.getRepository().isDirty(this, output)){
 						bOutputsDirty = true;
+						bSomethingDirty = true;
 					}
 				}
 				if (!bInputDirty && bOutputsDirty){
-					System.out.println("computing task "+task.getName());
-					task.compute(progress);
+					System.out.println("iteration "+iterationCount+", task "+task.getName()+" run");
+					task.compute(context, progress);
 					bComputedSomething = true;
-					refreshStatus();
+				}else if (bInputDirty || bOutputsDirty){
+					System.out.println("iteration "+iterationCount+", task "+task.getName()+" not run, inputDirty="+bInputDirty+", outputsDirty="+bOutputsDirty);
 				}
 			}
-			if (bComputedSomething == false && bAnythingDirty == true){
-				throw new Exception("finished prematurely ... still have dirty tasks");
-			}
+			iterationCount++;
+			System.out.println("\n\n\n\n\n");
+		}
+		if (bComputedSomething == false && bSomethingDirty == true) {
+			throw new Exception("finished prematurely ... still have dirty tasks");
 		}
 	}
 	
 	public void gatherIssues(IssueContext issueContext, ArrayList<Issue> issues) {
+		//
+		// look for workflowParameters and task inputs that have no connections.
+		//
 		for (Task task : tasks) {
-			task.gatherIssues(issueContext, issues);
+			for (DataInput input : task.getInputs()){
+				if (getConnectorSource(input)==null && !input.bOptional){
+					issues.add(new Issue(this, issueContext, IssueCategory.Workflow_missingInput, "input "+(task.getName()+"."+input.getName())+"is not connected and is not optional", Issue.SEVERITY_ERROR));
+				}
+			}
+		}
+		for (WorkflowParameter p : parameters) {
+			if (getTargets(p).isEmpty()){
+				issues.add(new Issue(this, issueContext, IssueCategory.Workflow_missingInput, "workflow parameter "+p.getName()+"is not used", Issue.SEVERITY_WARNING));
+			}
 		}
 	}
-
+	
 	public void reportIssues(ArrayList<Issue> issues, int minSeverity, boolean bExceptionOnError) {
 		boolean bAbort = false;
 		StringBuffer errorBuffer = new StringBuffer();
@@ -198,7 +240,7 @@ public class Workflow implements Serializable {
 //				Edge inputEdge = new Edge(inputNode,taskNode);
 //				graph.addEdge(inputEdge);
 //			}
-			for (DataHolder<? extends Object> output : task.getOutputs()){
+			for (DataOutput<? extends Object> output : task.getOutputs()){
 				Node outputNode = new Node(output.getName(),output);
 				graph.addNode(outputNode);
 				nodeMap.put(output,outputNode);
@@ -208,83 +250,30 @@ public class Workflow implements Serializable {
 			}
 		}
 		//
-		// hook up inputs and outputs
+		// hook up connections
 		//
-		for (Task task : tasks){
-			Node taskNode = nodeMap.get(task);
-			for (DataInput<? extends Object> input : task.getInputs()){
-				if (input.getSource() instanceof DataHolder){
-					//Node inputNode = nodeMap.get(input);
-					DataHolder<? extends Object> dataHolder = (DataHolder)input.getSource();
-					Node holderNode = nodeMap.get(dataHolder);
-					if (holderNode==null){ // an output of another task
-						holderNode = new Node("WORKFLOW:input:"+dataHolder.getName(),input.getSource());
-					}
-					Edge connectionEdge = new Edge(holderNode,taskNode);
-					graph.addEdge(connectionEdge);
-//				}else{
-//					// not hooked up ... floating node
-//					Node inputNode = new Node("Disconnected Input:"+input.name,input);
-//					graph.addNode(inputNode);
-//					nodeMap.put(input,inputNode);
-//					
-//					Edge inputEdge = new Edge(inputNode,taskNode);
-//					graph.addEdge(inputEdge);
-				}
+		for (Connection connection : connections){
+			if (connection.source instanceof DataOutput && connection.target instanceof DataInput){
+				Node outputNode = nodeMap.get(connection.source);
+				Node taskNode = nodeMap.get(((DataInput)connection.target).getParent());
+				Edge connectionEdge = new Edge(outputNode,taskNode);
+				graph.addEdge(connectionEdge);
 			}
 		}
-		
 		return graph;
 	}
 
-	/*
-	mxCell v1 = (mxCell) graph.insertVertex(parent, null, "Hello", 20,
-			20, 100, 100, "");
-	v1.setConnectable(false);
-	mxGeometry geo = graph.getModel().getGeometry(v1);
-	// The size of the rectangle when the minus sign is clicked
-	geo.setAlternateBounds(new mxRectangle(20, 20, 100, 50));
-
-	mxGeometry geo1 = new mxGeometry(0, 0.5, PORT_DIAMETER,
-			PORT_DIAMETER);
-	// Because the origin is at upper left corner, need to translate to
-	// position the center of port correctly
-	geo1.setOffset(new mxPoint(-PORT_RADIUS, -PORT_RADIUS));
-	geo1.setRelative(true);
-
-	mxCell port1 = new mxCell(null, geo1,
-			"shape=ellipse;perimter=ellipsePerimeter");
-	port1.setVertex(true);
-
-	mxGeometry geo2 = new mxGeometry(1.0, 0.5, PORT_DIAMETER,
-			PORT_DIAMETER);
-	geo2.setOffset(new mxPoint(-PORT_RADIUS, -PORT_RADIUS));
-	geo2.setRelative(true);
-
-	mxCell port2 = new mxCell(null, geo2,
-			"shape=ellipse;perimter=ellipsePerimeter");
-	port2.setVertex(true);
-
-	graph.addCell(port1, v1);
-	graph.addCell(port2, v1);
-
-	Object v2 = graph.insertVertex(parent, null, "World!", 240, 150, 80, 30);
-	
-	graph.insertEdge(parent, null, "Edge", port2, v2);
-*/
-	
-	
 	public List<Task> getTasks() {
 		return Collections.unmodifiableList(tasks);
 	}
 
-	public List<DataHolder<? extends Object>> getParameters() {
+	public List<WorkflowParameter<? extends Object>> getParameters() {
 		return Collections.unmodifiableList(parameters);
 	}
 	
-	public static Workflow parse(LocalWorkspace localWorkspace, String workflowLanguage){
+	public static Workflow parse(Repository repository, LocalWorkspace localWorkspace, String workflowLanguage){
 		String currAnonymousParameterName = "anonParam000";
-		Workflow workflow = new Workflow(localWorkspace);
+		Workflow workflow = new Workflow("parsedWorkflow");
 		
 		StringTokenizer lineTokens = new StringTokenizer(workflowLanguage, "\n\t", true);
 		int lineNumber = 1;
@@ -348,7 +337,6 @@ public class Workflow implements Serializable {
 						e.printStackTrace();
 						throw new RuntimeException("failed to resolve task input "+token0+" on line "+lineNumber);
 					}
-					DataHolder dataHolder = null;
 					if (token1.contains(".")){
 						String[] sourceParts = token1.split("\\.");
 						String sourceTaskName = sourceParts[0];
@@ -356,9 +344,9 @@ public class Workflow implements Serializable {
 						Task sourceTask = workflow.getTaskByName(sourceTaskName);
 						try {
 							Field sourceOutputField = sourceTask.getClass().getField(sourceOutputName);
-							dataHolder = (DataHolder)sourceOutputField.get(sourceTask);
-							if (dataHolder!=null){								// token1 was a reference to a parameter
-								dataInput.setSource(dataHolder);
+							DataOutput dataOutput = (DataOutput)sourceOutputField.get(sourceTask);
+							if (dataOutput!=null){								// token1 was a reference to a parameter
+								workflow.connect2(dataOutput, dataInput);
 							}else{
 								throw new RuntimeException("failed to resolve task output "+token1+" on line "+lineNumber);
 							}
@@ -367,35 +355,42 @@ public class Workflow implements Serializable {
 							throw new RuntimeException("failed to resolve task output "+token1+" on line "+lineNumber);
 						}
 					}else{
-						dataHolder = workflow.getParameter(token1);
-						if (dataHolder!=null){
+						WorkflowParameter generalParameter = workflow.getParameter(token1);
+						if (generalParameter!=null){
 							// token1 was a reference to a parameter
-							dataInput.setSource(dataHolder);
+							workflow.connectParameter(generalParameter, dataInput);
 						}else{
 							// token1 may be a literal ... create an anonymous parameter
 							if (token1.startsWith("\"") && token1.endsWith("\"")){
 								// RHS is a string
 								currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
-								dataInput.setSource(workflow.addParameter(String.class,currAnonymousParameterName, token1.replace("\"", "")));
+								WorkflowParameter<String> stringParameter = workflow.addParameter(String.class,currAnonymousParameterName, repository, token1.replace("\"", ""));
+								if (!dataInput.getType().equals(String.class)){
+									throw new RuntimeException("cannot assign string parameter "+stringParameter.getPath()+" to input "+dataInput.getPath()+" of type "+dataInput.getType().getName());
+								}
+								workflow.connectParameter(stringParameter, (DataInput<String>)dataInput);
 							}else{
 								try {
 									// RHS is an integer
 									Integer parsedInt = Integer.parseInt(token1);
 									currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
-									dataInput.setSource(workflow.addParameter(Integer.class,currAnonymousParameterName, parsedInt));
+									WorkflowParameter<Integer> intParameter = workflow.addParameter(Integer.class,currAnonymousParameterName, repository, parsedInt);
+									workflow.connectParameter(intParameter,(DataInput<Integer>)dataInput);
 								}catch (Exception e1){
 									try {
 										// RHS is a double
 										Double parsedDouble = Double.parseDouble(token1);
 										currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
-										dataInput.setSource(workflow.addParameter(Double.class,currAnonymousParameterName,parsedDouble));
+										WorkflowParameter<Double> doubleParameter = workflow.addParameter(Double.class,currAnonymousParameterName,repository,parsedDouble);
+										workflow.connectParameter(doubleParameter, (DataInput<Double>)dataInput);
 									}catch (Exception e2){
 										if (token1.toLowerCase().equals("true") || token1.toLowerCase().equals("false")){
 											// RHS is an boolean
 											try {
 												Boolean parsedBoolean = Boolean.parseBoolean(token1);
 												currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
-												dataInput.setSource(workflow.addParameter(Boolean.class,currAnonymousParameterName, parsedBoolean));
+												WorkflowParameter<Boolean> booleanParameter = workflow.addParameter(Boolean.class,currAnonymousParameterName, repository, parsedBoolean);
+												workflow.connectParameter(booleanParameter,  (DataInput<Boolean>)dataInput);
 											}catch (Exception e3){
 												throw new RuntimeException("failed to parse boolean literal "+token1+" on line "+lineNumber);
 											}
@@ -417,20 +412,20 @@ public class Workflow implements Serializable {
 				String sourceToken = token1;
 				if (sourceToken.startsWith("\"") && sourceToken.endsWith("\"")){
 					// input is a string
-					workflow.addParameter(String.class,parameterName, sourceToken.replace("\"", ""));
+					workflow.addParameter(String.class,parameterName, repository, sourceToken.replace("\"", ""));
 				}else{
 					try {
 						Integer parsedInt = Integer.parseInt(sourceToken);
-						workflow.addParameter(Integer.class,parameterName, parsedInt);
+						workflow.addParameter(Integer.class,parameterName, repository, parsedInt);
 					}catch (Exception e1){
 						try {
 							Double parsedDouble = Double.parseDouble(sourceToken);
-							workflow.addParameter(Double.class,parameterName,parsedDouble);
+							workflow.addParameter(Double.class,parameterName,repository,parsedDouble);
 						}catch (Exception e2){
 							if (sourceToken.toLowerCase().equals("true") || sourceToken.toLowerCase().equals("false")){
 								try {
 									Boolean parsedBoolean = Boolean.parseBoolean(sourceToken);
-									workflow.addParameter(Boolean.class,parameterName, parsedBoolean);
+									workflow.addParameter(Boolean.class,parameterName, repository, parsedBoolean);
 								}catch (Exception e3){
 									throw new RuntimeException("failed to parse RHS of parameter "+parameterName+" on line "+lineNumber);
 								}
@@ -445,8 +440,8 @@ public class Workflow implements Serializable {
 		return workflow;
 	}
 
-	private DataHolder getParameter(String id) {
-		for (DataHolder parameter : parameters){
+	public WorkflowParameter getParameter(String id) {
+		for (WorkflowParameter parameter : parameters){
 			if (parameter.getName().equals(id)){
 				return parameter;
 			}
@@ -470,19 +465,89 @@ public class Workflow implements Serializable {
 		return prefix;
 	}
 
-	public void refreshStatus() {
-		boolean bChanges = true;
-		while (bChanges){
-			bChanges = false;
-			for (Task task : tasks){
-				Status oldStatus = task.getStatus();
-				task.updateStatus();
-				Status newStatus = task.getStatus();
-				if (!Compare.isEqualOrNull(oldStatus, newStatus)){
-					bChanges = true;
+	private <T> void connect0(DataObject<T> source, DataObject<T> target) {
+		DataObject<T> existingSource = getConnectorSource(target);
+		if (existingSource != null){
+			throw new RuntimeException("target "+target.getPath()+" already connected to source "+existingSource.getPath());
+		}
+		Connection<T> connection = new Connection<T>(source,target);
+		connections.add(connection);
+	}
+
+	public <T> void connectParameter(WorkflowParameter<T> source, DataInput<T> target) {
+		connect0(source,target);
+	}
+
+	public <T> void connect2(DataOutput<T> source, DataInput<T> target) {
+		connect0(source,target);
+	}
+
+	public <T> void joinInputs(DataInput<T> source, DataInput<T> target) {
+		connect0(source,target);
+	}
+	
+	public <T> void joinOutputs(DataOutput<T> source, DataOutput<T> target) {
+		connect0(source,target);
+	}
+
+	public <T> WorkflowDataSource<T> getDataSource(DataObject<T> target){
+		for (Connection c : connections){
+			if (c.target == target){
+				if (c.source instanceof WorkflowDataSource){
+					DataObject connectorSource = getConnectorSource(c.source);
+					if (connectorSource == null){ // this source is authoritative
+						return (WorkflowDataSource)c.source;
+					}else{ // this source depends on another source (output-output join).
+						return getDataSource(connectorSource);
+					}
+				}else if (c.source instanceof DataInput){ // transitive property (two inputs bound together).
+					return getDataSource(c.source);
 				}
 			}
 		}
+		if (target instanceof WorkflowDataSource){
+			return (WorkflowDataSource)target;
+		}
+		return null;
+	}
+
+	public <T> DataObject<T> getConnectorSource(DataObject<T> target){
+		for (Connection c : connections){
+			if (c.target == target){
+				return c.source;
+			}
+		}
+		return null;
+	}
+
+	public <T> List<DataObject<T>> getTargets(DataObject<T> source){
+		ArrayList<DataObject<T>> targets = new ArrayList<DataObject<T>>();
+		for (Connection c : connections){
+			if (c.source == source){
+				targets.add((DataObject<T>)c.target);
+			}
+		}
+		return targets;
 	}
 	
+	public void refreshStatus() {
+		//
+	}
+
+	public String getName(){
+		return name;
+	}
+
+	public void removeConnector(DataOutput output, DataInput input) {
+		Connection connectionToRemove = null;
+		for (Connection c : connections){
+			if (c.source == output && c.target == input){
+				connectionToRemove = c;
+			}
+		}
+		if (connectionToRemove!=null){
+			connections.remove(connectionToRemove);
+		}
+	}
+
 }

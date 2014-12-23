@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -34,21 +35,21 @@ public class GenerateDependentImageROIs extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ROI[]> imageDataROIs;
+	public final DataOutput<ROI[]> imageDataROIs;
 	
 
 	public GenerateDependentImageROIs(String id){
 		super(id);
 		cellROI_2D = new DataInput<ROI>(ROI.class,"cellROI_2D",this);
 		bleachedROI_2D = new DataInput<ROI>(ROI.class,"bleachedROI_2D",this);
-		imageDataROIs = new DataHolder<ROI[]>(ROI[].class,"ImageDataROIs",this);
+		imageDataROIs = new DataOutput<ROI[]>(ROI[].class,"ImageDataROIs",this);
 		addInput(cellROI_2D);
 		addInput(bleachedROI_2D);
 		addOutput(imageDataROIs);
 	}
 	
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
 		UShortImage cellROI_2D = null;
 		UShortImage bleachedROI_2D = null;
@@ -61,8 +62,8 @@ public class GenerateDependentImageROIs extends Task {
 		UShortImage erodedROI_2D_1 = null;
 		UShortImage erodedROI_2D_2 = null;
 
-		cellROI_2D = this.cellROI_2D.getData().getRoiImages()[0];
-		bleachedROI_2D = this.bleachedROI_2D.getData().getRoiImages()[0];
+		cellROI_2D = context.getData(this.cellROI_2D).getRoiImages()[0];
+		bleachedROI_2D = context.getData(this.bleachedROI_2D).getRoiImages()[0];
 
 		dilatedROI_2D_1 = UShortImage.fastDilate(bleachedROI_2D, 4, cellROI_2D);
 		dilatedROI_2D_2 = UShortImage.fastDilate(bleachedROI_2D, 10, cellROI_2D);
@@ -142,7 +143,7 @@ public class GenerateDependentImageROIs extends Task {
 			}
 		}
 		
-		imageDataROIs.setData(rois.toArray(new ROI[0]));
+		context.setData(imageDataROIs,rois.toArray(new ROI[0]));
 	}
 
 }

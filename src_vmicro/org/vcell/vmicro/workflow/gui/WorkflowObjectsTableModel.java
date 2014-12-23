@@ -17,11 +17,16 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataObject;
+import org.vcell.workflow.DataOutput;
+import org.vcell.workflow.Repository;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
+import org.vcell.workflow.WorkflowDataSource;
 import org.vcell.workflow.WorkflowObject;
+import org.vcell.workflow.WorkflowParameter;
 
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -44,7 +49,7 @@ public class WorkflowObjectsTableModel extends AbstractWorkflowObjectsTableModel
 	private boolean bTaskInputs = true;
 	private boolean bTaskOutputs = true;
 	private boolean bParameters = true;
-	private Workflow workflow = null;
+	private TaskContext taskContext = null;
 	
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -82,9 +87,10 @@ public Class<?> getColumnClass(int col) {
  */
 protected List<WorkflowObject> computeData() {
 	ArrayList<WorkflowObject> allWorkflowObjectList = new ArrayList<WorkflowObject>();
-	if (workflow == null){
+	if (taskContext == null){
 		return null;
 	}
+	Workflow workflow = taskContext.getWorkflow();
 	if (bTasks) {
 		allWorkflowObjectList.addAll(workflow.getTasks());
 	}
@@ -109,7 +115,7 @@ protected List<WorkflowObject> computeData() {
 			|| getValue(workflowObject).toLowerCase().contains(lowerCaseSearchText)
 			|| getName(workflowObject).toLowerCase().contains(lowerCaseSearchText)
 			|| getType(workflowObject).toLowerCase().contains(lowerCaseSearchText)
-			|| getStatus(workflowObject).toLowerCase().contains(lowerCaseSearchText)) {
+			|| getStatus(taskContext,workflowObject).toLowerCase().contains(lowerCaseSearchText)) {
 			workflowObjectList.add(workflowObject);
 		}
 	}
@@ -119,12 +125,9 @@ protected List<WorkflowObject> computeData() {
 private String getType(WorkflowObject workflowObject){
 	if (workflowObject instanceof Task){
 		return "Task "+workflowObject.getClass().getSimpleName();
-	}else if (workflowObject instanceof DataHolder){
-		DataHolder dataHolder = (DataHolder)workflowObject;
+	}else if (workflowObject instanceof DataObject){
+		DataObject dataHolder = (DataObject)workflowObject;
 		return dataHolder.getType().getSimpleName();
-	}else if (workflowObject instanceof DataInput){
-		DataInput dataInput = (DataInput)workflowObject;
-		return dataInput.getType().getSimpleName();
 	}
 	return workflowObject.getClass().toString();
 }
@@ -133,38 +136,39 @@ String getName(WorkflowObject workflowObject){
 	return workflowObject.getPath();
 }
 
-private String getStatus(WorkflowObject workflowObject){
-	if (workflowObject instanceof DataHolder){
-		DataHolder dataHolder = (DataHolder)workflowObject;
-		if (dataHolder.getData()==null || dataHolder.isDirty()){
+public static <T> String getStatus(TaskContext taskContext, WorkflowObject workflowObject){
+	if (workflowObject instanceof WorkflowDataSource){
+		WorkflowDataSource dataHolder = (WorkflowDataSource)workflowObject;
+		if (taskContext.getRepository().isDirty(taskContext.getWorkflow(), dataHolder)){
 			return "needs run";
 		}else{
 			return "done";
 		}
 	}else if (workflowObject instanceof DataInput){
 		DataInput dataInput = (DataInput)workflowObject;
-		if (dataInput.getSource()==null){
+		if (taskContext.getWorkflow().getConnectorSource(dataInput) == null){
 			if (dataInput.isOptional()){
 				return "disconnected - optional";
 			}else{
 				return "disconnected";
 			}
-		}else if (dataInput.getData() == null || dataInput.getSource().isDirty()){
+		}else if (taskContext.getData(dataInput) == null){
 			return "needs data";
-		}else if (dataInput.getData() != null && !dataInput.getSource().isDirty()){
+		}else{
 			return "ready";
 		}
 	}else if (workflowObject instanceof Task){
 		Task task = (Task)workflowObject;
-		if (task.getStatus().bRunning){
+		if (task.isRunning()){
 			return "running";
-		}else if (task.getStatus().bOutputsDirty){
+		}else if (taskContext.areOutputsDirty(task)){
 			return "outputs dirty";
 		}else{
 			return "done";
 		}
+	}else{
+		return "unexpected workflowObject, "+workflowObject;
 	}
-	return workflowObject.getStatus().toString();
 }
 
 private String getValue(WorkflowObject workflowObject){
@@ -173,13 +177,14 @@ private String getValue(WorkflowObject workflowObject){
 	}else{
 		Object data = null;
 		Class dataType = null;
-		if (workflowObject instanceof DataHolder){
-			DataHolder dataHolder = (DataHolder)workflowObject;
-			data = dataHolder.getData();
+		if (workflowObject instanceof WorkflowDataSource){
+			WorkflowDataSource dataHolder = (WorkflowDataSource)workflowObject;
+			WorkflowDataSource dataSource = taskContext.getWorkflow().getDataSource((DataObject)dataHolder);
+			data = taskContext.getRepository().getData(dataSource);
 			dataType = dataHolder.getType();
 		}else if (workflowObject instanceof DataInput){
 			DataInput dataInput = (DataInput)workflowObject;
-			data = dataInput.getData();
+			data = taskContext.getData(dataInput);
 			dataType = dataInput.getType();
 		}
 		if (data instanceof RowColumnResultSet){
@@ -249,7 +254,7 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_NAME:
 				return getName(workflowObject);
 			case COLUMN_STATUS:{					
-				return getStatus(workflowObject);				
+				return getStatus(taskContext,workflowObject);				
 			}
 		}
 	} catch (Exception ex) {
@@ -261,16 +266,14 @@ public Object getValueAt(int row, int col) {
 public boolean isCellEditable(int row, int col) {
 	if (col == COLUMN_VALUE){
 		WorkflowObject workflowObject = getValueAt(row);
-		if (workflowObject instanceof DataHolder){
-			DataHolder dataHolder = (DataHolder)workflowObject;
-			if (dataHolder.getParent() instanceof Workflow){
-				if (dataHolder.getType().equals(Double.class)
-					|| dataHolder.getType().equals(Float.class)
-					|| dataHolder.getType().equals(Integer.class)
-					|| Boolean.class.isAssignableFrom(dataHolder.getType())
-					|| String.class.isAssignableFrom(dataHolder.getType())){
-					return true;
-				}
+		if (workflowObject instanceof WorkflowParameter){
+			WorkflowParameter dataHolder = (WorkflowParameter)workflowObject;
+			if (dataHolder.getType().equals(Double.class)
+				|| dataHolder.getType().equals(Float.class)
+				|| dataHolder.getType().equals(Integer.class)
+				|| Boolean.class.isAssignableFrom(dataHolder.getType())
+				|| String.class.isAssignableFrom(dataHolder.getType())){
+				return true;
 			}
 		}
 	}
@@ -287,17 +290,17 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	} else {
 		String propertyName = evt.getPropertyName();
-		if (evt.getSource() == workflow) {
+		if (evt.getSource() == taskContext.getWorkflow()) {
 			if (propertyName.equals(Workflow.PROPERTY_NAME_PARAMETERS)) {
-				DataHolder[] oldValue = (DataHolder[])evt.getOldValue();
+				WorkflowParameter[] oldValue = (WorkflowParameter[])evt.getOldValue();
 				if (oldValue!=null){
-					for (DataHolder parameter : oldValue) {
+					for (WorkflowParameter parameter : oldValue) {
 						parameter.removePropertyChangeListener(this);
 					}
 				}
-				DataHolder[] newValue = (DataHolder[])evt.getNewValue();
+				WorkflowParameter[] newValue = (WorkflowParameter[])evt.getNewValue();
 				if (newValue!=null){
-					for (DataHolder parameter : newValue) {
+					for (WorkflowParameter parameter : newValue) {
 						parameter.addPropertyChangeListener(this);
 					}
 				}
@@ -310,7 +313,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 						for (DataInput dataInput : task.getInputs()){
 							dataInput.removePropertyChangeListener(this);
 						}
-						for (DataHolder dataOutput : task.getOutputs()){
+						for (DataOutput dataOutput : task.getOutputs()){
 							dataOutput.removePropertyChangeListener(this);
 						}
 					}
@@ -322,7 +325,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 						for (DataInput dataInput : task.getInputs()){
 							dataInput.addPropertyChangeListener(this);
 						}
-						for (DataHolder dataOutput : task.getOutputs()){
+						for (DataOutput dataOutput : task.getOutputs()){
 							dataOutput.addPropertyChangeListener(this);
 						}
 					}
@@ -346,28 +349,28 @@ public void setValueAt(Object value, int row, int col) {
 				if (inputValue.length() == 0) {
 					return;
 				}
-				if (workflowObject instanceof DataHolder){
-					DataHolder dataHolder = (DataHolder)workflowObject;
-					if (dataHolder.getParent() instanceof Workflow){
-						Class dataClass = dataHolder.getType();
-						if (dataClass.equals(Double.class)){
-							dataHolder.setData(Double.valueOf(inputValue));
-							workflow.refreshStatus();
-						}else if (dataClass.equals(Float.class)){
-							dataHolder.setData(Float.valueOf(inputValue));
-							workflow.refreshStatus();
-						}else if (dataClass.equals(Integer.class)){
-							dataHolder.setData(Integer.valueOf(inputValue));
-							workflow.refreshStatus();
-						}else if (dataClass.equals(Boolean.class)){
-							dataHolder.setData(Boolean.valueOf(inputValue));
-							workflow.refreshStatus();
-						}else if (dataClass.equals(String.class)){
-							dataHolder.setData(inputValue);
-							workflow.refreshStatus();
-						}else{
-							System.out.println("type "+dataClass.getSimpleName()+" not supported");
-						}
+				if (workflowObject instanceof WorkflowParameter){
+					WorkflowParameter dataHolder = (WorkflowParameter)workflowObject;
+					Class dataClass = dataHolder.getType();
+					Repository repository = taskContext.getRepository();
+					Workflow workflow = taskContext.getWorkflow();
+					if (dataClass.equals(Double.class)){
+						repository.setData(dataHolder, Double.valueOf(inputValue));
+						workflow.refreshStatus();
+					}else if (dataClass.equals(Float.class)){
+						repository.setData(dataHolder, Float.valueOf(inputValue));
+						workflow.refreshStatus();
+					}else if (dataClass.equals(Integer.class)){
+						repository.setData(dataHolder,Integer.valueOf(inputValue));
+						workflow.refreshStatus();
+					}else if (dataClass.equals(Boolean.class)){
+						repository.setData(dataHolder,Boolean.valueOf(inputValue));
+						workflow.refreshStatus();
+					}else if (dataClass.equals(String.class)){
+						repository.setData(dataHolder,inputValue);
+						workflow.refreshStatus();
+					}else{
+						System.out.println("type "+dataClass.getSimpleName()+" not supported");
 					}
 				}
 				break;
@@ -392,7 +395,7 @@ public void setValueAt(Object value, int row, int col) {
 				case COLUMN_TYPE:
 					return scale * getType(parm1).compareToIgnoreCase(getType(parm2));
 				case COLUMN_STATUS:
-					return scale * getStatus(parm1).compareToIgnoreCase(getStatus(parm2));
+					return scale * getStatus(taskContext,parm1).compareToIgnoreCase(getStatus(taskContext,parm2));
 			}
 			return 0;
 		}
@@ -448,20 +451,22 @@ public final void setIncludeTaskOutputs(boolean newValue) {
 	refreshData();
 }
 
-public void setWorkflow(Workflow argWorkflow) {
-	if (workflow!=null){
+public void setTaskContext(TaskContext taskContext) {
+	if (taskContext!=null){
+		Workflow workflow = taskContext.getWorkflow();
 		workflow.removePropertyChangeListener(this);
-		for (DataHolder dataHolder : workflow.getParameters()){
+		for (WorkflowParameter<? extends Object> dataHolder : workflow.getParameters()){
 			dataHolder.removePropertyChangeListener(this);
 		}
 		for (Task task : workflow.getTasks()){
 			task.removePropertyChangeListener(this);
 		}
 	}
-	this.workflow = argWorkflow;
-	if (workflow!=null){
+	this.taskContext = taskContext;
+	if (this.taskContext!=null){
+		Workflow workflow = this.taskContext.getWorkflow();
 		workflow.addPropertyChangeListener(this);
-		for (DataHolder dataHolder : workflow.getParameters()){
+		for (WorkflowParameter<? extends Object> dataHolder : workflow.getParameters()){
 			dataHolder.addPropertyChangeListener(this);
 		}
 		for (Task task : workflow.getTasks()){

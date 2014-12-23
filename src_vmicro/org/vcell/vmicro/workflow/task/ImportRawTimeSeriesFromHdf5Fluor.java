@@ -4,12 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.ImageException;
 import cbit.image.SourceDataInfo;
@@ -36,16 +35,16 @@ public class ImportRawTimeSeriesFromHdf5Fluor extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> rawTimeSeriesImages;
+	public final DataOutput<ImageTimeSeries> rawTimeSeriesImages;
 	
 	public ImportRawTimeSeriesFromHdf5Fluor(String id){
 		super(id);
 		vcellHdf5File = new DataInput<String>(String.class,"vcellHdf5File",this);
 		fluorDataName = new DataInput<String>(String.class,"fluorDataName",this);
-		zSliceIndex = new DataInput<Integer>(Integer.class,"zSliceIndex",this);
+		zSliceIndex = new DataInput<Integer>(Integer.class,"zSliceIndex",this,true);
 		maxIntensity = new DataInput<Double>(Double.class,"maxIntensity",this);
 		bNoise = new DataInput<Boolean>(Boolean.class,"bNoise",this);
-		rawTimeSeriesImages = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
+		rawTimeSeriesImages = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
 		addInput(vcellHdf5File);
 		addInput(fluorDataName);
 		addInput(zSliceIndex);
@@ -55,13 +54,10 @@ public class ImportRawTimeSeriesFromHdf5Fluor extends Task {
 	}
 
 	@Override
-	protected void compute0(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		int zSlice = 0;
-		if (zSliceIndex.getSource()!=null){
-			zSlice = zSliceIndex.getData();
-		}
-		ImageTimeSeries<UShortImage> timeRawData = importTimeSeriesFromHDF5Data(new File(vcellHdf5File.getData()), fluorDataName.getData(), maxIntensity.getData(), bNoise.getData(), zSlice, clientTaskStatusSupport);
-		rawTimeSeriesImages.setData(timeRawData);
+	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		int zSlice = context.getDataWithDefault(zSliceIndex,0);
+		ImageTimeSeries<UShortImage> timeRawData = importTimeSeriesFromHDF5Data(new File(context.getData(vcellHdf5File)), context.getData(fluorDataName), context.getData(maxIntensity), context.getData(bNoise), zSlice, clientTaskStatusSupport);
+		context.setData(rawTimeSeriesImages,timeRawData);
 	}
 
 	public static ImageTimeSeries<UShortImage> importTimeSeriesFromHDF5Data(File inputHDF5File, String fluorDataName, Double maxIntensity, boolean bNoise, int zSliceIndex, ClientTaskStatusSupport progressListener) throws Exception
@@ -132,9 +128,4 @@ public class ImportRawTimeSeriesFromHdf5Fluor extends Task {
 		return rawImageTimeSeries;
 	}
 
-	@Override
-	public void gatherIssues(IssueContext issueContext, ArrayList<Issue> issues) {
-		super.gatherIssues(issueContext, issues);
-		// here put bounds checking ... etc.
-	}
 }

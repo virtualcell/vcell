@@ -10,9 +10,10 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.VCellSimReader;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -38,7 +39,7 @@ public class ImportRawTimeSeriesFrom2DVCellConcentrations extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> rawTimeSeriesImages;
+	public final DataOutput<ImageTimeSeries> rawTimeSeriesImages;
 	
 
 	public ImportRawTimeSeriesFrom2DVCellConcentrations(String id){
@@ -47,7 +48,7 @@ public class ImportRawTimeSeriesFrom2DVCellConcentrations extends Task {
 		fluorFunctionName = new DataInput<String>(String.class,"fluorFunctionName",this);
 		maxIntensity = new DataInput<Double>(Double.class,"maxIntensity",this);
 		bNoise = new DataInput<Boolean>(Boolean.class,"bNoise",this);
-		rawTimeSeriesImages = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
+		rawTimeSeriesImages = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
 		addInput(vcellSimLogFile);
 		addInput(fluorFunctionName);
 		addInput(maxIntensity);
@@ -57,10 +58,10 @@ public class ImportRawTimeSeriesFrom2DVCellConcentrations extends Task {
 
 
 	@Override
-	protected void compute0(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageDataset timeRawData = importRawTimeSeries(vcellSimLogFile.getData(), fluorFunctionName.getData(), maxIntensity.getData(), bNoise.getData(), clientTaskStatusSupport);
+	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageDataset timeRawData = importRawTimeSeries(context.getData(vcellSimLogFile), context.getData(fluorFunctionName), context.getData(maxIntensity), context.getData(bNoise), clientTaskStatusSupport);
 		ImageTimeSeries<UShortImage> imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class, timeRawData.getAllImages(),timeRawData.getImageTimeStamps(),1);
-		rawTimeSeriesImages.setData(imageTimeSeries);
+		context.setData(rawTimeSeriesImages,imageTimeSeries);
 	}
 
 	private static ImageDataset importRawTimeSeries(

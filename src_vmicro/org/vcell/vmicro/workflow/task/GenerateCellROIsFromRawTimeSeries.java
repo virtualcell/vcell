@@ -4,9 +4,10 @@ import java.util.Arrays;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
@@ -24,18 +25,18 @@ public class GenerateCellROIsFromRawTimeSeries extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ROI> cellROI_2D;
-	public final DataHolder<ROI> backgroundROI_2D;
-	public final DataHolder<Integer> indexOfFirstPostbleach;
+	public final DataOutput<ROI> cellROI_2D;
+	public final DataOutput<ROI> backgroundROI_2D;
+	public final DataOutput<Integer> indexOfFirstPostbleach;
 	
 
 	public GenerateCellROIsFromRawTimeSeries(String id){
 		super(id);
 		rawTimeSeriesImages = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
 		cellThreshold = new DataInput<Double>(Double.class,"cellThreshold",this);
-		cellROI_2D = new DataHolder<ROI>(ROI.class,"cellROI_2D",this);
-		backgroundROI_2D = new DataHolder<ROI>(ROI.class,"backgroundROI_2D",this);
-		indexOfFirstPostbleach = new DataHolder<Integer>(Integer.class,"indexOfFirstPostbleach",this);
+		cellROI_2D = new DataOutput<ROI>(ROI.class,"cellROI_2D",this);
+		backgroundROI_2D = new DataOutput<ROI>(ROI.class,"backgroundROI_2D",this);
+		indexOfFirstPostbleach = new DataOutput<Integer>(Integer.class,"indexOfFirstPostbleach",this);
 		addInput(rawTimeSeriesImages);
 		addInput(cellThreshold);
 		addOutput(cellROI_2D);
@@ -44,9 +45,9 @@ public class GenerateCellROIsFromRawTimeSeries extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
-		Image[] allImages = rawTimeSeriesImages.getData().getAllImages();
+		Image[] allImages = context.getData(rawTimeSeriesImages).getAllImages();
 		int numPixels = allImages[0].getNumXYZ();
 		int numTimes = allImages.length;
 
@@ -76,7 +77,7 @@ public class GenerateCellROIsFromRawTimeSeries extends Task {
 		//
 		// find cell and background by thresholding the first image
 		//
-		double cellThresholdValue = cellThreshold.getData()*imageStats[0].maxValue;
+		double cellThresholdValue = context.getData(cellThreshold)*imageStats[0].maxValue;
 		for (int j = 0; j < numPixels; j++) {
 			boolean isCell = firstImagePixels[j] > cellThresholdValue;
 			if(isCell) {
@@ -120,10 +121,10 @@ public class GenerateCellROIsFromRawTimeSeries extends Task {
 		ROI cellROI = new ROI(cellImage,"cellROI");
 		ROI backgroundROI = new ROI(backgroundImage,"backgroundROI");
 		
-		cellROI_2D.setData(cellROI);
-		backgroundROI_2D.setData(backgroundROI);
+		context.setData(cellROI_2D,cellROI);
+		context.setData(backgroundROI_2D,backgroundROI);
 		
-		indexOfFirstPostbleach.setData(indexPostbleach);
+		context.setData(indexOfFirstPostbleach,indexPostbleach);
 	}
 
 }

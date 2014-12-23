@@ -23,9 +23,10 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.vmicro.workflow.data.ExternalDataInfo;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -81,16 +82,16 @@ public class RunRefSimulation extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> refSimTimeSeries;
-	public final DataHolder<Double> refSimDiffusionRate;
+	public final DataOutput<ImageTimeSeries> refSimTimeSeries;
+	public final DataOutput<Double> refSimDiffusionRate;
 	
 
 	public RunRefSimulation(String id){
 		super(id);
 		cellROI_2D = new DataInput<ROI>(ROI.class,"cellROI_2D",this);
 		normalizedTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"normalizedTimeSeries",this);
-		refSimTimeSeries = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"refSimTimeSeries",this);
-		refSimDiffusionRate = new DataHolder<Double>(Double.class,"refSimDiffusionRate",this);
+		refSimTimeSeries = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"refSimTimeSeries",this);
+		refSimDiffusionRate = new DataOutput<Double>(Double.class,"refSimDiffusionRate",this);
 		addInput(cellROI_2D);
 		addInput(normalizedTimeSeries);
 		addOutput(refSimTimeSeries);
@@ -98,16 +99,16 @@ public class RunRefSimulation extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<FloatImage> normTimeSeries = normalizedTimeSeries.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<FloatImage> normTimeSeries = context.getData(normalizedTimeSeries);
 		double[] timeStamps = normTimeSeries.getImageTimeStamps();
 		TimeBounds timeBounds = new TimeBounds(0, 20*timeStamps[timeStamps.length-1]);
 		FloatImage initRefConc = normTimeSeries.getAllImages()[0];
 		double timeStepVal = timeStamps[1] - timeStamps[0];
 		double baseDiffusionRate = 1.0; // arbitrary for now.
-		ImageTimeSeries<FloatImage> solution = runRefSimulation(getLocalWorkspace(), cellROI_2D.getData(), timeStepVal, timeBounds, initRefConc, baseDiffusionRate, clientTaskStatusSupport);
-		refSimTimeSeries.setData(solution);
-		refSimDiffusionRate.setData(baseDiffusionRate);
+		ImageTimeSeries<FloatImage> solution = runRefSimulation(context.getLocalWorkspace(), context.getData(cellROI_2D), timeStepVal, timeBounds, initRefConc, baseDiffusionRate, clientTaskStatusSupport);
+		context.setData(refSimTimeSeries,solution);
+		context.setData(refSimDiffusionRate,baseDiffusionRate);
 	}
 	
 	private static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace, String extDataIDName){

@@ -4,9 +4,10 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -24,8 +25,8 @@ public class GenerateNormalizedFrapData extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> normalizedFrapData;
-	public final DataHolder<FloatImage> prebleachAverage;
+	public final DataOutput<ImageTimeSeries> normalizedFrapData;
+	public final DataOutput<FloatImage> prebleachAverage;
 	
 
 	public GenerateNormalizedFrapData(String id){
@@ -33,8 +34,8 @@ public class GenerateNormalizedFrapData extends Task {
 		rawImageTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"rawImageTimeSeries",this);
 		backgroundROI_2D = new DataInput<ROI>(ROI.class,"backgroundROI_2D",this);
 		indexOfFirstPostbleach = new DataInput<Integer>(Integer.class,"indexOfFirstPostbleach",this);
-		normalizedFrapData = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"normalizedFrapData",this);
-		prebleachAverage = new DataHolder<FloatImage>(FloatImage.class,"prebleachAverage",this);
+		normalizedFrapData = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"normalizedFrapData",this);
+		prebleachAverage = new DataOutput<FloatImage>(FloatImage.class,"prebleachAverage",this);
 		addInput(rawImageTimeSeries);
 		addInput(backgroundROI_2D);
 		addInput(indexOfFirstPostbleach);
@@ -61,8 +62,8 @@ public class GenerateNormalizedFrapData extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<UShortImage> rawTimeSeries = rawImageTimeSeries.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<UShortImage> rawTimeSeries = context.getData(rawImageTimeSeries);
 		UShortImage firstImage = rawTimeSeries.getAllImages()[0];
 		ISize isize = firstImage.getISize();
 		int nX = isize.getX();
@@ -72,7 +73,7 @@ public class GenerateNormalizedFrapData extends Task {
 		Extent extent = firstImage.getExtent();
 		org.vcell.util.Origin origin = firstImage.getOrigin();
 		
-		Integer indexPostbleach = indexOfFirstPostbleach.getData();
+		Integer indexPostbleach = context.getData(indexOfFirstPostbleach);
 		if (indexPostbleach == 0){
 			throw new RuntimeException("no prebleach images found - indexOfFirstPostbleach is 0");
 		}
@@ -83,7 +84,7 @@ public class GenerateNormalizedFrapData extends Task {
 		float avgBackground = 0.0f;
 		int numPrebleach = indexPostbleach;
 		for (int i=0;i<numPrebleach;i++){
-			avgBackground += getAverage(rawTimeSeries.getAllImages()[i], backgroundROI_2D.getData());
+			avgBackground += getAverage(rawTimeSeries.getAllImages()[i], context.getData(backgroundROI_2D));
 		}
 		avgBackground /= numPrebleach;
 		
@@ -109,7 +110,7 @@ public class GenerateNormalizedFrapData extends Task {
 		FloatImage[] normalizedImages = new FloatImage[numPostbleachImages];
 		double[] postbleachTimeStamps = new double[numPostbleachImages];
 		for (int i=0;i<numPostbleachImages;i++){
-			double[] origTimeStamps = rawImageTimeSeries.getData().getImageTimeStamps();
+			double[] origTimeStamps = context.getData(rawImageTimeSeries).getImageTimeStamps();
 			postbleachTimeStamps[i] = origTimeStamps[indexPostbleach + i] - origTimeStamps[indexPostbleach]; 
 			float[] normalizedPixels = new float[isize.getXYZ()];
 			normalizedImages[i] = new FloatImage(normalizedPixels, origin, extent, nX, nY, nZ);
@@ -122,8 +123,8 @@ public class GenerateNormalizedFrapData extends Task {
 		}
 		ImageTimeSeries<FloatImage> normalizedData = new ImageTimeSeries<FloatImage>(FloatImage.class, normalizedImages, postbleachTimeStamps, nZ);
 		
-		normalizedFrapData.setData(normalizedData);
-		this.prebleachAverage.setData(prebleachAverageImage);
+		context.setData(normalizedFrapData,normalizedData);
+		context.setData(this.prebleachAverage,prebleachAverageImage);
 		
 	}
 

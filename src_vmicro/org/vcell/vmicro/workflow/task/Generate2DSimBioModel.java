@@ -10,9 +10,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionFlag;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -76,7 +77,7 @@ public class Generate2DSimBioModel extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<BioModel> bioModel_2D;
+	public final DataOutput<BioModel> bioModel_2D;
 	
 
 	public Generate2DSimBioModel(String id){
@@ -97,7 +98,7 @@ public class Generate2DSimBioModel extends Task {
 		cytosolName = new DataInput<String>(String.class,"cytosolName", this);
 		owner = new DataInput<User>(User.class,"owner",this);
 		simKey = new DataInput<KeyValue>(KeyValue.class,"simKey", this);
-		bioModel_2D = new DataHolder<BioModel>(BioModel.class,"bioModel_2D",this);
+		bioModel_2D = new DataOutput<BioModel>(BioModel.class,"bioModel_2D",this);
 		addInput(extent);
 		addInput(cellROI_2D);
 		addInput(timeStamps);
@@ -118,28 +119,28 @@ public class Generate2DSimBioModel extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
 		if (owner == null){
 			throw new Exception("Owner is not defined");
 		}
 		
-		double df = primaryDiffusionRate.getData();
-		double ff = primaryFraction.getData();
-		double bwmRate = bleachMonitorRate.getData();
+		double df = context.getData(primaryDiffusionRate);
+		double ff = context.getData(primaryFraction);
+		double bwmRate = context.getData(bleachMonitorRate);
 		double dc = 0.0;
 		double fc = 0.0;
-		if (secondaryDiffusionRate.getSource()!=null){
-			dc = secondaryDiffusionRate.getData();
-			fc = secondaryFraction.getData();
+		if (context.isConnected(secondaryDiffusionRate)){
+			dc = context.getData(secondaryDiffusionRate);
+			fc = context.getData(secondaryFraction);
 		}
 		double bs = 0.0;
 		double onRate = 0.0;
 		double offRate = 0.0;
-		if (bindingSiteConcentration.getSource()!=null){
-			bs = bindingSiteConcentration.getData();
-			onRate = bindingOnRate.getData();
-			offRate = bindingOffRate.getData();
+		if (context.isConnected(bindingSiteConcentration)){
+			bs = context.getData(bindingSiteConcentration);
+			onRate = context.getData(bindingOnRate);
+			offRate = context.getData(bindingOffRate);
 		}		
 		//immobile fraction
 		double fimm = 1-ff-fc;
@@ -152,14 +153,14 @@ public class Generate2DSimBioModel extends Task {
 			fimm = 1;
 		}
 
-		Extent extent = this.extent.getData();
-		double[] timeStamps = this.timeStamps.getData();
-		int startingIndexForRecovery = this.indexFirstPostbleach.getData();
+		Extent extent = context.getData(this.extent);
+		double[] timeStamps = context.getData(this.timeStamps);
+		int startingIndexForRecovery = context.getData(this.indexFirstPostbleach);
 		
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
 		double timeStepVal = timeStamps[startingIndexForRecovery+1] - timeStamps[startingIndexForRecovery];
 		
-		ROI cellROI = cellROI_2D.getData();
+		ROI cellROI = context.getData(cellROI_2D);
 		int numX = cellROI.getISize().getX();
 		int numY = cellROI.getISize().getY();
 		int numZ = cellROI.getISize().getZ();
@@ -184,8 +185,8 @@ public class Generate2DSimBioModel extends Task {
 			throw new Exception("Cell ROI has no ExtraCellular.");
 		}
 		
-		String EXTRACELLULAR_NAME = extracellularName.getData();
-		String CYTOSOL_NAME = cytosolName.getData();
+		String EXTRACELLULAR_NAME = context.getData(extracellularName);
+		String CYTOSOL_NAME = context.getData(cytosolName);
 		
 		int subVolume0PixVal = ((ImageSubVolume)geometry.getGeometrySpec().getSubVolume(0)).getPixelValue();
 		geometry.getGeometrySpec().getSubVolume(0).setName((subVolume0PixVal == EXTRACELLULAR_PIXVAL?EXTRACELLULAR_NAME:CYTOSOL_NAME));
@@ -322,7 +323,7 @@ public class Generate2DSimBioModel extends Task {
 					             new Expression(species[FREE_SPECIES_INDEX].getCommonName()+"+"+species[COMPLEX_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName()), null));
 		simContext.setMathDescription(mathDesc);
 
-		SimulationVersion simVersion = new SimulationVersion(simKey.getData(),"sim1",owner.getData(),new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
+		SimulationVersion simVersion = new SimulationVersion(context.getData(simKey),"sim1",context.getData(owner),new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation newSimulation = new Simulation(simVersion,mathDesc);
 		simContext.addSimulation(newSimulation);
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
@@ -331,7 +332,7 @@ public class Generate2DSimBioModel extends Task {
 		newSimulation.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
 		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(timeStepVal));//use exp time step as output time spec
 		
-		this.bioModel_2D.setData(bioModel);
+		context.setData(this.bioModel_2D,bioModel);
 	}
 
 }

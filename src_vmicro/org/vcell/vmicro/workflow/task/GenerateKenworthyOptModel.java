@@ -6,9 +6,10 @@ import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk2P;
 import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk3P;
 import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk4P;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 public class GenerateKenworthyOptModel extends Task {
 	
@@ -20,23 +21,23 @@ public class GenerateKenworthyOptModel extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<OptModel> optModel;
+	public final DataOutput<OptModel> optModel;
 	
 	public GenerateKenworthyOptModel(String id){
 		super(id);
 		bleachRadius = new DataInput<Double>(Double.class,"bleachRadius",this);
 		modelType = new DataInput<String>(String.class,"modelType",this);
-		optModel = new DataHolder<OptModel>(OptModel.class,"optModel",this);
+		optModel = new DataOutput<OptModel>(OptModel.class,"optModel",this);
 		addInput(bleachRadius);
 		addInput(modelType);
 		addOutput(optModel);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		double bleachRadiusValue = bleachRadius.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		double bleachRadiusValue = context.getData(bleachRadius);
 		
-		ModelType modelType = ModelType.valueOf(this.modelType.getData());
+		ModelType modelType = ModelType.valueOf(context.getData(this.modelType));
 		OptModel optModel = null;
 		switch (modelType){
 		case KenworthyUniformDisk2Param: {
@@ -56,7 +57,7 @@ public class GenerateKenworthyOptModel extends Task {
 		}
 		}
 		
-		this.optModel.setData(optModel);
+		context.setData(this.optModel,optModel);
 	}
 	
 }
