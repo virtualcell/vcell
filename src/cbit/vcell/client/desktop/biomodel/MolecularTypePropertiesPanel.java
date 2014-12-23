@@ -70,6 +70,7 @@ import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
 
@@ -282,7 +283,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
 //				g.drawString("This is my custom Panel!", 10, 20);
-				for(SpeciesTypeLargeShape stls : speciesTypeShapeList) {
+				for(LargeShape stls : speciesTypeShapeList) {
 					stls.paintSelf(g);
 				}
 			}
