@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 
 public class MolecularComponentLargeShape {
@@ -17,18 +18,22 @@ public class MolecularComponentLargeShape {
 	
 	final Graphics graphicsContext;
 	
+	private boolean pattern;					// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
 	private int yPos = 0;
-	private int width = componentDiameter;			// with no letters inside, it's an empty circle
+	private int width = componentDiameter;		// with no letters inside, it's an empty circle
 	private int height = componentDiameter;
 	
 	private int textWidth = 0;			// we add this to componentDiameter to obtain the final width of the eclipse
 	private final String displayName;
 	private final MolecularComponent mc;
+	private final MolecularComponentPattern mcp;
 
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
 	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext) {
+		this.pattern = false;
+		this.mcp = null;
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
 		displayName = adjustForSize(mc.getDisplayName());
@@ -44,6 +49,25 @@ public class MolecularComponentLargeShape {
 		longestName = displayName.length() > longestName.length() ? displayName : longestName;
 		// there's already space enough in the circle if the component name is 1 letter only
 		// we add the +2 to slightly adjust width if that single letter is long (like "m")
+		textWidth = getStringWidth(longestName.substring(1)) + 5;	// we provide space for the component name and a bit extra
+		width = width + textWidth;
+		xPos = rightPos-width;
+		yPos = y;
+	}
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext) {
+		this.pattern = true;
+		this.mcp = mcp;
+		this.mc = mcp.getMolecularComponent();
+		this.graphicsContext = graphicsContext;
+		displayName = adjustForSize(mc.getDisplayName());
+		
+		String longestName = "";	// we find the longest State name
+		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+			String stateName = mc.getComponentStateDefinitions().get(i).getDisplayName();
+			stateName = adjustForSize(stateName);
+			longestName = stateName.length() > longestName.length() ? stateName : longestName;
+		}
+		longestName = displayName.length() > longestName.length() ? displayName : longestName;
 		textWidth = getStringWidth(longestName.substring(1)) + 5;	// we provide space for the component name and a bit extra
 		width = width + textWidth;
 		xPos = rightPos-width;
@@ -91,10 +115,18 @@ public class MolecularComponentLargeShape {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
 			int y = parent.getY() + parent.getHeight() - componentDiameter;
 			// we draw the components from left to right, so we start with the last
-			MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
-			offsetFromRight += mlcls.getWidth() + componentSeparation;
-			mlcls.paintSelf(g);
+			
+			if(parent.getPattern() == false) {
+				MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
+				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
+				offsetFromRight += mlcls.getWidth() + componentSeparation;
+				mlcls.paintSelf(g);
+			} else {
+				MolecularComponentPattern mcp = parent.getMolecularTypePattern().getComponentPatternList().get(i);
+				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
+				offsetFromRight += mlcls.getWidth() + componentSeparation;
+				mlcls.paintSelf(g);
+			}
 		}
 	}
 	
@@ -128,14 +160,20 @@ public class MolecularComponentLargeShape {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 		
-		font = deriveStateFont();
-		g.setFont(font);
-		g.setColor(Color.black);
-		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
-			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
-			String s = adjustForSize(csd.getDisplayName());
-			s = "~" + s;
-			g.drawString(s, xPos+7, yPos + componentDiameter + getStringHeight(font)*(i+1));
+		if(pattern == false) {			// component of a molecular type, we display all its states
+			font = deriveStateFont();
+			g.setFont(font);
+			g.setColor(Color.black);
+			for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+				ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
+				String s = adjustForSize(csd.getDisplayName());
+				s = "~" + s;
+				g.drawString(s, xPos+7, yPos + componentDiameter + getStringHeight(font)*(i+1));
+			}
+		} else {						// component pattern, we display its bonds
+			g.setColor(Color.black);
+			
+			
 		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);

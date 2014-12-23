@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.MolecularType;
 
+import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 
 
@@ -41,7 +42,7 @@ class MyPanel extends JPanel {
 	
 	MolecularType mt = new MolecularType("egfr");
 	Graphics panelContext = getGraphics();
-	SpeciesTypeLargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext);
+	LargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext);
 
 	public MyPanel() {
 		setBorder(BorderFactory.createLineBorder(Color.black));
