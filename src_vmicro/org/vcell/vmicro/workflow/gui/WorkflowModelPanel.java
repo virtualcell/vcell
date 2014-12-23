@@ -12,9 +12,10 @@ import javax.swing.JToolBar;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 
 import cbit.gui.graph.CartoonTool.Mode;
@@ -1041,39 +1042,39 @@ public class WorkflowModelPanel extends JPanel implements java.awt.event.ActionL
 					System.exit(0);
 				};
 			});
-			
-			Workflow workflow = new Workflow(new LocalWorkspace(new File("C:\\temp")));
+			LocalWorkspace localWorkspace = new LocalWorkspace(new File("C:\\temp"));
+			Workflow workflow = new Workflow("temp");
 			class Task1 extends Task {
 				final DataInput<Double> in = new DataInput<Double>(Double.class,"in", this);
-				final DataHolder<Double> out = new DataHolder<Double>(Double.class,"out", this);
+				final DataOutput<Double> out = new DataOutput<Double>(Double.class,"out", this);
 				public Task1(){
 					super("t1");
 					addInput(in);
 					addOutput(out);
 				}
 				@Override
-				protected void compute0(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+				protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 					System.out.println("executing task "+getName());
 				}
 			};
 			class Task2 extends Task {
 				final DataInput<Double> in = new DataInput<Double>(Double.class,"in", this);
-				final DataHolder<Double> out = new DataHolder<Double>(Double.class,"out", this);
+				final DataOutput<Double> out = new DataOutput<Double>(Double.class,"out", this);
 				public Task2(){
 					super("t2");
 					addInput(in);
 					addOutput(out);
 				}
 				@Override
-				protected void compute0(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+				protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 					System.out.println("executing task "+getName());
 				}
 			};
 			Task1 task1 = new Task1();
 			workflow.addTask(task1);
-			Task1 task2 = new Task1();
+			Task2 task2 = new Task2();
 			workflow.addTask(task2);
-			task2.in.setSource(task1.out);
+			workflow.connect2(task1.out,  task2.in);
 			
 			aWorkflowModelPanel.setWorkflow(workflow);
 			

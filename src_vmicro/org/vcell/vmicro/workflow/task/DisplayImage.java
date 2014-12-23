@@ -6,9 +6,10 @@ import javax.swing.JFrame;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Range;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.SourceDataInfo;
@@ -26,29 +27,23 @@ public class DisplayImage extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 
 	
 	public DisplayImage(String id){
 		super(id);
 		image = new DataInput<Image>(Image.class,"image",this);
 		title = new DataInput<String>(String.class,"title",this);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(image);
 		addInput(title);
 		addOutput(displayed);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayImage(image.getData(), title.getData(), listener);
-		displayed.setData(true);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		displayImage(context.getData(image), context.getDataWithDefault(title,"no title"), null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayImage(Image image, String title, WindowListener listener) {

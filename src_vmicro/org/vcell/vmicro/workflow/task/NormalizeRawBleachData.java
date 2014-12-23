@@ -1,9 +1,10 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.math.RowColumnResultSet;
 
@@ -16,14 +17,14 @@ public class NormalizeRawBleachData extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<RowColumnResultSet> normExpData;
+	public final DataOutput<RowColumnResultSet> normExpData;
 	
 	
 
 	public NormalizeRawBleachData(String id){
 		super(id);
 		rawExpData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"rawExpData",this);
-		normExpData = new DataHolder<RowColumnResultSet>(RowColumnResultSet.class,"normExpData",this);
+		normExpData = new DataOutput<RowColumnResultSet>(RowColumnResultSet.class,"normExpData",this);
 		addInput(rawExpData);
 		addOutput(normExpData);
 	}
@@ -41,8 +42,8 @@ public class NormalizeRawBleachData extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		RowColumnResultSet rawExpDataset = rawExpData.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		RowColumnResultSet rawExpDataset = context.getData(rawExpData);
 		if (rawExpDataset.getColumnDescriptionsCount()!=2){
 			throw new Exception("expecting 2 columns in rawExpData input");
 		}
@@ -63,7 +64,7 @@ public class NormalizeRawBleachData extends Task {
 			double normFluor = rawFluor[rawIndex]/prebleachAvg;
 			normExpDataset.addRow(new double[] { normTime, normFluor } );
 		}
-		normExpData.setData(normExpDataset);
+		context.setData(normExpData,normExpDataset);
 	}
 	
 }

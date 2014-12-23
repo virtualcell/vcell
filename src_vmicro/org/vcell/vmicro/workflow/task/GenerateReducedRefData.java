@@ -2,9 +2,10 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -20,25 +21,25 @@ public class GenerateReducedRefData extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<RowColumnResultSet> reducedROIData;
+	public final DataOutput<RowColumnResultSet> reducedROIData;
 	
 
 	public GenerateReducedRefData(String id){
 		super(id);
 		imageTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"imageTimeSeries", this);
 		imageDataROIs = new DataInput<ROI[]>(ROI[].class,"imageDataROIs", this);
-		reducedROIData = new DataHolder<RowColumnResultSet>(RowColumnResultSet.class,"reducedROIData",this);
+		reducedROIData = new DataOutput<RowColumnResultSet>(RowColumnResultSet.class,"reducedROIData",this);
 		addInput(imageTimeSeries);
 		addInput(imageDataROIs);
 		addOutput(reducedROIData);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ROI[] rois = imageDataROIs.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ROI[] rois = context.getData(imageDataROIs);
 		int numROIs = rois.length;
 		
-		ImageTimeSeries<FloatImage> simData = imageTimeSeries.getData();
+		ImageTimeSeries<FloatImage> simData = context.getData(imageTimeSeries);
 		int numTimes = simData.getSizeT();
 		int numPixels = simData.getISize().getXYZ();
 		
@@ -70,7 +71,7 @@ public class GenerateReducedRefData extends Task {
 			}
 			reducedData.addRow(row);
 		}
-		reducedROIData.setData(reducedData);
+		context.setData(reducedROIData,reducedData);
 	}
 
 }

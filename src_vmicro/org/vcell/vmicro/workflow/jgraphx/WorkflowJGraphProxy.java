@@ -9,14 +9,14 @@ import java.util.HashMap;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Compare;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataObject;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
-import org.vcell.workflow.TypedDataContainer;
+import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 import org.vcell.workflow.Workflow.WorkflowChangeListener;
 import org.vcell.workflow.WorkflowObject;
-import org.vcell.workflow.WorkflowObject.Status;
 
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
@@ -31,7 +31,7 @@ import com.mxgraph.view.mxGraph;
 
 public class WorkflowJGraphProxy {
 
-		private Workflow workflow = null;
+		private TaskContext context = null;
 		private WorkflowGraph graph = null;
 		
 		private WorkflowChangeListener workflowChangeListener = new WorkflowChangeListener() {
@@ -163,21 +163,18 @@ public class WorkflowJGraphProxy {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (graph!=null){
-					if (evt.getPropertyName().equals(WorkflowObject.PROPERTYNAME_STATUS)){
-						if (!Compare.isEqualOrNull((Status)evt.getOldValue(),(Status)evt.getNewValue())){
-							Status newStatus = (Status)evt.getNewValue();
-							System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> repainting from propertyChangeEvent, cell = "+workflowObject.getClass().getSimpleName()+", thread = "+Thread.currentThread().getName()+", status = "+newStatus.toString());
-							graph.forceRepaint();
-						}
+					if (evt.getPropertyName().equals(WorkflowObject.PROPERTYNAME_NAME)){
+						System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> repainting from propertyChangeEvent, cell = "+workflowObject.getClass().getSimpleName()+", thread = "+Thread.currentThread().getName());
+						graph.forceRepaint();
 					}
 				}
 			}
 			
 		}
 
-		public WorkflowJGraphProxy(Workflow workflow){
-			this.workflow = workflow;
-			workflow.addWorkflowChangeListener(workflowChangeListener);
+		public WorkflowJGraphProxy(TaskContext context){
+			this.context = context;
+			context.getWorkflow().addWorkflowChangeListener(workflowChangeListener);
 		}
 		
 		public WorkflowGraph getGraph(){
@@ -200,8 +197,8 @@ public class WorkflowJGraphProxy {
 							WorkflowObject addedTask = cell.workflowObject;
 							if (cell.workflowObject instanceof Task){
 								Task task = (Task)cell.workflowObject;
-								task.setName(workflow.getNextAvailableTaskName(task.getName()));
-								workflow.addTask((Task)cell.workflowObject);
+								task.setName(context.getWorkflow().getNextAvailableTaskName(task.getName()));
+								context.getWorkflow().addTask((Task)cell.workflowObject);
 								cell.setId(cell.workflowObject.getName());
 								cell.setGraph(graph);
 							}else{
@@ -223,13 +220,13 @@ public class WorkflowJGraphProxy {
 								if (validationError == null){
 									WorkflowObject workflowSourceObject = ((WorkflowObjectCell)source).workflowObject;
 									WorkflowObject workflowTargetObject = ((WorkflowObjectCell)target).workflowObject;
-									if (workflowSourceObject instanceof DataHolder && workflowTargetObject instanceof DataInput){
+									if (workflowSourceObject instanceof DataOutput && workflowTargetObject instanceof DataInput){
 										DataInput input = (DataInput)workflowTargetObject;
-										if (input.getSource()!=null){
+										if (context.getWorkflow().getConnectorSource(input)!=null){
 											System.out.println("don't add this connection, a connection already exists");
 										}else{
-											DataHolder output = (DataHolder)workflowSourceObject;
-											input.setSource(output);
+											DataOutput output = (DataOutput)workflowSourceObject;
+											context.getWorkflow().connect2(output, input);
 											System.out.println("added edge from "+workflowSourceObject.getPath()+" to "+workflowTargetObject.getPath());
 										}
 									}
@@ -241,7 +238,7 @@ public class WorkflowJGraphProxy {
 					}
 				}
 			}finally{
-				workflow.refreshStatus();
+				context.getWorkflow().refreshStatus();
 			}
 		}
 		
@@ -275,7 +272,7 @@ public class WorkflowJGraphProxy {
 			}
 			int numOutputs = task.getOutputs().size();
 			double outputCount = 2;
-			for (DataHolder<? extends Object> output : task.getOutputs()){
+			for (DataOutput<? extends Object> output : task.getOutputs()){
 				mxGeometry geoOutputPort = new mxGeometry(1, outputCount/(numOutputs+2), PORT_DIAMETER, PORT_DIAMETER);
 				outputCount++;
 				// Because the origin is at upper left corner, need to translate to
@@ -305,11 +302,11 @@ public class WorkflowJGraphProxy {
 						if ((source instanceof WorkflowObjectCell) && (source instanceof WorkflowObjectCell)){
 							WorkflowObject workflowSourceObject = ((WorkflowObjectCell)source).workflowObject;
 							WorkflowObject workflowTargetObject = ((WorkflowObjectCell)target).workflowObject;
-							if (workflowSourceObject instanceof DataHolder && workflowTargetObject instanceof DataInput){
-								DataHolder output = (DataHolder)workflowSourceObject;
+							if (workflowSourceObject instanceof DataOutput && workflowTargetObject instanceof DataInput){
+								DataOutput output = (DataOutput)workflowSourceObject;
 								DataInput input = (DataInput)workflowTargetObject;
-								if (input.getSource() == output){
-									((DataInput)workflowTargetObject).clearSource();
+								if (context.getWorkflow().getConnectorSource(input) == output){
+									context.getWorkflow().removeConnector(output,input);
 									System.out.println("removed edge from "+workflowSourceObject.getPath()+" to "+workflowTargetObject.getPath());
 								}else{
 									System.out.println("can't remove edge, edge from "+output.getPath()+" to "+input.getPath()+" not found in workflow");
@@ -328,7 +325,7 @@ public class WorkflowJGraphProxy {
 					if (!cell.isEdge() && cell instanceof WorkflowObjectCell){
 						WorkflowObject workflowObject = ((WorkflowObjectCell)cell).workflowObject;
 						if (workflowObject instanceof Task){
-							workflow.removeTask((Task)workflowObject);
+							context.getWorkflow().removeTask((Task)workflowObject);
 							System.out.println("removed task "+workflowObject.getPath());
 						}else{
 							System.out.println("can't remove non-edge cell "+cell.getId()+" not a task in this workflow");
@@ -345,13 +342,13 @@ public class WorkflowJGraphProxy {
 				
 				WorkflowObject workflowSourceObject = ((WorkflowObjectCell)source).workflowObject;
 				WorkflowObject workflowTargetObject = ((WorkflowObjectCell)target).workflowObject;
-				if (workflowSourceObject instanceof DataHolder && workflowTargetObject instanceof DataInput){
+				if (workflowSourceObject instanceof DataOutput && workflowTargetObject instanceof DataInput){
 					DataInput input = (DataInput)workflowTargetObject;
 					Type inputClass = input.getType();
-					if (input.getSource()!=null){
+					if (context.getWorkflow().getConnectorSource(input)!=null){
 						return "don't add this connection, a connection already exists";
 					}else{
-						DataHolder output = (DataHolder)workflowSourceObject;
+						DataOutput output = (DataOutput)workflowSourceObject;
 						Type outputClass = output.getType();
 						if (outputClass.getClass().isAssignableFrom(inputClass.getClass())){
 							return null;
@@ -366,7 +363,7 @@ public class WorkflowJGraphProxy {
 				e.printStackTrace();
 				return "error validating edge: exception: "+e.getMessage();
 			}finally{
-				workflow.refreshStatus();
+				context.getWorkflow().refreshStatus();
 			}
 		}
 		
@@ -383,7 +380,7 @@ public class WorkflowJGraphProxy {
 				int taskPosXDelta = 240;
 				int taskPosY = scale/2;
 				HashMap<Task,WorkflowObjectCell> taskMap = new HashMap<Task,WorkflowObjectCell>();
-				for (Task task : workflow.getTasks()){
+				for (Task task : context.getWorkflow().getTasks()){
 					WorkflowObjectCell taskNode = createGenericCell(task);
 					taskNode.getGeometry().setX(task.getDiagramStyle().getX(taskPosX));
 					taskNode.getGeometry().setY(task.getDiagramStyle().getY(taskPosY));
@@ -394,9 +391,9 @@ public class WorkflowJGraphProxy {
 				//
 				// hook up inputs and outputs
 				//
-				for (Task task : workflow.getTasks()){
+				for (Task task : context.getWorkflow().getTasks()){
 					for (DataInput<? extends Object> input : task.getInputs()){
-						TypedDataContainer<? extends Object> dataSource = input.getSource();
+						DataObject<? extends Object> dataSource = context.getWorkflow().getConnectorSource(input);
 						if (dataSource!=null){
 							WorkflowObjectCell inputTaskNode = taskMap.get(input.getParent());
 							if (inputTaskNode!=null){
@@ -406,8 +403,8 @@ public class WorkflowJGraphProxy {
 										inputNode = (WorkflowObjectCell)inputTaskNode.getChildAt(i);
 									}
 								}
-								if (dataSource instanceof DataHolder){
-									DataHolder dataHolder = (DataHolder)dataSource;
+								if (dataSource instanceof DataOutput){
+									DataOutput dataHolder = (DataOutput)dataSource;
 									Object dataHolderParent = dataHolder.getParent();
 									if (dataHolderParent instanceof Task){
 										WorkflowObjectCell outputTask = taskMap.get((Task)dataHolderParent);
@@ -462,7 +459,7 @@ public class WorkflowJGraphProxy {
 				public void addProgressDialogListener(ProgressDialogListener progressDialogListener) {
 				}
 			};
-			workflow.compute(progress);
+			context.getWorkflow().compute(context,progress);
 		}
 
 	}

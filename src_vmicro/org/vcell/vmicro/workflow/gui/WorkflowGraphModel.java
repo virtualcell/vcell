@@ -10,11 +10,9 @@
 
 package org.vcell.vmicro.workflow.gui;
 
-import java.io.File;
-
-import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataObject;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.Workflow;
 
@@ -28,7 +26,7 @@ import cbit.gui.graph.SimpleContainerShape;
  * @author: Jim Schaff
  */
 public class WorkflowGraphModel extends GraphModel {
-	private Workflow fieldWorkflow = new Workflow(new LocalWorkspace(new File("c:\\temp")));
+	private Workflow fieldWorkflow = new Workflow("unnamedWorkflow");
 
 	/**
 	 * SimpleGraphModel constructor comment.
@@ -83,7 +81,7 @@ public class WorkflowGraphModel extends GraphModel {
 			//
 			// add a DataHolderShape for each output and connect to TaskShape with an edge
 			//
-			for (DataHolder<? extends Object> output : task.getOutputs()){
+			for (DataOutput<? extends Object> output : task.getOutputs()){
 				if (!output.getName().equals("displayed")){
 					DataHolderShape dataHolderShape = new DataHolderShape(output,this);
 					containerShape.addChildShape(dataHolderShape);
@@ -112,8 +110,9 @@ public class WorkflowGraphModel extends GraphModel {
 		//
 		for (Task task : getWorkflow().getTasks()){
 			for (DataInput<? extends Object> input : task.getInputs()){
-				if (input.getSource()!=null && input.getSource().getParent() != getWorkflow()){
-					DataHolderShape dataHolderShape = (DataHolderShape) getShapeFromModelObject(input.getSource());
+				DataObject<? extends Object> source = getWorkflow().getConnectorSource(input);
+				if (source instanceof DataOutput){
+					DataHolderShape dataHolderShape = (DataHolderShape) getShapeFromModelObject(source);
 					TaskShape taskShape = (TaskShape) getShapeFromModelObject(task);
 					WorkflowEdgeShape workflowEdgeShape = new WorkflowEdgeShape("connection:"+input.getName(),dataHolderShape, taskShape, this, true, false);
 					containerShape.addChildShape(workflowEdgeShape);

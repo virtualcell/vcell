@@ -26,9 +26,10 @@ import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalContext;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.ROIDataGenerator;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -109,8 +110,8 @@ public class RunRefSimulationFast extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Double> refSimDiffusionRate;
-	public final DataHolder<RowColumnResultSet> reducedROIData;
+	public final DataOutput<Double> refSimDiffusionRate;
+	public final DataOutput<RowColumnResultSet> reducedROIData;
 	
 
 	public RunRefSimulationFast(String id){
@@ -119,8 +120,8 @@ public class RunRefSimulationFast extends Task {
 		normalizedTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"normalizedTimeSeries",this);
 		psf = new DataInput<UShortImage>(UShortImage.class,"psf",this);
 		imageDataROIs = new DataInput<ROI[]>(ROI[].class,"imageDataROIs", this);
-		refSimDiffusionRate = new DataHolder<Double>(Double.class,"refSimDiffusionRate",this);
-		reducedROIData = new DataHolder<RowColumnResultSet>(RowColumnResultSet.class,"reducedROIData",this);
+		refSimDiffusionRate = new DataOutput<Double>(Double.class,"refSimDiffusionRate",this);
+		reducedROIData = new DataOutput<RowColumnResultSet>(RowColumnResultSet.class,"reducedROIData",this);
 		addInput(cellROI_2D);
 		addInput(normalizedTimeSeries);
 		addInput(psf);
@@ -130,15 +131,15 @@ public class RunRefSimulationFast extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<FloatImage> normTimeSeries = normalizedTimeSeries.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<FloatImage> normTimeSeries = context.getData(normalizedTimeSeries);
 		double[] timeStamps = normTimeSeries.getImageTimeStamps();
 		FloatImage initRefConc = normTimeSeries.getAllImages()[0];
 		double experimentalRecoveryTime = timeStamps[timeStamps.length-1] - timeStamps[0];
-		RowColumnResultSet reducedData = runRefSimulation(getLocalWorkspace(), cellROI_2D.getData(), initRefConc, experimentalRecoveryTime, clientTaskStatusSupport);
+		RowColumnResultSet reducedData = runRefSimulation(context, context.getData(cellROI_2D), initRefConc, experimentalRecoveryTime, clientTaskStatusSupport);
 		
-		reducedROIData.setData(reducedData);
-		refSimDiffusionRate.setData(REFERENCE_DIFF_RATE_COEFFICIENT); // always D = 1, 
+		context.setData(reducedROIData,reducedData);
+		context.setData(refSimDiffusionRate,REFERENCE_DIFF_RATE_COEFFICIENT); // always D = 1, 
 	}
 	
 	private ExternalDataInfo createNewExternalDataInfo(LocalContext localWorkspace, String extDataIDName){
@@ -154,10 +155,11 @@ public class RunRefSimulationFast extends Task {
 		return newImageDataExtDataInfo;
 	}
 
-	private RowColumnResultSet runRefSimulation(LocalWorkspace localWorkspace, ROI cellROI, FloatImage initRefConc, double experimentalRecoveryTime, ClientTaskStatusSupport progressListener) throws Exception
+	private RowColumnResultSet runRefSimulation(TaskContext context, ROI cellROI, FloatImage initRefConc, double experimentalRecoveryTime, ClientTaskStatusSupport progressListener) throws Exception
 	{
 		User owner = LocalWorkspace.getDefaultOwner();
 		KeyValue simKey = LocalWorkspace.createNewKeyValue();
+		LocalWorkspace localWorkspace = context.getLocalWorkspace();
 		
 		// 
 		// save first image from normalized time series as the initial concentration field data
@@ -173,7 +175,7 @@ public class RunRefSimulationFast extends Task {
 		// save ROIs as a multivariate field data
 		//
 		ExternalDataInfo roiExtData = createNewExternalDataInfo(localWorkspace, ROI_EXTDATA_NAME);
-		ROI[] rois = imageDataROIs.getData();
+		ROI[] rois = context.getData(imageDataROIs);
 		saveROIsAsExternalData(rois, localWorkspace, roiExtData.getExternalDataIdentifier());
 		ArrayList<FieldFunctionArguments> roiFFAs = new ArrayList<FieldFunctionArguments>();
 		for (ROI roi : rois){
@@ -184,7 +186,7 @@ public class RunRefSimulationFast extends Task {
 		// save PSF as a field data
 		//
 		ExternalDataInfo psfExtData = createNewExternalDataInfo(localWorkspace, PSF_EXTDATA_NAME);
-		savePsfAsExternalData(psf.getData(), PSF_EXTDATA_VARNAME, psfExtData.getExternalDataIdentifier(), localWorkspace);
+		savePsfAsExternalData(context.getData(psf), PSF_EXTDATA_VARNAME, psfExtData.getExternalDataIdentifier(), localWorkspace);
 		FieldFunctionArguments psfFFA = new FieldFunctionArguments(PSF_EXTDATA_NAME, PSF_EXTDATA_VARNAME, new Expression(0.0), VariableType.VOLUME);
 		
 		
@@ -200,7 +202,7 @@ public class RunRefSimulationFast extends Task {
 		//run simulation
 		Simulation simulation = bioModel.getSimulation(0);
 		
-		ROIDataGenerator roiDataGenerator = getROIDataGenerator(getLocalWorkspace(),rois);
+		ROIDataGenerator roiDataGenerator = getROIDataGenerator(localWorkspace,rois);
 		simulation.getMathDescription().getPostProcessingBlock().addDataGenerator(roiDataGenerator);
 
 		
@@ -219,7 +221,7 @@ public class RunRefSimulationFast extends Task {
 
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 		VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID,0);
-		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
+		File hdf5File = new File(localWorkspace.getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		
 		// get post processing info (time points, variable sizes)
 		DataOperation.DataProcessingOutputInfoOP dataOperationInfo = new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null);

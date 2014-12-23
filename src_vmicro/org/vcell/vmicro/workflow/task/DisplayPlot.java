@@ -5,9 +5,10 @@ import java.awt.event.WindowListener;
 import javax.swing.JFrame;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -26,35 +27,24 @@ public class DisplayPlot extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 	
 
 	public DisplayPlot(String id){
 		super(id);
 		plotData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"plotData", this);
 		title = new DataInput<String>(String.class,"title",this,true);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(plotData);
 		addInput(title);
 		addOutput(displayed);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		String titleString = "no title - not connected";
-		if (title.bOptional && title.getSource()==null){
-			titleString = "no title";
-		}else{
-			titleString = title.getData();
-		}
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayPlot(plotData.getData(), titleString, listener);
-		displayed.setData(true);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		String titleString = context.getDataWithDefault(title,"no title");
+		displayPlot(context.getData(plotData), titleString, null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayPlot(RowColumnResultSet rowColumnResultSet, String title, WindowListener listener) throws ExpressionException {
@@ -63,7 +53,9 @@ public class DisplayPlot extends Task {
 		aPlotPane = new PlotPane();
 		frame.setContentPane(aPlotPane);
 		frame.setSize(aPlotPane.getSize());
-		frame.addWindowListener(listener);
+		if (listener!=null){
+			frame.addWindowListener(listener);
+		}
 		frame.setTitle(title);
 		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();

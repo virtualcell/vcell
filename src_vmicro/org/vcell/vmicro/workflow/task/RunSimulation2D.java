@@ -14,9 +14,10 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -40,23 +41,23 @@ public class RunSimulation2D extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> simTimeSeries;
+	public final DataOutput<ImageTimeSeries> simTimeSeries;
 	
 
 	public RunSimulation2D(String id){
 		super(id);
 		simulation_2D = new DataInput<Simulation>(Simulation.class,"simulation_2D",this);
 		dataVarName = new DataInput<String>(String.class,"dataVarName",this);
-		simTimeSeries = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"simTimeSeries",this);
+		simTimeSeries = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"simTimeSeries",this);
 		addInput(simulation_2D);
 		addInput(dataVarName);
 		addOutput(simTimeSeries);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<FloatImage> solution = runRefSimulation(getLocalWorkspace(), simulation_2D.getData(), dataVarName.getData(), clientTaskStatusSupport);
-		simTimeSeries.setData(solution);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<FloatImage> solution = runRefSimulation(context.getLocalWorkspace(), context.getData(simulation_2D), context.getData(dataVarName), clientTaskStatusSupport);
+		context.setData(simTimeSeries,solution);
 	}
 	
 	private static ImageTimeSeries<FloatImage> runRefSimulation(LocalWorkspace localWorkspace, Simulation simulation, String varName, ClientTaskStatusSupport progressListener) throws Exception

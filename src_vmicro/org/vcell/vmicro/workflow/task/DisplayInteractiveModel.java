@@ -8,9 +8,10 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.gui.OptModelParamPanel;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.parser.ExpressionException;
@@ -27,7 +28,7 @@ public class DisplayInteractiveModel extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 	
 
 	public DisplayInteractiveModel(String id){
@@ -35,7 +36,7 @@ public class DisplayInteractiveModel extends Task {
 		optContext = new DataInput<OptContext>(OptContext.class,"optContext", this);
 		rois = new DataInput<ROI[]>(ROI[].class,"rois", this);
 		title = new DataInput<String>(String.class,"title",this,true);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(optContext);
 		addInput(rois);
 		addInput(title);
@@ -43,21 +44,10 @@ public class DisplayInteractiveModel extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		String titleString = "no title - not connected";
-		if (title.bOptional && title.getSource()==null){
-			titleString = "no title";
-		}else{
-			titleString = title.getData();
-		}
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayOptModel(optContext.getData(), rois.getData(), getLocalWorkspace(), titleString, listener);
-		displayed.setData(true);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		String titleString = context.getDataWithDefault(title, "no title - not connected");
+		displayOptModel(context.getData(optContext), context.getData(rois), context.getLocalWorkspace(), titleString, null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayOptModel(OptContext optContext, ROI[] rois, LocalWorkspace localWorkspace, String title, WindowListener listener) throws ExpressionException {

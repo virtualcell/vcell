@@ -2,9 +2,10 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -23,7 +24,7 @@ public class ComputeMeasurementError extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<RowColumnResultSet> normalizedMeasurementError;
+	public final DataOutput<RowColumnResultSet> normalizedMeasurementError;
 	
 	public ComputeMeasurementError(String id){
 		super(id);
@@ -31,7 +32,7 @@ public class ComputeMeasurementError extends Task {
 		prebleachAverage = new DataInput<FloatImage>(FloatImage.class,"prebleachAverage",this);
 		imageDataROIs = new DataInput<ROI[]>(ROI[].class,"imageDataROIs",this);
 		indexFirstPostbleach = new DataInput<Integer>(Integer.class,"indexFirstPostbleach",this);
-		normalizedMeasurementError = new DataHolder<RowColumnResultSet>(RowColumnResultSet.class,"normalizedMeasurmentError",this);
+		normalizedMeasurementError = new DataOutput<RowColumnResultSet>(RowColumnResultSet.class,"normalizedMeasurmentError",this);
 		addInput(rawImageTimeSeries);
 		addInput(prebleachAverage);
 		addInput(imageDataROIs);
@@ -40,12 +41,12 @@ public class ComputeMeasurementError extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
-		ROI[] rois = imageDataROIs.getData();
-		int indexPostbleach = indexFirstPostbleach.getData();
-		ImageTimeSeries<UShortImage> rawImageDataset = rawImageTimeSeries.getData();
-		FloatImage prebleachAvgImage = prebleachAverage.getData();
+		ROI[] rois = context.getData(imageDataROIs);
+		int indexPostbleach = context.getData(indexFirstPostbleach);
+		ImageTimeSeries<UShortImage> rawImageDataset = context.getData(rawImageTimeSeries);
+		FloatImage prebleachAvgImage = context.getData(prebleachAverage);
 		
 		double[][] sigma = refreshNormalizedMeasurementError(rawImageDataset, prebleachAvgImage, rois, indexPostbleach);
 		String[] columnNames = new String[rois.length+1];
@@ -64,7 +65,7 @@ public class ComputeMeasurementError extends Task {
 			rowColumnResultSet.addRow(rowValues);
 		}
 		
-		normalizedMeasurementError.setData(rowColumnResultSet);
+		context.setData(normalizedMeasurementError,rowColumnResultSet);
 	}
 
 	/*

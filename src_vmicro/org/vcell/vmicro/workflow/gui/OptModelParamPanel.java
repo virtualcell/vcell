@@ -21,43 +21,37 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
-import org.vcell.optimization.OptProblemDescription;
-import org.vcell.optimization.ProfileData;
-import org.vcell.optimization.gui.ConfidenceIntervalPlotPanel;
-import org.vcell.optimization.gui.ProfileDataPanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptContextSolver;
 import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.RunProfileLikelihoodGeneral;
-import org.vcell.workflow.DataHolder;
+import org.vcell.workflow.MemoryRepository;
+import org.vcell.workflow.Repository;
+import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
+import org.vcell.workflow.WorkflowParameter;
 
 import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.Parameter;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 
 @SuppressWarnings("serial")
 public class OptModelParamPanel extends JPanel
@@ -350,23 +344,25 @@ public class OptModelParamPanel extends JPanel
 
 	public void computeProfileLikelihood()
 	{
-		
-		Workflow workflow = new Workflow(localWorkspace);
+		final Repository repository = new MemoryRepository();
+		Workflow workflow = new Workflow("profileLikelihoodWorkflow");
+		final TaskContext context = new TaskContext(workflow,repository,localWorkspace);
 		System.err.println("OptModelParamPanel.showParameterEvaluation(): how do we pass in the initial guess to ProfileLikelihood code??? should be an independent input to ProfileLikelihood so that it is explicit ... and OptContext is immutable.????");
-		workflow.addParameter(OptContext.class, "optContext", optContext);
 		final RunProfileLikelihoodGeneral runProfileLikelihoodGeneral = new RunProfileLikelihoodGeneral("internal");
-		runProfileLikelihoodGeneral.optContext.setSource(workflow.addParameter(OptContext.class, "optContext", optContext));
+		WorkflowParameter<OptContext> optContextParam = workflow.addParameter(OptContext.class, "optContext", repository, optContext);
+		workflow.connectParameter(optContextParam, runProfileLikelihoodGeneral.optContext);
 		workflow.addTask(runProfileLikelihoodGeneral);
 		final DisplayProfileLikelihoodPlots displayProfileLikelihoodPlots = new DisplayProfileLikelihoodPlots("displayProfileLikihood");
-		displayProfileLikelihoodPlots.profileData.setSource(runProfileLikelihoodGeneral.profileData);
-		displayProfileLikelihoodPlots.title.setSource(workflow.addParameter(String.class, "title", "profile likelihood"));
+		workflow.connect2(runProfileLikelihoodGeneral.profileData, displayProfileLikelihoodPlots.profileData);
+		WorkflowParameter<String> titleParam = workflow.addParameter(String.class, "title", repository, "profile likelihood");
+		workflow.connectParameter(titleParam, displayProfileLikelihoodPlots.title);
 		workflow.addTask(displayProfileLikelihoodPlots);
 
 		AsynchClientTask evaluateTask = new AsynchClientTask("Prepare to evaluate parameters ...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) 
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				runProfileLikelihoodGeneral.compute(getClientTaskStatusSupport());
+				runProfileLikelihoodGeneral.compute(context, getClientTaskStatusSupport());
 			}
 		};
 		
@@ -374,7 +370,7 @@ public class OptModelParamPanel extends JPanel
 		{
 			public void run(Hashtable<String, Object> hashTable) throws Exception
 			{
-				displayProfileLikelihoodPlots.compute(getClientTaskStatusSupport());
+				displayProfileLikelihoodPlots.compute(context, getClientTaskStatusSupport());
 			}
 		};
 		//dispatch

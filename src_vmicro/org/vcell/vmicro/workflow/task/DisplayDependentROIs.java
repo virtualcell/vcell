@@ -6,9 +6,10 @@ import javax.swing.JFrame;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.gui.DependentROIPanel;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 
@@ -24,7 +25,7 @@ public class DisplayDependentROIs extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 
 	
 	public DisplayDependentROIs(String id){
@@ -32,7 +33,7 @@ public class DisplayDependentROIs extends Task {
 		imageROIs = new DataInput<ROI[]>(ROI[].class,"imageROIs", this);
 		cellROI = new DataInput<ROI>(ROI.class,"cellROI", this);
 		title = new DataInput<String>(String.class,"title",this);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(imageROIs);
 		addInput(cellROI);
 		addInput(title);
@@ -40,15 +41,9 @@ public class DisplayDependentROIs extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayDependentROIs(imageROIs.getData(), cellROI.getData(), title.getData(), listener);
-		displayed.setData(true);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		displayDependentROIs(context.getData(imageROIs), context.getData(cellROI), context.getDataWithDefault(title,"no title"), null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayDependentROIs(ROI[] allROIs, ROI cellROI, String title, WindowListener listener) {
@@ -58,7 +53,9 @@ public class DisplayDependentROIs extends Task {
 		jframe.setTitle(title);
 		jframe.getContentPane().add(aDependentROIPanel);
 		jframe.setSize(500,500);
-		jframe.addWindowListener(listener);
+		if (listener!=null){
+			jframe.addWindowListener(listener);
+		}
 		jframe.setVisible(true);
 		
 		aDependentROIPanel.refresh();

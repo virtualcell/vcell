@@ -12,9 +12,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionFlag;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -62,10 +63,10 @@ public class Generate2DExpModel extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<BioModel> bioModel_2D;
-	public final DataHolder<Simulation> simulation_2D;
-	public final DataHolder<Double> bleachBlackoutBeginTime;
-	public final DataHolder<Double> bleachBlackoutEndTime;
+	public final DataOutput<BioModel> bioModel_2D;
+	public final DataOutput<Simulation> simulation_2D;
+	public final DataOutput<Double> bleachBlackoutBeginTime;
+	public final DataOutput<Double> bleachBlackoutEndTime;
 	
 
 	public Generate2DExpModel(String id){
@@ -103,10 +104,10 @@ public class Generate2DExpModel extends Task {
 		addInput(extracellularName);
 		addInput(cytosolName);
 		
-		bioModel_2D = new DataHolder<BioModel>(BioModel.class,"bioModel_2D",this);
-		simulation_2D = new DataHolder<Simulation>(Simulation.class,"simulation_2D",this);
-		bleachBlackoutBeginTime = new DataHolder<Double>(Double.class,"bleachBlackoutBeginTime",this);
-		bleachBlackoutEndTime = new DataHolder<Double>(Double.class,"bleachBlackoutEndTime",this);
+		bioModel_2D = new DataOutput<BioModel>(BioModel.class,"bioModel_2D",this);
+		simulation_2D = new DataOutput<Simulation>(Simulation.class,"simulation_2D",this);
+		bleachBlackoutBeginTime = new DataOutput<Double>(Double.class,"bleachBlackoutBeginTime",this);
+		bleachBlackoutEndTime = new DataOutput<Double>(Double.class,"bleachBlackoutEndTime",this);
 		addOutput(bioModel_2D);
 		addOutput(simulation_2D);
 		addOutput(bleachBlackoutBeginTime);
@@ -114,16 +115,16 @@ public class Generate2DExpModel extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
-		double domainSize = 2.2*cellRadius.getData();
+		double domainSize = 2.2*context.getData(cellRadius);
 		Extent extent = new Extent(domainSize, domainSize, 1.0);
 		Origin origin = new Origin(-extent.getX()/2.0, -extent.getY()/2.0, -extent.getZ()/2.0);
 		
-		String EXTRACELLULAR_NAME = extracellularName.getData();
-		String CYTOSOL_NAME = cytosolName.getData();
+		String EXTRACELLULAR_NAME = context.getData(extracellularName);
+		String CYTOSOL_NAME = context.getData(cytosolName);
 
-		AnalyticSubVolume cytosolSubVolume = new AnalyticSubVolume(CYTOSOL_NAME,new Expression("pow(x,2)+pow(y,2)<pow("+cellRadius.getData()+",2)"));
+		AnalyticSubVolume cytosolSubVolume = new AnalyticSubVolume(CYTOSOL_NAME,new Expression("pow(x,2)+pow(y,2)<pow("+context.getData(cellRadius)+",2)"));
 		AnalyticSubVolume extracellularSubVolume = new AnalyticSubVolume(EXTRACELLULAR_NAME,new Expression(1.0));
 		Geometry geometry = new Geometry("geometry",2);
 		geometry.getGeometrySpec().setExtent(extent);
@@ -149,9 +150,9 @@ public class Generate2DExpModel extends Task {
 		// common bleaching rate for all species
 		//
 		
-		double bleachStart = 10*outputTimeStep.getData() - bleachDuration.getData() - postbleachDelay.getData();
-		double bleachEnd =  bleachStart + bleachDuration.getData();
-		Expression bleachRateExp = new Expression(bleachMonitorRate.getData()+" + ((pow(x,2)+pow(y,2)<pow("+bleachRadius.getData()+",2))&&(t>="+bleachStart+")&&(t<="+bleachEnd+"))*("+(bleachRate.getData()-bleachMonitorRate.getData())+")");		
+		double bleachStart = 10*context.getData(outputTimeStep) - context.getData(bleachDuration) - context.getData(postbleachDelay);
+		double bleachEnd =  bleachStart + context.getData(bleachDuration);
+		Expression bleachRateExp = new Expression(context.getData(bleachMonitorRate)+" + ((pow(x,2)+pow(y,2)<pow("+context.getData(bleachRadius)+",2))&&(t>="+bleachStart+")&&(t<="+bleachEnd+"))*("+(context.getData(bleachRate)-context.getData(bleachMonitorRate))+")");		
 		
 		{
 		SimpleReaction immobileBWM = model.createSimpleReaction(cytosol);
@@ -191,44 +192,44 @@ public class Generate2DExpModel extends Task {
 		cytosolFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
 		extracellularFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
 		
-		double fixedFraction = 1.0 - primaryFraction.getData() - secondaryFraction.getData();
+		double fixedFraction = 1.0 - context.getData(primaryFraction) - context.getData(secondaryFraction);
 
 		SpeciesContextSpec immobileSCS = simContext.getReactionContext().getSpeciesContextSpec(immobileSC);
 		immobileSCS.getInitialConditionParameter().setExpression(new Expression(fixedFraction));
 		immobileSCS.getDiffusionParameter().setExpression(new Expression(0.0));
 
 		SpeciesContextSpec primarySCS = simContext.getReactionContext().getSpeciesContextSpec(primarySC);
-		primarySCS.getInitialConditionParameter().setExpression(new Expression(primaryFraction.getData()));
-		primarySCS.getDiffusionParameter().setExpression(new Expression(primaryDiffusionRate.getData()));
+		primarySCS.getInitialConditionParameter().setExpression(new Expression(context.getData(primaryFraction)));
+		primarySCS.getDiffusionParameter().setExpression(new Expression(context.getData(primaryDiffusionRate)));
 
 		SpeciesContextSpec secondarySCS = simContext.getReactionContext().getSpeciesContextSpec(secondarySC);
-		secondarySCS.getInitialConditionParameter().setExpression(new Expression(secondaryFraction.getData()));
-		secondarySCS.getDiffusionParameter().setExpression(new Expression(secondaryDiffusionRate.getData()));
+		secondarySCS.getInitialConditionParameter().setExpression(new Expression(context.getData(secondaryFraction)));
+		secondarySCS.getDiffusionParameter().setExpression(new Expression(context.getData(secondaryDiffusionRate)));
 
 		simContext.getMicroscopeMeasurement().addFluorescentSpecies(immobileSC);
 		simContext.getMicroscopeMeasurement().addFluorescentSpecies(primarySC);
 		simContext.getMicroscopeMeasurement().addFluorescentSpecies(secondarySC);
-		simContext.getMicroscopeMeasurement().setConvolutionKernel(new GaussianConvolutionKernel(new Expression(psfSigma.getData()), new Expression(psfSigma.getData())));
+		simContext.getMicroscopeMeasurement().setConvolutionKernel(new GaussianConvolutionKernel(new Expression(context.getData(psfSigma)), new Expression(context.getData(psfSigma))));
 		
 		MathMapping mathMapping = simContext.createNewMathMapping();
 		MathDescription mathDesc = mathMapping.getMathDescription();		
 		simContext.setMathDescription(mathDesc);
 
 		
-		User owner = localWorkspace.getDefaultOwner();
+		User owner = context.getDefaultOwner();
 
-		int meshSize = (int)(domainSize/deltaX.getData());
+		int meshSize = (int)(domainSize/context.getData(deltaX));
 		if (meshSize % 2== 0){
 			meshSize = meshSize + 1; // want an odd-sized mesh in x and y ... so centered at the origin.
 		}
 
-		TimeBounds timeBounds = new TimeBounds(0.0,postbleachDuration.getData());
+		TimeBounds timeBounds = new TimeBounds(0.0,context.getData(postbleachDuration));
 		
 		//
 		// simulation to use for data generation (output time steps as recorded by the microscope)
 		//
-		double bleachBlackoutBegin = bleachStart-postbleachDelay.getData();
-		double bleachBlackoutEnd = bleachEnd+postbleachDelay.getData();
+		double bleachBlackoutBegin = bleachStart-context.getData(postbleachDelay);
+		double bleachBlackoutEnd = bleachEnd+context.getData(postbleachDelay);
 
 //		ArrayList<Double> times = new ArrayList<Double>();
 //		double time = 0;
@@ -244,9 +245,9 @@ public class Generate2DExpModel extends Task {
 //			timeArray[i] = times.get(i);
 //		}
 //		OutputTimeSpec fakeDataSimOutputTimeSpec = new ExplicitOutputTimeSpec(timeArray);
-		OutputTimeSpec fakeDataSimOutputTimeSpec = new UniformOutputTimeSpec(outputTimeStep.getData());
+		OutputTimeSpec fakeDataSimOutputTimeSpec = new UniformOutputTimeSpec(context.getData(outputTimeStep));
 		
-		KeyValue fakeDataSimKey = localWorkspace.createNewKeyValue();
+		KeyValue fakeDataSimKey = context.createNewKeyValue();
 		SimulationVersion fakeDataSimVersion = new SimulationVersion(fakeDataSimKey,"fakeDataSim",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation fakeDataSim = new Simulation(fakeDataSimVersion, mathDesc);
 		simContext.addSimulation(fakeDataSim);
@@ -259,22 +260,22 @@ public class Generate2DExpModel extends Task {
 		//
 		// simulation to use for viewing the protocol (output time steps to understand the physics)
 		//
-		KeyValue fullExperimentSimKey = localWorkspace.createNewKeyValue();
+		KeyValue fullExperimentSimKey = context.createNewKeyValue();
 		SimulationVersion fullExperimentSimVersion = new SimulationVersion(fullExperimentSimKey,"fullExperiment",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
 		Simulation fullExperimentSim = new Simulation(fullExperimentSimVersion, mathDesc);
 		simContext.addSimulation(fullExperimentSim);
 				
-		OutputTimeSpec fullExperimentOutputTimeSpec = new UniformOutputTimeSpec(outputTimeStep.getData()/10.0);
+		OutputTimeSpec fullExperimentOutputTimeSpec = new UniformOutputTimeSpec(context.getData(outputTimeStep)/10.0);
 
 		fullExperimentSim.getSolverTaskDescription().setTimeBounds(timeBounds);
 		fullExperimentSim.getMeshSpecification().setSamplingSize(new ISize(meshSize, meshSize, 1));
 		fullExperimentSim.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
 		fullExperimentSim.getSolverTaskDescription().setOutputTimeSpec(fullExperimentOutputTimeSpec);
 		
-		this.bioModel_2D.setData(bioModel);
-		this.simulation_2D.setData(fakeDataSim);
-		this.bleachBlackoutBeginTime.setData(bleachBlackoutBegin);
-		this.bleachBlackoutEndTime.setData(bleachBlackoutEnd);
+		context.setData(this.bioModel_2D,bioModel);
+		context.setData(this.simulation_2D,fakeDataSim);
+		context.setData(this.bleachBlackoutBeginTime,bleachBlackoutBegin);
+		context.setData(this.bleachBlackoutEndTime,bleachBlackoutEnd);
 	}
 
 }
