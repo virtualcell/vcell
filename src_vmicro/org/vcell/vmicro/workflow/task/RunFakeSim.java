@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
 import org.vcell.util.Origin;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
@@ -17,9 +15,10 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -54,14 +53,8 @@ public class RunFakeSim extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> simTimeSeries;
+	public final DataOutput<ImageTimeSeries> simTimeSeries;
 	
-	
-	@Override
-	public void gatherIssues(IssueContext issueContext, ArrayList<Issue> issues) {
-		super.gatherIssues(issueContext, issues);
-		// here put bounds checking ... etc.
-	}
 	
 	public RunFakeSim(String id){
 		super(id);
@@ -76,23 +69,23 @@ public class RunFakeSim extends Task {
 		addInput(bleachBlackoutBeginTime);
 		addInput(bleachBlackoutEndTime);
 
-		simTimeSeries = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"simTimeSeries",this);
+		simTimeSeries = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"simTimeSeries",this);
 		addOutput(simTimeSeries);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<UShortImage> solution = runRefSimulation(getLocalWorkspace(), simulation_2D.getData(), clientTaskStatusSupport);
-		simTimeSeries.setData(solution);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<UShortImage> solution = runRefSimulation(context, context.getData(simulation_2D), clientTaskStatusSupport);
+		context.setData(simTimeSeries,solution);
 	}
 	
-	private ImageTimeSeries<UShortImage> runRefSimulation(LocalWorkspace localWorkspace, Simulation simulation, ClientTaskStatusSupport progressListener) throws Exception
+	private ImageTimeSeries<UShortImage> runRefSimulation(TaskContext context, Simulation simulation, ClientTaskStatusSupport progressListener) throws Exception
 	{
 		User owner = LocalWorkspace.getDefaultOwner();
 		KeyValue simKey = LocalWorkspace.createNewKeyValue();
 		
 		runFVSolverStandalone(
-			new File(localWorkspace.getDefaultSimDataDirectory()),
+			new File(context.getLocalWorkspace().getDefaultSimDataDirectory()),
 			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			simulation,
 			progressListener);
@@ -100,12 +93,12 @@ public class RunFakeSim extends Task {
 		Extent extent = simulation.getMathDescription().getGeometry().getExtent();
 		Origin origin = simulation.getMathDescription().getGeometry().getOrigin();
 		VCDataIdentifier vcDataIdentifier = new VCSimulationDataIdentifier(new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner()),0);
-		CartesianMesh mesh = localWorkspace.getDataSetControllerImpl().getMesh(vcDataIdentifier);
+		CartesianMesh mesh = context.getLocalWorkspace().getDataSetControllerImpl().getMesh(vcDataIdentifier);
 		ISize isize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
 		
-		double[] dataTimes = localWorkspace.getDataSetControllerImpl().getDataSetTimes(vcDataIdentifier);
+		double[] dataTimes = context.getLocalWorkspace().getDataSetControllerImpl().getDataSetTimes(vcDataIdentifier);
 
-		DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataProcessingOutputDataValues)localWorkspace.getDataSetControllerImpl().doDataOperation(new DataProcessingOutputDataValuesOP(
+		DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataProcessingOutputDataValues)context.getLocalWorkspace().getDataSetControllerImpl().doDataOperation(new DataProcessingOutputDataValuesOP(
 				vcDataIdentifier, 
 				SimulationContext.FLUOR_DATA_NAME,
 				TimePointHelper.createAllTimeTimePointHelper(),
@@ -127,12 +120,12 @@ public class RunFakeSim extends Task {
 				}
 			}
 		}
-		double scale = maxIntensity.getData()/maxDataValue;
+		double scale = context.getData(maxIntensity)/maxDataValue;
 		
 		ArrayList<UShortImage> outputImages = new ArrayList<UShortImage>();
 		ArrayList<Double> outputTimes = new ArrayList<Double>();
 		for (int i=0;i<dataTimes.length;i++){
-			if (dataTimes[i] < bleachBlackoutBeginTime.getData() || dataTimes[i] > bleachBlackoutEndTime.getData()){
+			if (dataTimes[i] < context.getData(bleachBlackoutBeginTime) || dataTimes[i] > context.getData(bleachBlackoutEndTime)){
 				//saving each time step 2D double array to a UShortImage
 				double[] doubleData = (double[])sourceDataInfoArr.get(i).getData();
 				short[] shortData = new short[isize.getX()*isize.getY()];
@@ -143,7 +136,7 @@ public class RunFakeSim extends Task {
 						throw new RuntimeException("scaled pixel out of range of unsigned 16 bit integer, original simulated value = "+doubleData[j]+", scale = "+scale+", scaled value = "+dData);
 					}
 					short sData = (short)(0x0000ffff & ((int)dData));
-					if (bNoise.getData() && dData>0.0){
+					if (context.getData(bNoise) && dData>0.0){
 						if (dData>20){
 							shortData[j] = (short)(0x0000ffff & (int)RandomVariable.normal(dData, Math.sqrt(dData)));
 						}else{

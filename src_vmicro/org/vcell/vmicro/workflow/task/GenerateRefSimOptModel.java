@@ -6,9 +6,10 @@ import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithoutPenalty;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.math.RowColumnResultSet;
 
@@ -23,14 +24,14 @@ public class GenerateRefSimOptModel extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<OptModel> optModel;
+	public final DataOutput<OptModel> optModel;
 	
 	public GenerateRefSimOptModel(String id){
 		super(id);
 		refSimData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"refSimData",this);
 		refSimDiffusionRate = new DataInput<Double>(Double.class,"refSimDiffusionRate",this);
 		modelType = new DataInput<String>(String.class,"modelType",this);
-		optModel = new DataHolder<OptModel>(OptModel.class,"optModel",this);
+		optModel = new DataOutput<OptModel>(OptModel.class,"optModel",this);
 		addInput(refSimData);
 		addInput(refSimDiffusionRate);
 		addInput(modelType);
@@ -38,8 +39,8 @@ public class GenerateRefSimOptModel extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		RowColumnResultSet refSimDataset = refSimData.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		RowColumnResultSet refSimDataset = context.getData(refSimData);
 		double[] refSimTimePoints = refSimDataset.extractColumn(0);
 
 		int numRois = refSimDataset.getDataColumnCount()-1;
@@ -52,19 +53,20 @@ public class GenerateRefSimOptModel extends Task {
 			}
 		}
 		
-		ModelType modelType = ModelType.valueOf(this.modelType.getData());
+		ModelType modelType = ModelType.valueOf(context.getData(this.modelType));
 		OptModel optModel = null;
+		Double refSimDiff = context.getData(refSimDiffusionRate);
 		switch (modelType){
 			case DiffOne: {
-				optModel = new OptModelOneDiff(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelOneDiff(refSimData, refSimTimePoints, refSimDiff);
 				break;
 			}
 			case DiffTwoWithoutPenalty: {
-				optModel = new OptModelTwoDiffWithoutPenalty(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelTwoDiffWithoutPenalty(refSimData, refSimTimePoints, refSimDiff);
 				break;
 			}
 			case DiffTwoWithPenalty: {
-				optModel = new OptModelTwoDiffWithPenalty(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelTwoDiffWithPenalty(refSimData, refSimTimePoints, refSimDiff);
 				break;
 			}
 			default:{
@@ -72,7 +74,7 @@ public class GenerateRefSimOptModel extends Task {
 			}
 		}
 		
-		this.optModel.setData(optModel);
+		context.setData(this.optModel,optModel);
 	}
 	
 }

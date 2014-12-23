@@ -13,9 +13,10 @@ import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithoutPenalty;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.function.DefaultScalarFunction;
 import cbit.vcell.math.RowColumnResultSet;
@@ -72,7 +73,7 @@ public class RunProfileLikelihood extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ProfileData[]> profileData;
+	public final DataOutput<ProfileData[]> profileData;
 	
 	private double leastError = Double.MAX_VALUE;
 	
@@ -84,7 +85,7 @@ public class RunProfileLikelihood extends Task {
 		normExpData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normExpData",this);
 		normalizedMeasurementErrors = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normalizedMeasurementErrors",this);
 		modelType = new DataInput<String>(String.class,"modelType",this);
-		profileData = new DataHolder<ProfileData[]>(ProfileData[].class,"profileData",this);
+		profileData = new DataOutput<ProfileData[]>(ProfileData[].class,"profileData",this);
 		addInput(refSimData);
 		addInput(refSimDiffusionRate);
 		addInput(normExpData);
@@ -94,8 +95,8 @@ public class RunProfileLikelihood extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		RowColumnResultSet refSimDataset = refSimData.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		RowColumnResultSet refSimDataset = context.getData(refSimData);
 		double[] refSimTimePoints = refSimDataset.extractColumn(0);
 
 		int numRois = refSimDataset.getDataColumnCount()-1;
@@ -108,7 +109,7 @@ public class RunProfileLikelihood extends Task {
 			}
 		}
 		
-		RowColumnResultSet normExpDataset = normExpData.getData();
+		RowColumnResultSet normExpDataset = context.getData(normExpData);
 		double[] normExpTimePoints = normExpDataset.extractColumn(0);
 
 //		int numRois = normExpDataset.getDataColumnCount()-1;
@@ -121,7 +122,7 @@ public class RunProfileLikelihood extends Task {
 			}
 		}
 		
-		RowColumnResultSet measurementErrorDataset = normalizedMeasurementErrors.getData();
+		RowColumnResultSet measurementErrorDataset = context.getData(normalizedMeasurementErrors);
 //		int numRois = measurementErrorDataset.getDataColumnCount()-1;
 //		int numNormMeasurementErrorTimes = measurementErrorDataset.getRowCount();
 		double[][] measurementErrors = new double[numRois][numNormExpTimes];
@@ -132,19 +133,19 @@ public class RunProfileLikelihood extends Task {
 			}
 		}
 		
-		ModelType modelType = ModelType.valueOf(this.modelType.getData());
+		ModelType modelType = ModelType.valueOf(context.getData(this.modelType));
 		OptModel optModel = null;
 		switch (modelType){
 			case DiffOne: {
-				optModel = new OptModelOneDiff(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelOneDiff(refSimData, refSimTimePoints, context.getData(refSimDiffusionRate));
 				break;
 			}
 			case DiffTwoWithPenalty: {
-				optModel = new OptModelTwoDiffWithPenalty(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelTwoDiffWithPenalty(refSimData, refSimTimePoints, context.getData(refSimDiffusionRate));
 				break;
 			}
 			case DiffTwoWithoutPenalty: {
-				optModel = new OptModelTwoDiffWithoutPenalty(refSimData, refSimTimePoints, refSimDiffusionRate.getData());
+				optModel = new OptModelTwoDiffWithoutPenalty(refSimData, refSimTimePoints, context.getData(refSimDiffusionRate));
 				break;
 			}
 			default:{
@@ -155,7 +156,7 @@ public class RunProfileLikelihood extends Task {
 		OptContext optContext = new OptContext(optModel,normExpData,normExpTimePoints,measurementErrors);
 		Parameter[] bestParameters = getBestParameters(optContext,optContext.getParameters(), null);
 		ProfileData[] profileData = evaluateParameters(optContext,modelType,bestParameters,clientTaskStatusSupport);
-		this.profileData.setData(profileData);
+		context.setData(this.profileData,profileData);
 	}
 	
 	//for second run of optimization for diffusion with two diffusing components

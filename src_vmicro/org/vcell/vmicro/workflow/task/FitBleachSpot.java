@@ -5,13 +5,12 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
-import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.math.RowColumnResultSet;
 
 public class FitBleachSpot extends Task {
 	
@@ -23,9 +22,9 @@ public class FitBleachSpot extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Double> bleachRadius;
-	public final DataHolder<Double> centerX;
-	public final DataHolder<Double> centerY;
+	public final DataOutput<Double> bleachRadius;
+	public final DataOutput<Double> centerX;
+	public final DataOutput<Double> centerY;
 	
 
 	public FitBleachSpot(String id){
@@ -35,17 +34,17 @@ public class FitBleachSpot extends Task {
 		addInput(normalizedImages);
 		addInput(bleachROI);
 
-		bleachRadius = new DataHolder<Double>(Double.class,"bleachRadius",this);
-		centerX = new DataHolder<Double>(Double.class,"centerX",this);
-		centerY = new DataHolder<Double>(Double.class,"centerY",this);
+		bleachRadius = new DataOutput<Double>(Double.class,"bleachRadius",this);
+		centerX = new DataOutput<Double>(Double.class,"centerX",this);
+		centerY = new DataOutput<Double>(Double.class,"centerY",this);
 		addOutput(bleachRadius);
 		addOutput(centerX);
 		addOutput(centerY);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ROI roi = bleachROI.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ROI roi = context.getData(bleachROI);
 		
 		// initialize guess by centroid of bleach ROI and total area of bleach ROI (assuming a circle of radius R)
 		int nonzeroPixelsCount = roi.getNonzeroPixelsCount();
@@ -90,9 +89,9 @@ public class FitBleachSpot extends Task {
 		
 		
 		
-		bleachRadius.setData(fittedRadius);
-		centerX.setData(fittedCenterX);
-		centerY.setData(fittedCenterY);
+		context.setData(bleachRadius,fittedRadius);
+		context.setData(centerX,fittedCenterX);
+		context.setData(centerY,fittedCenterY);
 		
 	}
 

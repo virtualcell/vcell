@@ -6,9 +6,10 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptContextSolver;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.opt.Parameter;
 
@@ -26,7 +27,7 @@ public class RunProfileLikelihoodGeneral extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ProfileData[]> profileData;
+	public final DataOutput<ProfileData[]> profileData;
 	
 	private double leastError = Double.MAX_VALUE;
 	
@@ -34,17 +35,17 @@ public class RunProfileLikelihoodGeneral extends Task {
 	public RunProfileLikelihoodGeneral(String id){
 		super(id);
 		optContext = new DataInput<OptContext>(OptContext.class,"optContext",this);
-		profileData = new DataHolder<ProfileData[]>(ProfileData[].class,"profileData",this);
+		profileData = new DataOutput<ProfileData[]>(ProfileData[].class,"profileData",this);
 		addInput(optContext);
 		addOutput(profileData);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		OptContext context = optContext.getData();
-		Parameter[] bestParameters = getBestParameters(context, context.getParameters(), null);
-		ProfileData[] profileData = evaluateParameters(context,bestParameters,clientTaskStatusSupport);
-		this.profileData.setData(profileData);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		OptContext optContext = context.getData(this.optContext);
+		Parameter[] bestParameters = getBestParameters(optContext, optContext.getParameters(), null);
+		ProfileData[] profileData = evaluateParameters(optContext,bestParameters,clientTaskStatusSupport);
+		context.setData(this.profileData,profileData);
 	}
 	
 	public Parameter[] getBestParameters(OptContext optContext, Parameter[] inParams, Parameter fixedParam) throws Exception

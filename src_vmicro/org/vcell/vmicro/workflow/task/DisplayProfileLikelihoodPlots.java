@@ -18,9 +18,10 @@ import org.vcell.optimization.gui.ConfidenceIntervalPlotPanel;
 import org.vcell.optimization.gui.ProfileDataPanel;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DescriptiveStatistics;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -37,29 +38,23 @@ public class DisplayProfileLikelihoodPlots extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 
 	
 	public DisplayProfileLikelihoodPlots(String id){
 		super(id);
 		profileData = new DataInput<ProfileData[]>(ProfileData[].class,"profileData", this);
 		title = new DataInput<String>(String.class,"title",this);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(profileData);
 		addInput(title);
 		addOutput(displayed);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayProfileLikelihoodPlots(profileData.getData(), title.getData(), listener);
-		displayed.setData(true);
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		displayProfileLikelihoodPlots(context.getData(profileData), context.getDataWithDefault(title,"no title"), null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayProfileLikelihoodPlots(ProfileData[] profileData, String title, WindowListener listener){
@@ -89,7 +84,9 @@ public class DisplayProfileLikelihoodPlots extends Task {
 		jframe.setTitle(title);
 		jframe.getContentPane().add(scrollPane);
 		jframe.setSize(500,500);
-		jframe.addWindowListener(listener);
+		if (listener!=null){
+			jframe.addWindowListener(listener);
+		}
 		jframe.setVisible(true);
  	}
 

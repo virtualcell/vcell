@@ -3,9 +3,10 @@ package org.vcell.vmicro.workflow.task;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.math.RowColumnResultSet;
 
@@ -20,14 +21,14 @@ public class Generate2DOptContext extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<OptContext> optContext;
+	public final DataOutput<OptContext> optContext;
 	
 	public Generate2DOptContext(String id){
 		super(id);
 		optModel = new DataInput<OptModel>(OptModel.class,"optModel",this);
 		normExpData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normExpData",this);
 		normalizedMeasurementErrors = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normalizedMeasurementErrors",this);
-		optContext = new DataHolder<OptContext>(OptContext.class,"optContext",this);
+		optContext = new DataOutput<OptContext>(OptContext.class,"optContext",this);
 		addInput(optModel);
 		addInput(normExpData);
 		addInput(normalizedMeasurementErrors);
@@ -35,10 +36,10 @@ public class Generate2DOptContext extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
 		
-		RowColumnResultSet normExpDataset = normExpData.getData();
+		RowColumnResultSet normExpDataset = context.getData(normExpData);
 		double[] normExpTimePoints = normExpDataset.extractColumn(0);
 
 		int numRois = normExpDataset.getDataColumnCount()-1;
@@ -51,7 +52,7 @@ public class Generate2DOptContext extends Task {
 			}
 		}
 		
-		RowColumnResultSet measurementErrorDataset = normalizedMeasurementErrors.getData();
+		RowColumnResultSet measurementErrorDataset = context.getData(normalizedMeasurementErrors);
 		double[][] measurementErrors = new double[numRois][numNormExpTimes];
 		for (int roi=0; roi<numRois; roi++){
 			double[] roiData = measurementErrorDataset.extractColumn(roi+1);
@@ -60,7 +61,7 @@ public class Generate2DOptContext extends Task {
 			}
 		}
 		
-		optContext.setData(new OptContext(optModel.getData(),normExpData,normExpTimePoints,measurementErrors));
+		context.setData(optContext,new OptContext(context.getData(optModel),normExpData,normExpTimePoints,measurementErrors));
 	}
 	
 }

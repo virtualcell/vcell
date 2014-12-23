@@ -5,9 +5,10 @@ import java.io.File;
 import org.jdom.Element;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -25,21 +26,21 @@ public class ImportRawTimeSeriesFromVFrap extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ImageTimeSeries> rawTimeSeriesImages;
+	public final DataOutput<ImageTimeSeries> rawTimeSeriesImages;
 	
 
 	public ImportRawTimeSeriesFromVFrap(String id){
 		super(id);
 		vfrapFile = new DataInput<File>(File.class,"vfrapFile",this);
-		rawTimeSeriesImages = new DataHolder<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
+		rawTimeSeriesImages = new DataOutput<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
 		addInput(vfrapFile);
 		addOutput(rawTimeSeriesImages);
 	}
 
 	@Override
-	protected void compute0(ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
-		String xmlString = XmlUtil.getXMLString(vfrapFile.getData().getAbsolutePath());
+		String xmlString = XmlUtil.getXMLString(context.getData(vfrapFile).getAbsolutePath());
 		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 		Element vFrapRoot = XmlUtil.stringToXML(xmlString, null).getRootElement();
 
@@ -48,9 +49,9 @@ public class ImportRawTimeSeriesFromVFrap extends Task {
 		ImageDataset imageDataset = annotatedImages.getImageDataset();
 		UShortImage[] allImages = imageDataset.getAllImages();
 		double[] imageTimeStamps = imageDataset.getImageTimeStamps();
-		ImageTimeSeries imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,allImages,imageTimeStamps,1);
+		ImageTimeSeries<UShortImage> imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,allImages,imageTimeStamps,1);
 		
-		rawTimeSeriesImages.setData(imageTimeSeries);
+		context.setData(rawTimeSeriesImages,imageTimeSeries);
 	}
 
 }

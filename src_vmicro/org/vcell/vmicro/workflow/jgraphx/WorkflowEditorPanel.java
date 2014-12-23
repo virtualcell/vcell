@@ -41,7 +41,6 @@ import org.vcell.vmicro.workflow.task.ImportTimeSeriesFromCSV;
 import org.vcell.vmicro.workflow.task.NormalizeRawBleachData;
 import org.vcell.vmicro.workflow.task.RunRefSimulation;
 import org.vcell.workflow.Task;
-import org.vcell.workflow.WorkflowObject.Status;
 
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.view.mxInteractiveCanvas;
@@ -161,26 +160,19 @@ public class WorkflowEditorPanel extends BasicGraphEditor
 			Object object = super.drawCell(state);
 			if (state.getCell() instanceof WorkflowObjectCell && ((WorkflowObjectCell)state.getCell()).workflowObject instanceof Task){
 				WorkflowObjectCell cell = (WorkflowObjectCell)state.getCell();
-				Status status = cell.workflowObject.getStatus();
-				StringBuffer buffer = new StringBuffer("<html>");
-				if (status.bOutputsDirty && !status.bRunning){
-					buffer.append("<font color='red'><b>OUTPUTS_DIRTY</b></font><br>");
-				}
-				if (status.bRunning){
-					buffer.append("<font color='green'><b>RUNNING</b></font><br>");
-				}
-				if (!status.bRunning && !status.bOutputsDirty){
-					buffer.append("<font color='green'><b>DONE</b></font><br>");
-				}
-//				if (status.issues.length>0){
-//					buffer.append("<ul>");
-//					for (Issue issue : status.issues){
-//						buffer.append("<li>"+issue.getMessage()+"</li>");
-//					}
-//					buffer.append("</ul>");
+//				Status status = cell.workflowObject.getStatus();
+//				StringBuffer buffer = new StringBuffer("<html>");
+//				if (status.bOutputsDirty && !status.bRunning){
+//					buffer.append("<font color='red'><b>OUTPUTS_DIRTY</b></font><br>");
 //				}
-				buffer.append("</html>");
-				vertexRenderer.setText(buffer.toString());
+//				if (status.bRunning){
+//					buffer.append("<font color='green'><b>RUNNING</b></font><br>");
+//				}
+//				if (!status.bRunning && !status.bOutputsDirty){
+//					buffer.append("<font color='green'><b>DONE</b></font><br>");
+//				}
+//				buffer.append("</html>");
+//				vertexRenderer.setText(buffer.toString());
 				
 				rendererPane.paintComponent(g, vertexRenderer, graphComponent,
 						(int) state.getX() + translate.x, (int) state.getY()

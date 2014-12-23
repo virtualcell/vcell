@@ -4,9 +4,10 @@ import java.io.File;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.VCellSimReader;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -28,9 +29,9 @@ public class ImportImageROIsFrom2DVCell extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ROI> cellROI_2D;
-	public final DataHolder<ROI> bleachedROI_2D;
-	public final DataHolder<ROI> backgroundROI_2D;
+	public final DataOutput<ROI> cellROI_2D;
+	public final DataOutput<ROI> bleachedROI_2D;
+	public final DataOutput<ROI> backgroundROI_2D;
 	
 
 	public ImportImageROIsFrom2DVCell(String id){
@@ -39,9 +40,9 @@ public class ImportImageROIsFrom2DVCell extends Task {
 		bleachedMaskVarName = new DataInput<String>(String.class,"bleachedMaskVarName",this);
 		cellSubvolumeName = new DataInput<String>(String.class,"cellSubvolumeName",this);
 		ecSubvolumeName = new DataInput<String>(String.class,"ecSubvolumeName",this);
-		cellROI_2D = new DataHolder<ROI>(ROI.class,"cellROI_2D",this);
-		bleachedROI_2D = new DataHolder<ROI>(ROI.class,"bleachedROI_2D",this);
-		backgroundROI_2D = new DataHolder<ROI>(ROI.class,"backgroundROI_2D",this);
+		cellROI_2D = new DataOutput<ROI>(ROI.class,"cellROI_2D",this);
+		bleachedROI_2D = new DataOutput<ROI>(ROI.class,"bleachedROI_2D",this);
+		backgroundROI_2D = new DataOutput<ROI>(ROI.class,"backgroundROI_2D",this);
 		addInput(vcellSimLogFile);
 		addInput(bleachedMaskVarName);
 		addInput(cellSubvolumeName);
@@ -52,11 +53,11 @@ public class ImportImageROIsFrom2DVCell extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		VCSimulationIdentifier vcSimulationIdentifier = VCellSimReader.getVCSimulationIdentifierFromVCellSimulationData(vcellSimLogFile.getData());
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		VCSimulationIdentifier vcSimulationIdentifier = VCellSimReader.getVCSimulationIdentifierFromVCellSimulationData(context.getData(vcellSimLogFile));
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,0);
 		
-		DataSetControllerImpl dataSetControllerImpl = VCellSimReader.getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile.getData());
+		DataSetControllerImpl dataSetControllerImpl = VCellSimReader.getDataSetControllerImplFromVCellSimulationData(context.getData(vcellSimLogFile));
 
 		CartesianMesh cartesianMesh = dataSetControllerImpl.getMesh(vcSimulationDataIdentifier);
 		
@@ -70,13 +71,13 @@ public class ImportImageROIsFrom2DVCell extends Task {
 		{
 			clientTaskStatusSupport.setMessage("Loading ROIs...");
 		}
-		double[] rawROIBleached = dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier, bleachedMaskVarName.getData(), 0).getData();
+		double[] rawROIBleached = dataSetControllerImpl.getSimDataBlock(null,vcSimulationDataIdentifier, context.getData(bleachedMaskVarName), 0).getData();
 		short[] scaledCellDataShort = new short[rawROIBleached.length];
 		short[] scaledBleachedDataShort = new short[rawROIBleached.length];
 		short[] scaledBackgoundDataShort = new short[rawROIBleached.length];
 		for (int j = 0; j < scaledCellDataShort.length; j++) {
-			boolean isCell = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals(cellSubvolumeName.getData());
-			boolean isBackground = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals(ecSubvolumeName.getData());
+			boolean isCell = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals(context.getData(cellSubvolumeName));
+			boolean isBackground = cartesianMesh.getCompartmentSubdomainNamefromVolIndex(j).equals(context.getData(ecSubvolumeName));
 			if(isCell)
 			{
 				scaledCellDataShort[j]= 1;
@@ -118,9 +119,9 @@ public class ImportImageROIsFrom2DVCell extends Task {
 		ROI bleachedROI = new ROI(bleachedImage,"bleachedROI");
 		ROI backgroundROI = new ROI(backgroundImage,"backgroundROI");
 		
-		cellROI_2D.setData(cellROI);
-		bleachedROI_2D.setData(bleachedROI);
-		backgroundROI_2D.setData(backgroundROI);
+		context.setData(cellROI_2D,cellROI);
+		context.setData(bleachedROI_2D,bleachedROI);
+		context.setData(backgroundROI_2D,backgroundROI);
 	}
 
 }

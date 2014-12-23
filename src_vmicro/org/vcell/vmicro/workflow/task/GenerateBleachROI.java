@@ -2,9 +2,10 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
@@ -23,8 +24,8 @@ public class GenerateBleachROI extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<ROI> bleachedROI_2D;
-	public final DataHolder<ROI[]> bleachedROI_2D_array;
+	public final DataOutput<ROI> bleachedROI_2D;
+	public final DataOutput<ROI[]> bleachedROI_2D_array;
 	
 
 	public GenerateBleachROI(String id){
@@ -32,8 +33,8 @@ public class GenerateBleachROI extends Task {
 		normalizedTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"rawTimeSeriesImages",this);
 		bleachThreshold = new DataInput<Double>(Double.class,"bleachThreshold",this);
 		cellROI_2D = new DataInput<ROI>(ROI.class,"cellROI_2D",this);
-		bleachedROI_2D = new DataHolder<ROI>(ROI.class,"bleachedROI_2D",this);
-		bleachedROI_2D_array = new DataHolder<ROI[]>(ROI[].class,"bleachedROI_2D_array",this);
+		bleachedROI_2D = new DataOutput<ROI>(ROI.class,"bleachedROI_2D",this);
+		bleachedROI_2D_array = new DataOutput<ROI[]>(ROI[].class,"bleachedROI_2D_array",this);
 		addInput(normalizedTimeSeries);
 		addInput(cellROI_2D);
 		addInput(bleachThreshold);
@@ -42,9 +43,9 @@ public class GenerateBleachROI extends Task {
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
-		Image[] allImages = normalizedTimeSeries.getData().getAllImages();
+		Image[] allImages = context.getData(normalizedTimeSeries).getAllImages();
 		int numPixels = allImages[0].getNumXYZ();
 		int numTimes = allImages.length;
 
@@ -55,8 +56,8 @@ public class GenerateBleachROI extends Task {
 		
 		short[] scaledBleachedDataShort = new short[numPixels];
 				
-		short[] erodedCellUShort = cellROI_2D.getData().getRoiImages()[0].getBinaryPixels(1);
-		double bleachThresholdValue = bleachThreshold.getData(); // input is already normalized to 1.0 ... if relative to max, then crazy values from outside cell can interfere.
+		short[] erodedCellUShort = context.getData(cellROI_2D).getRoiImages()[0].getBinaryPixels(1);
+		double bleachThresholdValue = context.getData(bleachThreshold); // input is already normalized to 1.0 ... if relative to max, then crazy values from outside cell can interfere.
 		double[] firstPostbleachImage = allImages[0].getDoublePixels();
 		for (int j = 0; j < numPixels; j++) {
 			boolean isCell = (erodedCellUShort[j] == 1);
@@ -80,8 +81,8 @@ public class GenerateBleachROI extends Task {
 		
 		ROI bleachedROI = new ROI(bleachedImage,"bleachedROI");
 		
-		bleachedROI_2D.setData(bleachedROI);
-		bleachedROI_2D_array.setData(new ROI[] { bleachedROI });
+		context.setData(bleachedROI_2D,bleachedROI);
+		context.setData(bleachedROI_2D_array,new ROI[] { bleachedROI });
 	}
 
 }

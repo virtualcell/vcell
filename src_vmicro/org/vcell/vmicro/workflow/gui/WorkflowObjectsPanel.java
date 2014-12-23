@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -39,14 +40,18 @@ import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.task.DisplayImage;
 import org.vcell.vmicro.workflow.task.DisplayPlot;
 import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.DisplayTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
+import org.vcell.workflow.MemoryRepository;
+import org.vcell.workflow.Repository;
 import org.vcell.workflow.Task;
-import org.vcell.workflow.Workflow;
+import org.vcell.workflow.TaskContext;
+import org.vcell.workflow.WorkflowDataSource;
 import org.vcell.workflow.WorkflowObject;
 
 import cbit.image.ImageException;
@@ -72,7 +77,7 @@ public class WorkflowObjectsPanel extends JPanel {
 	private JButton deleteButton = null;
 	private EditorScrollTable parametersFunctionsTable;
 	private WorkflowObjectsTableModel parametersFunctionsTableModel = null;
-	private Workflow workflow;
+	private TaskContext taskContext;
 	private JTextField textFieldSearch = null;
 	private JPanel parametersFunctionsPanel = null;
 		
@@ -101,7 +106,7 @@ public class WorkflowObjectsPanel extends JPanel {
 		}
 		
 		public void valueChanged(ListSelectionEvent e) {
-			if (workflow == null || e.getValueIsAdjusting()) {
+			if (taskContext == null || e.getValueIsAdjusting()) {
 				return;
 			}
 			if (e.getSource() == parametersFunctionsTable.getSelectionModel()) {
@@ -135,7 +140,7 @@ public class WorkflowObjectsPanel extends JPanel {
 		for (int r : rows) {
 			if (r < parametersFunctionsTableModel.getRowCount()) {
 				WorkflowObject workflowObject = parametersFunctionsTableModel.getValueAt(r);
-				displayData(workflowObject);
+				displayData(taskContext,workflowObject);
 			}
 		}
 	}
@@ -149,15 +154,17 @@ public class WorkflowObjectsPanel extends JPanel {
 			if (r < parametersFunctionsTableModel.getRowCount()) {
 				WorkflowObject workflowObject = parametersFunctionsTableModel.getValueAt(r);
 				if (workflowObject instanceof Task){
-					workflow.removeTask((Task)workflowObject);
+					taskContext.getWorkflow().removeTask((Task)workflowObject);
 				}
 			}
 		}
 	}
 
 	private void runButtonPressed() throws Exception {
-		if (workflow!=null){
-			workflow.compute(new ClientTaskStatusSupport(){
+		if (taskContext!=null){
+			LocalWorkspace localWorkspace = new LocalWorkspace(new File("C:\\temp\\"));
+			Repository repository = new MemoryRepository();
+			taskContext.getWorkflow().compute(taskContext, new ClientTaskStatusSupport(){
 
 				@Override
 				public void setMessage(String message) {
@@ -358,7 +365,7 @@ public class WorkflowObjectsPanel extends JPanel {
 				if (!(workflowObject instanceof Task)) {
 					bAllTasks = false;
 				}
-				if (!hasDisplayData(workflowObject)){
+				if (!hasDisplayData(taskContext, workflowObject)){
 					bAllDisplable = false;
 				}
 			}
@@ -367,17 +374,17 @@ public class WorkflowObjectsPanel extends JPanel {
 		showButton.setEnabled(bAllDisplable);
 	}
 	
-	private void displayData(WorkflowObject workflowObject){
-		if (workflowObject instanceof DataInput || workflowObject instanceof DataHolder){
+	private void displayData(TaskContext taskContext, WorkflowObject workflowObject){
+		if (workflowObject instanceof DataInput || workflowObject instanceof DataOutput){
 			String title = parametersFunctionsTableModel.getName(workflowObject);
 			WindowListener listener = new WindowAdapter(){};
 			Object data = null;
-			if (workflowObject instanceof DataHolder){
-				DataHolder dataHolder = (DataHolder)workflowObject;
-				data = dataHolder.getData();
+			if (workflowObject instanceof WorkflowDataSource){
+				WorkflowDataSource dataHolder = (WorkflowDataSource)workflowObject;
+				data = taskContext.getRepository().getData(dataHolder);
 			}else if (workflowObject instanceof DataInput){
 				DataInput dataInput = (DataInput)workflowObject;
-				data = dataInput.getData();
+				data = taskContext.getData(dataInput);
 			}
 			if (data instanceof RowColumnResultSet){
 				RowColumnResultSet rc = (RowColumnResultSet)data;
@@ -408,17 +415,17 @@ public class WorkflowObjectsPanel extends JPanel {
 	}
 
 	
-	private boolean hasDisplayData(WorkflowObject workflowObject){
-		if (workflowObject instanceof DataInput || workflowObject instanceof DataHolder){
+	private boolean hasDisplayData(TaskContext taskContext, WorkflowObject workflowObject){
+		if (workflowObject instanceof DataInput || workflowObject instanceof DataOutput){
 			String title = parametersFunctionsTableModel.getName(workflowObject);
 			WindowListener listener = new WindowAdapter(){};
 			Object data = null;
-			if (workflowObject instanceof DataHolder){
-				DataHolder dataHolder = (DataHolder)workflowObject;
-				data = dataHolder.getData();
+			if (workflowObject instanceof WorkflowDataSource){
+				WorkflowDataSource dataHolder = (WorkflowDataSource)workflowObject;
+				data = taskContext.getRepository().getData(dataHolder);
 			}else if (workflowObject instanceof DataInput){
 				DataInput dataInput = (DataInput)workflowObject;
-				data = dataInput.getData();
+				data = taskContext.getData(dataInput);
 			}
 			if (data instanceof RowColumnResultSet
 				|| data instanceof ROI
@@ -437,12 +444,12 @@ public class WorkflowObjectsPanel extends JPanel {
 		parametersFunctionsTableModel.setSearchText(text);
 	}
 	
-	public void setWorkflow(Workflow newValue) {
-		if (newValue == workflow) {
+	public void setTaskContext(TaskContext newValue) {
+		if (newValue == taskContext) {
 			return;
 		}
-		workflow = newValue;		
-		parametersFunctionsTableModel.setWorkflow(workflow);
+		taskContext = newValue;		
+		parametersFunctionsTableModel.setTaskContext(newValue);
 	}
 	
 }

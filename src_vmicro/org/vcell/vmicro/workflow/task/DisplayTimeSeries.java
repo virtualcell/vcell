@@ -16,9 +16,10 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.workflow.DataHolder;
 import org.vcell.workflow.DataInput;
+import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
+import org.vcell.workflow.TaskContext;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -63,36 +64,26 @@ public class DisplayTimeSeries extends Task {
 	//
 	// outputs
 	//
-	public final DataHolder<Boolean> displayed;
+	public final DataOutput<Boolean> displayed;
 
 	
 	public DisplayTimeSeries(String id){
 		super(id);
 		imageTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"imageTimeSeries", this);
 		title = new DataInput<String>(String.class,"title",this,true);
-		displayed = new DataHolder<Boolean>(Boolean.class,"displayed",this);
+		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(imageTimeSeries);
 		addInput(title);
 		addOutput(displayed);
 	}
 
 	@Override
-	protected void compute0(final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		ImageTimeSeries<Image> imageDataset = imageTimeSeries.getData();
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		ImageTimeSeries<Image> imageDataset = context.getData(imageTimeSeries);
 		String titleString = "no title - not connected";
-		if (title.bOptional && title.getSource()==null){
-			titleString = "no title";
-		}else{
-			titleString = title.getData();
-		}
-		WindowListener listener = new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				displayed.setDirty();
-				updateStatus();
-			};
-		};
-		displayImageTimeSeries(imageDataset, titleString, listener);
-		displayed.setData(true);
+		titleString = context.getDataWithDefault(title,"no title");
+		displayImageTimeSeries(imageDataset, titleString, null);
+		context.setData(displayed,true);
 	}
 	
 	public static void displayImageTimeSeries(final ImageTimeSeries<Image> imageTimeSeries, String title, WindowListener windowListener) throws ImageException, IOException {
@@ -219,7 +210,9 @@ public class DisplayTimeSeries extends Task {
 		jframe.getContentPane().add(pdeDataViewer);
 		jframe.setSize(1000,600);
 		jframe.setVisible(true);
-		jframe.addWindowListener(windowListener);
+		if (windowListener!=null){
+			jframe.addWindowListener(windowListener);
+		}
 		
 		pdeDataViewer.setPdeDataContext(myPdeDataContext);
 	}
