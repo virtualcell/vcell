@@ -75,6 +75,8 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.resource.LibraryLicense;
+import cbit.vcell.resource.LicensedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -460,6 +462,7 @@ public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
 	this.fieldName = "Application_with_"+geometry.getName();
 }
+
 
 
 /**
@@ -2212,6 +2215,24 @@ public SimContextTransformer createNewTransformer(){
 		}	// if no rbm stuff we don't need to flatten a deterministic model
 	}
 	return modelTransformer;	
+}
+
+/**
+ * duplicate logic in {@link #createNewTransformer()} ... if {@link NetworkTransformer} 
+ * going to be needed, return {@link LicensedLibrary#CYGWIN_DLL_BIONETGEN}
+ */
+@Override
+public LicensedLibrary getRequiredLibrary( ) {
+	if (!isRuleBased( )) {
+		try { //4 gets and size -- can any return null? Wrap for safety
+			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
+			if (listSize > 0) {
+				return LicensedLibrary.CYGWIN_DLL_BIONETGEN;
+			}
+		}
+		catch (NullPointerException npe) { }
+	}
+	return null;
 }
 
 public MathMapping createNewMathMapping() {
