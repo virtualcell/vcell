@@ -11,8 +11,12 @@
 package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.resource.LicensedLibrary;
 /**
  * Insert the type's description here.
  * Creation date: (6/4/2004 1:56:12 AM)
@@ -26,8 +30,17 @@ public interface SimulationOwner extends GeometryOwner {
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
 	OutputFunctionContext getOutputFunctionContext();
+	/**
+	 * may required licensed libraries; see {@link #getRequiredLibrary()}
+	 */
 	MathDescription getMathDescription();
 	void refreshMathDescription();
 	String getName();
+	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName);
+	/**
+	 * return any license libraries required for execution 
+	 * @return required library, if any, or null
+	 */
+	public LicensedLibrary getRequiredLibrary();
 }
 
